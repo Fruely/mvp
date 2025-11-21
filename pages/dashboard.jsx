@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import UserCard from '@/components/UserCard';
-import { fetchUserProfile, fetchUserBookings } from '@/utils/api';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import UserCard from '../components/UserCard';
+import { fetchUserProfile, fetchUserBookings } from '../utils/api';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
