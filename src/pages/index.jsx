@@ -1,95 +1,82 @@
-import { useState, useEffect } from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import ServiceCard from '@/components/ServiceCard';
-import { fetchServices } from '@/utils/api';
+import Header from "../components/Header";
+import Hero from "../components/Hero";
+import CategoryCard from "../components/CategoryCard";
+import { useState, useEffect } from "react";
+import { t } from "../utils/i18n";
 
 export default function Home() {
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [lang, setLang] = useState("de");
 
   useEffect(() => {
-    const loadServices = async () => {
-      try {
-        const data = await fetchServices();
-        setServices(data);
-      } catch (error) {
-        console.error('Ошибка загрузки услуг:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadServices();
+    const saved = typeof window !== "undefined" && localStorage.getItem("freuly_lang");
+    if (saved) setLang(saved);
   }, []);
 
+  const categories = [
+    { title: "Psychologen", subtitle: "Unterstützung & Beratung", img: "/assets/psychology.jpg" },
+    { title: "Masseure", subtitle: "Entspannung & Gesundheit", img: "/assets/massage.jpg" },
+    { title: "Nachhilfelehrer", subtitle: "Bildung & Entwicklung", img: "/assets/tutor.jpg" },
+    { title: "Handwerker", subtitle: "Reparatur & Renovierung", img: "/assets/repair.jpg" },
+    { title: "Logistik & Umzug", subtitle: "Transport & Hilfe", img: "/assets/moving.jpg" },
+    { title: "Ärzte", subtitle: "Medizinische Beratung", img: "/assets/doctor.jpg" }
+  ];
+
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header />
+    <div className="min-h-screen flex flex-col">
+      <Header onLangChange={(c) => setLang(c)} />
 
       <main className="flex-grow">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-br from-primary to-blue-600 text-white py-20">
-          <div className="container-custom">
-            <div className="max-w-2xl">
-              <h1 className="text-4xl sm:text-5xl font-bold mb-6">
-                Ваше здоровье и благополучие
-              </h1>
-              <p className="text-xl text-blue-100 mb-8">
-                Найдите лучшие услуги массажа, йоги, фитнеса и консультаций в одном месте
-              </p>
-              <button className="bg-white text-primary px-8 py-4 rounded-lg font-bold hover:scale-105 transition-transform duration-200 shadow-lg">
-                Начать поиск
-              </button>
-            </div>
+        <Hero
+          title={t("hero.title", lang)}
+          subtitle={t("hero.subtitle", lang)}
+          cta={t("hero.cta", lang)}
+        />
+
+        <section id="categories" className="max-w-7xl mx-auto px-4 py-16">
+          <h2 className="text-center text-2xl font-semibold mb-8">{t("categories.title", lang)}</h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {categories.map((c, i) => (
+              <CategoryCard key={i} {...c} />
+            ))}
           </div>
-        </section>
 
-        {/* Services Section */}
-        <section className="py-20 container-custom">
-          <h2 className="section-title">Наши услуги</h2>
-
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className="card animate-pulse">
-                  <div className="h-48 bg-gray-300 rounded-lg mb-4"></div>
-                  <div className="h-6 bg-gray-300 rounded mb-3"></div>
-                  <div className="h-4 bg-gray-300 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-300 rounded mb-4"></div>
-                  <div className="h-10 bg-gray-300 rounded"></div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {services.map(service => (
-                <ServiceCard
-                  key={service.id}
-                  {...service}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* CTA Section */}
-        <section className="bg-blue-50 py-16 container-custom">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-primary mb-4">
-              Не нашли нужную услугу?
-            </h2>
-            <p className="text-gray-600 mb-8 max-w-xl mx-auto">
-              Свяжитесь с нами, и мы подберем идеальное решение для вас
-            </p>
-            <button className="btn-primary">
-              Написать нам
+          <div className="flex justify-center mt-8">
+            <button className="px-5 py-2 border rounded-full text-primary hover:shadow-md">
+              {t("card.more", lang)}
             </button>
           </div>
         </section>
       </main>
 
-      <Footer />
+      <footer className="bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 py-10 flex flex-col md:flex-row justify-between items-start gap-6">
+          <div>
+            <div className="text-2xl font-bold text-primary">Freuly</div>
+            <div className="text-sm text-gray-600 mt-2 max-w-sm">Freuly — место, где люди находят профессионалов, говорящих на их языке.</div>
+          </div>
+
+          <div className="flex gap-10">
+            <div>
+              <h4 className="font-semibold mb-2">Компания</h4>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li><a href="#" className="hover:text-primary">О нас</a></li>
+                <li><a href="#" className="hover:text-primary">Поддержка</a></li>
+                <li><a href="#" className="hover:text-primary">Для специалистов</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-2">Контакты</h4>
+              <p className="text-sm text-gray-600">info@freuly.example</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-center text-xs text-gray-400 py-4 border-t">
+          © 2025 Freuly. Все права защищены.
+        </div>
+      </footer>
     </div>
   );
 }
