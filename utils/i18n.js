@@ -1,6 +1,6 @@
-import de from "../locales/de.json";
-import en from "../locales/en.json";
-import ua from "../locales/ua.json";
+import de from "../src/locales/de.json";
+import en from "../src/locales/en.json";
+import ua from "../src/locales/ua.json";
 
 const LOCALES = { de, en, ua };
 
