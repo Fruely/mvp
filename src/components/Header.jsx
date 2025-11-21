@@ -1,44 +1,71 @@
-import Link from 'next/link';
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
-export default function Header() {
+const LANGS = [
+  { code: "de", label: "DE" },
+  { code: "en", label: "EN" },
+  { code: "ua", label: "UA" }
+];
+
+export default function Header({ onLangChange }) {
+  const [lang, setLang] = useState("de");
+
+  useEffect(() => {
+    const saved = typeof window !== "undefined" && localStorage.getItem("freuly_lang");
+    if (saved) setLang(saved);
+  }, []);
+
+  const changeLang = (code) => {
+    setLang(code);
+    if (typeof window !== "undefined") localStorage.setItem("freuly_lang", code);
+    if (onLangChange) onLangChange(code);
+  };
+
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
-      <div className="container-custom">
-        <div className="flex justify-between items-center py-4">
-          {/* Logo */}
-          <Link href="/">
-            <div className="flex items-center gap-2 cursor-pointer">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">F</span>
-              </div>
-              <span className="text-xl font-bold text-primary">Froyle</span>
-            </div>
-          </Link>
+    <header className="bg-white shadow-sm sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center gap-3">
+            <Link href="/">
+              <a className="flex items-center gap-3">
+                <img src="/assets/logo.png" alt="Freuly" className="h-10 w-auto" />
+                <div className="leading-tight">
+                  <div className="text-2xl font-bold text-primary">Freuly</div>
+                  <div className="text-xs text-gray-500">Специалист на твоём языке</div>
+                </div>
+              </a>
+            </Link>
+          </div>
 
-          {/* Navigation */}
-          <nav className="hidden md:flex gap-8">
-            <Link href="/" className="text-gray-600 hover:text-primary transition-colors">
-              Услуги
-            </Link>
-            <Link href="/booking" className="text-gray-600 hover:text-primary transition-colors">
-              Запись
-            </Link>
-            <Link href="/dashboard" className="text-gray-600 hover:text-primary transition-colors">
-              Личный кабинет
-            </Link>
-            <Link href="/admin" className="text-gray-600 hover:text-primary transition-colors">
-              Админ
-            </Link>
+          <nav className="hidden md:flex items-center gap-6">
+            <a className="text-gray-700 hover:text-primary" href="#categories">Категории</a>
+            <Link href="/about"><a className="text-gray-700 hover:text-primary">О нас</a></Link>
+            <Link href="/contacts"><a className="text-gray-700 hover:text-primary">Контакты</a></Link>
           </nav>
 
-          {/* Language Selector */}
-          <div className="flex gap-4 items-center">
-            <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:border-primary transition-colors cursor-pointer">
-              <option value="ru">РУ</option>
-              <option value="en">EN</option>
-              <option value="de">DE</option>
-            </select>
-            <button className="btn-primary hidden sm:block">Войти</button>
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-2">
+              <div className="text-sm text-gray-600 mr-2">{/* question text */}Bist du Fachkraft?</div>
+              <Link href="/specialist">
+                <a className="px-4 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:shadow-lg transform hover:scale-105 transition">
+                  Bei Freuly beitreten
+                </a>
+              </Link>
+            </div>
+
+            <div className="flex items-center gap-2 border rounded-full overflow-hidden">
+              {LANGS.map(l => (
+                <button
+                  key={l.code}
+                  onClick={() => changeLang(l.code)}
+                  className={`px-3 py-1 text-sm ${lang === l.code ? "bg-primary text-white" : "text-primary bg-white"}`}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+
+            {/* mobile menu button could be here */}
           </div>
         </div>
       </div>
