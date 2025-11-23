@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.freuly.sync</string>
+
+    <key>ProgramArguments</key>
+    <array>
+      <string>/bin/bash</string>
+      <string>/Users/verkauf/freuly-mvp/scripts/sync-repo.sh</string>
+      <string>git@github.com:Fruely/mvp.git</string>
+      <string>/Users/verkauf/freuly-mvp</string>
+      <string>main</string>
+    </array>
+
+    <!-- run every hour -->
+    <key>StartInterval</key>
+    <integer>3600</integer>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/com.freuly.sync.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/com.freuly.sync.err.log</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+  </dict>
+</plist>
