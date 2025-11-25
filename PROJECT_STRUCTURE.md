@@ -6,17 +6,14 @@
 froyle-mvp/
 │
 ├── 📁 src/
-│   ├── 📁 components/              (6 компонентов)
+│   ├── 📁 components/              (5 компонентов)
 │   │   ├── 📄 Header.jsx           - Навигация, логотип, язык
 │   │   ├── 📄 Footer.jsx           - Подвал, контакты, ссылки
 │   │   ├── 📄 ServiceCard.jsx      - Карточка услуги
-│   │   ├── 📄 Calendar.jsx         - Календарь бронирования
-│   │   ├── 📄 BookingForm.jsx      - Форма записи на услугу
 │   │   └── 📄 UserCard.jsx         - Профиль пользователя
 │   │
-│   ├── 📁 pages/                   (4 страницы + конфиги)
+│   ├── 📁 pages/                   (3 страницы + конфиги)
 │   │   ├── 📄 index.jsx            - Главная страница (/)
-│   │   ├── 📄 booking.jsx          - Страница записи (/booking)
 │   │   ├── 📄 dashboard.jsx        - Личный кабинет (/dashboard)
 │   │   ├── 📄 admin.jsx            - Админ-панель (/admin)
 │   │   ├── 📄 _app.jsx             - App wrapper (Next.js конфиг)
@@ -91,12 +88,10 @@ src/
 ## 🎯 Назначение каждой папки
 
 ### `/src/components/`
-Переиспользуемые React компоненты:
+Переиспользуемые React компоненты (UI бронирования удалён):
 - **Header** - навигация
 - **Footer** - подвал
 - **ServiceCard** - карточка услуги
-- **Calendar** - календарь
-- **BookingForm** - форма записи
 - **UserCard** - профиль пользователя
 
 ### `/src/pages/`
@@ -135,10 +130,8 @@ pages/index.jsx
 ├── uses: fetchServices() from api.js
 └── renders: List of services
 
-pages/booking.jsx
-├── imports: Header, Footer, Calendar, BookingForm
-├── uses: No API calls in component
-└── renders: Booking interface
+pages/booking.jsx (removed)
+├── Примечание: страница `/booking` и связанные UI-компоненты (календарь/форма) удалены из шаблона — используйте Supabase или внешний backend для приёма заявок. Mock API функций для бронирований сохранён в `utils/api.js`.
 
 pages/dashboard.jsx
 ├── imports: Header, Footer, UserCard
@@ -161,7 +154,7 @@ components/Footer.jsx
 components/ServiceCard.jsx
 └── used by: pages/index.jsx
 
-components/Calendar.jsx
+components/Calendar.jsx (removed)
 └── used by: pages/booking.jsx
 
 components/BookingForm.jsx
@@ -292,7 +285,7 @@ const data = await fetchMyData();
 - **Навигация**: `Header.jsx`
 - **Подвал**: `Footer.jsx`
 - **Карточки услуг**: `ServiceCard.jsx`
-- **Календарь**: `Calendar.jsx`
+- **Календарь**: (удалён, используйте Supabase/внешний backend)
 - **Формы**: `BookingForm.jsx`
 - **Профили**: `UserCard.jsx`
 

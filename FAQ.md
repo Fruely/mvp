@@ -264,26 +264,9 @@ export default function Services() {
 
 ---
 
-### Q: Как сделать Calendar контролируемым?
+### Q: Как работать с выбором даты?
 
-**A**: Модифицируйте компонент `Calendar.jsx` для использования внешнего state:
-
-```jsx
-// В компоненте
-export default function Calendar({ onDateSelect }) {
-  // ... 
-  const handleSelect = (day) => {
-    setSelectedDate(day);
-    onDateSelect?.(day);  // Вызвать callback
-  };
-  // ...
-}
-
-// В странице
-const [selectedDate, setSelectedDate] = useState(null);
-
-<Calendar onDateSelect={(date) => setSelectedDate(date)} />
-```
+**A**: В текущем шаблоне встроенный компонент календаря удалён. Для приёма заявок рекомендуется использовать backend (например, Supabase) и хранить/обрабатывать выбранные даты там. Для интерактивного выбора даты используйте сторонние библиотеки или ваш собственный компонент, который передаёт выбранную дату в обработчик и backend.
 
 ---
 
@@ -551,8 +534,12 @@ rm -rf .next && npm run dev
 ANALYZE=true npm run build
 
 # 2. Используйте dynamic imports для больших компонентов
+Для тяжёлых компонентов (например, виджеты с картами, видеоплееры) используйте динамический импорт, чтобы уменьшить initial bundle:
+
+```js
 import dynamic from 'next/dynamic';
-const BookingForm = dynamic(() => import('@/components/BookingForm'));
+const HeavyComponent = dynamic(() => import('@/components/HeavyComponent'));
+```
 
 # 3. Оптимизировать изображения
 use Next.js Image component

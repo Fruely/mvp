@@ -45,7 +45,7 @@ npm run dev
 | Страница | URL | Описание |
 |----------|-----|---------|
 | 🏠 Главная | http://localhost:3000 | Список услуг |
-| 📅 Запись | http://localhost:3000/booking | Бронирование услуги |
+| (Запись UI удалён) | (см. docs) | Бронирование через Supabase / внешний backend |
 | 👤 Кабинет | http://localhost:3000/dashboard | Личный кабинет |
 | ⚙️ Админ | http://localhost:3000/admin | Админ-панель |
 
@@ -56,12 +56,10 @@ npm run dev
 ```
 froyle-mvp/
 ├── src/
-│   ├── components/          # React компоненты
+│   ├── components/          # React компоненты (booking UI removed)
 │   │   ├── Header.jsx       # Навигация
 │   │   ├── Footer.jsx       # Подвал
 │   │   ├── ServiceCard.jsx  # Карточка услуги
-│   │   ├── Calendar.jsx     # Календарь
-│   │   ├── BookingForm.jsx  # Форма записи
 │   │   └── UserCard.jsx     # Профиль
 │   ├── pages/               # Next.js страницы
 │   │   ├── index.jsx        # Главная (/)

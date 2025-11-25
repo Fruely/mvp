@@ -406,8 +406,8 @@ import Image from 'next/image';
 ```jsx
 import dynamic from 'next/dynamic';
 
-const BookingForm = dynamic(() => import('@/components/BookingForm'), {
-  loading: () => <div>Загрузка формы...</div>,
+const HeavyComponent = dynamic(() => import('@/components/HeavyComponent'), {
+  loading: () => <div>Загрузка компонента...</div>,
 });
 ```
 

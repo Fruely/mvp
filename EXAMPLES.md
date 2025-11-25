@@ -72,54 +72,27 @@ export default function Page() {
 // Автоматически переходит между страницами
 ```
 
-### Calendar с обработчиком
+### Работа с заявками (backend)
 
-```jsx
-import { useState } from 'react';
-import Calendar from '@/components/Calendar';
+В этом шаблоне UI-виджеты для бронирования (календарь и форма) удалены в пользу использования внешней системы заявок (например, Supabase). Для интеграции используйте backend (Supabase) и вызовы API — в проекте оставлен `utils/api.js` с mock-функциями, которые помогут при миграции:
 
-export default function BookingPage() {
-  const [selectedDate, setSelectedDate] = useState(null);
-
-  return (
-    <div>
-      <Calendar onDateSelect={(date) => setSelectedDate(date)} />
-      {selectedDate && (
-        <p>Вы выбрали: {selectedDate}</p>
-      )}
-    </div>
-  );
-}
-```
-
-### BookingForm с обработкой
-
-```jsx
-import { useState } from 'react';
-import BookingForm from '@/components/BookingForm';
+```js
 import { createBooking } from '@/utils/api';
 
-export default function BookingPage() {
-  const [booking, setBooking] = useState(null);
+async function handleBooking() {
+  const result = await createBooking({
+    serviceId: 1,
+    date: '2025-01-20',
+    time: '10:00',
+    name: 'Иван Петров',
+    email: 'ivan@example.com',
+    phone: '+7 (999) 123-45-67',
+    notes: 'Переходим на Supabase',
+  });
 
-  const handleBooking = async (formData) => {
-    try {
-      const result = await createBooking(formData);
-      if (result.success) {
-        setBooking(result.booking);
-        console.log('Бронирование успешно создано!');
-      }
-    } catch (error) {
-      console.error('Ошибка при создании бронирования:', error);
-    }
-  };
-
-  return (
-    <div>
-      <BookingForm onSubmit={handleBooking} />
-      {booking && <p>Бронирование ID: {booking.id}</p>}
-    </div>
-  );
+  if (result.success) {
+    console.log('Бронирование создано (mock):', result.booking);
+  }
 }
 ```
 
@@ -376,41 +349,9 @@ export default function Home() {
 }
 ```
 
-### Страница бронирования
+### Страница бронирования (удалена)
 
-```jsx
-// pages/booking.jsx
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import Calendar from '@/components/Calendar';
-import BookingForm from '@/components/BookingForm';
-
-export default function Booking() {
-  return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header />
-      <main className="flex-grow container-custom py-12">
-        <h1 className="section-title">Запись на услугу</h1>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div>
-            <h2 className="text-2xl font-bold text-primary mb-4">
-              Выберите дату
-            </h2>
-            <Calendar />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-primary mb-4">
-              Заполните форму
-            </h2>
-            <BookingForm />
-          </div>
-        </div>
-      </main>
-      <Footer />
-    </div>
-  );
-}
-```
+В этом шаблоне страница `/booking` и встроенные UI-компоненты для бронирования (календарь/форма) удалены. Рекомендуется реализовать приём заявок через Supabase или ваш backend и вызывать API из фронтенда. См. разделы `EXAMPLES.md` и `utils/api.js` для примера mock-вызовов.
 
 ### Личный кабинет
 

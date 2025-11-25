@@ -13,16 +13,13 @@
 ```
 froyle-mvp/
 ├── src/
-│   ├── components/              # 6 готовых компонентов
+│   ├── components/              # 4 готовых компонентов (booking UI removed)
 │   │   ├── Header.jsx
 │   │   ├── Footer.jsx
 │   │   ├── ServiceCard.jsx
-│   │   ├── Calendar.jsx
-│   │   ├── BookingForm.jsx
 │   │   └── UserCard.jsx
-│   ├── pages/                   # 4 страницы + конфиги
+│   ├── pages/                   # 3 страницы + конфиги (booking removed)
 │   │   ├── index.jsx            # Главная
-│   │   ├── booking.jsx          # Запись
 │   │   ├── dashboard.jsx        # Кабинет
 │   │   ├── admin.jsx            # Админ-панель
 │   │   ├── _app.jsx
@@ -101,21 +98,7 @@ http://localhost:3000
 - Кнопка "Записаться"
 - Hover эффекты
 
-### 4. **Calendar** ✅
-- Выбор месяца
-- Навигация (←→)
-- Выбор даты
-- Отображение выбранной даты
-- Русская локализация
-
-### 5. **BookingForm** ✅
-- Поля: ФИО, Email, Телефон
-- Выбор услуги (dropdown)
-- Дата и время
-- Дополнительные пожелания
-- Валидация формы
-
-### 6. **UserCard** ✅
+### 4. **UserCard** ✅
 - Аватар пользователя
 - Контактная информация
 - Статистика (записи, потрачено)

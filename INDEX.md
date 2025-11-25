@@ -202,15 +202,13 @@
 - **Header** → COMPONENTS.md → Header.jsx
 - **Footer** → COMPONENTS.md → Footer.jsx
 - **ServiceCard** → COMPONENTS.md → ServiceCard.jsx
-- **Calendar** → COMPONENTS.md → Calendar.jsx
-- **BookingForm** → COMPONENTS.md → BookingForm.jsx
 - **UserCard** → COMPONENTS.md → UserCard.jsx
 
 ### Страницы
 - **Главная** → EXAMPLES.md → pages/index.jsx
-- **Запись** → EXAMPLES.md → pages/booking.jsx
 - **Кабинет** → EXAMPLES.md → pages/dashboard.jsx
 - **Админ** → EXAMPLES.md → pages/admin.jsx
+> Примечание: страница `/booking` и встроенные UI-компоненты для записи удалены; используйте Supabase/внешний backend для приёма заявок.
 
 ### Функции
 - **Установка** → GETTING_STARTED.md → Установка
