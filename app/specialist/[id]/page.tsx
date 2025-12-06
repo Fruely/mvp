@@ -27,12 +27,16 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
         const { data, error } = await supabase
           .from("specialists")
           .select("*")
-          .eq("id", params.id)
-          .single();
+          .eq("id", params.id);
 
         if (error) throw error;
 
-        setSpecialist(data);
+        if (!data || data.length === 0) {
+          setError("Специалист не найден");
+          return;
+        }
+
+        setSpecialist(data[0]);
       } catch (err: any) {
         setError(err.message || "Не удалось загрузить данные специалиста");
       } finally {
