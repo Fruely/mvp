@@ -11,9 +11,9 @@ export default function Home() {
   }, []);
 
   const placeholderCategories = [
-    { title: "Психологи", icon: "🧠" },
-    { title: "Массажисты", icon: "💆" },
-    { title: "Репетиторы", icon: "📚" },
+    { id: "psychologists", title: "Психологи", icon: "🧠" },
+    { id: "masseurs", title: "Массажисты", icon: "💆" },
+    { id: "tutors", title: "Репетиторы", icon: "📚" },
   ];
 
   return (
@@ -105,18 +105,20 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {placeholderCategories.map((category, index) => (
-              <div
-                key={index}
-                className="group bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl border border-gray-100"
+            {placeholderCategories.map((category) => (
+              <Link
+                key={category.id}
+                href={`/category/${category.id}`}
               >
-                <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-full flex items-center justify-center text-4xl shadow-md group-hover:shadow-lg transition">
-                  {category.icon}
+                <div className="group bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl border border-gray-100">
+                  <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-full flex items-center justify-center text-4xl shadow-md group-hover:shadow-lg transition">
+                    {category.icon}
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition">
+                    {category.title}
+                  </h3>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition">
-                  {category.title}
-                </h3>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
