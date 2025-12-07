@@ -34,9 +34,9 @@ export default function LeadForm({ specialistId }: LeadFormProps) {
     const data = await res.json();
 
     if (!res.ok) {
-      setStatus("❌ Ошибка: " + (data.error || "Не удалось отправить"));
+      setStatus("error:" + (data.error || "Не удалось отправить"));
     } else {
-      setStatus("✅ Заявка отправлена!");
+      setStatus("success:Заявка отправлена!");
       setName("");
       setContact("");
       setMessage("");
@@ -45,34 +45,81 @@ export default function LeadForm({ specialistId }: LeadFormProps) {
     setLoading(false);
   };
 
+  const isSuccess = status.startsWith("success:");
+  const isError = status.startsWith("error:");
+  const statusMessage = status.split(":")[1] || "";
+
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{ display: "flex", flexDirection: "column", gap: "10px" }}
-    >
-      <input
-        placeholder="Ваше имя"
-        value={client_name}
-        onChange={(e) => setName(e.target.value)}
-        required
-      />
-      <input
-        placeholder="Контакт (email или телефон)"
-        value={client_contact}
-        onChange={(e) => setContact(e.target.value)}
-        required
-      />
-      <textarea
-        placeholder="Сообщение"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-      />
+    <div className="w-full max-w-md mx-auto mt-8 px-4 animate-fadeIn">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Ваше имя
+          </label>
+          <input
+            type="text"
+            placeholder="Иван Петров"
+            value={client_name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="w-full py-2 px-4 rounded-xl border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          />
+        </div>
 
-      <button type="submit" disabled={loading}>
-        {loading ? "Отправка..." : "Отправить заявку"}
-      </button>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Контакт <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            placeholder="email@example.com или +7 (999) 123-45-67"
+            value={client_contact}
+            onChange={(e) => setContact(e.target.value)}
+            required
+            className="w-full py-2 px-4 rounded-xl border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          />
+        </div>
 
-      {status && <p>{status}</p>}
-    </form>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Сообщение
+          </label>
+          <textarea
+            placeholder="Опишите ваш вопрос или проблему..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            rows={4}
+            className="w-full py-2 px-4 rounded-xl border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-none"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <>
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+              Отправка...
+            </>
+          ) : (
+            "Отправить заявку"
+          )}
+        </button>
+
+        {isSuccess && (
+          <div className="bg-green-50 text-green-700 border border-green-200 rounded-xl p-3 mt-3 shadow-sm">
+            • {statusMessage}
+          </div>
+        )}
+
+        {isError && (
+          <div className="bg-red-50 text-red-700 border border-red-200 rounded-xl p-3 mt-3 shadow-sm">
+            ✗ {statusMessage}
+          </div>
+        )}
+      </form>
+    </div>
   );
 }
