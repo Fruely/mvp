@@ -14,7 +14,7 @@ html, body, #__next {
 }
 
 body {
-  @apply bg-white text-gray-800 font-inter;
+  @apply bg-white text-gray-900 font-inter;
 }
 
 .btn-primary {
