@@ -1,8 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-let supabaseInstance: ReturnType<typeof createClient> | null = null;
+let supabaseInstance: SupabaseClient | null = null;
 
-export function getSupabase() {
+export function getSupabase(): SupabaseClient {
   if (!supabaseInstance) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -16,7 +16,10 @@ export function getSupabase() {
   return supabaseInstance;
 }
 
-// For client-side use, create instance immediately
-export const supabase = typeof window !== 'undefined' 
-  ? getSupabase() 
-  : (null as any);
+// Export supabase instance that works both client and server-side
+export const supabase = new Proxy({} as SupabaseClient, {
+  get: (_, prop) => {
+    const client = getSupabase();
+    return (client as any)[prop];
+  },
+});
