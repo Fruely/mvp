@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getSupabase } from "@/lib/supabaseClient";
@@ -13,9 +14,15 @@ interface Specialist {
   category_id: string;
 }
 
+interface Category {
+  id: string;
+  slug: string;
+  name: string;
+}
+
 export default function CategoryPage({ params }: { params: { id: string } }) {
   const [specialists, setSpecialists] = useState<Specialist[]>([]);
-  const [categoryName, setCategoryName] = useState<string>("");
+  const [category, setCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,19 +31,26 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
       try {
         const supabase = getSupabase();
 
-        // Fetch specialists for this category
+        const { data: categoryData, error: categoryError } = await (supabase
+          .from("categories")
+          .select("id, slug, name")
+          .eq("slug", params.id)
+          .single() as any);
+
+        if (categoryError || !categoryData) {
+          notFound();
+        }
+
+        setCategory(categoryData);
+
         const { data: specialistsData, error: specialistsError } = await (supabase
           .from("specialists")
           .select("id, name, bio, avatar_url, category_id")
-          .eq("category_id", params.id) as any);
+          .eq("category_id", categoryData.id) as any);
 
         if (specialistsError) throw specialistsError;
 
         setSpecialists(specialistsData || []);
-
-        // Set category name (could fetch from categories table if exists)
-        // For now, using category_id as fallback
-        setCategoryName(params.id);
       } catch (err: any) {
         setError(err.message || "Не удалось загрузить данные");
       } finally {
@@ -78,7 +92,6 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-12 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-12">
           <Link
             href="/"
@@ -87,14 +100,13 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
             ← На главную
           </Link>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-            Категория: {categoryName}
+            {category?.name}
           </h1>
           <p className="text-lg text-gray-600 mt-2">
             Найден {specialists.length} {specialists.length === 1 ? "специалист" : "специалистов"}
           </p>
         </div>
 
-        {/* Specialists List */}
         {specialists.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-lg p-12 text-center max-w-2xl mx-auto">
             <div className="text-6xl mb-4">🔍</div>
@@ -118,7 +130,6 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
                 className="group"
               >
                 <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 overflow-hidden h-full flex flex-col">
-                  {/* Avatar */}
                   <div className="relative w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center overflow-hidden">
                     {specialist.avatar_url ? (
                       <Image
@@ -133,7 +144,6 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
                     )}
                   </div>
 
-                  {/* Content */}
                   <div className="p-6 flex flex-col flex-grow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition">
                       {specialist.name}
