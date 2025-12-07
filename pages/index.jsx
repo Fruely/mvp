@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Header from "../components/Header";
 
 export default function Home() {
   const [lang, setLang] = useState("de");
@@ -9,10 +10,6 @@ export default function Home() {
     if (saved) setLang(saved);
   }, []);
 
-  const scrollToCategories = () => {
-    document.getElementById("categories")?.scrollIntoView({ behavior: "smooth" });
-  };
-
   const placeholderCategories = [
     { title: "Психологи", icon: "🧠" },
     { title: "Массажисты", icon: "💆" },
@@ -21,73 +18,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {/* Modern Sticky Header */}
-      <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/" className="text-2xl font-bold text-blue-600">
-              FROYLE
-            </Link>
-
-            {/* Navigation */}
-            <nav className="hidden md:flex items-center gap-8">
-              <Link href="/" className="text-gray-700 hover:text-blue-600 font-medium transition">
-                Главная
-              </Link>
-              <a
-                href="#categories"
-                onClick={(e) => {
-                  e.preventDefault();
-                  scrollToCategories();
-                }}
-                className="text-gray-700 hover:text-blue-600 font-medium transition cursor-pointer"
-              >
-                Категории
-              </a>
-              <Link href="/specialist" className="text-gray-700 hover:text-blue-600 font-medium transition">
-                Для специалистов
-              </Link>
-            </nav>
-
-            {/* CTA Button */}
-            <Link
-              href="/specialist"
-              className="px-6 py-2 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition shadow-sm hover:shadow-md"
-            >
-              Стать специалистом
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-20 md:py-32">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-            Найди специалиста, который говорит на твоём языке
-          </h1>
-          <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-            Психологи, массажисты, репетиторы и другие специалисты, говорящие на немецком, русском или украинском
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
-              onClick={scrollToCategories}
-              className="px-8 py-4 bg-blue-600 text-white text-lg font-semibold rounded-full hover:bg-blue-700 transition shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              Найти специалиста
-            </button>
-            <Link
-              href="/specialist"
-              className="px-8 py-4 border-2 border-blue-600 text-blue-600 text-lg font-semibold rounded-full hover:bg-blue-50 transition"
-            >
-              Стать специалистом
-            </Link>
-          </div>
-        </div>
-      </section>
+      <Header onLangChange={(c) => setLang(c)} />
 
       {/* Categories Section */}
       <section id="categories" className="py-20 bg-white">
