@@ -1,12 +1,9 @@
 import { NextRequest } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { getSupabase } from '@/lib/supabaseClient';
 
 export async function POST(request: NextRequest) {
   try {
-    // Read raw body for better debugging (some clients may send malformed JSON)
     const raw = await request.text();
-    // Log raw body so server logs show what was received
-    // eslint-disable-next-line no-console
     console.log('[leads.create] raw body:', raw);
 
     let body: any;
@@ -35,18 +32,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data, error } = await supabase
-      .from('leads')
-      .insert([
-        {
-          specialist_id,
-          client_name,
-          client_contact,
-          message: message || null,
-        },
-      ])
-      .select()
-      .single();
+    const supabase = getSupabase() as any;
+    const { data, error } = await supabase.from('leads').insert([
+      {
+        specialist_id,
+        client_name,
+        client_contact,
+        message: message || null,
+      },
+    ]).select().single();
 
     if (error) {
       return Response.json({ error: error.message }, { status: 400 });
