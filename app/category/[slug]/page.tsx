@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getSupabase } from "@/lib/supabaseClient";
@@ -18,48 +17,43 @@ interface Category {
   id: string;
   slug: string;
   name: string;
+  title?: string;
 }
 
-export default function CategoryPage({ params }: { params: { id: string } }) {
-  const [specialists, setSpecialists] = useState<Specialist[]>([]);
+export default function CategoryPage({ params }: { params: { slug: string } }) {
+  const { slug } = params;
   const [category, setCategory] = useState<Category | null>(null);
+  const [specialists, setSpecialists] = useState<Specialist[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const supabase = getSupabase();
+    const loadData = async () => {
+      const supabase = getSupabase();
 
-        const { data: categoryData, error: categoryError } = await (supabase
-          .from("categories")
-          .select("id, slug, name")
-          .eq("slug", params.id)
-          .single() as any);
+      const { data: catData } = await supabase
+        .from("categories")
+        .select("*")
+        .eq("slug", slug)
+        .single();
 
-        if (categoryError || !categoryData) {
-          notFound();
-        }
-
-        setCategory(categoryData);
-
-        const { data: specialistsData, error: specialistsError } = await (supabase
-          .from("specialists")
-          .select("id, name, bio, avatar_url, category_id")
-          .eq("category_id", categoryData.id) as any);
-
-        if (specialistsError) throw specialistsError;
-
-        setSpecialists(specialistsData || []);
-      } catch (err: any) {
-        setError(err.message || "Не удалось загрузить данные");
-      } finally {
+      if (!catData) {
         setLoading(false);
+        return;
       }
+
+      setCategory(catData);
+
+      const { data: specData } = await supabase
+        .from("specialists")
+        .select("*")
+        .eq("category_id", catData.id);
+
+      setSpecialists(specData || []);
+      setLoading(false);
     };
 
-    fetchData();
-  }, [params.id]);
+    loadData();
+  }, [slug]);
 
   if (loading) {
     return (
@@ -72,12 +66,11 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
     );
   }
 
-  if (error) {
+  if (!category) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
         <div className="text-center max-w-md mx-auto px-4">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Ошибка</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Категория не найдена</h1>
           <Link
             href="/"
             className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
@@ -100,7 +93,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
             ← На главную
           </Link>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-            {category?.name}
+            {category.name || category.title}
           </h1>
           <p className="text-lg text-gray-600 mt-2">
             Найден {specialists.length} {specialists.length === 1 ? "специалист" : "специалистов"}
