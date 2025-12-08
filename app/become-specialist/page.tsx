@@ -297,7 +297,7 @@ export default function BecomeSpecialist() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer border-none"
           >
             {loading ? (
               <>
@@ -309,6 +309,16 @@ export default function BecomeSpecialist() {
             )}
           </button>
         </form>
+
+        <div className="mt-6 text-center">
+          <button
+            type="button"
+            onClick={() => document.querySelector('form')?.dispatchEvent(new Event('submit', { bubbles: true }))}
+            className="inline-block px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg transition cursor-pointer border-none"
+          >
+            Отправить заявку
+          </button>
+        </div>
       </div>
     </div>
   );
