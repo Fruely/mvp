@@ -15,6 +15,8 @@ export default function BecomeSpecialist() {
     hourly_rate: "",
   });
 
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -48,6 +50,40 @@ export default function BecomeSpecialist() {
     }));
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadAvatar = async (fileName: string): Promise<string | null> => {
+    if (!avatarFile) return null;
+
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, avatarFile, { upsert: true });
+
+      if (error) throw error;
+
+      const { data: urlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
+
+      return urlData?.publicUrl || null;
+    } catch (err) {
+      console.error("Avatar upload error:", err);
+      return null;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -64,6 +100,13 @@ export default function BecomeSpecialist() {
 
       const supabase = getSupabase();
 
+      let avatarUrl: string | null = null;
+      if (avatarFile) {
+        const timestamp = Date.now();
+        const fileName = `${formData.email}-${timestamp}`;
+        avatarUrl = await uploadAvatar(fileName);
+      }
+
       const { data, error: dbError } = await supabase
         .from("specialists")
         .insert([
@@ -75,6 +118,7 @@ export default function BecomeSpecialist() {
             category_id: formData.category_id,
             languages: formData.languages,
             hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
+            avatar_url: avatarUrl,
             created_at: new Date().toISOString(),
           },
         ])
@@ -92,6 +136,8 @@ export default function BecomeSpecialist() {
         languages: [],
         hourly_rate: "",
       });
+      setAvatarFile(null);
+      setAvatarPreview(null);
 
       setTimeout(() => {
         setSuccess(false);
@@ -106,46 +152,55 @@ export default function BecomeSpecialist() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-12 px-4">
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
-          <Link
-            href="/"
-            className="text-blue-600 hover:text-blue-700 font-medium mb-4 inline-block"
-          >
+          <Link href="/" className="text-blue-600 hover:text-blue-700 font-medium mb-4 inline-block">
             ← На главную
           </Link>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Стать специалистом
           </h1>
           <p className="text-lg text-gray-600">
-            Зарегистрируйтесь как специалист и найдите клиентов, которые нуждаются в вашей помощи
+            Зарегистрируйтесь как специалист и найдите клиентов
           </p>
         </div>
 
-        {/* Success Message */}
         {success && (
-          <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-800 rounded-lg animate-fadeIn">
-            ✓ Спасибо! Ваша заявка принята. Мы свяжемся с вами в ближайшее время.
+          <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-800 rounded-lg">
+            ✓ Спасибо! Ваша заявка принята.
           </div>
         )}
 
-        {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-800 rounded-lg animate-fadeIn">
+          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-800 rounded-lg">
             ✗ {error}
           </div>
         )}
 
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-2xl shadow-lg p-8 space-y-6"
-        >
-          {/* Name */}
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Ваше имя *
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
+              Фото профиля
             </label>
+            <div className="flex gap-4 items-start">
+              <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                {avatarPreview ? (
+                  <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover rounded-full" />
+                ) : (
+                  <span className="text-3xl">👤</span>
+                )}
+              </div>
+              <label className="flex-1 flex items-center justify-center px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
+                <span className="text-center">
+                  <span className="text-xl block mb-1">📸</span>
+                  <span className="text-sm text-gray-600">Загрузить фото</span>
+                </span>
+                <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Ваше имя *</label>
             <input
               type="text"
               name="name"
@@ -157,11 +212,8 @@ export default function BecomeSpecialist() {
             />
           </div>
 
-          {/* Email */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Email *
-            </label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
             <input
               type="email"
               name="email"
@@ -173,11 +225,8 @@ export default function BecomeSpecialist() {
             />
           </div>
 
-          {/* Phone */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Телефон
-            </label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Телефон</label>
             <input
               type="tel"
               name="phone"
@@ -188,11 +237,8 @@ export default function BecomeSpecialist() {
             />
           </div>
 
-          {/* Category */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Категория *
-            </label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Категория *</label>
             <select
               name="category_id"
               value={formData.category_id}
@@ -202,24 +248,16 @@ export default function BecomeSpecialist() {
             >
               <option value="">Выберите категорию</option>
               {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
             </select>
           </div>
 
-          {/* Languages */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              Языки общения *
-            </label>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">Языки общения *</label>
             <div className="grid grid-cols-2 gap-3">
               {languages.map((lang) => (
-                <label
-                  key={lang.code}
-                  className="flex items-center p-3 border border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition"
-                >
+                <label key={lang.code} className="flex items-center p-3 border border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50">
                   <input
                     type="checkbox"
                     checked={formData.languages.includes(lang.code)}
@@ -232,43 +270,34 @@ export default function BecomeSpecialist() {
             </div>
           </div>
 
-          {/* Hourly Rate */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Почасовая ставка (€)
-            </label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Почасовая ставка (€)</label>
             <input
               type="number"
               name="hourly_rate"
               value={formData.hourly_rate}
               onChange={handleChange}
               placeholder="25"
-              min="0"
-              step="0.01"
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition"
             />
           </div>
 
-          {/* Bio */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              О себе
-            </label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">О себе</label>
             <textarea
               name="bio"
               value={formData.bio}
               onChange={handleChange}
-              placeholder="Расскажите о вашем опыте, квалификации и специализации..."
-              rows={5}
+              placeholder="Расскажите о вашем опыте..."
+              rows={4}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition resize-none"
             />
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
@@ -279,22 +308,7 @@ export default function BecomeSpecialist() {
               "Зарегистрироваться"
             )}
           </button>
-
-          <p className="text-center text-sm text-gray-600">
-            * Обязательные поля
-          </p>
         </form>
-
-        {/* Info Box */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-2xl p-6">
-          <h3 className="font-bold text-gray-900 mb-2">Как это работает?</h3>
-          <ul className="text-gray-700 space-y-2 text-sm">
-            <li>✓ Заполните форму со своей информацией</li>
-            <li>✓ Мы проверим ваши данные</li>
-            <li>✓ Вы появитесь в каталоге специалистов</li>
-            <li>✓ Клиенты смогут найти вас и запросить услуги</li>
-          </ul>
-        </div>
       </div>
     </div>
   );
