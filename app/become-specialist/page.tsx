@@ -100,6 +100,19 @@ export default function BecomeSpecialist() {
 
       const supabase = getSupabase();
 
+      // Получаем UUID категории по slug
+      const { data: categoryData, error: categoryError } = await supabase
+        .from("categories")
+        .select("id")
+        .eq("slug", formData.category_id)
+        .single();
+
+      if (categoryError || !categoryData) {
+        throw new Error("Категория не найдена");
+      }
+
+      const categoryUuid = categoryData.id;
+
       let avatarUrl: string | null = null;
       if (avatarFile) {
         const timestamp = Date.now();
@@ -115,7 +128,7 @@ export default function BecomeSpecialist() {
             email: formData.email,
             phone: formData.phone || null,
             bio: formData.bio || null,
-            category_id: formData.category_id,
+            category_id: categoryUuid,
             languages: formData.languages,
             hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
             avatar_url: avatarUrl,
@@ -307,7 +320,7 @@ export default function BecomeSpecialist() {
                 Отправка...
               </>
             ) : (
-              "Отправить заявку на модерацию"
+              "Отправить заявку"
             )}
           </button>
         </form>
