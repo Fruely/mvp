@@ -119,6 +119,8 @@ export default function BecomeSpecialist() {
             languages: formData.languages,
             hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
             avatar_url: avatarUrl,
+            status: "pending",
+            is_approved: false,
             created_at: new Date().toISOString(),
           },
         ])
@@ -166,7 +168,7 @@ export default function BecomeSpecialist() {
 
         {success && (
           <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-800 rounded-lg">
-            ✓ Спасибо! Ваша заявка принята.
+            ✓ Спасибо! Ваша заявка отправлена на модерацию.
           </div>
         )}
 
@@ -302,31 +304,13 @@ export default function BecomeSpecialist() {
             {loading ? (
               <>
                 <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                Отправляем...
+                Отправка...
               </>
             ) : (
-              "Зарегистрироваться"
+              "Отправить заявку на модерацию"
             )}
           </button>
-
-          <button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition"
-            disabled={loading}
-          >
-            {loading ? "Отправка..." : "Отправить на модерацию"}
-          </button>
         </form>
-
-        <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={() => document.querySelector('form')?.dispatchEvent(new Event('submit', { bubbles: true }))}
-            className="inline-block px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg transition cursor-pointer border-none"
-          >
-            Отправить заявку
-          </button>
-        </div>
       </div>
     </div>
   );
