@@ -25,20 +25,15 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     const fetchSpecialist = async () => {
       try {
-        const { data, error } = await supabase
-          .from("specialists")
-          .select("*")
-          .eq("id", params.id)
-          .eq("status", "approved");
+        const response = await fetch(`/api/specialists/${params.id}`);
+        const result = await response.json();
 
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-          setError("Специалист не найден");
+        if (!response.ok) {
+          setError(result.error || "Специалист не найден");
           return;
         }
 
-        setSpecialist(data[0]);
+        setSpecialist(result.data);
       } catch (err: any) {
         setError(err.message || "Не удалось загрузить данные специалиста");
       } finally {

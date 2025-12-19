@@ -43,13 +43,20 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
 
       setCategory(catData);
 
-      const { data: specData } = await supabase
-        .from("specialists")
-        .select("*")
-        .eq("category_id", catData.id)
-        .eq("status", "approved");
+      // Use server API to bypass RLS
+      try {
+        const response = await fetch(`/api/specialists/list?category_id=${catData.id}`);
+        const result = await response.json();
+        
+        if (response.ok) {
+          setSpecialists(result.data || []);
+        } else {
+          console.error('Failed to fetch specialists:', result.error);
+        }
+      } catch (err) {
+        console.error('Error fetching specialists:', err);
+      }
 
-      setSpecialists(specData || []);
       setLoading(false);
     };
 
