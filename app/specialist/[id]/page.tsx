@@ -28,7 +28,8 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
         const { data, error } = await supabase
           .from("specialists")
           .select("*")
-          .eq("id", params.id);
+          .eq("id", params.id)
+          .eq("status", "approved");
 
         if (error) throw error;
 

@@ -46,7 +46,8 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       const { data: specData } = await supabase
         .from("specialists")
         .select("*")
-        .eq("category_id", catData.id);
+        .eq("category_id", catData.id)
+        .eq("status", "approved");
 
       setSpecialists(specData || []);
       setLoading(false);

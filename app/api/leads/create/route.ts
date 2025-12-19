@@ -33,20 +33,25 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = getSupabase() as any;
-    const { data, error } = await supabase.from('leads').insert([
-      {
-        specialist_id,
-        client_name,
-        client_contact,
-        message: message || null,
-      },
-    ]).select().single();
+    const { data, error } = await supabase
+      .from('leads')
+      .insert([
+        {
+          specialist_id,
+          client_name,
+          client_contact,
+          message: message || null,
+          status: 'pending',
+        },
+      ])
+      .select()
+      .single();
 
     if (error) {
       return Response.json({ error: error.message }, { status: 400 });
     }
 
-    return Response.json({ data }, { status: 200 });
+    return Response.json({ data }, { status: 201 });
   } catch (err: any) {
     return Response.json({ error: err.message || 'Unknown error' }, { status: 400 });
   }
