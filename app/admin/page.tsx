@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 
 type Specialist = {
@@ -256,9 +257,12 @@ export default function AdminPage() {
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4">
                   <div className="flex items-center gap-3">
                     {s.avatar_url ? (
-                      <img
+                      <Image
                         src={s.avatar_url}
                         alt={displayName}
+                        width={48}
+                        height={48}
+                        unoptimized
                         className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md"
                       />
                     ) : (

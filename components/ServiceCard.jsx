@@ -1,10 +1,19 @@
+import Image from "next/image";
+
 export default function ServiceCard({ id, title, description, price, duration, image }) {
   return (
     <div className="card group">
       {/* Image Placeholder */}
-      <div className="w-full h-48 bg-gradient-to-br from-primary to-blue-600 rounded-lg mb-4 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300">
+      <div className="relative w-full h-48 bg-gradient-to-br from-primary to-blue-600 rounded-lg mb-4 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300">
         {image ? (
-          <img src={image} alt={title} className="w-full h-full object-cover" />
+          <Image
+            src={image}
+            alt={title}
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            unoptimized
+            className="object-cover"
+          />
         ) : (
           <div className="text-white text-center">
             <div className="text-4xl mb-2">🧘</div>

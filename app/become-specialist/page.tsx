@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { getSupabase } from "@/lib/supabaseClient";
 
 export default function BecomeSpecialist() {
@@ -195,9 +196,15 @@ export default function BecomeSpecialist() {
               Фото профиля
             </label>
             <div className="flex gap-4 items-start">
-              <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+              <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
                 {avatarPreview ? (
-                  <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover rounded-full" />
+                  <Image
+                    src={avatarPreview}
+                    alt="Preview"
+                    width={80}
+                    height={80}
+                    className="w-full h-full object-cover rounded-full"
+                  />
                 ) : (
                   <span className="text-3xl">👤</span>
                 )}
