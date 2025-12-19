@@ -71,7 +71,11 @@ export default function BecomeSpecialist() {
         .from("avatars")
         .upload(fileName, avatarFile, { upsert: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Avatar upload error:", error);
+        // Don't block registration if avatar upload fails
+        return null;
+      }
 
       const { data: urlData } = supabase.storage
         .from("avatars")
@@ -79,12 +83,14 @@ export default function BecomeSpecialist() {
 
       return urlData?.publicUrl || null;
     } catch (err) {
-      console.error("Avatar upload error:", err);
+      console.error("Avatar upload exception:", err);
+      // Don't block registration if avatar upload fails
       return null;
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("HANDLE SUBMIT CALLED");
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -98,21 +104,7 @@ export default function BecomeSpecialist() {
         throw new Error("Выберите хотя бы один язык");
       }
 
-      const supabase = getSupabase();
-
-      // Получаем UUID категории по slug
-      const { data: categoryData, error: categoryError } = await supabase
-        .from("categories")
-        .select("id")
-        .eq("slug", formData.category_id)
-        .single();
-
-      if (categoryError || !categoryData) {
-        throw new Error("Категория не найдена");
-      }
-
-      const categoryUuid = categoryData.id;
-
+      // Upload avatar if provided
       let avatarUrl: string | null = null;
       if (avatarFile) {
         const timestamp = Date.now();
@@ -120,26 +112,32 @@ export default function BecomeSpecialist() {
         avatarUrl = await uploadAvatar(fileName);
       }
 
-      const { data, error: dbError } = await supabase
-        .from("specialists")
-        .insert([
-          {
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone || null,
-            bio: formData.bio || null,
-            category_id: categoryUuid,
-            languages: formData.languages,
-            hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
-            avatar_url: avatarUrl,
-            status: "pending",
-            is_approved: false,
-            created_at: new Date().toISOString(),
-          },
-        ])
-        .select();
+      // Call API endpoint to create specialist
+      console.log("ABOUT TO CALL API");
+      const response = await fetch("/api/specialists/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || null,
+          bio: formData.bio || null,
+          category_id: formData.category_id,
+          languages: formData.languages,
+          hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
+          avatar_url: avatarUrl,
+        }),
+      });
 
-      if (dbError) throw dbError;
+      const result = await response.json();
+
+      console.log("API RESPONSE", result);
+
+      if (!response.ok) {
+        throw new Error(result.error || "Ошибка при регистрации");
+      }
 
       setSuccess(true);
       setFormData({
@@ -156,7 +154,7 @@ export default function BecomeSpecialist() {
 
       setTimeout(() => {
         setSuccess(false);
-      }, 5000);
+      }, 15000);
     } catch (err: any) {
       setError(err.message || "Ошибка при регистрации");
     } finally {
