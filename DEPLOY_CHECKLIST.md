@@ -1,0 +1,190 @@
+# ✅ Vercel Deployment Checklist
+
+## Critical Files Ready for Deploy
+
+✅ **API Endpoints Created:**
+- `/app/api/specialists/create/route.ts` (3KB)
+- `/app/api/admin/approve-specialist/route.ts` (1.8KB)
+
+✅ **Server Infrastructure:**
+- `/lib/supabase/server.ts` (637 bytes)
+
+✅ **Configuration:**
+- `vercel.json` ✓
+- `VERCEL_DEPLOY.md` ✓
+- `deploy.sh` ✓
+
+✅ **Updated Files:**
+- `app/admin/page.tsx` - uses API for approvals
+- `app/become-specialist/page.tsx` - uses API + enhanced UI
+
+---
+
+## Quick Deploy (Option 1: Automated)
+
+```bash
+./deploy.sh
+```
+
+Then add env vars in Vercel Dashboard.
+
+---
+
+## Manual Deploy (Option 2)
+
+### Step 1: Commit & Push
+
+```bash
+git add .
+git commit -m "feat: server-side specialist registration with admin approval"
+git push origin main
+```
+
+### Step 2: Vercel Environment Variables
+
+Go to: https://vercel.com/dashboard → Your Project → Settings → Environment Variables
+
+Add these **4 variables** (all environments: Production, Preview, Development):
+
+| Variable Name | Value | Type |
+|---------------|-------|------|
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://xbvyvvbionpcyasrbuey.supabase.co` | Plain Text |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJhbGci...` (from .env.local) | Plain Text |
+| `SUPABASE_SERVICE_ROLE_KEY` | `eyJhbGci...` (from .env.local) | **🔒 Encrypted** |
+| `NEXT_PUBLIC_ADMIN_PASSWORD` | `Perdipluher` | Plain Text |
+
+⚠️ **IMPORTANT:** Mark `SUPABASE_SERVICE_ROLE_KEY` as **Encrypted** (sensitive)
+
+### Step 3: Redeploy
+
+After adding env vars, trigger redeploy:
+- Click "Redeploy" button in Vercel dashboard, OR
+- Push a new commit
+
+---
+
+## Post-Deploy Testing
+
+### 1. Test Specialist Registration API
+
+```bash
+curl -X POST https://your-domain.vercel.app/api/specialists/create \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Production Test",
+    "email": "prodtest@example.com",
+    "phone": "+49123456789",
+    "category_id": "2b3b53ea-6139-4380-a305-036a298b9b2f",
+    "languages": ["de", "en"],
+    "bio": "Testing production deployment"
+  }'
+```
+
+**Expected Response:**
+```json
+{
+  "success": true,
+  "specialist_id": "uuid-here",
+  "message": "Specialist registered successfully. Awaiting approval."
+}
+```
+
+### 2. Test Frontend Form
+
+Visit: `https://your-domain.vercel.app/become-specialist`
+
+Fill and submit form → should see green success message with moderation details.
+
+### 3. Test Admin Panel
+
+Visit: `https://your-domain.vercel.app/admin`
+
+Login with password → should see pending specialists → approve/reject should work.
+
+---
+
+## Troubleshooting
+
+### ❌ 500 Error on `/api/specialists/create`
+
+**Check Vercel Function Logs:**
+```bash
+vercel logs your-deployment-url.vercel.app
+```
+
+**Common causes:**
+- `SUPABASE_SERVICE_ROLE_KEY` not set
+- Environment variable typo
+- Module not found (ensure `lib/supabase/server.ts` is committed)
+
+**Fix:**
+1. Verify all 4 env vars are set in Vercel
+2. Check they're assigned to all environments
+3. Redeploy
+
+### ❌ "Module not found: @/lib/supabase/server"
+
+**Fix:**
+```bash
+git add lib/supabase/server.ts
+git commit -m "add server supabase client"
+git push
+```
+
+### ❌ RLS errors still appearing
+
+**Fix:**
+- Service role key should bypass RLS automatically
+- Double-check the key is correct (not anon key)
+- Verify key is marked as "Encrypted" in Vercel
+
+---
+
+## Architecture Verification
+
+After deploy, verify these endpoints are live:
+
+1. ✅ `POST /api/specialists/create` → 201 (success) or 400/500 (error)
+2. ✅ `POST /api/admin/approve-specialist` → 200 (success)
+3. ✅ Frontend form at `/become-specialist` → submits to API
+4. ✅ Admin panel at `/admin` → calls approval API
+
+---
+
+## Security Checklist
+
+- ✅ Service role key NEVER exposed client-side (no `NEXT_PUBLIC_` prefix)
+- ✅ All INSERT operations server-only via API
+- ✅ RLS policies block direct client inserts
+- ✅ Public client used only for SELECT (approved specialists)
+- ✅ Admin approval requires password + uses server API
+
+---
+
+## Monitoring
+
+**View real-time logs:**
+```bash
+vercel logs --follow
+```
+
+**Check build output:**
+```bash
+vercel inspect [deployment-url]
+```
+
+---
+
+## Success Indicators
+
+✅ Form submits successfully
+✅ Success message appears with moderation details
+✅ Specialist appears in admin panel with "pending" status
+✅ Admin can approve/reject
+✅ Approved specialists visible in category pages
+✅ No RLS errors in logs
+✅ No "module not found" errors
+
+---
+
+**Ready to deploy!** 🚀
