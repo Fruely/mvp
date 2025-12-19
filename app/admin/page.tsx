@@ -55,17 +55,18 @@ export default function AdminPage() {
     setLoadingList(true);
     setError(null);
 
-    const { data, error } = await supabase
-      .from("specialists")
-      .select("*")
-      .eq("status", "pending")
-      .order("created_at", { ascending: false });
+    try {
+      const response = await fetch('/api/admin/specialists/pending');
+      const result = await response.json();
 
-    if (error) {
-      console.error("[admin] fetchSpecialists error:", error);
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to fetch');
+      }
+
+      setSpecialists(result.data || []);
+    } catch (err: any) {
+      console.error("[admin] fetchSpecialists error:", err);
       setError("Не удалось загрузить список специалистов");
-    } else {
-      setSpecialists(data || []);
     }
 
     setLoadingList(false);
@@ -82,18 +83,19 @@ export default function AdminPage() {
     setActionId(id);
     setError(null);
 
-    const { error } = await supabase
-      .from("specialists")
-      .update({ status: newStatus })
-      .eq("id", id);
-
-    if (error) {
-      console.error("[admin] updateStatus error:", error);
-      setToast({
-        type: "error",
-        message: "Ошибка при обновлении статуса",
+    try {
+      const response = await fetch('/api/admin/specialists/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: newStatus }),
       });
-    } else {
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to update');
+      }
+
       setToast({
         type: "success",
         message:
@@ -103,6 +105,12 @@ export default function AdminPage() {
       });
 
       setSpecialists((prev) => prev.filter((s) => s.id !== id));
+    } catch (err: any) {
+      console.error("[admin] updateStatus error:", err);
+      setToast({
+        type: "error",
+        message: "Ошибка при обновлении статуса",
+      });
     }
 
     setActionId(null);
