@@ -259,10 +259,10 @@ export default function AdminPage() {
             return (
               <div
                 key={s.id}
-                className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300"
+                className="bg-white rounded-2xl border border-gray-200 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 flex flex-col h-full"
               >
                 {/* Хедер карточки */}
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4">
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 rounded-t-2xl">
                   <div className="flex items-center gap-3">
                     {s.avatar_url ? (
                       <Image
@@ -293,7 +293,7 @@ export default function AdminPage() {
                 </div>
 
                 {/* Детали */}
-                <div className="p-3 space-y-2 flex-1 overflow-y-auto">
+                <div className="p-3 space-y-2 flex-1">
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <div className="text-gray-500 mb-0.5">Email</div>
@@ -334,7 +334,7 @@ export default function AdminPage() {
                 </div>
 
                 {/* Кнопки действий */}
-                <div className="p-3 pt-0 flex gap-2">
+                <div className="p-3 pt-2 flex gap-2 border-t border-gray-100 rounded-b-2xl bg-gray-50">
                   <button
                     onClick={() => updateStatus(s.id, "approved")}
                     disabled={!!actionId}
