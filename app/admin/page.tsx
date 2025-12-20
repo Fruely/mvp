@@ -63,6 +63,7 @@ export default function AdminPage() {
         throw new Error(result.error || 'Failed to fetch');
       }
 
+      console.log('[admin page] Loaded specialists:', result.data?.length, result.data);
       setSpecialists(result.data || []);
     } catch (err: any) {
       console.error("[admin] fetchSpecialists error:", err);
@@ -255,6 +256,8 @@ export default function AdminPage() {
             const city = s.city || "—";
             const category = s.category || "—";
             const langs = Array.isArray(s.languages) ? s.languages : [];
+
+            console.log('[admin card render]', s.id, 'name:', displayName, 'email:', email);
 
             return (
               <div
