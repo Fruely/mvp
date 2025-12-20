@@ -342,14 +342,14 @@ export default function AdminPage() {
                   <button
                     onClick={() => updateStatus(s.id, "approved")}
                     disabled={!!actionId}
-                    className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-base font-bold shadow-sm ring-1 ring-inset ring-blue-700/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-base font-bold shadow-md hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {actionId === s.id ? "..." : "✓ Одобрить"}
                   </button>
                   <button
                     onClick={() => updateStatus(s.id, "rejected")}
                     disabled={!!actionId}
-                    className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-base font-bold shadow-sm ring-1 ring-inset ring-blue-700/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white text-base font-bold shadow-md hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-600 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {actionId === s.id ? "..." : "✗ Отклонить"}
                   </button>
