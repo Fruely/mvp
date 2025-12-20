@@ -293,11 +293,11 @@ export default function AdminPage() {
                 </div>
 
                 {/* Детали */}
-                <div className="p-4 space-y-3">
+                <div className="p-3 space-y-2 flex-1 overflow-y-auto">
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <div className="text-gray-500 mb-0.5">Email</div>
-                      <div className="text-gray-900 font-medium truncate">{email}</div>
+                      <div className="text-gray-900 font-medium truncate text-xs">{email}</div>
                     </div>
                     <div>
                       <div className="text-gray-500 mb-0.5">Телефон</div>
@@ -323,31 +323,29 @@ export default function AdminPage() {
                   )}
 
                   {s.created_at && (
-                    <div className="text-[11px] text-gray-400 pt-2 border-t border-gray-100">
+                    <div className="text-[9px] text-gray-400 pt-2 border-t border-gray-100">
                       {new Date(s.created_at).toLocaleDateString("ru-RU", {
                         day: "numeric",
-                        month: "long",
+                        month: "short",
                         year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
                       })}
                     </div>
                   )}
                 </div>
 
                 {/* Кнопки действий */}
-                <div className="p-4 pt-0 flex gap-2">
+                <div className="p-3 pt-0 flex gap-2">
                   <button
                     onClick={() => updateStatus(s.id, "approved")}
                     disabled={!!actionId}
-                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-semibold hover:shadow-lg hover:shadow-green-500/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold hover:shadow-lg hover:shadow-green-500/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {actionId === s.id ? "..." : "✓ Одобрить"}
+                    {actionId === s.id ? "..." : "✓"}
                   </button>
                   <button
                     onClick={() => updateStatus(s.id, "rejected")}
                     disabled={!!actionId}
-                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white text-sm font-semibold hover:shadow-lg hover:shadow-red-500/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-2 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-semibold hover:shadow-lg hover:shadow-red-500/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {actionId === s.id ? "..." : "✗ Отклонить"}
                   </button>
