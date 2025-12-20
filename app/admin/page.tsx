@@ -262,7 +262,7 @@ export default function AdminPage() {
             return (
               <div
                 key={s.id}
-                className="bg-white rounded-2xl border border-gray-200 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300"
+                className="bg-white rounded-2xl border border-gray-200 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 relative"
                 style={{ minHeight: '450px' }}
               >
                 {/* Хедер карточки */}
@@ -297,7 +297,7 @@ export default function AdminPage() {
                 </div>
 
                 {/* Детали */}
-                <div className="p-4 space-y-3">
+                <div className="p-4 space-y-3 pb-20">
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
                       <div className="text-gray-500 mb-1">Email</div>
@@ -338,7 +338,7 @@ export default function AdminPage() {
                 </div>
 
                 {/* Кнопки действий */}
-                <div className="p-4 flex gap-2 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
+                <div className="p-4 flex gap-2 border-t border-gray-100 bg-gray-50 rounded-b-2xl absolute bottom-0 left-0 right-0">
                   <button
                     onClick={() => updateStatus(s.id, "approved")}
                     disabled={!!actionId}
