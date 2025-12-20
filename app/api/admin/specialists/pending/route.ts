@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    console.log(`[admin] Found ${data?.length || 0} pending specialists`);
     return NextResponse.json({ data }, { status: 200 });
   } catch (error: any) {
     console.error('[admin] Unexpected error:', error);
