@@ -247,7 +247,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 auto-rows-auto">
           {specialists.map((s) => {
             const displayName = s.name || s.full_name || "Без имени";
             const email = s.contact_email || s.email || "—";
@@ -259,7 +259,7 @@ export default function AdminPage() {
             return (
               <div
                 key={s.id}
-                className="bg-white rounded-2xl border border-gray-200 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 flex flex-col h-full"
+                className="bg-white rounded-2xl border border-gray-200 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 flex flex-col"
               >
                 {/* Хедер карточки */}
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 rounded-t-2xl">
@@ -293,28 +293,28 @@ export default function AdminPage() {
                 </div>
 
                 {/* Детали */}
-                <div className="p-3 space-y-2 flex-1">
-                  <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
-                      <div className="text-gray-500 mb-0.5">Email</div>
-                      <div className="text-gray-900 font-medium truncate text-xs">{email}</div>
+                      <div className="text-gray-500 mb-1">Email</div>
+                      <div className="text-gray-900 font-medium truncate">{email}</div>
                     </div>
                     <div>
-                      <div className="text-gray-500 mb-0.5">Телефон</div>
+                      <div className="text-gray-500 mb-1">Телефон</div>
                       <div className="text-gray-900 font-medium">{phone}</div>
                     </div>
                     <div className="col-span-2">
-                      <div className="text-gray-500 mb-0.5">Город</div>
+                      <div className="text-gray-500 mb-1">Город</div>
                       <div className="text-gray-900 font-medium">{city}</div>
                     </div>
                   </div>
 
                   {langs.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {langs.map((lng) => (
                         <span
                           key={lng}
-                          className="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-medium"
+                          className="px-3 py-1 rounded-lg bg-blue-50 text-blue-700 text-sm font-medium"
                         >
                           {lng}
                         </span>
@@ -323,7 +323,7 @@ export default function AdminPage() {
                   )}
 
                   {s.created_at && (
-                    <div className="text-[9px] text-gray-400 pt-2 border-t border-gray-100">
+                    <div className="text-xs text-gray-400 pt-2 border-t border-gray-100">
                       {new Date(s.created_at).toLocaleDateString("ru-RU", {
                         day: "numeric",
                         month: "short",
@@ -334,18 +334,18 @@ export default function AdminPage() {
                 </div>
 
                 {/* Кнопки действий */}
-                <div className="p-3 pt-2 flex gap-2 border-t border-gray-100 rounded-b-2xl bg-gray-50">
+                <div className="p-4 flex gap-2 border-t border-gray-100 bg-gray-50 rounded-b-2xl mt-auto">
                   <button
                     onClick={() => updateStatus(s.id, "approved")}
                     disabled={!!actionId}
-                    className="flex-1 py-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold hover:shadow-lg hover:shadow-green-500/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-3 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-semibold hover:shadow-lg hover:shadow-green-500/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {actionId === s.id ? "..." : "✓"}
+                    {actionId === s.id ? "..." : "✓ Одобрить"}
                   </button>
                   <button
                     onClick={() => updateStatus(s.id, "rejected")}
                     disabled={!!actionId}
-                    className="flex-1 py-2 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-semibold hover:shadow-lg hover:shadow-red-500/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-3 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 text-white text-sm font-semibold hover:shadow-lg hover:shadow-red-500/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {actionId === s.id ? "..." : "✗ Отклонить"}
                   </button>
