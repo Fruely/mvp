@@ -338,18 +338,18 @@ export default function AdminPage() {
                 </div>
 
                 {/* Кнопки действий */}
-                <div className="p-4 flex gap-2 border-t border-gray-100 bg-gray-50 rounded-b-2xl absolute bottom-0 left-0 right-0">
+                <div className="p-4 flex gap-2 border-t border-gray-200 bg-white rounded-b-2xl shadow-sm absolute bottom-0 left-0 right-0">
                   <button
                     onClick={() => updateStatus(s.id, "approved")}
                     disabled={!!actionId}
-                    className="flex-1 py-3 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-semibold hover:shadow-lg hover:shadow-green-500/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-base font-bold shadow-sm ring-1 ring-inset ring-blue-700/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {actionId === s.id ? "..." : "✓ Одобрить"}
                   </button>
                   <button
                     onClick={() => updateStatus(s.id, "rejected")}
                     disabled={!!actionId}
-                    className="flex-1 py-3 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 text-white text-sm font-semibold hover:shadow-lg hover:shadow-red-500/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-base font-bold shadow-sm ring-1 ring-inset ring-blue-700/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {actionId === s.id ? "..." : "✗ Отклонить"}
                   </button>
