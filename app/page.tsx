@@ -162,34 +162,40 @@ export default function Home() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
               {mosaicContent.images.map((img, idx) => {
                 const categoryId = img.category_id || "";
-                const categoryTitle = placeholderCategories.find(c => c.id === categoryId)?.title || "Категория";
-                
+                const categoryTitle = placeholderCategories.find((c) => c.id === categoryId)?.title || "Категория";
+
                 return (
                   <Link key={`${img.url}-${idx}`} href={categoryId ? `/category/${categoryId}` : "#"}>
-                    <div className="group rounded-2xl overflow-hidden shadow hover:shadow-lg transition cursor-pointer">
-                      <img src={img.url} alt={img.alt || `mosaic-${idx}`} className="w-full h-40 object-cover group-hover:scale-105 transition" />
-                      <div className="bg-gradient-to-t from-black to-transparent h-12 -mt-12 flex items-end px-3 py-2">
-                        <span className="text-white text-sm font-semibold">{categoryTitle}</span>
+                    <div className="group rounded-2xl overflow-hidden shadow hover:shadow-lg transition cursor-pointer bg-white">
+                      <div className="aspect-[4/3] w-full overflow-hidden">
+                        <img
+                          src={img.url}
+                          alt={img.alt || `mosaic-${idx}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition"
+                        />
+                      </div>
+                      <div className="bg-gradient-to-t from-black/70 via-black/30 to-transparent -mt-12 h-14 flex items-end px-3 py-2">
+                        <span className="text-white text-sm font-semibold drop-shadow">{categoryTitle}</span>
                       </div>
                     </div>
                   </Link>
                 );
               })}
             </div>
-          ) : null}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {placeholderCategories.map((category) => (
-              <Link key={category.id} href={`/category/${category.id}`}>
-                <div className="group bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl border border-gray-100">
-                  <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-full flex items-center justify-center text-4xl shadow-md group-hover:shadow-lg transition">
-                    {category.icon}
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {placeholderCategories.map((category) => (
+                <Link key={category.id} href={`/category/${category.id}`}>
+                  <div className="group bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl border border-gray-100">
+                    <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-full flex items-center justify-center text-4xl shadow-md group-hover:shadow-lg transition">
+                      {category.icon}
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition">{category.title}</h3>
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition">{category.title}</h3>
-                </div>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
