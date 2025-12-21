@@ -200,8 +200,12 @@ export default function AdminSiteBlocksPage() {
                   />
                 </div>
 
-                <button onClick={onSaveHero} className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg disabled:opacity-50" disabled={loading}>
-                  Сохранить Hero
+                <button
+                  onClick={onSaveHero}
+                  className="mt-6 w-full px-6 py-4 bg-blue-600 text-white rounded-xl font-semibold text-lg shadow-lg hover:bg-blue-700 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={loading}
+                >
+                  💾 Сохранить Hero
                 </button>
               </div>
 
@@ -247,8 +251,12 @@ export default function AdminSiteBlocksPage() {
                   />
                 </div>
 
-                <button onClick={onSaveMosaic} className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg disabled:opacity-50" disabled={loading}>
-                  Сохранить мозаику
+                <button
+                  onClick={onSaveMosaic}
+                  className="mt-6 w-full px-6 py-4 bg-blue-600 text-white rounded-xl font-semibold text-lg shadow-lg hover:bg-blue-700 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={loading}
+                >
+                  💾 Сохранить мозаику
                 </button>
               </div>
 
