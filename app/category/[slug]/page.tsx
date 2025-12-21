@@ -100,23 +100,54 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
             <Link href="/" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">Вернуться на главную</Link>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {specialists.map((specialist) => (
-              <div key={specialist.id} className="bg-white rounded-2xl shadow hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-                <div className="flex flex-col sm:flex-row items-stretch">
-                  <div className="relative w-full sm:w-48 h-44 sm:h-auto bg-gradient-to-br from-blue-100 to-purple-100 flex-shrink-0">
+              <div key={specialist.id} className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200">
+                <div className="flex flex-col md:flex-row">
+                  {/* Left: Avatar */}
+                  <div className="relative w-full md:w-64 h-56 md:h-auto bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex-shrink-0">
                     {specialist.avatar_url ? (
-                      <Image src={specialist.avatar_url} alt={specialist.name} fill sizes="(max-width: 640px) 100vw, 200px" unoptimized className="object-cover" />
+                      <Image 
+                        src={specialist.avatar_url} 
+                        alt={specialist.name} 
+                        fill 
+                        sizes="(max-width: 768px) 100vw, 256px" 
+                        unoptimized 
+                        className="object-cover"
+                      />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-5xl">👤</div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-24 h-24 rounded-full bg-white/40 flex items-center justify-center text-6xl">
+                          👤
+                        </div>
+                      </div>
                     )}
                   </div>
-                  <div className="flex-1 p-5 sm:p-6">
-                    <h3 className="text-lg font-bold text-gray-900">{specialist.name}</h3>
-                    <p className="text-gray-600 text-sm mt-1 line-clamp-3">{specialist.bio || "Описание отсутствует"}</p>
-                    <div className="mt-4 flex flex-wrap items-center gap-2">
-                      <Link href={`/specialist/${specialist.id}?open=form`} className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">Оставить заявку</Link>
-                      <Link href={`/specialist/${specialist.id}`} className="text-blue-600 hover:underline text-sm">Профиль</Link>
+
+                  {/* Right: Info */}
+                  <div className="flex-1 p-6 md:p-8 flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                        {specialist.name}
+                      </h3>
+                      <p className="text-gray-600 text-base leading-relaxed line-clamp-3 mb-4">
+                        {specialist.bio || "Опытный специалист готов помочь вам"}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 mt-4">
+                      <Link 
+                        href={`/specialist/${specialist.id}?open=form`} 
+                        className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-full hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all"
+                      >
+                        ✉️ Оставить заявку
+                      </Link>
+                      <Link 
+                        href={`/specialist/${specialist.id}`} 
+                        className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                      >
+                        Подробнее →
+                      </Link>
                     </div>
                   </div>
                 </div>
