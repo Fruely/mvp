@@ -120,6 +120,22 @@ export default function AdminPage() {
       const filtered = specialists.filter((s) => s.id !== id);
       console.log(`[admin page] List updated: ${specialists.length} -> ${filtered.length}`);
       setSpecialists(filtered);
+
+      setToast({
+        type: "success",
+        message: newStatus === "approved" ? "✓ Специалист одобрен" : "✗ Специалист отклонен",
+      });
+
+      setTimeout(() => setToast(null), 3000);
+    } catch (err: any) {
+      console.error('[admin page] Update error:', err);
+      setToast({ type: "error", message: err.message || "Ошибка при обновлении" });
+      setTimeout(() => setToast(null), 3000);
+    } finally {
+      if (isMountedRef.current) {
+        setActionId(null);
+      }
+    }
   };
 
   // Экран логина
