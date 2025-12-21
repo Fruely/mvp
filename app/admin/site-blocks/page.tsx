@@ -10,7 +10,7 @@ type ImageBlockContent = {
   alt?: string;
 };
 
-type MosaicImage = { url: string; alt?: string };
+type MosaicImage = { url: string; alt?: string; category_id?: string };
 
 type MosaicBlockContent = {
   title?: string;
@@ -53,6 +53,13 @@ export default function AdminSiteBlocksPage() {
   const [mosaicTitle, setMosaicTitle] = useState("");
   const [mosaicSubtitle, setMosaicSubtitle] = useState("");
   const [mosaicImages, setMosaicImages] = useState<MosaicImage[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+
+  const categories = [
+    { id: "psychologists", title: "Психологи" },
+    { id: "masseurs", title: "Массажисты" },
+    { id: "tutors", title: "Репетиторы" },
+  ];
 
   useEffect(() => {
     if (hero && hero.content) {
@@ -234,6 +241,18 @@ export default function AdminSiteBlocksPage() {
                 <label className="block text-sm font-medium mb-1 mt-4">Подзаголовок</label>
                 <input className="w-full border rounded-lg px-3 py-2" value={mosaicSubtitle} onChange={(e) => setMosaicSubtitle(e.target.value)} />
 
+                <label className="block text-sm font-medium mb-1 mt-4">Выберите категорию для нового изображения</label>
+                <select 
+                  className="w-full border rounded-lg px-3 py-2" 
+                  value={selectedCategory} 
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                >
+                  <option value="">-- Выберите категорию --</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>{cat.title}</option>
+                  ))}
+                </select>
+
                 <div className="mt-4">
                   <label className="block text-sm font-medium mb-2">Добавить изображение в мозаику</label>
                   <input
@@ -244,7 +263,15 @@ export default function AdminSiteBlocksPage() {
                       if (f) {
                         setLoading(true);
                         const url = await uploadImage(f);
-                        if (url) setMosaicImages((prev) => [...prev, { url }]);
+                        if (url) {
+                          if (!selectedCategory) {
+                            setMessage("Пожалуйста, выберите категорию перед загрузкой");
+                            setLoading(false);
+                            return;
+                          }
+                          setMosaicImages((prev) => [...prev, { url, category_id: selectedCategory }]);
+                          setSelectedCategory("");
+                        }
                         setLoading(false);
                       }
                     }}
@@ -266,18 +293,24 @@ export default function AdminSiteBlocksPage() {
                   <div className="w-64 h-64 rounded-xl bg-gray-100 border flex items-center justify-center text-gray-500">Нет изображений</div>
                 ) : (
                   <div className="grid grid-cols-2 gap-2 w-64">
-                    {mosaicImages.map((img, idx) => (
-                      <div key={`${img.url}-${idx}`} className="relative">
-                        <img src={img.url} alt={img.alt || `mosaic-${idx}`} className="w-32 h-32 object-cover rounded-lg border" />
-                        <button
-                          className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs"
-                          onClick={() => setMosaicImages((prev) => prev.filter((_, i) => i !== idx))}
-                          aria-label="Удалить"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
+                    {mosaicImages.map((img, idx) => {
+                      const catName = categories.find(c => c.id === img.category_id)?.title || "?";
+                      return (
+                        <div key={`${img.url}-${idx}`} className="relative group">
+                          <img src={img.url} alt={img.alt || `mosaic-${idx}`} className="w-32 h-32 object-cover rounded-lg border" />
+                          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs p-1 rounded-b-lg opacity-0 group-hover:opacity-100 transition">
+                            {catName}
+                          </div>
+                          <button
+                            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs hover:bg-red-700"
+                            onClick={() => setMosaicImages((prev) => prev.filter((_, i) => i !== idx))}
+                            aria-label="Удалить"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

@@ -11,7 +11,7 @@ type ImageBlockContent = {
   alt?: string;
 };
 
-type MosaicImage = { url: string; alt?: string };
+type MosaicImage = { url: string; alt?: string; category_id?: string };
 
 type MosaicBlockContent = {
   title?: string;
@@ -160,11 +160,21 @@ export default function Home() {
 
           {mosaicContent.images && mosaicContent.images.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
-              {mosaicContent.images.map((img, idx) => (
-                <div key={`${img.url}-${idx}`} className="group rounded-2xl overflow-hidden shadow hover:shadow-lg transition">
-                  <img src={img.url} alt={img.alt || `mosaic-${idx}`} className="w-full h-40 object-cover group-hover:scale-105 transition" />
-                </div>
-              ))}
+              {mosaicContent.images.map((img, idx) => {
+                const categoryId = img.category_id || "";
+                const categoryTitle = placeholderCategories.find(c => c.id === categoryId)?.title || "Категория";
+                
+                return (
+                  <Link key={`${img.url}-${idx}`} href={categoryId ? `/category/${categoryId}` : "#"}>
+                    <div className="group rounded-2xl overflow-hidden shadow hover:shadow-lg transition cursor-pointer">
+                      <img src={img.url} alt={img.alt || `mosaic-${idx}`} className="w-full h-40 object-cover group-hover:scale-105 transition" />
+                      <div className="bg-gradient-to-t from-black to-transparent h-12 -mt-12 flex items-end px-3 py-2">
+                        <span className="text-white text-sm font-semibold">{categoryTitle}</span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           ) : null}
 
