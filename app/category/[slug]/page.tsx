@@ -43,18 +43,16 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
 
       setCategory(catData);
 
-      // Use server API to bypass RLS
       try {
         const response = await fetch(`/api/specialists/list?category_id=${catData.id}`);
         const result = await response.json();
-        
         if (response.ok) {
           setSpecialists(result.data || []);
         } else {
-          console.error('Failed to fetch specialists:', result.error);
+          console.error("Failed to fetch specialists:", result.error);
         }
       } catch (err) {
-        console.error('Error fetching specialists:', err);
+        console.error("Error fetching specialists:", err);
       }
 
       setLoading(false);
@@ -79,12 +77,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
         <div className="text-center max-w-md mx-auto px-4">
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Категория не найдена</h1>
-          <Link
-            href="/"
-            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
-          >
-            На главную
-          </Link>
+          <Link href="/" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">На главную</Link>
         </div>
       </div>
     );
@@ -94,73 +87,40 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-12 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="mb-12">
-          <Link
-            href="/"
-            className="text-blue-600 hover:text-blue-700 font-medium mb-4 inline-block"
-          >
-            ← На главную
-          </Link>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-            {category.name || category.title}
-          </h1>
-          <p className="text-lg text-gray-600 mt-2">
-            Найден {specialists.length} {specialists.length === 1 ? "специалист" : "специалистов"}
-          </p>
+          <Link href="/" className="text-blue-600 hover:text-blue-700 font-medium mb-4 inline-block">← На главную</Link>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900">{category.name || category.title}</h1>
+          <p className="text-lg text-gray-600 mt-2">Найден {specialists.length} {specialists.length === 1 ? "специалист" : "специалистов"}</p>
         </div>
 
         {specialists.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-lg p-12 text-center max-w-2xl mx-auto">
             <div className="text-6xl mb-4">🔍</div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Специалисты отсутствуют</h2>
-            <p className="text-gray-600 mb-6">
-              К сожалению, в этой категории пока нет специалистов
-            </p>
-            <Link
-              href="/"
-              className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
-            >
-              Вернуться на главную
-            </Link>
+            <p className="text-gray-600 mb-6">К сожалению, в этой категории пока нет специалистов</p>
+            <Link href="/" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">Вернуться на главную</Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-4">
             {specialists.map((specialist) => (
-              <Link
-                key={specialist.id}
-                href={`/specialist/${specialist.id}`}
-                className="group"
-              >
-                <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 overflow-hidden h-full flex flex-col">
-                  <div className="relative w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center overflow-hidden">
+              <div key={specialist.id} className="bg-white rounded-2xl shadow hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+                <div className="flex flex-col sm:flex-row items-stretch">
+                  <div className="relative w-full sm:w-48 h-44 sm:h-auto bg-gradient-to-br from-blue-100 to-purple-100 flex-shrink-0">
                     {specialist.avatar_url ? (
-                      <Image
-                        src={specialist.avatar_url}
-                        alt={specialist.name}
-                        width={200}
-                        height={200}
-                        unoptimized
-                        className="w-full h-full object-cover"
-                      />
+                      <Image src={specialist.avatar_url} alt={specialist.name} fill sizes="(max-width: 640px) 100vw, 200px" unoptimized className="object-cover" />
                     ) : (
-                      <div className="text-6xl">👤</div>
+                      <div className="absolute inset-0 flex items-center justify-center text-5xl">👤</div>
                     )}
                   </div>
-
-                  <div className="p-6 flex flex-col flex-grow">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition">
-                      {specialist.name}
-                    </h3>
-                    <p className="text-gray-600 text-sm line-clamp-3 flex-grow">
-                      {specialist.bio || "Описание отсутствует"}
-                    </p>
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                      <span className="text-blue-600 font-semibold text-sm">
-                        Перейти к профилю →
-                      </span>
+                  <div className="flex-1 p-5 sm:p-6">
+                    <h3 className="text-lg font-bold text-gray-900">{specialist.name}</h3>
+                    <p className="text-gray-600 text-sm mt-1 line-clamp-3">{specialist.bio || "Описание отсутствует"}</p>
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      <Link href={`/specialist/${specialist.id}?open=form`} className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">Оставить заявку</Link>
+                      <Link href={`/specialist/${specialist.id}`} className="text-blue-600 hover:underline text-sm">Профиль</Link>
                     </div>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}

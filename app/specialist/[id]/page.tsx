@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import LeadForm from "@/components/LeadForm";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 interface Specialist {
   id: string;
@@ -21,6 +22,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const fetchSpecialist = async () => {
@@ -43,6 +45,19 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
 
     fetchSpecialist();
   }, [params.id]);
+
+  // Auto-open form by query param
+  useEffect(() => {
+    const open = searchParams?.get("open");
+    if (open === "form") {
+      setShowForm(true);
+      // Scroll to form after opening
+      setTimeout(() => {
+        const el = document.getElementById("lead-form");
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 200);
+    }
+  }, [searchParams]);
 
   if (loading) {
     return (
@@ -149,7 +164,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
 
         {/* Lead Form */}
         {showForm && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 animate-fadeIn">
+          <div id="lead-form" className="bg-white rounded-2xl shadow-xl p-8 animate-fadeIn">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
               Отправить заявку
             </h2>
