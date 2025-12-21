@@ -84,6 +84,8 @@ export default function AdminPage() {
     setActionId(id);
     setError(null);
 
+    console.log(`[admin page] Updating specialist ${id} to ${newStatus}`);
+
     try {
       const response = await fetch('/api/admin/specialists/update', {
         method: 'POST',
@@ -93,9 +95,18 @@ export default function AdminPage() {
 
       const result = await response.json();
 
+      console.log(`[admin page] Update response:`, response.status, result);
+
       if (!response.ok) {
         throw new Error(result.error || 'Failed to update');
       }
+
+      console.log(`[admin page] Removing specialist ${id} from local list`);
+      setSpecialists((prev) => {
+        const filtered = prev.filter((s) => s.id !== id);
+        console.log(`[admin page] List updated: ${prev.length} -> ${filtered.length}`);
+        return filtered;
+      });
 
       setToast({
         type: "success",
@@ -104,8 +115,6 @@ export default function AdminPage() {
             ? "✓ Специалист одобрен"
             : "✗ Специалист отклонён",
       });
-
-      setSpecialists((prev) => prev.filter((s) => s.id !== id));
     } catch (err: any) {
       console.error("[admin] updateStatus error:", err);
       setToast({

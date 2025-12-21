@@ -15,13 +15,18 @@ export async function POST(request: NextRequest) {
 
     const supabase = createSupabaseServerClient();
 
-    const { error } = await supabase
+    console.log(`[admin] Updating specialist ${id} to status: ${status}`);
+
+    const { error, data } = await supabase
       .from('specialists')
       .update({ 
         status,
         is_approved: status === 'approved'
       })
-      .eq('id', id);
+      .eq('id', id)
+      .select();
+
+    console.log(`[admin] Update result: error=${error}, updated rows=${data?.length || 0}`);
 
     if (error) {
       console.error('[admin] Error updating specialist:', error);
@@ -31,7 +36,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true }, { status: 200 });
+    if (!data || data.length === 0) {
+      console.warn(`[admin] No specialist found with id: ${id}`);
+      return NextResponse.json(
+        { error: 'Specialist not found', details: `No specialist with id ${id}` },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true, updated: data[0] }, { status: 200 });
   } catch (error: any) {
     console.error('[admin] Unexpected error:', error);
     return NextResponse.json(
