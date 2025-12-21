@@ -137,7 +137,16 @@ export default function BecomeSpecialist() {
       console.log("API RESPONSE", result);
 
       if (!response.ok) {
-        throw new Error(result.error || "Ошибка при регистрации");
+        // Provide more user-friendly error messages
+        let errorMessage = result.error || "Ошибка при регистрации";
+        
+        if (response.status === 409) {
+          errorMessage = "Специалист с таким email уже зарегистрирован. Используйте другой email или войдите в существующий аккаунт.";
+        } else if (response.status === 404) {
+          errorMessage = "Выбранная категория не найдена. Пожалуйста, выберите категорию из списка.";
+        }
+        
+        throw new Error(errorMessage);
       }
 
       setSuccess(true);
