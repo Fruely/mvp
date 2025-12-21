@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -23,6 +23,7 @@ type Specialist = {
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
 
 export default function AdminPage() {
+  const isMountedRef = useRef(true);
   const [passwordInput, setPasswordInput] = useState("");
   const [isAuthed, setIsAuthed] = useState(false);
 
@@ -52,6 +53,8 @@ export default function AdminPage() {
   };
 
   const fetchSpecialists = async () => {
+    if (!isMountedRef.current) return;
+    
     setLoadingList(true);
     setError(null);
 
@@ -63,14 +66,20 @@ export default function AdminPage() {
         throw new Error(result.error || 'Failed to fetch');
       }
 
-      console.log('[admin page] Loaded specialists:', result.data?.length, result.data);
-      setSpecialists(result.data || []);
+      console.log('[admin page] Loaded specialists:', result.data?.length);
+      if (isMountedRef.current) {
+        setSpecialists(result.data || []);
+      }
     } catch (err: any) {
       console.error("[admin] fetchSpecialists error:", err);
-      setError("Не удалось загрузить список специалистов");
+      if (isMountedRef.current) {
+        setError("Не удалось загрузить список специалистов");
+      }
     }
 
-    setLoadingList(false);
+    if (isMountedRef.current) {
+      setLoadingList(false);
+    }
   };
 
   useEffect(() => {
@@ -79,6 +88,12 @@ export default function AdminPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthed]);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const updateStatus = async (id: string, newStatus: "approved" | "rejected") => {
     setActionId(id);
@@ -102,29 +117,9 @@ export default function AdminPage() {
       }
 
       console.log(`[admin page] Removing specialist ${id} from local list`);
-      setSpecialists((prev) => {
-        const filtered = prev.filter((s) => s.id !== id);
-        console.log(`[admin page] List updated: ${prev.length} -> ${filtered.length}`);
-        return filtered;
-      });
-
-      setToast({
-        type: "success",
-        message:
-          newStatus === "approved"
-            ? "✓ Специалист одобрен"
-            : "✗ Специалист отклонён",
-      });
-    } catch (err: any) {
-      console.error("[admin] updateStatus error:", err);
-      setToast({
-        type: "error",
-        message: "Ошибка при обновлении статуса",
-      });
-    }
-
-    setActionId(null);
-    setTimeout(() => setToast(null), 3000);
+      const filtered = specialists.filter((s) => s.id !== id);
+      console.log(`[admin page] List updated: ${specialists.length} -> ${filtered.length}`);
+      setSpecialists(filtered);
   };
 
   // Экран логина
