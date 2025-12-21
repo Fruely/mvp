@@ -187,7 +187,7 @@ export default function AdminSiteBlocksPage() {
                   <label className="block text-sm font-medium mb-2">Загрузить изображение</label>
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/*,.svg"
                     onChange={async (e) => {
                       const f = e.target.files?.[0];
                       if (f) {
@@ -234,7 +234,7 @@ export default function AdminSiteBlocksPage() {
                   <label className="block text-sm font-medium mb-2">Добавить изображение в мозаику</label>
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/*,.svg"
                     onChange={async (e) => {
                       const f = e.target.files?.[0];
                       if (f) {
