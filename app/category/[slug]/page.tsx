@@ -100,53 +100,67 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
             <Link href="/" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">Вернуться на главную</Link>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-5">
             {specialists.map((specialist) => (
-              <div key={specialist.id} className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200">
-                <div className="flex flex-col md:flex-row">
-                  {/* Left: Avatar */}
-                  <div className="relative w-full md:w-64 h-56 md:h-auto bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex-shrink-0">
-                    {specialist.avatar_url ? (
-                      <Image 
-                        src={specialist.avatar_url} 
-                        alt={specialist.name} 
-                        fill 
-                        sizes="(max-width: 768px) 100vw, 256px" 
-                        unoptimized 
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-24 h-24 rounded-full bg-white/40 flex items-center justify-center text-6xl">
-                          👤
-                        </div>
+              <div key={specialist.id} className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 overflow-hidden">
+                <div className="flex flex-col sm:flex-row gap-5 p-6">
+                  {/* Left: Round Avatar */}
+                  <div className="flex-shrink-0">
+                    <div className="relative w-32 h-32 sm:w-36 sm:h-36 mx-auto sm:mx-0">
+                      <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 border-4 border-white shadow-lg">
+                        {specialist.avatar_url ? (
+                          <Image 
+                            src={specialist.avatar_url} 
+                            alt={specialist.name} 
+                            fill 
+                            sizes="144px" 
+                            unoptimized 
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center text-5xl">
+                            👤
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </div>
 
                   {/* Right: Info */}
-                  <div className="flex-1 p-6 md:p-8 flex flex-col justify-between">
-                    <div>
-                      <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                        {specialist.name}
-                      </h3>
-                      <p className="text-gray-600 text-base leading-relaxed line-clamp-3 mb-4">
-                        {specialist.bio || "Опытный специалист готов помочь вам"}
-                      </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-1">
+                          {specialist.name}
+                        </h3>
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium">
+                            Репетитор
+                          </span>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 mt-4">
+                    <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-2">
+                      {specialist.bio || "Профессиональный специалист с большим опытом работы"}
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-3">
                       <Link 
                         href={`/specialist/${specialist.id}?open=form`} 
-                        className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-full hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-sm hover:shadow transition-all"
                       >
-                        ✉️ Оставить заявку
+                        <span>✉️</span>
+                        Оставить заявку
                       </Link>
                       <Link 
                         href={`/specialist/${specialist.id}`} 
-                        className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                        className="inline-flex items-center gap-1 px-4 py-2.5 text-blue-600 hover:text-blue-700 font-medium transition-colors"
                       >
-                        Подробнее →
+                        Подробнее
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
                       </Link>
                     </div>
                   </div>
