@@ -138,6 +138,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                         alt={specialist.name}
                         width={200}
                         height={200}
+                        unoptimized
                         className="w-full h-full object-cover"
                       />
                     ) : (

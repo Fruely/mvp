@@ -86,14 +86,19 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
             {/* Avatar */}
             <div className="flex justify-center -mt-16 mb-6">
               <div className="relative">
-                <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gray-100">
-                  <Image
-                    src={specialist.avatar_url || "/avatar-default.png"}
-                    alt={specialist.name}
-                    width={128}
-                    height={128}
-                    className="object-cover"
-                  />
+                <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                  {specialist.avatar_url ? (
+                    <Image
+                      src={specialist.avatar_url}
+                      alt={specialist.name}
+                      width={128}
+                      height={128}
+                      unoptimized
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-5xl">👤</span>
+                  )}
                 </div>
               </div>
             </div>
