@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 type ImageBlockContent = {
@@ -220,7 +221,14 @@ export default function AdminSiteBlocksPage() {
                 <div className="text-sm text-gray-500 mb-2">Превью</div>
                 <div className="flex items-center justify-center">
                   {heroUrl ? (
-                    <img src={heroUrl} alt={heroAlt || heroTitle || "Hero"} className="w-64 h-64 object-cover rounded-xl border" />
+                    <Image
+                      unoptimized
+                      src={heroUrl}
+                      alt={heroAlt || heroTitle || "Hero"}
+                      width={256}
+                      height={256}
+                      className="w-64 h-64 object-cover rounded-xl border"
+                    />
                   ) : (
                     <div className="w-64 h-64 rounded-xl bg-gray-100 border flex items-center justify-center text-gray-500">Нет изображения</div>
                   )}
@@ -297,7 +305,14 @@ export default function AdminSiteBlocksPage() {
                       const catName = categories.find(c => c.id === img.category_id)?.title || "?";
                       return (
                         <div key={`${img.url}-${idx}`} className="relative group">
-                          <img src={img.url} alt={img.alt || `mosaic-${idx}`} className="w-32 h-32 object-cover rounded-lg border" />
+                          <Image
+                            unoptimized
+                            src={img.url}
+                            alt={img.alt || `mosaic-${idx}`}
+                            width={128}
+                            height={128}
+                            className="w-32 h-32 object-cover rounded-lg border"
+                          />
                           <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs p-1 rounded-b-lg opacity-0 group-hover:opacity-100 transition">
                             {catName}
                           </div>

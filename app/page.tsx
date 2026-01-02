@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import Header from "@/components/Header";
 
 type ImageBlockContent = {
@@ -104,10 +105,13 @@ export default function Home() {
 
             <div className="hidden md:flex items-center justify-center">
               {heroContent.url ? (
-                <img
+                <Image
+                  unoptimized
                   src={heroContent.url}
                   alt={heroContent.alt || heroContent.title || "Hero"}
-                  className="max-w-md rounded-3xl shadow-2xl border border-blue-100"
+                  width={512}
+                  height={512}
+                  className="max-w-md rounded-3xl shadow-2xl border border-blue-100 h-auto"
                 />
               ) : (
                 <div className="relative w-80 h-80">
@@ -168,9 +172,12 @@ export default function Home() {
                   <Link key={`${img.url}-${idx}`} href={categoryId ? `/category/${categoryId}` : "#"}>
                     <div className="group rounded-2xl overflow-hidden shadow hover:shadow-lg transition cursor-pointer bg-white">
                       <div className="aspect-[4/3] w-full overflow-hidden">
-                        <img
+                        <Image
+                          unoptimized
                           src={img.url}
                           alt={img.alt || `mosaic-${idx}`}
+                          width={800}
+                          height={600}
                           className="w-full h-full object-cover group-hover:scale-105 transition"
                         />
                       </div>

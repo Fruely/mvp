@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export type Specialist = {
   id: string;
@@ -48,9 +49,12 @@ export default function SpecialistsList({ specialists, isLoading }: Props) {
           <div className="flex items-center gap-4">
             <div className="h-14 w-14 flex-none overflow-hidden rounded-full bg-gray-100">
               {specialist.avatar_url ? (
-                <img
+                <Image
+                  unoptimized
                   src={specialist.avatar_url}
                   alt={specialist.name}
+                  width={56}
+                  height={56}
                   className="h-full w-full object-cover"
                 />
               ) : (
