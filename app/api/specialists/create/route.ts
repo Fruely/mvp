@@ -1,106 +1,152 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+const EMAIL_REGEX = /^[^@\s]+@[^@\s]+\.[^@\s]+\.[^@\s]+$/;
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, phone, bio, category_id, languages, hourly_rate, avatar_url } = body;
 
-    // Validate required fields
-    if (!name || !email || !category_id) {
+    const {
+      name,
+      email,
+      phone,
+      bio,
+      category_id,   // this is slug from frontend
+      languages,
+      hourly_rate,
+      avatar_url
+    } = body;
+
+    // ─────────────────────────────────────────────
+    // 1️⃣ HARD VALIDATION (match Supabase constraints)
+    // ─────────────────────────────────────────────
+
+    if (!name || !name.trim()) {
+      return NextResponse.json({ error: "Name is required" }, { status: 400 });
+    }
+
+    if (!email || !EMAIL_REGEX.test(email)) {
       return NextResponse.json(
-        { error: 'Missing required fields: name, email, category_id' },
+        { error: "Invalid email format. Use e.g. name@domain.co.uk" },
         { status: 400 }
       );
     }
 
-    if (!languages || !Array.isArray(languages) || languages.length === 0) {
+    if (!phone || !phone.trim()) {
       return NextResponse.json(
-        { error: 'At least one language is required' },
+        { error: "Phone is required" },
         { status: 400 }
       );
     }
 
-    // Use service role to bypass RLS
-    const supabaseServiceRole = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-      {
-        auth: { persistSession: false },
-      }
+    if (!category_id || !category_id.trim()) {
+      return NextResponse.json(
+        { error: "Category is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!Array.isArray(languages) || languages.length === 0) {
+      return NextResponse.json(
+        { error: "At least one language is required" },
+        { status: 400 }
+      );
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPhone = phone.trim();
+
+    // ─────────────────────────────────────────────
+    // 2️⃣ Create Supabase service client
+    // ─────────────────────────────────────────────
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { persistSession: false } }
     );
-    const supabase = supabaseServiceRole;
 
-    // Check if email already exists
-    const { data: existingSpecialist, error: checkError } = await supabase
-      .from('specialists')
-      .select('id')
-      .eq('email', email)
+    // ─────────────────────────────────────────────
+    // 3️⃣ Check email uniqueness
+    // ─────────────────────────────────────────────
+
+    const { data: existing, error: emailCheckError } = await supabase
+      .from("specialists")
+      .select("id")
+      .eq("email", normalizedEmail)
       .maybeSingle();
 
-    if (checkError) {
-      console.error('Error checking existing specialist:', checkError);
-      return NextResponse.json(
-        { error: 'Database error', details: checkError.message },
-        { status: 500 }
-      );
+    if (emailCheckError) {
+      console.error("Email check failed:", emailCheckError);
+      return NextResponse.json({ error: "Database error" }, { status: 500 });
     }
 
-    if (existingSpecialist) {
+    if (existing) {
       return NextResponse.json(
-        { error: 'Specialist with this email already exists' },
+        { error: "Specialist with this email already exists" },
         { status: 409 }
       );
     }
 
-    // Get category UUID from slug
-    const { data: categoryData, error: categoryError } = await supabase
-      .from('categories')
-      .select('id')
-      .eq('slug', category_id)
+    // ─────────────────────────────────────────────
+    // 4️⃣ Resolve category slug → UUID
+    // ─────────────────────────────────────────────
+
+    const { data: category, error: categoryError } = await supabase
+      .from("categories")
+      .select("id")
+      .eq("slug", category_id)
       .maybeSingle();
 
-    if (categoryError || !categoryData) {
+    if (categoryError || !category) {
       return NextResponse.json(
-        { error: 'Category not found' },
-        { status: 404 }
+        { error: "Invalid category" },
+        { status: 400 }
       );
     }
 
-    // Insert specialist with service role client (bypasses RLS)
+    // ─────────────────────────────────────────────
+    // 5️⃣ Insert specialist (100% schema-safe)
+    // ─────────────────────────────────────────────
+
     const { data: specialist, error: insertError } = await supabase
-      .from('specialists')
+      .from("specialists")
       .insert({
-        name,
-        email,
-        phone: phone || null,
-        bio: bio || null,
-        category_id: categoryData.id,
+        name: name.trim(),
+        email: normalizedEmail,
+        phone: normalizedPhone,
+        bio: bio?.trim() || null,
+        category_id: category.id,
         languages,
         hourly_rate: hourly_rate || null,
         avatar_url: avatar_url || null,
-        status: 'pending',
-        is_approved: false,
+        status: "pending",
+        is_approved: false
       })
-      .select('id')
+      .select("id")
       .single();
 
     if (insertError) {
-      console.error('Error inserting specialist:', insertError);
+      console.error("Insert failed:", insertError);
       return NextResponse.json(
-        { error: 'Failed to create specialist', details: insertError.message },
+        { error: "Supabase rejected insert", details: insertError.message },
         { status: 500 }
       );
     }
+
+    // ─────────────────────────────────────────────
+    // 6️⃣ Real success
+    // ─────────────────────────────────────────────
 
     return NextResponse.json(
       { success: true, specialist_id: specialist.id },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error('Unexpected error in specialists/create:', error);
+  } catch (err: any) {
+    console.error("Unexpected error:", err);
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { error: "Internal server error", details: err.message },
       { status: 500 }
     );
   }
