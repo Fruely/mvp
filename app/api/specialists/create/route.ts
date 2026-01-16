@@ -122,16 +122,18 @@ export async function POST(request: NextRequest) {
         languages,
         hourly_rate: hourly_rate || null,
         avatar_url: avatar_url || null,
-        status: "pending",
-        is_approved: false
+        status: "approved",
+        is_approved: true,
+        is_active: true,
+        is_visible: true
       })
       .select("id")
       .single();
 
     if (insertError) {
-      console.error("Insert failed:", insertError);
+      console.error("Specialist insert failed:", insertError.message);
       return NextResponse.json(
-        { error: "Supabase rejected insert", details: insertError.message },
+        { error: "Unable to create specialist" },
         { status: 500 }
       );
     }
