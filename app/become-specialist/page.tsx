@@ -263,6 +263,7 @@ export default function BecomeSpecialist() {
               onChange={handleChange}
               placeholder="+49 123 456789"
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition"
+              required
             />
           </div>
 

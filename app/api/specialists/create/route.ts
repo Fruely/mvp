@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const EMAIL_REGEX = /^[^@\s]+@[^@\s]+\.[^@\s]+\.[^@\s]+$/;
+// Accept common single-level domains like name@example.com and multi-level domains
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: NextRequest) {
   try {
