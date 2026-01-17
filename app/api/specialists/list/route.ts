@@ -6,8 +6,19 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const categoryId = searchParams.get('category_id');
+    const url = new URL(request.url);
+    const searchParams = url.searchParams;
+    // Log the full search params for diagnosis
+    console.log('[api/specialists/list] request.url:', request.url);
+    console.log('[api/specialists/list] searchParams:', Object.fromEntries(searchParams.entries()));
+
+    // Normalize to single canonical param name: category_id
+    const paramCategoryId = searchParams.get('category_id') || searchParams.get('categoryId');
+    if (searchParams.get('categoryId') && !searchParams.get('category_id')) {
+      console.warn('[api/specialists/list] Received deprecated param "categoryId". Please use "category_id".');
+    }
+
+    const categoryId = paramCategoryId && paramCategoryId !== 'undefined' && paramCategoryId !== 'null' ? paramCategoryId : null;
 
     if (!categoryId) {
       return NextResponse.json(
@@ -18,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     const supabase = createSupabaseServerClient();
 
-    console.log('[api/specialists/list] Query:', { categoryId, status: 'approved' });
+    console.log('[api/specialists/list] Query:', { category_id: categoryId, status: 'approved' });
     
     // Debug: Check all specialists in this category (any status)
     const { data: allData } = await supabase
