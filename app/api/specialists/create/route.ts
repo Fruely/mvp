@@ -122,12 +122,12 @@ export async function POST(request: NextRequest) {
         languages,
         hourly_rate: hourly_rate || null,
         avatar_url: avatar_url || null,
-        status: "approved",
-        profile_status: "active",
-        subscription_status: "active",
-        is_approved: true,
-        is_active: true,
-        is_visible: true
+        status: "pending",
+        profile_status: "draft",
+        subscription_status: "inactive",
+        is_approved: false,
+        is_active: false,
+        is_visible: false
       })
       .select("id")
       .single();
