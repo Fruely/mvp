@@ -44,8 +44,10 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       setCategory(catData);
 
       try {
+        console.log("[CategoryPage] Loading specialists for category:", { slug, categoryId: catData.id });
         const response = await fetch(`/api/specialists/list?category_id=${catData.id}`);
         const result = await response.json();
+        console.log("[CategoryPage] API response:", { status: response.status, dataLength: result.data?.length, error: result.error });
         if (response.ok) {
           setSpecialists(result.data || []);
         } else {

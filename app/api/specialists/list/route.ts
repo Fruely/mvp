@@ -18,6 +18,15 @@ export async function GET(request: NextRequest) {
 
     const supabase = createSupabaseServerClient();
 
+    console.log('[api/specialists/list] Query:', { categoryId, status: 'approved' });
+    
+    // Debug: Check all specialists in this category (any status)
+    const { data: allData } = await supabase
+      .from('specialists')
+      .select('id, name, status, category_id')
+      .eq('category_id', categoryId);
+    console.log('[api/specialists/list] DEBUG - All specialists in category:', allData);
+    
     const { data, error } = await supabase
       .from('specialists')
       .select('*')
@@ -26,12 +35,14 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('[api/specialists] Error fetching specialists:', error);
+      console.error('[api/specialists/list] Error fetching specialists:', error);
       return NextResponse.json(
         { error: 'Failed to fetch specialists', details: error.message },
         { status: 500 }
       );
     }
+    
+    console.log('[api/specialists/list] Found approved specialists:', data?.length || 0, data?.map(s => ({ id: s.id, name: s.name, status: s.status })));
 
     return NextResponse.json({ data }, { status: 200 });
   } catch (error: any) {
