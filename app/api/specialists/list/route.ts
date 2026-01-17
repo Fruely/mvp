@@ -6,6 +6,12 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    // Env diagnostics: log Supabase URL and extract project_ref
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const projectRefMatch = supabaseUrl?.match(/^https?:\/\/([^.]+)\.supabase\.co/);
+    const projectRef = projectRefMatch ? projectRefMatch[1] : null;
+    console.log('[env list] SUPABASE_URL:', supabaseUrl, 'project_ref:', projectRef);
+    
     const url = new URL(request.url);
     const searchParams = url.searchParams;
     // Log the full search params for diagnosis
@@ -52,7 +58,13 @@ export async function GET(request: NextRequest) {
       console.log('[api/specialists/list] First specialist:', { id: approvedSpecialists[0].id, name: approvedSpecialists[0].name, status: approvedSpecialists[0].status });
     }
 
-    return NextResponse.json({ data: approvedSpecialists }, { status: 200 });
+    return NextResponse.json({ 
+      data: approvedSpecialists,
+      meta: {
+        project_ref: projectRef,
+        has_url: !!supabaseUrl
+      }
+    }, { status: 200 });
   } catch (error: any) {
     console.error('[api/specialists] Unexpected error:', error);
     return NextResponse.json(
