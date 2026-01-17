@@ -67,6 +67,11 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       { auth: { persistSession: false } }
     );
+    // Env diagnostics: log Supabase project ref for comparison
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const projectRefMatch = supabaseUrl?.match(/^https?:\/\/([^.]+)\.supabase\.co/);
+    const projectRef = projectRefMatch ? projectRefMatch[1] : null;
+    console.log('[env] specialists/create SUPABASE_URL:', supabaseUrl, 'project_ref:', projectRef);
 
     // ─────────────────────────────────────────────
     // 3️⃣ Check email uniqueness
