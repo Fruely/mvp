@@ -123,6 +123,8 @@ export async function POST(request: NextRequest) {
         hourly_rate: hourly_rate || null,
         avatar_url: avatar_url || null,
         status: "approved",
+        profile_status: "active",
+        subscription_status: "active",
         is_approved: true,
         is_active: true,
         is_visible: true
