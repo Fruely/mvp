@@ -31,13 +31,6 @@ export async function GET(request: NextRequest) {
 
     console.log('[api/specialists/list] Query:', { category_id: categoryId, status: 'approved' });
     
-    // Debug: Check all specialists in this category (any status)
-    const { data: allData } = await supabase
-      .from('specialists')
-      .select('id, name, status, category_id')
-      .eq('category_id', categoryId);
-    console.log('[api/specialists/list] DEBUG - All specialists in category:', allData);
-    
     const { data, error } = await supabase
       .from('specialists')
       .select('*')
@@ -47,13 +40,18 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('[api/specialists/list] Error fetching specialists:', error);
+      console.error('[api/specialists/list] Full error object:', { code: error.code, message: error.message, details: error.details, hint: error.hint });
       return NextResponse.json(
         { error: 'Failed to fetch specialists', details: error.message },
         { status: 500 }
       );
     }
     
-    console.log('[api/specialists/list] Found approved specialists:', data?.length || 0, data?.map(s => ({ id: s.id, name: s.name, status: s.status })));
+    console.log('[api/specialists/list] Query succeeded');
+    console.log('[api/specialists/list] Found approved specialists:', data?.length || 0);
+    if (data && data.length > 0) {
+      console.log('[api/specialists/list] First specialist:', { id: data[0].id, name: data[0].name, status: data[0].status });
+    }
 
     return NextResponse.json({ data }, { status: 200 });
   } catch (error: any) {
