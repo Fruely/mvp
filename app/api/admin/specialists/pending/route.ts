@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log(`[admin] Found ${data?.length || 0} pending specialists`);
+    console.log('[admin api] Pending specialists count:', data?.length || 0);
+    console.log('[admin api] Pending specialists:', data?.map(s => ({ id: s.id, name: s.name, status: s.status, email: s.email })));
     return NextResponse.json({ data }, { status: 200 });
   } catch (error: any) {
     console.error('[admin] Unexpected error:', error);

@@ -67,6 +67,7 @@ export default function AdminPage() {
       }
 
       console.log('[admin page] Loaded specialists:', result.data?.length);
+        console.log('[admin page] Specialist details:', result.data?.map(s => ({ id: s.id, name: s.name, status: s.status })));
       if (isMountedRef.current) {
         setSpecialists(result.data || []);
       }
