@@ -35,13 +35,14 @@ export async function GET(request: NextRequest) {
 
     const supabase = createSupabaseServerClient();
 
-    console.log('[api/specialists/list] Query:', { category_id: categoryId, status: 'approved' });
+    console.log('[api/specialists/list] Query (diagnostic): { status: approved, is_active: true, is_visible: true }');
     
-    const { data: approvedSpecialists, error } = await supabase
+    const { data, error } = await supabase
       .from('specialists')
       .select('*')
-      .eq('category_id', categoryId)
       .eq('status', 'approved')
+      .eq('is_active', true)
+      .eq('is_visible', true)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -53,13 +54,10 @@ export async function GET(request: NextRequest) {
     }
     
     console.log('[api/specialists/list] Query succeeded');
-    console.log('[api/specialists/list] Found approved specialists:', approvedSpecialists?.length || 0);
-    if (approvedSpecialists && approvedSpecialists.length > 0) {
-      console.log('[api/specialists/list] First specialist:', { id: approvedSpecialists[0].id, name: approvedSpecialists[0].name, status: approvedSpecialists[0].status });
-    }
+    console.log('[api/specialists/list] FINAL DATA:', data);
 
     return NextResponse.json({ 
-      data: approvedSpecialists,
+      data,
       meta: {
         project_ref: projectRef,
         has_url: !!supabaseUrl
