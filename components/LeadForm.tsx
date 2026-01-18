@@ -8,28 +8,34 @@ interface LeadFormProps {
 
 export default function LeadForm({ specialistId }: LeadFormProps) {
   const [client_name, setName] = useState("");
-  const [client_contact, setContact] = useState("");
+  const [client_email, setEmail] = useState("");
+  const [client_phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setStatus("");
 
-    // Validate specialistId
     if (!specialistId) {
-      console.error("[LeadForm] ERROR: specialistId not provided");
-      setStatus("error:Ошибка: не удалось определить специалиста");
+      setStatus("error:Не удалось определить специалиста");
+      setLoading(false);
+      return;
+    }
+
+    if (!client_email && !client_phone) {
+      setStatus("error:Укажите email или телефон");
       setLoading(false);
       return;
     }
 
     const payload = {
       specialist_id: specialistId,
-      client_name,
-      client_contact,
+      client_name: client_name || null,
+      client_email: client_email || null,
+      client_phone: client_phone || null,
       message: message || null,
     };
 
@@ -37,23 +43,19 @@ export default function LeadForm({ specialistId }: LeadFormProps) {
 
     const res = await fetch("/api/leads/create", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
     const data = await res.json();
-    console.log("[LeadForm] API response:", { status: res.status, ok: res.ok, data });
 
     if (!res.ok) {
-      setStatus("error:" + (data.error || "Не удалось отправить"));
-      console.error("[LeadForm] API error:", data.error);
+      setStatus("error:" + (data.error || "Ошибка отправки"));
     } else {
       setStatus("success:Заявка отправлена!");
-      console.log("[LeadForm] Lead created successfully:", data.data?.id);
       setName("");
-      setContact("");
+      setEmail("");
+      setPhone("");
       setMessage("");
     }
 
@@ -65,76 +67,39 @@ export default function LeadForm({ specialistId }: LeadFormProps) {
   const statusMessage = status.split(":")[1] || "";
 
   return (
-    <div className="w-full max-w-md mx-auto mt-8 px-4 animate-fadeIn">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Ваше имя
-          </label>
-          <input
-            type="text"
-            placeholder="Иван Петров"
-            value={client_name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            className="w-full py-2 px-4 rounded-xl border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-          />
-        </div>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <input
+        placeholder="Ваше имя"
+        value={client_name}
+        onChange={(e) => setName(e.target.value)}
+      />
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Контакт <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            placeholder="email@example.com или +7 (999) 123-45-67"
-            value={client_contact}
-            onChange={(e) => setContact(e.target.value)}
-            required
-            className="w-full py-2 px-4 rounded-xl border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-          />
-        </div>
+      <input
+        type="email"
+        placeholder="Email"
+        value={client_email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Сообщение
-          </label>
-          <textarea
-            placeholder="Опишите ваш вопрос или проблему..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            rows={4}
-            className="w-full py-2 px-4 rounded-xl border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-none"
-          />
-        </div>
+      <input
+        type="tel"
+        placeholder="Телефон"
+        value={client_phone}
+        onChange={(e) => setPhone(e.target.value)}
+      />
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
-        >
-          {loading ? (
-            <>
-              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-              Отправка...
-            </>
-          ) : (
-            "Отправить заявку"
-          )}
-        </button>
+      <textarea
+        placeholder="Сообщение"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+      />
 
-        {isSuccess && (
-          <div className="bg-green-50 text-green-700 border border-green-200 rounded-xl p-3 mt-3 shadow-sm">
-            • {statusMessage}
-          </div>
-        )}
+      <button disabled={loading} type="submit">
+        {loading ? "Отправка..." : "Отправить заявку"}
+      </button>
 
-        {isError && (
-          <div className="bg-red-50 text-red-700 border border-red-200 rounded-xl p-3 mt-3 shadow-sm">
-            ✗ {statusMessage}
-          </div>
-        )}
-      </form>
-    </div>
+      {isSuccess && <div className="text-green-600">{statusMessage}</div>}
+      {isError && <div className="text-red-600">{statusMessage}</div>}
+    </form>
   );
 }
