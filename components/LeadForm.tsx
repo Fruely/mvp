@@ -18,25 +18,40 @@ export default function LeadForm({ specialistId }: LeadFormProps) {
     setLoading(true);
     setStatus("");
 
+    // Validate specialistId
+    if (!specialistId) {
+      console.error("[LeadForm] ERROR: specialistId not provided");
+      setStatus("error:Ошибка: не удалось определить специалиста");
+      setLoading(false);
+      return;
+    }
+
+    const payload = {
+      specialist_id: specialistId,
+      client_name,
+      client_contact,
+      message: message || null,
+    };
+
+    console.log("[LeadForm] Sending payload:", payload);
+
     const res = await fetch("/api/leads/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        specialist_id: specialistId || "bff0ae01-0bc9-4f9d-bab2-292460455794",
-        client_name,
-        client_contact,
-        message,
-      }),
+      body: JSON.stringify(payload),
     });
 
     const data = await res.json();
+    console.log("[LeadForm] API response:", { status: res.status, ok: res.ok, data });
 
     if (!res.ok) {
       setStatus("error:" + (data.error || "Не удалось отправить"));
+      console.error("[LeadForm] API error:", data.error);
     } else {
       setStatus("success:Заявка отправлена!");
+      console.log("[LeadForm] Lead created successfully:", data.data?.id);
       setName("");
       setContact("");
       setMessage("");
