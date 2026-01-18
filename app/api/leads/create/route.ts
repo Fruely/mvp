@@ -3,39 +3,40 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const raw = await request.text();
-    console.log('[leads.create] raw body:', raw);
+    const body = await request.json();
+    const { specialist_id, client_name, client_contact, message } = body;
 
-    let body: any;
-    try {
-      body = raw ? JSON.parse(raw) : {};
-    } catch (parseErr: any) {
+    console.log('[leads.create] Received payload:', {
+      specialist_id,
+      client_name,
+      client_contact,
+      has_message: !!message,
+    });
+
+    if (!specialist_id || typeof specialist_id !== 'string') {
       return Response.json(
-        { error: 'Invalid JSON', details: parseErr.message, raw },
+        { error: 'specialist_id is required and must be a string' },
         { status: 400 }
       );
     }
 
-    const { specialist_id, client_name, client_contact, message } = body;
-
-    if (
-      !specialist_id ||
-      typeof specialist_id !== 'string' ||
-      !client_name ||
-      typeof client_name !== 'string' ||
-      !client_contact ||
-      typeof client_contact !== 'string'
-    ) {
+    if (!client_name || typeof client_name !== 'string') {
       return Response.json(
-        { error: 'Missing or invalid required fields', received: { specialist_id, client_name, client_contact } },
+        { error: 'client_name is required and must be a string' },
+        { status: 400 }
+      );
+    }
+
+    if (!client_contact || typeof client_contact !== 'string') {
+      return Response.json(
+        { error: 'client_contact is required and must be a string' },
         { status: 400 }
       );
     }
 
     const supabase = createSupabaseServerClient();
 
-    // Optionally verify specialist exists (helps avoid FK errors and returns friendly message)
-    const { data: specialistExists, error: specialistError } = await supabase
+    const { data: specialist, error: specialistError } = await supabase
       .from('specialists')
       .select('id')
       .eq('id', specialist_id)
@@ -43,33 +44,49 @@ export async function POST(request: NextRequest) {
 
     if (specialistError) {
       console.error('[leads.create] specialist lookup error', specialistError);
-      return Response.json({ error: 'Failed to verify specialist' }, { status: 500 });
+      return Response.json(
+        { error: 'Failed to verify specialist' },
+        { status: 500 }
+      );
     }
 
-    if (!specialistExists) {
-      return Response.json({ error: 'Specialist not found' }, { status: 404 });
+    if (!specialist) {
+      return Response.json(
+        { error: 'Specialist not found' },
+        { status: 404 }
+      );
     }
+
+    const insertPayload = {
+      specialist_id,
+      client_name,
+      client_contact,
+      message: message || null,
+    };
+
+    console.log('[leads.create] Insert payload:', insertPayload);
 
     const { data, error } = await supabase
       .from('leads')
-      .insert([
-        {
-          specialist_id,
-          client_name,
-          client_contact,
-          message: message || null,
-        },
-      ])
+      .insert([insertPayload])
       .select()
       .single();
 
     if (error) {
-      return Response.json({ error: error.message }, { status: 400 });
+      console.error('[leads.create] INSERT ERROR:', error);
+      return Response.json(
+        { error: error.message },
+        { status: 400 }
+      );
     }
 
+    console.log('[leads.create] Lead created successfully:', data.id);
     return Response.json({ data }, { status: 200 });
   } catch (err: any) {
     console.error('[leads.create] unexpected error', err);
-    return Response.json({ error: err.message || 'Unknown error' }, { status: 400 });
+    return Response.json(
+      { error: 'Unexpected error' },
+      { status: 500 }
+    );
   }
 }
