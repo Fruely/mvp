@@ -24,6 +24,9 @@ type ApiResponse =
   | { data: Lead[] }
   | { error: string };
 
+const ALLOWED_STATUSES = ["new", "contacted", "closed"] as const;
+type LeadStatus = (typeof ALLOWED_STATUSES)[number];
+
 const TOKEN_STORAGE_KEY = "ADMIN_API_TOKEN";
 
 export default function AdminLeadsPage() {
@@ -33,6 +36,7 @@ export default function AdminLeadsPage() {
   const [data, setData] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [updatingById, setUpdatingById] = useState<Record<string, boolean>>({});
 
   const hasToken = useMemo(() => !!token && token.trim().length > 0, [token]);
 
@@ -93,6 +97,59 @@ export default function AdminLeadsPage() {
       setError(e?.message || "Ошибка сети при загрузке лидов");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function updateLeadStatus(id: string, status: LeadStatus) {
+    const activeToken = token || localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (!activeToken || !activeToken.trim()) {
+      setError("Введите токен, чтобы менять статус лидов.");
+      return;
+    }
+
+    setUpdatingById((prev) => ({ ...prev, [id]: true }));
+    setError(null);
+
+    try {
+      const res = await fetch("/api/admin/leads/status", {
+        method: "PATCH",
+        headers: {
+          "x-admin-token": activeToken,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id, status }),
+      });
+
+      const json = (await res.json()) as { data?: any; error?: string };
+
+      if (res.status === 401) {
+        try {
+          localStorage.removeItem(TOKEN_STORAGE_KEY);
+        } catch {
+          // ignore
+        }
+        setToken(null);
+        setTokenInput("");
+        setError("Токен недействителен. Введите токен заново.");
+        return;
+      }
+
+      if (!res.ok) {
+        setError(json?.error || "Не удалось обновить статус лида");
+        return;
+      }
+
+      setData((prev) =>
+        prev.map((lead) => (lead.id === id ? { ...lead, status } : lead))
+      );
+    } catch (e: any) {
+      setError(e?.message || "Ошибка сети при обновлении статуса");
+    } finally {
+      setUpdatingById((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
     }
   }
 
@@ -231,6 +288,12 @@ export default function AdminLeadsPage() {
                     ? new Date(lead.created_at).toLocaleString("ru-RU")
                     : "—";
                   const specialistName = lead.specialist?.name || "—";
+                  const isUpdating = !!updatingById[lead.id];
+                  const currentStatus = ALLOWED_STATUSES.includes(
+                    lead.status as LeadStatus
+                  )
+                    ? (lead.status as LeadStatus)
+                    : "";
 
                   return (
                     <tr key={lead.id} className="align-top">
@@ -260,7 +323,25 @@ export default function AdminLeadsPage() {
                         {lead.message || "—"}
                       </td>
                       <td className="px-3 py-2 border-b">
-                        {lead.status || "—"}
+                        <select
+                          className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white disabled:opacity-50"
+                          value={currentStatus}
+                          disabled={isUpdating || !hasToken}
+                          onChange={(e) => {
+                            const next = e.target.value as LeadStatus;
+                            if (!ALLOWED_STATUSES.includes(next)) return;
+                            updateLeadStatus(lead.id, next);
+                          }}
+                        >
+                          <option value="" disabled>
+                            —
+                          </option>
+                          {ALLOWED_STATUSES.map((s) => (
+                            <option key={s} value={s}>
+                              {s}
+                            </option>
+                          ))}
+                        </select>
                       </td>
                     </tr>
                   );
