@@ -26,14 +26,14 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase
       .from('leads')
       .select(
-        'id, specialist_id, client_name, client_email, client_phone, message, status, created_at'
+        'id, specialist_id, client_name, client_email, client_phone, message, status, created_at, specialist:specialists(id, name, category_id)'
       )
       .order('created_at', { ascending: false });
 
     if (error) {
       console.error('[admin] Error fetching leads:', error);
       return NextResponse.json(
-        { error: 'Failed to fetch leads' },
+        { error: 'Failed to fetch leads (specialist join)' },
         { status: 500 }
       );
     }
