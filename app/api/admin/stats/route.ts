@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { requireAdminToken } from '@/lib/adminApiAuth';
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const adminPassword = searchParams.get('admin_password');
-
-  // Validate admin password
-  if (adminPassword !== process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
+  const authResponse = requireAdminToken(request);
+  if (authResponse) return authResponse;
 
   try {
     const supabase = createSupabaseServerClient();
@@ -64,12 +57,12 @@ export async function GET(request: NextRequest) {
       approvedSpecialists: approvedSpecialists || 0,
       pendingSpecialists: pendingSpecialists || 0,
       activeSubscriptions: activeSubscriptions || 0,
-    });
+    }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
     console.error('Error fetching admin stats:', error);
     return NextResponse.json(
       { error: 'Failed to fetch statistics' },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     );
   }
 }

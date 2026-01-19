@@ -31,10 +31,14 @@ export default function AdminSiteBlocksPage() {
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const TOKEN_STORAGE_KEY = "ADMIN_API_TOKEN";
 
   // Проверка аутентификации при загрузке
   useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem(TOKEN_STORAGE_KEY)
+        : null;
     if (!token) {
       router.push("/admin/login");
       return;
@@ -97,11 +101,29 @@ export default function AdminSiteBlocksPage() {
   }
 
   async function uploadImage(file: File): Promise<string | null> {
+    const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (!token) {
+      setMessage("Токен отсутствует. Войдите заново.");
+      router.push("/admin/login");
+      return null;
+    }
+
     const fd = new FormData();
     fd.append("file", file);
-    fd.append("admin_password", process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "");
-    const res = await fetch("/api/site-blocks/upload", { method: "POST", body: fd });
+    const res = await fetch("/api/site-blocks/upload", {
+      method: "POST",
+      headers: { "x-admin-token": token },
+      body: fd,
+    });
     const json = await res.json();
+    if (res.status === 401) {
+      try {
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+      } catch {}
+      setMessage("Токен недействителен. Войдите заново.");
+      router.push("/admin/login");
+      return null;
+    }
     if (!res.ok) {
       setMessage(json.error || "Ошибка загрузки изображения");
       return null;
@@ -110,19 +132,40 @@ export default function AdminSiteBlocksPage() {
   }
 
   async function saveBlock(key: string, type: "image" | "mosaic", content: any) {
+    const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (!token) {
+      setMessage("Токен отсутствует. Войдите заново.");
+      router.push("/admin/login");
+      throw new Error("Missing admin token");
+    }
+
     const res = await fetch("/api/site-blocks", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ admin_password: process.env.NEXT_PUBLIC_ADMIN_PASSWORD, key, type, content }),
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-token": token,
+      },
+      body: JSON.stringify({ key, type, content }),
     });
     const json = await res.json();
+    if (res.status === 401) {
+      try {
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+      } catch {}
+      setMessage("Токен недействителен. Войдите заново.");
+      router.push("/admin/login");
+      throw new Error("Unauthorized");
+    }
     if (!res.ok) throw new Error(json.error || "Ошибка сохранения блока");
     return json.block as Block;
   }
 
   async function onLogout() {
-    localStorage.removeItem("admin_token");
-    localStorage.removeItem("admin_login_time");
+    try {
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+      localStorage.removeItem("admin_token");
+      localStorage.removeItem("admin_login_time");
+    } catch {}
     router.push("/admin/login");
   }
 

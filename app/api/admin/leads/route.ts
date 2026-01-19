@@ -1,24 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { requireAdminToken } from '@/lib/adminApiAuth';
 
 export async function GET(request: NextRequest) {
-  const adminToken = request.headers.get('x-admin-token');
-  const expectedToken = process.env.ADMIN_API_TOKEN;
-
-  if (!expectedToken) {
-    console.error('[admin] Missing ADMIN_API_TOKEN env var');
-    return NextResponse.json(
-      { error: 'Server misconfigured' },
-      { status: 500 }
-    );
-  }
-
-  if (!adminToken || adminToken !== expectedToken) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
+  const authResponse = requireAdminToken(request);
+  if (authResponse) return authResponse;
 
   try {
     const supabase = createSupabaseServerClient();
@@ -34,16 +20,19 @@ export async function GET(request: NextRequest) {
       console.error('[admin] Error fetching leads:', error);
       return NextResponse.json(
         { error: 'Failed to fetch leads (specialist join)' },
-        { status: 500 }
+        { status: 500, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
-    return NextResponse.json({ data }, { status: 200 });
+    return NextResponse.json(
+      { data },
+      { status: 200, headers: { 'Cache-Control': 'no-store' } }
+    );
   } catch (error) {
     console.error('[admin] Unexpected error fetching leads:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     );
   }
 }

@@ -1,18 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminToken } from '@/lib/adminApiAuth';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function POST(request: NextRequest) {
+  const authResponse = requireAdminToken(request);
+  if (authResponse) return authResponse;
+
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    const admin_password = formData.get('admin_password') as string;
-    if (admin_password !== process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-      return NextResponse.json({ error: 'Неверный пароль' }, { status: 403 });
-    }
     if (!file) {
       return NextResponse.json({ error: 'Файл не предоставлен' }, { status: 400 });
     }

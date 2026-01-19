@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
-import { supabase } from "@/lib/supabaseClient";
 
 type Specialist = {
   id: string;
@@ -20,11 +19,12 @@ type Specialist = {
   avatar_url?: string | null;
 };
 
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
+const TOKEN_STORAGE_KEY = "ADMIN_API_TOKEN";
 
 export default function AdminPage() {
   const isMountedRef = useRef(true);
-  const [passwordInput, setPasswordInput] = useState("");
+  const [tokenInput, setTokenInput] = useState("");
+  const [adminToken, setAdminToken] = useState<string | null>(null);
   const [isAuthed, setIsAuthed] = useState(false);
 
   const [specialists, setSpecialists] = useState<Specialist[]>([]);
@@ -37,19 +37,35 @@ export default function AdminPage() {
     message: string;
   } | null>(null);
 
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(TOKEN_STORAGE_KEY);
+      if (saved && saved.trim()) {
+        setAdminToken(saved.trim());
+        setIsAuthed(true);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ADMIN_PASSWORD) {
-      setError("Пароль администратора не настроен. Проверь .env.local");
+    const trimmed = tokenInput.trim();
+    if (!trimmed) {
+      setError("Введите токен администратора");
       return;
     }
 
-    if (passwordInput.trim() === ADMIN_PASSWORD) {
-      setIsAuthed(true);
-      setError(null);
-    } else {
-      setError("Неверный пароль");
+    try {
+      localStorage.setItem(TOKEN_STORAGE_KEY, trimmed);
+    } catch {
+      // ignore
     }
+
+    setAdminToken(trimmed);
+    setIsAuthed(true);
+    setError(null);
   };
 
   const fetchSpecialists = async () => {
@@ -59,8 +75,29 @@ export default function AdminPage() {
     setError(null);
 
     try {
-      const response = await fetch('/api/admin/specialists/pending');
+      const token = adminToken || localStorage.getItem(TOKEN_STORAGE_KEY);
+      if (!token) {
+        setIsAuthed(false);
+        setError("Токен отсутствует. Войдите заново.");
+        if (isMountedRef.current) setLoadingList(false);
+        return;
+      }
+
+      const response = await fetch('/api/admin/specialists/pending', {
+        headers: { 'x-admin-token': token },
+      });
       const result = await response.json();
+
+      if (response.status === 401) {
+        try {
+          localStorage.removeItem(TOKEN_STORAGE_KEY);
+        } catch {}
+        setAdminToken(null);
+        setIsAuthed(false);
+        setError("Токен недействителен. Введите токен заново.");
+        if (isMountedRef.current) setLoadingList(false);
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(result.error || 'Failed to fetch');
@@ -103,15 +140,32 @@ export default function AdminPage() {
     console.log(`[admin page] Updating specialist ${id} to ${newStatus}`);
 
     try {
+      const token = adminToken || localStorage.getItem(TOKEN_STORAGE_KEY);
+      if (!token) {
+        setIsAuthed(false);
+        setError("Токен отсутствует. Войдите заново.");
+        return;
+      }
+
       const response = await fetch('/api/admin/specialists/update', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
         body: JSON.stringify({ id, status: newStatus }),
       });
 
       const result = await response.json();
 
       console.log(`[admin page] Update response:`, response.status, result);
+
+      if (response.status === 401) {
+        try {
+          localStorage.removeItem(TOKEN_STORAGE_KEY);
+        } catch {}
+        setAdminToken(null);
+        setIsAuthed(false);
+        setError("Токен недействителен. Введите токен заново.");
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(result.error || 'Failed to update');
@@ -161,14 +215,14 @@ export default function AdminPage() {
             <form onSubmit={handleLogin} className="space-y-5">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Пароль администратора
+                  Admin API token
                 </label>
                 <input
                   type="password"
-                  value={passwordInput}
-                  onChange={(e) => setPasswordInput(e.target.value)}
+                  value={tokenInput}
+                  onChange={(e) => setTokenInput(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900"
-                  placeholder="Введите пароль"
+                  placeholder="Введите токен"
                 />
               </div>
 

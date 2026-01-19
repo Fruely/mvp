@@ -19,7 +19,6 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = createSupabaseServerClient();
-    console.log("[list] SUPABASE URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
 
     const { data, error } = await supabase
       .from("specialists")
@@ -29,12 +28,9 @@ export async function GET(request: NextRequest) {
       .eq("is_visible", true)
       .eq("category_id", categoryId);
 
-    console.log("[list] RAW DATA FROM SUPABASE:", data);
-    console.log("[list] ERROR:", error);
-
     if (error) {
       return NextResponse.json(
-        { error: 'Failed to fetch specialists', details: error.message },
+        { error: 'Failed to fetch specialists' },
         { status: 500 }
       );
     }
@@ -43,7 +39,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('[api/specialists] Unexpected error:', error);
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

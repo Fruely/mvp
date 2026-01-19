@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
-  const [password, setPassword] = useState("");
+  const [token, setToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -15,16 +15,15 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      // Простая проверка пароля на фронте
-      if (password !== process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-        setError("Неверный пароль");
+      const trimmed = token.trim();
+      if (!trimmed) {
+        setError("Введите токен");
         setLoading(false);
         return;
       }
 
-      // Сохраняем простой токен (хеш пароля) в localStorage
-      const token = btoa(password); // Простое кодирование
-      localStorage.setItem("admin_token", token);
+      // Сохраняем токен админ API в localStorage
+      localStorage.setItem("ADMIN_API_TOKEN", trimmed);
       localStorage.setItem("admin_login_time", String(Date.now()));
 
       // Редирект на админ-панель
@@ -46,13 +45,13 @@ export default function AdminLoginPage() {
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Пароль администратора
+              Admin API token
             </label>
             <input
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Введите пароль"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              placeholder="Введите токен"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={loading}
               autoFocus
@@ -67,7 +66,7 @@ export default function AdminLoginPage() {
 
           <button
             type="submit"
-            disabled={loading || !password}
+            disabled={loading || !token}
             className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             {loading ? "Проверка..." : "Войти"}

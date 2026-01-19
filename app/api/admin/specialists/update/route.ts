@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { requireAdminToken } from '@/lib/adminApiAuth';
 
 export async function POST(request: NextRequest) {
+  const authResponse = requireAdminToken(request);
+  if (authResponse) return authResponse;
+
   try {
     const body = await request.json();
     const { id, status } = body;
@@ -9,13 +13,11 @@ export async function POST(request: NextRequest) {
     if (!id || !status || !['approved', 'rejected'].includes(status)) {
       return NextResponse.json(
         { error: 'Invalid request: id and status (approved/rejected) required' },
-        { status: 400 }
+        { status: 400, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
     const supabase = createSupabaseServerClient();
-
-    console.log(`[admin] Updating specialist ${id} to status: ${status}`);
 
     const { error, data } = await supabase
       .from('specialists')
@@ -26,30 +28,30 @@ export async function POST(request: NextRequest) {
       .eq('id', id)
       .select();
 
-    console.log(`[admin] Update result: error=${error}, updated rows=${data?.length || 0}`);
-
     if (error) {
       console.error('[admin] Error updating specialist:', error);
       return NextResponse.json(
-        { error: 'Failed to update specialist', details: error.message },
-        { status: 500 }
+        { error: 'Failed to update specialist' },
+        { status: 500, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
     if (!data || data.length === 0) {
-      console.warn(`[admin] No specialist found with id: ${id}`);
       return NextResponse.json(
-        { error: 'Specialist not found', details: `No specialist with id ${id}` },
-        { status: 404 }
+        { error: 'Specialist not found' },
+        { status: 404, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
-    return NextResponse.json({ success: true, updated: data[0] }, { status: 200 });
+    return NextResponse.json(
+      { success: true, updated: data[0] },
+      { status: 200, headers: { 'Cache-Control': 'no-store' } }
+    );
   } catch (error: any) {
     console.error('[admin] Unexpected error:', error);
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
-      { status: 500 }
+      { error: 'Internal server error' },
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     );
   }
 }

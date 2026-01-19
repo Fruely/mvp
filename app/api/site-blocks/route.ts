@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminToken } from '@/lib/adminApiAuth';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -22,12 +23,12 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const authResponse = requireAdminToken(request);
+  if (authResponse) return authResponse;
+
   try {
     const body = await request.json();
-    const { admin_password, key, type, content } = body;
-    if (admin_password !== process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-      return NextResponse.json({ error: 'Неверный пароль' }, { status: 403 });
-    }
+    const { key, type, content } = body;
     if (!key || !type || !content) {
       return NextResponse.json({ error: 'Не указаны поля' }, { status: 400 });
     }

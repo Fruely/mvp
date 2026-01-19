@@ -51,9 +51,9 @@ Add these **4 variables** (all environments: Production, Preview, Development):
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://xbvyvvbionpcyasrbuey.supabase.co` | Plain Text |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJhbGci...` (from .env.local) | Plain Text |
 | `SUPABASE_SERVICE_ROLE_KEY` | `eyJhbGci...` (from .env.local) | **🔒 Encrypted** |
-| `NEXT_PUBLIC_ADMIN_PASSWORD` | `Perdipluher` | Plain Text |
+| `ADMIN_API_TOKEN` | `some-long-random-secret` | **🔒 Encrypted** |
 
-⚠️ **IMPORTANT:** Mark `SUPABASE_SERVICE_ROLE_KEY` as **Encrypted** (sensitive)
+⚠️ **IMPORTANT:** Mark `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_API_TOKEN` as **Encrypted** (sensitive)
 
 ### Step 3: Redeploy
 
@@ -99,7 +99,7 @@ Fill and submit form → should see green success message with moderation detail
 
 Visit: `https://your-domain.vercel.app/admin`
 
-Login with password → should see pending specialists → approve/reject should work.
+Login with token → should see pending specialists → approve/reject should work.
 
 ---
 
@@ -157,7 +157,7 @@ After deploy, verify these endpoints are live:
 - ✅ All INSERT operations server-only via API
 - ✅ RLS policies block direct client inserts
 - ✅ Public client used only for SELECT (approved specialists)
-- ✅ Admin approval requires password + uses server API
+- ✅ Admin actions require `ADMIN_API_TOKEN` via `x-admin-token`
 
 ---
 
