@@ -130,7 +130,11 @@ export default function AdminSpecialistsPage() {
       }
 
       if (!res.ok) {
-        setError(json?.error || "Не удалось обновить статус специалиста");
+        const errorMessage =
+          "error" in json && typeof json.error === "string"
+            ? json.error
+            : "Не удалось обновить статус специалиста";
+        setError(errorMessage);
         return;
       }
 
