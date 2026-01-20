@@ -74,10 +74,10 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-                {heroContent.title || t(dict, "hero.title")}
+                {t(dict, "hero.title")}
               </h1>
               <p className="text-lg text-gray-700 mb-6">
-                {heroContent.subtitle || t(dict, "hero.subtitle")}
+                {t(dict, "hero.subtitle")}
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <a
