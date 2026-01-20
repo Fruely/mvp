@@ -1,4 +1,5 @@
 import '@/styles/globals.css'
+import { cookies } from 'next/headers'
 
 export const metadata = {
   title: 'Freuly - Специалист на твоём языке',
@@ -10,8 +11,10 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const langCookie = cookies().get('freuly_lang')?.value
+  const lang = langCookie === 'ua' || langCookie === 'ru' || langCookie === 'de' ? langCookie : 'ua'
   return (
-    <html lang="ru">
+    <html lang={lang}>
       <body>{children}</body>
     </html>
   )

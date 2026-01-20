@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import LeadForm from "@/components/LeadForm";
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 interface Specialist {
   id: string;
@@ -23,6 +23,11 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const searchParams = useSearchParams();
+  const pathname = usePathname() || "/";
+  const langPrefix = useMemo(() => {
+    const seg = pathname.split("/").filter(Boolean)[0];
+    return seg === "ua" || seg === "ru" || seg === "de" ? `/${seg}` : "/ua";
+  }, [pathname]);
 
   useEffect(() => {
     const fetchSpecialist = async () => {
@@ -80,7 +85,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
           </h1>
           <p className="text-gray-600 mb-6">{error || "Попробуйте позже"}</p>
           <Link
-            href="/"
+            href={langPrefix}
             className="inline-block px-6 py-3 bg-primary text-white rounded-full hover:shadow-lg transition"
           >
             На главную

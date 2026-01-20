@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { getSupabase } from "@/lib/supabaseClient";
 
 export default function BecomeSpecialist() {
+  const pathname = usePathname() || "/";
+  const langPrefix = useMemo(() => {
+    const seg = pathname.split("/").filter(Boolean)[0];
+    return seg === "ua" || seg === "ru" || seg === "de" ? `/${seg}` : "/ua";
+  }, [pathname]);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -176,7 +183,7 @@ export default function BecomeSpecialist() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-12 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <Link href="/" className="text-blue-600 hover:text-blue-700 font-medium mb-4 inline-block">
+          <Link href={langPrefix} className="text-blue-600 hover:text-blue-700 font-medium mb-4 inline-block">
             ← На главную
           </Link>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">

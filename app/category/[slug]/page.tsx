@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { getSupabase } from "@/lib/supabaseClient";
+import { usePathname } from "next/navigation";
 
 interface Specialist {
   id: string;
@@ -22,6 +23,12 @@ interface Category {
 
 export default function CategoryPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
+  const pathname = usePathname() || "/";
+  const langPrefix = useMemo(() => {
+    const seg = pathname.split("/").filter(Boolean)[0];
+    return seg === "ua" || seg === "ru" || seg === "de" ? `/${seg}` : "/ua";
+  }, [pathname]);
+
   const [category, setCategory] = useState<Category | null>(null);
   const [specialists, setSpecialists] = useState<Specialist[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,7 +95,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
         <div className="text-center max-w-md mx-auto px-4">
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Категория не найдена</h1>
-          <Link href="/" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">На главную</Link>
+          <Link href={langPrefix} className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">На главную</Link>
         </div>
       </div>
     );
@@ -98,7 +105,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-12 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="mb-12">
-          <Link href="/" className="text-blue-600 hover:text-blue-700 font-medium mb-4 inline-block">← На главную</Link>
+          <Link href={langPrefix} className="text-blue-600 hover:text-blue-700 font-medium mb-4 inline-block">← На главную</Link>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900">{category.name || category.title}</h1>
           <p className="text-lg text-gray-600 mt-2">Найден {specialists.length} {specialists.length === 1 ? "специалист" : "специалистов"}</p>
         </div>
@@ -108,7 +115,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
             <div className="text-6xl mb-4">🔍</div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Специалисты отсутствуют</h2>
             <p className="text-gray-600 mb-6">К сожалению, в этой категории пока нет специалистов</p>
-            <Link href="/" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">Вернуться на главную</Link>
+            <Link href={langPrefix} className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">Вернуться на главную</Link>
           </div>
         ) : (
           <div className="space-y-5">
