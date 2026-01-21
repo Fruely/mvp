@@ -44,3 +44,4 @@ export default function ErrorPage({ error, reset }: any) {
     </div>
   );
 }
+

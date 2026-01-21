@@ -201,3 +201,4 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
+
