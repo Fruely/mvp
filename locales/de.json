@@ -19,6 +19,25 @@
     "tutors": "Nachhilfelehrer",
     "default": "Kategorie"
   },
+  "category": {
+    "loading": "Wird geladen...",
+    "notFound": "Kategorie nicht gefunden",
+    "found": "{{count}} Spezialisten gefunden",
+    "empty": {
+      "title": "Keine Spezialisten gefunden",
+      "subtitle": "Leider gibt es in dieser Kategorie noch keine Spezialisten"
+    }
+  },
+  "specialist": {
+    "badge": "Spezialist",
+    "fallbackDescription": "Professioneller Spezialist mit umfangreicher Erfahrung",
+    "cta": "Anfrage senden"
+  },
+  "common": {
+    "toHome": "Zur Startseite",
+    "backToHome": "← Zur Startseite",
+    "more": "Mehr erfahren"
+  },
   "categories.title": "Fachkraft-Kategorien",
   "card.more": "Mehr anzeigen",
   "nav.services": "Dienstleistungen",

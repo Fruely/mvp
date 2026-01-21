@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { getSupabase } from "@/lib/supabaseClient";
 import { usePathname } from "next/navigation";
+import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
+import uaDict from "@/locales/ua.json";
 
 interface Specialist {
   id: string;
@@ -24,14 +26,33 @@ interface Category {
 export default function CategoryPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
   const pathname = usePathname() || "/";
-  const langPrefix = useMemo(() => {
+  const lang = useMemo<Lang>(() => {
     const seg = pathname.split("/").filter(Boolean)[0];
-    return seg === "ua" || seg === "ru" || seg === "de" ? `/${seg}` : "/ua";
+    return seg === "ua" || seg === "ru" || seg === "de" ? (seg as Lang) : "ua";
   }, [pathname]);
+  const langPrefix = `/${lang}`;
+
+  const [dict, setDict] = useState<Dictionary>(uaDict as unknown as Dictionary);
 
   const [category, setCategory] = useState<Category | null>(null);
   const [specialists, setSpecialists] = useState<Specialist[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getDictionary(lang)
+      .then((d) => {
+        if (!cancelled) setDict(d);
+      })
+      .catch(() => {
+        if (!cancelled) setDict(uaDict as unknown as Dictionary);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lang]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -79,12 +100,17 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     loadData();
   }, [slug]);
 
+  const foundText = useMemo(() => {
+    const template = (t as any)(dict, "category.found", { count: specialists.length }) as string;
+    return String(template).replace(/\{\{\s*count\s*\}\}/g, String(specialists.length));
+  }, [dict, specialists.length]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Загрузка...</p>
+          <p className="text-gray-600">{t(dict, "category.loading")}</p>
         </div>
       </div>
     );
@@ -94,8 +120,8 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
         <div className="text-center max-w-md mx-auto px-4">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Категория не найдена</h1>
-          <Link href={langPrefix} className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">На главную</Link>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">{t(dict, "category.notFound")}</h1>
+          <Link href={langPrefix} className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">{t(dict, "common.toHome")}</Link>
         </div>
       </div>
     );
@@ -105,17 +131,17 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-12 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="mb-12">
-          <Link href={langPrefix} className="text-blue-600 hover:text-blue-700 font-medium mb-4 inline-block">← На главную</Link>
+          <Link href={langPrefix} className="text-blue-600 hover:text-blue-700 font-medium mb-4 inline-block">{t(dict, "common.backToHome")}</Link>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900">{category.name || category.title}</h1>
-          <p className="text-lg text-gray-600 mt-2">Найден {specialists.length} {specialists.length === 1 ? "специалист" : "специалистов"}</p>
+          <p className="text-lg text-gray-600 mt-2">{foundText}</p>
         </div>
 
         {specialists.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-lg p-12 text-center max-w-2xl mx-auto">
             <div className="text-6xl mb-4">🔍</div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Специалисты отсутствуют</h2>
-            <p className="text-gray-600 mb-6">К сожалению, в этой категории пока нет специалистов</p>
-            <Link href={langPrefix} className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">Вернуться на главную</Link>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">{t(dict, "category.empty.title")}</h2>
+            <p className="text-gray-600 mb-6">{t(dict, "category.empty.subtitle")}</p>
+            <Link href={langPrefix} className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">{t(dict, "common.toHome")}</Link>
           </div>
         ) : (
           <div className="space-y-5">
@@ -153,14 +179,14 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                         </h3>
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium">
-                            Репетитор
+                            {t(dict, "specialist.badge")}
                           </span>
                         </div>
                       </div>
                     </div>
 
                     <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-2">
-                      {specialist.bio || "Профессиональный специалист с большим опытом работы"}
+                      {specialist.bio || t(dict, "specialist.fallbackDescription")}
                     </p>
 
                     <div className="flex flex-wrap items-center gap-3">
@@ -169,13 +195,13 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                         className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-sm hover:shadow transition-all"
                       >
                         <span>✉️</span>
-                        Оставить заявку
+                        {t(dict, "specialist.cta")}
                       </Link>
                       <Link 
                         href={`/specialist/${specialist.id}`} 
                         className="inline-flex items-center gap-1 px-4 py-2.5 text-blue-600 hover:text-blue-700 font-medium transition-colors"
                       >
-                        Подробнее
+                        {t(dict, "common.more")}
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
