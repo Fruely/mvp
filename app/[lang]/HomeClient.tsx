@@ -147,11 +147,10 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              {mosaicContent.title || "Популярные категории"}
+              {t(dict, "home.categories.title")}
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {mosaicContent.subtitle ||
-                "Выберите категорию специалистов, которые помогут вам решить задачи на вашем родном языке"}
+              {t(dict, "home.categories.subtitle")}
             </p>
           </div>
 
