@@ -6,6 +6,8 @@ import LeadForm from "@/components/LeadForm";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
+import uaDict from "@/locales/ua.json";
 
 interface Specialist {
   id: string;
@@ -24,10 +26,29 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
   const [showForm, setShowForm] = useState(false);
   const searchParams = useSearchParams();
   const pathname = usePathname() || "/";
-  const langPrefix = useMemo(() => {
+  const lang = useMemo<Lang>(() => {
     const seg = pathname.split("/").filter(Boolean)[0];
-    return seg === "ua" || seg === "ru" || seg === "de" ? `/${seg}` : "/ua";
+    return seg === "ua" || seg === "ru" || seg === "de" ? (seg as Lang) : "ua";
   }, [pathname]);
+  const langPrefix = `/${lang}`;
+
+  const [dict, setDict] = useState<Dictionary>(uaDict as unknown as Dictionary);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getDictionary(lang)
+      .then((d) => {
+        if (!cancelled) setDict(d);
+      })
+      .catch(() => {
+        if (!cancelled) setDict(uaDict as unknown as Dictionary);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lang]);
 
   useEffect(() => {
     const fetchSpecialist = async () => {
@@ -36,13 +57,13 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
         const result = await response.json();
 
         if (!response.ok) {
-          setError(result.error || "Специалист не найден");
+          setError(result.error || null);
           return;
         }
 
         setSpecialist(result.data);
       } catch (err: any) {
-        setError(err.message || "Не удалось загрузить данные специалиста");
+        setError(null);
       } finally {
         setLoading(false);
       }
@@ -69,7 +90,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Загрузка...</p>
+          <p className="text-gray-600">{t(dict, "specialist.loading")}</p>
         </div>
       </div>
     );
@@ -81,14 +102,14 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
         <div className="text-center max-w-md mx-auto px-4">
           <div className="text-6xl mb-4">😔</div>
           <h1 className="text-2xl font-bold text-gray-800 mb-2">
-            Специалист не найден
+            {t(dict, "specialist.notFound")}
           </h1>
-          <p className="text-gray-600 mb-6">{error || "Попробуйте позже"}</p>
+          <p className="text-gray-600 mb-6">{error || t(dict, "common.tryLater")}</p>
           <Link
             href={langPrefix}
             className="inline-block px-6 py-3 bg-primary text-white rounded-full hover:shadow-lg transition"
           >
-            На главную
+            {t(dict, "common.toHome")}
           </Link>
         </div>
       </div>
@@ -148,10 +169,10 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
             {/* Description */}
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-gray-800 mb-3">
-                О специалисте
+                {t(dict, "specialist.about")}
               </h2>
               <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {specialist.description || "Описание отсутствует"}
+                {specialist.description || t(dict, "specialist.noDescription")}
               </p>
             </div>
 
@@ -161,7 +182,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
                 onClick={() => setShowForm(!showForm)}
                 className="px-8 py-4 bg-gradient-to-r from-primary to-purple-600 text-white text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
               >
-                {showForm ? "Скрыть форму" : "✉️ Отправить заявку"}
+                {showForm ? t(dict, "specialist.hideForm") : t(dict, "specialist.sendRequest")}
               </button>
             </div>
           </div>
@@ -171,7 +192,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
         {showForm && (
           <div id="lead-form" className="bg-white rounded-2xl shadow-xl p-8 animate-fadeIn">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-              Отправить заявку
+              {t(dict, "specialist.sendRequest")}
             </h2>
             <LeadForm specialistId={params.id} />
           </div>

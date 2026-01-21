@@ -31,12 +31,35 @@
   "specialist": {
     "badge": "Spezialist",
     "fallbackDescription": "Professioneller Spezialist mit umfangreicher Erfahrung",
-    "cta": "Anfrage senden"
+    "cta": "Anfrage senden",
+    "loading": "Wird geladen...",
+    "notFound": "Spezialist nicht gefunden",
+    "notFoundHint": "Möglicherweise gibt es diesen Spezialisten noch nicht",
+    "about": "Über den Spezialisten",
+    "noDescription": "Keine Beschreibung verfügbar",
+    "sendRequest": "✉️ Anfrage senden",
+    "hideForm": "Formular ausblenden"
   },
   "common": {
     "toHome": "Zur Startseite",
     "backToHome": "← Zur Startseite",
-    "more": "Mehr erfahren"
+    "more": "Mehr erfahren",
+    "tryLater": "Bitte versuchen Sie es später erneut",
+    "error": "Ein Fehler ist aufgetreten",
+    "unknownError": "Unbekannter Fehler",
+    "retry": "Erneut versuchen"
+  },
+  "lead": {
+    "name": "Ihr Name",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "message": "Nachricht",
+    "submit": "Anfrage senden",
+    "sending": "Wird gesendet...",
+    "success": "Anfrage gesendet!",
+    "error": "Fehler beim Senden",
+    "noSpecialist": "Spezialist konnte nicht bestimmt werden",
+    "needContact": "Bitte E-Mail oder Telefon angeben"
   },
   "categories.title": "Fachkraft-Kategorien",
   "card.more": "Mehr anzeigen",

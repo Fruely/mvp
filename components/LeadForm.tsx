@@ -1,12 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
+import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
+import uaDict from "@/locales/ua.json";
 
 interface LeadFormProps {
   specialistId?: string;
 }
 
 export default function LeadForm({ specialistId }: LeadFormProps) {
+  const pathname = usePathname() || "/";
+  const lang = useMemo<Lang>(() => {
+    const seg = pathname.split("/").filter(Boolean)[0];
+    return seg === "ua" || seg === "ru" || seg === "de" ? (seg as Lang) : "ua";
+  }, [pathname]);
+
+  const [dict, setDict] = useState<Dictionary>(uaDict as unknown as Dictionary);
+
+  useEffect(() => {
+    let cancelled = false;
+    getDictionary(lang)
+      .then((d) => {
+        if (!cancelled) setDict(d);
+      })
+      .catch(() => {
+        if (!cancelled) setDict(uaDict as unknown as Dictionary);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [lang]);
+
   const [client_name, setName] = useState("");
   const [client_email, setEmail] = useState("");
   const [client_phone, setPhone] = useState("");
@@ -20,13 +45,13 @@ export default function LeadForm({ specialistId }: LeadFormProps) {
     setStatus("");
 
     if (!specialistId) {
-      setStatus("error:Не удалось определить специалиста");
+      setStatus(`error:${t(dict, "lead.noSpecialist")}`);
       setLoading(false);
       return;
     }
 
     if (!client_email && !client_phone) {
-      setStatus("error:Укажите email или телефон");
+      setStatus(`error:${t(dict, "lead.needContact")}`);
       setLoading(false);
       return;
     }
@@ -50,9 +75,9 @@ export default function LeadForm({ specialistId }: LeadFormProps) {
     const data = await res.json();
 
     if (!res.ok) {
-      setStatus("error:" + (data.error || "Ошибка отправки"));
+      setStatus("error:" + (data.error || t(dict, "lead.error")));
     } else {
-      setStatus("success:Заявка отправлена!");
+      setStatus(`success:${t(dict, "lead.success")}`);
       setName("");
       setEmail("");
       setPhone("");
@@ -69,33 +94,33 @@ export default function LeadForm({ specialistId }: LeadFormProps) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <input
-        placeholder="Ваше имя"
+        placeholder={t(dict, "lead.name")}
         value={client_name}
         onChange={(e) => setName(e.target.value)}
       />
 
       <input
         type="email"
-        placeholder="Email"
+        placeholder={t(dict, "lead.email")}
         value={client_email}
         onChange={(e) => setEmail(e.target.value)}
       />
 
       <input
         type="tel"
-        placeholder="Телефон"
+        placeholder={t(dict, "lead.phone")}
         value={client_phone}
         onChange={(e) => setPhone(e.target.value)}
       />
 
       <textarea
-        placeholder="Сообщение"
+        placeholder={t(dict, "lead.message")}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
       />
 
       <button disabled={loading} type="submit">
-        {loading ? "Отправка..." : "Отправить заявку"}
+        {loading ? t(dict, "lead.sending") : t(dict, "lead.submit")}
       </button>
 
       {isSuccess && <div className="text-green-600">{statusMessage}</div>}
