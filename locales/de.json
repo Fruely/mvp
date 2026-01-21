@@ -13,6 +13,12 @@
   "header.nav.contacts": "Kontakt",
   "home.categories.title": "Beliebte Kategorien",
   "home.categories.subtitle": "Wähle eine Kategorie von Fachkräften, die dir in deiner Muttersprache helfen können",
+  "categories": {
+    "psychologists": "Psychologen",
+    "masseurs": "Masseure",
+    "tutors": "Nachhilfelehrer",
+    "default": "Kategorie"
+  },
   "categories.title": "Fachkraft-Kategorien",
   "card.more": "Mehr anzeigen",
   "nav.services": "Dienstleistungen",

@@ -13,6 +13,12 @@
   "header.nav.contacts": "Контакти",
   "home.categories.title": "Популярні категорії",
   "home.categories.subtitle": "Оберіть категорію спеціалістів, які допоможуть вам вирішити задачі вашою рідною мовою",
+  "categories": {
+    "psychologists": "Психологи",
+    "masseurs": "Масажисти",
+    "tutors": "Репетитори",
+    "default": "Категорія"
+  },
   "categories.title": "Категорії фахівців",
   "card.more": "Показати ще",
   "nav.services": "Послуги",

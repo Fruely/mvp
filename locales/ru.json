@@ -10,5 +10,11 @@
   "header.joinQuestion": "Ты специалист?",
   "header.joinButton": "Присоединиться к Freuly",
   "home.categories.title": "Популярные категории",
-  "home.categories.subtitle": "Выберите категорию специалистов, которые помогут вам решить задачи на вашем родном языке"
+  "home.categories.subtitle": "Выберите категорию специалистов, которые помогут вам решить задачи на вашем родном языке",
+  "categories": {
+    "psychologists": "Психологи",
+    "masseurs": "Массажисты",
+    "tutors": "Репетиторы",
+    "default": "Категория"
+  }
 }

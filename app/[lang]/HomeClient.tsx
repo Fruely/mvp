@@ -59,9 +59,9 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
   const mosaicContent = (mosaic?.content as MosaicBlockContent) || {};
 
   const placeholderCategories = [
-    { id: "psychologists", title: "Психологи", icon: "🧠" },
-    { id: "masseurs", title: "Массажисты", icon: "💆" },
-    { id: "tutors", title: "Репетиторы", icon: "📚" },
+    { id: "psychologists", icon: "🧠" },
+    { id: "masseurs", icon: "💆" },
+    { id: "tutors", icon: "📚" },
   ];
 
   return (
@@ -158,9 +158,9 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
               {mosaicContent.images.map((img, idx) => {
                 const categoryId = img.category_id || "";
-                const categoryTitle =
-                  placeholderCategories.find((c) => c.id === categoryId)?.title ||
-                  "Категория";
+                const categoryTitle = t(dict, `categories.${categoryId}`, {
+                  defaultValue: t(dict, "categories.default"),
+                });
 
                 return (
                   <Link key={`${img.url}-${idx}`} href={categoryId ? `/${lang}/category/${categoryId}` : "#"}>
@@ -192,7 +192,9 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                       {category.icon}
                     </div>
                     <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition">
-                      {category.title}
+                      {t(dict, `categories.${category.id}`, {
+                        defaultValue: t(dict, "categories.default"),
+                      })}
                     </h3>
                   </div>
                 </Link>
