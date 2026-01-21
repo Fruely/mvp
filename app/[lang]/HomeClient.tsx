@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
+import type React from "react";
 
 type ImageBlockContent = {
   url?: string;
@@ -29,6 +31,7 @@ type Block = {
 };
 
 export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionary }) {
+  const FooterComponent = Footer as unknown as React.ComponentType<any>;
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -205,46 +208,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-50 border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 py-10 flex flex-col md:flex-row justify-between items-start gap-6">
-          <div>
-            <div className="text-2xl font-bold text-blue-600">FREULY</div>
-            <div className="text-sm text-gray-600 mt-2 max-w-sm">
-              Freuly — место, где люди находят профессионалов, говорящих на их языке.
-            </div>
-          </div>
-
-          <div className="flex gap-10">
-            <div>
-              <h4 className="font-semibold mb-2">Компания</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>
-                  <Link href={`/${lang}/about`} className="hover:text-blue-600">
-                    О нас
-                  </Link>
-                </li>
-                <li>
-                  <Link href={`/${lang}/support`} className="hover:text-blue-600">
-                    Поддержка
-                  </Link>
-                </li>
-                <li>
-                  <Link href={`/${lang}/become-specialist`} className="hover:text-blue-600">
-                    Для специалистов
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-2">Контакты</h4>
-              <p className="text-sm text-gray-600">info@freuly.example</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="text-center text-xs text-gray-400 py-4 border-t border-gray-200">© 2025 Freuly. Все права защищены.</div>
-      </footer>
+      <FooterComponent dict={dict} lang={lang} />
 
       {error && (
         <div className="fixed bottom-4 right-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg shadow">

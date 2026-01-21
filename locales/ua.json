@@ -61,6 +61,15 @@
   "footer.blog": "Блог",
   "footer.careers": "Кар'єра",
   "footer.contact": "Контакти",
+  "footer": {
+    "rights": "Усі права захищені",
+    "about": "Про проєкт",
+    "contacts": "Контакти",
+    "companyHeading": "Про проєкт",
+    "support": "Підтримка",
+    "forSpecialists": "Для спеціалістів",
+    "tagline": "Freuly — місце, де люди знаходять професіоналів, які говорять їхньою мовою."
+  },
   "footer.email": "Email",
   "footer.phone": "Телефон",
   "footer.address": "Адреса",

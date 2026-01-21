@@ -61,6 +61,15 @@
   "footer.blog": "Blog",
   "footer.careers": "Karriere",
   "footer.contact": "Kontakt",
+  "footer": {
+    "rights": "Alle Rechte vorbehalten",
+    "about": "Über das Projekt",
+    "contacts": "Kontakte",
+    "companyHeading": "Über das Projekt",
+    "support": "Support",
+    "forSpecialists": "Für Fachkräfte",
+    "tagline": "Freuly — ein Ort, an dem Menschen Fachkräfte finden, die ihre Sprache sprechen."
+  },
   "footer.email": "E-Mail",
   "footer.phone": "Telefon",
   "footer.address": "Adresse",

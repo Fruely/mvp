@@ -36,11 +36,11 @@ export function t(
   key: string,
   options?: { defaultValue?: string }
 ): string {
-  const direct = (dict as any)?.[key];
-  if (typeof direct === "string") return direct;
-
   const byPath = getByPath(dict, key);
   if (typeof byPath === "string") return byPath;
+
+  const direct = (dict as any)?.[key];
+  if (typeof direct === "string") return direct;
 
   return options?.defaultValue ?? key;
 }
