@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: { params: { lang: string } })
     alternates: {
       canonical,
       languages: {
-        ua: `${DOMAIN}/ua/become-specialist`,
+        uk: `${DOMAIN}/ua/become-specialist`,
         ru: `${DOMAIN}/ru/become-specialist`,
         de: `${DOMAIN}/de/become-specialist`,
       },

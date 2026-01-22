@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: { lang: string } })
     alternates: {
       canonical,
       languages: {
-        ua: `${DOMAIN}/ua`,
+        uk: `${DOMAIN}/ua`,
         ru: `${DOMAIN}/ru`,
         de: `${DOMAIN}/de`,
       },
