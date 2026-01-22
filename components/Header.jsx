@@ -59,6 +59,14 @@ export default function Header({ dict: dictProp } = {}) {
     router.push(nextPath);
   };
 
+  const onCategoriesClick = (e) => {
+    if (typeof document !== "undefined" && document.getElementById("categories")) {
+      return;
+    }
+    e.preventDefault();
+    router.push(`/${lang}#categories`);
+  };
+
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -76,7 +84,7 @@ export default function Header({ dict: dictProp } = {}) {
           </div>
 
           <nav className="hidden md:flex items-center gap-6">
-            <a className="text-gray-700 hover:text-blue-600 font-medium transition" href="#categories">
+            <a className="text-gray-700 hover:text-blue-600 font-medium transition" href="#categories" onClick={onCategoriesClick}>
               {t(dict, "header.nav.categories")}
             </a>
             <Link href={`/${lang}/about`} className="text-gray-700 hover:text-blue-600 font-medium transition">

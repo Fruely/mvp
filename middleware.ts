@@ -61,12 +61,8 @@ export function middleware(request: NextRequest) {
     return res;
   }
 
-  // For /{lang}/... rewrite to /... (keep URL in browser)
-  const restPath = `/${segments.slice(1).join("/")}`;
-  const url = request.nextUrl.clone();
-  url.pathname = restPath;
-
-  const res = NextResponse.rewrite(url);
+  // For /{lang}/... keep as-is, just set cookie (for future redirects)
+  const res = NextResponse.next();
   res.cookies.set(LANG_COOKIE, lang, { path: "/" });
   return res;
 }

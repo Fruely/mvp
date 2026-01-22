@@ -66,25 +66,29 @@ export default function LeadForm({ specialistId }: LeadFormProps) {
 
     console.log("[LeadForm] Sending payload:", payload);
 
-    const res = await fetch("/api/leads/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const res = await fetch("/api/leads/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      setStatus("error:" + (data.error || t(dict, "lead.error")));
-    } else {
-      setStatus(`success:${t(dict, "lead.success")}`);
-      setName("");
-      setEmail("");
-      setPhone("");
-      setMessage("");
+      if (!res.ok) {
+        setStatus("error:" + (data.error || t(dict, "lead.error")));
+      } else {
+        setStatus(`success:${t(dict, "lead.success")}`);
+        setName("");
+        setEmail("");
+        setPhone("");
+        setMessage("");
+      }
+    } catch {
+      setStatus(`error:${t(dict, "lead.error")}`);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const isSuccess = status.startsWith("success:");

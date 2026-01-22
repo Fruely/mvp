@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { getSupabase } from "@/lib/supabaseClient";
-import { usePathname } from "next/navigation";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import uaDict from "@/locales/ua.json";
 
@@ -23,13 +22,9 @@ interface Category {
   title?: string;
 }
 
-export default function CategoryPage({ params }: { params: { slug: string } }) {
+export default function CategoryPage({ params }: { params: { lang: string; slug: string } }) {
   const { slug } = params;
-  const pathname = usePathname() || "/";
-  const lang = useMemo<Lang>(() => {
-    const seg = pathname.split("/").filter(Boolean)[0];
-    return seg === "ua" || seg === "ru" || seg === "de" ? (seg as Lang) : "ua";
-  }, [pathname]);
+  const lang = params.lang as Lang;
   const langPrefix = `/${lang}`;
 
   const [dict, setDict] = useState<Dictionary>(uaDict as unknown as Dictionary);
@@ -204,14 +199,14 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
 
                     <div className="flex flex-wrap items-center gap-3">
                       <Link
-                        href={`/specialist/${specialist.id}?open=form`}
+                        href={`/${lang}/specialist/${specialist.id}?open=form`}
                         className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-sm hover:shadow transition-all"
                       >
                         <span>✉️</span>
                         {t(dict, "specialist.cta")}
                       </Link>
                       <Link
-                        href={`/specialist/${specialist.id}`}
+                        href={`/${lang}/specialist/${specialist.id}`}
                         className="inline-flex items-center gap-1 px-4 py-2.5 text-blue-600 hover:text-blue-700 font-medium transition-colors"
                       >
                         {t(dict, "common.more")}
