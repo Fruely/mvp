@@ -1,7 +1,18 @@
 import Link from "next/link";
 import { t } from "@/lib/i18n";
 
-export default function Footer({ dict, lang } = {}) {
+/**
+ * @typedef {'ua'|'ru'|'de'} Lang
+ * @typedef {import('@/lib/i18n').Dictionary} Dictionary
+ *
+ * @typedef {Object} FooterProps
+ * @property {Lang} lang
+ * @property {Dictionary} dict
+ */
+
+/** @param {FooterProps} props */
+export default function Footer(props) {
+  const { dict, lang } = props;
   const prefix = lang ? `/${lang}` : "";
 
   return (
