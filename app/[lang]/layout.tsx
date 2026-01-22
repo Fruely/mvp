@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
-import { isSupportedLang } from "@/lib/i18n";
+import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
+import Footer from "@/components/Footer";
 
-export default function LangLayout({
+export default async function LangLayout({
   children,
   params,
 }: {
@@ -12,5 +13,13 @@ export default function LangLayout({
     redirect("/ua");
   }
 
-  return children;
+  const lang = params.lang as Lang;
+  const dict = await getDictionary(lang);
+
+  return (
+    <>
+      {children}
+      <Footer dict={dict} lang={lang} />
+    </>
+  );
 }

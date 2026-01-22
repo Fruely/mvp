@@ -4,10 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
-import type React from "react";
 
 type ImageBlockContent = {
   url?: string;
@@ -31,7 +29,6 @@ type Block = {
 };
 
 export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionary }) {
-  const FooterComponent = Footer as unknown as React.ComponentType<any>;
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -206,9 +203,6 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
           )}
         </div>
       </section>
-
-      {/* Footer */}
-      <FooterComponent dict={dict} lang={lang} />
 
       {error && (
         <div className="fixed bottom-4 right-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg shadow">
