@@ -143,7 +143,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       </section>
 
       {/* Mosaic Section (dynamic) */}
-      <section id="categories" className="py-20 bg-white">
+      <section id="categories" className="py-12 md:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -155,7 +155,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
           </div>
 
           {mosaicContent.images && mosaicContent.images.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-12">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-12">
               {mosaicContent.images.map((img, idx) => {
                 const categoryId = img.category_id || "";
                 const categoryTitle = t(dict, `categories.${categoryId}`, {
@@ -166,9 +166,9 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                   <Link 
                     key={`${img.url}-${idx}`} 
                     href={categoryId ? `/${lang}/category/${categoryId}` : "#"}
-                    className="block"
+                    className="block mx-auto"
                   >
-                    <div className="group relative w-full rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 bg-white">
+                    <div className="group relative w-full max-w-[200px] md:max-w-[220px] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 bg-white">
                       {/* Square Image Container */}
                       <div
                         className="relative w-full aspect-square"
