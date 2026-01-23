@@ -168,24 +168,26 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                     href={categoryId ? `/${lang}/category/${categoryId}` : "#"}
                     className="block"
                   >
-                    <div className="group relative w-full rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white transform hover:-translate-y-1">
-                      {/* Image Container with fixed 4:3 aspect ratio using padding trick */}
-                      <div className="relative w-full" style={{ paddingBottom: '75%' }}>
-                        <div className="absolute inset-0">
-                          <Image
-                            unoptimized
-                            src={img.url}
-                            alt={img.alt || `mosaic-${idx}`}
-                            fill
-                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                            onError={(e) => {
-                              // Fallback to placeholder SVG on error
-                              const target = e.target as HTMLImageElement;
-                              target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23e5e7eb" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%239ca3af" font-family="sans-serif" font-size="16"%3EImage%3C/text%3E%3C/svg%3E';
-                            }}
-                          />
-                        </div>
+                    <div className="group relative w-full rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 bg-white">
+                      {/* Square Image Container */}
+                      <div
+                        className="relative w-full aspect-square"
+                        style={{ aspectRatio: "1 / 1" }}
+                      >
+                        <Image
+                          unoptimized
+                          src={img.url}
+                          alt={img.alt || `mosaic-${idx}`}
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          className="mosaic-card-img object-cover w-full h-full group-hover:scale-[1.02] transition-transform duration-300"
+                          onError={(e) => {
+                            // Fallback to placeholder SVG on error
+                            const target = e.target as HTMLImageElement;
+                            target.src =
+                              'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23e5e7eb" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%239ca3af" font-family="sans-serif" font-size="16"%3EImage%3C/text%3E%3C/svg%3E';
+                          }}
+                        />
                         
                         {/* Gradient Overlay with absolute positioning */}
                         <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/80 via-black/50 to-transparent pointer-events-none">
@@ -196,6 +198,13 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                           </div>
                         </div>
                       </div>
+
+                      {/* Fallback hover-scale (если Tailwind не сгенерил scale-[1.02]) */}
+                      <style jsx>{`
+                        .group:hover :global(.mosaic-card-img) {
+                          transform: scale(1.02);
+                        }
+                      `}</style>
                     </div>
                   </Link>
                 );
