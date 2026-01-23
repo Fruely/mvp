@@ -16,19 +16,7 @@ function isLang(value: string): value is Lang {
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
-  // Whitelisted paths that should never be blocked
-  const isWhitelisted =
-    pathname === "/__dev" ||
-    pathname === "/__closed" ||
-    pathname.startsWith("/api") ||
-    pathname.startsWith("/admin") ||
-    pathname.startsWith("/_next") ||
-    pathname === "/robots.txt" ||
-    pathname === "/sitemap.xml" ||
-    pathname === "/favicon.ico" ||
-    pathname.includes(".");
-
-  // Check for dev access key in URL parameter
+  // STEP 1: Check for dev access key in URL parameter FIRST (before anything else)
   const devKey = searchParams.get("dev");
   const expectedKey = process.env.DEV_ACCESS_KEY;
 
@@ -47,8 +35,20 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // Check if user has dev cookie
+  // STEP 2: Check if user has dev cookie
   const isDev = request.cookies.get(DEV_COOKIE)?.value === "1";
+
+  // STEP 3: Whitelisted paths that should never be blocked
+  const isWhitelisted =
+    pathname === "/__dev" ||
+    pathname === "/__closed" ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/_next") ||
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml" ||
+    pathname === "/favicon.ico" ||
+    pathname.includes(".");
 
   // Block access if no dev cookie and not whitelisted
   if (!isDev && !isWhitelisted) {
