@@ -15,6 +15,22 @@ function isLang(value: string): value is Lang {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  const isDev = request.cookies.get("freuly_dev")?.value === "1";
+  const isWhitelisted =
+    pathname === "/__dev" ||
+    pathname === "/__closed" ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/_next") ||
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml" ||
+    pathname === "/favicon.ico" ||
+    pathname.includes(".");
+
+  if (!isDev && !isWhitelisted) {
+    return NextResponse.rewrite(new URL("/__closed", request.url));
+  }
+
   // Never apply i18n to admin/api/static assets
   if (
     pathname.startsWith("/api") ||
@@ -26,19 +42,6 @@ export function middleware(request: NextRequest) {
     pathname.includes(".")
   ) {
     return NextResponse.next();
-  }
-
-  // DEV gate: allow only if freuly_dev=1 cookie is present.
-  // Always allow the enable URL and the closed page itself.
-  if (pathname === DEV_ENABLE_PATH || pathname === DEV_CLOSED_PATH) {
-    return NextResponse.next();
-  }
-
-  const devCookie = request.cookies.get(DEV_COOKIE)?.value;
-  if (devCookie !== "1") {
-    const url = request.nextUrl.clone();
-    url.pathname = DEV_CLOSED_PATH;
-    return NextResponse.rewrite(url);
   }
 
   const segments = pathname.split("/").filter(Boolean);
