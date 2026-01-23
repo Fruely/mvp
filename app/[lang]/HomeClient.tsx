@@ -155,7 +155,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
           </div>
 
           {mosaicContent.images && mosaicContent.images.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-12">
               {mosaicContent.images.map((img, idx) => {
                 const categoryId = img.category_id || "";
                 const categoryTitle = t(dict, `categories.${categoryId}`, {
@@ -163,20 +163,38 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 });
 
                 return (
-                  <Link key={`${img.url}-${idx}`} href={categoryId ? `/${lang}/category/${categoryId}` : "#"}>
-                    <div className="group rounded-2xl overflow-hidden shadow hover:shadow-lg transition cursor-pointer bg-white">
-                      <div className="aspect-[4/3] w-full overflow-hidden">
-                        <Image
-                          unoptimized
-                          src={img.url}
-                          alt={img.alt || `mosaic-${idx}`}
-                          width={800}
-                          height={600}
-                          className="w-full h-full object-cover group-hover:scale-105 transition"
-                        />
-                      </div>
-                      <div className="bg-gradient-to-t from-black/70 via-black/30 to-transparent -mt-12 h-14 flex items-end px-3 py-2">
-                        <span className="text-white text-sm font-semibold drop-shadow">{categoryTitle}</span>
+                  <Link 
+                    key={`${img.url}-${idx}`} 
+                    href={categoryId ? `/${lang}/category/${categoryId}` : "#"}
+                    className="block"
+                  >
+                    <div className="group relative w-full rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white transform hover:-translate-y-1">
+                      {/* Image Container with fixed 4:3 aspect ratio using padding trick */}
+                      <div className="relative w-full" style={{ paddingBottom: '75%' }}>
+                        <div className="absolute inset-0">
+                          <Image
+                            unoptimized
+                            src={img.url}
+                            alt={img.alt || `mosaic-${idx}`}
+                            fill
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              // Fallback to placeholder SVG on error
+                              const target = e.target as HTMLImageElement;
+                              target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23e5e7eb" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%239ca3af" font-family="sans-serif" font-size="16"%3EImage%3C/text%3E%3C/svg%3E';
+                            }}
+                          />
+                        </div>
+                        
+                        {/* Gradient Overlay with absolute positioning */}
+                        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/80 via-black/50 to-transparent pointer-events-none">
+                          <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
+                            <span className="text-white text-sm font-semibold drop-shadow-lg line-clamp-1">
+                              {categoryTitle}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </Link>
