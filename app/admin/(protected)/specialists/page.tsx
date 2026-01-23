@@ -5,38 +5,28 @@ import { useEffect, useMemo, useState } from "react";
 type Specialist = {
   id: string;
   name: string | null;
-  category_id: string | null;
-};
-
-type Lead = {
-  id: string;
-  specialist_id: string | null;
-  client_name: string | null;
-  client_email: string | null;
-  client_phone: string | null;
-  message: string | null;
-  status: string | null;
+  category: string | null;
+  languages: string | null;
   created_at: string | null;
-  specialist: Specialist | null;
+  status: string | null;
 };
 
-type ApiResponse =
-  | { data: Lead[] }
-  | { error: string };
+type ApiResponse = { data: Specialist[] } | { error: string };
 
-const ALLOWED_STATUSES = ["new", "contacted", "closed"] as const;
-type LeadStatus = (typeof ALLOWED_STATUSES)[number];
+type UpdateResponse = { success: true; updated: any } | { error: string };
 
 const TOKEN_STORAGE_KEY = "ADMIN_API_TOKEN";
 
-export default function AdminLeadsPage() {
+export default function AdminSpecialistsPage() {
   const [token, setToken] = useState<string | null>(null);
   const [tokenInput, setTokenInput] = useState("");
 
-  const [data, setData] = useState<Lead[]>([]);
+  const [data, setData] = useState<Specialist[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [updatingById, setUpdatingById] = useState<Record<string, boolean>>({});
+  const [updatingById, setUpdatingById] = useState<Record<string, boolean>>(
+    {}
+  );
 
   const hasToken = useMemo(() => !!token && token.trim().length > 0, [token]);
 
@@ -51,12 +41,12 @@ export default function AdminLeadsPage() {
     }
   }, []);
 
-  async function fetchLeads(activeToken: string) {
+  async function fetchSpecialists(activeToken: string) {
     setLoading(true);
     setError(null);
 
     try {
-      const res = await fetch("/api/admin/leads", {
+      const res = await fetch("/api/admin/specialists/pending", {
         method: "GET",
         headers: {
           "x-admin-token": activeToken,
@@ -82,7 +72,7 @@ export default function AdminLeadsPage() {
         const message =
           "error" in json && typeof json.error === "string"
             ? json.error
-            : "Не удалось загрузить лиды";
+            : "Не удалось загрузить специалистов";
         setError(message);
         return;
       }
@@ -94,16 +84,19 @@ export default function AdminLeadsPage() {
 
       setError("Некорректный ответ API");
     } catch (e: any) {
-      setError(e?.message || "Ошибка сети при загрузке лидов");
+      setError(e?.message || "Ошибка сети при загрузке специалистов");
     } finally {
       setLoading(false);
     }
   }
 
-  async function updateLeadStatus(id: string, status: LeadStatus) {
+  async function updateSpecialistStatus(
+    id: string,
+    status: "approved" | "rejected"
+  ) {
     const activeToken = token || localStorage.getItem(TOKEN_STORAGE_KEY);
     if (!activeToken || !activeToken.trim()) {
-      setError("Введите токен, чтобы менять статус лидов.");
+      setError("Введите токен, чтобы менять статус специалистов.");
       return;
     }
 
@@ -111,8 +104,8 @@ export default function AdminLeadsPage() {
     setError(null);
 
     try {
-      const res = await fetch("/api/admin/leads/status", {
-        method: "PATCH",
+      const res = await fetch("/api/admin/specialists/update", {
+        method: "POST",
         headers: {
           "x-admin-token": activeToken,
           "Content-Type": "application/json",
@@ -120,7 +113,7 @@ export default function AdminLeadsPage() {
         body: JSON.stringify({ id, status }),
       });
 
-      const json = (await res.json()) as { data?: any; error?: string };
+      const json = (await res.json()) as UpdateResponse;
 
       if (res.status === 401) {
         try {
@@ -135,13 +128,16 @@ export default function AdminLeadsPage() {
       }
 
       if (!res.ok) {
-        setError(json?.error || "Не удалось обновить статус лида");
+        const errorMessage =
+          "error" in json && typeof json.error === "string"
+            ? json.error
+            : "Не удалось обновить статус специалиста";
+        setError(errorMessage);
         return;
       }
 
-      setData((prev) =>
-        prev.map((lead) => (lead.id === id ? { ...lead, status } : lead))
-      );
+      // Remove the specialist from the list locally
+      setData((prev) => prev.filter((specialist) => specialist.id !== id));
     } catch (e: any) {
       setError(e?.message || "Ошибка сети при обновлении статуса");
     } finally {
@@ -155,7 +151,8 @@ export default function AdminLeadsPage() {
 
   useEffect(() => {
     if (!hasToken || !token) return;
-    fetchLeads(token);
+    fetchSpecialists(token);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasToken, token]);
 
@@ -191,9 +188,11 @@ export default function AdminLeadsPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Лиды</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Ожидающие специалисты
+            </h1>
             <p className="text-sm text-gray-600">
-              Просмотр заявок клиентов (admin-only)
+              Просмотр и одобрение/отклонение заявок специалистов (admin-only)
             </p>
           </div>
 
@@ -202,7 +201,7 @@ export default function AdminLeadsPage() {
               <>
                 <button
                   type="button"
-                  onClick={() => token && fetchLeads(token)}
+                  onClick={() => token && fetchSpecialists(token)}
                   disabled={loading}
                   className="px-3 py-2 rounded-md border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-50"
                 >
@@ -256,92 +255,72 @@ export default function AdminLeadsPage() {
           </div>
         )}
 
-        {loading && (
-          <div className="mb-4 text-sm text-gray-600">Загрузка…</div>
-        )}
+        {loading && <div className="mb-4 text-sm text-gray-600">Загрузка…</div>}
 
         <div className="overflow-x-auto border border-gray-200 rounded-lg">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
               <tr className="text-left text-gray-700">
                 <th className="px-3 py-2 border-b">Created at</th>
-                <th className="px-3 py-2 border-b">Specialist</th>
-                <th className="px-3 py-2 border-b">Client</th>
-                <th className="px-3 py-2 border-b">Email</th>
-                <th className="px-3 py-2 border-b">Phone</th>
-                <th className="px-3 py-2 border-b">Message</th>
-                <th className="px-3 py-2 border-b">Status</th>
+                <th className="px-3 py-2 border-b">Name</th>
+                <th className="px-3 py-2 border-b">Category</th>
+                <th className="px-3 py-2 border-b">Languages</th>
+                <th className="px-3 py-2 border-b">Actions</th>
               </tr>
             </thead>
             <tbody>
               {data.length === 0 ? (
                 <tr>
-                  <td className="px-3 py-4 text-gray-600" colSpan={7}>
+                  <td className="px-3 py-4 text-gray-600" colSpan={5}>
                     {hasToken
-                      ? "Нет лидов (или не удалось загрузить)."
-                      : "Введите токен, чтобы загрузить лиды."}
+                      ? "Нет ожидающих специалистов (или не удалось загрузить)."
+                      : "Введите токен, чтобы загрузить специалистов."}
                   </td>
                 </tr>
               ) : (
-                data.map((lead) => {
-                  const createdAt = lead.created_at
-                    ? new Date(lead.created_at).toLocaleString("ru-RU")
+                data.map((specialist) => {
+                  const createdAt = specialist.created_at
+                    ? new Date(specialist.created_at).toLocaleString("ru-RU")
                     : "—";
-                  const specialistName = lead.specialist?.name || "—";
-                  const isUpdating = !!updatingById[lead.id];
-                  const currentStatus = ALLOWED_STATUSES.includes(
-                    lead.status as LeadStatus
-                  )
-                    ? (lead.status as LeadStatus)
-                    : "";
+                  const isUpdating = !!updatingById[specialist.id];
 
                   return (
-                    <tr key={lead.id} className="align-top">
+                    <tr key={specialist.id} className="align-top">
                       <td className="px-3 py-2 border-b whitespace-nowrap">
                         {createdAt}
                       </td>
+                      <td className="px-3 py-2 border-b font-medium text-gray-900">
+                        {specialist.name || "—"}
+                      </td>
                       <td className="px-3 py-2 border-b">
-                        <div className="font-medium text-gray-900">
-                          {specialistName}
+                        {specialist.category || "—"}
+                      </td>
+                      <td className="px-3 py-2 border-b">
+                        {specialist.languages || "—"}
+                      </td>
+                      <td className="px-3 py-2 border-b">
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateSpecialistStatus(specialist.id, "approved")
+                            }
+                            disabled={isUpdating || !hasToken}
+                            className="px-3 py-1 rounded-md bg-green-600 text-white text-xs font-semibold hover:bg-green-700 disabled:opacity-50"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateSpecialistStatus(specialist.id, "rejected")
+                            }
+                            disabled={isUpdating || !hasToken}
+                            className="px-3 py-1 rounded-md bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50"
+                          >
+                            Reject
+                          </button>
                         </div>
-                        {lead.specialist?.category_id ? (
-                          <div className="text-xs text-gray-500">
-                            category_id: {lead.specialist.category_id}
-                          </div>
-                        ) : null}
-                      </td>
-                      <td className="px-3 py-2 border-b">
-                        {lead.client_name || "—"}
-                      </td>
-                      <td className="px-3 py-2 border-b">
-                        {lead.client_email || "—"}
-                      </td>
-                      <td className="px-3 py-2 border-b">
-                        {lead.client_phone || "—"}
-                      </td>
-                      <td className="px-3 py-2 border-b max-w-[420px] whitespace-pre-wrap">
-                        {lead.message || "—"}
-                      </td>
-                      <td className="px-3 py-2 border-b">
-                        <select
-                          className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white disabled:opacity-50"
-                          value={currentStatus}
-                          disabled={isUpdating || !hasToken}
-                          onChange={(e) => {
-                            const next = e.target.value as LeadStatus;
-                            if (!ALLOWED_STATUSES.includes(next)) return;
-                            updateLeadStatus(lead.id, next);
-                          }}
-                        >
-                          <option value="" disabled>
-                            —
-                          </option>
-                          {ALLOWED_STATUSES.map((s) => (
-                            <option key={s} value={s}>
-                              {s}
-                            </option>
-                          ))}
-                        </select>
                       </td>
                     </tr>
                   );

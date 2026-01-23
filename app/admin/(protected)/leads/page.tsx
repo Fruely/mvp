@@ -5,30 +5,38 @@ import { useEffect, useMemo, useState } from "react";
 type Specialist = {
   id: string;
   name: string | null;
-  category: string | null;
-  languages: string | null;
-  created_at: string | null;
-  status: string | null;
+  category_id: string | null;
 };
 
-type ApiResponse =
-  | { data: Specialist[] }
-  | { error: string };
+type Lead = {
+  id: string;
+  specialist_id: string | null;
+  client_name: string | null;
+  client_email: string | null;
+  client_phone: string | null;
+  message: string | null;
+  status: string | null;
+  created_at: string | null;
+  specialist: Specialist | null;
+};
 
-type UpdateResponse =
-  | { success: true; updated: any }
-  | { error: string };
+type ApiResponse = { data: Lead[] } | { error: string };
+
+const ALLOWED_STATUSES = ["new", "contacted", "closed"] as const;
+type LeadStatus = (typeof ALLOWED_STATUSES)[number];
 
 const TOKEN_STORAGE_KEY = "ADMIN_API_TOKEN";
 
-export default function AdminSpecialistsPage() {
+export default function AdminLeadsPage() {
   const [token, setToken] = useState<string | null>(null);
   const [tokenInput, setTokenInput] = useState("");
 
-  const [data, setData] = useState<Specialist[]>([]);
+  const [data, setData] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [updatingById, setUpdatingById] = useState<Record<string, boolean>>({});
+  const [updatingById, setUpdatingById] = useState<Record<string, boolean>>(
+    {}
+  );
 
   const hasToken = useMemo(() => !!token && token.trim().length > 0, [token]);
 
@@ -43,12 +51,12 @@ export default function AdminSpecialistsPage() {
     }
   }, []);
 
-  async function fetchSpecialists(activeToken: string) {
+  async function fetchLeads(activeToken: string) {
     setLoading(true);
     setError(null);
 
     try {
-      const res = await fetch("/api/admin/specialists/pending", {
+      const res = await fetch("/api/admin/leads", {
         method: "GET",
         headers: {
           "x-admin-token": activeToken,
@@ -74,7 +82,7 @@ export default function AdminSpecialistsPage() {
         const message =
           "error" in json && typeof json.error === "string"
             ? json.error
-            : "Не удалось загрузить специалистов";
+            : "Не удалось загрузить лиды";
         setError(message);
         return;
       }
@@ -86,19 +94,16 @@ export default function AdminSpecialistsPage() {
 
       setError("Некорректный ответ API");
     } catch (e: any) {
-      setError(e?.message || "Ошибка сети при загрузке специалистов");
+      setError(e?.message || "Ошибка сети при загрузке лидов");
     } finally {
       setLoading(false);
     }
   }
 
-  async function updateSpecialistStatus(
-    id: string,
-    status: "approved" | "rejected"
-  ) {
+  async function updateLeadStatus(id: string, status: LeadStatus) {
     const activeToken = token || localStorage.getItem(TOKEN_STORAGE_KEY);
     if (!activeToken || !activeToken.trim()) {
-      setError("Введите токен, чтобы менять статус специалистов.");
+      setError("Введите токен, чтобы менять статус лидов.");
       return;
     }
 
@@ -106,8 +111,8 @@ export default function AdminSpecialistsPage() {
     setError(null);
 
     try {
-      const res = await fetch("/api/admin/specialists/update", {
-        method: "POST",
+      const res = await fetch("/api/admin/leads/status", {
+        method: "PATCH",
         headers: {
           "x-admin-token": activeToken,
           "Content-Type": "application/json",
@@ -115,7 +120,7 @@ export default function AdminSpecialistsPage() {
         body: JSON.stringify({ id, status }),
       });
 
-      const json = (await res.json()) as UpdateResponse;
+      const json = (await res.json()) as { data?: any; error?: string };
 
       if (res.status === 401) {
         try {
@@ -130,16 +135,13 @@ export default function AdminSpecialistsPage() {
       }
 
       if (!res.ok) {
-        const errorMessage =
-          "error" in json && typeof json.error === "string"
-            ? json.error
-            : "Не удалось обновить статус специалиста";
-        setError(errorMessage);
+        setError(json?.error || "Не удалось обновить статус лида");
         return;
       }
 
-      // Remove the specialist from the list locally
-      setData((prev) => prev.filter((specialist) => specialist.id !== id));
+      setData((prev) =>
+        prev.map((lead) => (lead.id === id ? { ...lead, status } : lead))
+      );
     } catch (e: any) {
       setError(e?.message || "Ошибка сети при обновлении статуса");
     } finally {
@@ -153,7 +155,7 @@ export default function AdminSpecialistsPage() {
 
   useEffect(() => {
     if (!hasToken || !token) return;
-    fetchSpecialists(token);
+    fetchLeads(token);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasToken, token]);
 
@@ -189,11 +191,9 @@ export default function AdminSpecialistsPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Ожидающие специалисты
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900">Лиды</h1>
             <p className="text-sm text-gray-600">
-              Просмотр и одобрение/отклонение заявок специалистов (admin-only)
+              Просмотр заявок клиентов (admin-only)
             </p>
           </div>
 
@@ -202,7 +202,7 @@ export default function AdminSpecialistsPage() {
               <>
                 <button
                   type="button"
-                  onClick={() => token && fetchSpecialists(token)}
+                  onClick={() => token && fetchLeads(token)}
                   disabled={loading}
                   className="px-3 py-2 rounded-md border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-50"
                 >
@@ -256,74 +256,90 @@ export default function AdminSpecialistsPage() {
           </div>
         )}
 
-        {loading && (
-          <div className="mb-4 text-sm text-gray-600">Загрузка…</div>
-        )}
+        {loading && <div className="mb-4 text-sm text-gray-600">Загрузка…</div>}
 
         <div className="overflow-x-auto border border-gray-200 rounded-lg">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
               <tr className="text-left text-gray-700">
                 <th className="px-3 py-2 border-b">Created at</th>
-                <th className="px-3 py-2 border-b">Name</th>
-                <th className="px-3 py-2 border-b">Category</th>
-                <th className="px-3 py-2 border-b">Languages</th>
-                <th className="px-3 py-2 border-b">Actions</th>
+                <th className="px-3 py-2 border-b">Specialist</th>
+                <th className="px-3 py-2 border-b">Client</th>
+                <th className="px-3 py-2 border-b">Email</th>
+                <th className="px-3 py-2 border-b">Phone</th>
+                <th className="px-3 py-2 border-b">Message</th>
+                <th className="px-3 py-2 border-b">Status</th>
               </tr>
             </thead>
             <tbody>
               {data.length === 0 ? (
                 <tr>
-                  <td className="px-3 py-4 text-gray-600" colSpan={5}>
+                  <td className="px-3 py-4 text-gray-600" colSpan={7}>
                     {hasToken
-                      ? "Нет ожидающих специалистов (или не удалось загрузить)."
-                      : "Введите токен, чтобы загрузить специалистов."}
+                      ? "Нет лидов (или не удалось загрузить)."
+                      : "Введите токен, чтобы загрузить лиды."}
                   </td>
                 </tr>
               ) : (
-                data.map((specialist) => {
-                  const createdAt = specialist.created_at
-                    ? new Date(specialist.created_at).toLocaleString("ru-RU")
+                data.map((lead) => {
+                  const createdAt = lead.created_at
+                    ? new Date(lead.created_at).toLocaleString("ru-RU")
                     : "—";
-                  const isUpdating = !!updatingById[specialist.id];
+                  const specialistName = lead.specialist?.name || "—";
+                  const isUpdating = !!updatingById[lead.id];
+                  const currentStatus = ALLOWED_STATUSES.includes(
+                    lead.status as LeadStatus
+                  )
+                    ? (lead.status as LeadStatus)
+                    : "";
 
                   return (
-                    <tr key={specialist.id} className="align-top">
+                    <tr key={lead.id} className="align-top">
                       <td className="px-3 py-2 border-b whitespace-nowrap">
                         {createdAt}
                       </td>
-                      <td className="px-3 py-2 border-b font-medium text-gray-900">
-                        {specialist.name || "—"}
-                      </td>
                       <td className="px-3 py-2 border-b">
-                        {specialist.category || "—"}
-                      </td>
-                      <td className="px-3 py-2 border-b">
-                        {specialist.languages || "—"}
-                      </td>
-                      <td className="px-3 py-2 border-b">
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              updateSpecialistStatus(specialist.id, "approved")
-                            }
-                            disabled={isUpdating || !hasToken}
-                            className="px-3 py-1 rounded-md bg-green-600 text-white text-xs font-semibold hover:bg-green-700 disabled:opacity-50"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              updateSpecialistStatus(specialist.id, "rejected")
-                            }
-                            disabled={isUpdating || !hasToken}
-                            className="px-3 py-1 rounded-md bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50"
-                          >
-                            Reject
-                          </button>
+                        <div className="font-medium text-gray-900">
+                          {specialistName}
                         </div>
+                        {lead.specialist?.category_id ? (
+                          <div className="text-xs text-gray-500">
+                            category_id: {lead.specialist.category_id}
+                          </div>
+                        ) : null}
+                      </td>
+                      <td className="px-3 py-2 border-b">
+                        {lead.client_name || "—"}
+                      </td>
+                      <td className="px-3 py-2 border-b">
+                        {lead.client_email || "—"}
+                      </td>
+                      <td className="px-3 py-2 border-b">
+                        {lead.client_phone || "—"}
+                      </td>
+                      <td className="px-3 py-2 border-b max-w-[420px] whitespace-pre-wrap">
+                        {lead.message || "—"}
+                      </td>
+                      <td className="px-3 py-2 border-b">
+                        <select
+                          className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white disabled:opacity-50"
+                          value={currentStatus}
+                          disabled={isUpdating || !hasToken}
+                          onChange={(e) => {
+                            const next = e.target.value as LeadStatus;
+                            if (!ALLOWED_STATUSES.includes(next)) return;
+                            updateLeadStatus(lead.id, next);
+                          }}
+                        >
+                          <option value="" disabled>
+                            —
+                          </option>
+                          {ALLOWED_STATUSES.map((s) => (
+                            <option key={s} value={s}>
+                              {s}
+                            </option>
+                          ))}
+                        </select>
                       </td>
                     </tr>
                   );
@@ -336,3 +352,4 @@ export default function AdminSpecialistsPage() {
     </div>
   );
 }
+

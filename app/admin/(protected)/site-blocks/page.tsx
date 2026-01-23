@@ -47,8 +47,13 @@ export default function AdminSiteBlocksPage() {
     fetchBlocks();
   }, [router]);
 
-  const hero = useMemo(() => blocks.find((b) => b.key === "homepage_hero"), [blocks]);
-  const mosaic = useMemo(() => blocks.find((b) => b.key === "homepage_mosaic"), [blocks]);
+  const hero = useMemo(() => blocks.find((b) => b.key === "homepage_hero"), [
+    blocks,
+  ]);
+  const mosaic = useMemo(
+    () => blocks.find((b) => b.key === "homepage_mosaic"),
+    [blocks]
+  );
 
   const [heroTitle, setHeroTitle] = useState("");
   const [heroSubtitle, setHeroSubtitle] = useState("");
@@ -173,10 +178,17 @@ export default function AdminSiteBlocksPage() {
     setLoading(true);
     setMessage(null);
     try {
-      const content: ImageBlockContent = { title: heroTitle, subtitle: heroSubtitle, url: heroUrl, alt: heroAlt };
+      const content: ImageBlockContent = {
+        title: heroTitle,
+        subtitle: heroSubtitle,
+        url: heroUrl,
+        alt: heroAlt,
+      };
       await saveBlock("homepage_hero", "image", content);
       await fetchBlocks();
-      try { localStorage.setItem("site_blocks_refresh", String(Date.now())); } catch {}
+      try {
+        localStorage.setItem("site_blocks_refresh", String(Date.now()));
+      } catch {}
       setMessage("Hero сохранён");
     } catch (e: any) {
       setMessage(e.message);
@@ -189,10 +201,16 @@ export default function AdminSiteBlocksPage() {
     setLoading(true);
     setMessage(null);
     try {
-      const content: MosaicBlockContent = { title: mosaicTitle, subtitle: mosaicSubtitle, images: mosaicImages };
+      const content: MosaicBlockContent = {
+        title: mosaicTitle,
+        subtitle: mosaicSubtitle,
+        images: mosaicImages,
+      };
       await saveBlock("homepage_mosaic", "mosaic", content);
       await fetchBlocks();
-      try { localStorage.setItem("site_blocks_refresh", String(Date.now())); } catch {}
+      try {
+        localStorage.setItem("site_blocks_refresh", String(Date.now()));
+      } catch {}
       setMessage("Mosaic сохранён");
     } catch (e: any) {
       setMessage(e.message);
@@ -202,15 +220,24 @@ export default function AdminSiteBlocksPage() {
   }
 
   if (!authed) {
-    return <div className="flex items-center justify-center min-h-screen text-gray-500">Загрузка...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen text-gray-500">
+        Загрузка...
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Управление визуальными блоками сайта</h1>
-          <button onClick={onLogout} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700">
+          <h1 className="text-2xl font-bold">
+            Управление визуальными блоками сайта
+          </h1>
+          <button
+            onClick={onLogout}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700"
+          >
             Выход
           </button>
         </div>
@@ -222,20 +249,47 @@ export default function AdminSiteBlocksPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Заголовок</label>
-                <input className="w-full border rounded-lg px-3 py-2" value={heroTitle} onChange={(e) => setHeroTitle(e.target.value)} />
+                <label className="block text-sm font-medium mb-1">
+                  Заголовок
+                </label>
+                <input
+                  className="w-full border rounded-lg px-3 py-2"
+                  value={heroTitle}
+                  onChange={(e) => setHeroTitle(e.target.value)}
+                />
 
-                <label className="block text-sm font-medium mb-1 mt-4">Подзаголовок</label>
-                <input className="w-full border rounded-lg px-3 py-2" value={heroSubtitle} onChange={(e) => setHeroSubtitle(e.target.value)} />
+                <label className="block text-sm font-medium mb-1 mt-4">
+                  Подзаголовок
+                </label>
+                <input
+                  className="w-full border rounded-lg px-3 py-2"
+                  value={heroSubtitle}
+                  onChange={(e) => setHeroSubtitle(e.target.value)}
+                />
 
-                <label className="block text-sm font-medium mb-1 mt-4">Alt-текст</label>
-                <input className="w-full border rounded-lg px-3 py-2" value={heroAlt} onChange={(e) => setHeroAlt(e.target.value)} />
+                <label className="block text-sm font-medium mb-1 mt-4">
+                  Alt-текст
+                </label>
+                <input
+                  className="w-full border rounded-lg px-3 py-2"
+                  value={heroAlt}
+                  onChange={(e) => setHeroAlt(e.target.value)}
+                />
 
-                <label className="block text-sm font-medium mb-1 mt-4">URL изображения</label>
-                <input className="w-full border rounded-lg px-3 py-2" value={heroUrl} onChange={(e) => setHeroUrl(e.target.value)} placeholder="Можно вставить прямую ссылку" />
+                <label className="block text-sm font-medium mb-1 mt-4">
+                  URL изображения
+                </label>
+                <input
+                  className="w-full border rounded-lg px-3 py-2"
+                  value={heroUrl}
+                  onChange={(e) => setHeroUrl(e.target.value)}
+                  placeholder="Можно вставить прямую ссылку"
+                />
 
                 <div className="mt-4">
-                  <label className="block text-sm font-medium mb-2">Загрузить изображение</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Загрузить изображение
+                  </label>
                   <input
                     type="file"
                     accept="image/*,.svg"
@@ -273,7 +327,9 @@ export default function AdminSiteBlocksPage() {
                       className="w-64 h-64 object-cover rounded-xl border"
                     />
                   ) : (
-                    <div className="w-64 h-64 rounded-xl bg-gray-100 border flex items-center justify-center text-gray-500">Нет изображения</div>
+                    <div className="w-64 h-64 rounded-xl bg-gray-100 border flex items-center justify-center text-gray-500">
+                      Нет изображения
+                    </div>
                   )}
                 </div>
               </div>
@@ -286,26 +342,44 @@ export default function AdminSiteBlocksPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Заголовок</label>
-                <input className="w-full border rounded-lg px-3 py-2" value={mosaicTitle} onChange={(e) => setMosaicTitle(e.target.value)} />
+                <label className="block text-sm font-medium mb-1">
+                  Заголовок
+                </label>
+                <input
+                  className="w-full border rounded-lg px-3 py-2"
+                  value={mosaicTitle}
+                  onChange={(e) => setMosaicTitle(e.target.value)}
+                />
 
-                <label className="block text-sm font-medium mb-1 mt-4">Подзаголовок</label>
-                <input className="w-full border rounded-lg px-3 py-2" value={mosaicSubtitle} onChange={(e) => setMosaicSubtitle(e.target.value)} />
+                <label className="block text-sm font-medium mb-1 mt-4">
+                  Подзаголовок
+                </label>
+                <input
+                  className="w-full border rounded-lg px-3 py-2"
+                  value={mosaicSubtitle}
+                  onChange={(e) => setMosaicSubtitle(e.target.value)}
+                />
 
-                <label className="block text-sm font-medium mb-1 mt-4">Выберите категорию для нового изображения</label>
-                <select 
-                  className="w-full border rounded-lg px-3 py-2" 
-                  value={selectedCategory} 
+                <label className="block text-sm font-medium mb-1 mt-4">
+                  Выберите категорию для нового изображения
+                </label>
+                <select
+                  className="w-full border rounded-lg px-3 py-2"
+                  value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
                 >
                   <option value="">-- Выберите категорию --</option>
                   {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>{cat.title}</option>
+                    <option key={cat.id} value={cat.id}>
+                      {cat.title}
+                    </option>
                   ))}
                 </select>
 
                 <div className="mt-4">
-                  <label className="block text-sm font-medium mb-2">Добавить изображение в мозаику</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Добавить изображение в мозаику
+                  </label>
                   <input
                     type="file"
                     accept="image/*,.svg"
@@ -316,11 +390,16 @@ export default function AdminSiteBlocksPage() {
                         const url = await uploadImage(f);
                         if (url) {
                           if (!selectedCategory) {
-                            setMessage("Пожалуйста, выберите категорию перед загрузкой");
+                            setMessage(
+                              "Пожалуйста, выберите категорию перед загрузкой"
+                            );
                             setLoading(false);
                             return;
                           }
-                          setMosaicImages((prev) => [...prev, { url, category_id: selectedCategory }]);
+                          setMosaicImages((prev) => [
+                            ...prev,
+                            { url, category_id: selectedCategory },
+                          ]);
                           setSelectedCategory("");
                         }
                         setLoading(false);
@@ -341,11 +420,15 @@ export default function AdminSiteBlocksPage() {
               <div>
                 <div className="text-sm text-gray-500 mb-2">Превью</div>
                 {mosaicImages.length === 0 ? (
-                  <div className="w-64 h-64 rounded-xl bg-gray-100 border flex items-center justify-center text-gray-500">Нет изображений</div>
+                  <div className="w-64 h-64 rounded-xl bg-gray-100 border flex items-center justify-center text-gray-500">
+                    Нет изображений
+                  </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-2 w-64">
                     {mosaicImages.map((img, idx) => {
-                      const catName = categories.find(c => c.id === img.category_id)?.title || "?";
+                      const catName =
+                        categories.find((c) => c.id === img.category_id)
+                          ?.title || "?";
                       return (
                         <div key={`${img.url}-${idx}`} className="relative group">
                           <Image
@@ -361,7 +444,11 @@ export default function AdminSiteBlocksPage() {
                           </div>
                           <button
                             className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs hover:bg-red-700"
-                            onClick={() => setMosaicImages((prev) => prev.filter((_, i) => i !== idx))}
+                            onClick={() =>
+                              setMosaicImages((prev) =>
+                                prev.filter((_, i) => i !== idx)
+                              )
+                            }
                             aria-label="Удалить"
                           >
                             ×
@@ -377,8 +464,13 @@ export default function AdminSiteBlocksPage() {
         </div>
 
         {loading && <div className="mt-4 text-sm text-gray-500">Загрузка...</div>}
-        {message && <div className="mt-3 text-sm text-blue-700 bg-blue-50 p-3 rounded-lg">{message}</div>}
+        {message && (
+          <div className="mt-3 text-sm text-blue-700 bg-blue-50 p-3 rounded-lg">
+            {message}
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
