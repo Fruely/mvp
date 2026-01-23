@@ -4,6 +4,9 @@ const SUPPORTED_LANGS = ["ua", "ru", "de"] as const;
 type Lang = (typeof SUPPORTED_LANGS)[number];
 
 const LANG_COOKIE = "freuly_lang";
+const DEV_COOKIE = "freuly_dev";
+const DEV_ENABLE_PATH = "/__dev";
+const DEV_CLOSED_PATH = "/__closed";
 
 function isLang(value: string): value is Lang {
   return (SUPPORTED_LANGS as readonly string[]).includes(value);
@@ -23,6 +26,19 @@ export function middleware(request: NextRequest) {
     pathname.includes(".")
   ) {
     return NextResponse.next();
+  }
+
+  // DEV gate: allow only if freuly_dev=1 cookie is present.
+  // Always allow the enable URL and the closed page itself.
+  if (pathname === DEV_ENABLE_PATH || pathname === DEV_CLOSED_PATH) {
+    return NextResponse.next();
+  }
+
+  const devCookie = request.cookies.get(DEV_COOKIE)?.value;
+  if (devCookie !== "1") {
+    const url = request.nextUrl.clone();
+    url.pathname = DEV_CLOSED_PATH;
+    return NextResponse.rewrite(url);
   }
 
   const segments = pathname.split("/").filter(Boolean);
