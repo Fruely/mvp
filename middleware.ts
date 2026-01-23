@@ -8,14 +8,15 @@ const DEV_COOKIE = "freuly_dev";
 const DEV_ENABLE_PATH = "/__dev";
 const DEV_CLOSED_PATH = "/__closed";
 
+// Example usage: https://domain.com/?dev=SECRET_KEY
 function isLang(value: string): value is Lang {
   return (SUPPORTED_LANGS as readonly string[]).includes(value);
 }
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, searchParams } = request.nextUrl;
 
-  const isDev = request.cookies.get("freuly_dev")?.value === "1";
+  // Whitelisted paths that should never be blocked
   const isWhitelisted =
     pathname === "/__dev" ||
     pathname === "/__closed" ||
@@ -27,8 +28,31 @@ export function middleware(request: NextRequest) {
     pathname === "/favicon.ico" ||
     pathname.includes(".");
 
+  // Check for dev access key in URL parameter
+  const devKey = searchParams.get("dev");
+  const expectedKey = process.env.DEV_ACCESS_KEY;
+
+  // If dev key is provided and matches, set cookie and redirect
+  if (devKey && expectedKey && devKey === expectedKey) {
+    const url = request.nextUrl.clone();
+    url.searchParams.delete("dev");
+    const response = NextResponse.redirect(url);
+    response.cookies.set(DEV_COOKIE, "1", {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: url.protocol === "https:",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+    return response;
+  }
+
+  // Check if user has dev cookie
+  const isDev = request.cookies.get(DEV_COOKIE)?.value === "1";
+
+  // Block access if no dev cookie and not whitelisted
   if (!isDev && !isWhitelisted) {
-    return NextResponse.rewrite(new URL("/__closed", request.url));
+    return NextResponse.redirect(new URL("/__closed", request.url));
   }
 
   // Never apply i18n to admin/api/static assets
