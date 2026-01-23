@@ -22,12 +22,15 @@ export default function AdminLoginPage() {
         return;
       }
 
-      // Сохраняем токен админ API в localStorage
+      // Сохраняем токен админ API в localStorage (для совместимости с существующими страницами)
       localStorage.setItem("ADMIN_API_TOKEN", trimmed);
       localStorage.setItem("admin_login_time", String(Date.now()));
 
+      // Устанавливаем cookie для серверной проверки в layout
+      document.cookie = `admin_token=${trimmed}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`;
+
       // Редирект на админ-панель
-      router.push("/admin/site-blocks");
+      router.push("/admin");
     } catch (e: any) {
       setError(e.message || "Ошибка входа");
       setLoading(false);
@@ -35,7 +38,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">FREULY Admin</h1>
