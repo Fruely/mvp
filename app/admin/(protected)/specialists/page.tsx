@@ -19,6 +19,14 @@ type UpdateResponse = { success: true; updated: unknown } | { error: string };
 
 const TOKEN_STORAGE_KEY = "ADMIN_API_TOKEN";
 
+type StatusTab = "pending" | "approved" | "rejected";
+
+const STATUS_TABS: { value: StatusTab; label: string }[] = [
+  { value: "pending", label: "Pending" },
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
+];
+
 export default function AdminSpecialistsPage() {
   const [token, setToken] = useState<string | null>(null);
   const [tokenInput, setTokenInput] = useState("");
@@ -36,6 +44,7 @@ export default function AdminSpecialistsPage() {
   const [expandedRejectionId, setExpandedRejectionId] = useState<
     string | null
   >(null);
+  const [activeStatus, setActiveStatus] = useState<StatusTab>("pending");
 
   const hasToken = useMemo(() => !!token && token.trim().length > 0, [token]);
 
@@ -71,17 +80,23 @@ export default function AdminSpecialistsPage() {
     }
   }, []);
 
-  async function fetchSpecialists(activeToken: string) {
+  async function fetchSpecialists(
+    activeToken: string,
+    statusFilter: StatusTab = activeStatus
+  ) {
     setLoading(true);
     setError(null);
 
     try {
-      const res = await fetch("/api/admin/specialists/pending", {
-        method: "GET",
-        headers: {
-          "x-admin-token": activeToken,
-        },
-      });
+      const res = await fetch(
+        `/api/admin/specialists/pending?status=${statusFilter}`,
+        {
+          method: "GET",
+          headers: {
+            "x-admin-token": activeToken,
+          },
+        }
+      );
 
       const json = (await res.json()) as ApiResponse;
 
@@ -189,9 +204,9 @@ export default function AdminSpecialistsPage() {
 
   useEffect(() => {
     if (!hasToken || !token) return;
-    fetchSpecialists(token);
+    fetchSpecialists(token, activeStatus);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasToken, token]);
+  }, [hasToken, token, activeStatus]);
 
   function handleSaveToken(e: React.FormEvent) {
     e.preventDefault();
@@ -226,7 +241,7 @@ export default function AdminSpecialistsPage() {
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              Ожидающие специалисты
+              Специалисты
             </h1>
             <p className="text-sm text-gray-600">
               Просмотр и одобрение/отклонение заявок специалистов (admin-only)
@@ -238,7 +253,9 @@ export default function AdminSpecialistsPage() {
               <>
                 <button
                   type="button"
-                  onClick={() => token && fetchSpecialists(token)}
+                  onClick={() =>
+                    token && fetchSpecialists(token, activeStatus)
+                  }
                   disabled={loading}
                   className="px-3 py-2 rounded-md border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-50"
                 >
@@ -255,6 +272,28 @@ export default function AdminSpecialistsPage() {
             )}
           </div>
         </div>
+
+        {hasToken && (
+          <div className="mb-6 flex gap-1 border-b border-gray-200">
+            {STATUS_TABS.map((tab) => (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => {
+                  setActiveStatus(tab.value);
+                  setExpandedRejectionId(null);
+                }}
+                className={`px-4 py-2 text-sm font-medium transition ${
+                  activeStatus === tab.value
+                    ? "border-b-2 border-blue-600 text-blue-600"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {!hasToken && (
           <div className="mb-6 border border-gray-200 rounded-lg p-4">
@@ -326,7 +365,9 @@ export default function AdminSpecialistsPage() {
                 <tr>
                   <td className="px-3 py-4 text-gray-600" colSpan={5}>
                     {hasToken
-                      ? "Нет ожидающих специалистов (или не удалось загрузить)."
+                      ? activeStatus === "pending"
+                        ? "Нет ожидающих специалистов (или не удалось загрузить)."
+                        : `Нет специалистов со статусом ${STATUS_TABS.find((t) => t.value === activeStatus)?.label ?? activeStatus}.`
                       : "Введите токен, чтобы загрузить специалистов."}
                   </td>
                 </tr>
@@ -372,32 +413,39 @@ export default function AdminSpecialistsPage() {
                                 {isExpanded ? "Hide reason" : "View reason"}
                               </button>
                             )}
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateSpecialistStatus(
-                                  specialist.id,
-                                  "approved"
-                                )
-                              }
-                              disabled={isUpdating || !hasToken}
-                              className="px-3 py-1 rounded-md bg-green-600 text-white text-xs font-semibold hover:bg-green-700 disabled:opacity-50"
-                            >
-                              {isUpdating ? "…" : "Approve"}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateSpecialistStatus(
-                                  specialist.id,
-                                  "rejected"
-                                )
-                              }
-                              disabled={isUpdating || !hasToken}
-                              className="px-3 py-1 rounded-md bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50"
-                            >
-                              {isUpdating ? "…" : "Reject"}
-                            </button>
+                            {activeStatus === "pending" && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateSpecialistStatus(
+                                      specialist.id,
+                                      "approved"
+                                    )
+                                  }
+                                  disabled={isUpdating || !hasToken}
+                                  className="px-3 py-1 rounded-md bg-green-600 text-white text-xs font-semibold hover:bg-green-700 disabled:opacity-50"
+                                >
+                                  {isUpdating ? "…" : "Approve"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateSpecialistStatus(
+                                      specialist.id,
+                                      "rejected"
+                                    )
+                                  }
+                                  disabled={isUpdating || !hasToken}
+                                  className="px-3 py-1 rounded-md bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50"
+                                >
+                                  {isUpdating ? "…" : "Reject"}
+                                </button>
+                              </>
+                            )}
+                            {activeStatus !== "pending" &&
+                              !isRejected &&
+                              "—"}
                           </div>
                         </td>
                       </tr>

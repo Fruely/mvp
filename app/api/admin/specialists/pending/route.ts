@@ -7,12 +7,19 @@ export async function GET(request: NextRequest) {
   if (authResponse) return authResponse;
 
   try {
+    const { searchParams } = new URL(request.url);
+    const statusParam = searchParams.get('status');
+    const status =
+      statusParam === 'approved' || statusParam === 'rejected'
+        ? statusParam
+        : 'pending';
+
     const supabase = createSupabaseServerClient();
 
     const { data, error } = await supabase
       .from('specialists')
       .select('*')
-      .eq('status', 'pending')
+      .eq('status', status)
       .order('created_at', { ascending: false });
 
     if (error) {
