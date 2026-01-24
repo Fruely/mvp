@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 type Specialist = {
   id: string;
@@ -9,6 +9,8 @@ type Specialist = {
   languages: string | null;
   created_at: string | null;
   status: string | null;
+  rejection_reason?: string | null;
+  rejected_at?: string | null;
 };
 
 type ApiResponse = { data: Specialist[] } | { error: string };
@@ -31,8 +33,23 @@ export default function AdminSpecialistsPage() {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [expandedRejectionId, setExpandedRejectionId] = useState<
+    string | null
+  >(null);
 
   const hasToken = useMemo(() => !!token && token.trim().length > 0, [token]);
+
+  function formatDateTime(iso: string | null | undefined): string {
+    if (!iso) return "—";
+    try {
+      return new Date(iso).toLocaleString("ru-RU", {
+        dateStyle: "short",
+        timeStyle: "short",
+      });
+    } catch {
+      return "—";
+    }
+  }
 
   useEffect(() => {
     if (!toast) return;
@@ -319,46 +336,97 @@ export default function AdminSpecialistsPage() {
                     ? new Date(specialist.created_at).toLocaleString("ru-RU")
                     : "—";
                   const isUpdating = !!updatingById[specialist.id];
+                  const isRejected = specialist.status === "rejected";
+                  const isExpanded =
+                    expandedRejectionId === specialist.id && isRejected;
 
                   return (
-                    <tr key={specialist.id} className="align-top">
-                      <td className="px-3 py-2 border-b whitespace-nowrap">
-                        {createdAt}
-                      </td>
-                      <td className="px-3 py-2 border-b font-medium text-gray-900">
-                        {specialist.name || "—"}
-                      </td>
-                      <td className="px-3 py-2 border-b">
-                        {specialist.category || "—"}
-                      </td>
-                      <td className="px-3 py-2 border-b">
-                        {specialist.languages || "—"}
-                      </td>
-                      <td className="px-3 py-2 border-b">
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              updateSpecialistStatus(specialist.id, "approved")
-                            }
-                            disabled={isUpdating || !hasToken}
-                            className="px-3 py-1 rounded-md bg-green-600 text-white text-xs font-semibold hover:bg-green-700 disabled:opacity-50"
+                    <React.Fragment key={specialist.id}>
+                      <tr className="align-top">
+                        <td className="px-3 py-2 border-b whitespace-nowrap">
+                          {createdAt}
+                        </td>
+                        <td className="px-3 py-2 border-b font-medium text-gray-900">
+                          {specialist.name || "—"}
+                        </td>
+                        <td className="px-3 py-2 border-b">
+                          {specialist.category || "—"}
+                        </td>
+                        <td className="px-3 py-2 border-b">
+                          {specialist.languages || "—"}
+                        </td>
+                        <td className="px-3 py-2 border-b">
+                          <div className="flex flex-wrap items-center gap-2">
+                            {isRejected && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setExpandedRejectionId((prev) =>
+                                    prev === specialist.id
+                                      ? null
+                                      : specialist.id
+                                  )
+                                }
+                                className="text-xs font-medium text-gray-600 underline hover:text-gray-900"
+                              >
+                                {isExpanded ? "Hide reason" : "View reason"}
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateSpecialistStatus(
+                                  specialist.id,
+                                  "approved"
+                                )
+                              }
+                              disabled={isUpdating || !hasToken}
+                              className="px-3 py-1 rounded-md bg-green-600 text-white text-xs font-semibold hover:bg-green-700 disabled:opacity-50"
+                            >
+                              {isUpdating ? "…" : "Approve"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateSpecialistStatus(
+                                  specialist.id,
+                                  "rejected"
+                                )
+                              }
+                              disabled={isUpdating || !hasToken}
+                              className="px-3 py-1 rounded-md bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50"
+                            >
+                              {isUpdating ? "…" : "Reject"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr>
+                          <td
+                            colSpan={5}
+                            className="border-b bg-gray-50 px-3 py-2 text-xs text-gray-600"
                           >
-                            {isUpdating ? "…" : "Approve"}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              updateSpecialistStatus(specialist.id, "rejected")
-                            }
-                            disabled={isUpdating || !hasToken}
-                            className="px-3 py-1 rounded-md bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50"
-                          >
-                            {isUpdating ? "…" : "Reject"}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                            <div className="space-y-1">
+                              <div>
+                                <span className="font-medium text-gray-700">
+                                  Rejected at:{" "}
+                                </span>
+                                {formatDateTime(specialist.rejected_at)}
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-700">
+                                  Reason:{" "}
+                                </span>
+                                <span className="whitespace-pre-wrap">
+                                  {specialist.rejection_reason?.trim() || "—"}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })
               )}
