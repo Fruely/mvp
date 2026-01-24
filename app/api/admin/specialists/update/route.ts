@@ -80,6 +80,23 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    try {
+      const { error: auditError } = await supabase
+        .from('specialist_moderation_log')
+        .insert({
+          specialist_id: id,
+          status,
+          reason: status === 'rejected' ? rejection_reason ?? null : null,
+          decided_by: 'admin',
+          created_at: new Date().toISOString(),
+        });
+      if (auditError) {
+        console.error('[admin] Audit log insert failed', auditError);
+      }
+    } catch (auditErr: unknown) {
+      console.error('[admin] Audit log insert failed', auditErr);
+    }
+
     return NextResponse.json(
       { success: true, updated: data[0] },
       { status: 200, headers: { 'Cache-Control': 'no-store' } }
