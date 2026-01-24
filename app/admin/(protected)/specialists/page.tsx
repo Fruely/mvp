@@ -13,7 +13,7 @@ type Specialist = {
 
 type ApiResponse = { data: Specialist[] } | { error: string };
 
-type ModerateResponse = { ok: true } | { error: string };
+type UpdateResponse = { success: true; updated: unknown } | { error: string };
 
 const TOKEN_STORAGE_KEY = "ADMIN_API_TOKEN";
 
@@ -27,8 +27,21 @@ export default function AdminSpecialistsPage() {
   const [updatingById, setUpdatingById] = useState<Record<string, boolean>>(
     {}
   );
+  const [toast, setToast] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const hasToken = useMemo(() => !!token && token.trim().length > 0, [token]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(
+      () => setToast(null),
+      toast.type === "success" ? 2500 : 4000
+    );
+    return () => clearTimeout(t);
+  }, [toast]);
 
   useEffect(() => {
     try {
@@ -102,9 +115,10 @@ export default function AdminSpecialistsPage() {
 
     setUpdatingById((prev) => ({ ...prev, [id]: true }));
     setError(null);
+    setToast(null);
 
     try {
-      const res = await fetch("/api/admin/specialists/moderate", {
+      const res = await fetch("/api/admin/specialists/update", {
         method: "POST",
         headers: {
           "x-admin-token": activeToken,
@@ -113,7 +127,7 @@ export default function AdminSpecialistsPage() {
         body: JSON.stringify({ id, status }),
       });
 
-      const json = (await res.json()) as ModerateResponse;
+      const json = (await res.json()) as UpdateResponse;
 
       if (res.status === 401) {
         try {
@@ -132,13 +146,21 @@ export default function AdminSpecialistsPage() {
           "error" in json && typeof json.error === "string"
             ? json.error
             : "Не удалось обновить статус специалиста";
-        setError(errorMessage);
+        setToast({ type: "error", message: errorMessage });
         return;
       }
 
       setData((prev) => prev.filter((specialist) => specialist.id !== id));
+      setToast({
+        type: "success",
+        message:
+          status === "approved" ? "Specialist approved" : "Specialist rejected",
+      });
     } catch (e: any) {
-      setError(e?.message || "Ошибка сети при обновлении статуса");
+      setToast({
+        type: "error",
+        message: e?.message || "Ошибка сети при обновлении статуса",
+      });
     } finally {
       setUpdatingById((prev) => {
         const next = { ...prev };
@@ -255,6 +277,22 @@ export default function AdminSpecialistsPage() {
 
         {loading && <div className="mb-4 text-sm text-gray-600">Загрузка…</div>}
 
+        {toast && (
+          <div
+            className="fixed bottom-6 right-6 z-50 max-w-sm rounded-lg border px-4 py-3 shadow-lg transition-opacity"
+            style={{
+              backgroundColor:
+                toast.type === "success" ? "#ecfdf5" : "#fef2f2",
+              borderColor:
+                toast.type === "success" ? "#a7f3d0" : "#fecaca",
+              color: toast.type === "success" ? "#065f46" : "#991b1b",
+            }}
+            role="status"
+          >
+            {toast.message}
+          </div>
+        )}
+
         <div className="overflow-x-auto border border-gray-200 rounded-lg">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
@@ -306,7 +344,7 @@ export default function AdminSpecialistsPage() {
                             disabled={isUpdating || !hasToken}
                             className="px-3 py-1 rounded-md bg-green-600 text-white text-xs font-semibold hover:bg-green-700 disabled:opacity-50"
                           >
-                            {isUpdating ? "…" : "Одобрить"}
+                            {isUpdating ? "…" : "Approve"}
                           </button>
                           <button
                             type="button"
@@ -316,7 +354,7 @@ export default function AdminSpecialistsPage() {
                             disabled={isUpdating || !hasToken}
                             className="px-3 py-1 rounded-md bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50"
                           >
-                            {isUpdating ? "…" : "Отклонить"}
+                            {isUpdating ? "…" : "Reject"}
                           </button>
                         </div>
                       </td>
