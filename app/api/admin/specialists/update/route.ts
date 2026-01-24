@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { requireAdminToken } from '@/lib/adminApiAuth';
+import { sendEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   const authResponse = requireAdminToken(request);
@@ -52,6 +53,31 @@ export async function POST(request: NextRequest) {
         { error: 'Specialist not found' },
         { status: 404, headers: { 'Cache-Control': 'no-store' } }
       );
+    }
+
+    const specialist = data[0] as { email?: string | null };
+    const email = specialist?.email && String(specialist.email).trim();
+    if (email) {
+      try {
+        if (status === 'approved') {
+          await sendEmail({
+            to: email,
+            subject: 'Your profile has been approved',
+            body: 'Your specialist profile has been approved. You can now be discovered by clients.',
+          });
+        } else if (status === 'rejected') {
+          const reason = rejection_reason
+            ? String(rejection_reason).trim()
+            : 'No reason provided.';
+          await sendEmail({
+            to: email,
+            subject: 'Your profile was not approved',
+            body: `Your specialist profile was not approved.\n\nRejection reason:\n${reason}`,
+          });
+        }
+      } catch (emailErr: unknown) {
+        console.error('[admin] Email send failed', emailErr);
+      }
     }
 
     return NextResponse.json(
