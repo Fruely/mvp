@@ -45,6 +45,7 @@ export default function AdminSpecialistsPage() {
     string | null
   >(null);
   const [activeStatus, setActiveStatus] = useState<StatusTab>("pending");
+  const [pendingCount, setPendingCount] = useState<number>(0);
 
   const hasToken = useMemo(() => !!token && token.trim().length > 0, [token]);
 
@@ -109,6 +110,7 @@ export default function AdminSpecialistsPage() {
         setToken(null);
         setTokenInput("");
         setData([]);
+        setPendingCount(0);
         setError("Токен недействителен. Введите токен заново.");
         return;
       }
@@ -124,6 +126,9 @@ export default function AdminSpecialistsPage() {
 
       if ("data" in json && Array.isArray(json.data)) {
         setData(json.data);
+        if (statusFilter === "pending") {
+          setPendingCount(json.data.length);
+        }
         return;
       }
 
@@ -183,6 +188,7 @@ export default function AdminSpecialistsPage() {
       }
 
       setData((prev) => prev.filter((specialist) => specialist.id !== id));
+      setPendingCount((prev) => Math.max(0, prev - 1));
       setToast({
         type: "success",
         message:
@@ -232,6 +238,7 @@ export default function AdminSpecialistsPage() {
     setToken(null);
     setTokenInput("");
     setData([]);
+    setPendingCount(0);
     setError(null);
   }
 
@@ -283,13 +290,18 @@ export default function AdminSpecialistsPage() {
                   setActiveStatus(tab.value);
                   setExpandedRejectionId(null);
                 }}
-                className={`px-4 py-2 text-sm font-medium transition ${
+                className={`inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition ${
                   activeStatus === tab.value
                     ? "border-b-2 border-blue-600 text-blue-600"
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
                 {tab.label}
+                {tab.value === "pending" && pendingCount > 0 && (
+                  <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                    {pendingCount}
+                  </span>
+                )}
               </button>
             ))}
           </div>
