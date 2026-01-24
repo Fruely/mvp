@@ -13,7 +13,7 @@ type Specialist = {
 
 type ApiResponse = { data: Specialist[] } | { error: string };
 
-type UpdateResponse = { success: true; updated: any } | { error: string };
+type ModerateResponse = { ok: true } | { error: string };
 
 const TOKEN_STORAGE_KEY = "ADMIN_API_TOKEN";
 
@@ -104,7 +104,7 @@ export default function AdminSpecialistsPage() {
     setError(null);
 
     try {
-      const res = await fetch("/api/admin/specialists/update", {
+      const res = await fetch("/api/admin/specialists/moderate", {
         method: "POST",
         headers: {
           "x-admin-token": activeToken,
@@ -113,7 +113,7 @@ export default function AdminSpecialistsPage() {
         body: JSON.stringify({ id, status }),
       });
 
-      const json = (await res.json()) as UpdateResponse;
+      const json = (await res.json()) as ModerateResponse;
 
       if (res.status === 401) {
         try {
@@ -136,7 +136,6 @@ export default function AdminSpecialistsPage() {
         return;
       }
 
-      // Remove the specialist from the list locally
       setData((prev) => prev.filter((specialist) => specialist.id !== id));
     } catch (e: any) {
       setError(e?.message || "Ошибка сети при обновлении статуса");
@@ -152,7 +151,6 @@ export default function AdminSpecialistsPage() {
   useEffect(() => {
     if (!hasToken || !token) return;
     fetchSpecialists(token);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasToken, token]);
 
@@ -308,7 +306,7 @@ export default function AdminSpecialistsPage() {
                             disabled={isUpdating || !hasToken}
                             className="px-3 py-1 rounded-md bg-green-600 text-white text-xs font-semibold hover:bg-green-700 disabled:opacity-50"
                           >
-                            Approve
+                            {isUpdating ? "…" : "Одобрить"}
                           </button>
                           <button
                             type="button"
@@ -318,7 +316,7 @@ export default function AdminSpecialistsPage() {
                             disabled={isUpdating || !hasToken}
                             className="px-3 py-1 rounded-md bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50"
                           >
-                            Reject
+                            {isUpdating ? "…" : "Отклонить"}
                           </button>
                         </div>
                       </td>
