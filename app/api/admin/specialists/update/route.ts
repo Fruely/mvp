@@ -20,6 +20,27 @@ export async function POST(request: NextRequest) {
 
     const supabase = createSupabaseServerClient();
 
+    const { data: current } = await supabase
+      .from('specialists')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (!current) {
+      return NextResponse.json(
+        { error: 'Specialist not found' },
+        { status: 404, headers: { 'Cache-Control': 'no-store' } }
+      );
+    }
+
+    const currentStatus = (current as { status?: string }).status;
+    if (currentStatus === status) {
+      return NextResponse.json(
+        { success: true, updated: current },
+        { status: 200, headers: { 'Cache-Control': 'no-store' } }
+      );
+    }
+
     const updateData: Record<string, any> = {
       status,
       is_approved: status === 'approved',
