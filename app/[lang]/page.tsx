@@ -2,6 +2,9 @@ import { redirect } from "next/navigation";
 import HomeClient from "./HomeClient";
 import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const DOMAIN = "https://freuly.de";
 
 export async function generateMetadata({ params }: { params: { lang: string } }) {
