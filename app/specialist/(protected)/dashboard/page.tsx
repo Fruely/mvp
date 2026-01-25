@@ -95,6 +95,44 @@ export default async function SpecialistDashboardPage() {
             </div>
           )}
         </div>
+
+        <div className="mt-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          {status === "pending" && (
+            <>
+              <h2 className="mb-3 text-sm font-semibold text-gray-900">
+                What happens next
+              </h2>
+              <p className="whitespace-pre-line text-gray-600">
+                {`Your profile is currently under review by our team.
+This process helps ensure quality and trust on the platform.
+You will receive an email once a decision is made.`}
+              </p>
+            </>
+          )}
+          {status === "approved" && (
+            <>
+              <h2 className="mb-3 text-sm font-semibold text-gray-900">
+                Next steps
+              </h2>
+              <p className="whitespace-pre-line text-gray-600">
+                {`Your profile is live and visible to clients.
+You can now receive requests and communicate with clients on the platform.
+Keeping your profile up to date helps improve visibility.`}
+              </p>
+            </>
+          )}
+          {status === "rejected" && (
+            <>
+              <h2 className="mb-3 text-sm font-semibold text-gray-900">
+                How to proceed
+              </h2>
+              <p className="whitespace-pre-line text-gray-600">
+                {`Please review the feedback above and update your profile if needed.
+You may submit your profile again for review in the future.`}
+              </p>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
