@@ -45,6 +45,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/api") ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/specialist") ||
+    pathname.startsWith("/client") ||
     pathname.startsWith("/_next") ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
@@ -61,6 +62,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/api") ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/specialist") ||
+    pathname.startsWith("/client") ||
     pathname.startsWith("/_next") ||
     pathname === "/favicon.ico" ||
     pathname === "/robots.txt" ||
