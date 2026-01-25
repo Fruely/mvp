@@ -44,6 +44,7 @@ export function middleware(request: NextRequest) {
     pathname === "/__closed" ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/admin") ||
+    pathname.startsWith("/specialist") ||
     pathname.startsWith("/_next") ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
@@ -55,10 +56,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/__closed", request.url));
   }
 
-  // Never apply i18n to admin/api/static assets
+  // Never apply i18n to admin/api/specialist/static assets
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/admin") ||
+    pathname.startsWith("/specialist") ||
     pathname.startsWith("/_next") ||
     pathname === "/favicon.ico" ||
     pathname === "/robots.txt" ||
