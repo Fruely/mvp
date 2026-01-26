@@ -16,6 +16,10 @@ function isLang(value: string): value is Lang {
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
+  if (pathname === "/__closed") {
+    return NextResponse.next();
+  }
+
   // STEP 1: Check for dev access key in URL parameter FIRST (before anything else)
   const devKey = searchParams.get("dev");
   const expectedKey = process.env.DEV_ACCESS_KEY;
@@ -105,6 +109,10 @@ export function middleware(request: NextRequest) {
   if (segments.length === 1) {
     const res = NextResponse.next();
     res.cookies.set(LANG_COOKIE, lang, { path: "/" });
+    res.headers.set(
+      "Cache-Control",
+      "private, no-store, no-cache, must-revalidate, max-age=0"
+    );
     return res;
   }
 
