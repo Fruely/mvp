@@ -16,7 +16,7 @@ function isLang(value: string): value is Lang {
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
-  if (pathname === "/__closed") {
+  if (pathname.startsWith("/__closed")) {
     return NextResponse.next();
   }
 
