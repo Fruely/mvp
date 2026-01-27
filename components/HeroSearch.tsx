@@ -1,10 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-type FilterOption = { id: string; name: string };
+const LANG_OPTIONS = [
+  { value: "de", label: "de" },
+  { value: "ru", label: "ru" },
+  { value: "uk", label: "uk" },
+  { value: "tr", label: "tr" },
+  { value: "ar", label: "ar" },
+  { value: "en", label: "en" },
+] as const;
 
 type HeroSearchProps = {
   lang: string;
@@ -18,119 +25,90 @@ const defaultSubtitle =
   "Психологи, услуги, обучение и помощь — без языкового барьера";
 
 export default function HeroSearch({
-  lang,
+  lang: _lang,
   title = defaultTitle,
   subtitle = defaultSubtitle,
   heroImageUrl,
 }: HeroSearchProps) {
   const router = useRouter();
+  const [q, setQ] = useState("");
+  const [place, setPlace] = useState("");
+  const [lang, setLang] = useState("");
 
-  const [language, setLanguage] = useState("");
-  const [category, setCategory] = useState("");
-  const [city, setCity] = useState("");
+  const canSubmit = Boolean(lang && place.trim());
 
-  const [categories, setCategories] = useState<FilterOption[]>([]);
-  const [languages, setLanguages] = useState<FilterOption[]>([]);
-  const [postalCodes, setPostalCodes] = useState<FilterOption[]>([]);
-
-  useEffect(() => {
-    fetch("/api/filters")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.categories) {
-          setCategories(
-            data.categories.map((c: { slug: string; title: string }) => ({
-              id: c.slug,
-              name: c.title,
-            }))
-          );
-        }
-        if (data.languages) {
-          setLanguages(
-            data.languages.map((l: string) => ({ id: l, name: l }))
-          );
-        }
-        if (data.postal_codes) {
-          setPostalCodes(
-            data.postal_codes.map((p: string) => ({ id: p, name: p }))
-          );
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  function handleSearch() {
-    const params = new URLSearchParams();
-    if (language) params.set("language", language);
-    if (category) params.set("category", category);
-    if (city) params.set("city", city);
-    router.push(`/${lang}/search?${params.toString()}`);
+  function handleRedirect() {
+    if (!canSubmit) return;
+    const params = new URLSearchParams({
+      lang,
+      place: place.trim(),
+    });
+    if (q?.trim()) {
+      params.set("q", q.trim());
+    }
+    router.push(`/specialists?${params.toString()}`);
   }
 
   return (
     <section className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-          {/* Left: title, subtitle, filter */}
+          {/* Left: title, subtitle, intent form */}
           <div className="order-2 md:order-1">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-2 leading-tight">
               {title}
             </h1>
             <p className="text-lg text-gray-700 mb-6">{subtitle}</p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto] gap-0 border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
-              <div className="border-b sm:border-b-0 sm:border-r border-gray-200 p-3">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleRedirect();
+              }}
+              className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto] gap-0 border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm min-w-0"
+            >
+              <div className="border-b sm:border-b-0 sm:border-r border-gray-200 p-3 min-w-0 flex items-center">
+                <input
+                  type="text"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="Кого вы ищете? (массажист, психолог, репетитор…)"
+                  className="w-full min-h-[2.25rem] py-1.5 text-sm bg-transparent border-none outline-none text-gray-800 placeholder-gray-400"
+                />
+              </div>
+              <div className="border-b sm:border-b-0 sm:border-r border-gray-200 p-3 min-w-0 flex items-center">
+                <input
+                  type="text"
+                  value={place}
+                  onChange={(e) => setPlace(e.target.value)}
+                  placeholder="PLZ oder Stadt"
+                  className="w-full min-h-[2.25rem] py-1.5 text-sm bg-transparent border-none outline-none text-gray-800 placeholder-gray-400"
+                />
+              </div>
+              <div className="border-b sm:border-b-0 sm:border-r border-gray-200 p-3 min-w-0 flex items-center">
                 <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="w-full py-1.5 text-sm bg-transparent border-none outline-none text-gray-800"
+                  value={lang}
+                  onChange={(e) => setLang(e.target.value)}
+                  className="w-full min-h-[2.25rem] py-1.5 text-sm bg-transparent border-none outline-none text-gray-800"
                 >
                   <option value="">Язык</option>
-                  {languages.map((opt) => (
-                    <option key={opt.id} value={opt.id}>
-                      {opt.name}
+                  {LANG_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
                     </option>
                   ))}
                 </select>
               </div>
-              <div className="border-b sm:border-b-0 sm:border-r border-gray-200 p-3">
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full py-1.5 text-sm bg-transparent border-none outline-none text-gray-800"
-                >
-                  <option value="">Категория</option>
-                  {categories.map((opt) => (
-                    <option key={opt.id} value={opt.id}>
-                      {opt.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="border-b sm:border-b-0 sm:border-r border-gray-200 p-3">
-                <select
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="w-full py-1.5 text-sm bg-transparent border-none outline-none text-gray-800"
-                >
-                  <option value="">Город / индекс</option>
-                  {postalCodes.map((opt) => (
-                    <option key={opt.id} value={opt.id}>
-                      {opt.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="p-3">
+              <div className="p-3 flex items-center shrink-0">
                 <button
-                  type="button"
-                  onClick={handleSearch}
-                  className="w-full sm:w-auto px-5 py-2 text-sm font-semibold rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition"
+                  type="submit"
+                  disabled={!canSubmit}
+                  className="w-full sm:w-auto px-5 py-2 min-h-[2.25rem] text-sm font-semibold rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-900"
                 >
                   Поиск
                 </button>
               </div>
-            </div>
+            </form>
           </div>
 
           {/* Right: hero image */}
