@@ -20,7 +20,7 @@ export default async function LangLayout({
 
   return (
     <>
-      <Header lang={lang}>
+      <Header lang={lang} dict={dict}>
         <HeaderCategoriesNav lang={lang} />
       </Header>
       {children}

@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
+import HeroSearch from "@/components/HeroSearch";
 
 type ImageBlockContent = {
   url?: string;
@@ -65,79 +66,12 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {/* Hero Section (dynamic) */}
-      <section className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-                {t(dict, "hero.title")}
-              </h1>
-              <p className="text-lg text-gray-700 mb-6">
-                {t(dict, "hero.subtitle")}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <a
-                  href="#categories"
-                  className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 shadow-lg hover:shadow-xl transition text-center cursor-pointer"
-                >
-                  {t(dict, "hero.primaryCta")}
-                </a>
-                <Link
-                  href={`/${lang}/become-specialist`}
-                  className="px-6 py-3 border-2 border-blue-600 text-blue-600 font-semibold rounded-full hover:bg-blue-50 transition text-center"
-                >
-                  {t(dict, "hero.secondaryCta")}
-                </Link>
-              </div>
-            </div>
-
-            <div className="hidden md:flex items-center justify-center">
-              {heroContent.url ? (
-                <Image
-                  unoptimized
-                  src={heroContent.url}
-                  alt={heroContent.alt || heroContent.title || "Hero"}
-                  width={512}
-                  height={512}
-                  className="max-w-md rounded-3xl shadow-2xl border border-blue-100 h-auto"
-                />
-              ) : (
-                <div className="relative w-80 h-80">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-6xl shadow-lg">
-                      🌍
-                    </div>
-                  </div>
-                  <div className="absolute top-0 left-8 animate-bounce" style={{ animationDelay: "0s" }}>
-                    <div className="w-20 h-20 rounded-full bg-white shadow-lg flex items-center justify-center text-3xl border-2 border-blue-200">
-                      🇩🇪
-                    </div>
-                    <p className="text-center text-sm font-semibold text-gray-700 mt-2">Deutsch</p>
-                  </div>
-                  <div className="absolute top-32 right-4 animate-bounce" style={{ animationDelay: "0.2s" }}>
-                    <div className="w-20 h-20 rounded-full bg-white shadow-lg flex items-center justify-center text-3xl border-2 border-purple-200">
-                      🇷🇺
-                    </div>
-                    <p className="text-center text-sm font-semibold text-gray-700 mt-2">Русский</p>
-                  </div>
-                  <div className="absolute bottom-8 left-12 animate-bounce" style={{ animationDelay: "0.4s" }}>
-                    <div className="w-20 h-20 rounded-full bg-white shadow-lg flex items-center justify-center text-3xl border-2 border-pink-200">
-                      🇺🇦
-                    </div>
-                    <p className="text-center text-sm font-semibold text-gray-700 mt-2">Українська</p>
-                  </div>
-                  <div className="absolute bottom-0 right-8 animate-pulse">
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-3xl shadow-lg">
-                      👨‍⚕️
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroSearch
+        lang={lang}
+        title={t(dict, "hero.title")}
+        subtitle={t(dict, "hero.subtitle")}
+        heroImageUrl={heroContent.url}
+      />
 
       {/* Mosaic Section (dynamic) */}
       <section id="categories" className="py-12 md:py-16 bg-white">
