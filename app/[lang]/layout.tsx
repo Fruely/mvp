@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
 import Footer from "@/components/Footer";
+import Header from "@/components/Header";
+import HeaderCategoriesNav from "@/components/HeaderCategoriesNav";
 
 export default async function LangLayout({
   children,
@@ -18,6 +20,9 @@ export default async function LangLayout({
 
   return (
     <>
+      <Header lang={lang}>
+        <HeaderCategoriesNav lang={lang} />
+      </Header>
       {children}
       <Footer dict={dict} lang={lang} />
     </>

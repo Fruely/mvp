@@ -29,7 +29,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header />
+      <Header lang="ua" />
 
       <main className="flex-grow container-custom py-12">
         <h1 className="section-title mb-12">Личный кабинет</h1>

@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import Header from "@/components/Header";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 
@@ -66,8 +65,6 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <Header />
-
       {/* Hero Section (dynamic) */}
       <section className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
