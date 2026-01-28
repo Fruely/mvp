@@ -67,5 +67,44 @@
     "error": "Ошибка отправки",
     "noSpecialist": "Не удалось определить специалиста",
     "needContact": "Укажите email или телефон"
+  },
+  "application": {
+    "title": "Подать заявку как специалист Freuly",
+    "subtitle": "Freuly — B2B-платформа. Мы работаем только с реальными специалистами и рассматриваем каждую заявку вручную.",
+    "name": "Имя и фамилия",
+    "namePlaceholder": "Иван Петров",
+    "email": "Email (рабочий)",
+    "emailPlaceholder": "ivan@example.com",
+    "category": "Категория услуг",
+    "categoryPlaceholder": "Выберите категорию",
+    "city": "Город / регион",
+    "cityPlaceholder": "Берлин",
+    "postalCode": "Почтовый индекс (PLZ)",
+    "postalCodePlaceholder": "10115",
+    "locationHint": "Укажите город или почтовый индекс",
+    "languages": "Языки обслуживания",
+    "proofLink": "Ссылка, которая подтверждает, что вы реально работающий специалист",
+    "proofLinkPlaceholder": "https://example.com",
+    "proofLinkHint": "Сайт, соцсеть, Google Business, LinkedIn и т.д. Без ссылки заявку не рассматриваем.",
+    "phone": "Телефон",
+    "phonePlaceholder": "+49 123 456789",
+    "submit": "Подать заявку",
+    "submitting": "Отправка...",
+    "loading": "Загрузка...",
+    "success": {
+      "title": "Спасибо за заявку!",
+      "message": "Мы отправили письмо для подтверждения email. После подтверждения ваша заявка будет рассмотрена вручную."
+    },
+    "errors": {
+      "nameRequired": "Имя обязательно",
+      "emailRequired": "Email обязателен",
+      "emailInvalid": "Неверный формат email",
+      "categoryRequired": "Категория обязательна",
+      "locationRequired": "Укажите город или почтовый индекс",
+      "proofLinkRequired": "Ссылка обязательна",
+      "proofLinkInvalid": "Неверный формат ссылки",
+      "languagesRequired": "Выберите хотя бы один язык",
+      "submitFailed": "Ошибка при отправке заявки"
+    }
   }
 }

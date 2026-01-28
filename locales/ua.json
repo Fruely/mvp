@@ -117,5 +117,44 @@
   "footer.address": "Адреса",
   "footer.privacy": "Політика конфіденційності",
   "footer.terms": "Умови використання",
-  "footer.copyright": "© 2025 Froyle. Всі права захищені."
+  "footer.copyright": "© 2025 Froyle. Всі права захищені.",
+  "application": {
+    "title": "Подати заявку як спеціаліст Freuly",
+    "subtitle": "Freuly — B2B-платформа. Ми працюємо лише з реальними спеціалістами та розглядаємо кожну заявку вручну.",
+    "name": "Імʼя та прізвище",
+    "namePlaceholder": "Іван Петров",
+    "email": "Email (робочий)",
+    "emailPlaceholder": "ivan@example.com",
+    "category": "Категорія послуг",
+    "categoryPlaceholder": "Виберіть категорію",
+    "city": "Місто / регіон",
+    "cityPlaceholder": "Берлін",
+    "postalCode": "Поштовий індекс (PLZ)",
+    "postalCodePlaceholder": "10115",
+    "locationHint": "Вкажіть місто або поштовий індекс",
+    "languages": "Мови обслуговування",
+    "proofLink": "Посилання, яке підтверджує, що ви реально працюючий спеціаліст",
+    "proofLinkPlaceholder": "https://example.com",
+    "proofLinkHint": "Сайт, соцмережа, Google Business, LinkedIn тощо. Без посилання заявку не розглядаємо.",
+    "phone": "Телефон",
+    "phonePlaceholder": "+49 123 456789",
+    "submit": "Подати заявку",
+    "submitting": "Відправка...",
+    "loading": "Завантаження...",
+    "success": {
+      "title": "Дякуємо за заявку!",
+      "message": "Ми надіслали лист для підтвердження email. Після підтвердження ваша заявка буде розглянута вручну."
+    },
+    "errors": {
+      "nameRequired": "Ім'я обов'язкове",
+      "emailRequired": "Email обов'язковий",
+      "emailInvalid": "Невірний формат email",
+      "categoryRequired": "Категорія обов'язкова",
+      "locationRequired": "Вкажіть місто або поштовий індекс",
+      "proofLinkRequired": "Посилання обов'язкове",
+      "proofLinkInvalid": "Невірний формат посилання",
+      "languagesRequired": "Виберіть хоча б одну мову",
+      "submitFailed": "Помилка при відправці заявки"
+    }
+  }
 }

@@ -117,5 +117,44 @@
   "footer.address": "Adresse",
   "footer.privacy": "Datenschutzrichtlinie",
   "footer.terms": "Nutzungsbedingungen",
-  "footer.copyright": "© 2025 Froyle. Alle Rechte vorbehalten."
+  "footer.copyright": "© 2025 Froyle. Alle Rechte vorbehalten.",
+  "application": {
+    "title": "Als Spezialist bei Freuly bewerben",
+    "subtitle": "Freuly ist eine B2B-Plattform. Wir arbeiten nur mit echten Fachkräften und prüfen jede Bewerbung manuell.",
+    "name": "Vor- und Nachname",
+    "namePlaceholder": "Max Mustermann",
+    "email": "Email (geschäftlich)",
+    "emailPlaceholder": "max@example.com",
+    "category": "Dienstleistungskategorie",
+    "categoryPlaceholder": "Kategorie wählen",
+    "city": "Stadt / Region",
+    "cityPlaceholder": "Berlin",
+    "postalCode": "Postleitzahl (PLZ)",
+    "postalCodePlaceholder": "10115",
+    "locationHint": "Stadt oder Postleitzahl angeben",
+    "languages": "Betreuungssprachen",
+    "proofLink": "Link, der bestätigt, dass Sie tatsächlich als Fachkraft arbeiten",
+    "proofLinkPlaceholder": "https://example.com",
+    "proofLinkHint": "Website, soziale Medien, Google Business, LinkedIn usw. Ohne Link können wir die Bewerbung nicht prüfen.",
+    "phone": "Telefon",
+    "phonePlaceholder": "+49 123 456789",
+    "submit": "Bewerbung absenden",
+    "submitting": "Wird gesendet...",
+    "loading": "Wird geladen...",
+    "success": {
+      "title": "Vielen Dank für Ihre Bewerbung!",
+      "message": "Wir haben eine E-Mail zur Bestätigung gesendet. Nach der Bestätigung wird Ihre Bewerbung manuell geprüft."
+    },
+    "errors": {
+      "nameRequired": "Name ist erforderlich",
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Ungültiges E-Mail-Format",
+      "categoryRequired": "Kategorie ist erforderlich",
+      "locationRequired": "Stadt oder Postleitzahl angeben",
+      "proofLinkRequired": "Link ist erforderlich",
+      "proofLinkInvalid": "Ungültiges Link-Format",
+      "languagesRequired": "Wählen Sie mindestens eine Sprache",
+      "submitFailed": "Fehler beim Senden der Bewerbung"
+    }
+  }
 }
