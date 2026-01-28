@@ -1,0 +1,242 @@
+import { Metadata } from "next";
+import Link from "next/link";
+import Image from "next/image";
+
+export const dynamic = "force-dynamic";
+
+const UI_LANGS = ["ua", "ru", "de"] as const;
+type UiLang = (typeof UI_LANGS)[number];
+
+function toUiLang(lang: string): UiLang {
+  const lower = lang.toLowerCase();
+  if (lower === "de") return "de";
+  if (lower === "ru") return "ru";
+  if (lower === "uk") return "ua";
+  return "ua";
+}
+
+type Specialist = {
+  id: string;
+  name: string;
+  bio: string | null;
+  avatar_url: string | null;
+  category_slug: string | null;
+  category_title: string | null;
+  languages: string[];
+  work_format: string;
+  postal_code: string | null;
+};
+
+async function fetchSpecialists(
+  lang: string,
+  place: string,
+  q: string | null
+): Promise<{ data?: Specialist[]; error?: string }> {
+  const params = new URLSearchParams({ lang, place });
+  if (q) params.set("q", q);
+  const base =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+    "http://localhost:3000";
+  const res = await fetch(`${base}/api/specialists/search?${params.toString()}`, {
+    cache: "no-store",
+  });
+  const json = await res.json();
+  if (!res.ok) return { error: json.error || "Request failed" };
+  return { data: json.data ?? [] };
+}
+
+type SearchParams = { lang?: string; place?: string; q?: string };
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}): Promise<Metadata> {
+  const lang = searchParams?.lang?.trim();
+  const place = searchParams?.place?.trim();
+  if (!lang || !place) {
+    return { title: "Specialists | Freuly" };
+  }
+  return {
+    title: `Specialists · ${place} | Freuly`,
+    description: `Find specialists by language and location.`,
+  };
+}
+
+export default async function SpecialistsPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const lang = searchParams?.lang?.trim();
+  const place = searchParams?.place?.trim();
+  const q = searchParams?.q?.trim() || null;
+
+  if (!lang || !place) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+          <h1 className="text-xl font-bold text-gray-900 mb-2">
+            Missing search parameters
+          </h1>
+          <p className="text-gray-600 mb-6">
+            Language and location are required. Please start your search from the
+            homepage.
+          </p>
+          <Link
+            href="/ua"
+            className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
+          >
+            Back to search
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const { data: specialists, error } = await fetchSpecialists(lang, place, q);
+  const uiLang = toUiLang(lang);
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+          <h1 className="text-xl font-bold text-gray-900 mb-2">
+            Something went wrong
+          </h1>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <Link
+            href={`/${uiLang}`}
+            className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
+          >
+            Back to search
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const empty = !specialists || specialists.length === 0;
+
+  if (empty) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
+        <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
+          <div className="text-5xl mb-4" aria-hidden>
+            🔍
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            No specialists found for the selected language in this area.
+          </h1>
+          <p className="text-gray-600 mb-8">
+            Try changing the language or expanding your location to see more
+            results.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link
+              href={`/${uiLang}`}
+              className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
+            >
+              Change language or location
+            </Link>
+            <Link
+              href={`/${uiLang}`}
+              className="inline-block px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
+            >
+              Back to search
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <Link
+            href={`/${uiLang}`}
+            className="text-gray-600 hover:text-gray-900 text-sm font-medium inline-flex items-center gap-1 mb-4"
+          >
+            ← Back to search
+          </Link>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Specialists
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {specialists.length} {specialists.length === 1 ? "result" : "results"}{" "}
+            for language &quot;{lang}&quot; in &quot;{place}&quot;
+            {q ? ` matching "${q}"` : ""}.
+          </p>
+        </div>
+
+        <ul className="space-y-4">
+          {specialists.map((s) => (
+            <li key={s.id}>
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                <div className="flex flex-col sm:flex-row gap-5 p-6">
+                  <div className="flex-shrink-0">
+                    <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-xl overflow-hidden bg-gray-100">
+                      {s.avatar_url ? (
+                        <Image
+                          src={s.avatar_url}
+                          alt={s.name}
+                          fill
+                          sizes="128px"
+                          unoptimized
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div
+                          className="absolute inset-0 flex items-center justify-center text-4xl"
+                          aria-hidden
+                        >
+                          👤
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-lg font-bold text-gray-900">{s.name}</h2>
+                    {(s.category_title || s.category_slug) && (
+                      <p className="text-sm text-gray-500 mt-0.5">
+                        {s.category_title || s.category_slug}
+                      </p>
+                    )}
+                    <p className="text-gray-600 text-sm leading-relaxed mt-2 line-clamp-2">
+                      {s.bio || "Specialist profile."}
+                    </p>
+                    {s.postal_code && (
+                      <p className="text-xs text-gray-400 mt-2">
+                        {s.postal_code}
+                        {s.work_format && s.work_format !== "online" && (
+                          <span> · {s.work_format}</span>
+                        )}
+                      </p>
+                    )}
+                    <div className="flex flex-wrap gap-3 mt-4">
+                      <Link
+                        href={`/${uiLang}/specialist/${s.id}?open=form`}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
+                      >
+                        Send request
+                      </Link>
+                      <Link
+                        href={`/${uiLang}/specialist/${s.id}`}
+                        className="inline-flex items-center gap-1 px-4 py-2 text-gray-700 text-sm font-medium hover:text-gray-900 transition"
+                      >
+                        View profile →
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
