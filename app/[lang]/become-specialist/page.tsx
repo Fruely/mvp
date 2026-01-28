@@ -1,24 +1,29 @@
 import type { Metadata } from "next";
-import BecomeSpecialistClientPage from "./BecomeSpecialistClientPage";
+import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
+import SpecialistApplicationForm from "@/components/SpecialistApplicationForm";
+
+// Force dynamic rendering to prevent caching issues
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const DOMAIN = "https://freuly.de";
 
 export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
   const byLang = {
     ua: {
-      title: "Стати спеціалістом | Приєднуйтесь до платформи",
+      title: "Подати заявку як спеціаліст | Freuly",
       description:
-        "Сторінка для реєстрації спеціалістів: подайте заявку, додайте профіль і почніть отримувати звернення від клієнтів у Німеччині.",
+        "Подайте заявку як спеціаліст на платформі Freuly. B2B-платформа для реальних спеціалістів.",
     },
     ru: {
-      title: "Стать специалистом | Присоединяйтесь к платформе",
+      title: "Подать заявку как специалист | Freuly",
       description:
-        "Страница регистрации специалистов: отправьте заявку, создайте профиль и начните получать обращения от клиентов в Германии.",
+        "Подайте заявку как специалист на платформе Freuly. B2B-платформа для реальных специалистов.",
     },
     de: {
-      title: "Spezialist werden | Der Plattform beitreten",
+      title: "Als Spezialist bewerben | Freuly",
       description:
-        "Registrierung für Fachkräfte: Bewerben Sie sich, erstellen Sie ein Profil und erhalten Sie Anfragen von Kunden in Deutschland.",
+        "Bewerben Sie sich als Spezialist auf der Freuly-Plattform. B2B-Plattform für echte Fachkräfte.",
     },
   } as const;
 
@@ -39,7 +44,18 @@ export async function generateMetadata({ params }: { params: { lang: string } })
   };
 }
 
-export default function BecomeSpecialistPage() {
-  return <BecomeSpecialistClientPage />;
+export default async function BecomeSpecialistPage({
+  params,
+}: {
+  params: { lang: string };
+}) {
+  if (!isSupportedLang(params.lang)) {
+    return null;
+  }
+
+  const lang = params.lang as Lang;
+  const dict = await getDictionary(lang);
+
+  return <SpecialistApplicationForm lang={lang} dict={dict} />;
 }
 
