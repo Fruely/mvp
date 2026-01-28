@@ -36,7 +36,7 @@ export default function LanguageBar() {
 
   return (
     <div className="bg-gray-50 border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-9 flex items-center justify-end">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-9 flex items-center justify-center sm:justify-end">
         <div className="flex items-center gap-0.5 border border-gray-200 rounded-full overflow-hidden bg-white">
           {LANGS.map((l) => (
             <button

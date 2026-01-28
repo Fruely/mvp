@@ -83,7 +83,7 @@ export default function Header({ lang, dict = fallbackDict, children }: HeaderPr
           </Link>
           <Link
             href={`/${lang}/become-specialist`}
-            className="shrink-0 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition"
+            className="hidden sm:inline-flex shrink-0 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition"
           >
             {t(d, "header.joinButton")}
           </Link>
