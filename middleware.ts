@@ -4,7 +4,10 @@ const SUPPORTED_LANGS = ["ua", "ru", "de"] as const;
 type Lang = (typeof SUPPORTED_LANGS)[number];
 
 const LANG_COOKIE = "freuly_lang";
+// Existing dev cookie – still respected for preview access
 const DEV_COOKIE = "freuly_dev";
+// New explicit preview cookie for link-based access (e.g. froily_preview=true)
+const PREVIEW_COOKIE = "froily_preview";
 const DEV_ENABLE_PATH = "/__dev";
 const DEV_CLOSED_PATH = "/__closed";
 
@@ -16,7 +19,8 @@ function isLang(value: string): value is Lang {
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
-  if (pathname.startsWith("/__closed")) {
+  // Always allow the Coming Soon and preview-unlock routes themselves
+  if (pathname === "/__closed" || pathname === "/__preview" || pathname === "/__dev") {
     return NextResponse.next();
   }
 
@@ -39,13 +43,20 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // STEP 2: Check if user has dev cookie
-  const isDev = request.cookies.get(DEV_COOKIE)?.value === "1";
+  // STEP 2: Check if user has any preview cookie
+  // - Existing dev cookie (freuly_dev=1) continues to work
+  // - New explicit preview cookie (froily_preview=true) is also accepted
+  const hasDevCookie = request.cookies.get(DEV_COOKIE)?.value === "1";
+  const hasPreviewCookie =
+    request.cookies.get(PREVIEW_COOKIE)?.value === "true" ||
+    request.cookies.get(PREVIEW_COOKIE)?.value === "1";
+  const isPreview = hasDevCookie || hasPreviewCookie;
 
   // STEP 3: Whitelisted paths that should never be blocked
   const isWhitelisted =
     pathname === "/__dev" ||
     pathname === "/__closed" ||
+    pathname === "/__preview" ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/specialist") ||
@@ -56,8 +67,9 @@ export function middleware(request: NextRequest) {
     pathname === "/favicon.ico" ||
     pathname.includes(".");
 
-  // Block access if no dev cookie and not whitelisted
-  if (!isDev && !isWhitelisted) {
+  // Block access to public app pages if no preview cookie and not whitelisted.
+  // This ensures visitors see the Coming Soon page by default on all public routes.
+  if (!isPreview && !isWhitelisted) {
     return NextResponse.redirect(new URL("/__closed", request.url));
   }
 
