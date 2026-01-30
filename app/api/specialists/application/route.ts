@@ -30,6 +30,8 @@ export async function POST(request: NextRequest) {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+    const termsAcceptedAt = new Date().toISOString();
+    const termsVersion = process.env.TERMS_VERSION || "1.0";
 
     // ─────────────────────────────────────────────
     // 2️⃣ Create Supabase service client
@@ -110,6 +112,8 @@ export async function POST(request: NextRequest) {
       is_approved: false,
       is_active: false,
       is_visible: false,
+      terms_accepted_at: termsAcceptedAt,
+      terms_version: termsVersion,
     };
 
     let applicationId: string;
