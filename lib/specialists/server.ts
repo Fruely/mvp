@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 
-export type SpecialistStatus = "pending" | "active" | "paused";
+/** Canon: approved = visible + dashboard; paused = hidden + dashboard; pending/email_unverified/etc = no dashboard */
+export type SpecialistStatus = "approved" | "paused" | "pending";
 
 type SpecialistRow = {
   id: string;
@@ -9,7 +10,7 @@ type SpecialistRow = {
   first_name: string | null;
   email: string | null;
   phone: string | null;
-  status: SpecialistStatus | null;
+  status: string | null;
 };
 
 export async function getCurrentUserAndSpecialist() {
@@ -30,7 +31,7 @@ export async function getCurrentUserAndSpecialist() {
     .maybeSingle();
 
   if (!specialist) {
-    redirect("/specialist/apply");
+    redirect("/ua");
   }
 
   return {

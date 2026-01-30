@@ -79,7 +79,7 @@ export default function AccountBlock({
           return;
         }
 
-        router.push("/specialist/paused");
+        router.push("/specialist/dashboard");
       } catch {
         setErrorMessage("Не удалось поставить профиль на паузу.");
       }

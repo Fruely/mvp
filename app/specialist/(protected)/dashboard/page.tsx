@@ -2,25 +2,16 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
-import type { SpecialistStatus } from "@/lib/specialists/server";
 import ProfileEditor from "./ProfileEditor";
 import AccountBlock from "./AccountBlock";
 
 export default async function SpecialistDashboardPage() {
   const { supabase, user, specialist } = await getCurrentUserAndSpecialist();
 
-  const status: SpecialistStatus | null = specialist.status;
+  const status = specialist.status;
 
-  if (status === "pending") {
-    redirect("/specialist/pending");
-  }
-
-  if (status === "paused") {
-    redirect("/specialist/paused");
-  }
-
-  if (status !== "active") {
-    redirect("/specialist/apply");
+  if (status !== "approved" && status !== "paused") {
+    redirect("/ua");
   }
 
   const { data: profile } = await supabase
