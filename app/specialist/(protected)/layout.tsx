@@ -12,7 +12,7 @@ export default async function SpecialistProtectedLayout({
   const specialistId = cookieStore.get(SPECIALIST_ID_COOKIE)?.value;
 
   if (!specialistId || !specialistId.trim()) {
-    redirect("/specialist/login");
+    redirect("/ua");
   }
 
   return <>{children}</>;
