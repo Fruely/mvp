@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
 
     if (status === 'approved') {
       updateData.approved_at = new Date().toISOString();
+      updateData.is_visible = true;
     } else if (status === 'rejected') {
       updateData.rejected_at = new Date().toISOString();
       if (rejection_reason) {
@@ -76,22 +77,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const specialist = data[0] as { email?: string | null };
-    const email = specialist?.email && String(specialist.email).trim();
-    if (email) {
+    const specialistRow = data[0] as { id?: string; email?: string | null };
+    const specialistEmail = specialistRow?.email && String(specialistRow.email).trim();
+    if (specialistEmail) {
       try {
         if (status === 'approved') {
+          const baseUrl =
+            process.env.NEXT_PUBLIC_SITE_URL ||
+            process.env.VERCEL_URL ||
+            (request.url ? new URL(request.url).origin : 'https://freuly.de');
+          const profileUrl = `${baseUrl}/ua/specialist/${id}`;
+          const dashboardUrl = `${baseUrl}/specialist/dashboard`;
           await sendEmail({
-            to: email,
-            subject: 'Your profile has been approved',
-            body: 'Your specialist profile has been approved. You can now be discovered by clients.',
+            to: specialistEmail,
+            subject: 'Заявка одобрена',
+            body: `<div style="font-family: Arial, sans-serif; max-width: 600px;">
+  <h2 style="color: #2563eb;">Заявка одобрена</h2>
+  <p>Ваша заявка одобрена. Ваш профиль теперь виден клиентам.</p>
+  <p><a href="${profileUrl}" style="color: #2563eb;">Открыть профиль</a></p>
+  <p><a href="${dashboardUrl}" style="color: #2563eb;">Перейти в дашборд</a></p>
+</div>`,
           });
         } else if (status === 'rejected') {
           const reason = rejection_reason
             ? String(rejection_reason).trim()
             : 'No reason provided.';
           await sendEmail({
-            to: email,
+            to: specialistEmail,
             subject: 'Your profile was not approved',
             body: `Your specialist profile was not approved.\n\nRejection reason:\n${reason}`,
           });
