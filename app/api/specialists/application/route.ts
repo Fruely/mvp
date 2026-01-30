@@ -4,24 +4,16 @@ import { sendEmail } from "@/lib/email";
 import crypto from "crypto";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const URL_REGEX = /^https?:\/\/.+/;
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { name, email, category_slug, city, postal_code, proof_link, phone, languages } = body;
+    const { email, stoir_number, about_short, terms_accepted, photo_base64 } = body;
 
     // ─────────────────────────────────────────────
-    // 1️⃣ VALIDATION
+    // 1️⃣ VALIDATION (simplified: email + terms only)
     // ─────────────────────────────────────────────
-
-    if (!name || !name.trim()) {
-      return NextResponse.json(
-        { error: "Ім'я обов'язкове" },
-        { status: 400 }
-      );
-    }
 
     if (!email || !EMAIL_REGEX.test(email)) {
       return NextResponse.json(
@@ -30,46 +22,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!category_slug || !category_slug.trim()) {
+    if (terms_accepted !== true) {
       return NextResponse.json(
-        { error: "Категорія обов'язкова" },
-        { status: 400 }
-      );
-    }
-
-    if ((!city || !city.trim()) && (!postal_code || !postal_code.trim())) {
-      return NextResponse.json(
-        { error: "Вкажіть місто або поштовий індекс" },
-        { status: 400 }
-      );
-    }
-
-    if (!proof_link || !proof_link.trim()) {
-      return NextResponse.json(
-        { error: "Посилання обов'язкове" },
-        { status: 400 }
-      );
-    }
-
-    if (!URL_REGEX.test(proof_link)) {
-      return NextResponse.json(
-        { error: "Невірний формат посилання" },
-        { status: 400 }
-      );
-    }
-
-    if (!Array.isArray(languages) || languages.length === 0) {
-      return NextResponse.json(
-        { error: "Виберіть хоча б одну мову" },
+        { error: "Потрібно прийняти умови" },
         { status: 400 }
       );
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-    const normalizedName = name.trim();
-    const normalizedCity = city?.trim() || null;
-    const normalizedPostalCode = postal_code?.trim() || null;
-    const normalizedProofLink = proof_link.trim();
 
     // ─────────────────────────────────────────────
     // 2️⃣ Create Supabase service client
@@ -107,21 +67,16 @@ export async function POST(request: NextRequest) {
     }
 
     // ─────────────────────────────────────────────
-    // 4️⃣ Resolve category slug → UUID
+    // 4️⃣ Optional: first category (for category_id if required by DB)
     // ─────────────────────────────────────────────
 
-    const { data: category, error: categoryError } = await supabase
+    const { data: firstCategory } = await supabase
       .from("categories")
       .select("id")
-      .eq("slug", category_slug)
+      .limit(1)
       .maybeSingle();
 
-    if (categoryError || !category) {
-      return NextResponse.json(
-        { error: "Невірна категорія" },
-        { status: 400 }
-      );
-    }
+    const categoryId = firstCategory?.id ?? null;
 
     // ─────────────────────────────────────────────
     // 5️⃣ Generate email verification token
@@ -138,15 +93,16 @@ export async function POST(request: NextRequest) {
     // 6️⃣ Insert or update application
     // ─────────────────────────────────────────────
 
-    const applicationData = {
-      name: normalizedName,
+    const nameFromEmail = normalizedEmail.split("@")[0] || "";
+    const applicationData: Record<string, unknown> = {
+      name: nameFromEmail,
       email: normalizedEmail,
-      phone: phone?.trim() || null,
-      category_id: category.id,
-      city: normalizedCity,
-      postal_code: normalizedPostalCode,
-      proof_link: normalizedProofLink,
-      languages: languages,
+      phone: null,
+      category_id: categoryId,
+      city: null,
+      postal_code: null,
+      proof_link: null,
+      languages: [],
       status: "email_unverified",
       email_verification_token: verificationToken,
       profile_status: "draft",
@@ -203,7 +159,7 @@ export async function POST(request: NextRequest) {
     const emailBody = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #2563eb;">Підтвердження email</h2>
-        <p>Вітаємо, ${normalizedName}!</p>
+        <p>Вітаємо!</p>
         <p>Дякуємо за вашу заявку на платформі Freuly. Для продовження розгляду заявки, будь ласка, підтвердіть ваш email.</p>
         <p style="margin: 30px 0;">
           <a href="${verifyUrl}" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">

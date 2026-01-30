@@ -1,15 +1,10 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { t } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/i18n";
-
-type Category = {
-  slug: string;
-  title: string;
-};
 
 type SpecialistApplicationFormProps = {
   lang: string;
@@ -17,99 +12,66 @@ type SpecialistApplicationFormProps = {
 };
 
 type FormData = {
-  name: string;
   email: string;
-  category_slug: string;
-  city: string;
-  postal_code: string;
-  proof_link: string;
-  phone: string;
-  languages: string[];
+  stoir_number: string;
+  about_short: string;
+  terms_accepted: boolean;
 };
-
-const SUPPORTED_LANGUAGES = [
-  { code: "ua", label: "Українська" },
-  { code: "ru", label: "Русский" },
-  { code: "de", label: "Deutsch" },
-  { code: "en", label: "English" },
-];
 
 export default function SpecialistApplicationForm({
   lang,
   dict,
 }: SpecialistApplicationFormProps) {
   const pathname = usePathname() || "/";
-  const langPrefix = useMemo(() => {
-    const seg = pathname.split("/").filter(Boolean)[0];
-    return seg === "ua" || seg === "ru" || seg === "de" ? `/${seg}` : "/ua";
-  }, [pathname]);
+  const langPrefix =
+    pathname.split("/").filter(Boolean)[0] === "ua" ||
+    pathname.split("/").filter(Boolean)[0] === "ru" ||
+    pathname.split("/").filter(Boolean)[0] === "de"
+      ? `/${pathname.split("/").filter(Boolean)[0]}`
+      : "/ua";
 
   const [formData, setFormData] = useState<FormData>({
-    name: "",
     email: "",
-    category_slug: "",
-    city: "",
-    postal_code: "",
-    proof_link: "",
-    phone: "",
-    languages: [],
+    stoir_number: "",
+    about_short: "",
+    terms_accepted: false,
   });
 
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [loadingCategories, setLoadingCategories] = useState(true);
-  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof FormData, string>>>({});
-
-  useEffect(() => {
-    // Load categories
-    fetch("/api/filters")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.categories) {
-          setCategories(data.categories);
-        }
-        setLoadingCategories(false);
-      })
-      .catch((err) => {
-        console.error("Failed to load categories:", err);
-        setLoadingCategories(false);
-      });
-  }, []);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<keyof FormData, string>>
+  >({});
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear field error when user starts typing
+    const { name, value, type } = e.target;
+    const checked =
+      type === "checkbox" ? (e.target as HTMLInputElement).checked : undefined;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
     if (fieldErrors[name as keyof FormData]) {
       setFieldErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name as keyof FormData];
-        return newErrors;
+        const next = { ...prev };
+        delete next[name as keyof FormData];
+        return next;
       });
     }
   };
 
-  const handleLanguageToggle = (code: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      languages: prev.languages.includes(code)
-        ? prev.languages.filter((l) => l !== code)
-        : [...prev.languages, code],
-    }));
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setPhotoFile(file || null);
   };
 
   const validateForm = (): boolean => {
     const errors: Partial<Record<keyof FormData, string>> = {};
-
-    if (!formData.name.trim()) {
-      errors.name = t(dict, "application.errors.nameRequired", {
-        defaultValue: "Ім'я обов'язкове",
-      });
-    }
 
     if (!formData.email.trim()) {
       errors.email = t(dict, "application.errors.emailRequired", {
@@ -121,31 +83,9 @@ export default function SpecialistApplicationForm({
       });
     }
 
-    if (!formData.category_slug) {
-      errors.category_slug = t(dict, "application.errors.categoryRequired", {
-        defaultValue: "Категорія обов'язкова",
-      });
-    }
-
-    if (!formData.city.trim() && !formData.postal_code.trim()) {
-      errors.city = t(dict, "application.errors.locationRequired", {
-        defaultValue: "Вкажіть місто або поштовий індекс",
-      });
-    }
-
-    if (!formData.proof_link.trim()) {
-      errors.proof_link = t(dict, "application.errors.proofLinkRequired", {
-        defaultValue: "Посилання обов'язкове",
-      });
-    } else if (!/^https?:\/\/.+/.test(formData.proof_link)) {
-      errors.proof_link = t(dict, "application.errors.proofLinkInvalid", {
-        defaultValue: "Невірний формат посилання",
-      });
-    }
-
-    if (formData.languages.length === 0) {
-      errors.languages = t(dict, "application.errors.languagesRequired", {
-        defaultValue: "Виберіть хоча б одну мову",
+    if (!formData.terms_accepted) {
+      errors.terms_accepted = t(dict, "application.errors.termsRequired", {
+        defaultValue: "Потрібно прийняти умови",
       });
     }
 
@@ -157,38 +97,35 @@ export default function SpecialistApplicationForm({
     e.preventDefault();
     setError(null);
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
 
     try {
-      const payload = {
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        category_slug: formData.category_slug,
-        city: formData.city.trim() || null,
-        postal_code: formData.postal_code.trim() || null,
-        proof_link: formData.proof_link.trim(),
-        phone: formData.phone.trim() || null,
-        languages: formData.languages,
-      };
-
-      // Ensure at least one location field is provided
-      if (!payload.city && !payload.postal_code) {
-        throw new Error(
-          t(dict, "application.errors.locationRequired", {
-            defaultValue: "Вкажіть місто або поштовий індекс",
-          })
-        );
+      let photo_base64: string | null = null;
+      if (photoFile) {
+        const reader = new FileReader();
+        photo_base64 = await new Promise<string | null>((resolve) => {
+          reader.onload = () =>
+            resolve(
+              typeof reader.result === "string" ? reader.result : null
+            );
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(photoFile);
+        });
       }
+
+      const payload = {
+        email: formData.email.trim(),
+        stoir_number: formData.stoir_number.trim() || null,
+        about_short: formData.about_short.trim() || null,
+        terms_accepted: formData.terms_accepted,
+        photo_base64: photo_base64 || null,
+      };
 
       const response = await fetch("/api/specialists/application", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
@@ -205,22 +142,21 @@ export default function SpecialistApplicationForm({
 
       setSuccess(true);
       setFormData({
-        name: "",
         email: "",
-        category_slug: "",
-        city: "",
-        postal_code: "",
-        proof_link: "",
-        phone: "",
-        languages: [],
+        stoir_number: "",
+        about_short: "",
+        terms_accepted: false,
       });
+      setPhotoFile(null);
+      if (photoInputRef.current) photoInputRef.current.value = "";
       setFieldErrors({});
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(
-        err.message ||
-          t(dict, "application.errors.submitFailed", {
-            defaultValue: "Помилка при відправці заявки",
-          })
+        err instanceof Error
+          ? err.message
+          : t(dict, "application.errors.submitFailed", {
+              defaultValue: "Помилка при відправці заявки",
+            })
       );
     } finally {
       setLoading(false);
@@ -276,33 +212,6 @@ export default function SpecialistApplicationForm({
           onSubmit={handleSubmit}
           className="bg-white rounded-2xl shadow-lg p-8 space-y-6"
         >
-          {/* Name */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              {t(dict, "application.name", {
-                defaultValue: "Імʼя та прізвище",
-              })}{" "}
-              <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder={t(dict, "application.namePlaceholder", {
-                defaultValue: "Іван Петров",
-              })}
-              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition ${
-                fieldErrors.name ? "border-red-500" : "border-gray-300"
-              }`}
-              required
-            />
-            {fieldErrors.name && (
-              <p className="mt-1 text-sm text-red-600">{fieldErrors.name}</p>
-            )}
-          </div>
-
-          {/* Email */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               {t(dict, "application.email", {
@@ -328,187 +237,95 @@ export default function SpecialistApplicationForm({
             )}
           </div>
 
-          {/* Category */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              {t(dict, "application.category", {
-                defaultValue: "Категорія послуг",
-              })}{" "}
-              <span className="text-red-500">*</span>
-            </label>
-            <select
-              name="category_slug"
-              value={formData.category_slug}
-              onChange={handleChange}
-              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition ${
-                fieldErrors.category_slug
-                  ? "border-red-500"
-                  : "border-gray-300"
-              }`}
-              required
-              disabled={loadingCategories}
-            >
-              <option value="">
-                {loadingCategories
-                  ? t(dict, "application.loading", { defaultValue: "Завантаження..." })
-                  : t(dict, "application.categoryPlaceholder", {
-                      defaultValue: "Виберіть категорію",
-                    })}
-              </option>
-              {categories.map((cat) => (
-                <option key={cat.slug} value={cat.slug}>
-                  {cat.title}
-                </option>
-              ))}
-            </select>
-            {fieldErrors.category_slug && (
-              <p className="mt-1 text-sm text-red-600">
-                {fieldErrors.category_slug}
-              </p>
-            )}
-          </div>
-
-          {/* City or Postal Code */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                {t(dict, "application.city", {
-                  defaultValue: "Місто / регіон",
-                })}
-              </label>
-              <input
-                type="text"
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                placeholder={t(dict, "application.cityPlaceholder", {
-                  defaultValue: "Берлін",
-                })}
-                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition ${
-                  fieldErrors.city ? "border-red-500" : "border-gray-300"
-                }`}
-              />
-              {fieldErrors.city && (
-                <p className="mt-1 text-sm text-red-600">{fieldErrors.city}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                {t(dict, "application.postalCode", {
-                  defaultValue: "Поштовий індекс (PLZ)",
-                })}
-              </label>
-              <input
-                type="text"
-                name="postal_code"
-                value={formData.postal_code}
-                onChange={handleChange}
-                placeholder={t(dict, "application.postalCodePlaceholder", {
-                  defaultValue: "10115",
-                })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition"
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                {t(dict, "application.locationHint", {
-                  defaultValue: "Вкажіть місто або поштовий індекс",
-                })}
-              </p>
-            </div>
-          </div>
-
-          {/* Languages */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              {t(dict, "application.languages", {
-                defaultValue: "Мови обслуговування",
-              })}{" "}
-              <span className="text-red-500">*</span>
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {SUPPORTED_LANGUAGES.map((langItem) => (
-                <label
-                  key={langItem.code}
-                  className={`flex items-center p-3 border rounded-xl cursor-pointer hover:bg-gray-50 transition ${
-                    formData.languages.includes(langItem.code)
-                      ? "border-blue-600 bg-blue-50"
-                      : "border-gray-300"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={formData.languages.includes(langItem.code)}
-                    onChange={() => handleLanguageToggle(langItem.code)}
-                    className="w-5 h-5 text-blue-600 rounded"
-                  />
-                  <span className="ml-3 text-gray-700 text-sm">
-                    {langItem.label}
-                  </span>
-                </label>
-              ))}
-            </div>
-            {fieldErrors.languages && (
-              <p className="mt-1 text-sm text-red-600">
-                {fieldErrors.languages}
-              </p>
-            )}
-          </div>
-
-          {/* Proof Link */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              {t(dict, "application.proofLink", {
-                defaultValue:
-                  "Посилання, яке підтверджує, що ви реально працюючий спеціаліст",
-              })}{" "}
-              <span className="text-red-500">*</span>
+              {t(dict, "application.stoirNumber", {
+                defaultValue: "Номер стора",
+              })}
             </label>
             <input
-              type="url"
-              name="proof_link"
-              value={formData.proof_link}
+              type="text"
+              name="stoir_number"
+              value={formData.stoir_number}
               onChange={handleChange}
-              placeholder={t(dict, "application.proofLinkPlaceholder", {
-                defaultValue: "https://example.com",
-              })}
+              placeholder=""
               className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition ${
-                fieldErrors.proof_link ? "border-red-500" : "border-gray-300"
+                fieldErrors.stoir_number ? "border-red-500" : "border-gray-300"
               }`}
-              required
             />
-            <p className="mt-2 text-sm text-gray-500">
-              {t(dict, "application.proofLinkHint", {
-                defaultValue:
-                  "Сайт, соцмережа, Google Business, LinkedIn тощо. Без посилання заявку не розглядаємо.",
-              })}
-            </p>
-            {fieldErrors.proof_link && (
+            {fieldErrors.stoir_number && (
               <p className="mt-1 text-sm text-red-600">
-                {fieldErrors.proof_link}
+                {fieldErrors.stoir_number}
               </p>
             )}
           </div>
 
-          {/* Phone */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              {t(dict, "application.phone", { defaultValue: "Телефон" })}
+              {t(dict, "application.photo", { defaultValue: "Фото" })}
             </label>
             <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder={t(dict, "application.phonePlaceholder", {
-                defaultValue: "+49 123 456789",
-              })}
+              ref={photoInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition"
             />
           </div>
 
-          {/* Submit Button */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              {t(dict, "application.aboutShort", {
+                defaultValue: "Коротко про себе",
+              })}
+            </label>
+            <textarea
+              name="about_short"
+              value={formData.about_short}
+              onChange={handleChange}
+              rows={3}
+              placeholder=""
+              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition ${
+                fieldErrors.about_short ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {fieldErrors.about_short && (
+              <p className="mt-1 text-sm text-red-600">
+                {fieldErrors.about_short}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                name="terms_accepted"
+                checked={formData.terms_accepted}
+                onChange={handleChange}
+                className="w-5 h-5 text-blue-600 rounded mt-0.5"
+              />
+              <span className="text-sm font-semibold text-gray-700">
+                {t(dict, "application.termsAccepted", {
+                  defaultValue: "Я приймаю умови",
+                })}{" "}
+                <span className="text-red-500">*</span>
+              </span>
+            </label>
+            <p className="mt-2 ml-8 text-sm text-gray-500">
+              Бесплатное размещение X месяцев, далее 49,90 €/мес. Можно
+              отказаться в любой момент.
+            </p>
+            {fieldErrors.terms_accepted && (
+              <p className="mt-1 text-sm text-red-600">
+                {fieldErrors.terms_accepted}
+              </p>
+            )}
+          </div>
+
           <button
             type="submit"
-            disabled={loading || loadingCategories}
+            disabled={loading || !formData.terms_accepted}
             className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
