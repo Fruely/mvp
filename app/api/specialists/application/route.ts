@@ -96,15 +96,18 @@ export async function POST(request: NextRequest) {
     // ─────────────────────────────────────────────
 
     const nameFromEmail = normalizedEmail.split("@")[0] || "";
+    const stoirNumber =
+      typeof stoir_number === "string" ? stoir_number.trim() || null : null;
+    const aboutShort =
+      typeof about_short === "string" ? about_short.trim() || null : null;
+    const avatarUrl =
+      typeof photo_base64 === "string" && photo_base64.trim()
+        ? photo_base64.trim()
+        : null;
+
     const applicationData: Record<string, unknown> = {
       name: nameFromEmail,
       email: normalizedEmail,
-      phone: null,
-      category_id: categoryId,
-      city: null,
-      postal_code: null,
-      proof_link: null,
-      languages: [],
       status: "email_unverified",
       email_verification_token: verificationToken,
       profile_status: "draft",
@@ -114,6 +117,9 @@ export async function POST(request: NextRequest) {
       is_visible: false,
       terms_accepted_at: termsAcceptedAt,
       terms_version: termsVersion,
+      stoir_number: stoirNumber,
+      about_short: aboutShort,
+      avatar_url: avatarUrl,
     };
 
     let applicationId: string;
