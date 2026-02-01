@@ -8,6 +8,8 @@ if (!MAIL_FROM) {
   throw new Error("MAIL_FROM is not defined");
 }
 
+const FROM_ADDRESS: string = MAIL_FROM;
+
 export async function sendEmail({
   to,
   subject,
@@ -18,7 +20,7 @@ export async function sendEmail({
   html: string;
 }) {
   return resend.emails.send({
-    from: MAIL_FROM,
+    from: FROM_ADDRESS,
     to,
     subject,
     html,
