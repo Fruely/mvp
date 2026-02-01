@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import ProfileEditor from "./ProfileEditor";
 import AccountBlock from "./AccountBlock";
+import SetPasswordBlock from "./SetPasswordBlock";
 
 export default async function SpecialistDashboardPage() {
   const { supabase, user, specialist } = await getCurrentUserAndSpecialist();
@@ -39,9 +40,14 @@ export default async function SpecialistDashboardPage() {
 
   const firstName = specialist.first_name?.trim() || "";
 
+  const showSetPassword = !specialist.password_set_at;
+
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-10">
       <div className="mx-auto max-w-4xl space-y-8">
+        {showSetPassword && (
+          <SetPasswordBlock />
+        )}
         {/* Welcome block */}
         <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
           <h1 className="text-2xl font-semibold text-gray-900">
@@ -55,7 +61,7 @@ export default async function SpecialistDashboardPage() {
             )}
           </h1>
           <p className="mt-2 text-gray-700">
-            Рады видеть вас на Froyle. Желаем вам хорошего и продуктивного
+            Рады видеть вас на Freuly. Желаем вам хорошего и продуктивного
             рабочего дня.
           </p>
           <p className="mt-3 text-sm text-gray-500">
