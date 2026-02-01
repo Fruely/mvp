@@ -32,6 +32,8 @@ export async function POST(req: NextRequest) {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+    const emailVerificationToken = crypto.randomUUID();
+    const now = new Date().toISOString();
 
     // -----------------------------
     // Prepare data
@@ -41,8 +43,10 @@ export async function POST(req: NextRequest) {
       stoir_number: stoir_number?.trim() || null,
       about_short: about_short?.trim() || null,
       avatar_url: photo_base64 || null,
-      status: "pending",
-      terms_accepted_at: new Date().toISOString(),
+      status: "email_pending",
+      email_verification_token: emailVerificationToken,
+      email_confirmation_sent_at: now,
+      terms_accepted_at: now,
       terms_version: process.env.TERMS_VERSION || "1.0",
     };
 
@@ -57,17 +61,26 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error("Application insert failed:", error);
+      const message =
+        error.code === "23505"
+          ? "Заявка з таким email вже існує."
+          : error.message?.includes("row-level security")
+            ? "Немає прав на створення заявки."
+            : "Не вдалося зберегти заявку. Спробуйте пізніше або зверніться до підтримки.";
       return NextResponse.json(
-        { error: "Failed to submit application" },
+        { error: message },
         { status: 500 }
       );
     }
+
+    const verifyUrl = `https://freuly.de/api/specialists/verify-email?token=${encodeURIComponent(emailVerificationToken)}`;
 
     await sendEmail({
       to: applicationData.email,
       subject: "Ваша заявка специалиста получена — Freuly",
       html: `<p>Здравствуйте!</p>
 <p>Мы получили вашу заявку специалиста на платформе <b>Freuly</b>.</p>
+<p>Подтвердите email по ссылке: <a href="${verifyUrl}">${verifyUrl}</a></p>
 <p>Наша команда рассмотрит заявку и свяжется с вами по этому email после проверки.</p>
 <p>С уважением,<br/>Команда Freuly</p>`,
     });
