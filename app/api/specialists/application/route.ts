@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { sendEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -61,6 +62,15 @@ export async function POST(req: NextRequest) {
         { status: 500 }
       );
     }
+
+    await sendEmail({
+      to: applicationData.email,
+      subject: "Ваша заявка специалиста получена — Freuly",
+      html: `<p>Здравствуйте!</p>
+<p>Мы получили вашу заявку специалиста на платформе <b>Freuly</b>.</p>
+<p>Наша команда рассмотрит заявку и свяжется с вами по этому email после проверки.</p>
+<p>С уважением,<br/>Команда Freuly</p>`,
+    });
 
     // -----------------------------
     // Success

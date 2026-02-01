@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
           await sendEmail({
             to: specialistEmail,
             subject: 'Заявка одобрена',
-            body: `<div style="font-family: Arial, sans-serif; max-width: 600px;">
+            html: `<div style="font-family: Arial, sans-serif; max-width: 600px;">
   <h2 style="color: #2563eb;">Заявка одобрена</h2>
   <p>Ваша заявка одобрена. Ваш профиль теперь виден клиентам.</p>
   <p><a href="${profileUrl}" style="color: #2563eb;">Открыть профиль</a></p>
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
           await sendEmail({
             to: specialistEmail,
             subject: 'Your profile was not approved',
-            body: `Your specialist profile was not approved.\n\nRejection reason:\n${reason}`,
+            html: `Your specialist profile was not approved.<br><br>Rejection reason:<br>${reason}`,
           });
         }
       } catch (emailErr: unknown) {

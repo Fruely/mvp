@@ -1,10 +1,26 @@
-export async function sendEmail(opts: {
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+const MAIL_FROM = process.env.MAIL_FROM;
+
+if (!MAIL_FROM) {
+  throw new Error("MAIL_FROM is not defined");
+}
+
+export async function sendEmail({
+  to,
+  subject,
+  html,
+}: {
   to: string;
   subject: string;
-  body: string;
-}): Promise<void> {
-  console.log(
-    "[email]",
-    JSON.stringify({ to: opts.to, subject: opts.subject, body: opts.body })
-  );
+  html: string;
+}) {
+  return resend.emails.send({
+    from: MAIL_FROM,
+    to,
+    subject,
+    html,
+  });
 }
