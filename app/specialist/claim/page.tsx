@@ -69,18 +69,13 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://freuly.de");
   const redirectTo = `${baseUrl}/specialist/dashboard`;
 
-  let linkData: { properties?: { action_link?: string } } | null = null;
-  let linkError: { message?: string } | null = null;
-
   const first = await supabase.auth.admin.generateLink({
     type: "magiclink",
     email,
     options: { redirectTo },
   });
-  linkData = first.data;
-  linkError = first.error;
 
-  if (linkError && /user.*not.*found|not found/i.test(linkError.message ?? "")) {
+  if (first.error && /user.*not.*found|not found/i.test(first.error.message ?? "")) {
     await supabase.auth.admin.createUser({
       email,
       email_confirm: true,
@@ -90,17 +85,25 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
       email,
       options: { redirectTo },
     });
-    linkData = second.data;
-    linkError = second.error;
+
+    if (second.error || !second.data?.properties?.action_link) {
+      console.error("[specialist/claim] generateLink failed after createUser", second.error);
+      return new Response(HTML_ERROR, {
+        status: 500,
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      });
+    }
+
+    redirect(second.data.properties.action_link);
   }
 
-  if (linkError || !linkData?.properties?.action_link) {
-    console.error("[specialist/claim] generateLink failed", linkError);
+  if (first.error || !first.data?.properties?.action_link) {
+    console.error("[specialist/claim] generateLink failed", first.error);
     return new Response(HTML_ERROR, {
       status: 500,
       headers: { "Content-Type": "text/html; charset=utf-8" },
     });
   }
 
-  redirect(linkData.properties.action_link);
+  redirect(first.data.properties.action_link);
 }
