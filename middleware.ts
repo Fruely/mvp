@@ -43,13 +43,20 @@ export function middleware(request: NextRequest) {
   const isDev = request.cookies.get(DEV_COOKIE)?.value === "1";
 
   // STEP 3: Whitelisted paths that should never be blocked
+  // Public routes: language prefixes, API (verify-email), specialist/claim, login
+  const segments = pathname.split("/").filter(Boolean);
+  const first = segments[0];
+  const isLangRoute = first && isLang(first);
+
   const isWhitelisted =
     pathname === "/__dev" ||
     pathname === "/__closed" ||
+    isLangRoute ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/specialist") ||
     pathname.startsWith("/client") ||
+    pathname.startsWith("/login") ||
     pathname.startsWith("/_next") ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
@@ -61,12 +68,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/__closed", request.url));
   }
 
-  // Never apply i18n to admin/api/specialist/static assets
+  // Never apply i18n to admin/api/specialist/client/login/static assets
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/specialist") ||
     pathname.startsWith("/client") ||
+    pathname.startsWith("/login") ||
     pathname.startsWith("/_next") ||
     pathname === "/favicon.ico" ||
     pathname === "/robots.txt" ||
@@ -76,8 +84,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const segments = pathname.split("/").filter(Boolean);
-  const first = segments[0];
+  // i18n logic (only for language routes)
+  const segmentsForI18n = pathname.split("/").filter(Boolean);
+  const firstI18n = segmentsForI18n[0];
 
   // Root: always redirect to default lang (/ua)
   if (pathname === "/") {
@@ -90,23 +99,23 @@ export function middleware(request: NextRequest) {
   const preferredLang: Lang = isLang(cookieLang || "") ? (cookieLang as Lang) : "ua";
 
   // No lang prefix: redirect to preferred lang + same path
-  if (!first || !isLang(first)) {
+  if (!firstI18n || !isLang(firstI18n)) {
     const url = request.nextUrl.clone();
     url.pathname = `/${preferredLang}${pathname}`;
     return NextResponse.redirect(url);
   }
 
-  const lang = first;
+  const lang = firstI18n;
 
   // Prevent nonsense like /ua/admin/... or /ua/api/...
-  if (segments[1] === "admin" || segments[1] === "api") {
+  if (segmentsForI18n[1] === "admin" || segmentsForI18n[1] === "api") {
     const url = request.nextUrl.clone();
-    url.pathname = `/${segments[1]}${segments.length > 2 ? "/" + segments.slice(2).join("/") : ""}`;
+    url.pathname = `/${segmentsForI18n[1]}${segmentsForI18n.length > 2 ? "/" + segmentsForI18n.slice(2).join("/") : ""}`;
     return NextResponse.redirect(url);
   }
 
   // For /{lang} keep as-is, just set cookie (for future redirects)
-  if (segments.length === 1) {
+  if (segmentsForI18n.length === 1) {
     const res = NextResponse.next();
     res.cookies.set(LANG_COOKIE, lang, { path: "/" });
     res.headers.set(
