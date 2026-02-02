@@ -8,14 +8,18 @@ export async function POST(req: NextRequest) {
 
     const {
       email,
+      name,
+      phone,
+      category_id,
       stoir_number,
       about_short,
       photo_base64,
+      proof_link,
       terms_accepted,
     } = body;
 
     // -----------------------------
-    // Basic validation
+    // Validation (required: name, phone, email, category_id, proof_link, terms)
     // -----------------------------
     if (!email || typeof email !== "string") {
       return NextResponse.json(
@@ -23,7 +27,30 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
+    if (!name || typeof name !== "string" || !name.trim()) {
+      return NextResponse.json(
+        { error: "Name is required" },
+        { status: 400 }
+      );
+    }
+    if (!phone || typeof phone !== "string" || !phone.trim()) {
+      return NextResponse.json(
+        { error: "Phone is required" },
+        { status: 400 }
+      );
+    }
+    if (!category_id || typeof category_id !== "string" || !category_id.trim()) {
+      return NextResponse.json(
+        { error: "Category is required" },
+        { status: 400 }
+      );
+    }
+    if (!proof_link || typeof proof_link !== "string" || !proof_link.trim()) {
+      return NextResponse.json(
+        { error: "Proof document is required" },
+        { status: 400 }
+      );
+    }
     if (terms_accepted !== true) {
       return NextResponse.json(
         { error: "Terms must be accepted" },
@@ -35,14 +62,15 @@ export async function POST(req: NextRequest) {
     const emailVerificationToken = crypto.randomUUID();
     const now = new Date().toISOString();
 
-    // -----------------------------
-    // Prepare data
-    // -----------------------------
     const applicationData = {
       email: normalizedEmail,
+      name: name.trim(),
+      phone: phone.trim(),
+      category_id: category_id.trim(),
       stoir_number: stoir_number?.trim() || null,
       about_short: about_short?.trim() || null,
       avatar_url: photo_base64 || null,
+      proof_link: proof_link.trim(),
       status: "email_pending",
       email_verification_token: emailVerificationToken,
       email_confirmation_sent_at: now,

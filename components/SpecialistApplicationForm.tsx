@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { t } from "@/lib/i18n";
@@ -11,8 +11,13 @@ type SpecialistApplicationFormProps = {
   dict: Dictionary;
 };
 
+type Category = { id: string; slug: string; title: string };
+
 type FormData = {
   email: string;
+  name: string;
+  phone: string;
+  category_id: string;
   stoir_number: string;
   about_short: string;
   terms_accepted: boolean;
@@ -32,22 +37,35 @@ export default function SpecialistApplicationForm({
 
   const [formData, setFormData] = useState<FormData>({
     email: "",
+    name: "",
+    phone: "",
+    category_id: "",
     stoir_number: "",
     about_short: "",
     terms_accepted: false,
   });
 
+  const [categories, setCategories] = useState<Category[]>([]);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [proofFile, setProofFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<
-    Partial<Record<keyof FormData, string>>
+    Partial<Record<keyof FormData | "proof", string>>
   >({});
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const proofInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch("/api/specialists/categories")
+      .then((res) => res.json())
+      .then((json: { data?: Category[] }) => setCategories(json.data || []))
+      .catch(() => setCategories([]));
+  }, []);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
     const checked =
@@ -66,27 +84,36 @@ export default function SpecialistApplicationForm({
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    setPhotoFile(file || null);
+    setPhotoFile(e.target.files?.[0] || null);
+  };
+
+  const handleProofChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setProofFile(e.target.files?.[0] || null);
+    if (fieldErrors.proof) setFieldErrors((prev) => ({ ...prev, proof: undefined }));
   };
 
   const validateForm = (): boolean => {
-    const errors: Partial<Record<keyof FormData, string>> = {};
+    const errors: Partial<Record<keyof FormData | "proof", string>> = {};
 
     if (!formData.email.trim()) {
-      errors.email = t(dict, "application.errors.emailRequired", {
-        defaultValue: "Email обов'язковий",
-      });
+      errors.email = t(dict, "application.errors.emailRequired", { defaultValue: "Email обов'язковий" });
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = t(dict, "application.errors.emailInvalid", {
-        defaultValue: "Невірний формат email",
-      });
+      errors.email = t(dict, "application.errors.emailInvalid", { defaultValue: "Невірний формат email" });
     }
-
+    if (!formData.name.trim()) {
+      errors.name = t(dict, "application.errors.nameRequired", { defaultValue: "Ім'я обов'язкове" });
+    }
+    if (!formData.phone.trim()) {
+      errors.phone = t(dict, "application.errors.phoneRequired", { defaultValue: "Телефон обов'язковий" });
+    }
+    if (!formData.category_id.trim()) {
+      errors.category_id = t(dict, "application.errors.categoryRequired", { defaultValue: "Оберіть категорію" });
+    }
+    if (!proofFile) {
+      errors.proof = t(dict, "application.errors.proofRequired", { defaultValue: "Завантажте документ (PDF або зображення)" });
+    }
     if (!formData.terms_accepted) {
-      errors.terms_accepted = t(dict, "application.errors.termsRequired", {
-        defaultValue: "Потрібно прийняти умови",
-      });
+      errors.terms_accepted = t(dict, "application.errors.termsRequired", { defaultValue: "Потрібно прийняти умови" });
     }
 
     setFieldErrors(errors);
@@ -96,20 +123,26 @@ export default function SpecialistApplicationForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
     if (!validateForm()) return;
 
     setLoading(true);
-
     try {
+      let proof_link: string | null = null;
+      if (proofFile) {
+        const form = new FormData();
+        form.append("file", proofFile);
+        const uploadRes = await fetch("/api/specialists/upload-proof", { method: "POST", body: form });
+        const uploadJson = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(uploadJson.error || "Не вдалося завантажити документ");
+        proof_link = uploadJson.url || null;
+        if (!proof_link) throw new Error("Не отримано посилання на документ");
+      }
+
       let photo_base64: string | null = null;
       if (photoFile) {
         const reader = new FileReader();
         photo_base64 = await new Promise<string | null>((resolve) => {
-          reader.onload = () =>
-            resolve(
-              typeof reader.result === "string" ? reader.result : null
-            );
+          reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : null);
           reader.onerror = () => resolve(null);
           reader.readAsDataURL(photoFile);
         });
@@ -117,10 +150,14 @@ export default function SpecialistApplicationForm({
 
       const payload = {
         email: formData.email.trim(),
+        name: formData.name.trim(),
+        phone: formData.phone.trim(),
+        category_id: formData.category_id.trim(),
         stoir_number: formData.stoir_number.trim() || null,
         about_short: formData.about_short.trim() || null,
         terms_accepted: formData.terms_accepted,
         photo_base64: photo_base64 || null,
+        proof_link,
       };
 
       const response = await fetch("/api/specialists/application", {
@@ -128,36 +165,29 @@ export default function SpecialistApplicationForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          result.error ||
-            t(dict, "application.errors.submitFailed", {
-              defaultValue: "Помилка при відправці заявки",
-            })
-        );
+        throw new Error(result.error || t(dict, "application.errors.submitFailed", { defaultValue: "Помилка при відправці заявки" }));
       }
 
       setSuccess(true);
       setFormData({
         email: "",
+        name: "",
+        phone: "",
+        category_id: "",
         stoir_number: "",
         about_short: "",
         terms_accepted: false,
       });
       setPhotoFile(null);
+      setProofFile(null);
       if (photoInputRef.current) photoInputRef.current.value = "";
+      if (proofInputRef.current) proofInputRef.current.value = "";
       setFieldErrors({});
     } catch (err: unknown) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : t(dict, "application.errors.submitFailed", {
-              defaultValue: "Помилка при відправці заявки",
-            })
-      );
+      setError(err instanceof Error ? err.message : t(dict, "application.errors.submitFailed", { defaultValue: "Помилка при відправці заявки" }));
     } finally {
       setLoading(false);
     }
@@ -239,9 +269,58 @@ export default function SpecialistApplicationForm({
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              {t(dict, "application.stoirNumber", {
-                defaultValue: "Номер стора",
-              })}
+              {t(dict, "application.name", { defaultValue: "Ім'я" })} <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Іван Петров"
+              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition ${fieldErrors.name ? "border-red-500" : "border-gray-300"}`}
+              required
+            />
+            {fieldErrors.name && <p className="mt-1 text-sm text-red-600">{fieldErrors.name}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              {t(dict, "application.phone", { defaultValue: "Телефон" })} <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="+49 123 456789"
+              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition ${fieldErrors.phone ? "border-red-500" : "border-gray-300"}`}
+              required
+            />
+            {fieldErrors.phone && <p className="mt-1 text-sm text-red-600">{fieldErrors.phone}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              {t(dict, "application.category", { defaultValue: "Категорія" })} <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="category_id"
+              value={formData.category_id}
+              onChange={handleChange}
+              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition ${fieldErrors.category_id ? "border-red-500" : "border-gray-300"}`}
+              required
+            >
+              <option value="">{t(dict, "application.categoryPlaceholder", { defaultValue: "Оберіть категорію" })}</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>{cat.title || cat.slug}</option>
+              ))}
+            </select>
+            {fieldErrors.category_id && <p className="mt-1 text-sm text-red-600">{fieldErrors.category_id}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              {t(dict, "application.stoirNumber", { defaultValue: "Номер стора" })}
             </label>
             <input
               type="text"
@@ -271,6 +350,22 @@ export default function SpecialistApplicationForm({
               onChange={handlePhotoChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              {t(dict, "application.proof", { defaultValue: "Документ підтвердження (PDF або зображення)" })} <span className="text-red-500">*</span>
+            </label>
+            <input
+              ref={proofInputRef}
+              type="file"
+              accept=".pdf,image/jpeg,image/jpg,image/png,image/webp"
+              onChange={handleProofChange}
+              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition ${fieldErrors.proof ? "border-red-500" : "border-gray-300"}`}
+              required
+            />
+            {proofFile && <p className="mt-1 text-sm text-gray-500">Обрано: {proofFile.name}</p>}
+            {fieldErrors.proof && <p className="mt-1 text-sm text-red-600">{fieldErrors.proof}</p>}
           </div>
 
           <div>
