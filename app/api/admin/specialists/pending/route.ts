@@ -16,25 +16,42 @@ export async function GET(request: NextRequest) {
 
     const supabase = createSupabaseServerClient();
 
+    const cols = 'id, email, name, phone, category_id, stoir_number, about_short, proof_link, created_at, status, rejection_reason, rejected_at';
     let query = supabase
       .from('specialist_applications')
-      .select('*')
+      .select(cols)
       .eq('status', status);
 
-    // For pending_review, only show applications with confirmed email
     if (status === 'pending_review') {
       query = query.not('email_confirmed_at', 'is', null);
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false });
+    const { data: rows, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
-      console.error('[admin] Error fetching pending specialists:', error);
+      console.error('[admin] Error fetching applications:', error);
       return NextResponse.json(
-        { error: 'Failed to fetch specialists' },
+        { error: 'Failed to fetch applications' },
         { status: 500, headers: { 'Cache-Control': 'no-store' } }
       );
     }
+
+    const categoryIds = Array.from(new Set((rows || []).map((r: { category_id?: string | null }) => r.category_id).filter(Boolean))) as string[];
+    let categoryMap: Record<string, string> = {};
+    if (categoryIds.length > 0) {
+      const { data: cats } = await supabase
+        .from('categories')
+        .select('id, title, slug')
+        .in('id', categoryIds);
+      (cats || []).forEach((c: { id: string; title?: string; slug?: string }) => {
+        categoryMap[c.id] = c.title || c.slug || c.id;
+      });
+    }
+
+    const data = (rows || []).map((row: { category_id?: string | null; [k: string]: unknown }) => ({
+      ...row,
+      category: row.category_id ? (categoryMap[row.category_id] ?? row.category_id) : null,
+    }));
 
     return NextResponse.json(
       { data },

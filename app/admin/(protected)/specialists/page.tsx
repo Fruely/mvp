@@ -2,18 +2,22 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 
-type Specialist = {
+type Application = {
   id: string;
+  email: string | null;
   name: string | null;
+  phone: string | null;
   category: string | null;
-  languages: string | null;
+  stoir_number: string | null;
+  about_short: string | null;
+  proof_link: string | null;
   created_at: string | null;
   status: string | null;
   rejection_reason?: string | null;
   rejected_at?: string | null;
 };
 
-type ApiResponse = { data: Specialist[] } | { error: string };
+type ApiResponse = { data: Application[] } | { error: string };
 
 type UpdateResponse = { success: true; updated: unknown } | { error: string };
 
@@ -31,19 +35,13 @@ export default function AdminSpecialistsPage() {
   const [token, setToken] = useState<string | null>(null);
   const [tokenInput, setTokenInput] = useState("");
 
-  const [data, setData] = useState<Specialist[]>([]);
+  const [data, setData] = useState<Application[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [updatingById, setUpdatingById] = useState<Record<string, boolean>>(
-    {}
-  );
-  const [toast, setToast] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
-  const [expandedRejectionId, setExpandedRejectionId] = useState<
-    string | null
-  >(null);
+  const [updatingById, setUpdatingById] = useState<Record<string, boolean>>({});
+  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [expandedRejectionId, setExpandedRejectionId] = useState<string | null>(null);
+  const [rejectModal, setRejectModal] = useState<{ id: string; reason: string } | null>(null);
   const [activeStatus, setActiveStatus] = useState<StatusTab>("pending");
   const [pendingCount, setPendingCount] = useState<number>(0);
 
@@ -119,7 +117,7 @@ export default function AdminSpecialistsPage() {
         const message =
           "error" in json && typeof json.error === "string"
             ? json.error
-            : "Не удалось загрузить специалистов";
+            : "Не удалось загрузить заявки";
         setError(message);
         return;
       }
@@ -134,7 +132,7 @@ export default function AdminSpecialistsPage() {
 
       setError("Некорректный ответ API");
     } catch (e: any) {
-      setError(e?.message || "Ошибка сети при загрузке специалистов");
+      setError(e?.message || "Ошибка сети при загрузке заявок");
     } finally {
       setLoading(false);
     }
@@ -142,17 +140,23 @@ export default function AdminSpecialistsPage() {
 
   async function updateSpecialistStatus(
     id: string,
-    status: "approved" | "rejected"
+    status: "approved" | "rejected",
+    rejection_reason?: string
   ) {
     const activeToken = token || localStorage.getItem(TOKEN_STORAGE_KEY);
     if (!activeToken || !activeToken.trim()) {
-      setError("Введите токен, чтобы менять статус специалистов.");
+      setError("Введите токен, чтобы менять статус заявок.");
+      return;
+    }
+    if (status === "rejected" && (!rejection_reason || !rejection_reason.trim())) {
+      setToast({ type: "error", message: "Укажите причину отклонения." });
       return;
     }
 
     setUpdatingById((prev) => ({ ...prev, [id]: true }));
     setError(null);
     setToast(null);
+    setRejectModal(null);
 
     try {
       const res = await fetch("/api/admin/specialists/update", {
@@ -161,7 +165,7 @@ export default function AdminSpecialistsPage() {
           "x-admin-token": activeToken,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id, status }),
+        body: JSON.stringify({ id, status, rejection_reason: status === "rejected" ? rejection_reason?.trim() : undefined }),
       });
 
       const json = (await res.json()) as UpdateResponse;
@@ -182,17 +186,16 @@ export default function AdminSpecialistsPage() {
         const errorMessage =
           "error" in json && typeof json.error === "string"
             ? json.error
-            : "Не удалось обновить статус специалиста";
+            : "Не удалось обновить статус заявки";
         setToast({ type: "error", message: errorMessage });
         return;
       }
 
-      setData((prev) => prev.filter((specialist) => specialist.id !== id));
+      setData((prev) => prev.filter((app) => app.id !== id));
       setPendingCount((prev) => Math.max(0, prev - 1));
       setToast({
         type: "success",
-        message:
-          status === "approved" ? "Specialist approved" : "Specialist rejected",
+        message: status === "approved" ? "Заявка одобрена" : "Заявка отклонена",
       });
     } catch (e: any) {
       setToast({
@@ -248,10 +251,10 @@ export default function AdminSpecialistsPage() {
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              Специалисты
+              Заявки специалистов
             </h1>
             <p className="text-sm text-gray-600">
-              Просмотр и одобрение/отклонение заявок специалистов (admin-only)
+              Модерация заявок: одобрение / отклонение с указанием причины (admin-only)
             </p>
           </div>
 
@@ -361,126 +364,145 @@ export default function AdminSpecialistsPage() {
           </div>
         )}
 
+        {rejectModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-md rounded-lg bg-white p-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Причина отклонения</h3>
+              <textarea
+                value={rejectModal.reason}
+                onChange={(e) => setRejectModal((prev) => prev ? { ...prev, reason: e.target.value } : null)}
+                placeholder="Укажите причину отклонения заявки (обязательно)"
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mb-4"
+                autoFocus
+              />
+              <div className="flex gap-2 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setRejectModal(null)}
+                  className="px-3 py-2 rounded-md border border-gray-300 text-sm hover:bg-gray-50"
+                >
+                  Отмена
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (rejectModal.reason.trim()) {
+                      updateSpecialistStatus(rejectModal.id, "rejected", rejectModal.reason);
+                    } else {
+                      setToast({ type: "error", message: "Укажите причину отклонения." });
+                    }
+                  }}
+                  disabled={!rejectModal.reason.trim() || !!updatingById[rejectModal.id]}
+                  className="px-3 py-2 rounded-md bg-red-600 text-white text-sm font-semibold hover:bg-red-700 disabled:opacity-50"
+                >
+                  {updatingById[rejectModal.id] ? "…" : "Отклонить"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="overflow-x-auto border border-gray-200 rounded-lg">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
               <tr className="text-left text-gray-700">
-                <th className="px-3 py-2 border-b">Created at</th>
-                <th className="px-3 py-2 border-b">Name</th>
-                <th className="px-3 py-2 border-b">Category</th>
-                <th className="px-3 py-2 border-b">Languages</th>
-                <th className="px-3 py-2 border-b">Actions</th>
+                <th className="px-3 py-2 border-b">Дата</th>
+                <th className="px-3 py-2 border-b">Email</th>
+                <th className="px-3 py-2 border-b">Имя</th>
+                <th className="px-3 py-2 border-b">Телефон</th>
+                <th className="px-3 py-2 border-b">Категория</th>
+                <th className="px-3 py-2 border-b">Стоир</th>
+                <th className="px-3 py-2 border-b">Документ</th>
+                <th className="px-3 py-2 border-b">О себе</th>
+                <th className="px-3 py-2 border-b">Действия</th>
               </tr>
             </thead>
             <tbody>
               {data.length === 0 ? (
                 <tr>
-                  <td className="px-3 py-4 text-gray-600" colSpan={5}>
+                  <td className="px-3 py-4 text-gray-600" colSpan={9}>
                     {hasToken
                       ? activeStatus === "pending"
-                        ? "Нет ожидающих специалистов (или не удалось загрузить)."
-                        : `Нет специалистов со статусом ${STATUS_TABS.find((t) => t.value === activeStatus)?.label ?? activeStatus}.`
-                      : "Введите токен, чтобы загрузить специалистов."}
+                        ? "Нет заявок на модерацию (или не удалось загрузить)."
+                        : `Нет заявок со статусом ${STATUS_TABS.find((t) => t.value === activeStatus)?.label ?? activeStatus}.`
+                      : "Введите токен, чтобы загрузить заявки."}
                   </td>
                 </tr>
               ) : (
-                data.map((specialist) => {
-                  const createdAt = specialist.created_at
-                    ? new Date(specialist.created_at).toLocaleString("ru-RU")
-                    : "—";
-                  const isUpdating = !!updatingById[specialist.id];
-                  const isRejected = specialist.status === "rejected";
-                  const isExpanded =
-                    expandedRejectionId === specialist.id && isRejected;
+                data.map((app) => {
+                  const createdAt = app.created_at ? new Date(app.created_at).toLocaleString("ru-RU") : "—";
+                  const isUpdating = !!updatingById[app.id];
+                  const isRejected = app.status === "rejected";
+                  const isExpanded = expandedRejectionId === app.id && isRejected;
 
                   return (
-                    <React.Fragment key={specialist.id}>
+                    <React.Fragment key={app.id}>
                       <tr className="align-top">
-                        <td className="px-3 py-2 border-b whitespace-nowrap">
-                          {createdAt}
-                        </td>
-                        <td className="px-3 py-2 border-b font-medium text-gray-900">
-                          {specialist.name || "—"}
-                        </td>
+                        <td className="px-3 py-2 border-b whitespace-nowrap">{createdAt}</td>
+                        <td className="px-3 py-2 border-b">{app.email || "—"}</td>
+                        <td className="px-3 py-2 border-b font-medium text-gray-900">{app.name || "—"}</td>
+                        <td className="px-3 py-2 border-b">{app.phone || "—"}</td>
+                        <td className="px-3 py-2 border-b">{app.category || "—"}</td>
+                        <td className="px-3 py-2 border-b">{app.stoir_number || "—"}</td>
                         <td className="px-3 py-2 border-b">
-                          {specialist.category || "—"}
+                          {app.proof_link ? (
+                            <a href={app.proof_link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                              Открыть
+                            </a>
+                          ) : (
+                            "—"
+                          )}
                         </td>
-                        <td className="px-3 py-2 border-b">
-                          {specialist.languages || "—"}
+                        <td className="px-3 py-2 border-b max-w-[200px] truncate" title={app.about_short || ""}>
+                          {app.about_short || "—"}
                         </td>
                         <td className="px-3 py-2 border-b">
                           <div className="flex flex-wrap items-center gap-2">
                             {isRejected && (
                               <button
                                 type="button"
-                                onClick={() =>
-                                  setExpandedRejectionId((prev) =>
-                                    prev === specialist.id
-                                      ? null
-                                      : specialist.id
-                                  )
-                                }
+                                onClick={() => setExpandedRejectionId((prev) => (prev === app.id ? null : app.id))}
                                 className="text-xs font-medium text-gray-600 underline hover:text-gray-900"
                               >
-                                {isExpanded ? "Hide reason" : "View reason"}
+                                {isExpanded ? "Скрыть причину" : "Причина"}
                               </button>
                             )}
                             {activeStatus === "pending" && (
                               <>
                                 <button
                                   type="button"
-                                  onClick={() =>
-                                    updateSpecialistStatus(
-                                      specialist.id,
-                                      "approved"
-                                    )
-                                  }
+                                  onClick={() => updateSpecialistStatus(app.id, "approved")}
                                   disabled={isUpdating || !hasToken}
                                   className="px-3 py-1 rounded-md bg-green-600 text-white text-xs font-semibold hover:bg-green-700 disabled:opacity-50"
                                 >
-                                  {isUpdating ? "…" : "Approve"}
+                                  {isUpdating ? "…" : "Одобрить"}
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() =>
-                                    updateSpecialistStatus(
-                                      specialist.id,
-                                      "rejected"
-                                    )
-                                  }
+                                  onClick={() => setRejectModal({ id: app.id, reason: "" })}
                                   disabled={isUpdating || !hasToken}
                                   className="px-3 py-1 rounded-md bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50"
                                 >
-                                  {isUpdating ? "…" : "Reject"}
+                                  Отклонить
                                 </button>
                               </>
                             )}
-                            {activeStatus !== "pending" &&
-                              !isRejected &&
-                              "—"}
+                            {activeStatus !== "pending" && !isRejected && "—"}
                           </div>
                         </td>
                       </tr>
                       {isExpanded && (
                         <tr>
-                          <td
-                            colSpan={5}
-                            className="border-b bg-gray-50 px-3 py-2 text-xs text-gray-600"
-                          >
+                          <td colSpan={9} className="border-b bg-gray-50 px-3 py-2 text-xs text-gray-600">
                             <div className="space-y-1">
                               <div>
-                                <span className="font-medium text-gray-700">
-                                  Rejected at:{" "}
-                                </span>
-                                {formatDateTime(specialist.rejected_at)}
+                                <span className="font-medium text-gray-700">Отклонено: </span>
+                                {formatDateTime(app.rejected_at)}
                               </div>
                               <div>
-                                <span className="font-medium text-gray-700">
-                                  Reason:{" "}
-                                </span>
-                                <span className="whitespace-pre-wrap">
-                                  {specialist.rejection_reason?.trim() || "—"}
-                                </span>
+                                <span className="font-medium text-gray-700">Причина: </span>
+                                <span className="whitespace-pre-wrap">{app.rejection_reason?.trim() || "—"}</span>
                               </div>
                             </div>
                           </td>
