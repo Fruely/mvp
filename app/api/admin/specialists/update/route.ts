@@ -21,54 +21,95 @@ export async function POST(request: NextRequest) {
 
     const supabase = createSupabaseServerClient();
 
-    const { data: current } = await supabase
-      .from('specialists')
+    // Find application in specialist_applications
+    const { data: application, error: fetchError } = await supabase
+      .from('specialist_applications')
       .select('*')
       .eq('id', id)
       .maybeSingle();
 
-    if (!current) {
+    if (fetchError || !application) {
       return NextResponse.json(
-        { error: 'Specialist not found' },
+        { error: 'Application not found' },
         { status: 404, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
-    const currentStatus = (current as { status?: string }).status;
+    const currentStatus = (application as { status?: string }).status;
     if (currentStatus === status) {
       return NextResponse.json(
-        { success: true, updated: current },
+        { success: true, updated: application },
         { status: 200, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
     const updateData: Record<string, any> = {
       status,
-      is_approved: status === 'approved',
     };
 
-    if (status === 'approved') {
-      const now = new Date();
-      const expiresAt = new Date(now.getTime() + 48 * 60 * 60 * 1000);
-      const claimToken = crypto.randomUUID();
-      updateData.approved_at = now.toISOString();
-      updateData.is_visible = true;
-      updateData.claim_token = claimToken;
-      updateData.claim_token_created_at = now.toISOString();
-      updateData.claim_token_expires_at = expiresAt.toISOString();
-      updateData.claim_token_used_at = null;
-    } else if (status === 'rejected') {
+    if (status === 'rejected') {
       updateData.rejected_at = new Date().toISOString();
       if (rejection_reason) {
         updateData.rejection_reason = rejection_reason;
       }
     }
 
+    // Update application status
     const { error, data } = await supabase
-      .from('specialists')
+      .from('specialist_applications')
       .update(updateData)
       .eq('id', id)
       .select();
+
+    let specialistRow: any = null;
+
+    // If approved, create specialist record
+    if (status === 'approved') {
+      const app = application as {
+        email: string;
+        stoir_number?: string | null;
+        about_short?: string | null;
+        avatar_url?: string | null;
+        terms_accepted_at?: string | null;
+        terms_version?: string | null;
+      };
+
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+      const claimToken = crypto.randomUUID();
+
+      // Create specialist record
+      const { data: newSpecialist, error: createError } = await supabase
+        .from('specialists')
+        .insert({
+          email: app.email,
+          first_name: null, // Will be filled later
+          phone: null,
+          bio: app.about_short || null,
+          avatar_url: app.avatar_url || null,
+          stoir_number: app.stoir_number || null,
+          status: 'approved',
+          approved_at: now.toISOString(),
+          claim_token: claimToken,
+          claim_token_created_at: now.toISOString(),
+          claim_token_expires_at: expiresAt.toISOString(),
+          claim_token_used_at: null,
+          terms_accepted_at: app.terms_accepted_at || null,
+          terms_version: app.terms_version || '1.0',
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        console.error('[admin] Failed to create specialist:', createError);
+        return NextResponse.json(
+          { error: 'Failed to create specialist record' },
+          { status: 500, headers: { 'Cache-Control': 'no-store' } }
+        );
+      }
+
+      specialistRow = newSpecialist;
+    }
 
     if (error) {
       console.error('[admin] Error updating specialist:', error);
@@ -85,24 +126,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const specialistRow = data[0] as {
-      id?: string;
+    const applicationRow = data[0] as {
       email?: string | null;
-      claim_token?: string | null;
     };
-    const specialistEmail = specialistRow?.email && String(specialistRow.email).trim();
+    const specialistEmail = applicationRow?.email && String(applicationRow.email).trim();
     if (specialistEmail) {
       try {
-        if (status === 'approved') {
+        if (status === 'approved' && specialistRow) {
           const baseUrl =
-            process.env.NEXT_PUBLIC_SITE_URL ||
-            process.env.VERCEL_URL ||
-            (request.url ? new URL(request.url).origin : 'https://freuly.de');
-          const claimToken = specialistRow?.claim_token;
+            process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
+            (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://freuly.de');
+          const claimToken = specialistRow.claim_token;
           const claimUrl = claimToken
             ? `${baseUrl}/specialist/claim?token=${encodeURIComponent(claimToken)}`
             : `${baseUrl}/specialist/dashboard`;
-          const profileUrl = `${baseUrl}/ua/specialist/${id}`;
+          const profileUrl = `${baseUrl}/ua/specialist/${specialistRow.id}`;
           await sendEmail({
             to: specialistEmail,
             subject: 'Ваша заявка одобрена — доступ к кабинету Freuly',
@@ -117,11 +155,16 @@ export async function POST(request: NextRequest) {
         } else if (status === 'rejected') {
           const reason = rejection_reason
             ? String(rejection_reason).trim()
-            : 'No reason provided.';
+            : 'Причина не указана.';
           await sendEmail({
             to: specialistEmail,
-            subject: 'Your profile was not approved',
-            html: `Your specialist profile was not approved.<br><br>Rejection reason:<br>${reason}`,
+            subject: 'Ваша заявка не одобрена — Freuly',
+            html: `<div style="font-family: Arial, sans-serif; max-width: 600px;">
+  <h2>Заявка не одобрена</h2>
+  <p>К сожалению, ваша заявка на платформе Freuly не была одобрена.</p>
+  <p><strong>Причина:</strong> ${reason}</p>
+  <p>Если у вас есть вопросы, напишите на <a href="mailto:info@freuly.de">info@freuly.de</a></p>
+</div>`,
           });
         }
       } catch (emailErr: unknown) {

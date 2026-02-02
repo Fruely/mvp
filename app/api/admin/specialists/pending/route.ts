@@ -12,15 +12,21 @@ export async function GET(request: NextRequest) {
     const status =
       statusParam === 'approved' || statusParam === 'rejected'
         ? statusParam
-        : 'pending';
+        : 'pending_review';
 
     const supabase = createSupabaseServerClient();
 
-    const { data, error } = await supabase
-      .from('specialists')
+    let query = supabase
+      .from('specialist_applications')
       .select('*')
-      .eq('status', status)
-      .order('created_at', { ascending: false });
+      .eq('status', status);
+
+    // For pending_review, only show applications with confirmed email
+    if (status === 'pending_review') {
+      query = query.not('email_confirmed_at', 'is', null);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('[admin] Error fetching pending specialists:', error);
