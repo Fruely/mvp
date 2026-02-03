@@ -19,7 +19,9 @@ type Application = {
 
 type ApiResponse = { data: Application[] } | { error: string };
 
-type UpdateResponse = { success: true; updated: unknown } | { error: string };
+type UpdateResponse =
+  | { success: true; updated: unknown; email_sent?: boolean; email_error?: string; claim_url?: string }
+  | { error: string };
 
 const TOKEN_STORAGE_KEY = "ADMIN_API_TOKEN";
 
@@ -193,10 +195,22 @@ export default function AdminSpecialistsPage() {
 
       setData((prev) => prev.filter((app) => app.id !== id));
       setPendingCount((prev) => Math.max(0, prev - 1));
-      setToast({
-        type: "success",
-        message: status === "approved" ? "Заявка одобрена" : "Заявка отклонена",
-      });
+      if (status === "approved" && "email_sent" in json && json.email_sent === false) {
+        const claimUrl = "claim_url" in json ? json.claim_url : "";
+        const err = "email_error" in json ? json.email_error : "";
+        if (claimUrl && typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(claimUrl).catch(() => {});
+        }
+        setToast({
+          type: "error",
+          message: `Заявка одобрена. Письмо не отправлено${err ? `: ${err}` : ""}. Ссылка для входа скопирована в буфер — отправьте специалисту вручную.`,
+        });
+      } else {
+        setToast({
+          type: "success",
+          message: status === "approved" ? "Заявка одобрена" : "Заявка отклонена",
+        });
+      }
     } catch (e: any) {
       setToast({
         type: "error",

@@ -32,10 +32,15 @@ export async function sendEmail({
 }) {
   const resend = getResend();
   const from = getMailFrom();
-  return resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from,
     to,
     subject,
     html,
   });
+  if (error) {
+    console.error("[email] Resend error:", error);
+    throw new Error(error.message ?? "Failed to send email");
+  }
+  return data;
 }

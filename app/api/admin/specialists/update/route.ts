@@ -176,13 +176,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const baseUrl =
+      process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://freuly.de');
+    const claimUrl = `${baseUrl}/specialist/claim?token=${encodeURIComponent(claimToken)}`;
+
+    let email_sent = false;
+    let email_error: string | undefined;
     const specialistEmail = app.email && String(app.email).trim();
     if (specialistEmail) {
       try {
-        const baseUrl =
-          process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
-          (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://freuly.de');
-        const claimUrl = `${baseUrl}/specialist/claim?token=${encodeURIComponent(claimToken)}`;
         await sendEmail({
           to: specialistEmail,
           subject: 'Ваша заявка одобрена — доступ к кабинету Freuly',
@@ -193,13 +196,22 @@ export async function POST(request: NextRequest) {
   <p style="color: #666; font-size: 14px;">Ссылка действует 48 часов. После первого входа она станет недействительной.</p>
 </div>`,
         });
+        email_sent = true;
       } catch (emailErr: unknown) {
+        email_error = emailErr instanceof Error ? emailErr.message : String(emailErr);
         console.error('[admin] Approve email failed', emailErr);
       }
     }
 
     return NextResponse.json(
-      { success: true, updated: { ...application, status: 'approved' }, specialist: newSpecialist },
+      {
+        success: true,
+        updated: { ...application, status: 'approved' },
+        specialist: newSpecialist,
+        email_sent,
+        ...(email_error !== undefined && { email_error }),
+        claim_url: claimUrl,
+      },
       { status: 200, headers: { 'Cache-Control': 'no-store' } }
     );
   } catch (error: unknown) {
