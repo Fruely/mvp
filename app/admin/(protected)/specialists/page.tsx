@@ -47,6 +47,7 @@ export default function AdminSpecialistsPage() {
   const [rejectModal, setRejectModal] = useState<{ id: string; reason: string } | null>(null);
   const [activeStatus, setActiveStatus] = useState<StatusTab>("pending");
   const [pendingCount, setPendingCount] = useState<number>(0);
+  const [lastClaimUrl, setLastClaimUrl] = useState<string | null>(null);
 
   const hasToken = useMemo(() => !!token && token.trim().length > 0, [token]);
 
