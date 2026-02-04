@@ -198,8 +198,9 @@ export default function AdminSpecialistsPage() {
 
       setData((prev) => prev.filter((app) => app.id !== id));
       setPendingCount((prev) => Math.max(0, prev - 1));
+      const claimUrl = status === "approved" && "claim_url" in json && typeof json.claim_url === "string" ? json.claim_url : "";
+      if (claimUrl) setLastClaimUrl(claimUrl);
       if (status === "approved" && "email_sent" in json && json.email_sent === false) {
-        const claimUrl = "claim_url" in json ? json.claim_url : "";
         const err = "email_error" in json ? json.email_error : "";
         if (claimUrl && typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
           navigator.clipboard.writeText(claimUrl).catch(() => {});
