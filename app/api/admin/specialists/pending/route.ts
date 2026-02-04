@@ -53,8 +53,9 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // For approved applications, attach claim_url based on specialists.claim_token
+    // For approved applications, attach claim_url and claim_token_used_at based on specialists
     let claimMap: Record<string, string> = {};
+    let claimUsedMap: Record<string, string | null> = {};
     if (status === 'approved' && rowsArray.length > 0) {
       const emails = Array.from(
         new Set(
@@ -67,13 +68,16 @@ export async function GET(request: NextRequest) {
       if (emails.length > 0) {
         const { data: specialistsRows } = await supabase
           .from('specialists')
-          .select('email, claim_token')
+          .select('email, claim_token, claim_token_used_at')
           .in('email', emails);
 
-        (specialistsRows || []).forEach((s: { email?: string | null; claim_token?: string | null }) => {
+        (specialistsRows || []).forEach((s: { email?: string | null; claim_token?: string | null; claim_token_used_at?: string | null }) => {
           const email = s.email && String(s.email).trim().toLowerCase();
-          if (email && s.claim_token) {
-            claimMap[email] = s.claim_token;
+          if (email) {
+            if (s.claim_token) {
+              claimMap[email] = s.claim_token;
+            }
+            claimUsedMap[email] = s.claim_token_used_at || null;
           }
         });
       }
@@ -93,11 +97,13 @@ export async function GET(request: NextRequest) {
         status === 'approved' && baseUrl && claimToken
           ? `${baseUrl}/specialist/claim?token=${encodeURIComponent(claimToken)}`
           : null;
+      const claim_token_used_at = status === 'approved' && email ? claimUsedMap[email] : null;
 
       return {
         ...row,
         category: row.category_id ? (categoryMap[row.category_id] ?? row.category_id) : null,
         claim_url,
+        claim_token_used_at,
       };
     });
 

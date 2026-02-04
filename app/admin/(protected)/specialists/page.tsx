@@ -16,6 +16,7 @@ type Application = {
   rejection_reason?: string | null;
   rejected_at?: string | null;
   claim_url?: string | null;
+  claim_token_used_at?: string | null;
 };
 
 type ApiResponse = { data: Application[] } | { error: string };
@@ -505,22 +506,41 @@ export default function AdminSpecialistsPage() {
                               </>
                             )}
                             {activeStatus === "approved" && !isRejected && app.claim_url && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-                                    navigator.clipboard.writeText(app.claim_url!).catch(() => {});
-                                  }
-                                  setLastClaimUrl(app.claim_url!);
-                                  setToast({
-                                    type: "success",
-                                    message: "Ссылка на кабинет скопирована в буфер обмена.",
-                                  });
-                                }}
-                                className="px-3 py-1 rounded-md border border-blue-300 text-xs font-semibold text-blue-700 hover:bg-blue-50"
-                              >
-                                Скопировать ссылку
-                              </button>
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+                                      navigator.clipboard.writeText(app.claim_url!).catch(() => {});
+                                    }
+                                    setLastClaimUrl(app.claim_url!);
+                                    setToast({
+                                      type: "success",
+                                      message: "Ссылка на кабинет скопирована в буфер обмена.",
+                                    });
+                                  }}
+                                  className="px-3 py-1 rounded-md border border-blue-300 text-xs font-semibold text-blue-700 hover:bg-blue-50"
+                                >
+                                  Скопировать ссылку
+                                </button>
+                                {app.claim_token_used_at ? (
+                                  <span className="px-3 py-1 text-xs text-gray-500">
+                                    Кабинет уже активирован
+                                  </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (app.claim_url) {
+                                        window.open(app.claim_url, "_blank");
+                                      }
+                                    }}
+                                    className="px-3 py-1 rounded-md bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
+                                  >
+                                    Открыть кабинет
+                                  </button>
+                                )}
+                              </>
                             )}
                             {activeStatus !== "pending" && !isRejected && !app.claim_url && "—"}
                           </div>
