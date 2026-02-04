@@ -10,7 +10,15 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { id, status, rejection_reason } = body;
+    // Support both legacy { id, status } and new { application_id, action } payloads.
+    let id: string | undefined = body.id ?? body.application_id;
+    let status: string | undefined = body.status;
+    const rejection_reason: string | undefined = body.rejection_reason;
+
+    if (!status && typeof body.action === 'string') {
+      if (body.action === 'approve') status = 'approved';
+      if (body.action === 'reject') status = 'rejected';
+    }
 
     if (!id || !status || !['approved', 'rejected'].includes(status)) {
       return NextResponse.json(
@@ -163,15 +171,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { error: updateError } = await supabase
+    // Explicitly update application status to 'approved' after successful specialist creation
+    const { error: updateError, data: updatedApplication } = await supabase
       .from('specialist_applications')
       .update({ status: 'approved' })
-      .eq('id', id);
+      .eq('id', id)
+      .select()
+      .single();
 
     if (updateError) {
       console.error('[admin] Application status update failed after specialist created', updateError);
       return NextResponse.json(
         { error: 'Specialist created but application status update failed' },
+        { status: 500, headers: { 'Cache-Control': 'no-store' } }
+      );
+    }
+
+    // Verify the update succeeded
+    if (!updatedApplication || updatedApplication.status !== 'approved') {
+      console.error('[admin] Application status update verification failed', { id, updatedApplication });
+      return NextResponse.json(
+        { error: 'Application status update did not persist correctly' },
         { status: 500, headers: { 'Cache-Control': 'no-store' } }
       );
     }
