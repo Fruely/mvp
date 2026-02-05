@@ -486,7 +486,7 @@ export default function AdminSpecialistsPage() {
                                 {isExpanded ? "Скрыть причину" : "Причина"}
                               </button>
                             )}
-                            {activeStatus === "pending" && (
+                            {activeStatus === "pending" && app.status != null && ["pending", "pending_review"].includes(app.status) && (
                               <>
                                 <button
                                   type="button"
