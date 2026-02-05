@@ -27,10 +27,10 @@ type UpdateResponse =
 
 const TOKEN_STORAGE_KEY = "ADMIN_API_TOKEN";
 
-type StatusTab = "pending" | "approved" | "rejected";
+type StatusTab = "pending_review" | "approved" | "rejected";
 
 const STATUS_TABS: { value: StatusTab; label: string }[] = [
-  { value: "pending", label: "Pending" },
+  { value: "pending_review", label: "Pending" },
   { value: "approved", label: "Approved" },
   { value: "rejected", label: "Rejected" },
 ];
@@ -46,7 +46,7 @@ export default function AdminSpecialistsPage() {
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [expandedRejectionId, setExpandedRejectionId] = useState<string | null>(null);
   const [rejectModal, setRejectModal] = useState<{ id: string; reason: string } | null>(null);
-  const [activeStatus, setActiveStatus] = useState<StatusTab>("pending");
+  const [activeStatus, setActiveStatus] = useState<StatusTab>("pending_review");
   const [pendingCount, setPendingCount] = useState<number>(0);
   const [lastClaimUrl, setLastClaimUrl] = useState<string | null>(null);
 
@@ -129,7 +129,7 @@ export default function AdminSpecialistsPage() {
 
       if ("data" in json && Array.isArray(json.data)) {
         setData(json.data);
-        if (statusFilter === "pending") {
+        if (statusFilter === "pending_review") {
           setPendingCount(json.data.length);
         }
         return;
@@ -318,7 +318,7 @@ export default function AdminSpecialistsPage() {
                 }`}
               >
                 {tab.label}
-                {tab.value === "pending" && pendingCount > 0 && (
+                {tab.value === "pending_review" && pendingCount > 0 && (
                   <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
                     {pendingCount}
                   </span>
@@ -441,7 +441,7 @@ export default function AdminSpecialistsPage() {
                 <tr>
                   <td className="px-3 py-4 text-gray-600" colSpan={9}>
                     {hasToken
-                      ? activeStatus === "pending"
+                      ? activeStatus === "pending_review"
                         ? "Нет заявок на модерацию (или не удалось загрузить)."
                         : `Нет заявок со статусом ${STATUS_TABS.find((t) => t.value === activeStatus)?.label ?? activeStatus}.`
                       : "Введите токен, чтобы загрузить заявки."}
@@ -486,7 +486,7 @@ export default function AdminSpecialistsPage() {
                                 {isExpanded ? "Скрыть причину" : "Причина"}
                               </button>
                             )}
-                            {activeStatus === "pending" && app.status != null && ["pending", "pending_review"].includes(app.status) && (
+                            {activeStatus === "pending_review" && app.status != null && ["pending", "pending_review"].includes(app.status) && (
                               <>
                                 <button
                                   type="button"
@@ -543,7 +543,7 @@ export default function AdminSpecialistsPage() {
                                 )}
                               </>
                             )}
-                            {activeStatus !== "pending" && !isRejected && !app.claim_url && "—"}
+                            {activeStatus !== "pending_review" && !isRejected && !app.claim_url && "—"}
                           </div>
                         </td>
                       </tr>
