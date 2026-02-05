@@ -492,7 +492,7 @@ export default function AdminSpecialistsPage() {
                                   type="button"
                                   onClick={() => updateSpecialistStatus(app.id, "approved")}
                                   disabled={isUpdating}
-                                  className="px-3 py-1 rounded-md bg-green-600 text-white text-xs font-semibold hover:bg-green-700 disabled:opacity-50"
+                                  className="inline-flex items-center justify-center rounded-md bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   {isUpdating ? "…" : "Одобрить"}
                                 </button>
