@@ -51,11 +51,16 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
     process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://freuly.de");
   const redirectTo = `${baseUrl}/specialist/dashboard`;
+  const emailRedirectTo =
+    process.env.NEXT_PUBLIC_SITE_URL != null
+      ? `${process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "")}/specialist/dashboard`
+      : redirectTo;
 
+  console.log("MAGIC LINK redirect to:", process.env.NEXT_PUBLIC_SITE_URL);
   const first = await supabase.auth.admin.generateLink({
     type: "magiclink",
     email,
-    options: { redirectTo },
+    options: { redirectTo, emailRedirectTo },
   });
 
   if (first.error && /user.*not.*found|not found/i.test(first.error.message ?? "")) {
@@ -63,10 +68,11 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
       email,
       email_confirm: true,
     });
+    console.log("MAGIC LINK redirect to:", process.env.NEXT_PUBLIC_SITE_URL);
     const second = await supabase.auth.admin.generateLink({
       type: "magiclink",
       email,
-      options: { redirectTo },
+      options: { redirectTo, emailRedirectTo },
     });
 
     if (second.error || !second.data?.properties?.action_link) {
