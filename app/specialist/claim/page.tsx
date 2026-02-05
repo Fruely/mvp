@@ -3,8 +3,6 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-const HTML_ERROR = `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Ссылка недействительна</title></head><body style="font-family: system-ui, sans-serif; max-width: 560px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5;"><p>Ссылка недействительна или устарела.</p><p>Вы можете запросить новую ссылку, написав на <a href="mailto:info@freuly.de">info@freuly.de</a>.</p></body></html>`;
-
 type Props = { searchParams: Promise<{ token?: string }> };
 
 export default async function SpecialistClaimPage({ searchParams }: Props) {
@@ -12,10 +10,7 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
   const token = params.token?.trim();
 
   if (!token) {
-    return new Response(HTML_ERROR, {
-      status: 400,
-      headers: { "Content-Type": "text/html; charset=utf-8" },
-    });
+    redirect("/specialist/claim/invalid");
   }
 
   const supabase = createSupabaseServerClient();
@@ -29,10 +24,7 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
 
   if (fetchError || !specialist) {
     console.error("[specialist/claim] fetch failed or not found", fetchError);
-    return new Response(HTML_ERROR, {
-      status: 400,
-      headers: { "Content-Type": "text/html; charset=utf-8" },
-    });
+    redirect("/specialist/claim/invalid");
   }
 
   const row = specialist as {
@@ -43,25 +35,16 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
   };
 
   if (row.claim_token_used_at) {
-    return new Response(HTML_ERROR, {
-      status: 400,
-      headers: { "Content-Type": "text/html; charset=utf-8" },
-    });
+    redirect("/specialist/claim/invalid");
   }
 
   if (!row.claim_token_expires_at || row.claim_token_expires_at <= now) {
-    return new Response(HTML_ERROR, {
-      status: 400,
-      headers: { "Content-Type": "text/html; charset=utf-8" },
-    });
+    redirect("/specialist/claim/invalid");
   }
 
   const email = row.email && String(row.email).trim();
   if (!email) {
-    return new Response(HTML_ERROR, {
-      status: 400,
-      headers: { "Content-Type": "text/html; charset=utf-8" },
-    });
+    redirect("/specialist/claim/invalid");
   }
 
   const baseUrl =
@@ -88,10 +71,7 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
 
     if (second.error || !second.data?.properties?.action_link) {
       console.error("[specialist/claim] generateLink failed after createUser", second.error);
-      return new Response(HTML_ERROR, {
-        status: 500,
-        headers: { "Content-Type": "text/html; charset=utf-8" },
-      });
+      redirect("/specialist/claim/invalid");
     }
 
     redirect(second.data.properties.action_link);
@@ -99,10 +79,7 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
 
   if (first.error || !first.data?.properties?.action_link) {
     console.error("[specialist/claim] generateLink failed", first.error);
-    return new Response(HTML_ERROR, {
-      status: 500,
-      headers: { "Content-Type": "text/html; charset=utf-8" },
-    });
+    redirect("/specialist/claim/invalid");
   }
 
   redirect(first.data.properties.action_link);
