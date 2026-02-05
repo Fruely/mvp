@@ -491,7 +491,7 @@ export default function AdminSpecialistsPage() {
                                 <button
                                   type="button"
                                   onClick={() => updateSpecialistStatus(app.id, "approved")}
-                                  disabled={isUpdating || !hasToken}
+                                  disabled={isUpdating}
                                   className="px-3 py-1 rounded-md bg-green-600 text-white text-xs font-semibold hover:bg-green-700 disabled:opacity-50"
                                 >
                                   {isUpdating ? "…" : "Одобрить"}
