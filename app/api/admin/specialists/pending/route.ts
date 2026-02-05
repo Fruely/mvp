@@ -17,13 +17,13 @@ export async function GET(request: NextRequest) {
     const supabase = createSupabaseServerClient();
 
     const cols = 'id, email, name, phone, category_id, stoir_number, about_short, proof_link, created_at, status, rejection_reason, rejected_at';
-    let query = supabase
-      .from('specialist_applications')
-      .select(cols)
-      .eq('status', status);
+    let query = supabase.from('specialist_applications').select(cols);
 
     if (status === 'pending_review') {
+      query = query.in('status', ['pending_review']);
       query = query.not('email_confirmed_at', 'is', null);
+    } else {
+      query = query.eq('status', status);
     }
 
     const { data: rows, error } = await query.order('created_at', { ascending: false });
