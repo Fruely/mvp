@@ -165,6 +165,12 @@ export async function POST(request: NextRequest) {
 
     if (createError) {
       console.error('[admin] Specialist insert failed', createError);
+      console.error('CREATE SPECIALIST ERROR', {
+        message: createError.message,
+        details: (createError as { details?: unknown }).details,
+        hint: (createError as { hint?: string }).hint,
+        code: (createError as { code?: string }).code,
+      });
       return NextResponse.json(
         { error: 'Failed to create specialist; application remains pending' },
         { status: 500, headers: { 'Cache-Control': 'no-store' } }
