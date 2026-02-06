@@ -9,14 +9,22 @@ export type SpecialistRow = {
   id: string;
   user_id: string | null;
   first_name: string | null;
+  name?: string | null;
   email: string | null;
   phone: string | null;
   status: string | null;
   password_set_at?: string | null;
 };
 
+function toSpecialistRow(row: Record<string, unknown> | null): SpecialistRow | null {
+  if (!row) return null;
+  const first_name = (row.name as string) ?? (row.first_name as string) ?? null;
+  return { ...row, first_name } as SpecialistRow;
+}
+
+// Table has "name"; some code expects "first_name" — we map name → first_name when returning
 const COLS =
-  "id, user_id, first_name, email, phone, status, password_set_at";
+  "id, user_id, name, email, phone, status, password_set_at";
 
 export async function getCurrentUserAndSpecialist() {
   const supabase = createSupabaseServerClient();
@@ -29,12 +37,12 @@ export async function getCurrentUserAndSpecialist() {
     redirect("/login");
   }
 
-  let specialist = await supabase
+  let specialist: SpecialistRow | null = await supabase
     .from("specialists")
     .select(COLS)
     .eq("user_id", user.id)
     .maybeSingle()
-    .then((r) => r.data);
+    .then((r) => toSpecialistRow(r.data));
 
   if (!specialist && user.email) {
     const service = createServiceClient();
@@ -45,22 +53,23 @@ export async function getCurrentUserAndSpecialist() {
       .is("user_id", null)
       .maybeSingle();
 
-    if (byEmail) {
+    const row = toSpecialistRow(byEmail);
+    if (row) {
       await service
         .from("specialists")
         .update({ user_id: user.id })
-        .eq("id", byEmail.id);
-      specialist = { ...byEmail, user_id: user.id };
+        .eq("id", row.id);
+      specialist = { ...row, user_id: user.id };
     }
   }
 
   if (!specialist) {
-    redirect("/ua");
+    redirect("/specialist/claim/invalid");
   }
 
   return {
     supabase,
     user,
-    specialist: specialist as SpecialistRow,
+    specialist,
   };
 }
