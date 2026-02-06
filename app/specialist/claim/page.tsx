@@ -9,11 +9,15 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
   const params = await searchParams;
   const token = params.token?.trim();
 
+  const supabase = createSupabaseServerClient();
+
   if (!token) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      redirect("/specialist/dashboard");
+    }
     redirect("/specialist/claim/invalid");
   }
-
-  const supabase = createSupabaseServerClient();
   const now = new Date().toISOString();
 
   const { data: specialist, error: fetchError } = await supabase
@@ -50,7 +54,7 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
   const baseUrl =
     process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://freuly.de");
-  const redirectTo = `${baseUrl}/specialist/dashboard`;
+  const redirectTo = `${baseUrl}/specialist/claim`;
 
   console.log("MAGIC LINK redirect to:", process.env.NEXT_PUBLIC_SITE_URL);
   const first = await supabase.auth.admin.generateLink({
