@@ -2,6 +2,7 @@
 
 import { useState, useTransition, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { SPECIALIST_OFFICE_PATH } from "@/lib/supabaseClient";
 
 type AccountBlockProps = {
   email: string;
