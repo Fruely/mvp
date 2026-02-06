@@ -12,7 +12,7 @@ export default async function SpecialistDashboardPage() {
   const status = specialist.status;
 
   if (status !== "approved" && status !== "paused") {
-    redirect("/ua");
+    redirect("/specialist/claim/invalid?reason=status");
   }
 
   const { data: profile } = await supabase

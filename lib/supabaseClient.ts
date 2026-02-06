@@ -1,7 +1,15 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
+/** Redirect path for the specialist office (cabinet). Used after auth so specialists land in dashboard. */
+export const SPECIALIST_OFFICE_PATH = '/specialist/dashboard';
+
 let supabaseInstance: SupabaseClient | null = null;
 
+/**
+ * In Supabase Dashboard → Authentication → URL Configuration, add to Redirect URLs:
+ * - {NEXT_PUBLIC_SITE_URL}/specialist/dashboard
+ * - {NEXT_PUBLIC_SITE_URL}/specialist/claim
+ */
 export function getSupabase(): SupabaseClient {
   if (!supabaseInstance) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -18,7 +26,7 @@ export function getSupabase(): SupabaseClient {
 
     const authOptions: any = {};
     if (siteUrl) {
-      authOptions.redirectTo = `${siteUrl}/specialist/dashboard`;
+      authOptions.redirectTo = `${siteUrl}${SPECIALIST_OFFICE_PATH}`;
       authOptions.site = siteUrl;
     }
     

@@ -4,11 +4,13 @@ import { ReactNode, useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { t } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/i18n";
+import { SPECIALIST_OFFICE_PATH } from "@/lib/supabaseClient";
 
 const fallbackDict: Dictionary = {
   "header.nav.categories": "Категорії",
   "header.nav.about": "Про нас",
   "header.nav.contacts": "Контакти",
+  "header.cabinet": "Кабінет",
   "header.joinButton": "Приєднатися до Freuly",
 };
 
@@ -80,6 +82,12 @@ export default function Header({ lang, dict = fallbackDict, children }: HeaderPr
             className="text-gray-700 hover:text-blue-600 font-medium transition hidden sm:inline"
           >
             {t(d, "header.nav.contacts")}
+          </Link>
+          <Link
+            href={SPECIALIST_OFFICE_PATH}
+            className="text-gray-700 hover:text-blue-600 font-medium transition hidden sm:inline"
+          >
+            {t(d, "header.cabinet")}
           </Link>
           <Link
             href={`/${lang}/become-specialist`}

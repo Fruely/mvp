@@ -1,6 +1,11 @@
 export const dynamic = "force-dynamic";
 
-export default function SpecialistClaimInvalidPage() {
+type Props = { searchParams: Promise<{ reason?: string }> };
+
+export default async function SpecialistClaimInvalidPage({ searchParams }: Props) {
+  const { reason } = await searchParams;
+  const isStatus = reason === "status";
+
   return (
     <div
       style={{
@@ -11,10 +16,14 @@ export default function SpecialistClaimInvalidPage() {
         lineHeight: 1.5,
       }}
     >
-      <h1>Ссылка недействительна</h1>
-      <p>Ссылка недействительна или устарела.</p>
+      <h1>{isStatus ? "Профиль ещё не одобрен" : "Ссылка недействительна"}</h1>
       <p>
-        Вы можете запросить новую ссылку, написав на{" "}
+        {isStatus
+          ? "Ваш профиль на модерации или ещё не активирован. Дождитесь одобрения или напишите в поддержку."
+          : "Ссылка недействительна или устарела."}
+      </p>
+      <p>
+        Написать в поддержку:{" "}
         <a href="mailto:info@freuly.de">info@freuly.de</a>.
       </p>
     </div>

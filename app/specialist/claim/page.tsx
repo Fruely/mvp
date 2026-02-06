@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServerClient as createAuthServerClient } from "@/lib/supabase/auth-server";
+import { SPECIALIST_OFFICE_PATH } from "@/lib/supabaseClient";
 import ClaimNoTokenHandler from "./ClaimNoTokenHandler";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +17,7 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
     const authClient = createAuthServerClient();
     const { data: { session } } = await authClient.auth.getSession();
     if (session) {
-      redirect("/specialist/dashboard");
+      redirect(SPECIALIST_OFFICE_PATH);
     }
     return <ClaimNoTokenHandler />;
   }

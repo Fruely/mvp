@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabase } from "@/lib/supabaseClient";
+import { getSupabase, SPECIALIST_OFFICE_PATH } from "@/lib/supabaseClient";
 
 /**
  * Runs in the browser when user lands on /specialist/claim without ?token=...
@@ -24,7 +24,7 @@ export default function ClaimNoTokenHandler() {
         if (handled.current) return;
         if (session) {
           handled.current = true;
-          router.replace("/specialist/dashboard");
+          router.replace(SPECIALIST_OFFICE_PATH);
         }
       });
       supabase.auth.getSession().then(({ data: { session } }) => {
@@ -32,7 +32,7 @@ export default function ClaimNoTokenHandler() {
         if (session) {
           handled.current = true;
           subscription.unsubscribe();
-          router.replace("/specialist/dashboard");
+          router.replace(SPECIALIST_OFFICE_PATH);
         }
       });
       const fallback = window.setTimeout(() => {
@@ -52,7 +52,7 @@ export default function ClaimNoTokenHandler() {
       if (handled.current) return;
       if (session) {
         handled.current = true;
-        router.replace("/specialist/dashboard");
+        router.replace(SPECIALIST_OFFICE_PATH);
       } else {
         handled.current = true;
         router.replace("/specialist/claim/invalid");
