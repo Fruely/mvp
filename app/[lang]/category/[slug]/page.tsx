@@ -18,8 +18,7 @@ interface Specialist {
 interface Category {
   id: string;
   slug: string;
-  name: string;
-  title?: string;
+  title: string;
 }
 
 export default function CategoryPage({ params }: { params: { lang: string; slug: string } }) {
@@ -134,7 +133,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
           <Link href={langPrefix} className="text-blue-600 hover:text-blue-700 font-medium mb-4 inline-block">
             {t(dict, "common.backToHome")}
           </Link>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900">{category.name || category.title}</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900">{category.title}</h1>
           <p className="text-lg text-gray-600 mt-2">{foundText}</p>
         </div>
 
