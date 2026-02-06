@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient as createAuthServerClient } from "@/lib/supabase/auth-server";
+import ClaimNoTokenHandler from "./ClaimNoTokenHandler";
 
 export const dynamic = "force-dynamic";
 
@@ -9,15 +11,17 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
   const params = await searchParams;
   const token = params.token?.trim();
 
-  const supabase = createSupabaseServerClient();
-
   if (!token) {
-    const { data: { session } } = await supabase.auth.getSession();
+    // Session check must use cookie-based client (auth-server), not service-role (server).
+    const authClient = createAuthServerClient();
+    const { data: { session } } = await authClient.auth.getSession();
     if (session) {
       redirect("/specialist/dashboard");
     }
-    redirect("/specialist/claim/invalid");
+    return <ClaimNoTokenHandler />;
   }
+
+  const supabase = createSupabaseServerClient();
   const now = new Date().toISOString();
 
   const { data: specialist, error: fetchError } = await supabase
@@ -56,7 +60,6 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://freuly.de");
   const redirectTo = `${baseUrl}/specialist/claim`;
 
-  console.log("MAGIC LINK redirect to:", process.env.NEXT_PUBLIC_SITE_URL);
   const first = await supabase.auth.admin.generateLink({
     type: "magiclink",
     email,
@@ -68,7 +71,6 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
       email,
       email_confirm: true,
     });
-    console.log("MAGIC LINK redirect to:", process.env.NEXT_PUBLIC_SITE_URL);
     const second = await supabase.auth.admin.generateLink({
       type: "magiclink",
       email,

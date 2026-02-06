@@ -15,9 +15,7 @@ export function getSupabase(): SupabaseClient {
     if (!siteUrl) {
       console.warn('[supabaseClient] NEXT_PUBLIC_SITE_URL is not set. Auth redirects may fail.');
     }
-    
-    console.log('[supabaseClient] NEXT_PUBLIC_SITE_URL:', siteUrl);
-    
+
     const authOptions: any = {};
     if (siteUrl) {
       authOptions.redirectTo = `${siteUrl}/specialist/dashboard`;
