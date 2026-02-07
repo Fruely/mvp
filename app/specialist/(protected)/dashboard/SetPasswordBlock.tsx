@@ -26,9 +26,14 @@ export default function SetPasswordBlock() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
+        credentials: "include",
       });
       const data = await res.json();
       if (!res.ok) {
+        if (res.status === 401) {
+          setError("Сессия истекла. Перейдите по ссылке из письма снова или запросите новую на info@freuly.de.");
+          return;
+        }
         setError((data.error as string) || "Не удалось установить пароль");
         return;
       }
@@ -46,7 +51,7 @@ export default function SetPasswordBlock() {
   if (success) return null;
 
   return (
-    <section className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
+    <section className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-6 shadow-sm">
       <h2 className="text-lg font-semibold text-amber-900">
         Для защиты ваших данных задайте пароль
       </h2>
@@ -54,7 +59,7 @@ export default function SetPasswordBlock() {
         После установки пароля вы сможете входить в кабинет по email и паролю.
         Ссылка из письма станет недействительной.
       </p>
-      <form onSubmit={handleSubmit} className="mt-4 max-w-sm space-y-3">
+      <form onSubmit={handleSubmit} className="mt-4 max-w-sm space-y-3" noValidate>
         <div>
           <label className="block text-sm font-medium text-gray-700">
             Пароль (мин. 8 символов)
@@ -81,14 +86,21 @@ export default function SetPasswordBlock() {
           />
         </div>
         {error && (
-          <p className="text-sm text-red-600">{error}</p>
+          <p className="text-sm text-red-600" role="alert">
+            {error}
+            {error.includes("Сессия истекла") && (
+              <span className="block mt-2">
+                <a href="/specialist/claim" className="text-blue-600 underline">Открыть страницу входа по ссылке</a>
+              </span>
+            )}
+          </p>
         )}
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+          className="mt-2 rounded-lg bg-amber-600 px-5 py-2.5 text-base font-semibold text-white shadow-sm hover:bg-amber-700 disabled:opacity-50"
         >
-          {loading ? "Сохранение…" : "Задать пароль"}
+          {loading ? "Сохранение…" : "Сохранить пароль"}
         </button>
       </form>
       <p className="mt-3 text-xs text-amber-700">
