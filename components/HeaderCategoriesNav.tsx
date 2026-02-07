@@ -53,7 +53,7 @@ export default async function HeaderCategoriesNav({ lang }: { lang: string }) {
             {group.items.map((item) => (
               <li key={item.slug}>
                 <Link
-                  href={`/${lang}/search?category=${item.slug}`}
+                  href={`/${lang}/category/${item.slug}`}
                   className="block text-sm text-gray-700 hover:text-blue-600 hover:bg-gray-50 py-1 px-2 -mx-2 rounded transition"
                 >
                   {item.title}
