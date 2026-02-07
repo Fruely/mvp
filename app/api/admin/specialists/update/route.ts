@@ -10,6 +10,99 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
+    const action: string | undefined = body.action;
+
+    // ——— RESEND CLAIM: new link for already approved specialist (no new application) ———
+    if (action === 'resend_claim') {
+      const applicationId = body.application_id ?? body.id;
+      if (!applicationId) {
+        return NextResponse.json(
+          { error: 'application_id required for resend_claim' },
+          { status: 400, headers: { 'Cache-Control': 'no-store' } }
+        );
+      }
+      const supabase = createSupabaseServerClient();
+      const { data: application, error: appErr } = await supabase
+        .from('specialist_applications')
+        .select('id, email, name, status')
+        .eq('id', applicationId)
+        .maybeSingle();
+      if (appErr || !application || application.status !== 'approved') {
+        return NextResponse.json(
+          { error: 'Approved application not found' },
+          { status: 404, headers: { 'Cache-Control': 'no-store' } }
+        );
+      }
+      const email = application.email && String(application.email).trim().toLowerCase();
+      if (!email) {
+        return NextResponse.json(
+          { error: 'Application has no email' },
+          { status: 400, headers: { 'Cache-Control': 'no-store' } }
+        );
+      }
+      const { data: specialist, error: specErr } = await supabase
+        .from('specialists')
+        .select('id, email')
+        .eq('email', email)
+        .maybeSingle();
+      if (specErr || !specialist) {
+        return NextResponse.json(
+          { error: 'Specialist not found for this application' },
+          { status: 404, headers: { 'Cache-Control': 'no-store' } }
+        );
+      }
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+      const claimToken = crypto.randomUUID();
+      const { error: updateErr } = await supabase
+        .from('specialists')
+        .update({
+          claim_token: claimToken,
+          claim_token_created_at: now.toISOString(),
+          claim_token_expires_at: expiresAt.toISOString(),
+          claim_token_used_at: null,
+        })
+        .eq('id', specialist.id);
+      if (updateErr) {
+        console.error('[admin] Resend claim update failed', updateErr);
+        return NextResponse.json(
+          { error: 'Failed to update specialist claim token' },
+          { status: 500, headers: { 'Cache-Control': 'no-store' } }
+        );
+      }
+      const baseUrl =
+        process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://freuly.de');
+      const claimUrl = `${baseUrl}/specialist/claim?token=${encodeURIComponent(claimToken)}`;
+      let email_sent = false;
+      let email_error: string | undefined;
+      try {
+        await sendEmail({
+          to: email,
+          subject: 'Новая ссылка для входа в кабинет — Freuly',
+          html: `<div style="font-family: Arial, sans-serif; max-width: 600px;">
+  <h2 style="color: #2563eb;">Новая ссылка для входа</h2>
+  <p>По вашему запросу отправлена новая ссылка для входа в кабинет специалиста Freuly.</p>
+  <p><a href="${claimUrl}" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">Войти в кабинет</a></p>
+  <p style="color: #666; font-size: 14px;">Ссылка действует 48 часов. После первого входа она станет недействительной.</p>
+</div>`,
+        });
+        email_sent = true;
+      } catch (emailErr: unknown) {
+        email_error = emailErr instanceof Error ? emailErr.message : String(emailErr);
+        console.error('[admin] Resend claim email failed', emailErr);
+      }
+      return NextResponse.json(
+        {
+          success: true,
+          claim_url: claimUrl,
+          email_sent,
+          ...(email_error !== undefined && { email_error }),
+        },
+        { status: 200, headers: { 'Cache-Control': 'no-store' } }
+      );
+    }
+
     // Support both legacy { id, status } and new { application_id, action } payloads.
     let id: string | undefined = body.id ?? body.application_id;
     let status: string | undefined = body.status;

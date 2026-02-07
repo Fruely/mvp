@@ -43,6 +43,7 @@ export default function AdminSpecialistsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updatingById, setUpdatingById] = useState<Record<string, boolean>>({});
+  const [resendingById, setResendingById] = useState<Record<string, boolean>>({});
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [expandedRejectionId, setExpandedRejectionId] = useState<string | null>(null);
   const [rejectModal, setRejectModal] = useState<{ id: string; reason: string } | null>(null);
@@ -221,11 +222,46 @@ export default function AdminSpecialistsPage() {
         message: e?.message || "Ошибка сети при обновлении статуса",
       });
     } finally {
-      setUpdatingById((prev) => {
-        const next = { ...prev };
-        delete next[id];
-        return next;
+      setUpdatingById((prev) => ({ ...prev, [id]: false }));
+    }
+  }
+
+  async function handleResendClaim(appId: string) {
+    const activeToken = token?.trim();
+    if (!activeToken) return;
+    setResendingById((prev) => ({ ...prev, [appId]: true }));
+    setToast(null);
+    try {
+      const res = await fetch("/api/admin/specialists/update", {
+        method: "POST",
+        headers: {
+          "x-admin-token": activeToken,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action: "resend_claim", application_id: appId }),
       });
+      const json = (await res.json()) as UpdateResponse & { claim_url?: string; email_sent?: boolean; email_error?: string };
+      if (!res.ok) {
+        const msg = "error" in json && typeof json.error === "string" ? json.error : "Не удалось выслать ссылку";
+        setToast({ type: "error", message: msg });
+        return;
+      }
+      const newClaimUrl = json.claim_url;
+      if (newClaimUrl && typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(newClaimUrl).catch(() => {});
+      }
+      setLastClaimUrl(newClaimUrl ?? null);
+      setToast({
+        type: "success",
+        message: json.email_sent
+          ? "Новая ссылка отправлена на email специалиста и скопирована в буфер."
+          : "Новая ссылка создана и скопирована в буфер. Отправьте её специалисту вручную.",
+      });
+      await fetchSpecialists(activeToken, activeStatus);
+    } catch (e: any) {
+      setToast({ type: "error", message: e?.message ?? "Ошибка запроса" });
+    } finally {
+      setResendingById((prev) => ({ ...prev, [appId]: false }));
     }
   }
 
@@ -506,44 +542,56 @@ export default function AdminSpecialistsPage() {
                                 </button>
                               </>
                             )}
-                            {activeStatus === "approved" && !isRejected && app.claim_url && (
+                            {activeStatus === "approved" && !isRejected && (app.claim_url || app.email) && (
                               <>
+                                {app.claim_url && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+                                          navigator.clipboard.writeText(app.claim_url!).catch(() => {});
+                                        }
+                                        setLastClaimUrl(app.claim_url!);
+                                        setToast({
+                                          type: "success",
+                                          message: "Ссылка на кабинет скопирована в буфер обмена.",
+                                        });
+                                      }}
+                                      className="px-3 py-1 rounded-md border border-blue-300 text-xs font-semibold text-blue-700 hover:bg-blue-50"
+                                    >
+                                      Скопировать ссылку
+                                    </button>
+                                    {app.claim_token_used_at ? (
+                                      <span className="px-3 py-1 text-xs text-gray-500">
+                                        Кабинет уже активирован
+                                      </span>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (app.claim_url) {
+                                            window.open(app.claim_url, "_blank");
+                                          }
+                                        }}
+                                        className="px-3 py-1 rounded-md bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
+                                      >
+                                        Открыть кабинет
+                                      </button>
+                                    )}
+                                  </>
+                                )}
                                 <button
                                   type="button"
-                                  onClick={() => {
-                                    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-                                      navigator.clipboard.writeText(app.claim_url!).catch(() => {});
-                                    }
-                                    setLastClaimUrl(app.claim_url!);
-                                    setToast({
-                                      type: "success",
-                                      message: "Ссылка на кабинет скопирована в буфер обмена.",
-                                    });
-                                  }}
-                                  className="px-3 py-1 rounded-md border border-blue-300 text-xs font-semibold text-blue-700 hover:bg-blue-50"
+                                  onClick={() => handleResendClaim(app.id)}
+                                  disabled={!!resendingById[app.id] || !hasToken}
+                                  className="px-3 py-1 rounded-md border border-blue-300 text-xs font-semibold text-blue-700 hover:bg-blue-50 disabled:opacity-50"
                                 >
-                                  Скопировать ссылку
+                                  {resendingById[app.id] ? "…" : "Выслать ссылку повторно"}
                                 </button>
-                                {app.claim_token_used_at ? (
-                                  <span className="px-3 py-1 text-xs text-gray-500">
-                                    Кабинет уже активирован
-                                  </span>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      if (app.claim_url) {
-                                        window.open(app.claim_url, "_blank");
-                                      }
-                                    }}
-                                    className="px-3 py-1 rounded-md bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
-                                  >
-                                    Открыть кабинет
-                                  </button>
-                                )}
                               </>
                             )}
-                            {activeStatus !== "pending_review" && !isRejected && !app.claim_url && "—"}
+                            {activeStatus !== "pending_review" && !isRejected && !app.claim_url && !app.email && "—"}
                           </div>
                         </td>
                       </tr>
