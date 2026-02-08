@@ -77,7 +77,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       <section className="py-14 md:py-20 bg-[#faf8f5]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-            <div className="lg:order-1 order-2">
+            <div className="lg:order-1 order-2 self-start">
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-10">
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 tracking-tight">
                   {t(dict, "home.howItWorks.title")}
@@ -100,7 +100,8 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 </p>
               </div>
             </div>
-            <div className="relative w-full aspect-[4/5] max-h-[480px] lg:max-h-[520px] rounded-xl overflow-hidden bg-gray-200 lg:order-2 order-1 shadow-sm min-h-[280px]">
+            {/* Явные width/height — в grid с items-center контейнер без них даёт 0px и Image fill не виден */}
+            <div className="relative w-full h-[320px] sm:h-[400px] lg:h-[480px] rounded-xl overflow-hidden bg-gray-200 lg:order-2 order-1 shadow-sm">
               <Image
                 src="/images/womenhiw.jpg"
                 alt=""
