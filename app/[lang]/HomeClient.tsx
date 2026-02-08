@@ -73,38 +73,23 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         heroImageUrl={heroContent.url}
       />
 
-      {/* How it works — calm two-column, TaskRabbit-style */}
+      {/* How it works — photo as main visual, text on left */}
       <section className="py-14 md:py-20 bg-[#fafafa]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-            <div>
+            <div className="lg:order-1 order-2">
               <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-8 tracking-tight">
                 {t(dict, "home.howItWorks.title")}
               </h2>
-              <ul className="space-y-5">
-                <li className="flex gap-4">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-300 text-gray-600 text-xs font-medium flex items-center justify-center mt-0.5">
-                    1
-                  </span>
-                  <span className="text-gray-700 text-base leading-relaxed">
-                    {t(dict, "home.howItWorks.step1")}
-                  </span>
+              <ul className="space-y-5 list-none pl-0">
+                <li className="text-gray-700 text-base leading-relaxed">
+                  {t(dict, "home.howItWorks.step1")}
                 </li>
-                <li className="flex gap-4">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-300 text-gray-600 text-xs font-medium flex items-center justify-center mt-0.5">
-                    2
-                  </span>
-                  <span className="text-gray-700 text-base leading-relaxed">
-                    {t(dict, "home.howItWorks.step2")}
-                  </span>
+                <li className="text-gray-700 text-base leading-relaxed">
+                  {t(dict, "home.howItWorks.step2")}
                 </li>
-                <li className="flex gap-4">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-300 text-gray-600 text-xs font-medium flex items-center justify-center mt-0.5">
-                    3
-                  </span>
-                  <span className="text-gray-700 text-base leading-relaxed">
-                    {t(dict, "home.howItWorks.step3")}
-                  </span>
+                <li className="text-gray-700 text-base leading-relaxed">
+                  {t(dict, "home.howItWorks.step3")}
                 </li>
               </ul>
               <p className="mt-8 text-sm text-gray-500">
@@ -113,14 +98,14 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 </Link>
               </p>
             </div>
-            <div className="relative aspect-[4/5] max-h-[480px] lg:max-h-none rounded-lg overflow-hidden bg-gray-200">
-              {/* Replace src with your own image: realistic person, natural light, home interior. Example Unsplash placeholder. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=720&q=80"
+            <div className="relative aspect-[4/5] max-h-[480px] lg:max-h-[520px] rounded-lg overflow-hidden bg-gray-200 lg:order-2 order-1">
+              <Image
+                src="/images/womenhiw.jpg"
                 alt=""
-                className="absolute inset-0 w-full h-full object-cover"
-                loading="lazy"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
+                priority={false}
               />
             </div>
           </div>
