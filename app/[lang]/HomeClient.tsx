@@ -100,15 +100,14 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 </p>
               </div>
             </div>
-            {/* Явные width/height — в grid с items-center контейнер без них даёт 0px и Image fill не виден */}
+            {/* Обычный img — не зависит от высоты родителя и от Next/Image */}
             <div className="relative w-full h-[320px] sm:h-[400px] lg:h-[480px] rounded-xl overflow-hidden bg-gray-200 lg:order-2 order-1 shadow-sm">
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src="/images/womenhiw.jpg"
                 alt=""
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-                priority={false}
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="lazy"
               />
             </div>
           </div>
