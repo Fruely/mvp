@@ -98,7 +98,7 @@ export default function SetPasswordBlock() {
         <button
           type="submit"
           disabled={loading}
-          className="mt-2 rounded-lg bg-amber-600 px-5 py-2.5 text-base font-semibold text-white shadow-sm hover:bg-amber-700 disabled:opacity-50"
+          className="mt-2 rounded-lg bg-blue-600 px-5 py-2.5 text-base font-semibold text-white shadow-md hover:bg-blue-700 disabled:opacity-50"
         >
           {loading ? "Сохранение…" : "Сохранить пароль"}
         </button>
