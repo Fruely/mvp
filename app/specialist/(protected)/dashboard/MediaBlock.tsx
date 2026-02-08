@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, useRef, FormEvent } from "react";
 
 type MediaBlockProps = {
   initialPhotoUrl: string;
@@ -33,6 +33,42 @@ export default function MediaBlock({
   const [isPending, setIsPending] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [uploadPending, setUploadPending] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadError(null);
+    setUploadSuccess(false);
+    setUploadPending(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    fetch("/api/specialist/avatar/upload", {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setUploadError(data?.error ?? "Не удалось загрузить фото.");
+          return;
+        }
+        if (data.url) {
+          setPhotoUrl(data.url);
+          setUploadSuccess(true);
+          setUploadError(null);
+        }
+      })
+      .catch(() => setUploadError("Не удалось загрузить фото. Попробуйте снова."))
+      .finally(() => {
+        setUploadPending(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      });
+  };
 
   const addGalleryRow = () => {
     if (galleryUrls.length >= MAX_VIDEO_GALLERY) return;
@@ -68,6 +104,7 @@ export default function MediaBlock({
     e.preventDefault();
     setSuccessMessage(null);
     setErrorMessage(null);
+    setUploadSuccess(false);
     setIsPending(true);
 
     const payload = {
@@ -138,9 +175,34 @@ export default function MediaBlock({
           </div>
         </div>
         <p className="text-xs text-gray-400">
-          Вставьте ссылку на своё фото (облако, Google Drive, сайт). Оно будет
-          отображаться как аватар на карточке и в списках.
+          Вставьте ссылку на фото или загрузите файл с устройства — он заменит
+          текущий аватар.
         </p>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={handleAvatarFileChange}
+          />
+          <button
+            type="button"
+            disabled={uploadPending}
+            onClick={() => fileInputRef.current?.click()}
+            className="rounded-lg border-2 border-emerald-600 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100 disabled:opacity-70"
+          >
+            {uploadPending ? "Загрузка…" : "Загрузить фото с устройства"}
+          </button>
+          {uploadSuccess && (
+            <span className="text-sm font-medium text-emerald-600">
+              Аватар обновлён
+            </span>
+          )}
+          {uploadError && (
+            <span className="text-sm text-red-600">{uploadError}</span>
+          )}
+        </div>
       </div>
 
       {/* Certificate photos */}

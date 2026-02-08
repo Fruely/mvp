@@ -249,7 +249,8 @@ export async function POST(request: NextRequest) {
         claim_token_created_at: now.toISOString(),
         claim_token_expires_at: expiresAt.toISOString(),
         claim_token_used_at: null,
-        is_visible: false,
+        is_active: true,
+        is_visible: true,
         terms_accepted_at: app.terms_accepted_at || null,
         terms_version: app.terms_version || '1.0',
       })
