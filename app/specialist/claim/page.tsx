@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServerClient as createAuthServerClient } from "@/lib/supabase/auth-server";
 import { SPECIALIST_OFFICE_PATH } from "@/lib/supabaseClient";
 import ClaimNoTokenHandler from "./ClaimNoTokenHandler";
+import SpecialistPasswordSignIn from "./SpecialistPasswordSignIn";
 
 export const dynamic = "force-dynamic";
 
@@ -13,13 +14,20 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
   const token = params.token?.trim();
 
   if (!token) {
-    // Session check must use cookie-based client (auth-server), not service-role (server).
+    // Use getUser() so we only redirect when the session is valid (e.g. after password
+    // change Supabase invalidates the session; getSession() can still return stale from cookie
+    // and cause redirect loop: claim → dashboard → login → claim).
     const authClient = createAuthServerClient();
-    const { data: { session } } = await authClient.auth.getSession();
-    if (session) {
+    const { data: { user } } = await authClient.auth.getUser();
+    if (user) {
       redirect(SPECIALIST_OFFICE_PATH);
     }
-    return <ClaimNoTokenHandler />;
+    return (
+      <div className="min-h-[40vh] px-4 py-10">
+        <SpecialistPasswordSignIn />
+        <ClaimNoTokenHandler />
+      </div>
+    );
   }
 
   const supabase = createSupabaseServerClient();

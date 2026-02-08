@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabase, SPECIALIST_OFFICE_PATH } from "@/lib/supabaseClient";
 
@@ -22,6 +22,7 @@ function getTokensFromHash(): { access_token: string; refresh_token: string } | 
 export default function ClaimNoTokenHandler() {
   const router = useRouter();
   const handled = useRef(false);
+  const [showLoader, setShowLoader] = useState(true);
 
   useEffect(() => {
     if (handled.current) return;
@@ -88,16 +89,17 @@ export default function ClaimNoTokenHandler() {
       };
     }
 
-    // No hash: check if session already exists (e.g. revisiting).
+    // No hash: check if session exists. If not, don't redirect — show password form on page.
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (handled.current) return;
       if (session) goToDashboard();
-      else goToInvalid();
+      else setShowLoader(false);
     });
   }, [router]);
 
+  if (!showLoader) return null;
   return (
-    <div className="flex min-h-[200px] items-center justify-center p-4 text-gray-600">
+    <div className="flex min-h-[120px] items-center justify-center p-4 text-gray-600">
       Проверка входа…
     </div>
   );
