@@ -5,6 +5,7 @@ import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import ProfileEditor from "./ProfileEditor";
 import AccountBlock from "./AccountBlock";
 import SetPasswordBlock from "./SetPasswordBlock";
+import LogoutButton from "./LogoutButton";
 
 export default async function SpecialistDashboardPage() {
   const { supabase, user, specialist } = await getCurrentUserAndSpecialist();
@@ -45,6 +46,9 @@ export default async function SpecialistDashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-10">
       <div className="mx-auto max-w-4xl space-y-8">
+        <div className="flex justify-end">
+          <LogoutButton />
+        </div>
         {showSetPassword && (
           <SetPasswordBlock />
         )}
