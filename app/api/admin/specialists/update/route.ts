@@ -300,9 +300,22 @@ export async function POST(request: NextRequest) {
       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://freuly.de');
     const claimUrl = `${baseUrl}/specialist/claim?token=${encodeURIComponent(claimToken)}`;
 
+    // Ensure Supabase Auth user exists before sending email — otherwise first link fails
+    // because generateLink on claim page needs the user to exist; resend works as user
+    // was created on first failed attempt.
+    const specialistEmail = app.email && String(app.email).trim().toLowerCase();
+    if (specialistEmail) {
+      const { error: createUserErr } = await supabase.auth.admin.createUser({
+        email: specialistEmail,
+        email_confirm: true,
+      });
+      if (createUserErr && !/already.*exist|duplicate/i.test(createUserErr.message ?? '')) {
+        console.warn('[admin] Create Auth user (optional) failed:', createUserErr.message);
+      }
+    }
+
     let email_sent = false;
     let email_error: string | undefined;
-    const specialistEmail = app.email && String(app.email).trim();
     if (specialistEmail) {
       try {
         await sendEmail({
