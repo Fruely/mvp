@@ -100,7 +100,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 </p>
               </div>
             </div>
-            <div className="relative aspect-[4/5] max-h-[480px] lg:max-h-[520px] rounded-xl overflow-hidden bg-gray-200 lg:order-2 order-1 shadow-sm">
+            <div className="relative w-full aspect-[4/5] max-h-[480px] lg:max-h-[520px] rounded-xl overflow-hidden bg-gray-200 lg:order-2 order-1 shadow-sm min-h-[280px]">
               <Image
                 src="/images/womenhiw.jpg"
                 alt=""
