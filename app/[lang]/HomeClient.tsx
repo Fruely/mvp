@@ -73,32 +73,49 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         heroImageUrl={heroContent.url}
       />
 
-      {/* How it works — photo as main visual, text on left */}
-      <section className="py-14 md:py-20 bg-[#fafafa]">
+      {/* How it works — TaskRabbit-style: white card left, photo right */}
+      <section className="py-14 md:py-20 bg-[#faf8f5]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             <div className="lg:order-1 order-2">
-              <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-8 tracking-tight">
-                {t(dict, "home.howItWorks.title")}
-              </h2>
-              <ul className="space-y-5 list-none pl-0">
-                <li className="text-gray-700 text-base leading-relaxed">
-                  {t(dict, "home.howItWorks.step1")}
-                </li>
-                <li className="text-gray-700 text-base leading-relaxed">
-                  {t(dict, "home.howItWorks.step2")}
-                </li>
-                <li className="text-gray-700 text-base leading-relaxed">
-                  {t(dict, "home.howItWorks.step3")}
-                </li>
-              </ul>
-              <p className="mt-8 text-sm text-gray-500">
-                <Link href={`/${lang}/become-specialist`} className="text-gray-600 hover:text-gray-900 underline underline-offset-2">
-                  {t(dict, "home.howItWorks.specialistCta")}
-                </Link>
-              </p>
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-10">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 tracking-tight">
+                  {t(dict, "home.howItWorks.title")}
+                </h2>
+                <ul className="space-y-6 list-none pl-0">
+                  <li className="flex gap-4">
+                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#e8e0f0] text-gray-800 text-sm font-semibold flex items-center justify-center">
+                      1
+                    </span>
+                    <span className="text-gray-700 text-base leading-relaxed pt-0.5">
+                      {t(dict, "home.howItWorks.step1")}
+                    </span>
+                  </li>
+                  <li className="flex gap-4">
+                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#e8f0e0] text-gray-800 text-sm font-semibold flex items-center justify-center">
+                      2
+                    </span>
+                    <span className="text-gray-700 text-base leading-relaxed pt-0.5">
+                      {t(dict, "home.howItWorks.step2")}
+                    </span>
+                  </li>
+                  <li className="flex gap-4">
+                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#e0f0e8] text-gray-800 text-sm font-semibold flex items-center justify-center">
+                      3
+                    </span>
+                    <span className="text-gray-700 text-base leading-relaxed pt-0.5">
+                      {t(dict, "home.howItWorks.step3")}
+                    </span>
+                  </li>
+                </ul>
+                <p className="mt-8 text-sm text-gray-500">
+                  <Link href={`/${lang}/become-specialist`} className="text-gray-600 hover:text-gray-900 underline underline-offset-2">
+                    {t(dict, "home.howItWorks.specialistCta")}
+                  </Link>
+                </p>
+              </div>
             </div>
-            <div className="relative aspect-[4/5] max-h-[480px] lg:max-h-[520px] rounded-lg overflow-hidden bg-gray-200 lg:order-2 order-1">
+            <div className="relative aspect-[4/5] max-h-[480px] lg:max-h-[520px] rounded-xl overflow-hidden bg-gray-200 lg:order-2 order-1 shadow-sm">
               <Image
                 src="/images/womenhiw.jpg"
                 alt=""
