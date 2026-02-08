@@ -73,80 +73,56 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         heroImageUrl={heroContent.url}
       />
 
-      {/* How it works — funnel to application */}
-      <section className="py-12 md:py-16 bg-white border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-              {t(dict, "home.howItWorks.title")}
-            </h2>
-            <p className="text-lg text-gray-600 max-w-xl mx-auto">
-              {t(dict, "home.howItWorks.subtitle")}
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            <Link
-              href={`#categories`}
-              className="group flex flex-col items-center text-center p-6 rounded-2xl bg-gray-50 hover:bg-blue-50 border-2 border-transparent hover:border-blue-200 transition-all duration-200"
-            >
-              <span className="flex items-center justify-center w-14 h-14 rounded-full bg-blue-100 text-blue-600 text-2xl font-bold mb-4 group-hover:scale-110 transition-transform">
-                1
-              </span>
-              <span className="text-4xl mb-3" aria-hidden>📂</span>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {t(dict, "home.howItWorks.step1.title")}
-              </h3>
-              <p className="text-sm text-gray-600 mb-4 flex-1">
-                {t(dict, "home.howItWorks.step1.desc")}
+      {/* How it works — calm two-column, TaskRabbit-style */}
+      <section className="py-14 md:py-20 bg-[#fafafa]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-8 tracking-tight">
+                {t(dict, "home.howItWorks.title")}
+              </h2>
+              <ul className="space-y-5">
+                <li className="flex gap-4">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-300 text-gray-600 text-xs font-medium flex items-center justify-center mt-0.5">
+                    1
+                  </span>
+                  <span className="text-gray-700 text-base leading-relaxed">
+                    {t(dict, "home.howItWorks.step1")}
+                  </span>
+                </li>
+                <li className="flex gap-4">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-300 text-gray-600 text-xs font-medium flex items-center justify-center mt-0.5">
+                    2
+                  </span>
+                  <span className="text-gray-700 text-base leading-relaxed">
+                    {t(dict, "home.howItWorks.step2")}
+                  </span>
+                </li>
+                <li className="flex gap-4">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-300 text-gray-600 text-xs font-medium flex items-center justify-center mt-0.5">
+                    3
+                  </span>
+                  <span className="text-gray-700 text-base leading-relaxed">
+                    {t(dict, "home.howItWorks.step3")}
+                  </span>
+                </li>
+              </ul>
+              <p className="mt-8 text-sm text-gray-500">
+                <Link href={`/${lang}/become-specialist`} className="text-gray-600 hover:text-gray-900 underline underline-offset-2">
+                  {t(dict, "home.howItWorks.specialistCta")}
+                </Link>
               </p>
-              <span className="text-sm font-medium text-blue-600 group-hover:text-blue-700">
-                {t(dict, "home.howItWorks.step1.cta")} →
-              </span>
-            </Link>
-            <Link
-              href={`#categories`}
-              className="group flex flex-col items-center text-center p-6 rounded-2xl bg-gray-50 hover:bg-blue-50 border-2 border-transparent hover:border-blue-200 transition-all duration-200"
-            >
-              <span className="flex items-center justify-center w-14 h-14 rounded-full bg-blue-100 text-blue-600 text-2xl font-bold mb-4 group-hover:scale-110 transition-transform">
-                2
-              </span>
-              <span className="text-4xl mb-3" aria-hidden>👤</span>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {t(dict, "home.howItWorks.step2.title")}
-              </h3>
-              <p className="text-sm text-gray-600 mb-4 flex-1">
-                {t(dict, "home.howItWorks.step2.desc")}
-              </p>
-              <span className="text-sm font-medium text-blue-600 group-hover:text-blue-700">
-                {t(dict, "home.howItWorks.step2.cta")} →
-              </span>
-            </Link>
-            <Link
-              href={`#categories`}
-              className="group flex flex-col items-center text-center p-6 rounded-2xl bg-gray-50 hover:bg-blue-50 border-2 border-transparent hover:border-blue-200 transition-all duration-200"
-            >
-              <span className="flex items-center justify-center w-14 h-14 rounded-full bg-blue-100 text-blue-600 text-2xl font-bold mb-4 group-hover:scale-110 transition-transform">
-                3
-              </span>
-              <span className="text-4xl mb-3" aria-hidden>✉️</span>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {t(dict, "home.howItWorks.step3.title")}
-              </h3>
-              <p className="text-sm text-gray-600 mb-4 flex-1">
-                {t(dict, "home.howItWorks.step3.desc")}
-              </p>
-              <span className="text-sm font-medium text-blue-600 group-hover:text-blue-700">
-                {t(dict, "home.howItWorks.step3.cta")} →
-              </span>
-            </Link>
-          </div>
-          <div className="mt-10 text-center">
-            <Link
-              href={`/${lang}/become-specialist`}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 text-white font-medium hover:bg-emerald-700 shadow-sm hover:shadow transition-all"
-            >
-              {t(dict, "home.howItWorks.specialistCta")}
-            </Link>
+            </div>
+            <div className="relative aspect-[4/5] max-h-[480px] lg:max-h-none rounded-lg overflow-hidden bg-gray-200">
+              {/* Replace src with your own image: realistic person, natural light, home interior. Example Unsplash placeholder. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=720&q=80"
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
           </div>
         </div>
       </section>
