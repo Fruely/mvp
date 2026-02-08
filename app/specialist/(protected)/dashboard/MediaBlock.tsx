@@ -198,8 +198,10 @@ export default function MediaBlock({
           onChange={(e) => setVideoUrl(e.target.value)}
           placeholder="https://www.youtube.com/... или https://vimeo.com/..."
         />
-        <p className="text-xs text-gray-400">
-          Одно видео будет показано на странице вашей карточки.
+        <p className="text-xs text-gray-500 font-medium mt-2">Как добавить видео:</p>
+        <p className="text-xs text-gray-500">
+          Загрузите видео на YouTube или Vimeo (доступ — «по ссылке» или «публичный»), затем вставьте ссылку сюда.
+          Мы не принимаем загрузку видеофайлов напрямую.
         </p>
       </div>
 
@@ -240,9 +242,8 @@ export default function MediaBlock({
             </div>
           ))}
         </div>
-        <p className="text-xs text-gray-400">
-          Дополнительные видео с YouTube или Vimeo отображаются в блоке
-          «Видеогалерея» на вашей карточке.
+        <p className="text-xs text-gray-500">
+          Дополнительные видео добавляются ссылками на YouTube или Vimeo.
         </p>
       </div>
 
