@@ -6,6 +6,7 @@ import ProfileEditor from "./ProfileEditor";
 import AccountBlock from "./AccountBlock";
 import SetPasswordBlock from "./SetPasswordBlock";
 import LogoutButton from "./LogoutButton";
+import MediaBlock from "./MediaBlock";
 
 export default async function SpecialistDashboardPage() {
   const { supabase, user, specialist } = await getCurrentUserAndSpecialist();
@@ -19,7 +20,7 @@ export default async function SpecialistDashboardPage() {
   const { data: profile } = await supabase
     .from("specialist_profiles")
     .select(
-      "photo_url, video_url, gallery_urls, about_me, services, how_i_work, experience, city, radius_km, categories"
+      "photo_url, video_url, gallery_urls, certificate_urls, about_me, services, how_i_work, experience, city, radius_km, categories"
     )
     .eq("specialist_id", specialist.id)
     .maybeSingle();
@@ -139,6 +140,16 @@ export default async function SpecialistDashboardPage() {
               radius_km: profile?.radius_km ?? null,
               categories: (profile?.categories as string[] | null) ?? [],
             }}
+          />
+        </section>
+
+        {/* Media: avatar, certificates, video, gallery */}
+        <section className="space-y-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+          <MediaBlock
+            initialPhotoUrl={(profile?.photo_url as string) ?? ""}
+            initialVideoUrl={(profile?.video_url as string) ?? ""}
+            initialGalleryUrls={(profile?.gallery_urls as string[] | null) ?? []}
+            initialCertificateUrls={(profile?.certificate_urls as string[] | null) ?? []}
           />
         </section>
 

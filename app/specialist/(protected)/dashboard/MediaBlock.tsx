@@ -1,0 +1,268 @@
+"use client";
+
+import { useState, FormEvent } from "react";
+
+type MediaBlockProps = {
+  initialPhotoUrl: string;
+  initialVideoUrl: string;
+  initialGalleryUrls: string[];
+  initialCertificateUrls: string[];
+};
+
+const MAX_VIDEO_GALLERY = 5;
+const MAX_CERTIFICATES = 10;
+
+export default function MediaBlock({
+  initialPhotoUrl,
+  initialVideoUrl,
+  initialGalleryUrls,
+  initialCertificateUrls,
+}: MediaBlockProps) {
+  const [photoUrl, setPhotoUrl] = useState(initialPhotoUrl ?? "");
+  const [videoUrl, setVideoUrl] = useState(initialVideoUrl ?? "");
+  const [galleryUrls, setGalleryUrls] = useState<string[]>(
+    Array.isArray(initialGalleryUrls) && initialGalleryUrls.length > 0
+      ? [...initialGalleryUrls]
+      : [""]
+  );
+  const [certificateUrls, setCertificateUrls] = useState<string[]>(
+    Array.isArray(initialCertificateUrls) && initialCertificateUrls.length > 0
+      ? [...initialCertificateUrls]
+      : [""]
+  );
+  const [isPending, setIsPending] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const addGalleryRow = () => {
+    if (galleryUrls.length >= MAX_VIDEO_GALLERY) return;
+    setGalleryUrls((prev) => [...prev, ""]);
+  };
+  const setGalleryAt = (index: number, value: string) => {
+    setGalleryUrls((prev) => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
+  };
+  const removeGalleryAt = (index: number) => {
+    setGalleryUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const addCertificateRow = () => {
+    if (certificateUrls.length >= MAX_CERTIFICATES) return;
+    setCertificateUrls((prev) => [...prev, ""]);
+  };
+  const setCertificateAt = (index: number, value: string) => {
+    setCertificateUrls((prev) => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
+  };
+  const removeCertificateAt = (index: number) => {
+    setCertificateUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    setSuccessMessage(null);
+    setErrorMessage(null);
+    setIsPending(true);
+
+    const payload = {
+      photo_url: photoUrl.trim() || null,
+      video_url: videoUrl.trim() || null,
+      gallery_urls: galleryUrls.map((u) => u.trim()).filter(Boolean),
+      certificate_urls: certificateUrls.map((u) => u.trim()).filter(Boolean),
+    };
+
+    fetch("/api/specialist/profile", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setErrorMessage(data?.error ?? "Не удалось сохранить. Попробуйте ещё раз.");
+          return;
+        }
+        setSuccessMessage("Аватар, сертификаты, видео и галерея сохранены.");
+      })
+      .catch(() => {
+        setErrorMessage("Не удалось сохранить. Проверьте ссылки и попробуйте снова.");
+      })
+      .finally(() => setIsPending(false));
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <div>
+        <h3 className="text-base font-semibold text-gray-900">
+          Аватар, сертификаты, видео и галерея работ
+        </h3>
+        <p className="mt-1 text-sm text-gray-500">
+          Ссылки на уже размещённые в интернете файлы. Фото — любая ссылка на
+          изображение. Видео — только YouTube или Vimeo.
+        </p>
+      </div>
+
+      {/* Avatar / main photo */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">
+          Аватар (главное фото на карточке и в ротации)
+        </label>
+        <div className="flex flex-col sm:flex-row gap-4">
+          {photoUrl && (
+            <div className="flex-shrink-0 w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-100">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={photoUrl}
+                alt="Текущий аватар"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = "none";
+                }}
+              />
+            </div>
+          )}
+          <div className="flex-1">
+            <input
+              type="url"
+              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+              value={photoUrl}
+              onChange={(e) => setPhotoUrl(e.target.value)}
+              placeholder="https://... (ссылка на фото)"
+            />
+          </div>
+        </div>
+        <p className="text-xs text-gray-400">
+          Вставьте ссылку на своё фото (облако, Google Drive, сайт). Оно будет
+          отображаться как аватар на карточке и в списках.
+        </p>
+      </div>
+
+      {/* Certificate photos */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <label className="block text-sm font-medium text-gray-700">
+            Фото сертификатов (до {MAX_CERTIFICATES} ссылок)
+          </label>
+          {certificateUrls.length < MAX_CERTIFICATES && (
+            <button
+              type="button"
+              onClick={addCertificateRow}
+              className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+            >
+              + Добавить сертификат
+            </button>
+          )}
+        </div>
+        <div className="space-y-2">
+          {certificateUrls.map((url, index) => (
+            <div key={index} className="flex gap-2">
+              <input
+                type="url"
+                className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                value={url}
+                onChange={(e) => setCertificateAt(index, e.target.value)}
+                placeholder="https://... (ссылка на фото сертификата)"
+              />
+              <button
+                type="button"
+                onClick={() => removeCertificateAt(index)}
+                className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                aria-label="Удалить"
+              >
+                Удалить
+              </button>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-gray-400">
+          Ссылки на изображения сертификатов, дипломов, квалификаций. Они
+          отобразятся в блоке «Сертификаты» на вашей карточке.
+        </p>
+      </div>
+
+      {/* Main video */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">
+          Основное видео (YouTube или Vimeo)
+        </label>
+        <input
+          type="url"
+          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+          value={videoUrl}
+          onChange={(e) => setVideoUrl(e.target.value)}
+          placeholder="https://www.youtube.com/... или https://vimeo.com/..."
+        />
+        <p className="text-xs text-gray-400">
+          Одно видео будет показано на странице вашей карточки.
+        </p>
+      </div>
+
+      {/* Video gallery (works) */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <label className="block text-sm font-medium text-gray-700">
+            Видеогалерея работ (до {MAX_VIDEO_GALLERY} ссылок)
+          </label>
+          {galleryUrls.length < MAX_VIDEO_GALLERY && (
+            <button
+              type="button"
+              onClick={addGalleryRow}
+              className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+            >
+              + Добавить видео
+            </button>
+          )}
+        </div>
+        <div className="space-y-2">
+          {galleryUrls.map((url, index) => (
+            <div key={index} className="flex gap-2">
+              <input
+                type="url"
+                className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                value={url}
+                onChange={(e) => setGalleryAt(index, e.target.value)}
+                placeholder="https://www.youtube.com/... или https://vimeo.com/..."
+              />
+              <button
+                type="button"
+                onClick={() => removeGalleryAt(index)}
+                className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                aria-label="Удалить"
+              >
+                Удалить
+              </button>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-gray-400">
+          Дополнительные видео с YouTube или Vimeo отображаются в блоке
+          «Видеогалерея» на вашей карточке.
+        </p>
+      </div>
+
+      <div className="flex items-center justify-between gap-4">
+        <button
+          type="submit"
+          disabled={isPending}
+          className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          {isPending ? "Сохранение..." : "Сохранить аватар, сертификаты и видео"}
+        </button>
+        <div className="flex-1 text-right">
+          {successMessage && (
+            <p className="text-sm text-emerald-600">{successMessage}</p>
+          )}
+          {errorMessage && (
+            <p className="text-sm text-red-600">{errorMessage}</p>
+          )}
+        </div>
+      </div>
+    </form>
+  );
+}

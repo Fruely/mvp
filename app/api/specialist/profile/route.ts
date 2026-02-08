@@ -1,6 +1,30 @@
 import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 
+function isValidHttpUrl(s: string): boolean {
+  try {
+    const u = new URL(s);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function isValidVideoUrl(s: string): boolean {
+  if (!isValidHttpUrl(s)) return false;
+  try {
+    const u = new URL(s);
+    const host = u.hostname.toLowerCase();
+    return (
+      host.includes("youtube.com") ||
+      host.includes("youtu.be") ||
+      host.includes("vimeo.com")
+    );
+  } catch {
+    return false;
+  }
+}
+
 export async function PUT(request: NextRequest) {
   const supabase = createSupabaseServerClient();
 
@@ -47,6 +71,10 @@ export async function PUT(request: NextRequest) {
     "city",
     "radius_km",
     "categories",
+    "photo_url",
+    "video_url",
+    "gallery_urls",
+    "certificate_urls",
   ] as const;
 
   // Build updatePayload ONLY from whitelisted fields
@@ -90,14 +118,67 @@ export async function PUT(request: NextRequest) {
     }
   }
 
+  // Photo URL (avatar) — any https/http image URL; synced to specialists.avatar_url
+  if (Object.prototype.hasOwnProperty.call(body, "photo_url")) {
+    const v = body.photo_url;
+    if (v == null || v === "") {
+      updatePayload.photo_url = null;
+    } else if (typeof v === "string" && isValidHttpUrl(v.trim())) {
+      updatePayload.photo_url = v.trim();
+    } else {
+      return Response.json(
+        { error: "Укажите корректную ссылку на фото (например https://...)" },
+        { status: 400 }
+      );
+    }
+  }
+
+  // Video URL — YouTube or Vimeo only
+  if (Object.prototype.hasOwnProperty.call(body, "video_url")) {
+    const v = body.video_url;
+    if (v == null || v === "") {
+      updatePayload.video_url = null;
+    } else if (typeof v === "string" && isValidVideoUrl(v.trim())) {
+      updatePayload.video_url = v.trim();
+    } else {
+      return Response.json(
+        { error: "Укажите ссылку на YouTube или Vimeo" },
+        { status: 400 }
+      );
+    }
+  }
+
+  // Video gallery — array of YouTube/Vimeo URLs
+  if (Object.prototype.hasOwnProperty.call(body, "gallery_urls")) {
+    if (!Array.isArray(body.gallery_urls)) {
+      updatePayload.gallery_urls = null;
+    } else {
+      const urls = body.gallery_urls
+        .filter((u: unknown) => typeof u === "string" && isValidVideoUrl(String(u).trim()))
+        .map((u: string) => u.trim());
+      updatePayload.gallery_urls = urls.length ? urls : null;
+    }
+  }
+
+  // Certificate image URLs — array of http/https URLs
+  if (Object.prototype.hasOwnProperty.call(body, "certificate_urls")) {
+    if (!Array.isArray(body.certificate_urls)) {
+      updatePayload.certificate_urls = null;
+    } else {
+      const urls = body.certificate_urls
+        .filter((u: unknown) => typeof u === "string" && isValidHttpUrl(String(u).trim()))
+        .map((u: string) => u.trim());
+      updatePayload.certificate_urls = urls.length ? urls : null;
+    }
+  }
+
   // Update only whitelisted fields
-  // Note: rotation_multiplier is explicitly excluded from both select and update
   const { data: profile, error: updateError } = await supabase
     .from("specialist_profiles")
     .update(updatePayload)
     .eq("specialist_id", specialist.id)
     .select(
-      "photo_url, video_url, gallery_urls, about_me, services, how_i_work, experience, city, radius_km, categories"
+      "photo_url, video_url, gallery_urls, certificate_urls, about_me, services, how_i_work, experience, city, radius_km, categories"
     )
     .maybeSingle();
 
@@ -107,6 +188,14 @@ export async function PUT(request: NextRequest) {
       { error: "Не удалось сохранить профиль" },
       { status: 400 }
     );
+  }
+
+  // Sync avatar to specialists so public card and category lists show it
+  if (Object.prototype.hasOwnProperty.call(updatePayload, "photo_url")) {
+    await supabase
+      .from("specialists")
+      .update({ avatar_url: updatePayload.photo_url ?? null })
+      .eq("id", specialist.id);
   }
 
   return Response.json({ data: profile }, { status: 200 });

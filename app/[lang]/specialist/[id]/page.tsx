@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import LeadForm from "@/components/LeadForm";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,11 +11,37 @@ import uaDict from "@/locales/ua.json";
 interface Specialist {
   id: string;
   name: string;
-  description: string;
+  description?: string;
+  bio?: string;
   avatar_url: string | null;
-  category: string;
+  category?: string;
+  category_id?: string;
+  video_url?: string | null;
+  gallery_urls?: string[];
+  certificate_urls?: string[];
   languages: string[];
   created_at: string;
+}
+
+function getEmbedUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.toLowerCase();
+    if (host.includes("youtube.com") && u.searchParams.has("v")) {
+      return `https://www.youtube.com/embed/${u.searchParams.get("v")}`;
+    }
+    if (host.includes("youtu.be")) {
+      const id = u.pathname.slice(1).split("?")[0];
+      return id ? `https://www.youtube.com/embed/${id}` : null;
+    }
+    if (host.includes("vimeo.com")) {
+      const id = u.pathname.replace(/^\/+/, "").split("/")[0];
+      return id ? `https://player.vimeo.com/video/${id}` : null;
+    }
+  } catch {
+    // ignore
+  }
+  return null;
 }
 
 export default function SpecialistPage({ params }: { params: { id: string } }) {
@@ -172,9 +197,80 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
                 {t(dict, "specialist.about")}
               </h2>
               <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {specialist.description || t(dict, "specialist.noDescription")}
+                {(specialist.description ?? specialist.bio) || t(dict, "specialist.noDescription")}
               </p>
             </div>
+
+            {/* Certificates */}
+            {specialist.certificate_urls && specialist.certificate_urls.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold text-gray-800 mb-3">Сертификаты</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {specialist.certificate_urls.map((url, idx) => (
+                    <a
+                      key={idx}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block rounded-xl overflow-hidden border border-gray-200 bg-gray-50 aspect-[3/4] hover:opacity-90 transition"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={url}
+                        alt={`Сертификат ${idx + 1}`}
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Main video */}
+            {specialist.video_url && getEmbedUrl(specialist.video_url) && (
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold text-gray-800 mb-3">Видео</h2>
+                <div className="aspect-video w-full max-w-2xl mx-auto rounded-xl overflow-hidden bg-gray-100">
+                  <iframe
+                    src={getEmbedUrl(specialist.video_url)!}
+                    title="Видео специалиста"
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Video gallery */}
+            {specialist.gallery_urls && specialist.gallery_urls.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold text-gray-800 mb-3">Видеогалерея</h2>
+                <div className="grid gap-6 sm:grid-cols-2">
+                  {specialist.gallery_urls.map((url, idx) => {
+                    const embed = getEmbedUrl(url);
+                    if (!embed) return null;
+                    return (
+                      <div
+                        key={idx}
+                        className="aspect-video w-full rounded-xl overflow-hidden bg-gray-100"
+                      >
+                        <iframe
+                          src={embed}
+                          title={`Видео ${idx + 1}`}
+                          className="w-full h-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* CTA Button */}
             <div className="text-center">
