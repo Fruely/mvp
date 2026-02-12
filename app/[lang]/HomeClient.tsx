@@ -54,6 +54,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
 
   const hero = useMemo(() => blocks.find((b) => b.key === "homepage_hero"), [blocks]);
   const mosaic = useMemo(() => blocks.find((b) => b.key === "homepage_mosaic"), [blocks]);
+  const textImage = blocks.find((b: any) => b.key === "homepage_text_image");
 
   const heroContent = (hero?.content as ImageBlockContent) || {};
   const mosaicContent = (mosaic?.content as MosaicBlockContent) || {};
