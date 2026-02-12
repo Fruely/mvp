@@ -90,11 +90,12 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       />
 
       {textImageContent?.url && (
-        <section className="relative py-32 bg-gradient-to-b from-white to-gray-50">
-          <div className="max-w-7xl mx-auto px-6 relative">
+        <section className="py-24 bg-gradient-to-b from-white to-gray-50">
+          <div className="max-w-7xl mx-auto px-6">
 
-            {/* Background image */}
             <div className="relative rounded-3xl overflow-hidden">
+
+              {/* Background Image */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={textImageContent.url}
@@ -102,8 +103,11 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 className="w-full h-[520px] object-cover"
               />
 
-              {/* Overlay card */}
-              <div className="absolute md:left-12 md:top-1/2 md:-translate-y-1/2 left-1/2 -translate-x-1/2 bottom-6 md:translate-x-0 bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-10 max-w-md w-[90%] md:w-auto">
+              {/* Soft left gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-white/80 via-white/40 to-transparent" />
+
+              {/* Floating card */}
+              <div className="absolute left-12 top-1/2 -translate-y-1/2 z-20 bg-white rounded-3xl shadow-2xl p-10 max-w-md">
 
                 <h2 className="text-3xl font-bold text-gray-900 mb-8">
                   {textImageContent.title}
@@ -136,7 +140,6 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
 
               </div>
             </div>
-
           </div>
         </section>
       )}
