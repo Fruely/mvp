@@ -93,7 +93,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         <section className="py-14 md:py-20 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-              <div>
+              <div className="self-start">
                 <h2 className="text-3xl font-bold mb-4">
                   {textImageContent.title}
                 </h2>
@@ -102,13 +102,16 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 </p>
               </div>
               {textImageContent.url && (
-                <div className="relative w-full h-[280px] sm:h-[320px] lg:h-[400px] rounded-xl overflow-hidden bg-gray-200">
+                <div className="relative w-full min-w-0 h-[280px] sm:h-[320px] lg:h-[400px] rounded-xl overflow-hidden bg-gray-200 self-start">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={textImageContent.url}
                     alt={textImageContent.title || ""}
                     className="absolute inset-0 w-full h-full object-cover"
                     loading="lazy"
+                    onError={(e) => {
+                      console.warn("[homepage_text_image] Image failed to load:", textImageContent.url);
+                    }}
                   />
                 </div>
               )}
