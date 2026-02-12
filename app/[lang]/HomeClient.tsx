@@ -22,10 +22,16 @@ type MosaicBlockContent = {
   images?: MosaicImage[];
 };
 
+type TextImageBlockContent = {
+  title?: string;
+  text?: string;
+  url?: string;
+};
+
 type Block = {
   key: string;
   type: "image" | "mosaic";
-  content: ImageBlockContent | MosaicBlockContent;
+  content: ImageBlockContent | MosaicBlockContent | TextImageBlockContent;
 };
 
 export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionary }) {
@@ -58,6 +64,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
 
   const heroContent = (hero?.content as ImageBlockContent) || {};
   const mosaicContent = (mosaic?.content as MosaicBlockContent) || {};
+  const textImageContent = (textImage?.content as TextImageBlockContent) || {};
 
   const placeholderCategories = [
     { id: "psychologists", icon: "🧠" },
@@ -69,12 +76,171 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     return <div>Loading blocks...</div>;
   }
 
-  console.log("BLOCKS STATE:", blocks);
-  console.log("IS ARRAY?", Array.isArray(blocks));
-
   return (
-    <div style={{ background: "red", height: "300px" }}>
-      TEST HOMECLIENT RENDER
+    <div className="min-h-screen flex flex-col bg-white">
+      <HeroSearch
+        lang={lang}
+        title={t(dict, "hero.title")}
+        subtitle={t(dict, "hero.subtitle")}
+        heroImageUrl={heroContent.url}
+      />
+
+      {textImage && (
+        <section className="py-14 md:py-20 bg-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+              <div>
+                <h2 className="text-3xl font-bold mb-4">
+                  {textImageContent.title}
+                </h2>
+                <p className="text-gray-600">
+                  {textImageContent.text}
+                </p>
+              </div>
+              {textImageContent.url && (
+                <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-gray-200">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={textImageContent.url}
+                    alt={textImageContent.title || ""}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* How it works — plain text steps, photo as main visual */}
+      <section className="py-14 md:py-20 bg-[#faf8f5]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            <div className="lg:order-1 order-2 self-start">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-10">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 tracking-tight">
+                  {t(dict, "home.howItWorks.title")}
+                </h2>
+                <ul className="space-y-5 list-none pl-0">
+                  <li className="text-gray-700 text-base leading-relaxed">
+                    {t(dict, "home.howItWorks.step1")}
+                  </li>
+                  <li className="text-gray-700 text-base leading-relaxed">
+                    {t(dict, "home.howItWorks.step2")}
+                  </li>
+                  <li className="text-gray-700 text-base leading-relaxed">
+                    {t(dict, "home.howItWorks.step3")}
+                  </li>
+                </ul>
+                <p className="mt-8 text-sm text-gray-500">
+                  <Link href={`/${lang}/become-specialist`} className="text-gray-600 hover:text-gray-900 underline underline-offset-2">
+                    {t(dict, "home.howItWorks.specialistCta")}
+                  </Link>
+                </p>
+              </div>
+            </div>
+            <div className="relative w-full h-[320px] sm:h-[400px] lg:h-[480px] rounded-xl overflow-hidden bg-gray-200 lg:order-2 order-1 shadow-sm">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/womenhiw.jpg"
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Mosaic Section (dynamic) */}
+      <section id="categories" className="py-12 md:py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              {t(dict, "home.categories.title")}
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              {t(dict, "home.categories.subtitle")}
+            </p>
+          </div>
+
+          {mosaicContent.images && mosaicContent.images.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-12">
+              {mosaicContent.images.map((img, idx) => {
+                const categoryId = img.category_id || "";
+                const categoryTitle = t(dict, `categories.${categoryId}`, {
+                  defaultValue: t(dict, "categories.default"),
+                });
+
+                return (
+                  <Link
+                    key={`${img.url}-${idx}`}
+                    href={categoryId ? `/${lang}/category/${categoryId}` : "#"}
+                    className="block mx-auto"
+                  >
+                    <div className="group relative w-full max-w-[200px] md:max-w-[220px] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 bg-white">
+                      <div
+                        className="relative w-full aspect-square"
+                        style={{ aspectRatio: "1 / 1" }}
+                      >
+                        <Image
+                          unoptimized
+                          src={img.url}
+                          alt={img.alt || `mosaic-${idx}`}
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          className="mosaic-card-img object-cover w-full h-full group-hover:scale-[1.02] transition-transform duration-300"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src =
+                              'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23e5e7eb" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%239ca3af" font-family="sans-serif" font-size="16"%3EImage%3C/text%3E%3C/svg%3E';
+                          }}
+                        />
+                        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/80 via-black/50 to-transparent pointer-events-none">
+                          <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
+                            <span className="text-white text-sm font-semibold drop-shadow-lg line-clamp-1">
+                              {categoryTitle}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <style jsx>{`
+                        .group:hover :global(.mosaic-card-img) {
+                          transform: scale(1.02);
+                        }
+                      `}</style>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {placeholderCategories.map((category) => (
+                <Link key={category.id} href={`/${lang}/category/${category.id}`}>
+                  <div className="group bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl border border-gray-100">
+                    <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-full flex items-center justify-center text-4xl shadow-md group-hover:shadow-lg transition">
+                      {category.icon}
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition">
+                      {t(dict, `categories.${category.id}`, {
+                        defaultValue: t(dict, "categories.default"),
+                      })}
+                    </h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {error && (
+        <div className="fixed bottom-4 right-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg shadow">
+          {error}
+        </div>
+      )}
     </div>
   );
 }
