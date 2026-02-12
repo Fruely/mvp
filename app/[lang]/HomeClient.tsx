@@ -90,24 +90,30 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       />
 
       {textImageContent?.url && (
-        <section className="py-16 bg-gray-50">
-          <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-10 items-center">
+        <section className="relative py-28 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
+          <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-20 items-center">
+
+            {/* TEXT SIDE */}
             <div>
-              <h2 className="text-3xl font-bold mb-4">
-                {textImageContent?.title}
+              <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-6 tracking-tight">
+                {textImageContent.title}
               </h2>
-              <p className="text-gray-600 text-lg">
-                {textImageContent?.text}
+              <p className="text-lg text-gray-600 leading-relaxed max-w-xl">
+                {textImageContent.text}
               </p>
             </div>
-            <div>
+
+            {/* IMAGE SIDE */}
+            <div className="relative">
+              <div className="absolute -inset-6 bg-blue-100 rounded-3xl blur-3xl opacity-30"></div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={textImageContent?.url}
-                alt={textImageContent?.title || "Image"}
-                className="w-full h-auto rounded-xl shadow-md"
+                src={textImageContent.url}
+                alt={textImageContent.title}
+                className="relative rounded-3xl shadow-2xl w-full h-auto"
               />
             </div>
+
           </div>
         </section>
       )}
