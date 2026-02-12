@@ -64,6 +64,10 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     { id: "tutors", icon: "📚" },
   ];
 
+  if (!blocks.length) {
+    return <div>Loading blocks...</div>;
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <HeroSearch
