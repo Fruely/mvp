@@ -119,21 +119,21 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                     <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
                       1
                     </div>
-                    <p>{t(dict, "home.howItWorks.step1")}</p>
+                    <p>Выберите категорию и язык.</p>
                   </div>
 
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
                       2
                     </div>
-                    <p>{t(dict, "home.howItWorks.step2")}</p>
+                    <p>Просмотрите профили специалистов.</p>
                   </div>
 
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
                       3
                     </div>
-                    <p>{t(dict, "home.howItWorks.step3")}</p>
+                    <p>Отправьте заявку — специалист ответит.</p>
                   </div>
 
                 </div>
