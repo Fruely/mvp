@@ -60,7 +60,13 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
 
   const hero = useMemo(() => blocks.find((b) => b.key === "homepage_hero"), [blocks]);
   const mosaic = useMemo(() => blocks.find((b) => b.key === "homepage_mosaic"), [blocks]);
-  const textImage = blocks.find((b: any) => b.key === "homepage_text_image");
+  const textImage = useMemo(
+    () => blocks.find((b) => b.key === "homepage_text_image"),
+    [blocks]
+  );
+
+  console.log("TEXT IMAGE FOUND:", textImage);
+  console.log("TEXT IMAGE CONTENT:", textImage?.content);
 
   const heroContent = (hero?.content as ImageBlockContent) || {};
   const mosaicContent = (mosaic?.content as MosaicBlockContent) || {};
@@ -85,7 +91,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         heroImageUrl={heroContent.url}
       />
 
-      {textImage && (
+      {textImageContent?.url && (
         <section className="py-14 md:py-20 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
