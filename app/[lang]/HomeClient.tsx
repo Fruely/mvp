@@ -90,24 +90,26 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       />
 
       {textImageContent?.url && (
-        <section className="py-24 bg-gradient-to-b from-white to-gray-50">
-          <div className="max-w-7xl mx-auto px-6">
+        <section className="py-24 overflow-x-hidden bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="relative min-h-[520px] overflow-hidden rounded-3xl bg-white">
 
-            <div className="relative rounded-3xl overflow-hidden">
-
-              {/* Background Image */}
+              {/* Layer 1: Background image (z-0) */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={textImageContent.url}
                 alt={textImageContent.title}
-                className="w-full h-[520px] object-cover"
+                className="absolute inset-0 w-full h-full object-cover object-right rounded-3xl z-0"
               />
 
-              {/* Soft left gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-r from-white/80 via-white/40 to-transparent" />
+              {/* Layer 2: Gradient overlay (z-1) */}
+              <div
+                className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/60 to-transparent pointer-events-none z-[1]"
+                aria-hidden
+              />
 
-              {/* Floating card */}
-              <div className="absolute left-12 top-1/2 -translate-y-1/2 z-20 bg-white rounded-3xl shadow-2xl p-10 max-w-md">
+              {/* Layer 3: Floating card (z-10) */}
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-6 w-[calc(100%-2rem)] md:left-16 md:top-1/2 md:bottom-auto md:-translate-y-1/2 md:translate-x-0 md:w-auto max-w-md bg-white rounded-2xl shadow-2xl p-8 z-10">
 
                 <h2 className="text-3xl font-bold text-gray-900 mb-8">
                   {textImageContent.title}
@@ -116,24 +118,24 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 <div className="space-y-6 text-gray-700">
 
                   <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
+                    <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
                       1
                     </div>
-                    <p>Выберите категорию и язык.</p>
+                    <p>{t(dict, "home.howItWorks.step1")}</p>
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
+                    <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
                       2
                     </div>
-                    <p>Просмотрите профили специалистов.</p>
+                    <p>{t(dict, "home.howItWorks.step2")}</p>
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
+                    <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
                       3
                     </div>
-                    <p>Отправьте заявку — специалист ответит.</p>
+                    <p>{t(dict, "home.howItWorks.step3")}</p>
                   </div>
 
                 </div>
