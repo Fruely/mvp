@@ -68,6 +68,9 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     return <div>Loading blocks...</div>;
   }
 
+  console.log("BLOCKS STATE:", blocks);
+  console.log("IS ARRAY?", Array.isArray(blocks));
+
   return (
     <div style={{ background: "red", height: "300px" }}>
       TEST HOMECLIENT RENDER
