@@ -65,9 +65,6 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     [blocks]
   );
 
-  console.log("TEXT IMAGE FOUND:", textImage);
-  console.log("TEXT IMAGE CONTENT:", textImage?.content);
-
   const heroContent = (hero?.content as ImageBlockContent) || {};
   const mosaicContent = (mosaic?.content as MosaicBlockContent) || {};
   const textImageContent = (textImage?.content as TextImageBlockContent) || {};
@@ -78,12 +75,13 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     { id: "tutors", icon: "📚" },
   ];
 
-  if (!blocks.length) {
-    return <div>Loading blocks...</div>;
-  }
-
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      {!blocks.length && (
+        <div className="text-center py-10 text-gray-500">Loading...</div>
+      )}
+      {blocks.length > 0 && (
+        <>
       <HeroSearch
         lang={lang}
         title={t(dict, "hero.title")}
@@ -91,7 +89,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         heroImageUrl={heroContent.url}
       />
 
-      {textImageContent?.url && (
+      {textImage && (
         <section className="py-14 md:py-20 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
@@ -104,7 +102,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 </p>
               </div>
               {textImageContent.url && (
-                <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-gray-200">
+                <div className="relative w-full h-[280px] sm:h-[320px] lg:h-[400px] rounded-xl overflow-hidden bg-gray-200">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={textImageContent.url}
@@ -241,6 +239,9 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
           )}
         </div>
       </section>
+
+        </>
+      )}
 
       {error && (
         <div className="fixed bottom-4 right-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg shadow">
