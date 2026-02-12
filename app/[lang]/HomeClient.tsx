@@ -75,9 +75,6 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     { id: "tutors", icon: "📚" },
   ];
 
-  console.log("TEXT IMAGE FINAL:", textImageContent);
-  console.log("URL TYPE:", typeof textImageContent?.url);
-
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {!blocks.length && (
@@ -92,27 +89,26 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         heroImageUrl={heroContent.url}
       />
 
-      <div style={{ background: "yellow" }}>BLOCK RENDER TEST</div>
       {textImageContent?.url && (
-        <section
-          style={{
-            padding: "40px",
-            background: "#f0f0f0",
-          }}
-        >
-          <h2>{textImageContent.title}</h2>
-          <p>{textImageContent.text}</p>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={textImageContent.url}
-            alt=""
-            style={{
-              width: "400px",
-              height: "auto",
-              display: "block",
-              border: "5px solid red",
-            }}
-          />
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-10 items-center">
+            <div>
+              <h2 className="text-3xl font-bold mb-4">
+                {textImageContent?.title}
+              </h2>
+              <p className="text-gray-600 text-lg">
+                {textImageContent?.text}
+              </p>
+            </div>
+            <div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={textImageContent?.url}
+                alt={textImageContent?.title || "Image"}
+                className="w-full h-auto rounded-xl shadow-md"
+              />
+            </div>
+          </div>
         </section>
       )}
 
