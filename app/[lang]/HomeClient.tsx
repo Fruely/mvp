@@ -103,7 +103,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               />
 
               {/* Overlay card */}
-              <div className="absolute left-12 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-10 max-w-md">
+              <div className="absolute md:left-12 md:top-1/2 md:-translate-y-1/2 left-1/2 -translate-x-1/2 bottom-6 md:translate-x-0 bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-10 max-w-md w-[90%] md:w-auto">
 
                 <h2 className="text-3xl font-bold text-gray-900 mb-8">
                   {textImageContent.title}
