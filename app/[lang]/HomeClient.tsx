@@ -90,28 +90,51 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       />
 
       {textImageContent?.url && (
-        <section className="relative py-28 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
-          <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-20 items-center">
+        <section className="relative py-32 bg-gradient-to-b from-white to-gray-50">
+          <div className="max-w-7xl mx-auto px-6 relative">
 
-            {/* TEXT SIDE */}
-            <div>
-              <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-6 tracking-tight">
-                {textImageContent.title}
-              </h2>
-              <p className="text-lg text-gray-600 leading-relaxed max-w-xl">
-                {textImageContent.text}
-              </p>
-            </div>
-
-            {/* IMAGE SIDE */}
-            <div className="relative">
-              <div className="absolute -inset-6 bg-blue-100 rounded-3xl blur-3xl opacity-30"></div>
+            {/* Background image */}
+            <div className="relative rounded-3xl overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={textImageContent.url}
                 alt={textImageContent.title}
-                className="relative rounded-3xl shadow-2xl w-full h-auto"
+                className="w-full h-[520px] object-cover"
               />
+
+              {/* Overlay card */}
+              <div className="absolute left-12 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-10 max-w-md">
+
+                <h2 className="text-3xl font-bold text-gray-900 mb-8">
+                  {textImageContent.title}
+                </h2>
+
+                <div className="space-y-6 text-gray-700">
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
+                      1
+                    </div>
+                    <p>{t(dict, "home.howItWorks.step1")}</p>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
+                      2
+                    </div>
+                    <p>{t(dict, "home.howItWorks.step2")}</p>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
+                      3
+                    </div>
+                    <p>{t(dict, "home.howItWorks.step3")}</p>
+                  </div>
+
+                </div>
+
+              </div>
             </div>
 
           </div>
