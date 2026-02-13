@@ -99,16 +99,19 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         heroImageUrl={heroContent.url}
       />
 
-      <section className="bg-white py-20">
+      <section className="bg-white py-24">
         <div className="max-w-3xl mx-auto px-6 text-center">
-          <p className="text-lg md:text-xl text-gray-700 leading-relaxed space-y-4">
-            <span className="block">Вы объясняете — но не так.</span>
-            <span className="block">Сомневаетесь — но не можете задать вопрос.</span>
-            <span className="block">Откладываете важное — потому что боитесь быть непонятым.</span>
+          <p className="text-2xl md:text-3xl font-medium text-gray-900 leading-snug">
+            Вы объясняете — но не так.
           </p>
 
-          <p className="mt-8 text-lg md:text-xl text-gray-900 font-medium">
-            Поэтому <span className="text-primary font-semibold">Freuly</span> соединяет вас
+          <p className="mt-6 text-lg md:text-xl text-gray-600 leading-relaxed">
+            Сомневаетесь — но не можете задать вопрос.<br />
+            Откладываете важное — потому что боитесь быть непонятым.
+          </p>
+
+          <p className="mt-10 text-xl md:text-2xl text-gray-900 font-semibold">
+            Поэтому <span className="text-primary">Freuly</span> соединяет вас
             со специалистами, которые говорят на вашем родном языке.
           </p>
         </div>
