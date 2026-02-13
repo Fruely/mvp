@@ -6,6 +6,7 @@
     "preinstall": "node scripts/check-node-version.js",
     "dev": "next dev",
     "dev:reset": "rm -rf .next && next dev",
+    "check:prepush": "bash scripts/check-prepush.sh",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
