@@ -12,6 +12,7 @@ type ImageBlockContent = {
 };
 
 type MosaicImage = { url: string; alt?: string; category_id?: string };
+type CategoryOption = { id: string; slug: string; title: string | null };
 
 type MosaicBlockContent = {
   title?: string;
@@ -45,6 +46,7 @@ export default function AdminSiteBlocksPage() {
     }
     setAuthed(true);
     fetchBlocks();
+    fetchCategories();
   }, [router]);
 
   const hero = useMemo(() => blocks.find((b) => b.key === "homepage_hero"), [
@@ -64,12 +66,7 @@ export default function AdminSiteBlocksPage() {
   const [mosaicSubtitle, setMosaicSubtitle] = useState("");
   const [mosaicImages, setMosaicImages] = useState<MosaicImage[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-
-  const categories = [
-    { id: "psychologists", title: "Психологи" },
-    { id: "masseurs", title: "Массажисты" },
-    { id: "tutors", title: "Репетиторы" },
-  ];
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
 
   useEffect(() => {
     if (hero && hero.content) {
@@ -102,6 +99,30 @@ export default function AdminSiteBlocksPage() {
       setMessage(e.message || "Ошибка сети");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchCategories() {
+    try {
+      const res = await fetch("/api/specialists/categories?min_count=0", {
+        cache: "no-store",
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setMessage(json.error || "Ошибка загрузки категорий");
+        return;
+      }
+      const data = Array.isArray(json.data) ? json.data : [];
+      const normalized = data
+        .map((item: any) => ({
+          id: String(item.id || ""),
+          slug: String(item.slug || ""),
+          title: item.title ? String(item.title) : null,
+        }))
+        .filter((item: CategoryOption) => item.id && item.slug);
+      setCategories(normalized);
+    } catch (e: any) {
+      setMessage(e.message || "Ошибка загрузки категорий");
     }
   }
 
@@ -218,6 +239,23 @@ export default function AdminSiteBlocksPage() {
       setLoading(false);
     }
   }
+
+  const categoryNameBySlug = useMemo(
+    () =>
+      new Map(
+        categories.map((category) => [
+          category.slug,
+          category.title || category.slug,
+        ] as const)
+      ),
+    [categories]
+  );
+
+  const categorySlugById = useMemo(
+    () =>
+      new Map(categories.map((category) => [category.id, category.slug] as const)),
+    [categories]
+  );
 
   if (!authed) {
     return (
@@ -370,8 +408,8 @@ export default function AdminSiteBlocksPage() {
                 >
                   <option value="">-- Выберите категорию --</option>
                   {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.title}
+                    <option key={cat.id} value={cat.slug}>
+                      {cat.title || cat.slug}
                     </option>
                   ))}
                 </select>
@@ -426,9 +464,14 @@ export default function AdminSiteBlocksPage() {
                 ) : (
                   <div className="grid grid-cols-2 gap-2 w-64">
                     {mosaicImages.map((img, idx) => {
+                      const slugOrId =
+                        typeof img.category_id === "string"
+                          ? img.category_id
+                          : "";
+                      const normalizedSlug =
+                        categorySlugById.get(slugOrId) || slugOrId;
                       const catName =
-                        categories.find((c) => c.id === img.category_id)
-                          ?.title || "?";
+                        categoryNameBySlug.get(normalizedSlug) || normalizedSlug || "?";
                       return (
                         <div key={`${img.url}-${idx}`} className="relative group">
                           <Image

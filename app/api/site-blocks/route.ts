@@ -6,6 +6,60 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+type MosaicImage = {
+  url?: string;
+  alt?: string;
+  category_id?: string;
+};
+
+type MosaicContent = {
+  title?: string;
+  subtitle?: string;
+  images?: MosaicImage[];
+};
+
+async function normalizeMosaicCategories(content: MosaicContent) {
+  const images = Array.isArray(content.images) ? content.images : [];
+  if (!images.length) return { content, error: null as string | null };
+
+  const { data: categories, error } = await supabase
+    .from('categories')
+    .select('id, slug');
+
+  if (error) {
+    return { content, error: `Не удалось загрузить категории: ${error.message}` };
+  }
+
+  const slugSet = new Set((categories ?? []).map((c) => c.slug));
+  const idToSlug = new Map((categories ?? []).map((c) => [c.id, c.slug] as const));
+  const invalidCategoryIds: string[] = [];
+
+  const normalizedImages = images.map((image) => {
+    const raw = typeof image?.category_id === 'string' ? image.category_id.trim() : '';
+    if (!raw) return image;
+    if (slugSet.has(raw)) return { ...image, category_id: raw };
+
+    const mappedSlug = idToSlug.get(raw);
+    if (mappedSlug) return { ...image, category_id: mappedSlug };
+
+    invalidCategoryIds.push(raw);
+    return image;
+  });
+
+  if (invalidCategoryIds.length > 0) {
+    const uniqueInvalid = Array.from(new Set(invalidCategoryIds)).join(', ');
+    return {
+      content,
+      error: `Mosaic содержит неизвестные category_id: ${uniqueInvalid}`,
+    };
+  }
+
+  return {
+    content: { ...content, images: normalizedImages },
+    error: null as string | null,
+  };
+}
+
 export async function GET() {
   try {
     const { data, error } = await supabase
@@ -32,7 +86,21 @@ export async function POST(request: NextRequest) {
     if (!key || !type || !content) {
       return NextResponse.json({ error: 'Не указаны поля' }, { status: 400 });
     }
-    const { data, error } = await supabase.from('site_blocks').upsert({ key, type, content }, { onConflict: 'key' }).select().single();
+
+    let normalizedContent = content;
+    if (key === 'homepage_mosaic' && type === 'mosaic') {
+      const normalized = await normalizeMosaicCategories(content as MosaicContent);
+      if (normalized.error) {
+        return NextResponse.json({ error: normalized.error }, { status: 400 });
+      }
+      normalizedContent = normalized.content;
+    }
+
+    const { data, error } = await supabase
+      .from('site_blocks')
+      .upsert({ key, type, content: normalizedContent }, { onConflict: 'key' })
+      .select()
+      .single();
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }

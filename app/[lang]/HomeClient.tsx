@@ -104,16 +104,6 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     []
   );
 
-  console.log("=== DEBUG START ===");
-  console.log("BLOCKS STATE:", blocks);
-  console.log("BLOCKS LENGTH:", blocks?.length);
-  console.log(
-    "TEXT IMAGE FIND:",
-    blocks?.find((b) => b.key === "homepage_text_image")
-  );
-  console.log("TEXT IMAGE MEMO:", textImage);
-  console.log("=== DEBUG END ===");
-
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {!blocks.length && (
