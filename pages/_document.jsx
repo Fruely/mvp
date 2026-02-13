@@ -5,8 +5,7 @@ export default function Document() {
     <Html lang="ru">
       <Head>
         <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="description" content="Froyle MVP - Платформа для бронирования услуг здоровья и благополучия" />
+        <meta name="description" content="Freuly - Платформа для поиска специалистов на родном языке" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </Head>
