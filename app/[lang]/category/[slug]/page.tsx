@@ -66,21 +66,13 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
       setCategory(catData);
 
       try {
-        console.log("[CategoryPage] Loading specialists for category:", { slug, categoryId: catData.id });
         const response = await fetch(`/api/specialists/list?category_id=${catData.id}`);
         const result = await response.json();
 
-        // Enhanced logging for diagnosis
-        console.log("[CategoryPage] API response full:", result);
-        console.log("[CategoryPage] response.data type:", typeof result.data, "is_array:", Array.isArray(result.data));
-        console.log("[CategoryPage] response.data length:", result.data?.length);
-
         const specsToSet = result.data || [];
-        console.log("[CategoryPage] About to setSpecialists with:", { count: specsToSet.length, sample: specsToSet.slice(0, 1) });
 
         if (response.ok) {
           setSpecialists(specsToSet);
-          console.log("[CategoryPage] setSpecialists completed, state should update");
         } else {
           console.error("Failed to fetch specialists:", result.error);
         }

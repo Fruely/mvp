@@ -3,6 +3,10 @@ import { createClient } from "@supabase/supabase-js";
 
 // Accept common single-level domains like name@example.com and multi-level domains
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DEPRECATION_HEADERS = {
+  "X-API-Deprecated": "true",
+  "X-API-Replacement": "/api/specialists/application",
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,34 +28,37 @@ export async function POST(request: NextRequest) {
     // ─────────────────────────────────────────────
 
     if (!name || !name.trim()) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Name is required" },
+        { status: 400, headers: DEPRECATION_HEADERS }
+      );
     }
 
     if (!email || !EMAIL_REGEX.test(email)) {
       return NextResponse.json(
         { error: "Invalid email format. Use e.g. name@domain.co.uk" },
-        { status: 400 }
+        { status: 400, headers: DEPRECATION_HEADERS }
       );
     }
 
     if (!phone || !phone.trim()) {
       return NextResponse.json(
         { error: "Phone is required" },
-        { status: 400 }
+        { status: 400, headers: DEPRECATION_HEADERS }
       );
     }
 
     if (!category_id || !category_id.trim()) {
       return NextResponse.json(
         { error: "Category is required" },
-        { status: 400 }
+        { status: 400, headers: DEPRECATION_HEADERS }
       );
     }
 
     if (!Array.isArray(languages) || languages.length === 0) {
       return NextResponse.json(
         { error: "At least one language is required" },
-        { status: 400 }
+        { status: 400, headers: DEPRECATION_HEADERS }
       );
     }
 
@@ -67,12 +74,6 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       { auth: { persistSession: false } }
     );
-    // Env diagnostics: log Supabase project ref for comparison
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const projectRefMatch = supabaseUrl?.match(/^https?:\/\/([^.]+)\.supabase\.co/);
-    const projectRef = projectRefMatch ? projectRefMatch[1] : null;
-    console.log('[env] specialists/create SUPABASE_URL:', supabaseUrl, 'project_ref:', projectRef);
-
     // ─────────────────────────────────────────────
     // 3️⃣ Check email uniqueness
     // ─────────────────────────────────────────────
@@ -85,13 +86,16 @@ export async function POST(request: NextRequest) {
 
     if (emailCheckError) {
       console.error("Email check failed:", emailCheckError);
-      return NextResponse.json({ error: "Database error" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Database error" },
+        { status: 500, headers: DEPRECATION_HEADERS }
+      );
     }
 
     if (existing) {
       return NextResponse.json(
         { error: "Specialist with this email already exists" },
-        { status: 409 }
+        { status: 409, headers: DEPRECATION_HEADERS }
       );
     }
 
@@ -108,7 +112,7 @@ export async function POST(request: NextRequest) {
     if (categoryError || !category) {
       return NextResponse.json(
         { error: "Invalid category" },
-        { status: 400 }
+        { status: 400, headers: DEPRECATION_HEADERS }
       );
     }
 
@@ -141,7 +145,7 @@ export async function POST(request: NextRequest) {
       console.error("Specialist insert failed:", insertError.message);
       return NextResponse.json(
         { error: "Unable to create specialist" },
-        { status: 500 }
+        { status: 500, headers: DEPRECATION_HEADERS }
       );
     }
 
@@ -151,13 +155,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       { success: true, specialist_id: specialist.id },
-      { status: 201 }
+      { status: 201, headers: DEPRECATION_HEADERS }
     );
   } catch (err: any) {
     console.error("Unexpected error:", err);
     return NextResponse.json(
       { error: "Internal server error", details: err.message },
-      { status: 500 }
+      { status: 500, headers: DEPRECATION_HEADERS }
     );
   }
 }
