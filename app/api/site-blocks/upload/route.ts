@@ -33,7 +33,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
     const { data: urlData } = supabase.storage.from('site-blocks').getPublicUrl(data.path);
-    console.log(`[site-blocks upload] Uploaded: ${fileName}`);
     return NextResponse.json({ success: true, url: urlData.publicUrl, fileName });
   } catch (error: any) {
     console.error('[site-blocks upload] Error:', error);

@@ -7,6 +7,10 @@ const DEPRECATION_HEADERS = {
   "X-API-Deprecated": "true",
   "X-API-Replacement": "/api/specialists/application",
 };
+const DEPRECATION_PAYLOAD = {
+  deprecated: true,
+  replacement: "/api/specialists/application",
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,35 +33,38 @@ export async function POST(request: NextRequest) {
 
     if (!name || !name.trim()) {
       return NextResponse.json(
-        { error: "Name is required" },
+        { error: "Name is required", ...DEPRECATION_PAYLOAD },
         { status: 400, headers: DEPRECATION_HEADERS }
       );
     }
 
     if (!email || !EMAIL_REGEX.test(email)) {
       return NextResponse.json(
-        { error: "Invalid email format. Use e.g. name@domain.co.uk" },
+        {
+          error: "Invalid email format. Use e.g. name@domain.co.uk",
+          ...DEPRECATION_PAYLOAD,
+        },
         { status: 400, headers: DEPRECATION_HEADERS }
       );
     }
 
     if (!phone || !phone.trim()) {
       return NextResponse.json(
-        { error: "Phone is required" },
+        { error: "Phone is required", ...DEPRECATION_PAYLOAD },
         { status: 400, headers: DEPRECATION_HEADERS }
       );
     }
 
     if (!category_id || !category_id.trim()) {
       return NextResponse.json(
-        { error: "Category is required" },
+        { error: "Category is required", ...DEPRECATION_PAYLOAD },
         { status: 400, headers: DEPRECATION_HEADERS }
       );
     }
 
     if (!Array.isArray(languages) || languages.length === 0) {
       return NextResponse.json(
-        { error: "At least one language is required" },
+        { error: "At least one language is required", ...DEPRECATION_PAYLOAD },
         { status: 400, headers: DEPRECATION_HEADERS }
       );
     }
@@ -87,14 +94,17 @@ export async function POST(request: NextRequest) {
     if (emailCheckError) {
       console.error("Email check failed:", emailCheckError);
       return NextResponse.json(
-        { error: "Database error" },
+        { error: "Database error", ...DEPRECATION_PAYLOAD },
         { status: 500, headers: DEPRECATION_HEADERS }
       );
     }
 
     if (existing) {
       return NextResponse.json(
-        { error: "Specialist with this email already exists" },
+        {
+          error: "Specialist with this email already exists",
+          ...DEPRECATION_PAYLOAD,
+        },
         { status: 409, headers: DEPRECATION_HEADERS }
       );
     }
@@ -111,7 +121,7 @@ export async function POST(request: NextRequest) {
 
     if (categoryError || !category) {
       return NextResponse.json(
-        { error: "Invalid category" },
+        { error: "Invalid category", ...DEPRECATION_PAYLOAD },
         { status: 400, headers: DEPRECATION_HEADERS }
       );
     }
@@ -144,7 +154,7 @@ export async function POST(request: NextRequest) {
     if (insertError) {
       console.error("Specialist insert failed:", insertError.message);
       return NextResponse.json(
-        { error: "Unable to create specialist" },
+        { error: "Unable to create specialist", ...DEPRECATION_PAYLOAD },
         { status: 500, headers: DEPRECATION_HEADERS }
       );
     }
@@ -154,13 +164,13 @@ export async function POST(request: NextRequest) {
     // ─────────────────────────────────────────────
 
     return NextResponse.json(
-      { success: true, specialist_id: specialist.id },
+      { success: true, specialist_id: specialist.id, ...DEPRECATION_PAYLOAD },
       { status: 201, headers: DEPRECATION_HEADERS }
     );
   } catch (err: any) {
     console.error("Unexpected error:", err);
     return NextResponse.json(
-      { error: "Internal server error", details: err.message },
+      { error: "Internal server error", details: err.message, ...DEPRECATION_PAYLOAD },
       { status: 500, headers: DEPRECATION_HEADERS }
     );
   }
