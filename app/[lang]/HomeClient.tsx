@@ -122,7 +122,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               )}
 
               {/* Layer 3: Floating card (z-10) */}
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-6 w-[calc(100%-2rem)] md:left-16 md:top-1/2 md:bottom-auto md:-translate-y-1/2 md:translate-x-0 md:w-auto max-w-md bg-white rounded-2xl shadow-2xl p-8 z-10">
+              <div className="absolute left-6 top-6 w-[calc(80%-1.6rem)] md:left-8 md:top-8 md:w-auto max-w-[22.4rem] bg-white rounded-2xl shadow-2xl p-[1.6rem] z-10">
 
                 <h2 className="text-3xl font-bold text-gray-900 mb-8">
                   {textImageContent?.title || t(dict, "home.howItWorks.title")}
