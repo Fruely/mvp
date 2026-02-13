@@ -89,30 +89,33 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         heroImageUrl={heroContent.url}
       />
 
-      {textImageContent?.url && (
+      {textImage && (
         <section className="py-24 overflow-x-hidden bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="relative min-h-[520px] overflow-hidden rounded-3xl bg-white">
 
-              {/* Layer 1: Background image (z-0) */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={textImageContent.url}
-                alt={textImageContent.title}
-                className="absolute inset-0 w-full h-full object-cover object-right rounded-3xl z-0"
-              />
-
-              {/* Layer 2: Gradient overlay (z-1) */}
-              <div
-                className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/60 to-transparent pointer-events-none z-[1]"
-                aria-hidden
-              />
+              {textImageContent?.url && (
+                <>
+                  {/* Layer 1: Background image (z-0) */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={textImageContent.url}
+                    alt={textImageContent.title || ""}
+                    className="absolute inset-0 w-full h-full object-cover object-right rounded-3xl z-0"
+                  />
+                  {/* Layer 2: Gradient overlay (z-1) */}
+                  <div
+                    className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/60 to-transparent pointer-events-none z-[1]"
+                    aria-hidden
+                  />
+                </>
+              )}
 
               {/* Layer 3: Floating card (z-10) */}
               <div className="absolute left-1/2 -translate-x-1/2 bottom-6 w-[calc(100%-2rem)] md:left-16 md:top-1/2 md:bottom-auto md:-translate-y-1/2 md:translate-x-0 md:w-auto max-w-md bg-white rounded-2xl shadow-2xl p-8 z-10">
 
                 <h2 className="text-3xl font-bold text-gray-900 mb-8">
-                  {textImageContent.title}
+                  {textImageContent?.title || t(dict, "home.howItWorks.title")}
                 </h2>
 
                 <div className="space-y-6 text-gray-700">
