@@ -5,11 +5,16 @@ import { NextRequest, NextResponse } from 'next/server';
  * - expects header `x-admin-token`
  * - compares to `process.env.ADMIN_API_TOKEN`
  */
+let hasLoggedMissingToken = false;
+
 export function requireAdminToken(request: NextRequest): NextResponse | null {
   const noStoreHeaders = { 'Cache-Control': 'no-store' };
   const expectedToken = process.env.ADMIN_API_TOKEN;
   if (!expectedToken) {
-    console.error('[admin] Missing ADMIN_API_TOKEN env var');
+    if (!hasLoggedMissingToken) {
+      hasLoggedMissingToken = true;
+      console.error('[admin] Missing ADMIN_API_TOKEN env var');
+    }
     return NextResponse.json(
       { error: 'Server misconfigured' },
       { status: 500, headers: noStoreHeaders }
