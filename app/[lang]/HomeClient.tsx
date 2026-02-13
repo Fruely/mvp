@@ -102,12 +102,12 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       <section className="bg-[#F8FAFD] py-24">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <p className="text-2xl md:text-3xl font-medium text-gray-900 leading-snug">
-            Вы объясняете — но не так.
+            Вы объясняете — но вас не понимают.
           </p>
 
           <p className="mt-6 text-lg md:text-xl text-gray-500 leading-relaxed">
-            Сомневаетесь — но не можете задать вопрос.<br />
-            Откладываете важное — потому что боитесь быть непонятым.
+            Сомневаетесь — потому что сложно задать вопрос.<br />
+            Откладываете важное — боясь быть непонятым.
           </p>
 
           <p className="mt-10 text-xl md:text-2xl text-gray-900 font-semibold">
