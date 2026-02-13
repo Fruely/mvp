@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "preinstall": "node scripts/check-node-version.js",
     "dev": "next dev",
     "dev:reset": "rm -rf .next && next dev",
     "build": "next build",
