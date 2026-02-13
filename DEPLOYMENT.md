@@ -1,6 +1,6 @@
 # 📦 Развертывание (Deployment)
 
-Полное руководство по развертыванию проекта Froyle MVP на различные платформы.
+Полное руководство по развертыванию проекта Freuly MVP на различные платформы.
 
 ## 📋 Содержание
 
@@ -115,8 +115,10 @@ jobs:
 3. Добавить переменные из `.env.example`:
 
 ```
-NEXT_PUBLIC_API_URL=https://api.froyle.com
-DATABASE_URL=your_db_url
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+ADMIN_API_TOKEN=your_admin_token
 ```
 
 **Преимущества**:
@@ -149,7 +151,7 @@ npm run build
   status = 200
 
 [context.production.environment]
-  NODE_VERSION = "18.0.0"
+  NODE_VERSION = "20.0.0"
   NODE_ENV = "production"
 ```
 
@@ -183,7 +185,7 @@ netlify deploy --prod
 
 ```dockerfile
 # Build stage
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -194,7 +196,7 @@ COPY . .
 RUN npm run build
 
 # Runtime stage
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -233,7 +235,9 @@ docker run -p 3000:3000 froyle-mvp
 
 # Запустить с environment переменными
 docker run -p 3000:3000 \
-  -e NEXT_PUBLIC_API_URL=https://api.froyle.com \
+  -e NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co \
+  -e NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key \
+  -e SUPABASE_SERVICE_ROLE_KEY=your_service_role_key \
   froyle-mvp
 ```
 
@@ -270,8 +274,8 @@ ssh root@your_droplet_ip
 # 2. Обновить систему
 apt update && apt upgrade -y
 
-# 3. Установить Node.js
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+# 3. Установить Node.js (LTS 20)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 apt install -y nodejs
 
 # 4. Установить PM2
@@ -355,11 +359,11 @@ sudo systemctl start certbot.timer
 2. Добавить переменные:
 
 ```
-NEXT_PUBLIC_API_URL=https://api.froyle.com
-DATABASE_URL=postgresql://user:pass@host/db
-NEXTAUTH_SECRET=your_secret_key
-STRIPE_PUBLIC_KEY=pk_live_...
-STRIPE_SECRET_KEY=sk_live_...
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+ADMIN_API_TOKEN=your_admin_token
+TERMS_VERSION=1.0
 ```
 
 ### На сервере
@@ -369,7 +373,10 @@ STRIPE_SECRET_KEY=sk_live_...
 nano /var/www/froyle-mvp/.env
 
 # Содержимое:
-NEXT_PUBLIC_API_URL=https://api.froyle.com
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+ADMIN_API_TOKEN=your_admin_token
 NODE_ENV=production
 ```
 
@@ -517,7 +524,7 @@ npm run build
 npm install
 
 # Проверить переменные окружения
-echo $NEXT_PUBLIC_API_URL
+echo $NEXT_PUBLIC_SUPABASE_URL
 ```
 
 ### Проблема: Медленная загрузка
