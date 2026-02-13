@@ -3,8 +3,10 @@
 ## Critical Files Ready for Deploy
 
 ✅ **API Endpoints Created:**
-- `/app/api/specialists/create/route.ts` (3KB)
-- `/app/api/admin/approve-specialist/route.ts` (1.8KB)
+- `/app/api/specialists/application/route.ts`
+- `/app/api/specialists/verify-email/route.ts`
+- `/app/api/admin/specialists/pending/route.ts`
+- `/app/api/admin/specialists/update/route.ts`
 
 ✅ **Server Infrastructure:**
 - `/lib/supabase/server.ts` (637 bytes)
@@ -68,24 +70,22 @@ After adding env vars, trigger redeploy:
 ### 1. Test Specialist Registration API
 
 ```bash
-curl -X POST https://your-domain.vercel.app/api/specialists/create \
+curl -X POST https://your-domain.vercel.app/api/specialists/application \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Production Test",
     "email": "prodtest@example.com",
+    "name": "Production Test",
     "phone": "+49123456789",
-    "category_id": "2b3b53ea-6139-4380-a305-036a298b9b2f",
-    "languages": ["de", "en"],
-    "bio": "Testing production deployment"
+    "category_id": "psychologists",
+    "proof_link": "https://example.com/proof.pdf",
+    "terms_accepted": true
   }'
 ```
 
 **Expected Response:**
 ```json
 {
-  "success": true,
-  "specialist_id": "uuid-here",
-  "message": "Specialist registered successfully. Awaiting approval."
+  "success": true
 }
 ```
 
@@ -105,7 +105,7 @@ Login with token → should see pending specialists → approve/reject should wo
 
 ## Troubleshooting
 
-### ❌ 500 Error on `/api/specialists/create`
+### ❌ 500 Error on `/api/specialists/application`
 
 **Check Vercel Function Logs:**
 ```bash
@@ -144,10 +144,11 @@ git push
 
 After deploy, verify these endpoints are live:
 
-1. ✅ `POST /api/specialists/create` → 201 (success) or 400/500 (error)
-2. ✅ `POST /api/admin/approve-specialist` → 200 (success)
-3. ✅ Frontend form at `/become-specialist` → submits to API
-4. ✅ Admin panel at `/admin` → calls approval API
+1. ✅ `POST /api/specialists/application` → 200 (success) or 400/500 (error)
+2. ✅ `GET /api/specialists/verify-email?token=...` → подтверждает email
+3. ✅ `GET /api/admin/specialists/pending` → список заявок модерации
+4. ✅ `POST /api/admin/specialists/update` → approve/reject работает
+5. ✅ Frontend form at `/become-specialist` → submits to application API
 
 ---
 
