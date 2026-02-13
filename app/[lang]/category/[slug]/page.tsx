@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { getSupabase } from "@/lib/supabaseClient";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import uaDict from "@/locales/ua.json";
 
@@ -19,6 +18,8 @@ interface Category {
   id: string;
   slug: string;
   title: string;
+  specialists_count: number;
+  is_clickable: boolean;
 }
 
 export default function CategoryPage({ params }: { params: { lang: string; slug: string } }) {
@@ -50,46 +51,70 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
 
   useEffect(() => {
     const loadData = async () => {
-      const supabase = getSupabase();
-
-      const { data: catData } = await supabase
-        .from("categories")
-        .select("*")
-        .eq("slug", slug)
-        .single();
-
-      if (!catData) {
-        setLoading(false);
-        return;
-      }
-
-      setCategory(catData);
-
       try {
-        const response = await fetch(`/api/specialists/list?category_id=${catData.id}`);
+        const categoriesRes = await fetch("/api/specialists/categories", {
+          cache: "no-store",
+        });
+        const categoriesJson = await categoriesRes.json();
+        const categories = Array.isArray(categoriesJson?.data)
+          ? categoriesJson.data
+          : [];
+        const catData = categories.find(
+          (c: any) => c && typeof c.slug === "string" && c.slug === slug
+        );
+
+        if (!catData) {
+          setLoading(false);
+          return;
+        }
+
+        const normalizedCategory: Category = {
+          id: String(catData.id),
+          slug: String(catData.slug),
+          title: String(catData.title || catData.slug),
+          specialists_count: Number(catData.specialists_count || 0),
+          is_clickable: Boolean(catData.is_clickable),
+        };
+
+        setCategory(normalizedCategory);
+
+        if (!normalizedCategory.is_clickable) {
+          setSpecialists([]);
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(
+          `/api/specialists/list?category_id=${normalizedCategory.id}`
+        );
         const result = await response.json();
-
-        const specsToSet = result.data || [];
-
         if (response.ok) {
-          setSpecialists(specsToSet);
+          setSpecialists(Array.isArray(result.data) ? result.data : []);
         } else {
           console.error("Failed to fetch specialists:", result.error);
+          setSpecialists([]);
         }
       } catch (err) {
-        console.error("Error fetching specialists:", err);
+        console.error("Error fetching category data:", err);
+        setSpecialists([]);
+        setCategory(null);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     loadData();
   }, [slug]);
 
   const foundText = useMemo(() => {
-    const template = (t as any)(dict, "category.found", { count: specialists.length }) as string;
-    return String(template).replace(/\{\{\s*count\s*\}\}/g, String(specialists.length));
-  }, [dict, specialists.length]);
+    const visibleCount = category?.is_clickable
+      ? specialists.length
+      : (category?.specialists_count ?? 0);
+    const template = (t as any)(dict, "category.found", {
+      count: visibleCount,
+    }) as string;
+    return String(template).replace(/\{\{\s*count\s*\}\}/g, String(visibleCount));
+  }, [dict, specialists.length, category]);
 
   if (loading) {
     return (
@@ -129,7 +154,28 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
           <p className="text-lg text-gray-600 mt-2">{foundText}</p>
         </div>
 
-        {specialists.length === 0 ? (
+        {!category.is_clickable ? (
+          <div className="bg-white rounded-2xl shadow-lg p-12 text-center max-w-2xl mx-auto">
+            <div className="text-6xl mb-4">⏳</div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              {t(dict, "category.comingSoon.title", {
+                defaultValue: "Категория скоро станет доступной",
+              })}
+            </h2>
+            <p className="text-gray-600 mb-6">
+              {t(dict, "category.comingSoon.subtitle", {
+                defaultValue:
+                  "Мы откроем эту категорию, как только появится достаточно подтверждённых специалистов.",
+              })}
+            </p>
+            <Link
+              href={langPrefix}
+              className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
+            >
+              {t(dict, "common.toHome")}
+            </Link>
+          </div>
+        ) : specialists.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-lg p-12 text-center max-w-2xl mx-auto">
             <div className="text-6xl mb-4">🔍</div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">{t(dict, "category.empty.title")}</h2>
