@@ -34,8 +34,23 @@ type Block = {
   content: ImageBlockContent | MosaicBlockContent | TextImageBlockContent;
 };
 
+type CategoryStat = {
+  id: string;
+  slug: string;
+  title: string | null;
+  specialists_count: number;
+  is_clickable: boolean;
+};
+
+const PLACEHOLDER_CATEGORIES = [
+  { id: "psychologists", icon: "🧠" },
+  { id: "masseurs", icon: "💆" },
+  { id: "tutors", icon: "📚" },
+];
+
 export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionary }) {
   const [blocks, setBlocks] = useState<Block[]>([]);
+  const [categories, setCategories] = useState<CategoryStat[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -50,7 +65,19 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       }
     }
 
+    async function loadCategories() {
+      try {
+        const res = await fetch("/api/specialists/categories", { cache: "no-store" });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || "Ошибка загрузки категорий");
+        setCategories(Array.isArray(json.data) ? json.data : []);
+      } catch (e: any) {
+        setError((prev) => prev || e.message || "Ошибка загрузки категорий");
+      }
+    }
+
     loadBlocks();
+    loadCategories();
 
     // Быстрая реакция на публикацию из админки
     const handler = () => loadBlocks();
@@ -69,11 +96,13 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
   const mosaicContent = (mosaic?.content as MosaicBlockContent) || {};
   const textImageContent = (textImage?.content as TextImageBlockContent) || {};
 
-  const placeholderCategories = [
-    { id: "psychologists", icon: "🧠" },
-    { id: "masseurs", icon: "💆" },
-    { id: "tutors", icon: "📚" },
-  ];
+  const placeholderIconByCategoryId = useMemo(
+    () =>
+      new Map(
+        PLACEHOLDER_CATEGORIES.map((category) => [category.id, category.icon] as const)
+      ),
+    []
+  );
 
   console.log("=== DEBUG START ===");
   console.log("BLOCKS STATE:", blocks);
@@ -188,29 +217,31 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
             </p>
           </div>
 
-          {mosaicContent.images && mosaicContent.images.length > 0 ? (
+          {categories.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-12">
-              {mosaicContent.images.map((img, idx) => {
-                const categoryId = img.category_id || "";
-                const categoryTitle = t(dict, `categories.${categoryId}`, {
+              {categories.map((category, idx) => {
+                const categoryTitle = category.title || t(dict, `categories.${category.slug}`, {
                   defaultValue: t(dict, "categories.default"),
                 });
+                const categoryImage = mosaicContent.images?.find(
+                  (img) =>
+                    img.category_id === category.slug ||
+                    img.category_id === category.id
+                );
+                const icon = placeholderIconByCategoryId.get(category.slug) || "📁";
+                const clickable = category.is_clickable;
 
-                return (
-                  <Link
-                    key={`${img.url}-${idx}`}
-                    href={categoryId ? `/${lang}/category/${categoryId}` : "#"}
-                    className="block mx-auto"
-                  >
-                    <div className="group relative w-full max-w-[200px] md:max-w-[220px] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 bg-white">
-                      <div
-                        className="relative w-full aspect-square"
-                        style={{ aspectRatio: "1 / 1" }}
-                      >
+                const card = (
+                  <div className="group relative w-full max-w-[200px] md:max-w-[220px] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 bg-white">
+                    <div
+                      className={`relative w-full aspect-square ${clickable ? "" : "opacity-70"}`}
+                      style={{ aspectRatio: "1 / 1" }}
+                    >
+                      {categoryImage?.url ? (
                         <Image
                           unoptimized
-                          src={img.url}
-                          alt={img.alt || `mosaic-${idx}`}
+                          src={categoryImage.url}
+                          alt={categoryImage.alt || categoryTitle}
                           fill
                           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                           className="mosaic-card-img object-cover w-full h-full group-hover:scale-[1.02] transition-transform duration-300"
@@ -220,27 +251,58 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                               'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23e5e7eb" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%239ca3af" font-family="sans-serif" font-size="16"%3EImage%3C/text%3E%3C/svg%3E';
                           }}
                         />
-                        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/80 via-black/50 to-transparent pointer-events-none">
-                          <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
-                            <span className="text-white text-sm font-semibold drop-shadow-lg line-clamp-1">
-                              {categoryTitle}
-                            </span>
-                          </div>
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center text-4xl">
+                          {icon}
+                        </div>
+                      )}
+                      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/80 via-black/50 to-transparent pointer-events-none">
+                        <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
+                          <span className="text-white text-sm font-semibold drop-shadow-lg line-clamp-1">
+                            {categoryTitle}
+                          </span>
                         </div>
                       </div>
-                      <style jsx>{`
-                        .group:hover :global(.mosaic-card-img) {
-                          transform: scale(1.02);
-                        }
-                      `}</style>
+                      {!clickable && (
+                        <div className="absolute top-2 right-2 rounded-full bg-white/90 px-2 py-1 text-[10px] font-semibold text-gray-700">
+                          Soon
+                        </div>
+                      )}
                     </div>
+                    <style jsx>{`
+                      .group:hover :global(.mosaic-card-img) {
+                        transform: scale(1.02);
+                      }
+                    `}</style>
+                  </div>
+                );
+
+                if (!clickable) {
+                  return (
+                    <div
+                      key={`${category.id}-${idx}`}
+                      className="block mx-auto cursor-not-allowed"
+                      aria-disabled="true"
+                    >
+                      {card}
+                    </div>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={`${category.id}-${idx}`}
+                    href={`/${lang}/category/${category.slug}`}
+                    className="block mx-auto"
+                  >
+                    {card}
                   </Link>
                 );
               })}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {placeholderCategories.map((category) => (
+              {PLACEHOLDER_CATEGORIES.map((category) => (
                 <Link key={category.id} href={`/${lang}/category/${category.id}`}>
                   <div className="group bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl border border-gray-100">
                     <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-full flex items-center justify-center text-4xl shadow-md group-hover:shadow-lg transition">
