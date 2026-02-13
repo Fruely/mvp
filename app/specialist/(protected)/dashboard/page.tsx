@@ -173,10 +173,10 @@ export default async function SpecialistDashboardPage() {
         <footer className="py-6 text-center text-sm text-gray-500">
           Есть вопросы? Напишите нам:{" "}
           <a
-            href="mailto:support@froyle.de"
+            href="mailto:ihfo@freuly.de"
             className="font-medium text-emerald-600 hover:text-emerald-700"
           >
-            support@froyle.de
+            ihfo@freuly.de
           </a>
         </footer>
       </div>
