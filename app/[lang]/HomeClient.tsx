@@ -75,6 +75,19 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     { id: "tutors", icon: "📚" },
   ];
 
+  console.log("=== DEBUG BLOCKS START ===");
+  console.log("BLOCKS:", blocks);
+  console.log("BLOCKS LENGTH:", blocks?.length);
+  blocks?.forEach((b, i) => {
+    console.log(`BLOCK ${i}:`, {
+      key: b.key,
+      type: typeof b.key,
+      equals: b.key === "homepage_text_image",
+    });
+  });
+  console.log("TEXT IMAGE RESULT:", textImage);
+  console.log("=== DEBUG BLOCKS END ===");
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {!blocks.length && (
