@@ -75,18 +75,15 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     { id: "tutors", icon: "📚" },
   ];
 
-  console.log("=== DEBUG BLOCKS START ===");
-  console.log("BLOCKS:", blocks);
+  console.log("=== DEBUG START ===");
+  console.log("BLOCKS STATE:", blocks);
   console.log("BLOCKS LENGTH:", blocks?.length);
-  blocks?.forEach((b, i) => {
-    console.log(`BLOCK ${i}:`, {
-      key: b.key,
-      type: typeof b.key,
-      equals: b.key === "homepage_text_image",
-    });
-  });
-  console.log("TEXT IMAGE RESULT:", textImage);
-  console.log("=== DEBUG BLOCKS END ===");
+  console.log(
+    "TEXT IMAGE FIND:",
+    blocks?.find((b) => b.key === "homepage_text_image")
+  );
+  console.log("TEXT IMAGE MEMO:", textImage);
+  console.log("=== DEBUG END ===");
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -102,7 +99,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         heroImageUrl={heroContent.url}
       />
 
-      {textImage && (
+      {true && (
         <section className="py-24 overflow-x-hidden bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="relative min-h-[520px] overflow-hidden rounded-3xl bg-white">
