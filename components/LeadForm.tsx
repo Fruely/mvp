@@ -64,8 +64,6 @@ export default function LeadForm({ specialistId }: LeadFormProps) {
       message: message || null,
     };
 
-    console.log("[LeadForm] Sending payload:", payload);
-
     try {
       const res = await fetch("/api/leads/create", {
         method: "POST",
