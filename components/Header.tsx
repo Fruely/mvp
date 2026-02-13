@@ -42,7 +42,7 @@ export default function Header({ lang, dict = fallbackDict, children }: HeaderPr
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
         <Link
           href={`/${lang}`}
-          className="text-xl font-bold text-blue-600 shrink-0 hover:text-blue-700 transition"
+          className="text-xl font-bold text-[#3B5BDB] shrink-0 hover:text-[#364FC7] transition-colors duration-200"
         >
           FREULY
         </Link>

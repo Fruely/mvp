@@ -103,7 +103,7 @@ export default function HeroSearch({
                 <button
                   type="submit"
                   disabled={!canSubmit}
-                  className="w-full sm:w-auto px-5 py-2 min-h-[2.25rem] text-sm font-semibold rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-900"
+                  className="w-full sm:w-auto px-5 py-2 min-h-[2.25rem] text-sm font-semibold rounded-lg bg-[#3B5BDB] text-white hover:bg-[#364FC7] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#3B5BDB]"
                 >
                   Поиск
                 </button>
