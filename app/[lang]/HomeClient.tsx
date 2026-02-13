@@ -102,17 +102,16 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       <section className="bg-[#F8FAFD] py-24">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <p className="text-2xl md:text-3xl font-medium text-gray-900 leading-snug">
-            Иногда вы объясняете — но вас не понимают.
+            {t(dict, "transitional.line1")}
           </p>
 
           <p className="mt-6 text-lg md:text-xl text-gray-500 leading-relaxed">
-            Сомневаетесь — потому что сложно задать вопрос.<br />
-            Откладываете важное — боясь быть непонятым.
+            {t(dict, "transitional.line2")}<br />
+            {t(dict, "transitional.line3")}
           </p>
 
           <p className="mt-10 text-xl md:text-2xl text-gray-900 font-semibold">
-            Поэтому <span className="text-primary">Freuly</span> соединяет вас
-            со специалистами, которые говорят на вашем родном языке.
+            {t(dict, "transitional.final")}
           </p>
         </div>
       </section>
