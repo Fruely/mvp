@@ -17,7 +17,7 @@ interface Specialist {
 interface Category {
   id: string;
   slug: string;
-  title: string;
+  title: string | null;
   specialists_count: number;
   is_clickable: boolean;
 }
@@ -25,7 +25,7 @@ interface Category {
 interface ParentChildCategory {
   id: string;
   slug: string;
-  title: string;
+  title: string | null;
   specialists_count: number;
   is_clickable: boolean;
 }
@@ -33,7 +33,7 @@ interface ParentChildCategory {
 interface ParentCategory {
   id: string;
   slug: string;
-  title: string;
+  title: string | null;
   specialists_count: number;
   is_clickable: boolean;
   children: ParentChildCategory[];
@@ -50,6 +50,11 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
   const [parentCategory, setParentCategory] = useState<ParentCategory | null>(null);
   const [specialists, setSpecialists] = useState<Specialist[]>([]);
   const [loading, setLoading] = useState(true);
+  const getCategoryLabel = (title: string | null, categorySlug: string) =>
+    title ??
+    t(dict, `categories.${categorySlug}`, {
+      defaultValue: t(dict, "categories.default"),
+    });
 
   useEffect(() => {
     let cancelled = false;
@@ -86,7 +91,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
           const normalizedParent: ParentCategory = {
             id: String(parentData.id),
             slug: String(parentData.slug),
-            title: String(parentData.title || parentData.slug),
+            title: parentData.title ? String(parentData.title) : null,
             specialists_count: Number(parentData.specialists_count || 0),
             is_clickable: Boolean(parentData.is_clickable),
             children: (Array.isArray(parentData.children) ? parentData.children : [])
@@ -99,7 +104,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
               .map((child: any) => ({
                 id: String(child.id),
                 slug: String(child.slug),
-                title: String(child.title || child.slug),
+                title: child.title ? String(child.title) : null,
                 specialists_count: Number(child.specialists_count || 0),
                 is_clickable: Boolean(child.is_clickable),
               })),
@@ -131,7 +136,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
         const normalizedCategory: Category = {
           id: String(catData.id),
           slug: String(catData.slug),
-          title: String(catData.title || catData.slug),
+          title: catData.title ? String(catData.title) : null,
           specialists_count: Number(catData.specialists_count || 0),
           is_clickable: Boolean(catData.is_clickable),
         };
@@ -198,7 +203,9 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
               <Link href={langPrefix} className="text-blue-600 hover:text-blue-700 font-medium mb-4 inline-block">
                 {t(dict, "common.backToHome")}
               </Link>
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900">{parentCategory.title}</h1>
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
+                {getCategoryLabel(parentCategory.title, parentCategory.slug)}
+              </h1>
               <p className="text-lg text-gray-600 mt-2">
                 {t(dict, "category.parent.subtitle")}
               </p>
@@ -230,7 +237,9 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2 mb-3">
-                      <h3 className="text-xl font-semibold text-gray-900">{child.title}</h3>
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        {getCategoryLabel(child.title, child.slug)}
+                      </h3>
                       {!child.is_clickable ? (
                         <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] font-semibold text-gray-600">
                           {t(dict, "common.soon")}
@@ -286,7 +295,9 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
           <Link href={langPrefix} className="text-blue-600 hover:text-blue-700 font-medium mb-4 inline-block">
             {t(dict, "common.backToHome")}
           </Link>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900">{category.title}</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
+            {getCategoryLabel(category.title, category.slug)}
+          </h1>
           <p className="text-lg text-gray-600 mt-2">{foundText}</p>
         </div>
 
