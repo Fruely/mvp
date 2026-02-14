@@ -106,7 +106,7 @@ export default function AdminSiteBlocksPage() {
 
   async function fetchCategories() {
     try {
-      const res = await fetch("/api/specialists/categories?min_count=0", {
+      const res = await fetch("/api/specialists/categories?mode=parents&min_count=0", {
         cache: "no-store",
       });
       const json = await res.json();
