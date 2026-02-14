@@ -397,8 +397,8 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {PLACEHOLDER_CATEGORIES.map((category) => (
-                <Link key={category.id} href={`/${lang}/category/${category.id}`}>
-                  <div className="group bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl border border-gray-100">
+                <div key={category.id} className="relative">
+                  <div className="group bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 text-center cursor-not-allowed border border-gray-100 opacity-80">
                     <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-full flex items-center justify-center text-4xl shadow-md group-hover:shadow-lg transition">
                       {category.icon}
                     </div>
@@ -408,7 +408,10 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                       })}
                     </h3>
                   </div>
-                </Link>
+                  <span className="absolute top-3 right-3 rounded-full bg-white/90 px-2 py-1 text-[10px] font-semibold text-gray-700">
+                    {t(dict, "common.soon", { defaultValue: "Soon" })}
+                  </span>
+                </div>
               ))}
             </div>
           )}
