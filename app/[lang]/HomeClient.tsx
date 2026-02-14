@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 import HeroSearch from "@/components/HeroSearch";
@@ -70,7 +69,16 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         const res = await fetch("/api/specialists/categories", { cache: "no-store" });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || "Ошибка загрузки категорий");
-        setCategories(Array.isArray(json.data) ? json.data : []);
+        const data = Array.isArray(json.data) ? json.data : [];
+        setCategories(
+          data.filter(
+            (item: any) =>
+              item &&
+              typeof item.id === "string" &&
+              typeof item.slug === "string" &&
+              item.slug.trim().length > 0
+          )
+        );
       } catch (e: any) {
         setError((prev) => prev || e.message || "Ошибка загрузки категорий");
       }
@@ -95,6 +103,23 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
   const heroContent = (hero?.content as ImageBlockContent) || {};
   const mosaicContent = (mosaic?.content as MosaicBlockContent) || {};
   const textImageContent = (textImage?.content as TextImageBlockContent) || {};
+  const mosaicImages = useMemo(
+    () =>
+      (Array.isArray(mosaicContent.images) ? mosaicContent.images : []).filter(
+        (item): item is MosaicImage => Boolean(item && typeof item.url === "string" && item.url)
+      ),
+    [mosaicContent.images]
+  );
+
+  const mosaicImageByCategory = useMemo(() => {
+    const map = new Map<string, MosaicImage>();
+    for (const img of mosaicImages) {
+      const raw = typeof img.category_id === "string" ? img.category_id.trim().toLowerCase() : "";
+      if (!raw || map.has(raw)) continue;
+      map.set(raw, img);
+    }
+    return map;
+  }, [mosaicImages]);
 
   const placeholderIconByCategoryId = useMemo(
     () =>
@@ -213,11 +238,12 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 const categoryTitle = category.title || t(dict, `categories.${category.slug}`, {
                   defaultValue: t(dict, "categories.default"),
                 });
-                const categoryImage = mosaicContent.images?.find(
-                  (img) =>
-                    img.category_id === category.slug ||
-                    img.category_id === category.id
-                );
+                const slugKey = typeof category.slug === "string" ? category.slug.trim().toLowerCase() : "";
+                const idKey = typeof category.id === "string" ? category.id.trim().toLowerCase() : "";
+                const categoryImage =
+                  mosaicImageByCategory.get(slugKey) ||
+                  mosaicImageByCategory.get(idKey) ||
+                  mosaicImages[idx % Math.max(mosaicImages.length, 1)];
                 const icon = placeholderIconByCategoryId.get(category.slug) || "📁";
                 const clickable = category.is_clickable;
 
@@ -228,13 +254,12 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                       style={{ aspectRatio: "1 / 1" }}
                     >
                       {categoryImage?.url ? (
-                        <Image
-                          unoptimized
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
                           src={categoryImage.url}
                           alt={categoryImage.alt || categoryTitle}
-                          fill
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                          className="mosaic-card-img object-cover w-full h-full group-hover:scale-[1.02] transition-transform duration-300"
+                          className="mosaic-card-img absolute inset-0 object-cover w-full h-full group-hover:scale-[1.02] transition-transform duration-300"
+                          loading="lazy"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.src =

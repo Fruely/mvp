@@ -34,7 +34,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const categoryIds = (categories ?? []).map((c) => c.id);
+    const normalizedCategories = (categories ?? []).filter(
+      (category) =>
+        typeof category?.id === "string" &&
+        typeof category?.slug === "string" &&
+        category.slug.trim().length > 0
+    );
+
+    const categoryIds = normalizedCategories.map((c) => c.id);
     let countsByCategoryId = new Map<string, number>();
 
     if (categoryIds.length > 0) {
@@ -63,7 +70,7 @@ export async function GET(request: NextRequest) {
       }, new Map<string, number>());
     }
 
-    const data = (categories ?? []).map((category) => {
+    const data = normalizedCategories.map((category) => {
       const specialistsCount = countsByCategoryId.get(category.id) ?? 0;
       return {
         ...category,
