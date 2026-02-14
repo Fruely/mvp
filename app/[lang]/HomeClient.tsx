@@ -37,8 +37,16 @@ type CategoryStat = {
   id: string;
   slug: string;
   title: string | null;
+  parent_id?: string | null;
   specialists_count: number;
   is_clickable: boolean;
+  children?: Array<{
+    id: string;
+    slug: string;
+    title: string | null;
+    specialists_count: number;
+    is_clickable: boolean;
+  }>;
 };
 
 const PLACEHOLDER_CATEGORIES = [
@@ -51,8 +59,49 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [categories, setCategories] = useState<CategoryStat[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const categoryHierarchyMode =
+    process.env.NEXT_PUBLIC_CATEGORY_HIERARCHY_MODE === "parents"
+      ? "parents"
+      : "children";
 
   useEffect(() => {
+    function normalizeCategories(rawData: any[]): CategoryStat[] {
+      return rawData
+        .filter(
+          (item: any) =>
+            item &&
+            typeof item.id === "string" &&
+            typeof item.slug === "string" &&
+            item.slug.trim().length > 0
+        )
+        .map((item: any) => ({
+          id: String(item.id),
+          slug: String(item.slug),
+          title: item.title ? String(item.title) : null,
+          parent_id:
+            typeof item.parent_id === "string" ? item.parent_id : null,
+          specialists_count: Number(item.specialists_count || 0),
+          is_clickable: Boolean(item.is_clickable),
+          children: Array.isArray(item.children)
+            ? item.children
+                .filter(
+                  (child: any) =>
+                    child &&
+                    typeof child.id === "string" &&
+                    typeof child.slug === "string" &&
+                    child.slug.trim().length > 0
+                )
+                .map((child: any) => ({
+                  id: String(child.id),
+                  slug: String(child.slug),
+                  title: child.title ? String(child.title) : null,
+                  specialists_count: Number(child.specialists_count || 0),
+                  is_clickable: Boolean(child.is_clickable),
+                }))
+            : undefined,
+        }));
+    }
+
     async function loadBlocks() {
       try {
         const res = await fetch("/api/site-blocks", { cache: "no-store" });
@@ -66,18 +115,34 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
 
     async function loadCategories() {
       try {
-        const res = await fetch("/api/specialists/categories", { cache: "no-store" });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error || "Ошибка загрузки категорий");
-        const data = Array.isArray(json.data) ? json.data : [];
+        if (categoryHierarchyMode === "parents") {
+          const parentRes = await fetch(
+            "/api/specialists/categories?mode=parents&include_children=1",
+            { cache: "no-store" }
+          );
+          const parentJson = await parentRes.json();
+          if (!parentRes.ok) {
+            throw new Error(parentJson.error || "Ошибка загрузки parent-категорий");
+          }
+          const parentData = normalizeCategories(
+            Array.isArray(parentJson.data) ? parentJson.data : []
+          );
+
+          if (parentData.length > 0) {
+            setCategories(parentData);
+            return;
+          }
+        }
+
+        const childRes = await fetch("/api/specialists/categories", {
+          cache: "no-store",
+        });
+        const childJson = await childRes.json();
+        if (!childRes.ok) {
+          throw new Error(childJson.error || "Ошибка загрузки категорий");
+        }
         setCategories(
-          data.filter(
-            (item: any) =>
-              item &&
-              typeof item.id === "string" &&
-              typeof item.slug === "string" &&
-              item.slug.trim().length > 0
-          )
+          normalizeCategories(Array.isArray(childJson.data) ? childJson.data : [])
         );
       } catch (e: any) {
         setError((prev) => prev || e.message || "Ошибка загрузки категорий");
@@ -91,7 +156,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     const handler = () => loadBlocks();
     window.addEventListener("storage", handler);
     return () => window.removeEventListener("storage", handler);
-  }, []);
+  }, [categoryHierarchyMode]);
 
   const hero = useMemo(() => blocks.find((b) => b.key === "homepage_hero"), [blocks]);
   const mosaic = useMemo(() => blocks.find((b) => b.key === "homepage_mosaic"), [blocks]);
@@ -236,9 +301,22 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 });
                 const slugKey = typeof category.slug === "string" ? category.slug.trim().toLowerCase() : "";
                 const idKey = typeof category.id === "string" ? category.id.trim().toLowerCase() : "";
+                const imageByChildren =
+                  category.children?.find((child) => {
+                    const childSlugKey = child.slug.trim().toLowerCase();
+                    const childIdKey = child.id.trim().toLowerCase();
+                    return (
+                      mosaicImageByCategory.has(childSlugKey) ||
+                      mosaicImageByCategory.has(childIdKey)
+                    );
+                  }) ?? null;
                 const categoryImage =
                   mosaicImageByCategory.get(slugKey) ||
                   mosaicImageByCategory.get(idKey) ||
+                  (imageByChildren
+                    ? mosaicImageByCategory.get(imageByChildren.slug.trim().toLowerCase()) ||
+                      mosaicImageByCategory.get(imageByChildren.id.trim().toLowerCase())
+                    : undefined) ||
                   mosaicImages[idx % Math.max(mosaicImages.length, 1)];
                 const icon = placeholderIconByCategoryId.get(category.slug) || "📁";
                 const clickable = category.is_clickable;

@@ -13,6 +13,7 @@ export default async function HeaderCategoriesNav({ lang }: { lang: string }) {
   const { data, error } = await supabase
     .from("categories")
     .select("id, slug, title")
+    .not("slug", "is", null)
     .order("title", { ascending: true });
 
   if (error) {
@@ -20,7 +21,9 @@ export default async function HeaderCategoriesNav({ lang }: { lang: string }) {
     return null;
   }
 
-  const categories = (data ?? []) as CategoryRow[];
+  const categories = ((data ?? []) as CategoryRow[]).filter(
+    (category) => typeof category.slug === "string" && category.slug.trim().length > 0
+  );
   if (!categories.length) return null;
 
   return (
