@@ -291,7 +291,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                   return (
                     <div
                       key={`${category.id}-${idx}`}
-                      className="block mx-auto cursor-not-allowed"
+                      className="block w-full mx-auto cursor-not-allowed"
                       aria-disabled="true"
                     >
                       {card}
@@ -303,7 +303,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                   <Link
                     key={`${category.id}-${idx}`}
                     href={`/${lang}/category/${category.slug}`}
-                    className="block mx-auto"
+                    className="block w-full mx-auto"
                   >
                     {card}
                   </Link>
