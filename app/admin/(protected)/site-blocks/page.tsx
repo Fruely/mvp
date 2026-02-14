@@ -26,6 +26,8 @@ type Block = {
   content: ImageBlockContent | MosaicBlockContent;
 };
 
+const DEFAULT_CATEGORY_LABEL = "Категория";
+
 export default function AdminSiteBlocksPage() {
   const router = useRouter();
   const [authed, setAuthed] = useState(false);
@@ -245,7 +247,7 @@ export default function AdminSiteBlocksPage() {
       new Map(
         categories.map((category) => [
           category.slug,
-          category.title || category.slug,
+          category.title || DEFAULT_CATEGORY_LABEL,
         ] as const)
       ),
     [categories]
@@ -409,7 +411,7 @@ export default function AdminSiteBlocksPage() {
                   <option value="">-- Выберите категорию --</option>
                   {categories.map((cat) => (
                     <option key={cat.id} value={cat.slug}>
-                      {cat.title || cat.slug}
+                      {cat.title || DEFAULT_CATEGORY_LABEL}
                     </option>
                   ))}
                 </select>
@@ -471,7 +473,7 @@ export default function AdminSiteBlocksPage() {
                       const normalizedSlug =
                         categorySlugById.get(slugOrId) || slugOrId;
                       const catName =
-                        categoryNameBySlug.get(normalizedSlug) || normalizedSlug || "?";
+                        categoryNameBySlug.get(normalizedSlug) || DEFAULT_CATEGORY_LABEL;
                       const hasKnownCategory = categories.some(
                         (category) => category.slug === normalizedSlug
                       );
@@ -510,7 +512,7 @@ export default function AdminSiteBlocksPage() {
                               ) : null}
                               {categories.map((cat) => (
                                 <option key={cat.id} value={cat.slug}>
-                                  {cat.title || cat.slug}
+                                  {cat.title || DEFAULT_CATEGORY_LABEL}
                                 </option>
                               ))}
                             </select>
