@@ -131,11 +131,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {!blocks.length && (
-        <div className="text-center py-10 text-gray-500">Loading...</div>
-      )}
-      {blocks.length > 0 && (
-        <>
+      <>
       <HeroSearch
         lang={lang}
         title={t(dict, "hero.title")}
@@ -250,8 +246,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 const card = (
                   <div className="group relative w-full max-w-[200px] md:max-w-[220px] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 bg-white">
                     <div
-                      className={`relative w-full aspect-square ${clickable ? "" : "opacity-70"}`}
-                      style={{ aspectRatio: "1 / 1" }}
+                      className={`relative w-full h-[180px] sm:h-[200px] md:h-[220px] ${clickable ? "" : "opacity-70"}`}
                     >
                       {categoryImage?.url ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -336,8 +331,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         </div>
       </section>
 
-        </>
-      )}
+      </>
 
       {error && (
         <div className="fixed bottom-4 right-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg shadow">
