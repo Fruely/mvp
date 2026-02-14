@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
+const DEFAULT_CATEGORY_LABEL = "Категория";
 
 /**
  * GET /api/specialists/verify-email?token=...
@@ -72,14 +73,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    let categoryLabel = row.category_id || "—";
+    let categoryLabel = DEFAULT_CATEGORY_LABEL;
     if (row.category_id) {
       const { data: cat } = await supabase
         .from("categories")
         .select("title, slug")
         .eq("id", row.category_id)
         .maybeSingle();
-      if (cat) categoryLabel = (cat as { title?: string; slug?: string }).title || (cat as { slug?: string }).slug || row.category_id;
+      if (cat) {
+        categoryLabel = (cat as { title?: string }).title || DEFAULT_CATEGORY_LABEL;
+      }
     }
     const createdLabel = row.created_at
       ? new Date(row.created_at).toLocaleString("ru-RU", { dateStyle: "short", timeStyle: "short" })

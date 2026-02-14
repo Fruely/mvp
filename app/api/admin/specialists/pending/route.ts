@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { requireAdminToken } from '@/lib/adminApiAuth';
 
+const DEFAULT_CATEGORY_LABEL = 'Категория';
+
 export async function GET(request: NextRequest) {
   const authResponse = requireAdminToken(request);
   if (authResponse) return authResponse;
@@ -49,7 +51,7 @@ export async function GET(request: NextRequest) {
         .select('id, title, slug')
         .in('id', categoryIds);
       (cats || []).forEach((c: { id: string; title?: string; slug?: string }) => {
-        categoryMap[c.id] = c.title || c.slug || c.id;
+        categoryMap[c.id] = c.title || DEFAULT_CATEGORY_LABEL;
       });
     }
 
@@ -101,7 +103,7 @@ export async function GET(request: NextRequest) {
 
       return {
         ...row,
-        category: row.category_id ? (categoryMap[row.category_id] ?? row.category_id) : null,
+        category: row.category_id ? (categoryMap[row.category_id] ?? DEFAULT_CATEGORY_LABEL) : null,
         claim_url,
         claim_token_used_at,
       };
