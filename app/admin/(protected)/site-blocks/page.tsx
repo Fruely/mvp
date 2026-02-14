@@ -472,18 +472,48 @@ export default function AdminSiteBlocksPage() {
                         categorySlugById.get(slugOrId) || slugOrId;
                       const catName =
                         categoryNameBySlug.get(normalizedSlug) || normalizedSlug || "?";
+                      const hasKnownCategory = categories.some(
+                        (category) => category.slug === normalizedSlug
+                      );
                       return (
                         <div key={`${img.url}-${idx}`} className="relative group">
-                          <Image
-                            unoptimized
-                            src={img.url}
-                            alt={img.alt || `mosaic-${idx}`}
-                            width={128}
-                            height={128}
-                            className="w-32 h-32 object-cover rounded-lg border"
-                          />
-                          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs p-1 rounded-b-lg opacity-0 group-hover:opacity-100 transition">
-                            {catName}
+                          <div className="relative">
+                            <Image
+                              unoptimized
+                              src={img.url}
+                              alt={img.alt || `mosaic-${idx}`}
+                              width={128}
+                              height={128}
+                              className="w-32 h-32 object-cover rounded-lg border"
+                            />
+                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs p-1 rounded-b-lg opacity-0 group-hover:opacity-100 transition">
+                              {catName}
+                            </div>
+                          </div>
+                          <div className="mt-1">
+                            <select
+                              className="w-32 border rounded px-1 py-1 text-[11px]"
+                              value={normalizedSlug}
+                              onChange={(e) => {
+                                const nextCategorySlug = e.target.value;
+                                setMosaicImages((prev) =>
+                                  prev.map((item, itemIdx) =>
+                                    itemIdx === idx
+                                      ? { ...item, category_id: nextCategorySlug }
+                                      : item
+                                  )
+                                );
+                              }}
+                            >
+                              {!hasKnownCategory && normalizedSlug ? (
+                                <option value={normalizedSlug}>{catName}</option>
+                              ) : null}
+                              {categories.map((cat) => (
+                                <option key={cat.id} value={cat.slug}>
+                                  {cat.title || cat.slug}
+                                </option>
+                              ))}
+                            </select>
                           </div>
                           <button
                             className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs hover:bg-red-700"
