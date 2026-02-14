@@ -299,6 +299,9 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 const categoryTitle = category.title || t(dict, `categories.${category.slug}`, {
                   defaultValue: t(dict, "categories.default"),
                 });
+                const categoryCountLabel = t(dict, "category.parent.found", {
+                  defaultValue: "{{count}} специалистов",
+                }).replace(/\{\{\s*count\s*\}\}/g, String(category.specialists_count));
                 const slugKey = typeof category.slug === "string" ? category.slug.trim().toLowerCase() : "";
                 const idKey = typeof category.id === "string" ? category.id.trim().toLowerCase() : "";
                 const imageByChildren =
@@ -346,14 +349,17 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                       )}
                       <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/80 via-black/50 to-transparent pointer-events-none">
                         <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
-                          <span className="text-white text-sm font-semibold drop-shadow-lg line-clamp-1">
+                          <span className="block text-white text-sm font-semibold drop-shadow-lg line-clamp-1">
                             {categoryTitle}
+                          </span>
+                          <span className="block text-white/90 text-[11px] drop-shadow line-clamp-1">
+                            {categoryCountLabel}
                           </span>
                         </div>
                       </div>
                       {!clickable && (
                         <div className="absolute top-2 right-2 rounded-full bg-white/90 px-2 py-1 text-[10px] font-semibold text-gray-700">
-                          Soon
+                          {t(dict, "common.soon", { defaultValue: "Soon" })}
                         </div>
                       )}
                     </div>

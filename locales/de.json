@@ -32,6 +32,18 @@
     "loading": "Wird geladen...",
     "notFound": "Kategorie nicht gefunden",
     "found": "{{count}} Spezialisten gefunden",
+    "comingSoon": {
+      "title": "Diese Kategorie ist bald verfügbar",
+      "subtitle": "Wir schalten diese Kategorie frei, sobald genug verifizierte Fachkräfte verfügbar sind."
+    },
+    "parent": {
+      "subtitle": "Wählen Sie den passenden Bereich innerhalb dieser Kategorie",
+      "found": "{{count}} Fachkräfte",
+      "empty": {
+        "title": "Unterkategorien folgen bald",
+        "subtitle": "Wir fügen laufend neue Bereiche hinzu. Schauen Sie bald wieder vorbei."
+      }
+    },
     "empty": {
       "title": "Keine Spezialisten gefunden",
       "subtitle": "Leider gibt es in dieser Kategorie noch keine Spezialisten"
@@ -53,6 +65,7 @@
     "toHome": "Zur Startseite",
     "backToHome": "← Zur Startseite",
     "more": "Mehr erfahren",
+    "soon": "Bald",
     "tryLater": "Bitte versuchen Sie es später erneut",
     "error": "Ein Fehler ist aufgetreten",
     "unknownError": "Unbekannter Fehler",
