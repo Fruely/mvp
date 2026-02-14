@@ -200,9 +200,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
               </Link>
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900">{parentCategory.title}</h1>
               <p className="text-lg text-gray-600 mt-2">
-                {t(dict, "category.parent.subtitle", {
-                  defaultValue: "Выберите подходящее направление внутри категории",
-                })}
+                {t(dict, "category.parent.subtitle")}
               </p>
             </div>
 
@@ -210,15 +208,10 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
               <div className="bg-white rounded-2xl shadow-lg p-12 text-center max-w-2xl mx-auto">
                 <div className="text-6xl mb-4">⏳</div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                  {t(dict, "category.parent.empty.title", {
-                    defaultValue: "Подкатегории скоро появятся",
-                  })}
+                  {t(dict, "category.parent.empty.title")}
                 </h2>
                 <p className="text-gray-600 mb-6">
-                  {t(dict, "category.parent.empty.subtitle", {
-                    defaultValue:
-                      "Мы добавляем новые направления. Возвращайтесь чуть позже.",
-                  })}
+                  {t(dict, "category.parent.empty.subtitle")}
                 </p>
                 <Link
                   href={langPrefix}
@@ -240,14 +233,15 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                       <h3 className="text-xl font-semibold text-gray-900">{child.title}</h3>
                       {!child.is_clickable ? (
                         <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] font-semibold text-gray-600">
-                          {t(dict, "common.soon", { defaultValue: "Soon" })}
+                          {t(dict, "common.soon")}
                         </span>
                       ) : null}
                     </div>
                     <p className="text-sm text-gray-600 mb-4">
-                      {t(dict, "category.parent.found", {
-                        defaultValue: "{{count}} специалистов",
-                      }).replace(/\{\{\s*count\s*\}\}/g, String(child.specialists_count))}
+                      {t(dict, "category.parent.found").replace(
+                        /\{\{\s*count\s*\}\}/g,
+                        String(child.specialists_count)
+                      )}
                     </p>
                     {child.is_clickable ? (
                       <Link
@@ -258,9 +252,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                       </Link>
                     ) : (
                       <span className="inline-flex items-center text-gray-400 font-medium">
-                        {t(dict, "category.comingSoon.title", {
-                          defaultValue: "Скоро станет доступно",
-                        })}
+                        {t(dict, "category.comingSoon.title")}
                       </span>
                     )}
                   </div>
@@ -302,15 +294,10 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
           <div className="bg-white rounded-2xl shadow-lg p-12 text-center max-w-2xl mx-auto">
             <div className="text-6xl mb-4">⏳</div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              {t(dict, "category.comingSoon.title", {
-                defaultValue: "Категория скоро станет доступной",
-              })}
+              {t(dict, "category.comingSoon.title")}
             </h2>
             <p className="text-gray-600 mb-6">
-              {t(dict, "category.comingSoon.subtitle", {
-                defaultValue:
-                  "Мы откроем эту категорию, как только появится достаточно подтверждённых специалистов.",
-              })}
+              {t(dict, "category.comingSoon.subtitle")}
             </p>
             <Link
               href={langPrefix}

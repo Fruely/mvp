@@ -164,7 +164,7 @@ export default async function HeaderCategoriesNav({ lang }: { lang: string }) {
               <span className="flex items-center justify-between gap-3 text-sm text-gray-400 py-1.5 px-2 -mx-2 rounded cursor-default">
                 <span className="truncate">{cat.title ?? cat.slug}</span>
                 <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-500">
-                  {t(dict, "common.soon", { defaultValue: "Soon" })}
+                  {t(dict, "common.soon")}
                 </span>
               </span>
             )}

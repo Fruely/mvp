@@ -299,9 +299,10 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 const categoryTitle = category.title || t(dict, `categories.${category.slug}`, {
                   defaultValue: t(dict, "categories.default"),
                 });
-                const categoryCountLabel = t(dict, "category.parent.found", {
-                  defaultValue: "{{count}} специалистов",
-                }).replace(/\{\{\s*count\s*\}\}/g, String(category.specialists_count));
+                const categoryCountLabel = t(dict, "category.parent.found").replace(
+                  /\{\{\s*count\s*\}\}/g,
+                  String(category.specialists_count)
+                );
                 const slugKey = typeof category.slug === "string" ? category.slug.trim().toLowerCase() : "";
                 const idKey = typeof category.id === "string" ? category.id.trim().toLowerCase() : "";
                 const imageByChildren =
@@ -359,7 +360,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                       </div>
                       {!clickable && (
                         <div className="absolute top-2 right-2 rounded-full bg-white/90 px-2 py-1 text-[10px] font-semibold text-gray-700">
-                          {t(dict, "common.soon", { defaultValue: "Soon" })}
+                          {t(dict, "common.soon")}
                         </div>
                       )}
                     </div>
@@ -409,7 +410,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                     </h3>
                   </div>
                   <span className="absolute top-3 right-3 rounded-full bg-white/90 px-2 py-1 text-[10px] font-semibold text-gray-700">
-                    {t(dict, "common.soon", { defaultValue: "Soon" })}
+                    {t(dict, "common.soon")}
                   </span>
                 </div>
               ))}
