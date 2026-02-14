@@ -11,7 +11,7 @@ type SpecialistApplicationFormProps = {
   dict: Dictionary;
 };
 
-type Category = { id: string; slug: string; title: string };
+type Category = { id: string; slug: string; title: string | null };
 
 type FormData = {
   email: string;
@@ -63,6 +63,12 @@ export default function SpecialistApplicationForm({
       .then((json: { data?: Category[] }) => setCategories(json.data || []))
       .catch(() => setCategories([]));
   }, []);
+
+  const getCategoryLabel = (category: Category) =>
+    category.title ??
+    t(dict, `categories.${category.slug}`, {
+      defaultValue: t(dict, "categories.default"),
+    });
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -312,7 +318,7 @@ export default function SpecialistApplicationForm({
             >
               <option value="">{t(dict, "application.categoryPlaceholder", { defaultValue: "Оберіть категорію" })}</option>
               {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.title || cat.slug}</option>
+                <option key={cat.id} value={cat.id}>{getCategoryLabel(cat)}</option>
               ))}
             </select>
             {fieldErrors.category_id && <p className="mt-1 text-sm text-red-600">{fieldErrors.category_id}</p>}
