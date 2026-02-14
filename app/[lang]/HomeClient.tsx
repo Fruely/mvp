@@ -49,10 +49,16 @@ type CategoryStat = {
   }>;
 };
 
-const PLACEHOLDER_CATEGORIES = [
+const CATEGORY_ICON_HINTS = [
   { id: "psychologists", icon: "🧠" },
   { id: "masseurs", icon: "💆" },
   { id: "tutors", icon: "📚" },
+];
+
+const FALLBACK_PLACEHOLDERS = [
+  { id: "placeholder-1", icon: "🧩" },
+  { id: "placeholder-2", icon: "✨" },
+  { id: "placeholder-3", icon: "🫶" },
 ];
 
 export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionary }) {
@@ -189,7 +195,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
   const placeholderIconByCategoryId = useMemo(
     () =>
       new Map(
-        PLACEHOLDER_CATEGORIES.map((category) => [category.id, category.icon] as const)
+        CATEGORY_ICON_HINTS.map((category) => [category.id, category.icon] as const)
       ),
     []
   );
@@ -397,16 +403,14 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {PLACEHOLDER_CATEGORIES.map((category) => (
+              {FALLBACK_PLACEHOLDERS.map((category) => (
                 <div key={category.id} className="relative">
                   <div className="group bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 text-center cursor-not-allowed border border-gray-100 opacity-80">
                     <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-full flex items-center justify-center text-4xl shadow-md group-hover:shadow-lg transition">
                       {category.icon}
                     </div>
                     <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition">
-                      {t(dict, `categories.${category.id}`, {
-                        defaultValue: t(dict, "categories.default"),
-                      })}
+                      {t(dict, "categories.default")}
                     </h3>
                   </div>
                   <span className="absolute top-3 right-3 rounded-full bg-white/90 px-2 py-1 text-[10px] font-semibold text-gray-700">
