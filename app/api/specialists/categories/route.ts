@@ -123,10 +123,16 @@ export async function GET(request: NextRequest) {
         };
       });
 
-      return NextResponse.json({
-        data,
-        meta: { min_count: minCount, mode, hierarchy_enabled: hasHierarchy },
-      });
+      const meta: Record<string, unknown> = {
+        min_count: minCount,
+        mode,
+        hierarchy_enabled: hasHierarchy,
+      };
+      if (searchParams.get("debug") === "1") {
+        const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+        meta._debug = { supabase_tail: url ? `***${url.slice(-20)}` : "missing" };
+      }
+      return NextResponse.json({ data, meta });
     }
 
     const childrenByParentId = new Map<string, CategoryRow[]>();
@@ -174,9 +180,23 @@ export async function GET(request: NextRequest) {
       })
       .filter(Boolean);
 
+    const meta: Record<string, unknown> = {
+      min_count: minCount,
+      mode,
+      hierarchy_enabled: hasHierarchy,
+    };
+    if (searchParams.get("debug") === "1") {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+      meta._debug = {
+        supabase_tail: url ? `***${url.slice(-20)}` : "missing",
+        parent_count: parentData.length,
+        raw_parent_count: parentCandidates.length,
+      };
+    }
+
     return NextResponse.json({
       data: parentData,
-      meta: { min_count: minCount, mode, hierarchy_enabled: hasHierarchy },
+      meta,
     });
   } catch (err: unknown) {
     console.error("[specialists/categories] unexpected", err);
