@@ -65,10 +65,6 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [categories, setCategories] = useState<CategoryStat[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const categoryHierarchyMode =
-    process.env.NEXT_PUBLIC_CATEGORY_HIERARCHY_MODE === "parents"
-      ? "parents"
-      : "children";
 
   useEffect(() => {
     function normalizeCategories(rawData: any[]): CategoryStat[] {
@@ -121,23 +117,21 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
 
     async function loadCategories() {
       try {
-        if (categoryHierarchyMode === "parents") {
-          const parentRes = await fetch(
-            "/api/specialists/categories?mode=parents&include_children=1",
-            { cache: "no-store" }
-          );
-          const parentJson = await parentRes.json();
-          if (!parentRes.ok) {
-            throw new Error(parentJson.error || "Ошибка загрузки parent-категорий");
-          }
-          const parentData = normalizeCategories(
-            Array.isArray(parentJson.data) ? parentJson.data : []
-          );
+        const parentRes = await fetch(
+          "/api/specialists/categories?mode=parents&include_children=1",
+          { cache: "no-store" }
+        );
+        const parentJson = await parentRes.json();
+        if (!parentRes.ok) {
+          throw new Error(parentJson.error || "Ошибка загрузки parent-категорий");
+        }
+        const parentData = normalizeCategories(
+          Array.isArray(parentJson.data) ? parentJson.data : []
+        );
 
-          if (parentData.length > 0) {
-            setCategories(parentData);
-            return;
-          }
+        if (parentData.length > 0) {
+          setCategories(parentData);
+          return;
         }
 
         const childRes = await fetch("/api/specialists/categories", {
@@ -162,7 +156,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     const handler = () => loadBlocks();
     window.addEventListener("storage", handler);
     return () => window.removeEventListener("storage", handler);
-  }, [categoryHierarchyMode]);
+  }, []);
 
   const hero = useMemo(() => blocks.find((b) => b.key === "homepage_hero"), [blocks]);
   const mosaic = useMemo(() => blocks.find((b) => b.key === "homepage_mosaic"), [blocks]);
