@@ -17,6 +17,11 @@ function parsePositiveInt(value: string | null | undefined): number | null {
   return num;
 }
 
+function isCategoryClickable(specialistsCount: number, minCount: number): boolean {
+  // Keep empty categories visible in API while preventing dead links in UI.
+  return specialistsCount > 0 && specialistsCount >= minCount;
+}
+
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
   const parts = token.split(".");
   if (parts.length < 2) return null;
@@ -102,10 +107,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const debugEnabled = searchParams.get("debug") === "1";
     const queryMinCount = parsePositiveInt(searchParams.get("min_count"));
-    const envMinCount =
-      parsePositiveInt(process.env.CATEGORY_MIN_SPECIALISTS) ??
-      parsePositiveInt(process.env.NEXT_PUBLIC_CATEGORY_MIN_COUNT);
-    const minCount = queryMinCount ?? envMinCount ?? 1;
+    const minCount = queryMinCount ?? 0;
     const mode = searchParams.get("mode") === "parents" ? "parents" : "children";
     const includeChildren = searchParams.get("include_children") === "1";
 
@@ -165,7 +167,7 @@ export async function GET(request: NextRequest) {
           title: category.title,
           parent_id: category.parent_id ?? null,
           specialists_count: specialistsCount,
-          is_clickable: specialistsCount >= minCount,
+          is_clickable: isCategoryClickable(specialistsCount, minCount),
         };
       });
 
@@ -211,7 +213,7 @@ export async function GET(request: NextRequest) {
             slug: child.slug,
             title: child.title,
             specialists_count: specialistsCount,
-            is_clickable: specialistsCount >= minCount,
+            is_clickable: isCategoryClickable(specialistsCount, minCount),
           };
         });
 
@@ -226,7 +228,7 @@ export async function GET(request: NextRequest) {
           title: parent.title,
           parent_id: null,
           specialists_count: parentCount,
-          is_clickable: parentCount >= minCount,
+          is_clickable: isCategoryClickable(parentCount, minCount),
           ...(includeChildren ? { children: mappedChildren } : {}),
         };
       })
