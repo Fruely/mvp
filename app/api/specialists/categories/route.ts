@@ -17,6 +17,51 @@ function parsePositiveInt(value: string | null | undefined): number | null {
   return num;
 }
 
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  const parts = token.split(".");
+  if (parts.length < 2) return null;
+  try {
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+    const payload = Buffer.from(padded, "base64").toString("utf8");
+    return JSON.parse(payload) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+function extractServiceKeyDebugInfo() {
+  const serviceKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_KEY ?? "";
+  if (!serviceKey) {
+    return {
+      service_key_role: "missing",
+      service_key_iss_ref: "missing",
+    };
+  }
+
+  const payload = decodeJwtPayload(serviceKey);
+  const role =
+    payload && typeof payload.role === "string" ? payload.role : "unknown";
+
+  let issRef = "unknown";
+  const iss = payload && typeof payload.iss === "string" ? payload.iss : "";
+  if (iss) {
+    try {
+      const host = new URL(iss).hostname;
+      const ref = host.split(".")[0];
+      if (ref) issRef = ref;
+    } catch {
+      issRef = "invalid";
+    }
+  }
+
+  return {
+    service_key_role: role,
+    service_key_iss_ref: issRef,
+  };
+}
+
 async function loadCategoriesWithOptionalHierarchy() {
   const supabase = createSupabaseServerClient();
 
@@ -131,10 +176,12 @@ export async function GET(request: NextRequest) {
       };
       if (debugEnabled) {
         const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+        const serviceKeyDebug = extractServiceKeyDebugInfo();
         meta._debug = {
           supabase_tail: url ? `***${url.slice(-20)}` : "missing",
           build_sha: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 8) ?? "local",
           vercel_env: process.env.VERCEL_ENV ?? "local",
+          ...serviceKeyDebug,
         };
       }
       return NextResponse.json({ data, meta });
@@ -192,10 +239,12 @@ export async function GET(request: NextRequest) {
     };
     if (debugEnabled) {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+      const serviceKeyDebug = extractServiceKeyDebugInfo();
       meta._debug = {
         supabase_tail: url ? `***${url.slice(-20)}` : "missing",
         build_sha: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 8) ?? "local",
         vercel_env: process.env.VERCEL_ENV ?? "local",
+        ...serviceKeyDebug,
         parent_count: parentData.length,
         raw_parent_count: parentCandidates.length,
       };
