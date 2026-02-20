@@ -173,7 +173,11 @@ export default async function SpecialistsPage({
         </div>
 
         <ul className="space-y-4">
-          {specialists.map((s) => (
+          {specialists.map((s) => {
+            const hasCategory = Boolean(s.category_title || s.category_slug);
+            const categoryLabel = s.category_title || "Category";
+
+            return (
             <li key={s.id}>
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
                 <div className="flex flex-col sm:flex-row gap-5 p-6">
@@ -200,9 +204,9 @@ export default async function SpecialistsPage({
                   </div>
                   <div className="flex-1 min-w-0">
                     <h2 className="text-lg font-bold text-gray-900">{s.name}</h2>
-                    {(s.category_title || s.category_slug) && (
+                    {hasCategory && (
                       <p className="text-sm text-gray-500 mt-0.5">
-                        {s.category_title || s.category_slug}
+                        {categoryLabel}
                       </p>
                     )}
                     <p className="text-gray-600 text-sm leading-relaxed mt-2 line-clamp-2">
@@ -234,7 +238,8 @@ export default async function SpecialistsPage({
                 </div>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       </div>
     </div>
