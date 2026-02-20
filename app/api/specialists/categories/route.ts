@@ -55,6 +55,7 @@ async function loadCategoriesWithOptionalHierarchy() {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const debugEnabled = searchParams.get("debug") === "1";
     const queryMinCount = parsePositiveInt(searchParams.get("min_count"));
     const envMinCount =
       parsePositiveInt(process.env.CATEGORY_MIN_SPECIALISTS) ??
@@ -128,9 +129,13 @@ export async function GET(request: NextRequest) {
         mode,
         hierarchy_enabled: hasHierarchy,
       };
-      if (searchParams.get("debug") === "1") {
+      if (debugEnabled) {
         const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-        meta._debug = { supabase_tail: url ? `***${url.slice(-20)}` : "missing" };
+        meta._debug = {
+          supabase_tail: url ? `***${url.slice(-20)}` : "missing",
+          build_sha: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 8) ?? "local",
+          vercel_env: process.env.VERCEL_ENV ?? "local",
+        };
       }
       return NextResponse.json({ data, meta });
     }
@@ -185,10 +190,12 @@ export async function GET(request: NextRequest) {
       mode,
       hierarchy_enabled: hasHierarchy,
     };
-    if (searchParams.get("debug") === "1") {
+    if (debugEnabled) {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
       meta._debug = {
         supabase_tail: url ? `***${url.slice(-20)}` : "missing",
+        build_sha: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 8) ?? "local",
+        vercel_env: process.env.VERCEL_ENV ?? "local",
         parent_count: parentData.length,
         raw_parent_count: parentCandidates.length,
       };
