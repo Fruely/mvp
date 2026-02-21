@@ -62,7 +62,7 @@ export default function Footer(props) {
 
           <div>
             <h4 className="font-semibold mb-2">{t(dict, "footer.contacts")}</h4>
-            <p className="text-sm text-gray-600">info@freuly.example</p>
+            <p className="text-sm text-gray-600">info@freuly.de</p>
           </div>
         </div>
       </div>
