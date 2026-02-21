@@ -14,12 +14,15 @@ import { t } from "@/lib/i18n";
 export default function Footer(props) {
   const { dict, lang } = props;
   const prefix = lang ? `/${lang}` : "";
+  const homeHref = lang ? `/${lang}` : "/";
 
   return (
     <footer className="bg-gray-50 border-t border-gray-100">
       <div className="max-w-7xl mx-auto px-4 py-10 flex flex-col md:flex-row justify-between items-start gap-6">
         <div>
-          <div className="text-2xl font-bold text-blue-600">FREULY</div>
+          <Link href={homeHref} className="text-2xl font-bold text-blue-600">
+            FREULY
+          </Link>
           <div className="text-sm text-gray-600 mt-2 max-w-sm">
             {t(dict, "footer.tagline")}
           </div>
