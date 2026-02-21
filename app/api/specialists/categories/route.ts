@@ -201,10 +201,8 @@ export async function GET(request: NextRequest) {
       ? normalizedCategories.filter((category) => !category.parent_id)
       : [];
 
-    const parentData = parentCandidates
-      .map((parent) => {
+    const parentData = parentCandidates.map((parent) => {
         const children = childrenByParentId.get(parent.id) ?? [];
-        if (!children.length) return null;
 
         const mappedChildren = children.map((child) => {
           const specialistsCount = countsByCategoryId.get(child.id) ?? 0;
@@ -231,8 +229,7 @@ export async function GET(request: NextRequest) {
           is_clickable: isCategoryClickable(parentCount, minCount),
           ...(includeChildren ? { children: mappedChildren } : {}),
         };
-      })
-      .filter(Boolean);
+      });
 
     const meta: Record<string, unknown> = {
       min_count: minCount,
