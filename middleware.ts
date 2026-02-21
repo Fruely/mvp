@@ -16,6 +16,10 @@ function isLang(value: string): value is Lang {
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
+  if (pathname === "/impressum" || pathname === "/datenschutzerklaerung") {
+    return NextResponse.next();
+  }
+
   if (pathname.startsWith("/__closed")) {
     return NextResponse.next();
   }

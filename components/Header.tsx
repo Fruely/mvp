@@ -72,18 +72,6 @@ export default function Header({ lang, dict = fallbackDict, children }: HeaderPr
           </div>
 
           <Link
-            href={`/${lang}/about`}
-            className="text-gray-700 hover:text-blue-600 font-medium transition hidden sm:inline"
-          >
-            {t(d, "header.nav.about")}
-          </Link>
-          <Link
-            href={`/${lang}/contacts`}
-            className="text-gray-700 hover:text-blue-600 font-medium transition hidden sm:inline"
-          >
-            {t(d, "header.nav.contacts")}
-          </Link>
-          <Link
             href={SPECIALIST_OFFICE_PATH}
             className="text-gray-700 hover:text-blue-600 font-medium transition hidden sm:inline"
           >
