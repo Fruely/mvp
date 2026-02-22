@@ -14,9 +14,9 @@ function getResend(): Resend {
 }
 
 function getMailFrom(): string {
-  const mailFrom = process.env.MAIL_FROM;
+  const mailFrom = process.env.MAIL_FROM ?? process.env.RESEND_FROM_EMAIL;
   if (!mailFrom) {
-    throw new Error("MAIL_FROM is not defined");
+    throw new Error("MAIL_FROM (or RESEND_FROM_EMAIL) is not defined");
   }
   return mailFrom;
 }

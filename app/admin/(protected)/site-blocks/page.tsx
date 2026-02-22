@@ -106,23 +106,46 @@ export default function AdminSiteBlocksPage() {
 
   async function fetchCategories() {
     try {
-      const res = await fetch("/api/specialists/categories?mode=parents&min_count=0", {
-        cache: "no-store",
-      });
-      const json = await res.json();
-      if (!res.ok) {
-        setMessage(json.error || "Ошибка загрузки категорий");
+      const [parentsRes, childrenRes] = await Promise.all([
+        fetch("/api/specialists/categories?mode=parents&min_count=0", {
+          cache: "no-store",
+        }),
+        fetch("/api/specialists/categories?min_count=0", {
+          cache: "no-store",
+        }),
+      ]);
+
+      const [parentsJson, childrenJson] = await Promise.all([
+        parentsRes.json(),
+        childrenRes.json(),
+      ]);
+
+      if (!parentsRes.ok) {
+        setMessage(parentsJson.error || "Ошибка загрузки родительских категорий");
         return;
       }
-      const data = Array.isArray(json.data) ? json.data : [];
-      const normalized = data
-        .map((item: any) => ({
-          id: String(item.id || ""),
-          slug: String(item.slug || ""),
-          title: item.title ? String(item.title) : null,
-        }))
-        .filter((item: CategoryOption) => item.id && item.slug);
-      setCategories(normalized);
+      if (!childrenRes.ok) {
+        setMessage(childrenJson.error || "Ошибка загрузки категорий");
+        return;
+      }
+
+      const normalize = (source: any): CategoryOption[] =>
+        (Array.isArray(source) ? source : [])
+          .map((item: any) => ({
+            id: String(item.id || ""),
+            slug: String(item.slug || ""),
+            title: item.title ? String(item.title) : null,
+          }))
+          .filter((item: CategoryOption) => item.id && item.slug);
+
+      const parentCategories = normalize(parentsJson.data);
+      const childCategories = normalize(childrenJson.data);
+      const merged = [...parentCategories, ...childCategories].filter(
+        (item, index, list) =>
+          list.findIndex((candidate) => candidate.slug === item.slug) === index
+      );
+
+      setCategories(merged);
     } catch (e: any) {
       setMessage(e.message || "Ошибка загрузки категорий");
     }

@@ -5,7 +5,7 @@ import { sendEmail } from "@/lib/email";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-
+ 
     const {
       email,
       name,
@@ -61,6 +61,11 @@ export async function POST(req: NextRequest) {
     const normalizedEmail = email.trim().toLowerCase();
     const emailVerificationToken = crypto.randomUUID();
     const now = new Date().toISOString();
+    const emailIsConfigured = Boolean(
+      process.env.RESEND_API_KEY &&
+      (process.env.MAIL_FROM || process.env.RESEND_FROM_EMAIL)
+    );
+    const shouldRequireEmailVerification = emailIsConfigured;
 
     const applicationData = {
       email: normalizedEmail,
@@ -71,9 +76,12 @@ export async function POST(req: NextRequest) {
       about_short: about_short?.trim() || null,
       avatar_url: photo_base64 || null,
       proof_link: proof_link.trim(),
-      status: "email_pending",
-      email_verification_token: emailVerificationToken,
-      email_confirmation_sent_at: now,
+      status: shouldRequireEmailVerification ? "email_pending" : "pending_review",
+      email_verification_token: shouldRequireEmailVerification
+        ? emailVerificationToken
+        : null,
+      email_confirmation_sent_at: shouldRequireEmailVerification ? now : null,
+      email_confirmed_at: shouldRequireEmailVerification ? null : now,
       terms_accepted_at: now,
       terms_version: process.env.TERMS_VERSION || "1.0",
     };
@@ -83,9 +91,11 @@ export async function POST(req: NextRequest) {
     // -----------------------------
     // Insert application
     // -----------------------------
-    const { error } = await supabase
+    const { data: insertedApplication, error } = await supabase
       .from("specialist_applications")
-      .insert(applicationData);
+      .insert(applicationData)
+      .select("id")
+      .single();
 
     if (error) {
       console.error("Application insert failed:", error);
@@ -101,22 +111,58 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!shouldRequireEmailVerification) {
+      console.warn(
+        "[specialists/application] Email service is not configured. " +
+          "Saved application directly as pending_review."
+      );
+      return NextResponse.json({
+        success: true,
+        email_verification_required: false,
+      });
+    }
+
     const verifyUrl = `https://freuly.de/api/specialists/verify-email?token=${encodeURIComponent(emailVerificationToken)}`;
 
-    await sendEmail({
-      to: applicationData.email,
-      subject: "Ваша заявка специалиста получена — Freuly",
-      html: `<p>Здравствуйте!</p>
+    try {
+      await sendEmail({
+        to: applicationData.email,
+        subject: "Ваша заявка специалиста получена — Freuly",
+        html: `<p>Здравствуйте!</p>
 <p>Мы получили вашу заявку специалиста на платформе <b>Freuly</b>.</p>
 <p>Подтвердите email по ссылке: <a href="${verifyUrl}">${verifyUrl}</a></p>
 <p>Наша команда рассмотрит заявку и свяжется с вами по этому email после проверки.</p>
 <p>С уважением,<br/>Команда Freuly</p>`,
-    });
+      });
+    } catch (emailError) {
+      console.error("[specialists/application] Email send failed:", emailError);
+      if (process.env.NODE_ENV !== "production" && insertedApplication?.id) {
+        await supabase
+          .from("specialist_applications")
+          .update({
+            status: "pending_review",
+            email_verification_token: null,
+            email_confirmation_sent_at: null,
+            email_confirmed_at: now,
+          })
+          .eq("id", insertedApplication.id);
+
+        return NextResponse.json({
+          success: true,
+          email_verification_required: false,
+        });
+      }
+
+      return NextResponse.json(
+        { error: "Не вдалося надіслати лист підтвердження. Спробуйте пізніше." },
+        { status: 502 }
+      );
+    }
 
     // -----------------------------
     // Success
     // -----------------------------
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, email_verification_required: true });
 
   } catch (err: any) {
     console.error("Unexpected error:", err);
