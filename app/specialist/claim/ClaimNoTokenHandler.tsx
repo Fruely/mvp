@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabase, SPECIALIST_OFFICE_PATH } from "@/lib/supabaseClient";
 
@@ -40,7 +40,6 @@ function clearUrlHashPreservingPathAndQuery() {
 export default function ClaimNoTokenHandler() {
   const router = useRouter();
   const handled = useRef(false);
-  const [showLoader, setShowLoader] = useState(false);
 
   useEffect(() => {
     if (handled.current) return;
@@ -49,21 +48,13 @@ export default function ClaimNoTokenHandler() {
     const tokens = getTokensFromHash();
     const hasHash = typeof window !== "undefined" && window.location.hash?.includes("access_token");
 
-    // Show loader only for hash-based magic-link processing.
-    if (hasHash) {
-      setShowLoader(true);
-    }
-
     const goToDashboard = () => {
       if (handled.current) return;
       handled.current = true;
       router.replace(SPECIALIST_OFFICE_PATH);
     };
 
-    const stopLoading = () => {
-      if (handled.current) return;
-      setShowLoader(false);
-    };
+    const stopLoading = () => {};
 
     if (hasHash && tokens) {
       const setupHashSession = async () => {
@@ -140,14 +131,8 @@ export default function ClaimNoTokenHandler() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (handled.current) return;
       if (session) goToDashboard();
-      else setShowLoader(false);
+      else stopLoading();
     });
   }, [router]);
-
-  if (!showLoader) return null;
-  return (
-    <div className="flex min-h-[120px] items-center justify-center p-4 text-gray-600">
-      Проверка входа…
-    </div>
-  );
+  return null;
 }
