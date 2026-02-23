@@ -37,10 +37,9 @@ export default function ClaimNoTokenHandler() {
       router.replace(SPECIALIST_OFFICE_PATH);
     };
 
-    const goToInvalid = () => {
+    const stopLoading = () => {
       if (handled.current) return;
-      handled.current = true;
-      router.replace("/specialist/claim/invalid");
+      setShowLoader(false);
     };
 
     if (hasHash && tokens) {
@@ -50,20 +49,21 @@ export default function ClaimNoTokenHandler() {
         .then(({ data: { session }, error }) => {
           if (handled.current) return;
           if (error) {
-            goToInvalid();
+            stopLoading();
             return;
           }
           if (session) goToDashboard();
+          else stopLoading();
         })
-        .catch(() => goToInvalid());
+        .catch(() => stopLoading());
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
         if (handled.current) return;
         if (session) goToDashboard();
       });
       const fallback = window.setTimeout(() => {
-        if (!handled.current) goToInvalid();
-      }, 5000);
+        if (!handled.current) stopLoading();
+      }, 6000);
       return () => {
         subscription.unsubscribe();
         window.clearTimeout(fallback);
@@ -79,10 +79,11 @@ export default function ClaimNoTokenHandler() {
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (handled.current) return;
         if (session) goToDashboard();
+        else stopLoading();
       });
       const fallback = window.setTimeout(() => {
-        if (!handled.current) goToInvalid();
-      }, 5000);
+        if (!handled.current) stopLoading();
+      }, 6000);
       return () => {
         subscription.unsubscribe();
         window.clearTimeout(fallback);
