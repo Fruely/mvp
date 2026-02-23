@@ -40,7 +40,7 @@ function clearUrlHashPreservingPathAndQuery() {
 export default function ClaimNoTokenHandler() {
   const router = useRouter();
   const handled = useRef(false);
-  const [showLoader, setShowLoader] = useState(true);
+  const [showLoader, setShowLoader] = useState(false);
 
   useEffect(() => {
     if (handled.current) return;
@@ -48,6 +48,11 @@ export default function ClaimNoTokenHandler() {
 
     const tokens = getTokensFromHash();
     const hasHash = typeof window !== "undefined" && window.location.hash?.includes("access_token");
+
+    // Show loader only for hash-based magic-link processing.
+    if (hasHash) {
+      setShowLoader(true);
+    }
 
     const goToDashboard = () => {
       if (handled.current) return;
