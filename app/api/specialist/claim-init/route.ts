@@ -51,7 +51,8 @@ export async function POST(request: NextRequest) {
       (process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : "https://freuly.de");
-    const redirectTo = `${baseUrl}/specialist/claim`;
+    const buildTag = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 8) ?? "local";
+    const redirectTo = `${baseUrl}/specialist/claim?v=${encodeURIComponent(buildTag)}`;
 
     const first = await service.auth.admin.generateLink({
       type: "magiclink",

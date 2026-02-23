@@ -14,6 +14,24 @@ function getTokensFromHash(): { access_token: string; refresh_token: string } | 
   return null;
 }
 
+function getJwtSub(token: string): string | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length < 2) return null;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+    return typeof payload?.sub === "string" ? payload.sub : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearUrlHashPreservingPathAndQuery() {
+  if (typeof window === "undefined") return;
+  if (!window.location.hash) return;
+  const cleanUrl = `${window.location.pathname}${window.location.search}`;
+  window.history.replaceState(null, "", cleanUrl);
+}
+
 /**
  * Runs in the browser when user lands on /specialist/claim without ?token=...
  * (e.g. after magic link redirect with #access_token=... in URL).
@@ -43,23 +61,46 @@ export default function ClaimNoTokenHandler() {
     };
 
     if (hasHash && tokens) {
-      // Set session from hash so cookies are written; then redirect to dashboard.
-      supabase.auth
-        .setSession({ access_token: tokens.access_token, refresh_token: tokens.refresh_token })
-        .then(({ data: { session }, error }) => {
+      const setupHashSession = async () => {
+        try {
+          const { data: { session: currentSession } } = await supabase.auth.getSession();
+          const hashSub = getJwtSub(tokens.access_token);
+          const currentSub = currentSession?.user?.id ?? null;
+
+          // Clear conflicting stale session before applying hash tokens.
+          if (hashSub && currentSub && hashSub !== currentSub) {
+            await supabase.auth.signOut();
+          }
+
+          const { data: { session }, error } = await supabase.auth.setSession({
+            access_token: tokens.access_token,
+            refresh_token: tokens.refresh_token,
+          });
+
           if (handled.current) return;
           if (error) {
             stopLoading();
             return;
           }
-          if (session) goToDashboard();
-          else stopLoading();
-        })
-        .catch(() => stopLoading());
+          if (session) {
+            clearUrlHashPreservingPathAndQuery();
+            goToDashboard();
+          } else {
+            stopLoading();
+          }
+        } catch {
+          stopLoading();
+        }
+      };
+
+      setupHashSession();
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
         if (handled.current) return;
-        if (session) goToDashboard();
+        if (session) {
+          clearUrlHashPreservingPathAndQuery();
+          goToDashboard();
+        }
       });
       const fallback = window.setTimeout(() => {
         if (!handled.current) stopLoading();

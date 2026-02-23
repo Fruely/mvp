@@ -85,7 +85,11 @@ export function middleware(request: NextRequest) {
     pathname === "/sitemap.xml" ||
     pathname.includes(".")
   ) {
-    return NextResponse.next();
+    const res = NextResponse.next();
+    if (pathname.startsWith("/specialist/claim")) {
+      res.headers.set("Cache-Control", "private, no-store, no-cache, must-revalidate, max-age=0");
+    }
+    return res;
   }
 
   // i18n logic (only for language routes)
