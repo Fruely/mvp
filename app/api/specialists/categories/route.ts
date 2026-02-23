@@ -131,8 +131,41 @@ export async function GET(request: NextRequest) {
 
     const categoryIds = childCategories.map((c) => c.id);
     let countsByCategoryId = new Map<string, number>();
+    let debugCountBreakdown:
+      | {
+          specialists_in_child_categories: number;
+          approved_total: number;
+          approved_active_total: number;
+          approved_active_visible_total: number;
+          counted_in_response_total: number;
+        }
+      | null = null;
 
     if (categoryIds.length > 0) {
+      if (debugEnabled) {
+        const { data: specialistsForDebug, error: debugError } = await supabase
+          .from("specialists")
+          .select("category_id, status, is_active, is_visible")
+          .in("category_id", categoryIds);
+
+        if (!debugError) {
+          const rows = specialistsForDebug ?? [];
+          const approved = rows.filter((row) => row.status === "approved");
+          const approvedActive = approved.filter((row) => row.is_active === true);
+          const approvedActiveVisible = approvedActive.filter(
+            (row) => row.is_visible === true
+          );
+
+          debugCountBreakdown = {
+            specialists_in_child_categories: rows.length,
+            approved_total: approved.length,
+            approved_active_total: approvedActive.length,
+            approved_active_visible_total: approvedActiveVisible.length,
+            counted_in_response_total: 0,
+          };
+        }
+      }
+
       const { data: specialists, error: specialistsError } = await supabase
         .from("specialists")
         .select("category_id")
@@ -156,6 +189,14 @@ export async function GET(request: NextRequest) {
         acc.set(categoryId, (acc.get(categoryId) ?? 0) + 1);
         return acc;
       }, new Map<string, number>());
+
+      if (debugCountBreakdown) {
+        let countedTotal = 0;
+        countsByCategoryId.forEach((value) => {
+          countedTotal += value;
+        });
+        debugCountBreakdown.counted_in_response_total = countedTotal;
+      }
     }
 
     if (mode === "children") {
@@ -183,6 +224,7 @@ export async function GET(request: NextRequest) {
           supabase_tail: url ? `***${url.slice(-20)}` : "missing",
           build_sha: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 8) ?? "local",
           vercel_env: process.env.VERCEL_ENV ?? "local",
+          ...(debugCountBreakdown ? { count_breakdown: debugCountBreakdown } : {}),
           ...serviceKeyDebug,
         };
       }
@@ -243,6 +285,7 @@ export async function GET(request: NextRequest) {
         supabase_tail: url ? `***${url.slice(-20)}` : "missing",
         build_sha: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 8) ?? "local",
         vercel_env: process.env.VERCEL_ENV ?? "local",
+        ...(debugCountBreakdown ? { count_breakdown: debugCountBreakdown } : {}),
         ...serviceKeyDebug,
         parent_count: parentData.length,
         raw_parent_count: parentCandidates.length,

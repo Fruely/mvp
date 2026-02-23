@@ -3,4 +3,5 @@
 
 UPDATE specialists
 SET is_active = true, is_visible = true
-WHERE status = 'approved' AND (is_active = false OR is_visible = false);
+WHERE status = 'approved'
+  AND (is_active IS DISTINCT FROM true OR is_visible IS DISTINCT FROM true);
