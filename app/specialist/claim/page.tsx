@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServerClient as createAuthServerClient } from "@/lib/supabase/auth-server";
 import { SPECIALIST_OFFICE_PATH } from "@/lib/supabaseClient";
 import ClaimNoTokenHandler from "./ClaimNoTokenHandler";
+import ClaimInitButton from "./ClaimInitButton";
 import SpecialistPasswordSignIn from "./SpecialistPasswordSignIn";
 
 export const dynamic = "force-dynamic";
@@ -64,40 +65,17 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
     redirect("/specialist/claim/invalid");
   }
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://freuly.de");
-  const redirectTo = `${baseUrl}/specialist/claim`;
-
-  const first = await supabase.auth.admin.generateLink({
-    type: "magiclink",
-    email,
-    options: { redirectTo },
-  });
-
-  if (first.error && /user.*not.*found|not found/i.test(first.error.message ?? "")) {
-    await supabase.auth.admin.createUser({
-      email,
-      email_confirm: true,
-    });
-    const second = await supabase.auth.admin.generateLink({
-      type: "magiclink",
-      email,
-      options: { redirectTo },
-    });
-
-    if (second.error || !second.data?.properties?.action_link) {
-      console.error("[specialist/claim] generateLink failed after createUser", second.error);
-      redirect("/specialist/claim/invalid");
-    }
-
-    redirect(second.data.properties.action_link);
-  }
-
-  if (first.error || !first.data?.properties?.action_link) {
-    console.error("[specialist/claim] generateLink failed", first.error);
-    redirect("/specialist/claim/invalid");
-  }
-
-  redirect(first.data.properties.action_link);
+  return (
+    <div className="min-h-[40vh] px-4 py-10">
+      <div className="mx-auto w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <h1 className="text-xl font-semibold text-gray-900">Продолжить вход</h1>
+        <p className="mt-2 text-sm text-gray-600">
+          Ссылка подтверждена. Нажмите кнопку ниже, чтобы продолжить безопасный вход в кабинет.
+        </p>
+        <div className="mt-5">
+          <ClaimInitButton token={token} />
+        </div>
+      </div>
+    </div>
+  );
 }
