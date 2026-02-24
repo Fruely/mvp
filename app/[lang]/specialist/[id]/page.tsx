@@ -22,6 +22,10 @@ interface Specialist {
   certificate_urls?: string[];
   languages: string[];
   created_at: string;
+  is_online?: boolean;
+  online?: boolean;
+  format?: string | null;
+  work_format?: string | null;
 }
 
 export default function SpecialistPage({ params }: { params: { id: string } }) {
@@ -127,9 +131,60 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
     const twoWeeksMs = 14 * 24 * 60 * 60 * 1000;
     return Date.now() - createdTs <= twoWeeksMs;
   })();
-  const aboutText = (specialist.description ?? specialist.bio) || t(dict, "specialist.noDescription");
+  const aboutText = (specialist.description ?? specialist.bio)?.trim() || "";
   const specializationText = specialist.category || t(dict, "specialist.about", { defaultValue: "Спеціаліст" });
   const galleryPlaceholders = Array.from({ length: 6 }, (_, idx) => idx);
+  const workMode = (() => {
+    if (typeof specialist.format === "string") {
+      const normalized = specialist.format.trim().toLowerCase();
+      if (normalized === "online" || normalized === "offline" || normalized === "hybrid") return normalized;
+    }
+    if (typeof specialist.work_format === "string") {
+      const normalized = specialist.work_format.trim().toLowerCase();
+      if (normalized === "online" || normalized === "offline" || normalized === "hybrid") return normalized;
+    }
+    if (typeof specialist.is_online === "boolean") return specialist.is_online ? "online" : "offline";
+    if (typeof specialist.online === "boolean") return specialist.online ? "online" : "offline";
+    return null;
+  })();
+  const sectionText = {
+    ua: {
+      galleryTitle: "Галерея і відео",
+      gallerySubtitle: "Розділ підготовлено для майбутнього медіа-контенту",
+      servicesTitle: "Послуги",
+      servicesSubtitle: "Список послуг з'явиться після наступного оновлення профілю",
+      contactsTitle: "Контакти / Формат роботи",
+      contactsSubtitle: "Блок підготовлено для майбутньої інтеграції",
+      contactsLine1: "Онлайн консультації: за наявності у профілі",
+      contactsLine2: "Контактні канали будуть додані після оновлення анкети.",
+      readMore: "Читати повністю",
+      newBadge: "Новий",
+    },
+    ru: {
+      galleryTitle: "Галерея и видео",
+      gallerySubtitle: "Раздел подготовлен для будущего медиа-контента",
+      servicesTitle: "Услуги",
+      servicesSubtitle: "Список услуг появится после следующего обновления профиля",
+      contactsTitle: "Контакты / Формат работы",
+      contactsSubtitle: "Блок подготовлен для будущей интеграции",
+      contactsLine1: "Онлайн-консультации: при наличии в профиле",
+      contactsLine2: "Контактные каналы будут добавлены после обновления анкеты.",
+      readMore: "Читать полностью",
+      newBadge: "Новый",
+    },
+    de: {
+      galleryTitle: "Galerie und Video",
+      gallerySubtitle: "Dieser Bereich ist für künftige Medieninhalte vorbereitet",
+      servicesTitle: "Leistungen",
+      servicesSubtitle: "Die Liste der Leistungen erscheint nach dem nächsten Profil-Update",
+      contactsTitle: "Kontakte / Arbeitsformat",
+      contactsSubtitle: "Dieser Block ist für eine zukünftige Integration vorbereitet",
+      contactsLine1: "Online-Beratung: falls im Profil vorhanden",
+      contactsLine2: "Kontaktkanäle werden nach der Profilaktualisierung ergänzt.",
+      readMore: "Vollständig lesen",
+      newBadge: "Neu",
+    },
+  }[lang];
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-6 sm:py-8">
@@ -139,16 +194,25 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
           avatarUrl={specialist.avatar_url}
           specialization={specializationText}
           languages={Array.isArray(specialist.languages) ? specialist.languages : []}
+          workMode={workMode}
           isNew={isNewActive}
+          newBadgeLabel={sectionText.newBadge}
           sendRequestLabel={showForm ? t(dict, "specialist.hideForm") : t(dict, "specialist.sendRequest")}
           onSendRequest={() => setShowForm((value) => !value)}
+          aboutPreview={aboutText || null}
+          aboutHref="#about"
+          readMoreLabel={sectionText.readMore}
         />
 
-        <SectionCard title={t(dict, "specialist.about")} subtitle="Досвід, підхід та ключові компетенції">
-          <p className="whitespace-pre-wrap leading-relaxed text-gray-700">{aboutText}</p>
-        </SectionCard>
+        {aboutText ? (
+          <SectionCard title={t(dict, "specialist.about")} subtitle={lang === "ru" ? "Опыт, подход и ключевые компетенции" : lang === "de" ? "Erfahrung, Ansatz und Schlüsselkompetenzen" : "Досвід, підхід та ключові компетенції"}>
+            <div id="about">
+              <p className="whitespace-pre-wrap leading-relaxed text-gray-700">{aboutText}</p>
+            </div>
+          </SectionCard>
+        ) : null}
 
-        <SectionCard title="Галерея і відео" subtitle="Розділ підготовлено для майбутнього медіа-контенту">
+        <SectionCard title={sectionText.galleryTitle} subtitle={sectionText.gallerySubtitle}>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {galleryPlaceholders.map((item) => (
               <div
@@ -159,7 +223,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
           </div>
         </SectionCard>
 
-        <SectionCard title="Послуги" subtitle="Список послуг з'явиться після наступного оновлення профілю">
+        <SectionCard title={sectionText.servicesTitle} subtitle={sectionText.servicesSubtitle}>
           <div className="space-y-2">
             <div className="h-10 rounded-xl bg-slate-100" />
             <div className="h-10 rounded-xl bg-slate-100" />
@@ -167,10 +231,10 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
           </div>
         </SectionCard>
 
-        <SectionCard title="Контакти / Формат роботи" subtitle="Блок підготовлено для майбутньої інтеграції">
+        <SectionCard title={sectionText.contactsTitle} subtitle={sectionText.contactsSubtitle}>
           <div className="space-y-2 text-sm text-gray-700">
-            <p>Онлайн консультації: доступно</p>
-            <p>Контактні канали будуть додані після оновлення анкети.</p>
+            <p>{sectionText.contactsLine1}</p>
+            <p>{sectionText.contactsLine2}</p>
           </div>
         </SectionCard>
 
