@@ -178,7 +178,10 @@ export async function GET(request: NextRequest) {
         console.error("[specialists/categories] specialists", specialistsError);
         return NextResponse.json(
           { error: "Failed to load specialists counts" },
-          { status: 500 }
+          {
+            status: 500,
+            headers: { "Cache-Control": "no-store, max-age=0" },
+          }
         );
       }
 
@@ -228,7 +231,12 @@ export async function GET(request: NextRequest) {
           ...serviceKeyDebug,
         };
       }
-      return NextResponse.json({ data, meta });
+      return NextResponse.json(
+        { data, meta },
+        {
+          headers: { "Cache-Control": "no-store, max-age=0" },
+        }
+      );
     }
 
     const childrenByParentId = new Map<string, CategoryRow[]>();
@@ -292,15 +300,23 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    return NextResponse.json({
-      data: parentData,
-      meta,
-    });
+    return NextResponse.json(
+      {
+        data: parentData,
+        meta,
+      },
+      {
+        headers: { "Cache-Control": "no-store, max-age=0" },
+      }
+    );
   } catch (err: unknown) {
     console.error("[specialists/categories] unexpected", err);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      {
+        status: 500,
+        headers: { "Cache-Control": "no-store, max-age=0" },
+      }
     );
   }
 }
