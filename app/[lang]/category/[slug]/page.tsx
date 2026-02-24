@@ -2,16 +2,26 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import uaDict from "@/locales/ua.json";
+import SpecialistPreviewCard from "@/components/specialist/SpecialistPreviewCard";
 
-interface Specialist {
+interface SpecialistPreview {
   id: string;
+  slug?: string | null;
   name: string;
-  bio: string | null;
   avatar_url: string | null;
-  category_id: string;
+  specialization_line?: string | null;
+  about_line?: string | null;
+  city: string | null;
+  work_format: "online" | "offline" | "hybrid";
+  languages?: string[];
+  is_verified: boolean;
+  rating?: number | null;
+  reviews_count?: number | null;
+  years_of_experience?: number | null;
+  is_new: boolean;
+  new_until?: string | null;
 }
 
 interface Category {
@@ -39,6 +49,67 @@ interface ParentCategory {
   children: ParentChildCategory[];
 }
 
+interface SpecialistsMeta {
+  total?: number;
+  has_more?: boolean;
+  next_offset?: number;
+  filter_options?: {
+    languages?: string[];
+    cities?: string[];
+  };
+}
+
+const PAGE_LIMIT = 12;
+
+function toNullableNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function normalizeSpecialistPreview(input: unknown): SpecialistPreview | null {
+  if (!input || typeof input !== "object") return null;
+  const row = input as Record<string, unknown>;
+  const id = typeof row.id === "string" ? row.id : "";
+  if (!id) return null;
+  const name = typeof row.name === "string" && row.name.trim() ? row.name.trim() : "Specialist";
+  const slug =
+    typeof row.slug === "string" && row.slug.trim()
+      ? row.slug.trim()
+      : `specialist-${id.slice(0, 8)}`;
+  const workFormat =
+    row.work_format === "offline" || row.work_format === "hybrid" || row.work_format === "online"
+      ? row.work_format
+      : "online";
+
+  return {
+    id,
+    slug,
+    name,
+    avatar_url: typeof row.avatar_url === "string" && row.avatar_url.trim() ? row.avatar_url : null,
+    specialization_line:
+      typeof row.specialization_line === "string" && row.specialization_line.trim()
+        ? row.specialization_line.trim()
+        : null,
+    about_line:
+      typeof row.about_line === "string" && row.about_line.trim() ? row.about_line.trim() : null,
+    city: typeof row.city === "string" && row.city.trim() ? row.city.trim() : null,
+    work_format: workFormat,
+    languages: Array.isArray(row.languages)
+      ? row.languages.filter((value): value is string => typeof value === "string" && value.trim()).slice(0, 8)
+      : [],
+    is_verified: Boolean(row.is_verified),
+    rating: toNullableNumber(row.rating),
+    reviews_count: toNullableNumber(row.reviews_count),
+    years_of_experience: toNullableNumber(row.years_of_experience),
+    is_new: Boolean(row.is_new),
+    new_until: typeof row.new_until === "string" && row.new_until.trim() ? row.new_until : null,
+  };
+}
+
 export default function CategoryPage({ params }: { params: { lang: string; slug: string } }) {
   const { slug } = params;
   const lang = params.lang as Lang;
@@ -48,13 +119,107 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
 
   const [category, setCategory] = useState<Category | null>(null);
   const [parentCategory, setParentCategory] = useState<ParentCategory | null>(null);
-  const [specialists, setSpecialists] = useState<Specialist[]>([]);
+  const [specialists, setSpecialists] = useState<SpecialistPreview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingSpecialists, setLoadingSpecialists] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextOffset, setNextOffset] = useState(0);
+  const [totalSpecialists, setTotalSpecialists] = useState(0);
+  const [languageOptions, setLanguageOptions] = useState<string[]>([]);
+  const [cityOptions, setCityOptions] = useState<string[]>([]);
+  const [selectedLanguage, setSelectedLanguage] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
+  const [sort, setSort] = useState<"relevance" | "new" | "experience">("relevance");
+  const [loadError, setLoadError] = useState<string | null>(null);
   const getCategoryLabel = (title: string | null, categorySlug: string) =>
     title ??
     t(dict, `categories.${categorySlug}`, {
       defaultValue: t(dict, "categories.default"),
     });
+
+  const mergeUniqueSpecialists = (
+    current: SpecialistPreview[],
+    incoming: SpecialistPreview[]
+  ): SpecialistPreview[] => {
+    const seen = new Set(current.map((item) => item.id));
+    const merged = [...current];
+    for (const item of incoming) {
+      if (seen.has(item.id)) continue;
+      seen.add(item.id);
+      merged.push(item);
+    }
+    return merged;
+  };
+
+  const loadSpecialists = async (reset: boolean) => {
+    if (!category?.id || !category.is_clickable) return;
+    setLoadingSpecialists(true);
+    setLoadError(null);
+    try {
+      const offset = reset ? 0 : nextOffset;
+      const params = new URLSearchParams({
+        category_id: category.id,
+        limit: String(PAGE_LIMIT),
+        offset: String(offset),
+        sort,
+      });
+      if (selectedLanguage) params.set("language", selectedLanguage);
+      if (selectedCity) params.set("city", selectedCity);
+
+      const response = await fetch(`/api/specialists/list?${params.toString()}`, {
+        cache: "no-store",
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result?.error || "Failed to load specialists");
+      }
+
+      const incoming = Array.isArray(result?.data)
+        ? result.data
+            .map((item) => normalizeSpecialistPreview(item))
+            .filter((item): item is SpecialistPreview => Boolean(item))
+        : [];
+      const meta = (result?.meta ?? {}) as SpecialistsMeta;
+
+      setSpecialists((prev) => (reset ? incoming : mergeUniqueSpecialists(prev, incoming)));
+      setHasMore(Boolean(meta.has_more));
+      setNextOffset(Number(meta.next_offset ?? offset + incoming.length));
+      setTotalSpecialists(Number(meta.total ?? incoming.length));
+
+      if (meta.filter_options?.languages) {
+        setLanguageOptions(meta.filter_options.languages);
+      } else if (reset) {
+        setLanguageOptions(
+          Array.from(
+            new Set(
+              incoming.flatMap((item) => item.languages).filter((value): value is string => Boolean(value))
+            )
+          ).sort((a, b) => a.localeCompare(b, "uk"))
+        );
+      }
+
+      if (meta.filter_options?.cities) {
+        setCityOptions(meta.filter_options.cities);
+      } else if (reset) {
+        setCityOptions(
+          Array.from(
+            new Set(
+              incoming
+                .map((item) => item.city?.trim())
+                .filter((value): value is string => Boolean(value))
+            )
+          ).sort((a, b) => a.localeCompare(b, "uk"))
+        );
+      }
+    } catch (error) {
+      console.error("Failed to load specialists", error);
+      if (reset) setSpecialists([]);
+      setHasMore(false);
+      setLoadError(t(dict, "common.tryLater"));
+    } finally {
+      setLoadingSpecialists(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -113,6 +278,11 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
           setParentCategory(normalizedParent);
           setCategory(null);
           setSpecialists([]);
+          setLanguageOptions([]);
+          setCityOptions([]);
+          setHasMore(false);
+          setNextOffset(0);
+          setTotalSpecialists(0);
           setLoading(false);
           return;
         }
@@ -143,22 +313,20 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
 
         setCategory(normalizedCategory);
         setParentCategory(null);
+        setSelectedLanguage("");
+        setSelectedCity("");
+        setSort("relevance");
+        setSpecialists([]);
+        setLanguageOptions([]);
+        setCityOptions([]);
+        setHasMore(false);
+        setNextOffset(0);
+        setTotalSpecialists(0);
 
         if (!normalizedCategory.is_clickable) {
           setSpecialists([]);
           setLoading(false);
           return;
-        }
-
-        const response = await fetch(
-          `/api/specialists/list?category_id=${normalizedCategory.id}`
-        );
-        const result = await response.json();
-        if (response.ok) {
-          setSpecialists(Array.isArray(result.data) ? result.data : []);
-        } else {
-          console.error("Failed to fetch specialists:", result.error);
-          setSpecialists([]);
         }
       } catch (err) {
         console.error("Error fetching category data:", err);
@@ -171,17 +339,23 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
     };
 
     loadData();
-  }, [slug]);
+  }, [slug, lang]);
+
+  useEffect(() => {
+    if (!category?.id || !category.is_clickable || parentCategory) return;
+    loadSpecialists(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category?.id, category?.is_clickable, selectedLanguage, selectedCity, sort, parentCategory]);
 
   const foundText = useMemo(() => {
     const visibleCount = category?.is_clickable
-      ? specialists.length
+      ? totalSpecialists
       : (category?.specialists_count ?? 0);
     const template = (t as any)(dict, "category.found", {
       count: visibleCount,
     }) as string;
     return String(template).replace(/\{\{\s*count\s*\}\}/g, String(visibleCount));
-  }, [dict, specialists.length, category]);
+  }, [dict, totalSpecialists, category]);
 
   if (loading) {
     return (
@@ -317,87 +491,103 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
               {t(dict, "common.toHome")}
             </Link>
           </div>
-        ) : specialists.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-lg p-12 text-center max-w-2xl mx-auto">
-            <div className="text-6xl mb-4">🔍</div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">{t(dict, "category.empty.title")}</h2>
-            <p className="text-gray-600 mb-6">{t(dict, "category.empty.subtitle")}</p>
-            <Link
-              href={langPrefix}
-              className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
-            >
-              {t(dict, "common.toHome")}
-            </Link>
-          </div>
         ) : (
-          <div className="space-y-5">
-            {specialists.map((specialist) => (
-              <div
-                key={specialist.id}
-                className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 overflow-hidden"
-              >
-                <div className="flex flex-col sm:flex-row gap-5 p-6">
-                  {/* Left: Round Avatar */}
-                  <div className="flex-shrink-0">
-                    <div className="relative w-32 h-32 sm:w-36 sm:h-36 mx-auto sm:mx-0">
-                      <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 border-4 border-white shadow-lg">
-                        {specialist.avatar_url ? (
-                          <Image
-                            src={specialist.avatar_url}
-                            alt={specialist.name}
-                            fill
-                            sizes="144px"
-                            unoptimized
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center text-5xl">
-                            👤
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+          <div className="space-y-6">
+            <div className="sticky top-0 z-20 rounded-xl border-b border-black/5 bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <label className="text-sm">
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Мова
+                  </span>
+                  <select
+                    value={selectedLanguage}
+                    onChange={(event) => setSelectedLanguage(event.target.value)}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                  >
+                    <option value="">Усі мови</option>
+                    {languageOptions.map((value) => (
+                      <option key={value} value={value.toLowerCase()}>
+                        {value}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
-                  {/* Right: Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-1">{specialist.name}</h3>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium">
-                            {t(dict, "specialist.badge")}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                <label className="text-sm">
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Місто
+                  </span>
+                  <select
+                    value={selectedCity}
+                    onChange={(event) => setSelectedCity(event.target.value)}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                  >
+                    <option value="">Усі міста</option>
+                    {cityOptions.map((value) => (
+                      <option key={value} value={value.toLowerCase()}>
+                        {value}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
-                    <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-2">
-                      {specialist.bio || t(dict, "specialist.fallbackDescription")}
-                    </p>
-
-                    <div className="flex flex-wrap items-center gap-3">
-                      <Link
-                        href={`/${lang}/specialist/${specialist.id}?open=form`}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-sm hover:shadow transition-all"
-                      >
-                        <span>✉️</span>
-                        {t(dict, "specialist.cta")}
-                      </Link>
-                      <Link
-                        href={`/${lang}/specialist/${specialist.id}`}
-                        className="inline-flex items-center gap-1 px-4 py-2.5 text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                      >
-                        {t(dict, "common.more")}
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
+                <label className="text-sm">
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Сортування
+                  </span>
+                  <select
+                    value={sort}
+                    onChange={(event) => setSort(event.target.value as "relevance" | "new" | "experience")}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                  >
+                    <option value="relevance">Найкраща відповідність</option>
+                    <option value="new">Нові</option>
+                    <option value="experience">За досвідом</option>
+                  </select>
+                </label>
               </div>
-            ))}
+            </div>
+
+            {loadError ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {loadError}
+              </div>
+            ) : null}
+
+            {specialists.length === 0 && loadingSpecialists ? (
+              <div className="py-10 text-center text-gray-500">Завантаження спеціалістів…</div>
+            ) : null}
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {specialists.map((specialist) => (
+                <SpecialistPreviewCard
+                  key={specialist.id}
+                  specialist={specialist}
+                  lang={lang}
+                  dict={dict}
+                  categoryLabel={getCategoryLabel(category.title, category.slug)}
+                />
+              ))}
+            </div>
+
+            {!loadingSpecialists && specialists.length === 0 ? (
+              <div className="rounded-2xl border border-gray-200 bg-white px-6 py-10 text-center text-gray-600">
+                {t(dict, "category.empty.subtitle")}
+              </div>
+            ) : null}
+
+            {hasMore ? (
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={() => loadSpecialists(false)}
+                  disabled={loadingSpecialists}
+                  className="inline-flex items-center justify-center rounded-lg border border-blue-200 bg-white px-5 py-2.5 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loadingSpecialists ? "Завантаження…" : "Показати ще"}
+                </button>
+              </div>
+            ) : null}
           </div>
         )}
       </div>
