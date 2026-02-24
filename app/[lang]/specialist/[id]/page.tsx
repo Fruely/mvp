@@ -41,6 +41,8 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [activePortfolioIndex, setActivePortfolioIndex] = useState(0);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const searchParams = useSearchParams();
   const pathname = usePathname() || "/";
   const lang = useMemo<Lang>(() => {
@@ -184,7 +186,9 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
     ])
   ).slice(0, 8);
   const hasPortfolio = portfolioImages.length > 0;
-  const [mainPortfolio, ...thumbPortfolio] = portfolioImages;
+  const portfolioCount = portfolioImages.length;
+  const normalizedActivePortfolioIndex = portfolioCount > 0 ? Math.min(activePortfolioIndex, portfolioCount - 1) : 0;
+  const activePortfolioImage = portfolioCount > 0 ? portfolioImages[normalizedActivePortfolioIndex] : null;
   const hasRating = specialist.rating != null && Number.isFinite(specialist.rating);
   const reviewsCount = specialist.reviews_count ?? 0;
   const sectionText = {
@@ -261,6 +265,32 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
       newBadge: "Neu",
     },
   }[lang];
+
+  const goToPrevPortfolio = () => {
+    if (portfolioCount <= 1) return;
+    setActivePortfolioIndex((prev) => (prev - 1 + portfolioCount) % portfolioCount);
+  };
+
+  const goToNextPortfolio = () => {
+    if (portfolioCount <= 1) return;
+    setActivePortfolioIndex((prev) => (prev + 1) % portfolioCount);
+  };
+
+  const onTouchStartPortfolio = (event: React.TouchEvent<HTMLDivElement>) => {
+    setTouchStartX(event.touches[0]?.clientX ?? null);
+  };
+
+  const onTouchEndPortfolio = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (touchStartX == null || portfolioCount <= 1) return;
+    const endX = event.changedTouches[0]?.clientX ?? touchStartX;
+    const delta = endX - touchStartX;
+    const threshold = 40;
+    if (Math.abs(delta) >= threshold) {
+      if (delta < 0) goToNextPortfolio();
+      if (delta > 0) goToPrevPortfolio();
+    }
+    setTouchStartX(null);
+  };
   const workModeLabel =
     workMode === "online"
       ? sectionText.online
@@ -276,18 +306,42 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
         {hasPortfolio ? (
           <section className="md:col-start-1">
             <SectionCard title={sectionText.topGalleryTitle} subtitle={sectionText.topGallerySubtitle}>
-              <div className="space-y-3">
-                <div className="relative overflow-hidden rounded-xl bg-slate-100 aspect-[16/10]">
-                  <Image src={mainPortfolio} alt={specialist.name} fill className="object-cover" unoptimized />
-                </div>
-                {thumbPortfolio.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    {thumbPortfolio.slice(0, 4).map((src, idx) => (
-                      <div key={`${src}-${idx}`} className="relative overflow-hidden rounded-xl bg-slate-100 aspect-[4/3]">
-                        <Image src={src} alt={`${specialist.name} ${idx + 2}`} fill className="object-cover" unoptimized />
-                      </div>
-                    ))}
+              <div className="relative group overflow-hidden rounded-xl bg-slate-100 aspect-[16/10]">
+                {activePortfolioImage ? (
+                  <div onTouchStart={onTouchStartPortfolio} onTouchEnd={onTouchEndPortfolio} className="h-full w-full">
+                    <Image
+                      src={activePortfolioImage}
+                      alt={`${specialist.name} work ${normalizedActivePortfolioIndex + 1}`}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                      sizes="(min-width: 768px) 66vw, 100vw"
+                    />
                   </div>
+                ) : null}
+
+                {portfolioCount > 1 ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={goToPrevPortfolio}
+                      aria-label="Previous image"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition md:opacity-0 md:group-hover:opacity-100"
+                    >
+                      ←
+                    </button>
+                    <button
+                      type="button"
+                      onClick={goToNextPortfolio}
+                      aria-label="Next image"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition md:opacity-0 md:group-hover:opacity-100"
+                    >
+                      →
+                    </button>
+                    <div className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white">
+                      {normalizedActivePortfolioIndex + 1} / {portfolioCount}
+                    </div>
+                  </>
                 ) : null}
               </div>
             </SectionCard>
