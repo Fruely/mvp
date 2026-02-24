@@ -7,18 +7,31 @@ export default function SpecialistHero({
   avatarUrl,
   specialization,
   languages,
+  workMode,
   isNew,
+  newBadgeLabel,
   onSendRequest,
   sendRequestLabel,
+  aboutPreview,
+  aboutHref,
+  readMoreLabel,
 }: {
   name: string;
   avatarUrl: string | null;
   specialization: string | null;
   languages: string[];
+  workMode?: "online" | "offline" | "hybrid" | null;
   isNew: boolean;
+  newBadgeLabel: string;
   onSendRequest: () => void;
   sendRequestLabel: string;
+  aboutPreview?: string | null;
+  aboutHref: string;
+  readMoreLabel: string;
 }) {
+  const workModeLabel =
+    workMode === "online" ? "Онлайн" : workMode === "offline" ? "Офлайн" : workMode === "hybrid" ? "Онлайн • Офлайн" : null;
+
   return (
     <section className="rounded-2xl border border-black/5 bg-white p-4 shadow-md sm:p-6">
       <div className="grid gap-5 md:grid-cols-[minmax(0,320px)_1fr] md:items-start">
@@ -46,7 +59,7 @@ export default function SpecialistHero({
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-bold leading-tight text-gray-900 sm:text-3xl">{name}</h1>
               {isNew ? (
-                <span className="rounded-full bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white">Новий</span>
+                <span className="rounded-full bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white">{newBadgeLabel}</span>
               ) : null}
             </div>
 
@@ -55,10 +68,12 @@ export default function SpecialistHero({
             ) : null}
 
             <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
-              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1">
-                <span aria-hidden>💻</span>
-                Онлайн
-              </span>
+              {workModeLabel ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1">
+                  <span aria-hidden>💻</span>
+                  {workModeLabel}
+                </span>
+              ) : null}
               {languages.length > 0 ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1">
                   <span aria-hidden>🌐</span>
@@ -78,6 +93,15 @@ export default function SpecialistHero({
               {sendRequestLabel}
             </button>
           </div>
+
+          {aboutPreview ? (
+            <div className="rounded-xl bg-slate-50 p-3 sm:p-4">
+              <p className="line-clamp-4 text-sm leading-relaxed text-gray-700">{aboutPreview}</p>
+              <a href={aboutHref} className="mt-2 inline-flex text-sm font-medium text-blue-600 transition hover:text-blue-700">
+                {readMoreLabel}
+              </a>
+            </div>
+          ) : null}
         </div>
       </div>
     </section>
