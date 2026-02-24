@@ -44,16 +44,8 @@ export default function SpecialistPreviewCard({
   const languageList = Array.isArray(specialist.languages) ? specialist.languages : [];
   const chips = languageList.slice(0, 3);
   const extraLangCount = Math.max(languageList.length - chips.length, 0);
-  const safeSlug =
-    typeof specialist.slug === "string" && specialist.slug.trim()
-      ? specialist.slug
-      : `specialist-${specialist.id.slice(0, 8)}`;
-  const detailsHref = `/${lang}/specialist/${safeSlug}?id=${encodeURIComponent(
-    specialist.id
-  )}`;
-  const leadHref = `/${lang}/specialist/${safeSlug}?id=${encodeURIComponent(
-    specialist.id
-  )}&open=form`;
+  const detailsHref = `/${lang}/specialist/${specialist.id}`;
+  const leadHref = `/${lang}/specialist/${specialist.id}?open=form`;
   const isNewActive = useMemo(() => {
     if (!specialist.is_new || !specialist.new_until) return false;
     const untilTs = Date.parse(specialist.new_until);
