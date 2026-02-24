@@ -22,6 +22,8 @@ interface Specialist {
   video_url?: string | null;
   gallery_urls?: string[];
   certificate_urls?: string[];
+  portfolio_images?: string[];
+  works?: string[];
   rating?: number | null;
   reviews_count?: number | null;
   services?: string[] | string | null;
@@ -164,19 +166,33 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
     return [];
   };
   const servicesList = Array.from(new Set([...parseList(specialist.services), ...parseList(specialist.directions)])).slice(0, 8);
-  const mediaItems = Array.from(
-    new Set(
-      [...(specialist.gallery_urls ?? []), ...(specialist.certificate_urls ?? []), specialist.avatar_url ?? ""]
-        .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
-    )
-  ).slice(0, 5);
-  const [mainMedia, ...thumbMedia] = mediaItems;
+  const asRecord = specialist as unknown as Record<string, unknown>;
+  const parseImageList = (value: unknown): string[] => {
+    if (!Array.isArray(value)) return [];
+    return value
+      .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+      .map((item) => item.trim());
+  };
+  const portfolioImages = Array.from(
+    new Set([
+      ...parseImageList(specialist.gallery_urls),
+      ...parseImageList(specialist.portfolio_images),
+      ...parseImageList(specialist.works),
+      ...parseImageList(asRecord.portfolioImages),
+      ...parseImageList(asRecord.work_images),
+      ...parseImageList(asRecord.works_images),
+    ])
+  ).slice(0, 8);
+  const hasPortfolio = portfolioImages.length > 0;
+  const [mainPortfolio, ...thumbPortfolio] = portfolioImages;
   const hasRating = specialist.rating != null && Number.isFinite(specialist.rating);
   const reviewsCount = specialist.reviews_count ?? 0;
   const sectionText = {
     ua: {
       topGalleryTitle: "Галерея робіт",
       topGallerySubtitle: "Приклади робіт та матеріали спеціаліста",
+      profilePhotoTitle: "Фото спеціаліста",
+      profilePhotoSubtitle: "Портфоліо поки не додано",
       leadFormTitle: "Швидка заявка",
       galleryTitle: "Галерея і відео",
       gallerySubtitle: "Розділ підготовлено для майбутнього медіа-контенту",
@@ -199,6 +215,8 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
     ru: {
       topGalleryTitle: "Галерея работ",
       topGallerySubtitle: "Примеры работ и материалы специалиста",
+      profilePhotoTitle: "Фото специалиста",
+      profilePhotoSubtitle: "Портфолио пока не добавлено",
       leadFormTitle: "Быстрая заявка",
       galleryTitle: "Галерея и видео",
       gallerySubtitle: "Раздел подготовлен для будущего медиа-контента",
@@ -221,6 +239,8 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
     de: {
       topGalleryTitle: "Galerie der Arbeiten",
       topGallerySubtitle: "Arbeitsbeispiele und Materialien des Spezialisten",
+      profilePhotoTitle: "Foto des Spezialisten",
+      profilePhotoSubtitle: "Portfolio noch nicht hinzugefügt",
       leadFormTitle: "Schnellanfrage",
       galleryTitle: "Galerie und Video",
       gallerySubtitle: "Dieser Bereich ist für künftige Medieninhalte vorbereitet",
@@ -252,17 +272,17 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-6 sm:py-8">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <div className="grid gap-6 md:grid-cols-[minmax(0,1.45fr)_minmax(320px,1fr)] md:items-start">
-          <SectionCard title={sectionText.topGalleryTitle} subtitle={sectionText.topGallerySubtitle}>
-            {mainMedia ? (
+      <div className="mx-auto max-w-6xl md:grid md:grid-cols-[minmax(0,1.45fr)_minmax(320px,1fr)] md:gap-6 md:items-start">
+        <main className="space-y-6">
+          {hasPortfolio ? (
+            <SectionCard title={sectionText.topGalleryTitle} subtitle={sectionText.topGallerySubtitle}>
               <div className="space-y-3">
                 <div className="relative overflow-hidden rounded-xl bg-slate-100 aspect-[16/10]">
-                  <Image src={mainMedia} alt={specialist.name} fill className="object-cover" unoptimized />
+                  <Image src={mainPortfolio} alt={specialist.name} fill className="object-cover" unoptimized />
                 </div>
-                {thumbMedia.length > 0 ? (
+                {thumbPortfolio.length > 0 ? (
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    {thumbMedia.slice(0, 4).map((src, idx) => (
+                    {thumbPortfolio.slice(0, 4).map((src, idx) => (
                       <div key={`${src}-${idx}`} className="relative overflow-hidden rounded-xl bg-slate-100 aspect-[4/3]">
                         <Image src={src} alt={`${specialist.name} ${idx + 2}`} fill className="object-cover" unoptimized />
                       </div>
@@ -270,18 +290,102 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
                   </div>
                 ) : null}
               </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3">
-                {galleryPlaceholders.map((item) => (
-                  <div
-                    key={item}
-                    className={item === 0 ? "col-span-2 aspect-[16/10] rounded-xl border border-dashed border-slate-300 bg-slate-100/70" : "aspect-[4/3] rounded-xl border border-dashed border-slate-300 bg-slate-100/70"}
-                  />
-                ))}
+            </SectionCard>
+          ) : (
+            <SectionCard title={sectionText.profilePhotoTitle} subtitle={sectionText.profilePhotoSubtitle}>
+              {specialist.avatar_url ? (
+                <div className="relative overflow-hidden rounded-xl bg-slate-100 aspect-[4/3] sm:aspect-[16/10]">
+                  <Image src={specialist.avatar_url} alt={specialist.name} fill className="object-cover" unoptimized />
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {galleryPlaceholders.map((item) => (
+                    <div
+                      key={item}
+                      className={item === 0 ? "col-span-2 aspect-[16/10] rounded-xl border border-dashed border-slate-300 bg-slate-100/70" : "aspect-[4/3] rounded-xl border border-dashed border-slate-300 bg-slate-100/70"}
+                    />
+                  ))}
+                </div>
+              )}
+            </SectionCard>
+          )}
+
+          {aboutText ? (
+            <SectionCard title={t(dict, "specialist.about")} subtitle={lang === "ru" ? "Опыт, подход и ключевые компетенции" : lang === "de" ? "Erfahrung, Ansatz und Schlüsselkompetenzen" : "Досвід, підхід та ключові компетенції"}>
+              <div id="about" className="scroll-mt-24">
+                <p className="whitespace-pre-wrap leading-relaxed text-gray-700">{aboutText}</p>
               </div>
+            </SectionCard>
+          ) : null}
+
+          <SectionCard title={sectionText.reviewsTitle} subtitle={sectionText.reviewsSubtitle}>
+            {hasRating || reviewsCount > 0 ? (
+              <div className="flex flex-wrap items-center gap-3 text-gray-800">
+                {hasRating ? <p className="text-2xl font-bold">{specialist.rating?.toFixed(1)}</p> : null}
+                <p className="text-sm text-gray-600">({reviewsCount})</p>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-600">{sectionText.noReviews}</p>
             )}
           </SectionCard>
 
+          {servicesList.length > 0 ? (
+            <SectionCard title={sectionText.servicesTitle} subtitle={sectionText.servicesSubtitle}>
+              <div className="flex flex-wrap gap-2">
+                {servicesList.map((service) => (
+                  <span key={service} className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">
+                    {service}
+                  </span>
+                ))}
+              </div>
+            </SectionCard>
+          ) : null}
+
+          {(specialist.city || (specialist.languages && specialist.languages.length > 0) || workModeLabel) ? (
+            <SectionCard title={sectionText.contactsTitle} subtitle={sectionText.contactsSubtitle}>
+              <div className="space-y-2 text-sm text-gray-700">
+                {specialist.city ? (
+                  <p>
+                    <span className="font-medium">{sectionText.contactsLineLocation}: </span>
+                    {specialist.city}
+                  </p>
+                ) : null}
+                {specialist.languages && specialist.languages.length > 0 ? (
+                  <p>
+                    <span className="font-medium">{sectionText.contactsLineLanguages}: </span>
+                    {specialist.languages.join(", ")}
+                  </p>
+                ) : null}
+                {workModeLabel ? (
+                  <p>
+                    <span className="font-medium">{sectionText.contactsLineFormat}: </span>
+                    {workModeLabel}
+                  </p>
+                ) : null}
+              </div>
+            </SectionCard>
+          ) : null}
+
+          {hasPortfolio ? (
+            <SectionCard title={sectionText.galleryTitle} subtitle={sectionText.gallerySubtitle}>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {portfolioImages.map((src, idx) => (
+                  <div key={`${src}-${idx}`} className="relative overflow-hidden rounded-xl bg-slate-100 aspect-[4/3]">
+                    <Image src={src} alt={`${specialist.name} work ${idx + 1}`} fill className="object-cover" unoptimized />
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+          ) : null}
+
+          {!showForm ? (
+            <section id="lead-form" className="hidden">
+              {/* keeps open=form scroll target stable even when form is collapsed */}
+            </section>
+          ) : null}
+        </main>
+
+        <aside className="mt-6 md:mt-0">
           <SpecialistHero
             name={specialist.name}
             specialization={specializationText}
@@ -299,80 +403,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
             formTitle={sectionText.leadFormTitle}
             formNode={<LeadForm specialistId={params.id} />}
           />
-        </div>
-
-        {aboutText ? (
-          <SectionCard title={t(dict, "specialist.about")} subtitle={lang === "ru" ? "Опыт, подход и ключевые компетенции" : lang === "de" ? "Erfahrung, Ansatz und Schlüsselkompetenzen" : "Досвід, підхід та ключові компетенції"}>
-            <div id="about" className="scroll-mt-24">
-              <p className="whitespace-pre-wrap leading-relaxed text-gray-700">{aboutText}</p>
-            </div>
-          </SectionCard>
-        ) : null}
-
-        <SectionCard title={sectionText.reviewsTitle} subtitle={sectionText.reviewsSubtitle}>
-          {hasRating || reviewsCount > 0 ? (
-            <div className="flex flex-wrap items-center gap-3 text-gray-800">
-              {hasRating ? <p className="text-2xl font-bold">{specialist.rating?.toFixed(1)}</p> : null}
-              <p className="text-sm text-gray-600">({reviewsCount})</p>
-            </div>
-          ) : (
-            <p className="text-sm text-gray-600">{sectionText.noReviews}</p>
-          )}
-        </SectionCard>
-
-        {servicesList.length > 0 ? (
-          <SectionCard title={sectionText.servicesTitle} subtitle={sectionText.servicesSubtitle}>
-            <div className="flex flex-wrap gap-2">
-              {servicesList.map((service) => (
-                <span key={service} className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">
-                  {service}
-                </span>
-              ))}
-            </div>
-          </SectionCard>
-        ) : null}
-
-        {(specialist.city || (specialist.languages && specialist.languages.length > 0) || workModeLabel) ? (
-          <SectionCard title={sectionText.contactsTitle} subtitle={sectionText.contactsSubtitle}>
-            <div className="space-y-2 text-sm text-gray-700">
-              {specialist.city ? (
-                <p>
-                  <span className="font-medium">{sectionText.contactsLineLocation}: </span>
-                  {specialist.city}
-                </p>
-              ) : null}
-              {specialist.languages && specialist.languages.length > 0 ? (
-                <p>
-                  <span className="font-medium">{sectionText.contactsLineLanguages}: </span>
-                  {specialist.languages.join(", ")}
-                </p>
-              ) : null}
-              {workModeLabel ? (
-                <p>
-                  <span className="font-medium">{sectionText.contactsLineFormat}: </span>
-                  {workModeLabel}
-                </p>
-              ) : null}
-            </div>
-          </SectionCard>
-        ) : (
-          <SectionCard title={sectionText.galleryTitle} subtitle={sectionText.gallerySubtitle}>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {galleryPlaceholders.map((item) => (
-                <div
-                  key={item}
-                  className="aspect-[4/3] rounded-xl border border-dashed border-slate-300 bg-slate-100/70"
-                />
-              ))}
-            </div>
-          </SectionCard>
-        )}
-
-        {!showForm ? (
-          <section id="lead-form" className="hidden">
-            {/* keeps open=form scroll target stable even when form is collapsed */}
-          </section>
-        ) : null}
+        </aside>
       </div>
     </div>
   );
