@@ -99,7 +99,9 @@ function normalizeSpecialistPreview(input: unknown): SpecialistPreview | null {
     city: typeof row.city === "string" && row.city.trim() ? row.city.trim() : null,
     work_format: workFormat,
     languages: Array.isArray(row.languages)
-      ? row.languages.filter((value): value is string => typeof value === "string" && value.trim()).slice(0, 8)
+      ? row.languages
+          .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+          .slice(0, 8)
       : [],
     is_verified: Boolean(row.is_verified),
     rating: toNullableNumber(row.rating),
@@ -174,7 +176,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
         throw new Error(result?.error || "Failed to load specialists");
       }
 
-      const incoming = Array.isArray(result?.data)
+      const incoming: SpecialistPreview[] = Array.isArray(result?.data)
         ? result.data
             .map((item) => normalizeSpecialistPreview(item))
             .filter((item): item is SpecialistPreview => Boolean(item))
@@ -189,12 +191,15 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
       if (meta.filter_options?.languages) {
         setLanguageOptions(meta.filter_options.languages);
       } else if (reset) {
+        const fallbackLanguages: string[] = Array.from(
+          new Set<string>(
+            incoming
+              .flatMap((item) => item.languages ?? [])
+              .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+          )
+        ).sort((a, b) => a.localeCompare(b, "uk"));
         setLanguageOptions(
-          Array.from(
-            new Set(
-              incoming.flatMap((item) => item.languages).filter((value): value is string => Boolean(value))
-            )
-          ).sort((a, b) => a.localeCompare(b, "uk"))
+          fallbackLanguages
         );
       }
 
