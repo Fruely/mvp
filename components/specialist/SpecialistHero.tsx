@@ -36,7 +36,7 @@ export default function SpecialistHero({
   formNode: ReactNode;
 }) {
   return (
-    <aside className="rounded-2xl border border-black/5 bg-white p-4 shadow-md md:sticky md:top-6 sm:p-6">
+    <aside className="rounded-2xl border border-black/5 bg-white p-4 shadow-md sm:p-6">
       <div className="space-y-4">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">

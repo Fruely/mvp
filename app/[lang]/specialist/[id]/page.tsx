@@ -273,8 +273,8 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-6 sm:py-8">
       <div className="mx-auto max-w-6xl md:grid md:grid-cols-[minmax(0,1.45fr)_minmax(320px,1fr)] md:gap-6 md:items-start">
-        <main className="space-y-6">
-          {hasPortfolio ? (
+        {hasPortfolio ? (
+          <section className="md:col-start-1">
             <SectionCard title={sectionText.topGalleryTitle} subtitle={sectionText.topGallerySubtitle}>
               <div className="space-y-3">
                 <div className="relative overflow-hidden rounded-xl bg-slate-100 aspect-[16/10]">
@@ -291,7 +291,9 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
                 ) : null}
               </div>
             </SectionCard>
-          ) : (
+          </section>
+        ) : (
+          <section className="md:col-start-1">
             <SectionCard title={sectionText.profilePhotoTitle} subtitle={sectionText.profilePhotoSubtitle}>
               {specialist.avatar_url ? (
                 <div className="relative overflow-hidden rounded-xl bg-slate-100 aspect-[4/3] sm:aspect-[16/10]">
@@ -308,8 +310,30 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
                 </div>
               )}
             </SectionCard>
-          )}
+          </section>
+        )}
 
+        <aside className="mt-6 md:col-start-2 md:row-span-2 md:row-start-1 md:mt-0 md:self-start md:sticky md:top-6">
+          <SpecialistHero
+            name={specialist.name}
+            specialization={specializationText}
+            city={specialist.city ?? null}
+            languages={Array.isArray(specialist.languages) ? specialist.languages : []}
+            workModeText={workModeLabel}
+            isNew={isNewActive}
+            newBadgeLabel={sectionText.newBadge}
+            sendRequestLabel={showForm ? t(dict, "specialist.hideForm") : t(dict, "specialist.sendRequest")}
+            onSendRequest={() => setShowForm((value) => !value)}
+            aboutPreview={aboutText || null}
+            aboutHref="#about"
+            readMoreLabel={sectionText.readMore}
+            showForm={showForm}
+            formTitle={sectionText.leadFormTitle}
+            formNode={<LeadForm specialistId={params.id} />}
+          />
+        </aside>
+
+        <main className="mt-6 space-y-6 md:col-start-1 md:mt-6">
           {aboutText ? (
             <SectionCard title={t(dict, "specialist.about")} subtitle={lang === "ru" ? "Опыт, подход и ключевые компетенции" : lang === "de" ? "Erfahrung, Ansatz und Schlüsselkompetenzen" : "Досвід, підхід та ключові компетенції"}>
               <div id="about" className="scroll-mt-24">
@@ -384,26 +408,6 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
             </section>
           ) : null}
         </main>
-
-        <aside className="mt-6 md:mt-0">
-          <SpecialistHero
-            name={specialist.name}
-            specialization={specializationText}
-            city={specialist.city ?? null}
-            languages={Array.isArray(specialist.languages) ? specialist.languages : []}
-            workModeText={workModeLabel}
-            isNew={isNewActive}
-            newBadgeLabel={sectionText.newBadge}
-            sendRequestLabel={showForm ? t(dict, "specialist.hideForm") : t(dict, "specialist.sendRequest")}
-            onSendRequest={() => setShowForm((value) => !value)}
-            aboutPreview={aboutText || null}
-            aboutHref="#about"
-            readMoreLabel={sectionText.readMore}
-            showForm={showForm}
-            formTitle={sectionText.leadFormTitle}
-            formNode={<LeadForm specialistId={params.id} />}
-          />
-        </aside>
       </div>
     </div>
   );
