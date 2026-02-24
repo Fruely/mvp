@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import LeadForm from "@/components/LeadForm";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import uaDict from "@/locales/ua.json";
+import SectionCard from "@/components/specialist/SectionCard";
+import SpecialistHero from "@/components/specialist/SpecialistHero";
 
 interface Specialist {
   id: string;
@@ -21,27 +22,6 @@ interface Specialist {
   certificate_urls?: string[];
   languages: string[];
   created_at: string;
-}
-
-function getEmbedUrl(url: string): string | null {
-  try {
-    const u = new URL(url);
-    const host = u.hostname.toLowerCase();
-    if (host.includes("youtube.com") && u.searchParams.has("v")) {
-      return `https://www.youtube.com/embed/${u.searchParams.get("v")}`;
-    }
-    if (host.includes("youtu.be")) {
-      const id = u.pathname.slice(1).split("?")[0];
-      return id ? `https://www.youtube.com/embed/${id}` : null;
-    }
-    if (host.includes("vimeo.com")) {
-      const id = u.pathname.replace(/^\/+/, "").split("/")[0];
-      return id ? `https://player.vimeo.com/video/${id}` : null;
-    }
-  } catch {
-    // ignore
-  }
-  return null;
 }
 
 export default function SpecialistPage({ params }: { params: { id: string } }) {
@@ -141,157 +121,67 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
     );
   }
 
+  const isNewActive = (() => {
+    const createdTs = Date.parse(specialist.created_at);
+    if (!Number.isFinite(createdTs)) return false;
+    const twoWeeksMs = 14 * 24 * 60 * 60 * 1000;
+    return Date.now() - createdTs <= twoWeeksMs;
+  })();
+  const aboutText = (specialist.description ?? specialist.bio) || t(dict, "specialist.noDescription");
+  const specializationText = specialist.category || t(dict, "specialist.about", { defaultValue: "Спеціаліст" });
+  const galleryPlaceholders = Array.from({ length: 6 }, (_, idx) => idx);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Specialist Card */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-primary to-purple-600 h-32"></div>
-          
-          <div className="px-6 pb-8">
-            {/* Avatar */}
-            <div className="flex justify-center -mt-16 mb-6">
-              <div className="relative">
-                <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                  {specialist.avatar_url ? (
-                    <Image
-                      src={specialist.avatar_url}
-                      alt={specialist.name}
-                      width={128}
-                      height={128}
-                      unoptimized
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-5xl">👤</span>
-                  )}
-                </div>
-              </div>
-            </div>
+    <div className="min-h-screen bg-slate-50 px-4 py-6 sm:py-8">
+      <div className="mx-auto max-w-6xl space-y-6">
+        <SpecialistHero
+          name={specialist.name}
+          avatarUrl={specialist.avatar_url}
+          specialization={specializationText}
+          languages={Array.isArray(specialist.languages) ? specialist.languages : []}
+          isNew={isNewActive}
+          sendRequestLabel={showForm ? t(dict, "specialist.hideForm") : t(dict, "specialist.sendRequest")}
+          onSendRequest={() => setShowForm((value) => !value)}
+        />
 
-            {/* Name & Category */}
-            <div className="text-center mb-6">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {specialist.name}
-              </h1>
-              <p className="text-lg text-primary font-semibold mb-2">
-                {specialist.category}
-              </p>
-              {specialist.languages && specialist.languages.length > 0 && (
-                <div className="flex justify-center gap-2 flex-wrap">
-                  {specialist.languages.map((lang) => (
-                    <span
-                      key={lang}
-                      className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
-                    >
-                      {lang}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
+        <SectionCard title={t(dict, "specialist.about")} subtitle="Досвід, підхід та ключові компетенції">
+          <p className="whitespace-pre-wrap leading-relaxed text-gray-700">{aboutText}</p>
+        </SectionCard>
 
-            {/* Description */}
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-3">
-                {t(dict, "specialist.about")}
-              </h2>
-              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {(specialist.description ?? specialist.bio) || t(dict, "specialist.noDescription")}
-              </p>
-            </div>
-
-            {/* Certificates */}
-            {specialist.certificate_urls && specialist.certificate_urls.length > 0 && (
-              <div className="mb-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-3">Сертификаты</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {specialist.certificate_urls.map((url, idx) => (
-                    <a
-                      key={idx}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block rounded-xl overflow-hidden border border-gray-200 bg-gray-50 aspect-[3/4] hover:opacity-90 transition"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={url}
-                        alt={`Сертификат ${idx + 1}`}
-                        className="w-full h-full object-contain"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
-                      />
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Main video */}
-            {specialist.video_url && getEmbedUrl(specialist.video_url) && (
-              <div className="mb-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-3">Видео</h2>
-                <div className="aspect-video w-full max-w-2xl mx-auto rounded-xl overflow-hidden bg-gray-100">
-                  <iframe
-                    src={getEmbedUrl(specialist.video_url)!}
-                    title="Видео специалиста"
-                    className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Video gallery */}
-            {specialist.gallery_urls && specialist.gallery_urls.length > 0 && (
-              <div className="mb-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-3">Видеогалерея</h2>
-                <div className="grid gap-6 sm:grid-cols-2">
-                  {specialist.gallery_urls.map((url, idx) => {
-                    const embed = getEmbedUrl(url);
-                    if (!embed) return null;
-                    return (
-                      <div
-                        key={idx}
-                        className="aspect-video w-full rounded-xl overflow-hidden bg-gray-100"
-                      >
-                        <iframe
-                          src={embed}
-                          title={`Видео ${idx + 1}`}
-                          className="w-full h-full"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* CTA Button */}
-            <div className="text-center">
-              <button
-                onClick={() => setShowForm(!showForm)}
-                className="px-8 py-4 bg-gradient-to-r from-primary to-purple-600 text-white text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-              >
-                {showForm ? t(dict, "specialist.hideForm") : t(dict, "specialist.sendRequest")}
-              </button>
-            </div>
+        <SectionCard title="Галерея і відео" subtitle="Розділ підготовлено для майбутнього медіа-контенту">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {galleryPlaceholders.map((item) => (
+              <div
+                key={item}
+                className="aspect-[4/3] rounded-xl border border-dashed border-slate-300 bg-slate-100/70"
+              />
+            ))}
           </div>
-        </div>
+        </SectionCard>
 
-        {/* Lead Form */}
+        <SectionCard title="Послуги" subtitle="Список послуг з'явиться після наступного оновлення профілю">
+          <div className="space-y-2">
+            <div className="h-10 rounded-xl bg-slate-100" />
+            <div className="h-10 rounded-xl bg-slate-100" />
+            <div className="h-10 rounded-xl bg-slate-100" />
+          </div>
+        </SectionCard>
+
+        <SectionCard title="Контакти / Формат роботи" subtitle="Блок підготовлено для майбутньої інтеграції">
+          <div className="space-y-2 text-sm text-gray-700">
+            <p>Онлайн консультації: доступно</p>
+            <p>Контактні канали будуть додані після оновлення анкети.</p>
+          </div>
+        </SectionCard>
+
         {showForm && (
-          <div id="lead-form" className="bg-white rounded-2xl shadow-xl p-8 animate-fadeIn">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-              {t(dict, "specialist.sendRequest")}
-            </h2>
+          <section
+            id="lead-form"
+            className="rounded-2xl border border-black/5 bg-white p-5 shadow-md animate-fadeIn sm:p-6"
+          >
+            <h2 className="mb-6 text-2xl font-bold text-gray-900">{t(dict, "specialist.sendRequest")}</h2>
             <LeadForm specialistId={params.id} />
-          </div>
+          </section>
         )}
       </div>
     </div>
