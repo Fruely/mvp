@@ -464,7 +464,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
           ) : null}
         </main>
       </div>
-      <MobileStickyCTA onClick={() => setShowForm(true)} label="Anfrage senden" />
+      <MobileStickyCTA onClick={() => setShowForm(true)} label="Anfrage senden" isHidden={showForm} />
     </div>
   );
 }
