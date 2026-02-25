@@ -528,12 +528,12 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
         ) : (
           <div className="space-y-6">
             <div className="sticky top-0 z-20 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-              <div className="grid grid-cols-1 gap-4 items-end md:grid-cols-3">
-                <label className="text-sm">
-                  <span className="mb-2 block text-xs font-medium text-gray-600">
+              <div className="grid grid-cols-1 gap-4 items-end md:mx-auto md:flex md:max-w-4xl md:flex-wrap md:items-end md:justify-center md:gap-3">
+                <label className="text-sm md:flex-none">
+                  <span className="mb-2 block text-xs font-medium text-gray-600 md:sr-only">
                     {t(dict, "filters.language.label")}
                   </span>
-                  <div className="relative">
+                  <div className="relative md:w-56">
                     <select
                       value={selectedLanguage}
                       onChange={(event) => setSelectedLanguage(event.target.value)}
@@ -556,11 +556,11 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                   </div>
                 </label>
 
-                <label className="text-sm">
-                  <span className="mb-2 block text-xs font-medium text-gray-600">
+                <label className="text-sm md:flex-none">
+                  <span className="mb-2 block text-xs font-medium text-gray-600 md:sr-only">
                     {t(dict, "filters.city.label")}
                   </span>
-                  <div className="relative">
+                  <div className="relative md:w-56">
                     <select
                       value={selectedCity}
                       onChange={(event) => setSelectedCity(event.target.value)}
@@ -583,11 +583,11 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                   </div>
                 </label>
 
-                <label className="text-sm">
-                  <span className="mb-2 block text-xs font-medium text-gray-600">
+                <label className="text-sm md:flex-none">
+                  <span className="mb-2 block text-xs font-medium text-gray-600 md:sr-only">
                     {t(dict, "filters.sort.label")}
                   </span>
-                  <div className="relative">
+                  <div className="relative md:w-56">
                     <select
                       value={sort}
                       onChange={(event) => setSort(event.target.value as SortKey)}

@@ -9,6 +9,7 @@ import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import uaDict from "@/locales/ua.json";
 import SectionCard from "@/components/specialist/SectionCard";
 import SpecialistHero from "@/components/specialist/SpecialistHero";
+import MobileStickyCTA from "@/components/MobileStickyCTA";
 
 interface Specialist {
   id: string;
@@ -40,7 +41,8 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
   const [specialist, setSpecialist] = useState<Specialist | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(true);
+  const [leadSuccessMessage, setLeadSuccessMessage] = useState<string | null>(null);
   const [activePortfolioIndex, setActivePortfolioIndex] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const searchParams = useSearchParams();
@@ -96,7 +98,6 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
     const open = searchParams?.get("open");
     if (open === "form") {
       setShowForm(true);
-      // Scroll to form after opening
       setTimeout(() => {
         const el = document.getElementById("lead-form");
         if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -291,6 +292,10 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
     }
     setTouchStartX(null);
   };
+  const scrollToLeadForm = () => {
+    const el = document.getElementById("lead-form");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
   const workModeLabel =
     workMode === "online"
       ? sectionText.online
@@ -301,7 +306,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
           : null;
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-6 sm:py-8">
+    <div className="min-h-screen bg-slate-50 px-4 py-6 sm:py-8 pb-24 md:pb-0">
       <div className="mx-auto max-w-6xl md:grid md:grid-cols-[minmax(0,1.45fr)_minmax(320px,1fr)] md:gap-6 md:items-start">
         {hasPortfolio ? (
           <section className="md:col-start-1">
@@ -376,14 +381,27 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
             workModeText={workModeLabel}
             isNew={isNewActive}
             newBadgeLabel={sectionText.newBadge}
-            sendRequestLabel={showForm ? t(dict, "specialist.hideForm") : t(dict, "specialist.sendRequest")}
-            onSendRequest={() => setShowForm((value) => !value)}
+            sendRequestLabel={t(dict, "specialist.sendRequest")}
+            successMessage={leadSuccessMessage}
+            onSendRequest={() => {
+              setLeadSuccessMessage(null);
+              setShowForm(true);
+              scrollToLeadForm();
+            }}
             aboutPreview={aboutText || null}
             aboutHref="#about"
             readMoreLabel={sectionText.readMore}
             showForm={showForm}
             formTitle={sectionText.leadFormTitle}
-            formNode={<LeadForm specialistId={params.id} />}
+            formNode={
+              <LeadForm
+                specialistId={params.id}
+                onSuccess={(message) => {
+                  setShowForm(false);
+                  setLeadSuccessMessage(message);
+                }}
+              />
+            }
           />
         </aside>
 
@@ -456,13 +474,17 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
             </SectionCard>
           ) : null}
 
-          {!showForm ? (
-            <section id="lead-form" className="hidden">
-              {/* keeps open=form scroll target stable even when form is collapsed */}
-            </section>
-          ) : null}
         </main>
       </div>
+      <MobileStickyCTA
+        onClick={() => {
+          setLeadSuccessMessage(null);
+          setShowForm(true);
+          scrollToLeadForm();
+        }}
+        label={t(dict, "specialist.sendRequest")}
+        isHidden={showForm}
+      />
     </div>
   );
 }
