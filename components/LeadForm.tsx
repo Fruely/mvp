@@ -121,7 +121,11 @@ export default function LeadForm({ specialistId }: LeadFormProps) {
         onChange={(e) => setMessage(e.target.value)}
       />
 
-      <button disabled={loading} type="submit">
+      <button
+        disabled={loading}
+        type="submit"
+        className="h-14 rounded-xl bg-blue-600 text-white font-semibold shadow-md transition hover:bg-blue-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      >
         {loading ? t(dict, "lead.sending") : t(dict, "lead.submit")}
       </button>
 
