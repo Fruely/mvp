@@ -381,13 +381,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
             workModeText={workModeLabel}
             isNew={isNewActive}
             newBadgeLabel={sectionText.newBadge}
-            sendRequestLabel={t(dict, "specialist.sendRequest")}
             successMessage={leadSuccessMessage}
-            onSendRequest={() => {
-              setLeadSuccessMessage(null);
-              setShowForm(true);
-              scrollToLeadForm();
-            }}
             aboutPreview={aboutText || null}
             aboutHref="#about"
             readMoreLabel={sectionText.readMore}

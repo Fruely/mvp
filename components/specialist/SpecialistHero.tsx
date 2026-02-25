@@ -10,8 +10,6 @@ export default function SpecialistHero({
   workModeText,
   isNew,
   newBadgeLabel,
-  onSendRequest,
-  sendRequestLabel,
   successMessage,
   aboutPreview,
   aboutHref,
@@ -27,8 +25,6 @@ export default function SpecialistHero({
   workModeText?: string | null;
   isNew: boolean;
   newBadgeLabel: string;
-  onSendRequest: () => void;
-  sendRequestLabel: string;
   successMessage?: string | null;
   aboutPreview?: string | null;
   aboutHref: string;
@@ -70,15 +66,6 @@ export default function SpecialistHero({
             </span>
           ) : null}
         </div>
-
-        <button
-          type="button"
-          onClick={onSendRequest}
-          className="inline-flex w-full items-center justify-center gap-1 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
-        >
-          <span aria-hidden>⚡</span>
-          {sendRequestLabel}
-        </button>
 
         {successMessage ? (
           <div className="rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm font-medium text-green-700">
