@@ -97,11 +97,12 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
   const statusMessage = status.split(":")[1] || "";
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <input
         placeholder={t(dict, "lead.name")}
         value={client_name}
         onChange={(e) => setName(e.target.value)}
+        className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
       />
 
       <input
@@ -109,6 +110,7 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
         placeholder={t(dict, "lead.email")}
         value={client_email}
         onChange={(e) => setEmail(e.target.value)}
+        className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
       />
 
       <input
@@ -116,24 +118,27 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
         placeholder={t(dict, "lead.phone")}
         value={client_phone}
         onChange={(e) => setPhone(e.target.value)}
+        className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
       />
 
       <textarea
         placeholder={t(dict, "lead.message")}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
+        rows={4}
+        className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
       />
 
       <button
         disabled={loading}
         type="submit"
-        className="h-14 rounded-xl bg-blue-600 text-white font-semibold shadow-md transition hover:bg-blue-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 text-sm font-semibold text-white shadow-md transition hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
       >
         {loading ? t(dict, "lead.sending") : t(dict, "lead.submit")}
       </button>
 
-      {isSuccess && <div className="text-green-600">{statusMessage}</div>}
-      {isError && <div className="text-red-600">{statusMessage}</div>}
+      {isSuccess && <div className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{statusMessage}</div>}
+      {isError && <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{statusMessage}</div>}
     </form>
   );
 }
