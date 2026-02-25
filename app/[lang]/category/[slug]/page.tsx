@@ -69,6 +69,18 @@ const SORT_TO_API: Record<SortKey, "relevance" | "new" | "experience"> = {
   price_high: "relevance",
 };
 
+function slugToTitleCase(value: string): string {
+  return value
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function hasCyrillic(value: string): boolean {
+  return /[А-Яа-яЁёІіЇїЄє]/.test(value);
+}
+
 function toNullableNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value === "string" && value.trim()) {
@@ -141,11 +153,20 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
   const [selectedCity, setSelectedCity] = useState("");
   const [sort, setSort] = useState<SortKey>("best_match");
   const [loadError, setLoadError] = useState<string | null>(null);
-  const getCategoryLabel = (title: string | null, categorySlug: string) =>
-    title ??
-    t(dict, `categories.${categorySlug}`, {
-      defaultValue: t(dict, "categories.default"),
-    });
+  const getCategoryLabel = (title: string | null, categorySlug: string) => {
+    const translated = t(dict, `categories.${categorySlug}`, { defaultValue: "" }).trim();
+    if (lang === "de") {
+      if (typeof title === "string" && title.trim() && !hasCyrillic(title)) return title.trim();
+      if (translated) return translated;
+      return slugToTitleCase(categorySlug);
+    }
+    return (
+      title ??
+      t(dict, `categories.${categorySlug}`, {
+        defaultValue: t(dict, "categories.default"),
+      })
+    );
+  };
 
   const mergeUniqueSpecialists = (
     current: SpecialistPreview[],
