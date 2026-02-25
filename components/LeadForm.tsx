@@ -7,9 +7,10 @@ import uaDict from "@/locales/ua.json";
 
 interface LeadFormProps {
   specialistId?: string;
+  onSuccess?: (message: string) => void;
 }
 
-export default function LeadForm({ specialistId }: LeadFormProps) {
+export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
   const pathname = usePathname() || "/";
   const lang = useMemo<Lang>(() => {
     const seg = pathname.split("/").filter(Boolean)[0];
@@ -76,7 +77,9 @@ export default function LeadForm({ specialistId }: LeadFormProps) {
       if (!res.ok) {
         setStatus("error:" + (data.error || t(dict, "lead.error")));
       } else {
-        setStatus(`success:${t(dict, "lead.success")}`);
+        const successMessage = t(dict, "lead.success");
+        setStatus(`success:${successMessage}`);
+        onSuccess?.(successMessage);
         setName("");
         setEmail("");
         setPhone("");

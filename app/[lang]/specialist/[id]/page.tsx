@@ -42,6 +42,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [leadSuccessMessage, setLeadSuccessMessage] = useState<string | null>(null);
   const [activePortfolioIndex, setActivePortfolioIndex] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const searchParams = useSearchParams();
@@ -377,14 +378,26 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
             workModeText={workModeLabel}
             isNew={isNewActive}
             newBadgeLabel={sectionText.newBadge}
-            sendRequestLabel={showForm ? t(dict, "specialist.hideForm") : t(dict, "specialist.sendRequest")}
-            onSendRequest={() => setShowForm((value) => !value)}
+            sendRequestLabel={t(dict, "specialist.sendRequest")}
+            successMessage={leadSuccessMessage}
+            onSendRequest={() => {
+              setLeadSuccessMessage(null);
+              setShowForm(true);
+            }}
             aboutPreview={aboutText || null}
             aboutHref="#about"
             readMoreLabel={sectionText.readMore}
             showForm={showForm}
             formTitle={sectionText.leadFormTitle}
-            formNode={<LeadForm specialistId={params.id} />}
+            formNode={
+              <LeadForm
+                specialistId={params.id}
+                onSuccess={(message) => {
+                  setShowForm(false);
+                  setLeadSuccessMessage(message);
+                }}
+              />
+            }
           />
         </aside>
 

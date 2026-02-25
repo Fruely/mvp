@@ -12,6 +12,7 @@ export default function SpecialistHero({
   newBadgeLabel,
   onSendRequest,
   sendRequestLabel,
+  successMessage,
   aboutPreview,
   aboutHref,
   readMoreLabel,
@@ -28,6 +29,7 @@ export default function SpecialistHero({
   newBadgeLabel: string;
   onSendRequest: () => void;
   sendRequestLabel: string;
+  successMessage?: string | null;
   aboutPreview?: string | null;
   aboutHref: string;
   readMoreLabel: string;
@@ -77,6 +79,12 @@ export default function SpecialistHero({
           <span aria-hidden>⚡</span>
           {sendRequestLabel}
         </button>
+
+        {successMessage ? (
+          <div className="rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm font-medium text-green-700">
+            {successMessage}
+          </div>
+        ) : null}
 
         {aboutPreview ? (
           <div className="rounded-xl bg-slate-50 p-3 sm:p-4">
