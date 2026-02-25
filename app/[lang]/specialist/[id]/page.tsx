@@ -9,6 +9,7 @@ import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import uaDict from "@/locales/ua.json";
 import SectionCard from "@/components/specialist/SectionCard";
 import SpecialistHero from "@/components/specialist/SpecialistHero";
+import MobileStickyCTA from "@/components/MobileStickyCTA";
 
 interface Specialist {
   id: string;
@@ -301,7 +302,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
           : null;
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-6 sm:py-8">
+    <div className="min-h-screen bg-slate-50 px-4 py-6 sm:py-8 pb-24 md:pb-0">
       <div className="mx-auto max-w-6xl md:grid md:grid-cols-[minmax(0,1.45fr)_minmax(320px,1fr)] md:gap-6 md:items-start">
         {hasPortfolio ? (
           <section className="md:col-start-1">
@@ -463,6 +464,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
           ) : null}
         </main>
       </div>
+      <MobileStickyCTA onClick={() => setShowForm(true)} label="Anfrage senden" />
     </div>
   );
 }
