@@ -17,6 +17,8 @@ type Application = {
   rejected_at?: string | null;
   claim_url?: string | null;
   claim_token_used_at?: string | null;
+  specialist_id?: string | null;
+  is_active?: boolean | null;
 };
 
 type ApiResponse = { data: Application[] } | { error: string };
@@ -43,6 +45,7 @@ export default function AdminSpecialistsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updatingById, setUpdatingById] = useState<Record<string, boolean>>({});
+  const [togglingActiveById, setTogglingActiveById] = useState<Record<string, boolean>>({});
   const [resendingById, setResendingById] = useState<Record<string, boolean>>({});
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [expandedRejectionId, setExpandedRejectionId] = useState<string | null>(null);
@@ -262,6 +265,61 @@ export default function AdminSpecialistsPage() {
       setToast({ type: "error", message: e?.message ?? "Ошибка запроса" });
     } finally {
       setResendingById((prev) => ({ ...prev, [appId]: false }));
+    }
+  }
+
+  async function updateSpecialistActive(specialistId: string, nextIsActive: boolean) {
+    const activeToken = token || localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (!activeToken || !activeToken.trim()) {
+      setError("Введите токен, чтобы менять активность специалиста.");
+      return;
+    }
+
+    setTogglingActiveById((prev) => ({ ...prev, [specialistId]: true }));
+    setToast(null);
+
+    try {
+      const res = await fetch(`/api/admin/specialists/${specialistId}/active`, {
+        method: "PATCH",
+        headers: {
+          "x-admin-token": activeToken,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ is_active: nextIsActive }),
+      });
+
+      const json = (await res.json()) as { success?: boolean; data?: { id: string; is_active: boolean }; error?: string };
+
+      if (res.status === 401) {
+        try {
+          localStorage.removeItem(TOKEN_STORAGE_KEY);
+        } catch {
+          // ignore
+        }
+        setToken(null);
+        setTokenInput("");
+        setError("Токен недействителен. Введите токен заново.");
+        return;
+      }
+
+      if (!res.ok || !json?.data) {
+        setToast({ type: "error", message: json?.error || "Не удалось обновить активность специалиста" });
+        return;
+      }
+
+      setData((prev) =>
+        prev.map((app) =>
+          app.specialist_id === specialistId ? { ...app, is_active: json.data!.is_active } : app
+        )
+      );
+      setToast({
+        type: "success",
+        message: json.data.is_active ? "Специалист активирован" : "Специалист деактивирован",
+      });
+    } catch (e: any) {
+      setToast({ type: "error", message: e?.message || "Ошибка сети при обновлении активности" });
+    } finally {
+      setTogglingActiveById((prev) => ({ ...prev, [specialistId]: false }));
     }
   }
 
@@ -487,6 +545,9 @@ export default function AdminSpecialistsPage() {
                 data.map((app) => {
                   const createdAt = app.created_at ? new Date(app.created_at).toLocaleString("ru-RU") : "—";
                   const isUpdating = !!updatingById[app.id];
+                  const specialistId = typeof app.specialist_id === "string" ? app.specialist_id : null;
+                  const hasActiveValue = typeof app.is_active === "boolean";
+                  const isTogglingActive = specialistId ? !!togglingActiveById[specialistId] : false;
                   const isRejected = app.status === "rejected";
                   const isExpanded = expandedRejectionId === app.id && isRejected;
 
@@ -513,6 +574,18 @@ export default function AdminSpecialistsPage() {
                         </td>
                         <td className="px-3 py-2 border-b">
                           <div className="flex flex-wrap items-center gap-2">
+                            {specialistId && hasActiveValue ? (
+                              <label className="inline-flex items-center gap-1 text-xs text-gray-700">
+                                <input
+                                  type="checkbox"
+                                  checked={!!app.is_active}
+                                  onChange={(e) => updateSpecialistActive(specialistId, e.target.checked)}
+                                  disabled={isTogglingActive || !hasToken}
+                                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-60"
+                                />
+                                Active
+                              </label>
+                            ) : null}
                             {isRejected && (
                               <button
                                 type="button"

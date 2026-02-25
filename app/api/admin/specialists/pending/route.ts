@@ -58,6 +58,8 @@ export async function GET(request: NextRequest) {
     // For approved applications, attach claim_url and claim_token_used_at based on specialists
     let claimMap: Record<string, string> = {};
     let claimUsedMap: Record<string, string | null> = {};
+    let specialistIdMap: Record<string, string> = {};
+    let specialistActiveMap: Record<string, boolean | null> = {};
     if (status === 'approved' && rowsArray.length > 0) {
       const emails = Array.from(
         new Set(
@@ -70,16 +72,18 @@ export async function GET(request: NextRequest) {
       if (emails.length > 0) {
         const { data: specialistsRows } = await supabase
           .from('specialists')
-          .select('email, claim_token, claim_token_used_at')
+          .select('id, email, claim_token, claim_token_used_at, is_active')
           .in('email', emails);
 
-        (specialistsRows || []).forEach((s: { email?: string | null; claim_token?: string | null; claim_token_used_at?: string | null }) => {
+        (specialistsRows || []).forEach((s: { id: string; email?: string | null; claim_token?: string | null; claim_token_used_at?: string | null; is_active?: boolean | null }) => {
           const email = s.email && String(s.email).trim().toLowerCase();
           if (email) {
             if (s.claim_token) {
               claimMap[email] = s.claim_token;
             }
             claimUsedMap[email] = s.claim_token_used_at || null;
+            specialistIdMap[email] = s.id;
+            specialistActiveMap[email] = typeof s.is_active === 'boolean' ? s.is_active : null;
           }
         });
       }
@@ -95,6 +99,8 @@ export async function GET(request: NextRequest) {
     const data = rowsArray.map((row: { category_id?: string | null; email?: string | null; [k: string]: unknown }) => {
       const email = row.email && String(row.email).trim().toLowerCase();
       const claimToken = email ? claimMap[email] : undefined;
+      const specialist_id = email ? specialistIdMap[email] ?? null : null;
+      const is_active = email ? specialistActiveMap[email] ?? null : null;
       const claim_url =
         status === 'approved' && baseUrl && claimToken
           ? `${baseUrl}/specialist/claim?token=${encodeURIComponent(claimToken)}`
@@ -104,6 +110,8 @@ export async function GET(request: NextRequest) {
       return {
         ...row,
         category: row.category_id ? (categoryMap[row.category_id] ?? DEFAULT_CATEGORY_LABEL) : null,
+        specialist_id,
+        is_active,
         claim_url,
         claim_token_used_at,
       };
