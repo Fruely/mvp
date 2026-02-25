@@ -192,6 +192,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
   const activePortfolioImage = portfolioCount > 0 ? portfolioImages[normalizedActivePortfolioIndex] : null;
   const hasRating = specialist.rating != null && Number.isFinite(specialist.rating);
   const reviewsCount = specialist.reviews_count ?? 0;
+  const normalizedRating = hasRating ? Math.max(0, Math.min(5, specialist.rating ?? 0)) : 0;
   const sectionText = {
     ua: {
       topGalleryTitle: "Галерея робіт",
@@ -204,6 +205,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
       reviewsTitle: "Відгуки і рейтинг",
       reviewsSubtitle: "Досвід клієнтів та соціальний доказ",
       noReviews: "Відгуки поки не додані.",
+      reviewsWord: "відгуків",
       servicesTitle: "Послуги",
       servicesSubtitle: "Список послуг з'явиться після наступного оновлення профілю",
       contactsTitle: "Додаткова інформація",
@@ -228,6 +230,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
       reviewsTitle: "Отзывы и рейтинг",
       reviewsSubtitle: "Опыт клиентов и социальное доказательство",
       noReviews: "Отзывы пока не добавлены.",
+      reviewsWord: "отзывов",
       servicesTitle: "Услуги",
       servicesSubtitle: "Список услуг появится после следующего обновления профиля",
       contactsTitle: "Дополнительная информация",
@@ -252,6 +255,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
       reviewsTitle: "Bewertungen und Rating",
       reviewsSubtitle: "Kundenerfahrung und sozialer Nachweis",
       noReviews: "Noch keine Bewertungen vorhanden.",
+      reviewsWord: "Bewertungen",
       servicesTitle: "Leistungen",
       servicesSubtitle: "Die Liste der Leistungen erscheint nach dem nächsten Profil-Update",
       contactsTitle: "Zusätzliche Informationen",
@@ -304,6 +308,21 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
         : workMode === "hybrid"
           ? sectionText.hybrid
           : null;
+  const renderStar = (fillRatio: number, idx: number) => {
+    const clamped = Math.max(0, Math.min(1, fillRatio));
+    return (
+      <span key={idx} className="relative inline-block h-5 w-5">
+        <svg viewBox="0 0 20 20" className="h-5 w-5 text-gray-300" fill="currentColor" aria-hidden="true">
+          <path d="M10 1.5l2.5 5.07 5.6.81-4.05 3.95.96 5.58L10 14.27 5 16.91l.96-5.58L1.9 7.38l5.6-.81L10 1.5z" />
+        </svg>
+        <span className="absolute inset-0 overflow-hidden" style={{ width: `${clamped * 100}%` }}>
+          <svg viewBox="0 0 20 20" className="h-5 w-5 text-amber-400" fill="currentColor" aria-hidden="true">
+            <path d="M10 1.5l2.5 5.07 5.6.81-4.05 3.95.96 5.58L10 14.27 5 16.91l.96-5.58L1.9 7.38l5.6-.81L10 1.5z" />
+          </svg>
+        </span>
+      </span>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-6 sm:py-8 pb-24 md:pb-0">
@@ -409,14 +428,20 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
           ) : null}
 
           <SectionCard title={sectionText.reviewsTitle} subtitle={sectionText.reviewsSubtitle}>
-            {hasRating || reviewsCount > 0 ? (
-              <div className="flex flex-wrap items-center gap-3 text-gray-800">
-                {hasRating ? <p className="text-2xl font-bold">{specialist.rating?.toFixed(1)}</p> : null}
-                <p className="text-sm text-gray-600">({reviewsCount})</p>
+            <div className="flex flex-wrap items-center gap-3 text-gray-800">
+              <div className="flex items-center gap-1" aria-label={`rating ${normalizedRating.toFixed(1)} out of 5`}>
+                {Array.from({ length: 5 }, (_, idx) => renderStar(normalizedRating - idx, idx))}
               </div>
-            ) : (
+              {hasRating ? <p className="text-2xl font-bold">{specialist.rating?.toFixed(1)}</p> : null}
+              {reviewsCount > 0 ? (
+                <p className="text-sm text-gray-600">
+                  ({reviewsCount} {sectionText.reviewsWord})
+                </p>
+              ) : null}
+            </div>
+            {!hasRating && reviewsCount === 0 ? (
               <p className="text-sm text-gray-600">{sectionText.noReviews}</p>
-            )}
+            ) : null}
           </SectionCard>
 
           {servicesList.length > 0 ? (
