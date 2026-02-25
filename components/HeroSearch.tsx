@@ -1,16 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 const LANG_OPTIONS = [
-  { value: "de", label: "de" },
-  { value: "ru", label: "ru" },
-  { value: "uk", label: "uk" },
-  { value: "tr", label: "tr" },
-  { value: "ar", label: "ar" },
-  { value: "en", label: "en" },
+  { value: "ru", label: "Русский" },
+  { value: "uk", label: "Українська" },
+  { value: "de", label: "Deutsch" },
 ] as const;
 
 type HeroSearchProps = {
@@ -24,29 +21,130 @@ const defaultTitle = "Найди специалиста на своём язык
 const defaultSubtitle =
   "Психологи, услуги, обучение и помощь — без языкового барьера";
 
+type CategoryOption = {
+  slug: string;
+  title: string;
+};
+
 export default function HeroSearch({
-  lang: _lang,
+  lang: currentLocale,
   title = defaultTitle,
   subtitle = defaultSubtitle,
   heroImageUrl,
 }: HeroSearchProps) {
   const router = useRouter();
-  const [q, setQ] = useState("");
-  const [place, setPlace] = useState("");
-  const [lang, setLang] = useState("");
+  const [language, setLanguage] = useState<"" | "ru" | "uk" | "de">("");
+  const [location, setLocation] = useState("");
+  const [categoryQuery, setCategoryQuery] = useState("");
+  const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(null);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [inlineError, setInlineError] = useState("");
 
-  const canSubmit = Boolean(lang && place.trim());
+  useEffect(() => {
+    const normalized = currentLocale === "ua" ? "uk" : currentLocale === "ru" ? "ru" : currentLocale === "de" ? "de" : "ru";
+    setLanguage(normalized);
+  }, [currentLocale]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCategories() {
+      try {
+        const res = await fetch("/api/specialists/categories?mode=children", { cache: "no-store" });
+        const json = await res.json();
+        if (!res.ok || !Array.isArray(json?.data)) return;
+
+        const normalized = json.data
+          .filter(
+            (item: { slug?: unknown; title?: unknown }) =>
+              typeof item?.slug === "string" &&
+              item.slug.trim().length > 0 &&
+              typeof item?.title === "string" &&
+              item.title.trim().length > 0
+          )
+          .map((item: { slug: string; title: string }) => ({
+            slug: item.slug.trim(),
+            title: item.title.trim(),
+          }));
+
+        if (!cancelled) {
+          setCategories(normalized);
+        }
+      } catch {
+        // keep search usable without category hints
+      }
+    }
+
+    loadCategories();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const filteredCategories = useMemo(() => {
+    const query = categoryQuery.trim().toLowerCase();
+    if (!query) return categories.slice(0, 8);
+    return categories
+      .filter(
+        (item) =>
+          item.title.toLowerCase().includes(query) ||
+          item.slug.toLowerCase().includes(query)
+      )
+      .slice(0, 8);
+  }, [categories, categoryQuery]);
+
+  const canSubmit = Boolean(language);
+
+  function toPathLocale(uiLanguage: "ru" | "uk" | "de") {
+    return uiLanguage === "uk" ? "ua" : uiLanguage;
+  }
+
+  function resolveCategorySlug() {
+    if (selectedCategorySlug) return selectedCategorySlug;
+    const query = categoryQuery.trim().toLowerCase();
+    if (!query) return null;
+    const match = categories.find(
+      (item) => item.title.toLowerCase() === query || item.slug.toLowerCase() === query
+    );
+    return match?.slug ?? null;
+  }
 
   function handleRedirect() {
-    if (!canSubmit) return;
-    const params = new URLSearchParams({
-      lang,
-      place: place.trim(),
-    });
-    if (q?.trim()) {
-      params.set("q", q.trim());
+    if (!language) {
+      setInlineError("Выберите язык общения");
+      return;
     }
-    router.push(`/specialists?${params.toString()}`);
+
+    setInlineError("");
+    const chosenCategorySlug = resolveCategorySlug();
+    const trimmedLocation = location.trim();
+
+    if (trimmedLocation) {
+      const params = new URLSearchParams({
+        lang: language,
+        place: trimmedLocation,
+      });
+      if (chosenCategorySlug) {
+        params.set("category", chosenCategorySlug);
+      }
+      router.push(`/specialists?${params.toString()}`);
+      return;
+    }
+
+    if (chosenCategorySlug) {
+      const locale = toPathLocale(language);
+      router.push(`/${locale}/category/${chosenCategorySlug}?lang=${language}`);
+      return;
+    }
+
+    router.push(`/${toPathLocale(language)}`);
+  }
+
+  function chooseCategory(option: CategoryOption) {
+    setCategoryQuery(option.title);
+    setSelectedCategorySlug(option.slug);
+    setCategoryOpen(false);
   }
 
   return (
@@ -65,31 +163,17 @@ export default function HeroSearch({
                 e.preventDefault();
                 handleRedirect();
               }}
-              className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto] gap-0 border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm min-w-0"
+              className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto] gap-0 border border-gray-200 rounded-xl overflow-visible bg-white shadow-sm min-w-0"
             >
               <div className="border-b sm:border-b-0 sm:border-r border-gray-200 p-3 min-w-0 flex items-center">
-                <input
-                  type="text"
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Кого вы ищете? (массажист, психолог, репетитор…)"
-                  className="w-full min-h-[2.25rem] py-1.5 text-sm bg-transparent border-none outline-none text-gray-800 placeholder-gray-400"
-                />
-              </div>
-              <div className="border-b sm:border-b-0 sm:border-r border-gray-200 p-3 min-w-0 flex items-center">
-                <input
-                  type="text"
-                  value={place}
-                  onChange={(e) => setPlace(e.target.value)}
-                  placeholder="PLZ oder Stadt"
-                  className="w-full min-h-[2.25rem] py-1.5 text-sm bg-transparent border-none outline-none text-gray-800 placeholder-gray-400"
-                />
-              </div>
-              <div className="border-b sm:border-b-0 sm:border-r border-gray-200 p-3 min-w-0 flex items-center">
                 <select
-                  value={lang}
-                  onChange={(e) => setLang(e.target.value)}
+                  value={language}
+                  onChange={(e) => {
+                    setLanguage((e.target.value as "ru" | "uk" | "de") || "");
+                    if (inlineError) setInlineError("");
+                  }}
                   className="w-full min-h-[2.25rem] py-1.5 text-sm bg-transparent border-none outline-none text-gray-800"
+                  aria-label="Язык"
                 >
                   <option value="">Язык</option>
                   {LANG_OPTIONS.map((opt) => (
@@ -99,16 +183,69 @@ export default function HeroSearch({
                   ))}
                 </select>
               </div>
+              <div className="border-b sm:border-b-0 sm:border-r border-gray-200 p-3 min-w-0 relative">
+                <input
+                  type="text"
+                  value={categoryQuery}
+                  onChange={(e) => {
+                    setCategoryQuery(e.target.value);
+                    setSelectedCategorySlug(null);
+                    setCategoryOpen(true);
+                  }}
+                  onFocus={() => setCategoryOpen(true)}
+                  onBlur={() => {
+                    setTimeout(() => setCategoryOpen(false), 120);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && categoryOpen && filteredCategories.length > 0) {
+                      e.preventDefault();
+                      chooseCategory(filteredCategories[0]);
+                    }
+                  }}
+                  placeholder="Категория"
+                  className="w-full min-h-[2.25rem] py-1.5 text-sm bg-transparent border-none outline-none text-gray-800 placeholder-gray-400"
+                  aria-label="Категория"
+                  autoComplete="off"
+                />
+                {categoryOpen && filteredCategories.length > 0 ? (
+                  <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-56 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                    {filteredCategories.map((option) => (
+                      <button
+                        key={option.slug}
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => chooseCategory(option)}
+                        className="block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        {option.title}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+              <div className="border-b sm:border-b-0 sm:border-r border-gray-200 p-3 min-w-0 flex items-center">
+                <input
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="PLZ или город"
+                  className="w-full min-h-[2.25rem] py-1.5 text-sm bg-transparent border-none outline-none text-gray-800 placeholder-gray-400"
+                  aria-label="Локация"
+                />
+              </div>
               <div className="p-3 flex items-center shrink-0">
                 <button
                   type="submit"
                   disabled={!canSubmit}
                   className="w-full sm:w-auto px-5 py-2 min-h-[2.25rem] text-sm font-semibold rounded-lg bg-[#3B5BDB] text-white hover:bg-[#364FC7] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#3B5BDB]"
                 >
-                  Поиск
+                  Найти специалиста
                 </button>
               </div>
             </form>
+            {inlineError ? (
+              <p className="mt-2 text-sm text-red-600">{inlineError}</p>
+            ) : null}
           </div>
 
           {/* Right: hero image */}
