@@ -60,6 +60,14 @@ interface SpecialistsMeta {
 }
 
 const PAGE_LIMIT = 12;
+type SortKey = "best_match" | "newest" | "rating" | "price_low" | "price_high";
+const SORT_TO_API: Record<SortKey, "relevance" | "new" | "experience"> = {
+  best_match: "relevance",
+  newest: "new",
+  rating: "experience",
+  price_low: "relevance",
+  price_high: "relevance",
+};
 
 function toNullableNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -131,7 +139,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
   const [cityOptions, setCityOptions] = useState<string[]>([]);
   const [selectedLanguage, setSelectedLanguage] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
-  const [sort, setSort] = useState<"relevance" | "new" | "experience">("relevance");
+  const [sort, setSort] = useState<SortKey>("best_match");
   const [loadError, setLoadError] = useState<string | null>(null);
   const getCategoryLabel = (title: string | null, categorySlug: string) =>
     title ??
@@ -163,7 +171,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
         category_id: category.id,
         limit: String(PAGE_LIMIT),
         offset: String(offset),
-        sort,
+        sort: SORT_TO_API[sort],
       });
       if (selectedLanguage) params.set("language", selectedLanguage);
       if (selectedCity) params.set("city", selectedCity);
@@ -320,7 +328,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
         setParentCategory(null);
         setSelectedLanguage("");
         setSelectedCity("");
-        setSort("relevance");
+        setSort("best_match");
         setSpecialists([]);
         setLanguageOptions([]);
         setCityOptions([]);
@@ -498,57 +506,86 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="sticky top-0 z-20 rounded-xl border-b border-black/5 bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div className="sticky top-0 z-20 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+              <div className="grid grid-cols-1 gap-4 items-end md:grid-cols-3">
                 <label className="text-sm">
-                  <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Мова
+                  <span className="mb-2 block text-xs font-medium text-gray-600">
+                    {t(dict, "filters.language.label")}
                   </span>
-                  <select
-                    value={selectedLanguage}
-                    onChange={(event) => setSelectedLanguage(event.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-                  >
-                    <option value="">Усі мови</option>
-                    {languageOptions.map((value) => (
-                      <option key={value} value={value.toLowerCase()}>
-                        {value}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={selectedLanguage}
+                      onChange={(event) => setSelectedLanguage(event.target.value)}
+                      className="h-11 w-full appearance-none rounded-xl border border-gray-200 bg-white px-3 pr-10 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">{t(dict, "filters.language.all")}</option>
+                      {languageOptions.map((value) => (
+                        <option key={value} value={value.toLowerCase()}>
+                          {value}
+                        </option>
+                      ))}
+                    </select>
+                    <svg
+                      viewBox="0 0 20 20"
+                      aria-hidden
+                      className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500"
+                    >
+                      <path d="M5.5 7.5L10 12l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
                 </label>
 
                 <label className="text-sm">
-                  <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Місто
+                  <span className="mb-2 block text-xs font-medium text-gray-600">
+                    {t(dict, "filters.city.label")}
                   </span>
-                  <select
-                    value={selectedCity}
-                    onChange={(event) => setSelectedCity(event.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-                  >
-                    <option value="">Усі міста</option>
-                    {cityOptions.map((value) => (
-                      <option key={value} value={value.toLowerCase()}>
-                        {value}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={selectedCity}
+                      onChange={(event) => setSelectedCity(event.target.value)}
+                      className="h-11 w-full appearance-none rounded-xl border border-gray-200 bg-white px-3 pr-10 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">{t(dict, "filters.city.all")}</option>
+                      {cityOptions.map((value) => (
+                        <option key={value} value={value.toLowerCase()}>
+                          {value}
+                        </option>
+                      ))}
+                    </select>
+                    <svg
+                      viewBox="0 0 20 20"
+                      aria-hidden
+                      className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500"
+                    >
+                      <path d="M5.5 7.5L10 12l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
                 </label>
 
                 <label className="text-sm">
-                  <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Сортування
+                  <span className="mb-2 block text-xs font-medium text-gray-600">
+                    {t(dict, "filters.sort.label")}
                   </span>
-                  <select
-                    value={sort}
-                    onChange={(event) => setSort(event.target.value as "relevance" | "new" | "experience")}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-                  >
-                    <option value="relevance">Найкраща відповідність</option>
-                    <option value="new">Нові</option>
-                    <option value="experience">За досвідом</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={sort}
+                      onChange={(event) => setSort(event.target.value as SortKey)}
+                      className="h-11 w-full appearance-none rounded-xl border border-gray-200 bg-white px-3 pr-10 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="best_match">{t(dict, "filters.sort.best_match")}</option>
+                      <option value="newest">{t(dict, "filters.sort.newest")}</option>
+                      <option value="rating">{t(dict, "filters.sort.rating")}</option>
+                      <option value="price_low">{t(dict, "filters.sort.price_low")}</option>
+                      <option value="price_high">{t(dict, "filters.sort.price_high")}</option>
+                    </select>
+                    <svg
+                      viewBox="0 0 20 20"
+                      aria-hidden
+                      className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500"
+                    >
+                      <path d="M5.5 7.5L10 12l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
                 </label>
               </div>
             </div>
@@ -560,7 +597,9 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
             ) : null}
 
             {specialists.length === 0 && loadingSpecialists ? (
-              <div className="py-10 text-center text-gray-500">Завантаження спеціалістів…</div>
+              <div className="py-10 text-center text-gray-500">
+                {t(dict, "category.loadingSpecialists", { defaultValue: "Loading specialists..." })}
+              </div>
             ) : null}
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -589,7 +628,9 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                   disabled={loadingSpecialists}
                   className="inline-flex items-center justify-center rounded-lg border border-blue-200 bg-white px-5 py-2.5 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {loadingSpecialists ? "Завантаження…" : "Показати ще"}
+                  {loadingSpecialists
+                    ? t(dict, "category.loadingMore", { defaultValue: "Loading..." })
+                    : t(dict, "category.loadMore", { defaultValue: "Show more" })}
                 </button>
               </div>
             ) : null}

@@ -31,6 +31,9 @@
   },
   "category": {
     "loading": "Wird geladen...",
+    "loadingSpecialists": "Spezialisten werden geladen...",
+    "loadingMore": "Wird geladen...",
+    "loadMore": "Mehr anzeigen",
     "notFound": "Kategorie nicht gefunden",
     "found": "{{count}} Spezialisten gefunden",
     "comingSoon": {
@@ -48,6 +51,18 @@
     "empty": {
       "title": "Keine Spezialisten gefunden",
       "subtitle": "Leider gibt es in dieser Kategorie noch keine Spezialisten"
+    }
+  },
+  "filters": {
+    "language": { "label": "Sprache", "all": "Alle Sprachen" },
+    "city": { "label": "Stadt", "all": "Alle Städte" },
+    "sort": {
+      "label": "Sortierung",
+      "best_match": "Beste Übereinstimmung",
+      "newest": "Neueste zuerst",
+      "rating": "Beste Bewertung",
+      "price_low": "Preis: aufsteigend",
+      "price_high": "Preis: absteigend"
     }
   },
   "specialist": {
