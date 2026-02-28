@@ -129,6 +129,7 @@ export async function GET() {
         id: category.id,
         slug: category.slug,
         title: category.title,
+        image_url: category.image_url,
         specialists_count: specialistsCount,
         sort_order: item.sort_order,
       };
@@ -140,6 +141,7 @@ export async function GET() {
         id: string;
         slug: string | null;
         title: string | null;
+        image_url: string | null;
         specialists_count: number;
         sort_order: number | null;
       } => item !== null
