@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 import HeroSearch from "@/components/HeroSearch";
@@ -49,6 +50,13 @@ type CategoryStat = {
   }>;
 };
 
+type PopularCategory = {
+  slug: string;
+  title: string | null;
+  specialists_count: number;
+  sort_order?: number | null;
+};
+
 const CATEGORY_ICON_HINTS = [
   { id: "psychologists", icon: "🧠" },
   { id: "masseurs", icon: "💆" },
@@ -64,7 +72,11 @@ const FALLBACK_PLACEHOLDERS = [
 export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionary }) {
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [categories, setCategories] = useState<CategoryStat[]>([]);
+  const [popularCategories, setPopularCategories] = useState<PopularCategory[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const placeFromUrl = searchParams?.get("place")?.trim() ?? "";
+  const specialistLang = lang === "ua" ? "uk" : lang;
 
   useEffect(() => {
     function normalizeCategories(rawData: any[]): CategoryStat[] {
@@ -149,8 +161,35 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       }
     }
 
+    async function loadPopularCategories() {
+      try {
+        const res = await fetch("/api/homepage/popular-categories", { cache: "no-store" });
+        const json = await res.json();
+        if (!res.ok || !Array.isArray(json?.data)) return;
+        const normalized = json.data
+          .filter(
+            (item: { slug?: unknown; title?: unknown; specialists_count?: unknown; sort_order?: unknown }) =>
+              item &&
+              typeof item.slug === "string" &&
+              item.slug.trim().length > 0 &&
+              (typeof item.title === "string" || item.title == null) &&
+              typeof item.specialists_count === "number"
+          )
+          .map((item: { slug: string; title: string | null; specialists_count: number; sort_order?: number | null }) => ({
+            slug: item.slug,
+            title: item.title,
+            specialists_count: item.specialists_count,
+            sort_order: item.sort_order ?? null,
+          }));
+        setPopularCategories(normalized);
+      } catch {
+        // Silently skip popular block on RPC/network issues.
+      }
+    }
+
     loadBlocks();
     loadCategories();
+    loadPopularCategories();
 
     // Быстрая реакция на публикацию из админки
     const handler = () => loadBlocks();
@@ -282,6 +321,44 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       )}
 
       {/* Mosaic Section (dynamic) */}
+      {popularCategories.length > 0 ? (
+        <section className="py-10 md:py-12 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                {t(dict, "home.popularServices.title", { defaultValue: "Популярные услуги" })}
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              {popularCategories.map((category) => {
+                const href = placeFromUrl
+                  ? `/specialists?lang=${encodeURIComponent(specialistLang)}&place=${encodeURIComponent(placeFromUrl)}&category=${encodeURIComponent(category.slug)}`
+                  : `/${lang}/category/${category.slug}`;
+
+                return (
+                  <Link
+                    key={category.slug}
+                    href={href}
+                    className="rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm transition hover:shadow-md"
+                  >
+                    <p className="text-base font-semibold text-gray-900 line-clamp-1">
+                      {category.title || category.slug}
+                    </p>
+                    <p className="mt-1 text-sm text-gray-600">
+                      {t(dict, "category.parent.found").replace(
+                        /\{\{\s*count\s*\}\}/g,
+                        String(category.specialists_count)
+                      )}
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section id="categories" className="py-12 md:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
