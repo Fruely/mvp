@@ -343,7 +343,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                   key={`popular-skeleton-${idx}`}
                   className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden"
                 >
-                  <div className="h-40 w-full bg-gray-200/80 animate-pulse" />
+                  <div className="w-full aspect-square bg-gray-200/80 animate-pulse" />
                   <div className="px-4 py-3 space-y-2">
                     <div className="h-4 w-3/4 rounded bg-gray-200/80 animate-pulse" />
                     <div className="h-3 w-1/2 rounded bg-gray-200/80 animate-pulse" />
@@ -374,17 +374,21 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                     href={href}
                     className="rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md overflow-hidden flex flex-col"
                   >
-                    {category.image_url && (
-                      <div className="h-40 w-full overflow-hidden">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={category.image_url}
-                          alt={category.title ?? category.slug}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
-                    )}
+                    <div className="w-full aspect-square overflow-hidden">
+                      {category.image_url ? (
+                        <>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={category.image_url}
+                            alt={category.title ?? category.slug}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        </>
+                      ) : (
+                        <div className="w-full h-full bg-gray-100" aria-hidden />
+                      )}
+                    </div>
 
                     <div className="px-4 py-3">
                       <p className="text-base font-semibold text-gray-900 line-clamp-1">
