@@ -74,6 +74,8 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [categories, setCategories] = useState<CategoryStat[]>([]);
   const [popularCategories, setPopularCategories] = useState<PopularCategory[]>([]);
+  const [isBlocksLoading, setIsBlocksLoading] = useState(true);
+  const [isPopularLoading, setIsPopularLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const placeFromUrl = searchParams?.get("place")?.trim() ?? "";
@@ -125,6 +127,8 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         setBlocks(json.blocks || []);
       } catch (e: any) {
         setError(e.message || "Ошибка загрузки блоков");
+      } finally {
+        setIsBlocksLoading(false);
       }
     }
 
@@ -166,7 +170,10 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       try {
         const res = await fetch("/api/homepage/popular-categories", { cache: "no-store" });
         const json = await res.json();
-        if (!res.ok || !Array.isArray(json?.data)) return;
+        if (!res.ok || !Array.isArray(json?.data)) {
+          setPopularCategories([]);
+          return;
+        }
         const normalized = json.data
           .filter(
             (item: { slug?: unknown; title?: unknown; image_url?: unknown; specialists_count?: unknown; sort_order?: unknown }) =>
@@ -186,6 +193,9 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         setPopularCategories(normalized);
       } catch {
         // Silently skip popular block on RPC/network issues.
+        setPopularCategories([]);
+      } finally {
+        setIsPopularLoading(false);
       }
     }
 
@@ -243,6 +253,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         title={t(dict, "hero.title")}
         subtitle={t(dict, "hero.subtitle")}
         heroImageUrl={heroContent.url}
+        isHeroLoading={isBlocksLoading}
       />
 
       <section className="bg-[#F8FAFD] py-24">
@@ -322,8 +333,27 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         </section>
       )}
 
-      {/* Mosaic Section (dynamic) */}
-      {popularCategories.length > 0 ? (
+      {isPopularLoading ? (
+        <section className="py-10 md:py-12 bg-white" aria-hidden>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-6 h-8 w-64 rounded-lg bg-gray-200/80 animate-pulse" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <div
+                  key={`popular-skeleton-${idx}`}
+                  className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden"
+                >
+                  <div className="h-40 w-full bg-gray-200/80 animate-pulse" />
+                  <div className="px-4 py-3 space-y-2">
+                    <div className="h-4 w-3/4 rounded bg-gray-200/80 animate-pulse" />
+                    <div className="h-3 w-1/2 rounded bg-gray-200/80 animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : popularCategories.length > 0 ? (
         <section className="py-10 md:py-12 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-6">

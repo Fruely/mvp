@@ -15,6 +15,7 @@ type HeroSearchProps = {
   title?: string;
   subtitle?: string;
   heroImageUrl?: string | null;
+  isHeroLoading?: boolean;
 };
 
 const defaultTitle = "Найди специалиста на своём языке в Германии";
@@ -31,6 +32,7 @@ export default function HeroSearch({
   title = defaultTitle,
   subtitle = defaultSubtitle,
   heroImageUrl,
+  isHeroLoading = false,
 }: HeroSearchProps) {
   const router = useRouter();
   const [language, setLanguage] = useState<"" | "ru" | "uk" | "de">("");
@@ -250,7 +252,9 @@ export default function HeroSearch({
 
           {/* Right: hero image */}
           <div className="order-1 md:order-2 hidden md:flex items-center justify-center">
-            {heroImageUrl ? (
+            {isHeroLoading ? (
+              <div className="max-w-md w-full aspect-square rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 animate-pulse" />
+            ) : heroImageUrl ? (
               <Image
                 unoptimized
                 src={heroImageUrl}
