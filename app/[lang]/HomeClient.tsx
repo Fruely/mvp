@@ -53,6 +53,7 @@ type CategoryStat = {
 type PopularCategory = {
   slug: string;
   title: string | null;
+  image_url?: string | null;
   specialists_count: number;
   sort_order?: number | null;
 };
@@ -168,16 +169,17 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         if (!res.ok || !Array.isArray(json?.data)) return;
         const normalized = json.data
           .filter(
-            (item: { slug?: unknown; title?: unknown; specialists_count?: unknown; sort_order?: unknown }) =>
+            (item: { slug?: unknown; title?: unknown; image_url?: unknown; specialists_count?: unknown; sort_order?: unknown }) =>
               item &&
               typeof item.slug === "string" &&
               item.slug.trim().length > 0 &&
               (typeof item.title === "string" || item.title == null) &&
               typeof item.specialists_count === "number"
           )
-          .map((item: { slug: string; title: string | null; specialists_count: number; sort_order?: number | null }) => ({
+          .map((item: { slug: string; title: string | null; image_url?: string | null; specialists_count: number; sort_order?: number | null }) => ({
             slug: item.slug,
             title: item.title,
+            image_url: typeof item.image_url === "string" ? item.image_url : null,
             specialists_count: item.specialists_count,
             sort_order: item.sort_order ?? null,
           }));
@@ -340,17 +342,31 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                   <Link
                     key={category.slug}
                     href={href}
-                    className="rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm transition hover:shadow-md"
+                    className="rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md overflow-hidden flex flex-col"
                   >
-                    <p className="text-base font-semibold text-gray-900 line-clamp-1">
-                      {category.title || category.slug}
-                    </p>
-                    <p className="mt-1 text-sm text-gray-600">
-                      {t(dict, "category.parent.found").replace(
-                        /\{\{\s*count\s*\}\}/g,
-                        String(category.specialists_count)
-                      )}
-                    </p>
+                    {category.image_url && (
+                      <div className="h-40 w-full overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={category.image_url}
+                          alt={category.title ?? category.slug}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    )}
+
+                    <div className="px-4 py-3">
+                      <p className="text-base font-semibold text-gray-900 line-clamp-1">
+                        {category.title || category.slug}
+                      </p>
+                      <p className="mt-1 text-sm text-gray-600">
+                        {t(dict, "category.parent.found").replace(
+                          /\{\{\s*count\s*\}\}/g,
+                          String(category.specialists_count)
+                        )}
+                      </p>
+                    </div>
                   </Link>
                 );
               })}
