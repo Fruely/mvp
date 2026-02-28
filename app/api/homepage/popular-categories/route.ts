@@ -62,7 +62,7 @@ export async function GET() {
 
   let categoriesQuery = supabase
     .from("categories")
-    .select("id, slug, title, parent_id")
+    .select("id, slug, title, image_url, parent_id")
     .not("parent_id", "is", null);
 
   if (requestedCategoryIds.length > 0) {
