@@ -335,6 +335,24 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         </section>
       )}
 
+      {(isPopularLoading || popularCategories.length > 0) ? (
+        <section className="py-8 md:py-10 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="rounded-2xl border border-blue-100 bg-blue-50/60 px-5 py-6 text-center shadow-sm">
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
+                {t(dict, "home.bridge.title")}
+              </h2>
+              <p className="mt-2 text-sm md:text-base text-gray-600">
+                {t(dict, "home.bridge.subtitle")}
+              </p>
+              <p className="mt-3 text-xs md:text-sm text-blue-700/90">
+                {t(dict, "home.bridge.hint")}
+              </p>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       {isPopularLoading ? (
         <section className="py-10 md:py-12 bg-white" aria-hidden>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
