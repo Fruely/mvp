@@ -336,7 +336,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       )}
 
       {(isPopularLoading || popularCategories.length > 0) ? (
-        <section className="mt-16 mb-12 py-0">
+        <section className="mt-8 mb-8 py-0">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="rounded-3xl bg-white px-6 py-10 shadow-sm">
               <h2 className="text-center text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">
