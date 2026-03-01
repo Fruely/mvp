@@ -54,7 +54,7 @@ const navItems: NavItem[] = [
   },
   {
     label: "Профиль",
-    disabled: true,
+    href: "/specialist/dashboard/profile",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
         <path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.4 0-8 2-8 4.5V21h16v-2.5c0-2.5-3.6-4.5-8-4.5z" fill="currentColor" />

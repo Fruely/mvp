@@ -80,26 +80,28 @@ export async function PUT(request: NextRequest) {
   // Build updatePayload ONLY from whitelisted fields
   // Any extra fields in request body are ignored and discarded
   const updatePayload: Record<string, unknown> = {};
+  const hasField = (field: (typeof ALLOWED_FIELDS)[number]) =>
+    Object.prototype.hasOwnProperty.call(body, field);
 
   // Handle text fields
-  if (ALLOWED_FIELDS.includes("about_me")) {
+  if (hasField("about_me")) {
     updatePayload.about_me = body.about_me ?? null;
   }
-  if (ALLOWED_FIELDS.includes("services")) {
+  if (hasField("services")) {
     updatePayload.services = body.services ?? null;
   }
-  if (ALLOWED_FIELDS.includes("how_i_work")) {
+  if (hasField("how_i_work")) {
     updatePayload.how_i_work = body.how_i_work ?? null;
   }
-  if (ALLOWED_FIELDS.includes("experience")) {
+  if (hasField("experience")) {
     updatePayload.experience = body.experience ?? null;
   }
-  if (ALLOWED_FIELDS.includes("city")) {
+  if (hasField("city")) {
     updatePayload.city = body.city ?? null;
   }
 
   // Handle radius_km (numeric)
-  if (ALLOWED_FIELDS.includes("radius_km")) {
+  if (hasField("radius_km")) {
     updatePayload.radius_km =
       typeof body.radius_km === "number" && !Number.isNaN(body.radius_km)
         ? body.radius_km
@@ -107,7 +109,7 @@ export async function PUT(request: NextRequest) {
   }
 
   // Handle categories (array)
-  if (ALLOWED_FIELDS.includes("categories")) {
+  if (hasField("categories")) {
     if (Array.isArray(body.categories)) {
       updatePayload.categories = body.categories
         .filter((c: unknown) => typeof c === "string")
