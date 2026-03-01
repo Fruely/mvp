@@ -623,7 +623,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
               </div>
             ) : null}
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))] gap-6">
               {specialists.map((specialist) => (
                 <SpecialistPreviewCard
                   key={specialist.id}
