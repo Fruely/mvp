@@ -6,8 +6,6 @@ import { useSearchParams } from "next/navigation";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 import HeroSearch from "@/components/HeroSearch";
-import MicroConfidenceLine from "@/components/home/MicroConfidenceLine";
-import WhyFreulySection from "@/components/home/WhyFreulySection";
 
 type ImageBlockContent = {
   url?: string;
@@ -260,8 +258,6 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         isHeroLoading={isBlocksLoading}
       />
 
-      <MicroConfidenceLine dict={dict} />
-
       <section className="bg-[#F8FAFD] py-24">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <p className="text-2xl md:text-3xl font-medium text-gray-900 leading-snug">
@@ -339,32 +335,16 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         </section>
       )}
 
-      <WhyFreulySection dict={dict} />
-
       {(isPopularLoading || popularCategories.length > 0) ? (
         <section className="mt-16 mb-12 py-0">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-center text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">
-              {t(dict, "home.bridge.title")}
-            </h2>
-            <p className="mt-4 mx-auto max-w-2xl text-center text-base text-gray-500">
-              {t(dict, "home.bridge.subtitle")}
-            </p>
-            <div className="mt-6 flex justify-center">
-              <svg
-                viewBox="0 0 20 20"
-                aria-hidden="true"
-                className="h-5 w-5 text-gray-500/60 animate-bounce"
-              >
-                <path
-                  d="M5.5 7.5L10 12l4.5-4.5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+            <div className="rounded-3xl bg-white px-6 py-10 shadow-sm">
+              <h2 className="text-center text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">
+                {t(dict, "home.bridge.title")}
+              </h2>
+              <p className="mt-3 mx-auto max-w-xl text-center text-base md:text-lg text-gray-700">
+                {t(dict, "home.bridge.subtitle")}
+              </p>
             </div>
           </div>
         </section>
