@@ -27,6 +27,20 @@ function formatPrice(service: SpecialistService): string {
   return `${service.price_from} ${currency}`;
 }
 
+function hasValidPrice(service: {
+  pricing_type: PricingType;
+  price_from: number | null;
+  price_to: number | null;
+}): boolean {
+  if (typeof service.price_from !== "number" || !Number.isFinite(service.price_from)) return false;
+  if (service.price_from < 0) return false;
+  if (service.pricing_type === "range") {
+    if (typeof service.price_to !== "number" || !Number.isFinite(service.price_to)) return false;
+    if (service.price_to < service.price_from) return false;
+  }
+  return true;
+}
+
 export default function ServicesTable({
   initialServices,
 }: {
@@ -52,11 +66,16 @@ export default function ServicesTable({
     price_to: number | null;
     currency: string;
     duration_minutes: number | null;
+    requested_active: boolean;
   }) {
     setCreating(true);
     setToast(null);
     try {
-      const created = await createService(payload);
+      const shouldBeActive = payload.requested_active && hasValidPrice(payload);
+      const created = await createService({
+        ...payload,
+        is_active: shouldBeActive,
+      });
       setServices((prev) => [created, ...prev]);
       setShowCreate(false);
       setToast({ kind: "success", text: "Услуга добавлена" });
@@ -75,12 +94,17 @@ export default function ServicesTable({
       price_to: number | null;
       currency: string;
       duration_minutes: number | null;
+      requested_active: boolean;
     }
   ) {
     setBusyById((prev) => ({ ...prev, [id]: true }));
     setToast(null);
     try {
-      const updated = await updateService(id, payload);
+      const shouldBeActive = payload.requested_active && hasValidPrice(payload);
+      const updated = await updateService(id, {
+        ...payload,
+        is_active: shouldBeActive,
+      });
       setServices((prev) => prev.map((service) => (service.id === id ? updated : service)));
       setEditingId(null);
       setToast({ kind: "success", text: "Услуга обновлена" });
@@ -94,6 +118,13 @@ export default function ServicesTable({
   }
 
   async function handleToggle(service: SpecialistService) {
+    if (!service.is_active && !hasValidPrice(service)) {
+      setToast({
+        kind: "error",
+        text: "Без указания цены услуга не может быть активирована.",
+      });
+      return;
+    }
     setBusyById((prev) => ({ ...prev, [service.id]: true }));
     setToast(null);
     try {
@@ -179,6 +210,7 @@ export default function ServicesTable({
           <ServiceForm
             submitLabel="Сохранить услугу"
             loading={creating}
+            initialIsActive={true}
             onCancel={() => setShowCreate(false)}
             onSubmit={handleCreate}
           />
@@ -275,6 +307,7 @@ export default function ServicesTable({
                             }}
                             submitLabel="Сохранить изменения"
                             loading={busy}
+                            initialIsActive={service.is_active}
                             onCancel={() => setEditingId(null)}
                             onSubmit={(payload) => handleUpdate(service.id, payload)}
                           />

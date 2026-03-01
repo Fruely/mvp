@@ -9,8 +9,10 @@ import LeadsChart from "@/components/dashboard/LeadsChart";
 import RecentLeads from "@/components/dashboard/RecentLeads";
 import SubscriptionCard from "@/components/dashboard/SubscriptionCard";
 import ProfileCompletion from "@/components/dashboard/ProfileCompletion";
+import ProfilePublicationStatus from "@/components/dashboard/ProfilePublicationStatus";
 import { getDashboardData } from "@/lib/dashboard/getDashboardData";
 import { isContactsLocked } from "@/lib/dashboard/isContactsLocked";
+import type { PublicationService } from "@/lib/dashboard/isProfilePublished";
 
 export default async function SpecialistDashboardPage() {
   const { supabase, user, specialist } = await getCurrentUserAndSpecialist();
@@ -30,6 +32,19 @@ export default async function SpecialistDashboardPage() {
     .maybeSingle();
 
   const dashboardData = await getDashboardData(supabase, specialist.id);
+  const { data: services } = await supabase
+    .from("specialist_services")
+    .select("id, pricing_type, price_from, price_to, is_active")
+    .eq("specialist_id", specialist.id);
+  const publicationServices: PublicationService[] = (services ?? []).map((service) => ({
+    is_active: Boolean(service.is_active),
+    pricing_type:
+      service.pricing_type === "fixed" || service.pricing_type === "range" || service.pricing_type === "hourly"
+        ? service.pricing_type
+        : null,
+    price_from: typeof service.price_from === "number" ? service.price_from : null,
+    price_to: typeof service.price_to === "number" ? service.price_to : null,
+  }));
   const firstName = specialist.first_name?.trim() || specialist.name?.trim() || "";
   const specialistRecord = specialist as unknown as Record<string, unknown>;
   const subscriptionStatus =
@@ -69,6 +84,8 @@ export default async function SpecialistDashboardPage() {
       </div>
 
       {showSetPassword ? <SetPasswordBlock /> : null}
+
+      <ProfilePublicationStatus services={publicationServices} />
 
       <KpiCards
         newCount={dashboardData.counts.new}

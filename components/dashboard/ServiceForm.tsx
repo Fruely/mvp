@@ -25,12 +25,14 @@ const DEFAULT_VALUES: ServiceFormValues = {
 
 export default function ServiceForm({
   initialValues,
+  initialIsActive = true,
   submitLabel,
   onSubmit,
   onCancel,
   loading = false,
 }: {
   initialValues?: Partial<ServiceFormValues>;
+  initialIsActive?: boolean;
   submitLabel: string;
   onSubmit: (payload: {
     title: string;
@@ -40,6 +42,7 @@ export default function ServiceForm({
     price_to: number | null;
     currency: string;
     duration_minutes: number | null;
+    requested_active: boolean;
   }) => Promise<void>;
   onCancel?: () => void;
   loading?: boolean;
@@ -50,6 +53,7 @@ export default function ServiceForm({
   );
   const [values, setValues] = useState<ServiceFormValues>(merged);
   const [error, setError] = useState<string | null>(null);
+  const [requestedActive, setRequestedActive] = useState<boolean>(initialIsActive);
 
   function updateValue<Key extends keyof ServiceFormValues>(key: Key, value: ServiceFormValues[Key]) {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -82,6 +86,17 @@ export default function ServiceForm({
       setError("Длительность должна быть положительным числом");
       return;
     }
+    if (requestedActive) {
+      const hasValidPrice =
+        Number.isFinite(priceFrom) &&
+        priceFrom >= 0 &&
+        (values.pricing_type !== "range" ||
+          (priceTo != null && Number.isFinite(priceTo) && priceTo >= priceFrom));
+      if (!hasValidPrice) {
+        setError("Без указания цены услуга не может быть активирована.");
+        return;
+      }
+    }
 
     await onSubmit({
       title,
@@ -91,6 +106,7 @@ export default function ServiceForm({
       price_to: values.pricing_type === "range" ? priceTo : null,
       currency: values.currency.trim() || "EUR",
       duration_minutes: duration,
+      requested_active: requestedActive,
     }).catch((e) => {
       setError(e instanceof Error ? e.message : "Не удалось сохранить услугу");
     });
@@ -134,7 +150,16 @@ export default function ServiceForm({
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Цена от</label>
+          <label className="mb-1 flex items-center gap-1 text-xs font-medium text-gray-600">
+            Цена от
+            <span
+              className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-gray-300 text-[10px] text-gray-500"
+              title="Цена обязательна для публикации профиля. Профили с указанной ценой получают больше заявок и выше доверие клиентов."
+              aria-label="Информация о требовании цены"
+            >
+              i
+            </span>
+          </label>
           <input
             value={values.price_from}
             onChange={(e) => updateValue("price_from", e.target.value)}
@@ -181,6 +206,16 @@ export default function ServiceForm({
           />
         </div>
       </div>
+
+      <label className="flex items-center gap-2 text-sm text-gray-700">
+        <input
+          type="checkbox"
+          checked={requestedActive}
+          onChange={(e) => setRequestedActive(e.target.checked)}
+          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        />
+        Активировать услугу
+      </label>
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 

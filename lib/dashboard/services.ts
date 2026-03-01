@@ -22,6 +22,7 @@ type ServicePayload = {
   price_to: number | null;
   currency: string;
   duration_minutes: number | null;
+  is_active?: boolean;
 };
 
 async function parseApiResponse<T>(response: Response): Promise<T> {

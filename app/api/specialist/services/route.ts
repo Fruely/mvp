@@ -19,6 +19,22 @@ function normalizeText(value: unknown): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+function hasValidServicePrice(args: {
+  pricingType: PricingType;
+  priceFrom: number | null;
+  priceTo: number | null;
+}): boolean {
+  if (typeof args.priceFrom !== "number" || !Number.isFinite(args.priceFrom) || args.priceFrom < 0) {
+    return false;
+  }
+  if (args.pricingType === "range") {
+    if (typeof args.priceTo !== "number" || !Number.isFinite(args.priceTo) || args.priceTo < args.priceFrom) {
+      return false;
+    }
+  }
+  return true;
+}
+
 async function getCurrentSpecialistId() {
   const supabase = createSupabaseServerClient();
   const {
@@ -81,6 +97,7 @@ export async function POST(request: NextRequest) {
   const priceTo = normalizeNumber(body?.price_to);
   const currency = normalizeText(body?.currency) ?? "EUR";
   const durationMinutes = normalizeNumber(body?.duration_minutes);
+  const requestedActive = typeof body?.is_active === "boolean" ? body.is_active : true;
 
   if (!title) {
     return NextResponse.json({ error: "title is required" }, { status: 400 });
@@ -96,6 +113,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "price_to is required for range and must be >= price_from" }, { status: 400 });
     }
   }
+  const validPrice = hasValidServicePrice({
+    pricingType: pricingType as PricingType,
+    priceFrom,
+    priceTo,
+  });
+  if (requestedActive && !validPrice) {
+    return NextResponse.json(
+      { error: "Без указания цены услуга не может быть активирована." },
+      { status: 400 }
+    );
+  }
 
   const payload = {
     specialist_id: ctx.specialistId,
@@ -106,7 +134,7 @@ export async function POST(request: NextRequest) {
     price_to: pricingType === "range" ? priceTo : null,
     currency,
     duration_minutes: durationMinutes,
-    is_active: true,
+    is_active: validPrice ? requestedActive : false,
   };
 
   const { data, error } = await ctx.supabase
@@ -140,6 +168,21 @@ export async function PATCH(request: NextRequest) {
   const durationMinutes = normalizeNumber(body?.duration_minutes);
   const isActive = typeof body?.is_active === "boolean" ? body.is_active : null;
 
+  const { data: currentService, error: currentServiceError } = await ctx.supabase
+    .from("specialist_services")
+    .select("id, pricing_type, price_from, price_to, is_active")
+    .eq("id", id)
+    .eq("specialist_id", ctx.specialistId)
+    .maybeSingle();
+
+  if (currentServiceError) {
+    console.error("[specialist/services] PATCH current service lookup failed", currentServiceError);
+    return NextResponse.json({ error: "Failed to update service" }, { status: 500 });
+  }
+  if (!currentService) {
+    return NextResponse.json({ error: "Service not found" }, { status: 404 });
+  }
+
   const patch: Record<string, unknown> = {};
 
   if (title !== null) patch.title = title;
@@ -156,14 +199,44 @@ export async function PATCH(request: NextRequest) {
   if (Object.prototype.hasOwnProperty.call(body ?? {}, "duration_minutes")) patch.duration_minutes = durationMinutes;
   if (isActive !== null) patch.is_active = isActive;
 
-  const effectivePricingType = (patch.pricing_type as string | undefined) ?? pricingType;
-  const effectivePriceFrom = (patch.price_from as number | undefined) ?? priceFrom;
-  const effectivePriceTo = (patch.price_to as number | null | undefined) ?? priceTo;
+  const effectivePricingTypeRaw =
+    (patch.pricing_type as string | undefined) ??
+    pricingType ??
+    (typeof currentService.pricing_type === "string" ? currentService.pricing_type : "fixed");
+  const effectivePricingType: PricingType =
+    effectivePricingTypeRaw === "fixed" || effectivePricingTypeRaw === "range" || effectivePricingTypeRaw === "hourly"
+      ? effectivePricingTypeRaw
+      : "fixed";
+  const effectivePriceFrom =
+    (patch.price_from as number | undefined) ??
+    priceFrom ??
+    (typeof currentService.price_from === "number" ? currentService.price_from : null);
+  const effectivePriceTo =
+    (patch.price_to as number | null | undefined) ??
+    priceTo ??
+    (typeof currentService.price_to === "number" ? currentService.price_to : null);
 
   if (effectivePricingType === "range") {
     if (effectivePriceFrom == null || effectivePriceTo == null || effectivePriceTo < effectivePriceFrom) {
       return NextResponse.json({ error: "range requires price_to >= price_from" }, { status: 400 });
     }
+  }
+  const validPrice = hasValidServicePrice({
+    pricingType: effectivePricingType,
+    priceFrom: effectivePriceFrom,
+    priceTo: effectivePriceTo,
+  });
+
+  const currentIsActive = Boolean(currentService.is_active);
+  const nextRequestedIsActive = isActive ?? currentIsActive;
+  if (nextRequestedIsActive && !validPrice) {
+    return NextResponse.json(
+      { error: "Без указания цены услуга не может быть активирована." },
+      { status: 400 }
+    );
+  }
+  if (!validPrice) {
+    patch.is_active = false;
   }
 
   const { data, error } = await ctx.supabase
