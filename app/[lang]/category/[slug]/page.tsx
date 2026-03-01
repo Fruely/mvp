@@ -404,6 +404,21 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
     return String(template).replace(/\{\{\s*count\s*\}\}/g, String(visibleCount));
   }, [dict, totalSpecialists, category]);
 
+  const categoryLabel = category ? getCategoryLabel(category.title, category.slug) : "";
+
+  const uspHeading = useMemo(() => {
+    if (!categoryLabel) return "";
+    if (lang === "ru") return `${categoryLabel} в Германии на вашем языке`;
+    if (lang === "de") return `${categoryLabel} in Deutschland – in Ihrer Sprache`;
+    return `${categoryLabel} в Німеччині вашою мовою`;
+  }, [categoryLabel, lang]);
+
+  const uspSubtext = useMemo(() => {
+    if (lang === "ru") return "Выберите специалиста и отправьте заявку напрямую.";
+    if (lang === "de") return "Wählen Sie einen Spezialisten und senden Sie direkt eine Anfrage.";
+    return "Оберіть фахівця та надішліть заявку напряму.";
+  }, [lang]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
@@ -517,8 +532,9 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
             {t(dict, "common.backToHome")}
           </Link>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-            {getCategoryLabel(category.title, category.slug)}
+            {uspHeading}
           </h1>
+          <p className="mt-2 text-sm text-gray-600">{uspSubtext}</p>
           <p className="text-lg text-gray-600 mt-2">{foundText}</p>
         </div>
 
@@ -643,7 +659,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                   specialist={specialist}
                   lang={lang}
                   dict={dict}
-                  categoryLabel={getCategoryLabel(category.title, category.slug)}
+                  categoryLabel={categoryLabel}
                 />
               ))}
             </div>
