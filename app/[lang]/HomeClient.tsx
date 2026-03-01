@@ -337,7 +337,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         <section className="py-10 md:py-12 bg-white" aria-hidden>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-6 h-8 w-64 rounded-lg bg-gray-200/80 animate-pulse" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-4">
               {Array.from({ length: 6 }).map((_, idx) => (
                 <div
                   key={`popular-skeleton-${idx}`}
@@ -362,7 +362,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-4">
               {popularCategories.map((category) => {
                 const href = placeFromUrl
                   ? `/specialists?lang=${encodeURIComponent(specialistLang)}&place=${encodeURIComponent(placeFromUrl)}&category=${encodeURIComponent(category.slug)}`
