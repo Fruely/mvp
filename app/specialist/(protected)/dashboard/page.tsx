@@ -5,6 +5,7 @@ import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import SetPasswordBlock from "./SetPasswordBlock";
 import LogoutButton from "./LogoutButton";
 import KpiCards from "@/components/dashboard/KpiCards";
+import LeadsChart from "@/components/dashboard/LeadsChart";
 import RecentLeads from "@/components/dashboard/RecentLeads";
 import SubscriptionCard from "@/components/dashboard/SubscriptionCard";
 import ProfileCompletion from "@/components/dashboard/ProfileCompletion";
@@ -75,6 +76,8 @@ export default async function SpecialistDashboardPage() {
         closedCount={dashboardData.counts.closed}
         totalLast30Days={dashboardData.totalLast30Days}
       />
+
+      <LeadsChart data={dashboardData.activityByDay} />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div className="xl:col-span-2">
