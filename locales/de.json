@@ -1,10 +1,10 @@
 {
   "site.title": "Freuly",
   "site.slogan": "Fachkraft in deiner Sprache",
-  "hero.title": "Finde einen Fachmann, der deine Sprache spricht",
-  "hero.subtitle": "Psychologen, Masseure, Nachhilfelehrer und andere Profis, die dir auf Deutsch, Russisch oder Ukrainisch helfen können",
-  "hero.primaryCta": "Fachkraft finden",
-  "hero.secondaryCta": "Fachkraft werden",
+  "hero.title": "Fachkräfte in Deutschland – in Ihrer Sprache.",
+  "hero.subtitle": "Vor Ort oder online.",
+  "hero.primaryCta": "Spezialist finden",
+  "hero.secondaryCta": "Bei Freuly mitmachen",
   "hero.cta": "Fachkraft finden",
   "header.joinQuestion": "Bist du Fachkraft?",
   "header.joinButton": "Bei Freuly beitreten",
@@ -74,7 +74,7 @@
     "notFoundHint": "Möglicherweise gibt es diesen Spezialisten noch nicht",
     "about": "Über den Spezialisten",
     "noDescription": "Keine Beschreibung verfügbar",
-    "sendRequest": "✉️ Anfrage senden",
+    "sendRequest": "Anfrage senden",
     "hideForm": "Formular ausblenden"
   },
   "common": {

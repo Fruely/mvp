@@ -252,6 +252,8 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         lang={lang}
         title={t(dict, "hero.title")}
         subtitle={t(dict, "hero.subtitle")}
+        primaryCta={t(dict, "hero.primaryCta")}
+        secondaryCta={t(dict, "hero.secondaryCta")}
         heroImageUrl={heroContent.url}
         isHeroLoading={isBlocksLoading}
       />

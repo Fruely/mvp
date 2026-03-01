@@ -218,13 +218,13 @@ export default function SpecialistPreviewCard({
             className="inline-flex items-center justify-center gap-1 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
           >
             <span aria-hidden>⚡</span>
-            Залишити заявку
+            {t(dict, "lead.submit")}
           </Link>
           <Link
             href={detailsHref}
             className="text-sm font-medium text-blue-600 transition hover:text-blue-700"
           >
-            Детальніше →
+            {t(dict, "common.more")} →
           </Link>
         </div>
       </div>

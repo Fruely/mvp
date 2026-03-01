@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const LANG_OPTIONS = [
@@ -14,13 +15,16 @@ type HeroSearchProps = {
   lang: string;
   title?: string;
   subtitle?: string;
+  primaryCta?: string;
+  secondaryCta?: string;
   heroImageUrl?: string | null;
   isHeroLoading?: boolean;
 };
 
-const defaultTitle = "Найди специалиста на своём языке в Германии";
-const defaultSubtitle =
-  "Психологи, услуги, обучение и помощь — без языкового барьера";
+const defaultTitle = "Специалисты в Германии на вашем языке.";
+const defaultSubtitle = "Локально или онлайн.";
+const defaultPrimaryCta = "Найти специалиста";
+const defaultSecondaryCta = "Присоединиться к Freuly";
 
 type CategoryOption = {
   slug: string;
@@ -31,6 +35,8 @@ export default function HeroSearch({
   lang: currentLocale,
   title = defaultTitle,
   subtitle = defaultSubtitle,
+  primaryCta = defaultPrimaryCta,
+  secondaryCta = defaultSecondaryCta,
   heroImageUrl,
   isHeroLoading = false,
 }: HeroSearchProps) {
@@ -241,13 +247,21 @@ export default function HeroSearch({
                   disabled={!canSubmit}
                   className="w-full sm:w-auto px-5 py-2 min-h-[2.25rem] text-sm font-semibold rounded-lg bg-[#3B5BDB] text-white hover:bg-[#364FC7] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#3B5BDB]"
                 >
-                  Найти специалиста
+                  {primaryCta}
                 </button>
               </div>
             </form>
             {inlineError ? (
               <p className="mt-2 text-sm text-red-600">{inlineError}</p>
             ) : null}
+            <div className="mt-4">
+              <Link
+                href={`/${currentLocale}/become-specialist`}
+                className="inline-flex h-10 items-center justify-center rounded-full bg-white px-5 text-sm font-semibold text-blue-700 shadow-sm ring-1 ring-blue-200 transition hover:bg-blue-50"
+              >
+                {secondaryCta}
+              </Link>
+            </div>
           </div>
 
           {/* Right: hero image */}
