@@ -22,6 +22,11 @@ interface SpecialistPreview {
   years_of_experience?: number | null;
   is_new: boolean;
   new_until?: string | null;
+  min_price_from?: number | null;
+  min_price_to?: number | null;
+  min_pricing_type?: "fixed" | "range" | "hourly" | null;
+  min_currency?: string | null;
+  active_services_count?: number | null;
 }
 
 interface Category {
@@ -129,6 +134,14 @@ function normalizeSpecialistPreview(input: unknown): SpecialistPreview | null {
     years_of_experience: toNullableNumber(row.years_of_experience),
     is_new: Boolean(row.is_new),
     new_until: typeof row.new_until === "string" && row.new_until.trim() ? row.new_until : null,
+    min_price_from: toNullableNumber(row.min_price_from),
+    min_price_to: toNullableNumber(row.min_price_to),
+    min_pricing_type:
+      row.min_pricing_type === "fixed" || row.min_pricing_type === "range" || row.min_pricing_type === "hourly"
+        ? row.min_pricing_type
+        : null,
+    min_currency: typeof row.min_currency === "string" && row.min_currency.trim() ? row.min_currency : null,
+    active_services_count: toNullableNumber(row.active_services_count),
   };
 }
 

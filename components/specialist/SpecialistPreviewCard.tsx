@@ -21,12 +21,23 @@ type SpecialistPreview = {
   years_of_experience?: number | null;
   is_new: boolean;
   new_until?: string | null;
+  min_price_from?: number | null;
+  min_price_to?: number | null;
+  min_pricing_type?: "fixed" | "range" | "hourly" | null;
+  min_currency?: string | null;
+  active_services_count?: number | null;
 };
 
 function workFormatLabel(workFormat: SpecialistPreview["work_format"]): string {
   if (workFormat === "offline") return "Офлайн";
   if (workFormat === "hybrid") return "Гібрид";
   return "Онлайн";
+}
+
+function fromLabel(lang: string): string {
+  if (lang === "ru") return "от";
+  if (lang === "de") return "ab";
+  return "від";
 }
 
 export default function SpecialistPreviewCard({
@@ -66,6 +77,21 @@ export default function SpecialistPreviewCard({
     || specialist.about_line
     || experienceText
     || null;
+  const minPrice = specialist.min_price_from;
+  const minPriceTo = specialist.min_price_to;
+  const pricingType = specialist.min_pricing_type;
+  const currency = specialist.min_currency?.trim() || "EUR";
+  const serviceCount = specialist.active_services_count ?? 0;
+  const priceText =
+    typeof minPrice === "number" && Number.isFinite(minPrice)
+      ? serviceCount > 1
+        ? `${fromLabel(lang)} ${minPrice}${currency === "EUR" ? "€" : ` ${currency}`}`
+        : pricingType === "range" && typeof minPriceTo === "number" && Number.isFinite(minPriceTo)
+          ? `${minPrice}–${minPriceTo}${currency === "EUR" ? "€" : ` ${currency}`}`
+          : pricingType === "hourly"
+            ? `${minPrice}${currency === "EUR" ? "€" : ` ${currency}`}/час`
+            : `${minPrice}${currency === "EUR" ? "€" : ` ${currency}`}`
+      : null;
 
   return (
     <article className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
@@ -180,6 +206,13 @@ export default function SpecialistPreviewCard({
         </div>
 
         <div className="flex items-center justify-between gap-3 pt-1">
+          {priceText ? (
+            <div className="rounded-lg bg-blue-50 px-2.5 py-1 text-sm font-semibold text-blue-700">
+              {priceText}
+            </div>
+          ) : (
+            <span />
+          )}
           <Link
             href={leadHref}
             className="inline-flex items-center justify-center gap-1 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"

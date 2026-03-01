@@ -28,6 +28,15 @@ type ProfileRow = {
   experience?: string | null;
 };
 
+type ServicePricingType = 'fixed' | 'range' | 'hourly';
+type ServiceRow = {
+  specialist_id: string;
+  pricing_type: ServicePricingType | null;
+  price_from: number | null;
+  price_to: number | null;
+  currency: string | null;
+};
+
 function parsePositiveInt(value: string | null, fallback: number): number {
   if (!value) return fallback;
   const parsed = Number.parseInt(value, 10);
@@ -151,6 +160,7 @@ export async function GET(request: NextRequest) {
       .maybeSingle();
 
     let profileRows: ProfileRow[] = [];
+    let serviceRows: ServiceRow[] = [];
     if (specialistIds.length > 0) {
       const fullProfile = await supabase
         .from('specialist_profiles')
@@ -166,6 +176,18 @@ export async function GET(request: NextRequest) {
       } else {
         profileRows = (fullProfile.data as ProfileRow[] | null) ?? [];
       }
+
+      const servicesResponse = await supabase
+        .from('specialist_services')
+        .select('specialist_id, pricing_type, price_from, price_to, currency')
+        .in('specialist_id', specialistIds)
+        .eq('is_active', true);
+
+      if (servicesResponse.error) {
+        console.error('[api/specialists/list] services query failed', servicesResponse.error);
+      } else {
+        serviceRows = (servicesResponse.data as ServiceRow[] | null) ?? [];
+      }
     }
 
     const profileBySpecialistId = new Map<string, ProfileRow>();
@@ -174,11 +196,56 @@ export async function GET(request: NextRequest) {
       profileBySpecialistId.set(row.specialist_id, row);
     }
 
+    const serviceMetaBySpecialistId = new Map<
+      string,
+      {
+        min_price_from: number;
+        min_price_to: number | null;
+        min_pricing_type: ServicePricingType;
+        min_currency: string;
+        active_services_count: number;
+      }
+    >();
+    for (const row of serviceRows) {
+      if (!row?.specialist_id) continue;
+      if (typeof row.price_from !== 'number' || !Number.isFinite(row.price_from)) continue;
+      if (row.price_from < 0) continue;
+      const pricingType: ServicePricingType =
+        row.pricing_type === 'range' || row.pricing_type === 'hourly' || row.pricing_type === 'fixed'
+          ? row.pricing_type
+          : 'fixed';
+      const currency =
+        typeof row.currency === 'string' && row.currency.trim() ? row.currency.trim() : 'EUR';
+      const nextPriceTo =
+        typeof row.price_to === 'number' && Number.isFinite(row.price_to) ? row.price_to : null;
+
+      const prev = serviceMetaBySpecialistId.get(row.specialist_id);
+      if (!prev) {
+        serviceMetaBySpecialistId.set(row.specialist_id, {
+          min_price_from: row.price_from,
+          min_price_to: nextPriceTo,
+          min_pricing_type: pricingType,
+          min_currency: currency,
+          active_services_count: 1,
+        });
+        continue;
+      }
+      const isBetter = row.price_from < prev.min_price_from;
+      serviceMetaBySpecialistId.set(row.specialist_id, {
+        min_price_from: isBetter ? row.price_from : prev.min_price_from,
+        min_price_to: isBetter ? nextPriceTo : prev.min_price_to,
+        min_pricing_type: isBetter ? pricingType : prev.min_pricing_type,
+        min_currency: isBetter ? currency : prev.min_currency,
+        active_services_count: prev.active_services_count + 1,
+      });
+    }
+
     const { data: categoryData } = await categoryTitlePromise;
     const categoryTitle = categoryData?.title ?? null;
 
     const nowTs = Date.now();
     const merged = uniqueSpecialists.map((row) => {
+      const serviceMeta = serviceMetaBySpecialistId.get(row.id);
       const profile = profileBySpecialistId.get(row.id);
       const approvedAt = row.approved_at ?? row.created_at ?? null;
       const approvedTs = approvedAt ? Date.parse(approvedAt) : NaN;
@@ -206,6 +273,11 @@ export async function GET(request: NextRequest) {
         new_until: newUntil,
         _sort_new_ts: Number.isFinite(approvedTs) ? approvedTs : 0,
         _sort_experience: parseExperienceYears(profile?.experience),
+        min_price_from: serviceMeta?.min_price_from ?? null,
+        min_price_to: serviceMeta?.min_price_to ?? null,
+        min_pricing_type: serviceMeta?.min_pricing_type ?? null,
+        min_currency: serviceMeta?.min_currency ?? null,
+        active_services_count: serviceMeta?.active_services_count ?? 0,
       };
     });
 
@@ -213,7 +285,9 @@ export async function GET(request: NextRequest) {
       const languageMatch = !language
         || row.languages.some((value) => value?.toLowerCase() === language);
       const cityMatch = !city || row.city?.toLowerCase() === city;
-      return languageMatch && cityMatch;
+      const hasActiveServiceWithPrice =
+        typeof row.min_price_from === 'number' && Number.isFinite(row.min_price_from);
+      return languageMatch && cityMatch && hasActiveServiceWithPrice;
     });
 
     if (sort === 'new') {
@@ -237,6 +311,11 @@ export async function GET(request: NextRequest) {
       is_verified: row.is_verified,
       is_new: row.is_new,
       new_until: row.new_until,
+      min_price_from: row.min_price_from,
+      min_price_to: row.min_price_to,
+      min_pricing_type: row.min_pricing_type,
+      min_currency: row.min_currency,
+      active_services_count: row.active_services_count,
     }));
     const hasMore = offset + page.length < total;
 
