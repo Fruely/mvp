@@ -336,7 +336,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       )}
 
       {(isPopularLoading || popularCategories.length > 0) ? (
-        <section className="mt-24 mb-20 py-0 bg-white">
+        <section className="mt-16 mb-12 py-0 bg-gradient-to-b from-transparent via-blue-50/20 to-indigo-50/40">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-center text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">
               {t(dict, "home.bridge.title")}
@@ -348,7 +348,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               <svg
                 viewBox="0 0 20 20"
                 aria-hidden="true"
-                className="h-5 w-5 text-gray-500/40 animate-bounce"
+                className="h-5 w-5 text-gray-500/60 animate-bounce"
               >
                 <path
                   d="M5.5 7.5L10 12l4.5-4.5"
