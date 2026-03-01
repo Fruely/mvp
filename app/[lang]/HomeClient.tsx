@@ -335,23 +335,8 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         </section>
       )}
 
-      {(isPopularLoading || popularCategories.length > 0) ? (
-        <section className="mt-8 mb-8 py-0">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="rounded-3xl bg-white px-6 py-10 shadow-sm">
-              <h2 className="text-center text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">
-                {t(dict, "home.bridge.title")}
-              </h2>
-              <p className="mt-3 mx-auto max-w-xl text-center text-base md:text-lg text-gray-700">
-                {t(dict, "home.bridge.subtitle")}
-              </p>
-            </div>
-          </div>
-        </section>
-      ) : null}
-
       {isPopularLoading ? (
-        <section className="py-10 md:py-12 bg-white" aria-hidden>
+        <section className="mt-12 py-10 md:py-12 bg-white" aria-hidden>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-6 h-8 w-64 rounded-lg bg-gray-200/80 animate-pulse" />
             <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-4">
@@ -371,9 +356,9 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
           </div>
         </section>
       ) : popularCategories.length > 0 ? (
-        <section className="py-10 md:py-12 bg-white">
+        <section className="mt-12 py-10 md:py-12 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-6">
+            <div className="mb-6 text-center">
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
                 {t(dict, "home.popularServices.title", { defaultValue: "Популярные услуги" })}
               </h2>
