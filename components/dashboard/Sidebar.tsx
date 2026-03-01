@@ -63,7 +63,7 @@ const navItems: NavItem[] = [
   },
   {
     label: "Настройки",
-    disabled: true,
+    href: "/specialist/dashboard/settings",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
         <path d="M19.4 13a7.9 7.9 0 000-2l2-1.5-2-3.5-2.4 1a8 8 0 00-1.7-1L15 2h-6l-.3 3a8 8 0 00-1.7 1l-2.4-1-2 3.5 2 1.5a8 8 0 000 2l-2 1.5 2 3.5 2.4-1a8 8 0 001.7 1L9 22h6l.3-3a8 8 0 001.7-1l2.4 1 2-3.5-2-1.5zM12 15a3 3 0 110-6 3 3 0 010 6z" fill="currentColor" />
