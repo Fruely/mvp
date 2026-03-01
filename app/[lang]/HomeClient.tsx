@@ -6,6 +6,8 @@ import { useSearchParams } from "next/navigation";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 import HeroSearch from "@/components/HeroSearch";
+import MicroConfidenceLine from "@/components/home/MicroConfidenceLine";
+import WhyFreulySection from "@/components/home/WhyFreulySection";
 
 type ImageBlockContent = {
   url?: string;
@@ -258,6 +260,8 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         isHeroLoading={isBlocksLoading}
       />
 
+      <MicroConfidenceLine dict={dict} />
+
       <section className="bg-[#F8FAFD] py-24">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <p className="text-2xl md:text-3xl font-medium text-gray-900 leading-snug">
@@ -335,8 +339,10 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         </section>
       )}
 
+      <WhyFreulySection dict={dict} />
+
       {(isPopularLoading || popularCategories.length > 0) ? (
-        <section className="mt-16 mb-12 py-0 bg-gradient-to-b from-transparent via-blue-50/20 to-indigo-50/40">
+        <section className="mt-16 mb-12 py-0">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-center text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">
               {t(dict, "home.bridge.title")}
