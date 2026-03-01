@@ -336,18 +336,29 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       )}
 
       {(isPopularLoading || popularCategories.length > 0) ? (
-        <section className="py-8 md:py-10 bg-white">
+        <section className="mt-24 mb-20 py-0 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="rounded-2xl border border-blue-100 bg-blue-50/60 px-5 py-6 text-center shadow-sm">
-              <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
-                {t(dict, "home.bridge.title")}
-              </h2>
-              <p className="mt-2 text-sm md:text-base text-gray-600">
-                {t(dict, "home.bridge.subtitle")}
-              </p>
-              <p className="mt-3 text-xs md:text-sm text-blue-700/90">
-                {t(dict, "home.bridge.hint")}
-              </p>
+            <h2 className="text-center text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">
+              {t(dict, "home.bridge.title")}
+            </h2>
+            <p className="mt-4 mx-auto max-w-2xl text-center text-base text-gray-500">
+              {t(dict, "home.bridge.subtitle")}
+            </p>
+            <div className="mt-6 flex justify-center">
+              <svg
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+                className="h-5 w-5 text-gray-500/40 animate-bounce"
+              >
+                <path
+                  d="M5.5 7.5L10 12l4.5-4.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </div>
           </div>
         </section>
