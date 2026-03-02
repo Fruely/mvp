@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { jsonNoStore } from "@/lib/api/response";
 
 export const dynamic = "force-dynamic";
 
@@ -75,7 +76,7 @@ export async function GET(request: NextRequest) {
     const q = searchParams.get("q")?.trim() || null;
 
     if (!lang || !place) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "lang and place are required" },
         { status: 400 }
       );
@@ -118,7 +119,7 @@ export async function GET(request: NextRequest) {
 
     if (specError) {
       console.error("[specialists/search] specialists fetch:", specError);
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "Failed to fetch specialists" },
         { status: 500 }
       );
@@ -214,10 +215,10 @@ export async function GET(request: NextRequest) {
       postal_code: s.postal_code,
     }));
 
-    return NextResponse.json({ data });
+    return jsonNoStore({ data });
   } catch (e: any) {
     console.error("[specialists/search] unexpected:", e);
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Internal server error" },
       { status: 500 }
     );

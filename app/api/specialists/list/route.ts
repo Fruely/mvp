@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { jsonNoStore } from "@/lib/api/response";
 
 // Force dynamic so Next.js does not attempt to prerender this API route
 export const dynamic = 'force-dynamic';
@@ -94,7 +95,7 @@ export async function GET(request: NextRequest) {
     const sort = (searchParams.get('sort') as SortMode | null) ?? 'relevance';
 
     if (!categoryId) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: 'category_id parameter is required' },
         { status: 400 }
       );
@@ -138,7 +139,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (queryError) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: 'Failed to fetch specialists' },
         { status: 500 }
       );
@@ -335,7 +336,7 @@ export async function GET(request: NextRequest) {
       )
     ).sort((a, b) => a.localeCompare(b, 'uk'));
 
-    return NextResponse.json({
+    return jsonNoStore({
       data: page,
       meta: {
         total,
@@ -351,7 +352,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('[api/specialists] Unexpected error:', error);
-    return NextResponse.json(
+    return jsonNoStore(
       { error: 'Internal server error' },
       { status: 500 }
     );

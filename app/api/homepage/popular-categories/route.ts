@@ -1,5 +1,7 @@
-import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { jsonNoStore } from "@/lib/api/response";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const supabase = createSupabaseServerClient();
@@ -15,7 +17,7 @@ export async function GET() {
       "[homepage/popular-categories] failed to load homepage_popular_categories",
       homepageError
     );
-    return NextResponse.json({ error: homepageError.message }, { status: 500 });
+    return jsonNoStore({ error: homepageError.message }, { status: 500 });
   }
 
   const normalizedHomepageRows = (homepageRows ?? []).map((row) => {
@@ -50,7 +52,7 @@ export async function GET() {
   });
 
   if (normalizedHomepageRows.length === 0) {
-    return NextResponse.json({ data: [] });
+    return jsonNoStore({ data: [] });
   }
 
   const requestedCategoryIds = normalizedHomepageRows
@@ -74,12 +76,12 @@ export async function GET() {
   const { data: categories, error: categoriesError } = await categoriesQuery;
   if (categoriesError) {
     console.error("[homepage/popular-categories] failed to load categories", categoriesError);
-    return NextResponse.json({ error: categoriesError.message }, { status: 500 });
+    return jsonNoStore({ error: categoriesError.message }, { status: 500 });
   }
 
   const categoryList = categories ?? [];
   if (categoryList.length === 0) {
-    return NextResponse.json({ data: [] });
+    return jsonNoStore({ data: [] });
   }
 
   const categoryIds = categoryList.map((category) => category.id);
@@ -101,7 +103,7 @@ export async function GET() {
 
   if (specialistsError) {
     console.error("[homepage/popular-categories] failed to load specialists", specialistsError);
-    return NextResponse.json({ error: specialistsError.message }, { status: 500 });
+    return jsonNoStore({ error: specialistsError.message }, { status: 500 });
   }
 
   const specialistsCountByCategoryId = new Map<string, number>();
@@ -148,6 +150,6 @@ export async function GET() {
     )
     .slice(0, 10);
 
-  return NextResponse.json({ data });
+  return jsonNoStore({ data });
 }
 

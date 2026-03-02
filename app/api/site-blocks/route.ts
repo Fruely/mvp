@@ -2,6 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminToken } from '@/lib/adminApiAuth';
 
+export const revalidate = 300;
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -70,7 +72,14 @@ export async function GET() {
       console.error('[site-blocks API] Error:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    return NextResponse.json({ blocks: data });
+    return NextResponse.json(
+      { blocks: data },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=59",
+        },
+      }
+    );
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
