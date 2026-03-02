@@ -325,7 +325,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
             )}
 
             {isPopularLoading ? (
-              <div aria-hidden>
+              <div className="mt-8 md:mt-10" aria-hidden>
                 <div className="mb-6 h-8 w-64 rounded-lg bg-gray-200/80 animate-pulse" />
                 <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-4">
                   {Array.from({ length: 6 }).map((_, idx) => (
@@ -343,7 +343,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 </div>
               </div>
             ) : popularCategories.length > 0 ? (
-              <div>
+              <div className="mt-8 md:mt-10">
                 <div className="mb-4 md:mb-6 text-center">
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
                     {t(dict, "home.popularServices.title", { defaultValue: "Популярные услуги" })}
