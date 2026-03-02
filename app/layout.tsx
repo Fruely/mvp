@@ -15,7 +15,7 @@ export default function RootLayout({
   const lang = langCookie === 'ua' || langCookie === 'ru' || langCookie === 'de' ? langCookie : 'ua'
   return (
     <html lang={lang}>
-      <body className="min-h-screen bg-gradient-to-b from-[#F4F6FF] via-[#EEF1FF] to-[#E9ECFF]">{children}</body>
+      <body className="min-h-screen">{children}</body>
     </html>
   )
 }

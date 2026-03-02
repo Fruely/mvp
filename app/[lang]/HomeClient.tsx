@@ -258,7 +258,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         isHeroLoading={isBlocksLoading}
       />
 
-      <section className="py-24">
+      <section className="py-20 md:py-24">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <p className="text-2xl md:text-3xl font-medium text-gray-900 leading-snug">
             {t(dict, "transitional.line1")}
@@ -275,141 +275,129 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         </div>
       </section>
 
-      {true && (
-        <section className="py-24 overflow-x-hidden">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="relative min-h-[520px] overflow-hidden rounded-2xl">
-
-              {textImageContent?.url && (
-                <>
-                  {/* Layer 1: Background image (z-0) */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={textImageContent.url}
-                    alt={textImageContent.title || ""}
-                    className="absolute inset-0 w-full h-full object-cover object-right rounded-2xl z-0"
-                  />
-                  {/* Layer 2: Gradient overlay (z-1) */}
-                  <div
-                    className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/60 to-transparent pointer-events-none z-[1]"
-                    aria-hidden
-                  />
-                </>
-              )}
-
-              {/* Layer 3: Floating card (z-10) */}
-              <div className="absolute left-6 top-6 w-[calc(80%-1.6rem)] md:left-8 md:top-8 md:w-auto max-w-[22.4rem] bg-white rounded-2xl shadow-2xl p-[1.6rem] z-10">
-
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">
-                  {textImageContent?.title || t(dict, "home.howItWorks.title")}
-                </h2>
-
-                <div className="space-y-6 text-gray-700">
-
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
-                      1
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-3xl bg-[#EEF1FF] px-6 py-12 md:px-12 md:py-16">
+            {isPopularLoading ? (
+              <div aria-hidden>
+                <div className="mb-6 h-8 w-64 rounded-lg bg-gray-200/80 animate-pulse" />
+                <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-4">
+                  {Array.from({ length: 6 }).map((_, idx) => (
+                    <div
+                      key={`popular-skeleton-${idx}`}
+                      className="rounded-2xl bg-white shadow-sm overflow-hidden"
+                    >
+                      <div className="w-full aspect-square bg-gray-200/80 animate-pulse" />
+                      <div className="px-4 py-3 space-y-2">
+                        <div className="h-4 w-3/4 rounded bg-gray-200/80 animate-pulse" />
+                        <div className="h-3 w-1/2 rounded bg-gray-200/80 animate-pulse" />
+                      </div>
                     </div>
-                    <p>{t(dict, "home.howItWorks.step1")}</p>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
-                      2
-                    </div>
-                    <p>{t(dict, "home.howItWorks.step2")}</p>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
-                      3
-                    </div>
-                    <p>{t(dict, "home.howItWorks.step3")}</p>
-                  </div>
-
+                  ))}
                 </div>
-
               </div>
-            </div>
-          </div>
-        </section>
-      )}
+            ) : popularCategories.length > 0 ? (
+              <div>
+                <div className="mb-6 text-center">
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                    {t(dict, "home.popularServices.title", { defaultValue: "Популярные услуги" })}
+                  </h2>
+                </div>
 
-      {isPopularLoading ? (
-        <section className="mt-12 py-10 md:py-12" aria-hidden>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-6 h-8 w-64 rounded-lg bg-gray-200/80 animate-pulse" />
-            <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-4">
-              {Array.from({ length: 6 }).map((_, idx) => (
-                <div
-                  key={`popular-skeleton-${idx}`}
-                  className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden"
-                >
-                  <div className="w-full aspect-square bg-gray-200/80 animate-pulse" />
-                  <div className="px-4 py-3 space-y-2">
-                    <div className="h-4 w-3/4 rounded bg-gray-200/80 animate-pulse" />
-                    <div className="h-3 w-1/2 rounded bg-gray-200/80 animate-pulse" />
+                <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-4">
+                  {popularCategories.map((category) => {
+                    const href = placeFromUrl
+                      ? `/specialists?lang=${encodeURIComponent(specialistLang)}&place=${encodeURIComponent(placeFromUrl)}&category=${encodeURIComponent(category.slug)}`
+                      : `/${lang}/category/${category.slug}`;
+
+                    return (
+                      <Link
+                        key={category.slug}
+                        href={href}
+                        className="rounded-2xl bg-white shadow-sm transition hover:shadow-md overflow-hidden flex flex-col"
+                      >
+                        <div className="w-full aspect-square overflow-hidden">
+                          {category.image_url ? (
+                            <>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={category.image_url}
+                                alt={category.title ?? category.slug}
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                              />
+                            </>
+                          ) : (
+                            <div className="w-full h-full bg-gray-100" aria-hidden />
+                          )}
+                        </div>
+
+                        <div className="px-4 py-3">
+                          <p className="text-base font-semibold text-gray-900 line-clamp-1">
+                            {category.title || category.slug}
+                          </p>
+                          <p className="mt-1 text-sm text-gray-600">
+                            {t(dict, "category.parent.found").replace(
+                              /\{\{\s*count\s*\}\}/g,
+                              String(category.specialists_count)
+                            )}
+                          </p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+
+            {true && (
+              <div className="mt-10 md:mt-12 overflow-x-hidden">
+                <div className="relative min-h-[520px] overflow-hidden rounded-2xl">
+                  {textImageContent?.url ? (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={textImageContent.url}
+                        alt={textImageContent.title || ""}
+                        className="absolute inset-0 w-full h-full object-cover object-right rounded-2xl z-0"
+                      />
+                    </>
+                  ) : null}
+
+                  <div className="absolute left-6 top-6 w-[calc(80%-1.6rem)] md:left-8 md:top-8 md:w-auto max-w-[22.4rem] bg-white/90 rounded-2xl shadow-sm p-[1.6rem] backdrop-blur-sm z-10">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-8">
+                      {textImageContent?.title || t(dict, "home.howItWorks.title")}
+                    </h2>
+
+                    <div className="space-y-6 text-gray-700">
+                      <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
+                          1
+                        </div>
+                        <p>{t(dict, "home.howItWorks.step1")}</p>
+                      </div>
+
+                      <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
+                          2
+                        </div>
+                        <p>{t(dict, "home.howItWorks.step2")}</p>
+                      </div>
+
+                      <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
+                          3
+                        </div>
+                        <p>{t(dict, "home.howItWorks.step3")}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
-        </section>
-      ) : popularCategories.length > 0 ? (
-        <section className="mt-12 py-10 md:py-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-6 text-center">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-                {t(dict, "home.popularServices.title", { defaultValue: "Популярные услуги" })}
-              </h2>
-            </div>
-
-            <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-4">
-              {popularCategories.map((category) => {
-                const href = placeFromUrl
-                  ? `/specialists?lang=${encodeURIComponent(specialistLang)}&place=${encodeURIComponent(placeFromUrl)}&category=${encodeURIComponent(category.slug)}`
-                  : `/${lang}/category/${category.slug}`;
-
-                return (
-                  <Link
-                    key={category.slug}
-                    href={href}
-                    className="rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md overflow-hidden flex flex-col"
-                  >
-                    <div className="w-full aspect-square overflow-hidden">
-                      {category.image_url ? (
-                        <>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={category.image_url}
-                            alt={category.title ?? category.slug}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        </>
-                      ) : (
-                        <div className="w-full h-full bg-gray-100" aria-hidden />
-                      )}
-                    </div>
-
-                    <div className="px-4 py-3">
-                      <p className="text-base font-semibold text-gray-900 line-clamp-1">
-                        {category.title || category.slug}
-                      </p>
-                      <p className="mt-1 text-sm text-gray-600">
-                        {t(dict, "category.parent.found").replace(
-                          /\{\{\s*count\s*\}\}/g,
-                          String(category.specialists_count)
-                        )}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      ) : null}
+        </div>
+      </section>
 
       </>
 

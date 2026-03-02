@@ -21,8 +21,8 @@ export default async function LangLayout({
   const dict = await getDictionary(lang);
 
   return (
-    <>
-      <Suspense fallback={<div className="h-9 bg-gray-50 border-b border-gray-100" />}>
+    <div className="min-h-screen bg-gradient-to-b from-[#F4F6FF] via-[#EEF1FF] to-[#E9ECFF]">
+      <Suspense fallback={<div className="h-9 border-b border-gray-100 bg-white/40" />}>
         <LanguageBar />
       </Suspense>
       <Header lang={lang} dict={dict}>
@@ -30,6 +30,6 @@ export default async function LangLayout({
       </Header>
       {children}
       <Footer dict={dict} lang={lang} />
-    </>
+    </div>
   );
 }
