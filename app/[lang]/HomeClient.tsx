@@ -259,17 +259,17 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       />
 
       <section className="pt-12 pb-10 md:pt-16 md:pb-12">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <p className="text-2xl md:text-3xl font-medium text-gray-900 leading-snug">
+        <div className="max-w-5xl mx-auto px-6 text-center">
+          <p className="max-w-3xl mx-auto text-2xl md:text-3xl font-medium text-gray-900 leading-snug">
             {t(dict, "transitional.line1")}
           </p>
 
-          <p className="mt-4 text-lg md:text-xl text-gray-500 leading-relaxed">
+          <p className="mt-4 max-w-3xl mx-auto text-lg md:text-xl text-gray-500 leading-relaxed">
             {t(dict, "transitional.line2")}<br />
             {t(dict, "transitional.line3")}
           </p>
 
-          <p className="mt-8 text-xl md:text-2xl text-gray-900 font-semibold">
+          <p className="mt-8 max-w-4xl mx-auto text-xl md:text-2xl text-gray-900 font-semibold">
             {t(dict, "transitional.final")}
           </p>
         </div>
