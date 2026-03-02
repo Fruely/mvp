@@ -258,9 +258,72 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         isHeroLoading={isBlocksLoading}
       />
 
+      <section className="py-20 md:py-24">
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <p className="text-2xl md:text-3xl font-medium text-gray-900 leading-snug">
+            {t(dict, "transitional.line1")}
+          </p>
+
+          <p className="mt-6 text-lg md:text-xl text-gray-500 leading-relaxed">
+            {t(dict, "transitional.line2")}<br />
+            {t(dict, "transitional.line3")}
+          </p>
+
+          <p className="mt-10 text-xl md:text-2xl text-gray-900 font-semibold">
+            {t(dict, "transitional.final")}
+          </p>
+        </div>
+      </section>
+
       <section className="pt-14 pb-12 md:pt-16 md:pb-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="rounded-3xl bg-[#EEF1FF] px-6 py-8 md:px-12 md:py-10">
+            {true && (
+              <div className="mt-7 md:mt-8 overflow-x-hidden">
+                <div className="relative min-h-[520px] overflow-hidden rounded-2xl">
+                  {textImageContent?.url ? (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={textImageContent.url}
+                        alt={textImageContent.title || ""}
+                        className="absolute inset-0 w-full h-full object-cover object-right rounded-2xl z-0"
+                      />
+                    </>
+                  ) : null}
+
+                  <div className="absolute left-6 top-6 w-[calc(80%-1.6rem)] md:left-8 md:top-8 md:w-auto max-w-[22.4rem] bg-white/90 rounded-2xl shadow-sm p-[1.6rem] backdrop-blur-sm z-10">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-8">
+                      {textImageContent?.title || t(dict, "home.howItWorks.title")}
+                    </h2>
+
+                    <div className="space-y-6 text-gray-700">
+                      <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
+                          1
+                        </div>
+                        <p>{t(dict, "home.howItWorks.step1")}</p>
+                      </div>
+
+                      <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
+                          2
+                        </div>
+                        <p>{t(dict, "home.howItWorks.step2")}</p>
+                      </div>
+
+                      <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
+                          3
+                        </div>
+                        <p>{t(dict, "home.howItWorks.step3")}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {isPopularLoading ? (
               <div aria-hidden>
                 <div className="mb-6 h-8 w-64 rounded-lg bg-gray-200/80 animate-pulse" />
@@ -332,70 +395,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 </div>
               </div>
             ) : null}
-
-            {true && (
-              <div className="mt-7 md:mt-8 overflow-x-hidden">
-                <div className="relative min-h-[520px] overflow-hidden rounded-2xl">
-                  {textImageContent?.url ? (
-                    <>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={textImageContent.url}
-                        alt={textImageContent.title || ""}
-                        className="absolute inset-0 w-full h-full object-cover object-right rounded-2xl z-0"
-                      />
-                    </>
-                  ) : null}
-
-                  <div className="absolute left-6 top-6 w-[calc(80%-1.6rem)] md:left-8 md:top-8 md:w-auto max-w-[22.4rem] bg-white/90 rounded-2xl shadow-sm p-[1.6rem] backdrop-blur-sm z-10">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-8">
-                      {textImageContent?.title || t(dict, "home.howItWorks.title")}
-                    </h2>
-
-                    <div className="space-y-6 text-gray-700">
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
-                          1
-                        </div>
-                        <p>{t(dict, "home.howItWorks.step1")}</p>
-                      </div>
-
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
-                          2
-                        </div>
-                        <p>{t(dict, "home.howItWorks.step2")}</p>
-                      </div>
-
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
-                          3
-                        </div>
-                        <p>{t(dict, "home.howItWorks.step3")}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
-        </div>
-      </section>
-
-      <section className="py-20 md:py-24">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <p className="text-2xl md:text-3xl font-medium text-gray-900 leading-snug">
-            {t(dict, "transitional.line1")}
-          </p>
-
-          <p className="mt-6 text-lg md:text-xl text-gray-500 leading-relaxed">
-            {t(dict, "transitional.line2")}<br />
-            {t(dict, "transitional.line3")}
-          </p>
-
-          <p className="mt-10 text-xl md:text-2xl text-gray-900 font-semibold">
-            {t(dict, "transitional.final")}
-          </p>
         </div>
       </section>
 
