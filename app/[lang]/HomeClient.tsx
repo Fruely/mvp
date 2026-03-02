@@ -258,9 +258,9 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         isHeroLoading={isBlocksLoading}
       />
 
-      <section className="py-20">
+      <section className="pt-14 pb-12 md:pt-16 md:pb-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl bg-[#EEF1FF] px-6 py-12 md:px-12 md:py-16">
+          <div className="rounded-3xl bg-[#EEF1FF] px-6 py-8 md:px-12 md:py-10">
             {isPopularLoading ? (
               <div aria-hidden>
                 <div className="mb-6 h-8 w-64 rounded-lg bg-gray-200/80 animate-pulse" />
@@ -281,7 +281,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               </div>
             ) : popularCategories.length > 0 ? (
               <div>
-                <div className="mb-6 text-center">
+                <div className="mb-4 md:mb-6 text-center">
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
                     {t(dict, "home.popularServices.title", { defaultValue: "Популярные услуги" })}
                   </h2>
@@ -334,7 +334,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
             ) : null}
 
             {true && (
-              <div className="mt-10 md:mt-12 overflow-x-hidden">
+              <div className="mt-7 md:mt-8 overflow-x-hidden">
                 <div className="relative min-h-[520px] overflow-hidden rounded-2xl">
                   {textImageContent?.url ? (
                     <>
