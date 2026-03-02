@@ -246,7 +246,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col">
       <>
       <HeroSearch
         lang={lang}
@@ -258,7 +258,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         isHeroLoading={isBlocksLoading}
       />
 
-      <section className="bg-[#F8FAFD] py-24">
+      <section className="py-24">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <p className="text-2xl md:text-3xl font-medium text-gray-900 leading-snug">
             {t(dict, "transitional.line1")}
@@ -276,9 +276,9 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       </section>
 
       {true && (
-        <section className="py-24 overflow-x-hidden bg-white">
+        <section className="py-24 overflow-x-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="relative min-h-[520px] overflow-hidden rounded-3xl bg-white">
+            <div className="relative min-h-[520px] overflow-hidden rounded-2xl">
 
               {textImageContent?.url && (
                 <>
@@ -287,7 +287,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                   <img
                     src={textImageContent.url}
                     alt={textImageContent.title || ""}
-                    className="absolute inset-0 w-full h-full object-cover object-right rounded-3xl z-0"
+                    className="absolute inset-0 w-full h-full object-cover object-right rounded-2xl z-0"
                   />
                   {/* Layer 2: Gradient overlay (z-1) */}
                   <div
@@ -336,7 +336,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       )}
 
       {isPopularLoading ? (
-        <section className="mt-12 py-10 md:py-12 bg-white" aria-hidden>
+        <section className="mt-12 py-10 md:py-12" aria-hidden>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-6 h-8 w-64 rounded-lg bg-gray-200/80 animate-pulse" />
             <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-4">
@@ -356,7 +356,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
           </div>
         </section>
       ) : popularCategories.length > 0 ? (
-        <section className="mt-12 py-10 md:py-12 bg-white">
+        <section className="mt-12 py-10 md:py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-6 text-center">
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
