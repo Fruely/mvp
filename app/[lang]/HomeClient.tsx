@@ -275,7 +275,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         </div>
       </section>
 
-      <section className="pt-14 pb-12 md:pt-16 md:pb-14">
+      <section className="pt-14 pb-10 md:pt-16 md:pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="rounded-3xl bg-[#EEF1FF] px-6 py-8 md:px-12 md:py-10">
             {true && (
