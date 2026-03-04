@@ -38,6 +38,45 @@ export async function PUT(request: NextRequest) {
   const body = (await request.json().catch(() => null)) as Payload | null;
   if (!body) return jsonNoStore({ error: "Invalid payload" }, { status: 400 });
 
+  const allowedLanguages = new Set(["ru", "uk", "de"]);
+  if (!Array.isArray(body.languages)) {
+    return jsonNoStore({ error: "Invalid payload: languages must be an array" }, { status: 400 });
+  }
+  const hasInvalidLanguage = body.languages.some(
+    (language) => typeof language !== "string" || !allowedLanguages.has(language)
+  );
+  if (hasInvalidLanguage) {
+    return jsonNoStore({ error: "Invalid payload: languages contains unsupported values" }, { status: 400 });
+  }
+
+  if (
+    typeof body.work_format !== "undefined" &&
+    body.work_format !== "online" &&
+    body.work_format !== "offline" &&
+    body.work_format !== "hybrid"
+  ) {
+    return jsonNoStore({ error: "Invalid payload: work_format is not supported" }, { status: 400 });
+  }
+
+  const postalCodeValue = (body as Record<string, unknown>).postal_code;
+  if (
+    typeof postalCodeValue !== "undefined" &&
+    (typeof postalCodeValue !== "string" || !/^\d{5}$/.test(postalCodeValue))
+  ) {
+    return jsonNoStore({ error: "Invalid payload: postal_code must match /^\\d{5}$/" }, { status: 400 });
+  }
+
+  const categoryIdValue = (body as Record<string, unknown>).category_id;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (
+    typeof categoryIdValue !== "undefined" &&
+    categoryIdValue !== null &&
+    (typeof categoryIdValue !== "string" || !uuidRegex.test(categoryIdValue))
+  ) {
+    return jsonNoStore({ error: "Invalid payload: category_id must be a UUID" }, { status: 400 });
+  }
+
   const { data: specialist, error: specialistError } = await supabase
     .from("specialists")
     .select("id")
@@ -64,9 +103,9 @@ export async function PUT(request: NextRequest) {
   if (body.work_format === "online" || body.work_format === "offline" || body.work_format === "hybrid") {
     specialistPatch.work_format = body.work_format;
   }
-  const postalCodeValue = (body as Record<string, unknown>).postal_code;
-  if (typeof postalCodeValue === "string") {
-    specialistPatch.postal_code = postalCodeValue.trim() || null;
+  const specialistPostalCodeValue = (body as Record<string, unknown>).postal_code;
+  if (typeof specialistPostalCodeValue === "string") {
+    specialistPatch.postal_code = specialistPostalCodeValue.trim() || null;
   }
 
   const avatarUrlValue = (body as Record<string, unknown>).avatar_url;
