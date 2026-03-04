@@ -10,7 +10,7 @@ export default async function SpecialistDashboardServicesPage() {
   const { supabase, specialist } = await getCurrentUserAndSpecialist();
 
   if (!isDashboardAllowedStatus(specialist.status)) {
-    redirect("/specialist/claim/invalid?reason=status");
+    redirect("/become-specialist");
   }
 
   const { data, error } = await supabase

@@ -21,7 +21,7 @@ export default async function SpecialistDashboardSubscriptionPage() {
   const { specialist, supabase } = await getCurrentUserAndSpecialist();
 
   if (!isDashboardAllowedStatus(specialist.status)) {
-    redirect("/specialist/claim/invalid?reason=status");
+    redirect("/become-specialist");
   }
 
   const specialistRecord = specialist as unknown as Record<string, unknown>;

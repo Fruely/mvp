@@ -10,7 +10,6 @@ export const DASHBOARD_ALLOWED_SPECIALIST_STATUSES = [
   "draft",
   "published_unverified",
   "featured_verified",
-  "blocked",
 ] as const;
 
 export function isDashboardAllowedStatus(status: string | null | undefined): boolean {

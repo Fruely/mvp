@@ -74,7 +74,7 @@ export default async function SpecialistDashboardPage() {
   }
 
   if (!isDashboardAllowedStatus(status)) {
-    redirect("/specialist/claim/invalid?reason=status");
+    redirect("/become-specialist");
   }
 
   const { data: profile } = await supabase

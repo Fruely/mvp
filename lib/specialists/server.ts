@@ -71,7 +71,7 @@ export async function getCurrentUserAndSpecialist() {
   }
 
   if (!specialist) {
-    redirect("/specialist/claim/invalid");
+    redirect("/become-specialist");
   }
 
   return {
