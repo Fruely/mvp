@@ -15,7 +15,7 @@ export async function POST() {
 
   const { data: specialist, error: specialistError } = await supabase
     .from("specialists")
-    .select("id, status")
+    .select("id, status, name, category_id")
     .eq("user_id", user.id)
     .maybeSingle();
   if (specialistError || !specialist?.id) {
@@ -26,38 +26,23 @@ export async function POST() {
 
   const { data: profile } = await supabase
     .from("specialist_profiles")
-    .select("photo_url")
+    .select("photo_url, city, about_me")
     .eq("specialist_id", specialistId)
     .maybeSingle();
-
-  const { data: specialistServices } = await supabase
-    .from("specialist_services")
-    .select("id, title, price_from, is_active")
-    .eq("specialist_id", specialistId);
-
-  const hasPhoto = Boolean(typeof profile?.photo_url === "string" && profile.photo_url.trim().length > 0);
-  const { data: specialistMain } = await supabase
-    .from("specialists")
-    .select("name")
-    .eq("id", specialistId)
-    .single();
-  const hasName = Boolean(typeof specialistMain?.name === "string" && specialistMain.name.trim().length > 0);
-  const hasService = (specialistServices ?? []).some(
-    (service) => typeof service.title === "string" && service.title.trim().length > 0
+  const hasName = Boolean(typeof specialist.name === "string" && specialist.name.trim().length > 0);
+  const hasCategory = Boolean(
+    typeof specialist.category_id === "string" && specialist.category_id.trim().length > 0
   );
-  const hasPrice = (specialistServices ?? []).some(
-    (service) =>
-      service.is_active === true &&
-      typeof service.price_from === "number" &&
-      Number.isFinite(service.price_from) &&
-      service.price_from > 0
+  const hasCity = Boolean(typeof profile?.city === "string" && profile.city.trim().length > 0);
+  const hasDescription = Boolean(
+    typeof profile?.about_me === "string" && profile.about_me.trim().length > 0
+  );
+  const hasAvatar = Boolean(
+    typeof profile?.photo_url === "string" && profile.photo_url.trim().length > 0
   );
 
-  if (!hasPhoto || !hasName || !hasService || !hasPrice) {
-    return jsonNoStore(
-      { error: "Для публикации нужно заполнить фото, имя, минимум одну услугу и цену." },
-      { status: 400 }
-    );
+  if (!hasName || !hasCategory || !hasCity || !hasDescription || !hasAvatar) {
+    return jsonNoStore({ error: "Заполните обязательные поля" }, { status: 400 });
   }
 
   const { data: updated, error: updateError } = await supabase

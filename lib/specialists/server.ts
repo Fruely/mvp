@@ -20,6 +20,7 @@ export type SpecialistRow = {
   name?: string | null;
   email: string | null;
   phone: string | null;
+  category_id?: string | null;
   status: string | null;
   password_set_at?: string | null;
 };
@@ -38,7 +39,7 @@ function toSpecialistRow(row: Record<string, unknown> | null): SpecialistRow | n
 
 // Table has "name"; some code expects "first_name" — we map name → first_name when returning
 const COLS =
-  "id, user_id, name, email, phone, status, password_set_at";
+  "id, user_id, name, email, phone, category_id, status, password_set_at";
 
 export async function getCurrentUserAndSpecialist() {
   const supabase = createSupabaseServerClient();

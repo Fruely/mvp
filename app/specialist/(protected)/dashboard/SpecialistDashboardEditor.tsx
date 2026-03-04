@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ChangeEvent } from "react";
 
 type ServiceInput = {
   id?: string;
@@ -15,16 +15,21 @@ type Props = {
     name: string;
     email: string;
     phone: string;
+    category_id: string;
     work_format: "online" | "offline" | "hybrid";
     languages: string[];
     about_me: string;
+    video_url: string;
     city: string;
     photo_url: string;
     gallery_urls: string[];
     services: ServiceInput[];
   };
   initialStatus: string;
+  categories: Array<{ id: string; title: string }>;
 };
+
+const MAX_GALLERY_IMAGES = 5;
 
 function toSnapshot(data: Props["initialData"]) {
   return JSON.stringify({
@@ -40,10 +45,12 @@ function toSnapshot(data: Props["initialData"]) {
   });
 }
 
-export default function SpecialistDashboardEditor({ initialData, initialStatus }: Props) {
+export default function SpecialistDashboardEditor({ initialData, initialStatus, categories }: Props) {
   const [form, setForm] = useState(initialData);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [galleryUploading, setGalleryUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [status, setStatus] = useState(initialStatus);
@@ -53,11 +60,13 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus }
   const isDirty = initialSnapshot !== currentSnapshot;
 
   const publicationReady = useMemo(() => {
-    const hasPhoto = Boolean(form.photo_url.trim());
-    const hasName = Boolean(form.name.trim());
-    const hasService = form.services.some((service) => service.title.trim().length > 0);
-    const hasPrice = form.services.some((service) => Number(service.price_from) > 0);
-    return hasPhoto && hasName && hasService && hasPrice;
+    return Boolean(
+      form.name.trim() &&
+        form.category_id.trim() &&
+        form.city.trim() &&
+        form.about_me.trim() &&
+        form.photo_url.trim()
+    );
   }, [form]);
 
   function updateService(index: number, patch: Partial<ServiceInput>) {
@@ -71,10 +80,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus }
   function addService() {
     setForm((prev) => ({
       ...prev,
-      services: [
-        ...prev.services,
-        { title: "", price_from: "", currency: "EUR", is_active: true },
-      ],
+      services: [...prev.services, { title: "", price_from: "", currency: "EUR", is_active: true }],
     }));
   }
 
@@ -85,6 +91,64 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus }
     }));
   }
 
+  async function uploadSingleImage(endpoint: string, file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch(endpoint, {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || typeof json.url !== "string") {
+      throw new Error(typeof json.error === "string" ? json.error : "Не удалось загрузить изображение.");
+    }
+    return json.url;
+  }
+
+  async function handleAvatarUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setAvatarUploading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const url = await uploadSingleImage("/api/specialist/avatar/upload", file);
+      setForm((prev) => ({ ...prev, photo_url: url }));
+      setSuccess("Аватар загружен.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Не удалось загрузить аватар.");
+    } finally {
+      setAvatarUploading(false);
+    }
+  }
+
+  async function handleGalleryUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (form.gallery_urls.length >= MAX_GALLERY_IMAGES) {
+      setError("Можно загрузить до 5 изображений.");
+      return;
+    }
+    setGalleryUploading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const url = await uploadSingleImage("/api/specialist/gallery/upload", file);
+      setForm((prev) => ({
+        ...prev,
+        gallery_urls: [...prev.gallery_urls, url].slice(0, MAX_GALLERY_IMAGES),
+      }));
+      setSuccess("Изображение добавлено в галерею.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Не удалось загрузить изображение.");
+    } finally {
+      setGalleryUploading(false);
+    }
+  }
+
   async function save() {
     setSaving(true);
     setError(null);
@@ -92,6 +156,8 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus }
     try {
       const payload = {
         ...form,
+        category_id: form.category_id || null,
+        video_url: form.video_url.trim(),
         languages: form.languages.map((lang) => lang.trim()).filter(Boolean),
         gallery_urls: form.gallery_urls.map((url) => url.trim()).filter(Boolean),
         services: form.services
@@ -124,6 +190,11 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus }
   }
 
   async function publish() {
+    if (!publicationReady) {
+      setError("Заполните обязательные поля");
+      setSuccess(null);
+      return;
+    }
     setPublishing(true);
     setError(null);
     setSuccess(null);
@@ -155,7 +226,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus }
         <button
           type="button"
           onClick={publish}
-          disabled={publishing || !publicationReady}
+          disabled={publishing}
           className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
         >
           {publishing ? "Публикация..." : "Опубликовать"}
@@ -181,8 +252,27 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus }
             />
           </label>
           <label className="space-y-1 text-sm">
+            <span className="font-medium text-gray-700">Категория</span>
+            <select
+              value={form.category_id}
+              onChange={(e) => setForm((prev) => ({ ...prev, category_id: e.target.value }))}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2"
+            >
+              <option value="">Выберите категорию</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="space-y-1 text-sm">
             <span className="font-medium text-gray-700">Email</span>
-            <input value={form.email} readOnly className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-600" />
+            <input
+              value={form.email}
+              readOnly
+              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-600"
+            />
           </label>
           <label className="space-y-1 text-sm">
             <span className="font-medium text-gray-700">Город / локация</span>
@@ -204,14 +294,17 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus }
               <option value="hybrid">Онлайн/Офлайн</option>
             </select>
           </label>
-          <label className="space-y-1 text-sm">
+          <label className="space-y-1 text-sm md:col-span-2">
             <span className="font-medium text-gray-700">Языки (через запятую)</span>
             <input
               value={form.languages.join(", ")}
               onChange={(e) =>
                 setForm((prev) => ({
                   ...prev,
-                  languages: e.target.value.split(",").map((item) => item.trim()).filter(Boolean),
+                  languages: e.target.value
+                    .split(",")
+                    .map((item) => item.trim())
+                    .filter(Boolean),
                 }))
               }
               className="w-full rounded-lg border border-gray-200 px-3 py-2"
@@ -219,16 +312,35 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus }
           </label>
         </div>
 
-        <label className="space-y-1 text-sm block">
-          <span className="font-medium text-gray-700">Фото профиля (URL)</span>
-          <input
-            value={form.photo_url}
-            onChange={(e) => setForm((prev) => ({ ...prev, photo_url: e.target.value }))}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2"
-          />
-        </label>
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-gray-700">Аватар</p>
+          <div className="flex items-center gap-3">
+            {form.photo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={form.photo_url}
+                alt="Аватар"
+                className="h-16 w-16 rounded-full border border-gray-200 object-cover"
+              />
+            ) : (
+              <div className="flex h-16 w-16 items-center justify-center rounded-full border border-dashed border-gray-300 text-xs text-gray-400">
+                нет фото
+              </div>
+            )}
+            <label className="inline-flex cursor-pointer items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+              {avatarUploading ? "Загрузка..." : "Загрузить фото"}
+              <input
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                className="hidden"
+                onChange={handleAvatarUpload}
+                disabled={avatarUploading}
+              />
+            </label>
+          </div>
+        </div>
 
-        <label className="space-y-1 text-sm block">
+        <label className="block space-y-1 text-sm">
           <span className="font-medium text-gray-700">Описание</span>
           <textarea
             value={form.about_me}
@@ -237,19 +349,52 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus }
           />
         </label>
 
-        <label className="space-y-1 text-sm block">
-          <span className="font-medium text-gray-700">Галерея (URL через запятую)</span>
+        <label className="block space-y-1 text-sm">
+          <span className="font-medium text-gray-700">Видео (YouTube / Vimeo URL)</span>
           <input
-            value={form.gallery_urls.join(", ")}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                gallery_urls: e.target.value.split(",").map((item) => item.trim()).filter(Boolean),
-              }))
-            }
+            value={form.video_url}
+            onChange={(e) => setForm((prev) => ({ ...prev, video_url: e.target.value }))}
+            placeholder="https://www.youtube.com/... или https://vimeo.com/..."
             className="w-full rounded-lg border border-gray-200 px-3 py-2"
           />
         </label>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-gray-700">Галерея</p>
+            <label className="inline-flex cursor-pointer items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+              {galleryUploading ? "Загрузка..." : "Добавить изображение"}
+              <input
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                className="hidden"
+                onChange={handleGalleryUpload}
+                disabled={galleryUploading || form.gallery_urls.length >= MAX_GALLERY_IMAGES}
+              />
+            </label>
+          </div>
+          <p className="text-xs text-gray-500">До 5 изображений.</p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {form.gallery_urls.map((url, index) => (
+              <div key={`${url}-${index}`} className="relative overflow-hidden rounded-lg border border-gray-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt={`Галерея ${index + 1}`} className="h-28 w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      gallery_urls: prev.gallery_urls.filter((_, i) => i !== index),
+                    }))
+                  }
+                  className="absolute right-2 top-2 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-gray-700"
+                >
+                  Удалить
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <div className="rounded-lg border border-gray-200 p-4">
           <div className="mb-3 flex items-center justify-between">

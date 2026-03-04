@@ -29,7 +29,7 @@ export default async function SpecialistDashboardPage() {
   if (featureFlags.newSpecialistDashboard) {
     const { data: profile } = await supabase
       .from("specialist_profiles")
-      .select("photo_url, about_me, city, gallery_urls")
+      .select("photo_url, about_me, city, gallery_urls, video_url")
       .eq("specialist_id", specialist.id)
       .maybeSingle();
     const { data: servicesRows } = await supabase
@@ -37,6 +37,10 @@ export default async function SpecialistDashboardPage() {
       .select("id, title, price_from, currency, is_active")
       .eq("specialist_id", specialist.id)
       .order("created_at", { ascending: false });
+    const { data: categoriesRows } = await supabase
+      .from("categories")
+      .select("id, title")
+      .order("title", { ascending: true });
 
     return (
       <SpecialistDashboardEditor
@@ -45,6 +49,10 @@ export default async function SpecialistDashboardPage() {
           name: specialist.first_name?.trim() || specialist.name?.trim() || "",
           email: specialist.email || "",
           phone: specialist.phone || "",
+          category_id:
+            typeof (specialist as unknown as Record<string, unknown>).category_id === "string"
+              ? ((specialist as unknown as Record<string, unknown>).category_id as string)
+              : "",
           work_format:
             typeof (specialist as unknown as Record<string, unknown>).work_format === "string" &&
             ((specialist as unknown as Record<string, unknown>).work_format === "online" ||
@@ -57,6 +65,7 @@ export default async function SpecialistDashboardPage() {
                 .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
             : [],
           about_me: typeof profile?.about_me === "string" ? profile.about_me : "",
+          video_url: typeof profile?.video_url === "string" ? profile.video_url : "",
           city: typeof profile?.city === "string" ? profile.city : "",
           photo_url: typeof profile?.photo_url === "string" ? profile.photo_url : "",
           gallery_urls: Array.isArray(profile?.gallery_urls)
@@ -73,6 +82,9 @@ export default async function SpecialistDashboardPage() {
             is_active: Boolean(service.is_active),
           })),
         }}
+        categories={(categoriesRows ?? [])
+          .filter((category): category is { id: string; title: string } => typeof category?.id === "string" && typeof category?.title === "string")
+          .map((category) => ({ id: category.id, title: category.title }))}
       />
     );
   }

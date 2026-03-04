@@ -5,10 +5,12 @@ import { jsonNoStore } from "@/lib/api/response";
 type Payload = {
   name?: string;
   phone?: string;
+  category_id?: string | null;
   work_format?: "online" | "offline" | "hybrid";
   languages?: string[];
   city?: string;
   about_me?: string;
+  video_url?: string;
   photo_url?: string;
   gallery_urls?: string[];
   services?: Array<{
@@ -54,6 +56,11 @@ export async function PUT(request: NextRequest) {
   const specialistPatch: Record<string, unknown> = {};
   if (typeof body.name === "string") specialistPatch.name = body.name.trim() || null;
   if (typeof body.phone === "string") specialistPatch.phone = body.phone.trim() || null;
+  if (body.category_id === null) {
+    specialistPatch.category_id = null;
+  } else if (typeof body.category_id === "string") {
+    specialistPatch.category_id = body.category_id.trim() || null;
+  }
   if (body.work_format === "online" || body.work_format === "offline" || body.work_format === "hybrid") {
     specialistPatch.work_format = body.work_format;
   }
@@ -70,9 +77,12 @@ export async function PUT(request: NextRequest) {
   const profilePatch = {
     about_me: typeof body.about_me === "string" ? body.about_me.trim() || null : null,
     city: typeof body.city === "string" ? body.city.trim() || null : null,
+    video_url: typeof body.video_url === "string" ? body.video_url.trim() || null : null,
     photo_url: typeof body.photo_url === "string" ? body.photo_url.trim() || null : null,
     gallery_urls: Array.isArray(body.gallery_urls)
-      ? body.gallery_urls.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+      ? body.gallery_urls
+          .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+          .slice(0, 5)
       : [],
   };
 
