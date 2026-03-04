@@ -31,6 +31,17 @@ type CategoryOption = {
   title: string;
 };
 
+function getCategoryIcon(slug: string): string {
+  const key = slug.toLowerCase();
+  if (key.includes("psych")) return "🧠";
+  if (key.includes("massage")) return "💆";
+  if (key.includes("coach")) return "🎯";
+  if (key.includes("tutor") || key.includes("education")) return "📚";
+  if (key.includes("beauty") || key.includes("cosmet")) return "💅";
+  if (key.includes("move") || key.includes("transport")) return "🚚";
+  return "✨";
+}
+
 export default function HeroSearch({
   lang: currentLocale,
   title = defaultTitle,
@@ -216,17 +227,24 @@ export default function HeroSearch({
                   aria-label="Категория"
                   autoComplete="off"
                 />
-                {categoryOpen && filteredCategories.length > 0 ? (
-                  <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-56 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                {filteredCategories.length > 0 ? (
+                  <div
+                    className={`absolute left-0 top-[calc(100%+10px)] z-50 min-w-[260px] max-h-56 overflow-auto bg-transparent transition-all duration-[120ms] ${
+                      categoryOpen ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-1 pointer-events-none"
+                    }`}
+                  >
                     {filteredCategories.map((option) => (
                       <button
                         key={option.slug}
                         type="button"
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => chooseCategory(option)}
-                        className="block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                        className="flex w-full items-center gap-2 whitespace-nowrap px-3 py-2 text-left text-sm text-gray-700 hover:bg-[rgba(0,0,0,0.04)] hover:rounded-lg"
                       >
-                        {option.title}
+                        <span aria-hidden className="inline-flex w-5 items-center justify-center">
+                          {getCategoryIcon(option.slug)}
+                        </span>
+                        <span>{option.title}</span>
                       </button>
                     ))}
                   </div>
