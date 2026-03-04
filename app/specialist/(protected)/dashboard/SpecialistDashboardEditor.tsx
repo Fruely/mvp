@@ -313,7 +313,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
                         setForm((prev) => ({
                           ...prev,
                           languages: e.target.checked
-                            ? [...new Set([...prev.languages, option.value])]
+                            ? Array.from(new Set([...prev.languages, option.value]))
                             : prev.languages.filter((lang) => lang !== option.value),
                         }))
                       }
