@@ -42,6 +42,7 @@ const COLS =
 
 export async function getCurrentUserAndSpecialist() {
   const supabase = createSupabaseServerClient();
+  const service = createServiceClient();
 
   const {
     data: { user },
@@ -51,7 +52,7 @@ export async function getCurrentUserAndSpecialist() {
     redirect("/login");
   }
 
-  let specialist: SpecialistRow | null = await supabase
+  let specialist: SpecialistRow | null = await service
     .from("specialists")
     .select(COLS)
     .eq("user_id", user.id)
@@ -59,7 +60,6 @@ export async function getCurrentUserAndSpecialist() {
     .then((r) => toSpecialistRow(r.data));
 
   if (!specialist && user.email) {
-    const service = createServiceClient();
     const { data: byEmail } = await service
       .from("specialists")
       .select(COLS)
@@ -78,9 +78,8 @@ export async function getCurrentUserAndSpecialist() {
   }
 
   if (!specialist && user.email) {
-    const service = createServiceClient();
     const normalizedEmail = user.email.trim().toLowerCase();
-    const { data: created } = await service
+    const { data: created, error: createError } = await service
       .from("specialists")
       .insert({
         user_id: user.id,
@@ -93,6 +92,9 @@ export async function getCurrentUserAndSpecialist() {
       .select(COLS)
       .maybeSingle();
 
+    if (createError) {
+      console.error("[specialists/server] failed to auto-create draft specialist", createError);
+    }
     specialist = toSpecialistRow(created);
   }
 
