@@ -30,6 +30,11 @@ type Props = {
 };
 
 const MAX_GALLERY_IMAGES = 5;
+const LANGUAGE_OPTIONS = [
+  { label: "Русский", value: "ru" },
+  { label: "Українська", value: "uk" },
+  { label: "Deutsch", value: "de" },
+] as const;
 
 function toSnapshot(data: Props["initialData"]) {
   return JSON.stringify({
@@ -294,22 +299,32 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
               <option value="hybrid">Онлайн/Офлайн</option>
             </select>
           </label>
-          <label className="space-y-1 text-sm md:col-span-2">
-            <span className="font-medium text-gray-700">Языки (через запятую)</span>
-            <input
-              value={form.languages.join(", ")}
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  languages: e.target.value
-                    .split(",")
-                    .map((item) => item.trim())
-                    .filter(Boolean),
-                }))
-              }
-              className="w-full rounded-lg border border-gray-200 px-3 py-2"
-            />
-          </label>
+          <div className="space-y-2 text-sm md:col-span-2">
+            <span className="font-medium text-gray-700">Языки</span>
+            <div className="flex flex-wrap gap-4">
+              {LANGUAGE_OPTIONS.map((option) => {
+                const checked = form.languages.includes(option.value);
+                return (
+                  <label key={option.value} className="inline-flex items-center gap-2 text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          languages: e.target.checked
+                            ? [...new Set([...prev.languages, option.value])]
+                            : prev.languages.filter((lang) => lang !== option.value),
+                        }))
+                      }
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    <span>{option.label}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         <div className="space-y-2">
