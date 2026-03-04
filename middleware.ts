@@ -59,6 +59,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/api") ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/specialist") ||
+    pathname.startsWith("/services") ||
     pathname.startsWith("/client") ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/_next") ||
@@ -77,6 +78,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/api") ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/specialist") ||
+    pathname.startsWith("/services") ||
     pathname.startsWith("/client") ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/_next") ||

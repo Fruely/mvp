@@ -1,5 +1,7 @@
 import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
+import { consumeLeadRateLimit, getLeadRateLimitKey } from "@/lib/leads/rateLimit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,7 +12,14 @@ export async function POST(request: NextRequest) {
       client_email,
       client_phone,
       message,
+      source,
+      source_path,
+      hp,
     } = body;
+
+    if (typeof hp === "string" && hp.trim().length > 0) {
+      return Response.json({ error: "Spam rejected" }, { status: 400 });
+    }
 
     if (!specialist_id || typeof specialist_id !== "string") {
       return Response.json(
@@ -26,12 +35,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (typeof message === "string" && message.length > 3000) {
+      return Response.json({ error: "message is too long" }, { status: 400 });
+    }
+
+    const forwardedFor = request.headers.get("x-forwarded-for");
+    const ip = forwardedFor ? forwardedFor.split(",")[0].trim() : "unknown";
+    const limit = consumeLeadRateLimit(getLeadRateLimitKey(ip, specialist_id));
+    if (!limit.allowed) {
+      return Response.json(
+        { error: "Too many requests. Try again later." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(limit.retryAfterSec ?? 60) },
+        }
+      );
+    }
+
     const supabase = createSupabaseServerClient();
 
     const { data: specialist, error: specialistError } = await supabase
       .from("specialists")
       .select("id")
       .eq("id", specialist_id)
+      .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
+      .eq("is_active", true)
+      .eq("is_visible", true)
       .maybeSingle();
 
     if (specialistError) {
@@ -55,6 +84,14 @@ export async function POST(request: NextRequest) {
       client_phone: client_phone || null,
       message: message || null,
     };
+
+    if (source || source_path) {
+      console.info("[leads/create] lead source", {
+        specialist_id,
+        source: typeof source === "string" ? source : "unknown",
+        source_path: typeof source_path === "string" ? source_path : "unknown",
+      });
+    }
 
     const { data, error } = await supabase
       .from("leads")

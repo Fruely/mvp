@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { jsonNoStore } from "@/lib/api/response";
+import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 // Force dynamic so Next.js does not attempt to prerender this API route
 export const dynamic = 'force-dynamic';
@@ -118,7 +119,7 @@ export async function GET(request: NextRequest) {
     const initial = await supabase
       .from("specialists")
       .select(fullSelect)
-      .eq("status", "approved")
+      .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
       .eq("is_active", true)
       .eq("is_visible", true)
       .eq("category_id", categoryId);
@@ -130,7 +131,7 @@ export async function GET(request: NextRequest) {
       const fallback = await supabase
         .from("specialists")
         .select(fallbackSelect)
-        .eq("status", "approved")
+        .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
         .eq("is_active", true)
         .eq("is_visible", true)
         .eq("category_id", categoryId);

@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     const { count: approvedSpecialists, error: approvedError } = await supabase
       .from('specialists')
       .select('*', { count: 'exact', head: true })
-      .eq('status', 'approved');
+      .in('status', ['approved', 'published_unverified', 'featured_verified']);
 
     if (approvedError) throw approvedError;
 
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     const { count: pendingSpecialists, error: pendingError } = await supabase
       .from('specialists')
       .select('*', { count: 'exact', head: true })
-      .eq('status', 'pending');
+      .eq('status', 'draft');
 
     if (pendingError) throw pendingError;
 

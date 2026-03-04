@@ -5,11 +5,12 @@ import LeadsTable from "@/components/dashboard/LeadsTable";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { isContactsLocked } from "@/lib/dashboard/isContactsLocked";
 import type { DashboardLead } from "@/lib/dashboard/getDashboardData";
+import { isDashboardAllowedStatus } from "@/lib/specialists/status";
 
 export default async function SpecialistDashboardLeadsPage() {
   const { supabase, specialist } = await getCurrentUserAndSpecialist();
 
-  if (specialist.status !== "approved" && specialist.status !== "paused") {
+  if (!isDashboardAllowedStatus(specialist.status)) {
     redirect("/specialist/claim/invalid?reason=status");
   }
 

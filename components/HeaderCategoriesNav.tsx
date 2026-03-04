@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 import { getDictionary, t, type Lang } from "@/lib/i18n";
 
 type CategoryRow = {
@@ -85,7 +86,7 @@ export default async function HeaderCategoriesNav({ lang }: { lang: string }) {
     const { data: specialists, error: specialistsError } = await supabase
       .from("specialists")
       .select("category_id")
-      .eq("status", "approved")
+      .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
       .eq("is_active", true)
       .eq("is_visible", true)
       .in("category_id", childIds);

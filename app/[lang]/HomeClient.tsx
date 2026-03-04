@@ -58,6 +58,16 @@ type PopularCategory = {
   sort_order?: number | null;
 };
 
+type RecommendedSpecialist = {
+  id: string;
+  slug: string | null;
+  name: string | null;
+  avatar_url: string | null;
+  city: string | null;
+  languages: string[];
+  category_title: string | null;
+};
+
 const CATEGORY_ICON_HINTS = [
   { id: "psychologists", icon: "🧠" },
   { id: "masseurs", icon: "💆" },
@@ -71,11 +81,16 @@ const FALLBACK_PLACEHOLDERS = [
 ];
 
 export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionary }) {
+  const featuredHomeBlockEnabled =
+    process.env.NEXT_PUBLIC_FEATURED_HOME_BLOCK_ENABLED === "1" ||
+    process.env.NEXT_PUBLIC_FEATURED_HOME_BLOCK_ENABLED === "true";
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [categories, setCategories] = useState<CategoryStat[]>([]);
   const [popularCategories, setPopularCategories] = useState<PopularCategory[]>([]);
+  const [recommendedSpecialists, setRecommendedSpecialists] = useState<RecommendedSpecialist[]>([]);
   const [isBlocksLoading, setIsBlocksLoading] = useState(true);
   const [isPopularLoading, setIsPopularLoading] = useState(true);
+  const [isRecommendedLoading, setIsRecommendedLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const placeFromUrl = searchParams?.get("place")?.trim() ?? "";
@@ -199,15 +214,49 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       }
     }
 
+    async function loadRecommendedSpecialists() {
+      try {
+        const res = await fetch("/api/homepage/recommended-specialists", { cache: "no-store" });
+        const json = await res.json();
+        if (!res.ok || !Array.isArray(json?.data)) {
+          setRecommendedSpecialists([]);
+          return;
+        }
+        const normalized = json.data
+          .filter((item: any) => item && typeof item.id === "string")
+          .map((item: any) => ({
+            id: String(item.id),
+            slug: typeof item.slug === "string" ? item.slug : null,
+            name: typeof item.name === "string" ? item.name : null,
+            avatar_url: typeof item.avatar_url === "string" ? item.avatar_url : null,
+            city: typeof item.city === "string" ? item.city : null,
+            languages: Array.isArray(item.languages)
+              ? item.languages.filter((lang: unknown): lang is string => typeof lang === "string" && lang.trim().length > 0)
+              : [],
+            category_title: typeof item.category_title === "string" ? item.category_title : null,
+          }));
+        setRecommendedSpecialists(normalized);
+      } catch {
+        setRecommendedSpecialists([]);
+      } finally {
+        setIsRecommendedLoading(false);
+      }
+    }
+
     loadBlocks();
     loadCategories();
     loadPopularCategories();
+    if (featuredHomeBlockEnabled) {
+      loadRecommendedSpecialists();
+    } else {
+      setIsRecommendedLoading(false);
+    }
 
     // Быстрая реакция на публикацию из админки
     const handler = () => loadBlocks();
     window.addEventListener("storage", handler);
     return () => window.removeEventListener("storage", handler);
-  }, []);
+  }, [featuredHomeBlockEnabled]);
 
   const hero = useMemo(() => blocks.find((b) => b.key === "homepage_hero"), [blocks]);
   const mosaic = useMemo(() => blocks.find((b) => b.key === "homepage_mosaic"), [blocks]);
@@ -391,6 +440,48 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                       </Link>
                     );
                   })}
+                </div>
+              </div>
+            ) : null}
+
+            {isRecommendedLoading ? (
+              <div className="mt-10">
+                <div className="mb-4 h-8 w-80 rounded-lg bg-gray-200/80 animate-pulse" />
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  {Array.from({ length: 4 }).map((_, idx) => (
+                    <div key={`recommended-skeleton-${idx}`} className="rounded-2xl bg-white p-4 shadow-sm">
+                      <div className="mb-3 h-14 w-14 rounded-full bg-gray-200/80 animate-pulse" />
+                      <div className="h-4 w-2/3 rounded bg-gray-200/80 animate-pulse" />
+                      <div className="mt-2 h-3 w-1/2 rounded bg-gray-200/80 animate-pulse" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : recommendedSpecialists.length > 0 ? (
+              <div className="mt-10">
+                <div className="mb-4 md:mb-6 text-center">
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Рекомендованные специалисты</h2>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  {recommendedSpecialists.map((specialist) => (
+                    <Link
+                      key={specialist.id}
+                      href={`/${lang}/specialist/${encodeURIComponent(specialist.slug || specialist.id)}`}
+                      className="rounded-2xl bg-white p-4 shadow-sm transition hover:shadow-md"
+                    >
+                      <div className="mb-3 h-14 w-14 overflow-hidden rounded-full bg-gray-100">
+                        {specialist.avatar_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={specialist.avatar_url} alt={specialist.name || "specialist"} className="h-full w-full object-cover" loading="lazy" />
+                        ) : null}
+                      </div>
+                      <p className="line-clamp-1 text-base font-semibold text-gray-900">{specialist.name || "Специалист"}</p>
+                      <p className="mt-1 text-sm text-gray-600 line-clamp-1">{specialist.category_title || "Услуги"}</p>
+                      <p className="mt-1 text-xs text-gray-500 line-clamp-1">
+                        {[specialist.city, specialist.languages[0]].filter(Boolean).join(" • ")}
+                      </p>
+                    </Link>
+                  ))}
                 </div>
               </div>
             ) : null}

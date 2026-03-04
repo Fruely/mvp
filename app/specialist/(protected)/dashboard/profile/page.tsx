@@ -6,6 +6,7 @@ import ProfileEditor from "../ProfileEditor";
 import MediaBlock from "../MediaBlock";
 import SetPasswordBlock from "../SetPasswordBlock";
 import LogoutButton from "../LogoutButton";
+import { isDashboardAllowedStatus } from "@/lib/specialists/status";
 
 type ProfileRow = {
   about_me: string | null;
@@ -24,7 +25,7 @@ type ProfileRow = {
 export default async function SpecialistDashboardProfilePage() {
   const { supabase, specialist } = await getCurrentUserAndSpecialist();
 
-  if (specialist.status !== "approved" && specialist.status !== "paused") {
+  if (!isDashboardAllowedStatus(specialist.status)) {
     redirect("/specialist/claim/invalid?reason=status");
   }
 

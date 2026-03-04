@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
+import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 export const dynamic = "force-dynamic";
 
@@ -99,7 +100,7 @@ export async function GET(request: NextRequest) {
     const res = await supabase
       .from("specialists")
       .select(fullSelect)
-      .eq("status", "approved")
+      .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
       .eq("is_active", true)
       .eq("is_visible", true);
 
@@ -110,7 +111,7 @@ export async function GET(request: NextRequest) {
       const fallback = await supabase
         .from("specialists")
         .select(minimalSelect)
-        .eq("status", "approved")
+        .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
         .eq("is_active", true)
         .eq("is_visible", true);
       specError = fallback.error;

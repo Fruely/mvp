@@ -2,8 +2,15 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 
-/** Canon: approved = visible + dashboard; paused = hidden + dashboard; pending/email_unverified/etc = no dashboard */
-export type SpecialistStatus = "approved" | "paused" | "pending";
+/** Marketplace v2 canonical statuses + legacy compatibility during rollout. */
+export type SpecialistStatus =
+  | "draft"
+  | "published_unverified"
+  | "featured_verified"
+  | "blocked"
+  | "approved"
+  | "paused"
+  | "pending";
 
 export type SpecialistRow = {
   id: string;

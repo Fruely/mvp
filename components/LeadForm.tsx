@@ -39,6 +39,7 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
+  const [hp, setHp] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +64,9 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
       client_email: client_email || null,
       client_phone: client_phone || null,
       message: message || null,
+      source: "specialist_profile",
+      source_path: pathname,
+      hp,
     };
 
     try {
@@ -127,6 +131,16 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
         onChange={(e) => setMessage(e.target.value)}
         rows={4}
         className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+      />
+
+      <input
+        type="text"
+        tabIndex={-1}
+        autoComplete="off"
+        value={hp}
+        onChange={(e) => setHp(e.target.value)}
+        className="hidden"
+        aria-hidden="true"
       />
 
       <button

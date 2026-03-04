@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
+import { isDashboardAllowedStatus } from "@/lib/specialists/status";
 
 function getStatusClass(status: string): string {
   if (status === "early_access") return "bg-emerald-50 text-emerald-700";
@@ -17,16 +18,25 @@ function formatDate(value: string | null): string {
 }
 
 export default async function SpecialistDashboardSubscriptionPage() {
-  const { specialist } = await getCurrentUserAndSpecialist();
+  const { specialist, supabase } = await getCurrentUserAndSpecialist();
 
-  if (specialist.status !== "approved" && specialist.status !== "paused") {
+  if (!isDashboardAllowedStatus(specialist.status)) {
     redirect("/specialist/claim/invalid?reason=status");
   }
 
   const specialistRecord = specialist as unknown as Record<string, unknown>;
-  const subscriptionStatusRaw = specialistRecord.subscription_status;
-  const planNameRaw = specialistRecord.plan_name;
-  const subscriptionUntilRaw = specialistRecord.subscription_until;
+  const { data: planRow } = await supabase
+    .from("specialist_plan")
+    .select("plan_code, plan_status, expires_at")
+    .eq("specialist_id", specialist.id)
+    .maybeSingle();
+
+  const subscriptionStatusRaw =
+    typeof planRow?.plan_status === "string" ? planRow.plan_status : specialistRecord.subscription_status;
+  const planNameRaw =
+    typeof planRow?.plan_code === "string" ? planRow.plan_code : specialistRecord.plan_name;
+  const subscriptionUntilRaw =
+    typeof planRow?.expires_at === "string" ? planRow.expires_at : specialistRecord.subscription_until;
   const graceUntilRaw = specialistRecord.grace_until;
 
   const status =

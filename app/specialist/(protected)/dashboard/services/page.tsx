@@ -4,11 +4,12 @@ import { redirect } from "next/navigation";
 import ServicesTable from "@/components/dashboard/ServicesTable";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import type { SpecialistService } from "@/lib/dashboard/services";
+import { isDashboardAllowedStatus } from "@/lib/specialists/status";
 
 export default async function SpecialistDashboardServicesPage() {
   const { supabase, specialist } = await getCurrentUserAndSpecialist();
 
-  if (specialist.status !== "approved" && specialist.status !== "paused") {
+  if (!isDashboardAllowedStatus(specialist.status)) {
     redirect("/specialist/claim/invalid?reason=status");
   }
 

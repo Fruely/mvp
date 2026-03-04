@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import LeadForm from "@/components/LeadForm";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import uaDict from "@/locales/ua.json";
 import SectionCard from "@/components/specialist/SectionCard";
@@ -13,6 +13,7 @@ import MobileStickyCTA from "@/components/MobileStickyCTA";
 
 interface Specialist {
   id: string;
+  slug?: string | null;
   name: string;
   description?: string;
   bio?: string;
@@ -27,6 +28,8 @@ interface Specialist {
   works?: string[];
   rating?: number | null;
   reviews_count?: number | null;
+  plan_code?: string | null;
+  plan_status?: string | null;
   services?: string[] | string | null;
   directions?: string[] | string | null;
   languages: string[];
@@ -46,6 +49,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
   const [activePortfolioIndex, setActivePortfolioIndex] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const searchParams = useSearchParams();
+  const router = useRouter();
   const pathname = usePathname() || "/";
   const lang = useMemo<Lang>(() => {
     const seg = pathname.split("/").filter(Boolean)[0];
@@ -83,6 +87,13 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
         }
 
         setSpecialist(result.data);
+        const canonicalSlug =
+          result?.data && typeof result.data.slug === "string"
+            ? result.data.slug.trim()
+            : "";
+        if (canonicalSlug && canonicalSlug !== params.id) {
+          router.replace(`/${lang}/specialist/${encodeURIComponent(canonicalSlug)}`);
+        }
       } catch (err: any) {
         setError(null);
       } finally {
@@ -91,7 +102,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
     };
 
     fetchSpecialist();
-  }, [params.id]);
+  }, [params.id, router, lang]);
 
   // Auto-open form by query param
   useEffect(() => {
@@ -308,6 +319,27 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
         : workMode === "hybrid"
           ? sectionText.hybrid
           : null;
+  const canonicalSlug = typeof specialist.slug === "string" && specialist.slug.trim().length > 0 ? specialist.slug : specialist.id;
+  const specialistUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/${lang}/specialist/${encodeURIComponent(canonicalSlug)}`
+      : `https://freuly.de/${lang}/specialist/${encodeURIComponent(canonicalSlug)}`;
+  const planCode = typeof specialist.plan_code === "string" ? specialist.plan_code : "free";
+  const isProPlan = planCode.toLowerCase() === "pro";
+  const handleShare = async (channel: "copy" | "whatsapp" | "telegram" | "instagram") => {
+    if (channel === "copy") {
+      try {
+        await navigator.clipboard.writeText(specialistUrl);
+      } catch {
+        // no-op
+      }
+      return;
+    }
+    const text = encodeURIComponent(`Профиль специалиста: ${specialistUrl}`);
+    if (channel === "whatsapp") window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
+    if (channel === "telegram") window.open(`https://t.me/share/url?url=${encodeURIComponent(specialistUrl)}`, "_blank", "noopener,noreferrer");
+    if (channel === "instagram") window.open(`https://www.instagram.com/`, "_blank", "noopener,noreferrer");
+  };
   const renderStar = (fillRatio: number, idx: number) => {
     const clamped = Math.max(0, Math.min(1, fillRatio));
     return (
@@ -408,7 +440,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
             formTitle={sectionText.leadFormTitle}
             formNode={
               <LeadForm
-                specialistId={params.id}
+                specialistId={specialist.id}
                 onSuccess={(message) => {
                   setShowForm(false);
                   setLeadSuccessMessage(message);
@@ -476,6 +508,40 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
                     <span className="font-medium">{sectionText.contactsLineFormat}: </span>
                     {workModeLabel}
                   </p>
+                ) : null}
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => void handleShare("copy")}
+                  className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Copy link
+                </button>
+                {isProPlan ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => void handleShare("whatsapp")}
+                      className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      WhatsApp
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleShare("telegram")}
+                      className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      Telegram
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleShare("instagram")}
+                      className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      Instagram
+                    </button>
+                  </>
                 ) : null}
               </div>
             </SectionCard>

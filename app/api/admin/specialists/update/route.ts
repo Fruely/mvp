@@ -243,7 +243,7 @@ export async function POST(request: NextRequest) {
         avatar_url: app.avatar_url || null,
         stoir_number: app.stoir_number || null,
         bio: app.about_short?.trim() || null,
-        status: 'approved',
+        status: 'published_unverified',
         approved_at: now.toISOString(),
         claim_token: claimToken,
         claim_token_created_at: now.toISOString(),

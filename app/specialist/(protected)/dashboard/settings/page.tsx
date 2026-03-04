@@ -3,11 +3,12 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import ChangePasswordForm from "@/components/dashboard/settings/ChangePasswordForm";
+import { isDashboardAllowedStatus } from "@/lib/specialists/status";
 
 export default async function SpecialistDashboardSettingsPage() {
   const { user, specialist } = await getCurrentUserAndSpecialist();
 
-  if (specialist.status !== "approved" && specialist.status !== "paused") {
+  if (!isDashboardAllowedStatus(specialist.status)) {
     redirect("/specialist/claim/invalid?reason=status");
   }
 
