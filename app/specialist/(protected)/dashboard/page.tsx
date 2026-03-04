@@ -15,8 +15,7 @@ import { isContactsLocked } from "@/lib/dashboard/isContactsLocked";
 import type { PublicationService } from "@/lib/dashboard/isProfilePublished";
 import { featureFlags } from "@/lib/featureFlags";
 import SpecialistDashboardEditor from "./SpecialistDashboardEditor";
-import { isDashboardAllowedStatus } from "@/lib/specialists/status";
-import { specialistLangBecomePath, specialistLangHomePath } from "@/lib/specialists/navigation";
+import { specialistLangHomePath } from "@/lib/specialists/navigation";
 
 export default async function SpecialistDashboardPage() {
   const { supabase, user, specialist } = await getCurrentUserAndSpecialist();
@@ -25,10 +24,6 @@ export default async function SpecialistDashboardPage() {
 
   if (status === "blocked") {
     redirect(specialistLangHomePath());
-  }
-
-  if (!isDashboardAllowedStatus(status)) {
-    redirect(specialistLangBecomePath());
   }
 
   if (featureFlags.newSpecialistDashboard) {
