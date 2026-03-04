@@ -18,6 +18,7 @@ type Props = {
     category_id: string;
     work_format: "online" | "offline" | "hybrid";
     languages: string[];
+    postal_code?: string;
     about_me: string;
     video_url: string;
     city: string;
@@ -277,6 +278,18 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
               value={form.email}
               readOnly
               className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-600"
+            />
+          </label>
+          <label className="space-y-1 text-sm">
+            <span className="font-medium text-gray-700">Почтовый индекс (PLZ)</span>
+            <input
+              value={form.postal_code || ""}
+              placeholder="Например: 57399"
+              inputMode="numeric"
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, postal_code: e.target.value }))
+              }
+              className="w-full rounded-lg border border-gray-200 px-3 py-2"
             />
           </label>
           <label className="space-y-1 text-sm">
