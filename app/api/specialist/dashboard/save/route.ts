@@ -64,7 +64,18 @@ export async function PUT(request: NextRequest) {
   if (body.work_format === "online" || body.work_format === "offline" || body.work_format === "hybrid") {
     specialistPatch.work_format = body.work_format;
   }
-  specialistPatch.languages = languages;
+  const postalCodeValue = (body as Record<string, unknown>).postal_code;
+  if (typeof postalCodeValue === "string") {
+    specialistPatch.postal_code = postalCodeValue.trim() || null;
+  }
+
+  const avatarUrlValue = (body as Record<string, unknown>).avatar_url;
+  if (typeof avatarUrlValue === "string") {
+    specialistPatch.avatar_url = avatarUrlValue.trim() || null;
+  }
+
+  specialistPatch.languages = Array.isArray(languages) ? languages : [];
+  specialistPatch.updated_at = new Date().toISOString();
 
   const { error: specialistPatchError } = await supabase
     .from("specialists")
