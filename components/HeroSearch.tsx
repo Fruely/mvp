@@ -29,6 +29,14 @@ type CategoryOption = {
   title: string;
 };
 
+const FALLBACK_QUICK_CATEGORIES: Array<{ slug: string; title: string }> = [
+  { slug: "lawyers", title: "Адвокаты" },
+  { slug: "barbers", title: "Барберы" },
+  { slug: "makeup-artists", title: "Визажисты" },
+  { slug: "massage-therapists", title: "Массажисты" },
+  { slug: "cosmetologists", title: "Косметологи" },
+];
+
 function getCategoryIcon(slug: string): string {
   const key = slug.toLowerCase();
   if (key.includes("psych")) return "🧠";
@@ -109,6 +117,10 @@ export default function HeroSearch({
       )
       .slice(0, 8);
   }, [categories, categoryQuery]);
+  const quickCategories = useMemo(
+    () => (categories.length > 0 ? categories.slice(0, 5) : FALLBACK_QUICK_CATEGORIES),
+    [categories]
+  );
 
   const canSubmit = Boolean(language);
 
@@ -226,7 +238,7 @@ export default function HeroSearch({
                 />
                 {filteredCategories.length > 0 ? (
                   <div
-                    className={`absolute left-0 top-[calc(100%+10px)] z-50 min-w-[260px] max-h-56 overflow-auto bg-transparent transition-all duration-[120ms] ${
+                    className={`absolute top-full left-0 mt-2 min-w-[320px] max-h-56 overflow-auto bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 transition-all duration-[120ms] ${
                       categoryOpen ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-1 pointer-events-none"
                     }`}
                   >
@@ -236,7 +248,7 @@ export default function HeroSearch({
                         type="button"
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => chooseCategory(option)}
-                        className="flex w-full items-center gap-2 whitespace-nowrap px-3 py-2 text-left text-sm text-gray-700 hover:bg-[rgba(0,0,0,0.04)] hover:rounded-lg"
+                        className="flex w-full items-center gap-2 whitespace-nowrap px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 cursor-pointer transition-all duration-150 hover:translate-x-1"
                       >
                         <span aria-hidden className="inline-flex w-5 items-center justify-center">
                           {getCategoryIcon(option.slug)}
@@ -270,13 +282,38 @@ export default function HeroSearch({
             {inlineError ? (
               <p className="mt-2 text-sm text-red-600">{inlineError}</p>
             ) : null}
-            <div className="mt-4 text-sm text-gray-500">
+            <div className="mt-5 min-w-[320px]">
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                Категории
+              </div>
+              <div className="mt-2 space-y-1">
+                {quickCategories.map((option) => (
+                  <Link
+                    key={`quick-category-${option.slug}`}
+                    href={`/${currentLocale}/category/${option.slug}`}
+                    className="block text-sm text-gray-700 hover:text-gray-900 whitespace-nowrap transition-all duration-150 hover:translate-x-1"
+                  >
+                    ✨ {option.title}
+                  </Link>
+                ))}
+                <Link
+                  href={`/${currentLocale}`}
+                  className="block text-sm text-blue-600 hover:text-blue-700 font-medium whitespace-nowrap mt-1 transition-all duration-150 hover:translate-x-1"
+                >
+                  Все категории →
+                </Link>
+              </div>
+            </div>
+
+            <div className="my-3 h-px w-full bg-gray-200/70" />
+
+            <div className="text-sm text-gray-500">
               Вы специалист?{" "}
               <Link
-                href={`/${currentLocale}/become-specialist`}
+                href="/specialist"
                 className="text-blue-600 hover:text-blue-700 font-medium"
               >
-                Добавьте свои услуги →
+                Добавить услуги →
               </Link>
             </div>
             </div>
