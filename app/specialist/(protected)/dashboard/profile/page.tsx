@@ -7,6 +7,7 @@ import MediaBlock from "../MediaBlock";
 import SetPasswordBlock from "../SetPasswordBlock";
 import LogoutButton from "../LogoutButton";
 import { isDashboardAllowedStatus } from "@/lib/specialists/status";
+import { specialistLangBecomePath, specialistLangHomePath } from "@/lib/specialists/navigation";
 
 type ProfileRow = {
   about_me: string | null;
@@ -25,8 +26,12 @@ type ProfileRow = {
 export default async function SpecialistDashboardProfilePage() {
   const { supabase, specialist } = await getCurrentUserAndSpecialist();
 
+  if (specialist.status === "blocked") {
+    redirect(specialistLangHomePath());
+  }
+
   if (!isDashboardAllowedStatus(specialist.status)) {
-    redirect("/become-specialist");
+    redirect(specialistLangBecomePath());
   }
 
   const { data, error } = await supabase

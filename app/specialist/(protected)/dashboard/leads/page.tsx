@@ -6,12 +6,17 @@ import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { isContactsLocked } from "@/lib/dashboard/isContactsLocked";
 import type { DashboardLead } from "@/lib/dashboard/getDashboardData";
 import { isDashboardAllowedStatus } from "@/lib/specialists/status";
+import { specialistLangBecomePath, specialistLangHomePath } from "@/lib/specialists/navigation";
 
 export default async function SpecialistDashboardLeadsPage() {
   const { supabase, specialist } = await getCurrentUserAndSpecialist();
 
+  if (specialist.status === "blocked") {
+    redirect(specialistLangHomePath());
+  }
+
   if (!isDashboardAllowedStatus(specialist.status)) {
-    redirect("/become-specialist");
+    redirect(specialistLangBecomePath());
   }
 
   const { data, error } = await supabase

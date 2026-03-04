@@ -4,12 +4,17 @@ import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import ChangePasswordForm from "@/components/dashboard/settings/ChangePasswordForm";
 import { isDashboardAllowedStatus } from "@/lib/specialists/status";
+import { specialistLangBecomePath, specialistLangHomePath } from "@/lib/specialists/navigation";
 
 export default async function SpecialistDashboardSettingsPage() {
   const { user, specialist } = await getCurrentUserAndSpecialist();
 
+  if (specialist.status === "blocked") {
+    redirect(specialistLangHomePath());
+  }
+
   if (!isDashboardAllowedStatus(specialist.status)) {
-    redirect("/become-specialist");
+    redirect(specialistLangBecomePath());
   }
 
   const email = user.email ?? "";

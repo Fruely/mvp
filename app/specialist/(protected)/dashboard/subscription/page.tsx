@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { isDashboardAllowedStatus } from "@/lib/specialists/status";
+import { specialistLangBecomePath, specialistLangHomePath } from "@/lib/specialists/navigation";
 
 function getStatusClass(status: string): string {
   if (status === "early_access") return "bg-emerald-50 text-emerald-700";
@@ -20,8 +21,12 @@ function formatDate(value: string | null): string {
 export default async function SpecialistDashboardSubscriptionPage() {
   const { specialist, supabase } = await getCurrentUserAndSpecialist();
 
+  if (specialist.status === "blocked") {
+    redirect(specialistLangHomePath());
+  }
+
   if (!isDashboardAllowedStatus(specialist.status)) {
-    redirect("/become-specialist");
+    redirect(specialistLangBecomePath());
   }
 
   const specialistRecord = specialist as unknown as Record<string, unknown>;

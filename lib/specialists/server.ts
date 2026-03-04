@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
+import { specialistLangBecomePath } from "@/lib/specialists/navigation";
 
 /** Marketplace v2 canonical statuses + legacy compatibility during rollout. */
 export type SpecialistStatus =
@@ -96,7 +97,7 @@ export async function getCurrentUserAndSpecialist() {
   }
 
   if (!specialist) {
-    redirect("/become-specialist");
+    redirect(specialistLangBecomePath());
   }
 
   return {

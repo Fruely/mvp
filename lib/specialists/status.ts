@@ -5,8 +5,6 @@ export const VISIBLE_PUBLIC_SPECIALIST_STATUSES = [
 ] as const;
 
 export const DASHBOARD_ALLOWED_SPECIALIST_STATUSES = [
-  "approved", // legacy compatibility
-  "paused", // legacy compatibility
   "draft",
   "published_unverified",
   "featured_verified",

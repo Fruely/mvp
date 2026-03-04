@@ -5,12 +5,17 @@ import ServicesTable from "@/components/dashboard/ServicesTable";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import type { SpecialistService } from "@/lib/dashboard/services";
 import { isDashboardAllowedStatus } from "@/lib/specialists/status";
+import { specialistLangBecomePath, specialistLangHomePath } from "@/lib/specialists/navigation";
 
 export default async function SpecialistDashboardServicesPage() {
   const { supabase, specialist } = await getCurrentUserAndSpecialist();
 
+  if (specialist.status === "blocked") {
+    redirect(specialistLangHomePath());
+  }
+
   if (!isDashboardAllowedStatus(specialist.status)) {
-    redirect("/become-specialist");
+    redirect(specialistLangBecomePath());
   }
 
   const { data, error } = await supabase
