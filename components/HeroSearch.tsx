@@ -16,7 +16,6 @@ type HeroSearchProps = {
   title?: string;
   subtitle?: string;
   primaryCta?: string;
-  secondaryCta?: string;
   heroImageUrl?: string | null;
   isHeroLoading?: boolean;
 };
@@ -24,7 +23,6 @@ type HeroSearchProps = {
 const defaultTitle = "Специалисты в Германии на вашем языке.";
 const defaultSubtitle = "Локально или онлайн.";
 const defaultPrimaryCta = "Найти специалиста";
-const defaultSecondaryCta = "Присоединиться к Freuly";
 
 type CategoryOption = {
   slug: string;
@@ -47,7 +45,6 @@ export default function HeroSearch({
   title = defaultTitle,
   subtitle = defaultSubtitle,
   primaryCta = defaultPrimaryCta,
-  secondaryCta = defaultSecondaryCta,
   heroImageUrl,
   isHeroLoading = false,
 }: HeroSearchProps) {
@@ -273,12 +270,13 @@ export default function HeroSearch({
             {inlineError ? (
               <p className="mt-2 text-sm text-red-600">{inlineError}</p>
             ) : null}
-            <div className="mt-4">
+            <div className="mt-4 text-sm text-gray-500">
+              Вы специалист?{" "}
               <Link
                 href={`/${currentLocale}/become-specialist`}
-                className="inline-flex h-10 items-center justify-center rounded-full bg-white px-5 text-sm font-semibold text-blue-700 shadow-sm ring-1 ring-blue-200 transition hover:bg-blue-50"
+                className="text-blue-600 hover:text-blue-700 font-medium"
               >
-                {secondaryCta}
+                Добавьте свои услуги →
               </Link>
             </div>
             </div>
