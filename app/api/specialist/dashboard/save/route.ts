@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { jsonNoStore } from "@/lib/api/response";
 
@@ -115,6 +115,17 @@ export async function PUT(request: NextRequest) {
 
   specialistPatch.languages = Array.isArray(languages) ? languages : [];
   specialistPatch.updated_at = new Date().toISOString();
+
+  if (specialistPatch.postal_code) {
+    const plz = String(specialistPatch.postal_code);
+
+    if (!/^\d{5}$/.test(plz)) {
+      return NextResponse.json(
+        { error: "Invalid postal code" },
+        { status: 400 }
+      );
+    }
+  }
 
   const { error: specialistPatchError } = await supabase
     .from("specialists")
