@@ -35,7 +35,7 @@ const navItems: NavItem[] = [
     ),
   },
   {
-    label: "Подписка",
+    label: "Мой абонемент",
     href: "/specialist/dashboard/subscription",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>

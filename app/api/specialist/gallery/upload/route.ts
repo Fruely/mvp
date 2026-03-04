@@ -21,12 +21,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Необходима авторизация" }, { status: 401 });
     }
 
-    const { data: specialist, error: specialistError } = await supabaseAuth
+    const service = createServiceClient();
+    const { data: specialist, error: specialistError } = await service
       .from("specialists")
       .select("id")
       .eq("user_id", user.id)
       .maybeSingle();
-    if (specialistError || !specialist?.id) {
+    if (specialistError) {
+      console.error("[specialist/gallery/upload] specialists lookup error:", specialistError);
+      return NextResponse.json({ error: "Внутренняя ошибка сервера" }, { status: 500 });
+    }
+    if (!specialist?.id) {
       return NextResponse.json({ error: "Профиль специалиста не найден" }, { status: 404 });
     }
 
@@ -42,7 +47,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Размер файла не более 5 МБ" }, { status: 400 });
     }
 
-    const service = createServiceClient();
+    const { data: existingProfile, error: profileLookupError } = await service
+      .from("specialist_profiles")
+      .select("specialist_id")
+      .eq("specialist_id", specialist.id)
+      .maybeSingle();
+    if (profileLookupError) {
+      console.error("[specialist/gallery/upload] profile lookup error:", profileLookupError);
+      return NextResponse.json({ error: "Внутренняя ошибка сервера" }, { status: 500 });
+    }
+    if (!existingProfile?.specialist_id) {
+      const { error: profileCreateError } = await service.from("specialist_profiles").insert({
+        specialist_id: specialist.id,
+        created_at: new Date().toISOString(),
+      });
+      if (profileCreateError) {
+        console.error("[specialist/gallery/upload] profile create error:", profileCreateError);
+        return NextResponse.json({ error: "Внутренняя ошибка сервера" }, { status: 500 });
+      }
+    }
+
     const { data: profile } = await service
       .from("specialist_profiles")
       .select("gallery_urls")
