@@ -23,6 +23,12 @@ export type SpecialistRow = {
   password_set_at?: string | null;
 };
 
+function makeFallbackName(email: string): string {
+  const local = email.split("@")[0] || "specialist";
+  const normalized = local.replace(/[^a-zA-Z0-9._-]+/g, " ").trim();
+  return normalized.slice(0, 64) || "Specialist";
+}
+
 function toSpecialistRow(row: Record<string, unknown> | null): SpecialistRow | null {
   if (!row) return null;
   const first_name = (row.name as string) ?? (row.first_name as string) ?? null;
@@ -68,6 +74,25 @@ export async function getCurrentUserAndSpecialist() {
         .eq("id", row.id);
       specialist = { ...row, user_id: user.id };
     }
+  }
+
+  if (!specialist && user.email) {
+    const service = createServiceClient();
+    const normalizedEmail = user.email.trim().toLowerCase();
+    const { data: created } = await service
+      .from("specialists")
+      .insert({
+        user_id: user.id,
+        name: makeFallbackName(normalizedEmail),
+        email: normalizedEmail,
+        status: "draft",
+        is_active: false,
+        is_visible: false,
+      })
+      .select(COLS)
+      .maybeSingle();
+
+    specialist = toSpecialistRow(created);
   }
 
   if (!specialist) {
