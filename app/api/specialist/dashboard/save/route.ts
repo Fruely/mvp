@@ -127,9 +127,13 @@ export async function PUT(request: NextRequest) {
     }
   }
 
+  const cleanedPatch = Object.fromEntries(
+    Object.entries(specialistPatch).filter(([_, v]) => v !== undefined)
+  );
+
   const { error: specialistPatchError } = await supabase
     .from("specialists")
-    .update(specialistPatch)
+    .update(cleanedPatch)
     .eq("id", specialistId);
   if (specialistPatchError) {
     return jsonNoStore({ error: "Failed to update specialist profile" }, { status: 500 });
