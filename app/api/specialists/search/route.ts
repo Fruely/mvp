@@ -75,6 +75,8 @@ export async function GET(request: NextRequest) {
     const lang = searchParams.get("lang")?.trim();
     const place = searchParams.get("place")?.trim();
     const q = searchParams.get("q")?.trim() || null;
+    const offsetRaw = Number.parseInt(searchParams.get("offset") ?? "0", 10);
+    const offset = Number.isFinite(offsetRaw) && offsetRaw > 0 ? offsetRaw : 0;
 
     if (!lang || !place) {
       return jsonNoStore(
@@ -98,22 +100,26 @@ export async function GET(request: NextRequest) {
       "id, name, bio, avatar_url, category_id, languages, postal_code";
 
     const res = await supabase
-      .from("specialists")
+      .from("search_specialists")
       .select(fullSelect)
       .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
       .eq("is_active", true)
-      .eq("is_visible", true);
+      .eq("is_visible", true)
+      .range(offset, offset + 19)
+      .limit(20);
 
     specError = res.error;
     rows = res.data;
 
     if (specError && /column.*does not exist/i.test(specError.message ?? "")) {
       const fallback = await supabase
-        .from("specialists")
+        .from("search_specialists")
         .select(minimalSelect)
         .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
         .eq("is_active", true)
-        .eq("is_visible", true);
+        .eq("is_visible", true)
+        .range(offset, offset + 19)
+        .limit(20);
       specError = fallback.error;
       rows = fallback.data;
     }
