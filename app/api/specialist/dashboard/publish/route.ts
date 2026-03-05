@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { jsonNoStore } from "@/lib/api/response";
 
@@ -15,7 +16,7 @@ export async function POST() {
 
   const { data: specialist, error: specialistError } = await supabase
     .from("specialists")
-    .select("id, status, name, category_id")
+    .select("id, status, name, category_id, languages, work_format, postal_code")
     .eq("user_id", user.id)
     .maybeSingle();
   if (specialistError || !specialist?.id) {
@@ -24,32 +25,21 @@ export async function POST() {
 
   const specialistId = specialist.id as string;
 
-  const { data: profile } = await supabase
-    .from("specialist_profiles")
-    .select("photo_url, city, about_me")
-    .eq("specialist_id", specialistId)
-    .maybeSingle();
-  const hasName = Boolean(typeof specialist.name === "string" && specialist.name.trim().length > 0);
-  const hasCategory = Boolean(
-    typeof specialist.category_id === "string" && specialist.category_id.trim().length > 0
-  );
-  const hasCity = Boolean(typeof profile?.city === "string" && profile.city.trim().length > 0);
-  const hasDescription = Boolean(
-    typeof profile?.about_me === "string" && profile.about_me.trim().length > 0
-  );
-  const hasAvatar = Boolean(
-    typeof profile?.photo_url === "string" && profile.photo_url.trim().length > 0
-  );
-
   const missing: string[] = [];
-  if (!hasName) missing.push("Имя");
-  if (!hasCategory) missing.push("Категория");
-  if (!hasCity) missing.push("Город / локация");
-  if (!hasDescription) missing.push("Описание");
-  if (!hasAvatar) missing.push("Аватар");
+  if (!specialist.name) missing.push("Имя");
+  if (!specialist.category_id) missing.push("Категория");
+  if (!specialist.languages || specialist.languages.length === 0) missing.push("Языки");
+  if (!specialist.work_format) missing.push("Формат работы");
+  if (!specialist.postal_code) missing.push("Почтовый индекс");
 
-  if (!hasName || !hasCategory || !hasCity || !hasDescription || !hasAvatar) {
-    return jsonNoStore({ error: "Заполните обязательные поля", fields: missing }, { status: 400 });
+  if (missing.length) {
+    return NextResponse.json(
+      {
+        error: "Заполните обязательные поля",
+        fields: missing,
+      },
+      { status: 400 }
+    );
   }
 
   const { data: updated, error: updateError } = await supabase
