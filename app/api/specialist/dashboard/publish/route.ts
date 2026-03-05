@@ -41,8 +41,15 @@ export async function POST() {
     typeof profile?.photo_url === "string" && profile.photo_url.trim().length > 0
   );
 
+  const missing: string[] = [];
+  if (!hasName) missing.push("Имя");
+  if (!hasCategory) missing.push("Категория");
+  if (!hasCity) missing.push("Город / локация");
+  if (!hasDescription) missing.push("Описание");
+  if (!hasAvatar) missing.push("Аватар");
+
   if (!hasName || !hasCategory || !hasCity || !hasDescription || !hasAvatar) {
-    return jsonNoStore({ error: "Заполните обязательные поля" }, { status: 400 });
+    return jsonNoStore({ error: "Заполните обязательные поля", fields: missing }, { status: 400 });
   }
 
   const { data: updated, error: updateError } = await supabase
