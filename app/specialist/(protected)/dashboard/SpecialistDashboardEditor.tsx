@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 
 type ServiceInput = {
   id?: string;
@@ -74,6 +74,33 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
         form.photo_url.trim()
     );
   }, [form]);
+
+  useEffect(() => {
+    const postalCode = (form.postal_code || "").trim();
+    if (postalCode.length !== 5 || !/^\d{5}$/.test(postalCode)) return;
+
+    let isCancelled = false;
+
+    const fetchCityByPostalCode = async () => {
+      try {
+        const response = await fetch(`https://api.zippopotam.us/de/${postalCode}`);
+        if (!response.ok) return;
+        const data = (await response.json().catch(() => null)) as
+          | { places?: Array<{ "place name"?: string }> }
+          | null;
+        const cityName = data?.places?.[0]?.["place name"];
+        if (!cityName || isCancelled) return;
+        setForm((prev) => ({ ...prev, city: cityName }));
+      } catch {
+      }
+    };
+
+    fetchCityByPostalCode();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [form.postal_code]);
 
   function updateService(index: number, patch: Partial<ServiceInput>) {
     setForm((prev) => {
