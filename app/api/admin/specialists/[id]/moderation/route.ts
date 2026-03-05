@@ -31,7 +31,12 @@ export async function PATCH(
 
     let patch: Record<string, unknown> = {};
     if (action === "approve") {
-      patch = { status: "published_verified" };
+      patch = {
+        is_verified: true,
+        is_approved: true,
+        approved_at: new Date().toISOString(),
+        status: "published_verified",
+      };
     } else if (action === "feature") {
       patch = { is_featured: true };
     } else if (action === "deactivate") {

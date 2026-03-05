@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     const safeExt = ["jpg", "jpeg", "png", "pdf"].includes(ext) ? ext : "pdf";
     const path = `${specialist.id}/document.${safeExt}`;
 
-    const { error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
       .from(BUCKET)
       .upload(path, file, {
         contentType: file.type,
@@ -75,19 +75,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(uploadData.path);
+    const fileUrl = urlData.publicUrl;
+
     const { error: updateError } = await supabase
       .from("specialists")
-      .update({ verification_status: "pending" })
+      .update({ proof_link: fileUrl })
       .eq("id", specialist.id);
 
     if (updateError) {
       return NextResponse.json(
-        { error: "Файл загружен, но не удалось обновить статус проверки" },
+        { error: "Файл загружен, но не удалось сохранить ссылку документа" },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ success: true, verification_status: "pending" }, { status: 200 });
+    return NextResponse.json({ success: true, proof_link: fileUrl }, { status: 200 });
   } catch (error) {
     console.error("[specialist/verification/upload] unexpected error", error);
     return NextResponse.json({ error: "Внутренняя ошибка сервера" }, { status: 500 });
