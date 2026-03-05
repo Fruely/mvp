@@ -46,6 +46,7 @@ export default function AdminSpecialistsPage() {
   const [error, setError] = useState<string | null>(null);
   const [updatingById, setUpdatingById] = useState<Record<string, boolean>>({});
   const [togglingActiveById, setTogglingActiveById] = useState<Record<string, boolean>>({});
+  const [moderatingById, setModeratingById] = useState<Record<string, boolean>>({});
   const [resendingById, setResendingById] = useState<Record<string, boolean>>({});
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [expandedRejectionId, setExpandedRejectionId] = useState<string | null>(null);
@@ -323,6 +324,65 @@ export default function AdminSpecialistsPage() {
     }
   }
 
+  async function moderateSpecialist(
+    specialistId: string,
+    action: "approve" | "feature" | "deactivate"
+  ) {
+    const activeToken = token || localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (!activeToken || !activeToken.trim()) {
+      setError("Введите токен, чтобы модерировать специалиста.");
+      return;
+    }
+
+    setModeratingById((prev) => ({ ...prev, [specialistId]: true }));
+    setToast(null);
+
+    try {
+      const res = await fetch(`/api/admin/specialists/${specialistId}/moderation`, {
+        method: "PATCH",
+        headers: {
+          "x-admin-token": activeToken,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action }),
+      });
+
+      const json = (await res.json()) as { error?: string };
+
+      if (res.status === 401) {
+        try {
+          localStorage.removeItem(TOKEN_STORAGE_KEY);
+        } catch {
+          // ignore
+        }
+        setToken(null);
+        setTokenInput("");
+        setError("Токен недействителен. Введите токен заново.");
+        return;
+      }
+
+      if (!res.ok) {
+        setToast({ type: "error", message: json?.error || "Не удалось обновить специалиста" });
+        return;
+      }
+
+      setToast({
+        type: "success",
+        message:
+          action === "approve"
+            ? "Специалист верифицирован"
+            : action === "feature"
+              ? "Специалист отмечен как featured"
+              : "Специалист деактивирован",
+      });
+      await fetchSpecialists(activeToken, activeStatus);
+    } catch (e: any) {
+      setToast({ type: "error", message: e?.message || "Ошибка сети при модерации специалиста" });
+    } finally {
+      setModeratingById((prev) => ({ ...prev, [specialistId]: false }));
+    }
+  }
+
   useEffect(() => {
     if (!hasToken || !token) return;
     fetchSpecialists(token, activeStatus);
@@ -548,6 +608,7 @@ export default function AdminSpecialistsPage() {
                   const specialistId = typeof app.specialist_id === "string" ? app.specialist_id : null;
                   const hasActiveValue = typeof app.is_active === "boolean";
                   const isTogglingActive = specialistId ? !!togglingActiveById[specialistId] : false;
+                  const isModerating = specialistId ? !!moderatingById[specialistId] : false;
                   const isRejected = app.status === "rejected";
                   const isExpanded = expandedRejectionId === app.id && isRejected;
 
@@ -586,6 +647,34 @@ export default function AdminSpecialistsPage() {
                                 Active
                               </label>
                             ) : null}
+                            {specialistId && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => moderateSpecialist(specialistId, "approve")}
+                                  disabled={isModerating || !hasToken}
+                                  className="px-3 py-1 rounded-md border border-green-300 text-xs font-semibold text-green-700 hover:bg-green-50 disabled:opacity-50"
+                                >
+                                  Верифицировать
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => moderateSpecialist(specialistId, "feature")}
+                                  disabled={isModerating || !hasToken}
+                                  className="px-3 py-1 rounded-md border border-amber-300 text-xs font-semibold text-amber-700 hover:bg-amber-50 disabled:opacity-50"
+                                >
+                                  Featured
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => moderateSpecialist(specialistId, "deactivate")}
+                                  disabled={isModerating || !hasToken}
+                                  className="px-3 py-1 rounded-md border border-red-300 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"
+                                >
+                                  Деактивировать
+                                </button>
+                              </>
+                            )}
                             {isRejected && (
                               <button
                                 type="button"
