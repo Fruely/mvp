@@ -9,16 +9,11 @@ type SupabaseLike = {
 type ServiceCategoryRow = {
   specialist_id: string | null;
   category_id: string | null;
-  price_from: number | null;
 };
 
 type SpecialistVisibilityRow = {
   id: string;
 };
-
-function isValidPrice(value: number | null): boolean {
-  return typeof value === "number" && Number.isFinite(value) && value >= 0;
-}
 
 export async function getPublicSpecialistCountsByServiceCategory(
   supabase: SupabaseLike,
@@ -29,9 +24,10 @@ export async function getPublicSpecialistCountsByServiceCategory(
 
   const { data: serviceRows, error: servicesError } = await supabase
     .from("specialist_services")
-    .select("specialist_id, category_id, price_from")
+    .select("specialist_id, category_id")
     .in("category_id", uniqueCategoryIds)
-    .eq("is_active", true);
+    .eq("is_active", true)
+    .gte("price_from", 0);
 
   if (servicesError) {
     throw servicesError;
@@ -40,12 +36,10 @@ export async function getPublicSpecialistCountsByServiceCategory(
   const normalizedServiceRows = ((serviceRows ?? []) as ServiceCategoryRow[]).filter(
     (row) =>
       typeof row.specialist_id === "string" &&
-      typeof row.category_id === "string" &&
-      isValidPrice(row.price_from)
+      typeof row.category_id === "string"
   ) as Array<{
     specialist_id: string;
     category_id: string;
-    price_from: number;
   }>;
 
   if (normalizedServiceRows.length === 0) return new Map<string, number>();
