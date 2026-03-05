@@ -1,6 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
-import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
+import { getPublicSpecialistCountsByServiceCategory } from "@/lib/specialists/publicCategoryCounts";
 
 export const dynamic = "force-dynamic";
 
@@ -93,29 +93,16 @@ export async function GET() {
       .map((category) => [category.slug as string, category])
   );
 
-  const { data: specialists, error: specialistsError } = await supabase
-    .from("specialists")
-    .select("category_id")
-    .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
-    .eq("is_active", true)
-    .eq("is_visible", true)
-    .neq("is_test", true)
-    .in("category_id", categoryIds);
-
-  if (specialistsError) {
-    console.error("[homepage/popular-categories] failed to load specialists", specialistsError);
-    return jsonNoStore({ error: specialistsError.message }, { status: 500 });
-  }
-
-  const specialistsCountByCategoryId = new Map<string, number>();
-  for (const row of specialists ?? []) {
-    const categoryId =
-      row && typeof row.category_id === "string" ? row.category_id : null;
-    if (!categoryId) continue;
-    specialistsCountByCategoryId.set(
-      categoryId,
-      (specialistsCountByCategoryId.get(categoryId) ?? 0) + 1
+  let specialistsCountByCategoryId: Map<string, number>;
+  try {
+    specialistsCountByCategoryId = await getPublicSpecialistCountsByServiceCategory(
+      supabase,
+      categoryIds
     );
+  } catch (error) {
+    console.error("[homepage/popular-categories] failed to load specialists", error);
+    const message = error instanceof Error ? error.message : "Failed to load specialists";
+    return jsonNoStore({ error: message }, { status: 500 });
   }
 
   const data = normalizedHomepageRows

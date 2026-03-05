@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
+import { getPublicSpecialistCountsByServiceCategory } from "@/lib/specialists/publicCategoryCounts";
 
 export const dynamic = "force-dynamic";
 
@@ -144,39 +144,35 @@ export async function GET(request: NextRequest) {
 
     if (categoryIds.length > 0) {
       if (debugEnabled) {
-        const { data: specialistsForDebug, error: debugError } = await supabase
-          .from("specialists")
-          .select("category_id, status, is_active, is_visible")
+        const { data: servicesForDebug, error: debugError } = await supabase
+          .from("specialist_services")
+          .select("specialist_id, category_id, is_active, price_from")
           .in("category_id", categoryIds);
 
         if (!debugError) {
-          const rows = specialistsForDebug ?? [];
-          const approved = rows.filter((row) => row.status === "approved");
-          const approvedActive = approved.filter((row) => row.is_active === true);
-          const approvedActiveVisible = approvedActive.filter(
-            (row) => row.is_visible === true
+          const rows = servicesForDebug ?? [];
+          const active = rows.filter((row) => row.is_active === true);
+          const activeWithPrice = active.filter(
+            (row) => typeof row.price_from === "number" && Number.isFinite(row.price_from) && row.price_from >= 0
           );
 
           debugCountBreakdown = {
             specialists_in_child_categories: rows.length,
-            approved_total: approved.length,
-            approved_active_total: approvedActive.length,
-            approved_active_visible_total: approvedActiveVisible.length,
+            approved_total: active.length,
+            approved_active_total: activeWithPrice.length,
+            approved_active_visible_total: activeWithPrice.length,
             counted_in_response_total: 0,
           };
         }
       }
 
-      const { data: specialists, error: specialistsError } = await supabase
-        .from("specialists")
-        .select("category_id")
-        .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
-        .eq("is_active", true)
-        .eq("is_visible", true)
-        .in("category_id", categoryIds);
-
-      if (specialistsError) {
-        console.error("[specialists/categories] specialists", specialistsError);
+      try {
+        countsByCategoryId = await getPublicSpecialistCountsByServiceCategory(
+          supabase,
+          categoryIds
+        );
+      } catch (error) {
+        console.error("[specialists/categories] specialists", error);
         return NextResponse.json(
           { error: "Failed to load specialists counts" },
           {
@@ -185,14 +181,6 @@ export async function GET(request: NextRequest) {
           }
         );
       }
-
-      countsByCategoryId = (specialists ?? []).reduce((acc, row) => {
-        const categoryId =
-          row && typeof row.category_id === "string" ? row.category_id : null;
-        if (!categoryId) return acc;
-        acc.set(categoryId, (acc.get(categoryId) ?? 0) + 1);
-        return acc;
-      }, new Map<string, number>());
 
       if (debugCountBreakdown) {
         let countedTotal = 0;

@@ -30,10 +30,12 @@ type Specialist = {
 async function fetchSpecialists(
   lang: string,
   place: string,
-  q: string | null
+  q: string | null,
+  category: string | null
 ): Promise<{ data?: Specialist[]; error?: string }> {
   const params = new URLSearchParams({ lang, place });
   if (q) params.set("q", q);
+  if (category) params.set("category", category);
   const base =
     process.env.NEXT_PUBLIC_APP_URL ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
@@ -46,7 +48,7 @@ async function fetchSpecialists(
   return { data: json.data ?? [] };
 }
 
-type SearchParams = { lang?: string; place?: string; q?: string };
+type SearchParams = { lang?: string; place?: string; q?: string; category?: string };
 
 export async function generateMetadata({
   searchParams,
@@ -72,6 +74,7 @@ export default async function SpecialistsPage({
   const lang = searchParams?.lang?.trim();
   const place = searchParams?.place?.trim();
   const q = searchParams?.q?.trim() || null;
+  const category = searchParams?.category?.trim() || null;
 
   if (!lang || !place) {
     return (
@@ -95,7 +98,7 @@ export default async function SpecialistsPage({
     );
   }
 
-  const { data: specialists, error } = await fetchSpecialists(lang, place, q);
+  const { data: specialists, error } = await fetchSpecialists(lang, place, q, category);
   const uiLang = toUiLang(lang);
 
   if (error) {

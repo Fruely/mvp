@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
+import { getPublicSpecialistCountsByServiceCategory } from "@/lib/specialists/publicCategoryCounts";
 import { getDictionary, t, type Lang } from "@/lib/i18n";
 
 type CategoryRow = {
@@ -83,26 +83,15 @@ export default async function HeaderCategoriesNav({ lang }: { lang: string }) {
 
   let countsByCategoryId = new Map<string, number>();
   if (childIds.length > 0) {
-    const { data: specialists, error: specialistsError } = await supabase
-      .from("specialists")
-      .select("category_id")
-      .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
-      .eq("is_active", true)
-      .eq("is_visible", true)
-      .in("category_id", childIds);
-
-    if (specialistsError) {
-      console.error("[HeaderCategoriesNav] specialists", specialistsError);
+    try {
+      countsByCategoryId = await getPublicSpecialistCountsByServiceCategory(
+        supabase,
+        childIds
+      );
+    } catch (error) {
+      console.error("[HeaderCategoriesNav] specialists", error);
       return null;
     }
-
-    countsByCategoryId = (specialists ?? []).reduce((acc, row) => {
-      const categoryId =
-        row && typeof row.category_id === "string" ? row.category_id : null;
-      if (!categoryId) return acc;
-      acc.set(categoryId, (acc.get(categoryId) ?? 0) + 1);
-      return acc;
-    }, new Map<string, number>());
   }
 
   let categories: NavCategory[] = [];

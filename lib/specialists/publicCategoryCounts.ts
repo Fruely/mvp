@@ -1,0 +1,85 @@
+import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
+
+type SupabaseLike = {
+  from: (table: string) => {
+    select: (columns: string) => any;
+  };
+};
+
+type ServiceCategoryRow = {
+  specialist_id: string | null;
+  category_id: string | null;
+  price_from: number | null;
+};
+
+type SpecialistVisibilityRow = {
+  id: string;
+};
+
+function isValidPrice(value: number | null): boolean {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0;
+}
+
+export async function getPublicSpecialistCountsByServiceCategory(
+  supabase: SupabaseLike,
+  categoryIds: string[]
+): Promise<Map<string, number>> {
+  const uniqueCategoryIds = Array.from(new Set(categoryIds.filter(Boolean)));
+  if (uniqueCategoryIds.length === 0) return new Map<string, number>();
+
+  const { data: serviceRows, error: servicesError } = await supabase
+    .from("specialist_services")
+    .select("specialist_id, category_id, price_from")
+    .in("category_id", uniqueCategoryIds)
+    .eq("is_active", true);
+
+  if (servicesError) {
+    throw servicesError;
+  }
+
+  const normalizedServiceRows = ((serviceRows ?? []) as ServiceCategoryRow[]).filter(
+    (row) =>
+      typeof row.specialist_id === "string" &&
+      typeof row.category_id === "string" &&
+      isValidPrice(row.price_from)
+  ) as Array<{
+    specialist_id: string;
+    category_id: string;
+    price_from: number;
+  }>;
+
+  if (normalizedServiceRows.length === 0) return new Map<string, number>();
+
+  const specialistIds = Array.from(
+    new Set(normalizedServiceRows.map((row) => row.specialist_id))
+  );
+  const { data: visibleSpecialists, error: specialistsError } = await supabase
+    .from("specialists")
+    .select("id")
+    .in("id", specialistIds)
+    .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
+    .eq("is_active", true)
+    .eq("is_visible", true)
+    .neq("is_test", true);
+
+  if (specialistsError) {
+    throw specialistsError;
+  }
+
+  const visibleIdSet = new Set(
+    ((visibleSpecialists ?? []) as SpecialistVisibilityRow[]).map((row) => row.id)
+  );
+
+  const seenPairs = new Set<string>();
+  const counts = new Map<string, number>();
+
+  for (const row of normalizedServiceRows) {
+    if (!visibleIdSet.has(row.specialist_id)) continue;
+    const pairKey = `${row.category_id}:${row.specialist_id}`;
+    if (seenPairs.has(pairKey)) continue;
+    seenPairs.add(pairKey);
+    counts.set(row.category_id, (counts.get(row.category_id) ?? 0) + 1);
+  }
+
+  return counts;
+}

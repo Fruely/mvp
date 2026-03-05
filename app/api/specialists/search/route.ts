@@ -75,6 +75,7 @@ export async function GET(request: NextRequest) {
     const lang = searchParams.get("lang")?.trim();
     const place = searchParams.get("place")?.trim();
     const q = searchParams.get("q")?.trim() || null;
+    const category = searchParams.get("category")?.trim() || null;
     const offsetRaw = Number.parseInt(searchParams.get("offset") ?? "0", 10);
     const offset = Number.isFinite(offsetRaw) && offsetRaw > 0 ? offsetRaw : 0;
 
@@ -150,12 +151,53 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    let specialistIdsByCategory: Set<string> | null = null;
+    if (category) {
+      const { data: categoryRow } = await supabase
+        .from("categories")
+        .select("id")
+        .eq("slug", category)
+        .maybeSingle();
+
+      if (!categoryRow?.id) {
+        return jsonNoStore({ data: [] });
+      }
+
+      const { data: serviceRows, error: servicesError } = await supabase
+        .from("specialist_services")
+        .select("specialist_id, price_from")
+        .eq("category_id", categoryRow.id)
+        .eq("is_active", true);
+
+      if (servicesError) {
+        console.error("[specialists/search] specialist_services fetch:", servicesError);
+        return jsonNoStore(
+          { error: "Failed to fetch specialists" },
+          { status: 500 }
+        );
+      }
+
+      specialistIdsByCategory = new Set(
+        (serviceRows ?? [])
+          .filter(
+            (row) =>
+              typeof row.specialist_id === "string" &&
+              typeof row.price_from === "number" &&
+              Number.isFinite(row.price_from) &&
+              row.price_from >= 0
+          )
+          .map((row) => String(row.specialist_id))
+      );
+    }
+
     const placeCoords = await geocode(place);
 
     const langLower = lang.toLowerCase();
     const filtered: (SpecialistRow & { _distance?: number; _cat?: CategoryRow })[] = [];
 
     for (const s of specialists) {
+      if (specialistIdsByCategory && !specialistIdsByCategory.has(s.id)) continue;
+
       const langs = Array.isArray(s.languages)
         ? s.languages.map((l) => String(l).toLowerCase())
         : [];
