@@ -16,6 +16,7 @@ import type { PublicationService } from "@/lib/dashboard/isProfilePublished";
 import { featureFlags } from "@/lib/featureFlags";
 import SpecialistDashboardEditor from "./SpecialistDashboardEditor";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
+import VerificationBanner from "./VerificationBanner";
 
 export default async function SpecialistDashboardPage() {
   const { supabase, user, specialist } = await getCurrentUserAndSpecialist();
@@ -43,9 +44,11 @@ export default async function SpecialistDashboardPage() {
       .order("title", { ascending: true });
 
     return (
-      <SpecialistDashboardEditor
-        initialStatus={status || "draft"}
-        initialData={{
+      <div className="space-y-6">
+        <VerificationBanner status={status} />
+        <SpecialistDashboardEditor
+          initialStatus={status || "draft"}
+          initialData={{
           name: specialist.first_name?.trim() || specialist.name?.trim() || "",
           email: specialist.email || "",
           phone: specialist.phone || "",
@@ -82,10 +85,11 @@ export default async function SpecialistDashboardPage() {
             is_active: Boolean(service.is_active),
           })),
         }}
-        categories={(categoriesRows ?? [])
-          .filter((category): category is { id: string; title: string } => typeof category?.id === "string" && typeof category?.title === "string")
-          .map((category) => ({ id: category.id, title: category.title }))}
-      />
+          categories={(categoriesRows ?? [])
+            .filter((category): category is { id: string; title: string } => typeof category?.id === "string" && typeof category?.title === "string")
+            .map((category) => ({ id: category.id, title: category.title }))}
+        />
+      </div>
     );
   }
 
@@ -135,6 +139,7 @@ export default async function SpecialistDashboardPage() {
 
   return (
     <div className="space-y-6">
+      <VerificationBanner status={status} />
       <div className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">
