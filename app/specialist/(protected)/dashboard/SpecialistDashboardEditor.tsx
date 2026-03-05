@@ -236,6 +236,14 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
       const res = await fetch("/api/specialist/dashboard/publish", { method: "POST" });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
+        if (res.status === 400 && Array.isArray((json as { fields?: unknown }).fields)) {
+          const fields = (json as { fields: unknown[] }).fields
+            .filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+          if (fields.length > 0) {
+            setError("Заполните обязательные поля:\n" + fields.join("\n"));
+            return;
+          }
+        }
         setError(typeof json.error === "string" ? json.error : "Не удалось опубликовать профиль.");
         return;
       }
