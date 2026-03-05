@@ -15,14 +15,28 @@ function shuffle<T>(items: T[]): T[] {
 export async function GET() {
   const supabase = createSupabaseServerClient();
 
-  const { data: rows, error } = await supabase
+  const { data: featuredRows, error: featuredError } = await supabase
     .from("specialists")
-    .select("id, slug, name, avatar_url, city, languages, category_id, featured_priority, status, is_active, is_visible")
-    .eq("status", "featured_verified")
-    .eq("is_active", true)
-    .eq("is_visible", true)
-    .order("featured_priority", { ascending: false })
-    .limit(80);
+    .select("id")
+    .eq("is_featured", true)
+    .eq("status", "published_verified")
+    .limit(10);
+
+  if (featuredError) {
+    return jsonNoStore({ error: featuredError.message }, { status: 500 });
+  }
+
+  const featuredIds = (featuredRows ?? [])
+    .map((row) => (row && typeof row.id === "string" ? row.id : null))
+    .filter((id): id is string => Boolean(id));
+
+  if (featuredIds.length === 0) return jsonNoStore({ data: [] });
+
+  const { data: rows, error } = await supabase
+    .from("search_specialists")
+    .select("*")
+    .in("id", featuredIds)
+    .limit(10);
 
   if (error) {
     return jsonNoStore({ error: error.message }, { status: 500 });
