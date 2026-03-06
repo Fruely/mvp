@@ -38,6 +38,10 @@ type ServiceRow = {
   price_to: number | null;
   currency: string | null;
 };
+type ServiceWithSpecialistRow = {
+  specialist_id: string | null;
+  specialists: SpecialistRow | SpecialistRow[] | null;
+};
 
 function parsePositiveInt(value: string | null, fallback: number): number {
   if (!value) return fallback;
@@ -105,37 +109,49 @@ export async function GET(request: NextRequest) {
     const supabase = createSupabaseServerClient();
 
     type SelectCols =
-      | 'id,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at'
-      | 'id,name,bio,avatar_url,category_id,languages,created_at';
+      | 'specialist_id,specialists!inner(id,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at)'
+      | 'specialist_id,specialists!inner(id,name,bio,avatar_url,category_id,languages,created_at)';
 
     const fullSelect: SelectCols =
-      'id,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at';
+      'specialist_id,specialists!inner(id,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at)';
     const fallbackSelect: SelectCols =
-      'id,name,bio,avatar_url,category_id,languages,created_at';
+      'specialist_id,specialists!inner(id,name,bio,avatar_url,category_id,languages,created_at)';
 
     let rows: SpecialistRow[] | null = null;
     let queryError: { message?: string } | null = null;
 
     const initial = await supabase
-      .from("specialists")
+      .from("specialist_services")
       .select(fullSelect)
-      .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
+      .eq("category_id", categoryId)
       .eq("is_active", true)
-      .eq("is_visible", true)
-      .eq("category_id", categoryId);
+      .gte("price_from", 0)
+      .in("specialists.status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
+      .eq("specialists.is_active", true)
+      .eq("specialists.is_visible", true);
 
-    rows = (initial.data as SpecialistRow[] | null) ?? null;
+    rows = ((initial.data as ServiceWithSpecialistRow[] | null) ?? [])
+      .map((row) =>
+        Array.isArray(row.specialists) ? row.specialists[0] ?? null : row.specialists
+      )
+      .filter((row): row is SpecialistRow => Boolean(row));
     queryError = initial.error;
 
     if (queryError && /column.*does not exist/i.test(queryError.message ?? '')) {
       const fallback = await supabase
-        .from("specialists")
+        .from("specialist_services")
         .select(fallbackSelect)
-        .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
+        .eq("category_id", categoryId)
         .eq("is_active", true)
-        .eq("is_visible", true)
-        .eq("category_id", categoryId);
-      rows = (fallback.data as SpecialistRow[] | null) ?? null;
+        .gte("price_from", 0)
+        .in("specialists.status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
+        .eq("specialists.is_active", true)
+        .eq("specialists.is_visible", true);
+      rows = ((fallback.data as ServiceWithSpecialistRow[] | null) ?? [])
+        .map((row) =>
+          Array.isArray(row.specialists) ? row.specialists[0] ?? null : row.specialists
+        )
+        .filter((row): row is SpecialistRow => Boolean(row));
       queryError = fallback.error;
     }
 
