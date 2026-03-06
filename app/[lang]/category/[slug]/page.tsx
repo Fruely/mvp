@@ -196,7 +196,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
   };
 
   const loadSpecialists = async (reset: boolean) => {
-    if (!category?.id || !category.is_clickable) return;
+    if (!category?.id) return;
     setLoadingSpecialists(true);
     setLoadError(null);
     try {
@@ -370,11 +370,6 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
         setNextOffset(0);
         setTotalSpecialists(0);
 
-        if (!normalizedCategory.is_clickable) {
-          setSpecialists([]);
-          setLoading(false);
-          return;
-        }
       } catch (err) {
         console.error("Error fetching category data:", err);
         setSpecialists([]);
@@ -389,15 +384,13 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
   }, [slug, lang]);
 
   useEffect(() => {
-    if (!category?.id || !category.is_clickable || parentCategory) return;
+    if (!category?.id || parentCategory) return;
     loadSpecialists(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category?.id, category?.is_clickable, selectedLanguage, selectedCity, sort, parentCategory]);
+  }, [category?.id, selectedLanguage, selectedCity, sort, parentCategory]);
 
   const foundText = useMemo(() => {
-    const visibleCount = category?.is_clickable
-      ? totalSpecialists
-      : (category?.specialists_count ?? 0);
+    const visibleCount = totalSpecialists;
     const template = (t as any)(dict, "category.found", {
       count: visibleCount,
     }) as string;
@@ -538,24 +531,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
           <p className="text-lg text-gray-600 mt-2">{foundText}</p>
         </div>
 
-        {!category.is_clickable ? (
-          <div className="bg-white rounded-2xl shadow-lg p-12 text-center max-w-2xl mx-auto">
-            <div className="text-6xl mb-4">⏳</div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              {t(dict, "category.comingSoon.title")}
-            </h2>
-            <p className="text-gray-600 mb-6">
-              {t(dict, "category.comingSoon.subtitle")}
-            </p>
-            <Link
-              href={langPrefix}
-              className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
-            >
-              {t(dict, "common.toHome")}
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-6">
+        <div className="space-y-6">
             <div className="sticky top-0 z-20 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
               <div className="grid grid-cols-1 gap-4 items-end md:mx-auto md:flex md:max-w-4xl md:flex-wrap md:items-end md:justify-center md:gap-3">
                 <label className="text-sm md:flex-none">
@@ -685,7 +661,6 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
               </div>
             ) : null}
           </div>
-        )}
       </div>
     </div>
   );
