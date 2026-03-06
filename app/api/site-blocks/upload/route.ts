@@ -4,15 +4,18 @@ import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminToken } from '@/lib/adminApiAuth';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
 export async function POST(request: NextRequest) {
   const authResponse = requireAdminToken(request);
   if (authResponse) return authResponse;
 
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: 'Supabase env is not configured' }, { status: 500 });
+    }
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     if (!file) {
