@@ -92,12 +92,31 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const searchParams = url.searchParams;
 
-    const categoryId = searchParams.get('category_id') || searchParams.get('categoryId');
+    const categoryIdParam = searchParams.get('category_id') || searchParams.get('categoryId');
+    const categorySlug = searchParams.get('category')?.trim().toLowerCase() ?? '';
     const limit = Math.min(parsePositiveInt(searchParams.get('limit'), 12), 50);
     const offset = parsePositiveInt(searchParams.get('offset'), 0);
     const language = searchParams.get('language')?.trim().toLowerCase() ?? '';
     const city = searchParams.get('city')?.trim().toLowerCase() ?? '';
     const sort = (searchParams.get('sort') as SortMode | null) ?? 'relevance';
+
+    const supabase = createSupabaseServerClient();
+
+    let categoryId = categoryIdParam;
+    if (!categoryId && categorySlug) {
+      const { data: categoryRow, error: categoryError } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('slug', categorySlug)
+        .maybeSingle();
+      if (categoryError) {
+        return jsonNoStore(
+          { error: 'Failed to resolve category' },
+          { status: 500 }
+        );
+      }
+      categoryId = categoryRow?.id ?? null;
+    }
 
     if (!categoryId) {
       return jsonNoStore(
@@ -105,8 +124,6 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    const supabase = createSupabaseServerClient();
 
     type SelectCols =
       | 'specialist_id,specialists!inner(id,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at)'
