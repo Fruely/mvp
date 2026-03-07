@@ -282,13 +282,13 @@ export default function AdminSpecialistsPage() {
     setToast(null);
 
     try {
-      const res = await fetch(`/api/admin/specialists/${specialistId}/active`, {
-        method: "PATCH",
+      const res = await fetch(`/api/admin/update-specialist`, {
+        method: "POST",
         headers: {
           "x-admin-token": activeToken,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ is_active: nextIsActive }),
+        body: JSON.stringify({ id: specialistId, action: "activate", is_active: nextIsActive }),
       });
 
       const json = (await res.json()) as { success?: boolean; data?: { id: string; is_active: boolean }; error?: string };
@@ -340,13 +340,16 @@ export default function AdminSpecialistsPage() {
     setToast(null);
 
     try {
-      const res = await fetch(`/api/admin/specialists/${specialistId}/moderation`, {
-        method: "PATCH",
+      const res = await fetch(`/api/admin/update-specialist`, {
+        method: "POST",
         headers: {
           "x-admin-token": activeToken,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ action }),
+        body: JSON.stringify({
+          id: specialistId,
+          action: action === "approve" ? "verify" : action,
+        }),
       });
 
       const json = (await res.json()) as { error?: string };
