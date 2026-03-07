@@ -13,6 +13,10 @@ type ServiceCategoryRow = {
 
 type SpecialistVisibilityRow = {
   id: string;
+  status: string | null;
+  is_active: boolean | null;
+  is_visible: boolean | null;
+  is_test: boolean | null;
 };
 
 export async function getPublicSpecialistCountsByServiceCategory(
@@ -47,22 +51,28 @@ export async function getPublicSpecialistCountsByServiceCategory(
   const specialistIds = Array.from(
     new Set(normalizedServiceRows.map((row) => row.specialist_id))
   );
+  const publicStatuses = new Set<string>([...VISIBLE_PUBLIC_SPECIALIST_STATUSES]);
+
   const { data: visibleSpecialists, error: specialistsError } = await supabase
     .from("specialists")
-    .select("id")
-    .in("id", specialistIds)
-    .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
-    .eq("is_active", true)
-    .eq("is_visible", true)
-    // Treat NULL as non-test; exclude only explicitly marked test specialists.
-    .or("is_test.is.null,is_test.eq.false");
+    .select("id,status,is_active,is_visible,is_test")
+    .in("id", specialistIds);
 
   if (specialistsError) {
     throw specialistsError;
   }
 
   const visibleIdSet = new Set(
-    ((visibleSpecialists ?? []) as SpecialistVisibilityRow[]).map((row) => row.id)
+    ((visibleSpecialists ?? []) as SpecialistVisibilityRow[])
+      .filter(
+        (row) =>
+          typeof row.id === "string" &&
+          publicStatuses.has(row.status ?? "") &&
+          row.is_active === true &&
+          row.is_visible === true &&
+          row.is_test !== true
+      )
+      .map((row) => row.id)
   );
 
   const seenPairs = new Set<string>();
