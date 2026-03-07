@@ -4,9 +4,14 @@ import { requireAdminToken } from '@/lib/adminApiAuth';
 
 export const revalidate = 300;
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseServiceKey) {
+    return null;
+  }
+  return createClient(supabaseUrl, supabaseServiceKey);
+}
 
 type MosaicImage = {
   url?: string;
@@ -20,9 +25,13 @@ type MosaicContent = {
   images?: MosaicImage[];
 };
 
-async function normalizeMosaicCategories(content: MosaicContent) {
+async function normalizeMosaicCategories(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  content: MosaicContent
+) {
   const images = Array.isArray(content.images) ? content.images : [];
   if (!images.length) return { content, error: null as string | null };
+  if (!supabase) return { content, error: 'Supabase env is not configured' };
 
   const { data: categories, error } = await supabase
     .from('categories')
@@ -64,6 +73,11 @@ async function normalizeMosaicCategories(content: MosaicContent) {
 
 export async function GET() {
   try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Supabase env is not configured' }, { status: 500 });
+    }
+
     const { data, error } = await supabase
       .from('site_blocks')
       .select('*')
@@ -90,6 +104,11 @@ export async function POST(request: NextRequest) {
   if (authResponse) return authResponse;
 
   try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Supabase env is not configured' }, { status: 500 });
+    }
+
     const body = await request.json();
     const { key, type, content } = body;
     if (!key || !type || !content) {
@@ -98,7 +117,7 @@ export async function POST(request: NextRequest) {
 
     let normalizedContent = content;
     if (key === 'homepage_mosaic' && type === 'mosaic') {
-      const normalized = await normalizeMosaicCategories(content as MosaicContent);
+      const normalized = await normalizeMosaicCategories(supabase, content as MosaicContent);
       if (normalized.error) {
         return NextResponse.json({ error: normalized.error }, { status: 400 });
       }
