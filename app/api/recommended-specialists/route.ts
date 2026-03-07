@@ -62,14 +62,19 @@ export async function GET() {
     categoryById = new Map(
       (categories ?? []).map((category) => [
         String(category.id),
-        { title: typeof category.title === "string" ? category.title : null, slug: typeof category.slug === "string" ? category.slug : null },
+        {
+          title: typeof category.title === "string" ? category.title : null,
+          slug: typeof category.slug === "string" ? category.slug : null,
+        },
       ])
     );
   }
 
   const grouped = new Map<number, typeof specialists>();
   for (const specialist of specialists) {
-    const priority = Number.isFinite(specialist.featured_priority) ? Number(specialist.featured_priority) : 0;
+    const priority = Number.isFinite(specialist.featured_priority)
+      ? Number(specialist.featured_priority)
+      : 0;
     const list = grouped.get(priority) ?? [];
     list.push(specialist);
     grouped.set(priority, list);
@@ -82,7 +87,8 @@ export async function GET() {
   }
 
   const data = mixed.slice(0, 8).map((row) => {
-    const category = typeof row.category_id === "string" ? categoryById.get(row.category_id) : undefined;
+    const category =
+      typeof row.category_id === "string" ? categoryById.get(row.category_id) : undefined;
     return {
       id: row.id,
       slug: row.slug,

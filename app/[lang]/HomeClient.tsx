@@ -216,7 +216,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
 
     async function loadRecommendedSpecialists() {
       try {
-        const res = await fetch("/api/homepage/recommended-specialists", { cache: "no-store" });
+        const res = await fetch("/api/recommended-specialists", { cache: "no-store" });
         const json = await res.json();
         if (!res.ok || !Array.isArray(json?.data)) {
           setRecommendedSpecialists([]);
