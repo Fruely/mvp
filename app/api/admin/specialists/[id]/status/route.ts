@@ -40,8 +40,13 @@ export async function PATCH(
   };
 
   if (nextStatus === "featured_verified") {
+    patch.is_featured = true;
     patch.featured_at = new Date().toISOString();
     patch.featured_priority = featuredPriority ?? 0;
+  } else {
+    patch.is_featured = false;
+    patch.featured_priority = 0;
+    patch.featured_at = null;
   }
 
   const supabase = createSupabaseServerClient();

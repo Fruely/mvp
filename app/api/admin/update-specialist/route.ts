@@ -34,6 +34,8 @@ export async function POST(request: NextRequest) {
       patch.is_verified = true;
       patch.is_approved = true;
       patch.approved_at = new Date().toISOString();
+      patch.is_featured = true;
+      patch.featured_at = new Date().toISOString();
       patch.status = "featured_verified";
       patch.is_active = true;
       patch.is_visible = true;

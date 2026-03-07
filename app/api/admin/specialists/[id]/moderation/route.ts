@@ -35,12 +35,27 @@ export async function PATCH(
         is_verified: true,
         is_approved: true,
         approved_at: new Date().toISOString(),
-        status: "published_verified",
+        is_featured: true,
+        featured_at: new Date().toISOString(),
+        featured_priority: 0,
+        is_active: true,
+        is_visible: true,
+        status: "featured_verified",
       };
     } else if (action === "feature") {
-      patch = { is_featured: true };
+      patch = {
+        is_featured: true,
+        featured_at: new Date().toISOString(),
+        status: "featured_verified",
+        is_active: true,
+        is_visible: true,
+      };
     } else if (action === "deactivate") {
-      patch = { status: "deactivated" };
+      patch = {
+        status: "blocked",
+        is_active: false,
+        is_visible: false,
+      };
     }
 
     const supabase = createSupabaseServerClient();
