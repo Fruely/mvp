@@ -286,6 +286,39 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     return map;
   }, [mosaicImages]);
 
+  const renderRecommendedSpecialists = () => {
+    if (!recommendedSpecialists || recommendedSpecialists.length === 0) return null;
+
+    return (
+      <div className="mt-10">
+        <div className="mb-4 md:mb-6 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Рекомендованные специалисты</h2>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {recommendedSpecialists.map((specialist) => (
+            <Link
+              key={specialist.id}
+              href={`/${lang}/specialist/${encodeURIComponent(specialist.slug || specialist.id)}`}
+              className="rounded-2xl bg-white p-4 shadow-sm transition hover:shadow-md"
+            >
+              <div className="mb-3 h-14 w-14 overflow-hidden rounded-full bg-gray-100">
+                {specialist.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={specialist.avatar_url} alt={specialist.name || "specialist"} className="h-full w-full object-cover" loading="lazy" />
+                ) : null}
+              </div>
+              <p className="line-clamp-1 text-base font-semibold text-gray-900">{specialist.name || "Специалист"}</p>
+              <p className="mt-1 text-sm text-gray-600 line-clamp-1">{specialist.category_title || "Услуги"}</p>
+              <p className="mt-1 text-xs text-gray-500 line-clamp-1">
+                {[specialist.city, specialist.languages[0]].filter(Boolean).join(" • ")}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const placeholderIconByCategoryId = useMemo(
     () =>
       new Map(
@@ -457,34 +490,9 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                   ))}
                 </div>
               </div>
-            ) : recommendedSpecialists.length > 0 ? (
-              <div className="mt-10">
-                <div className="mb-4 md:mb-6 text-center">
-                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Рекомендованные специалисты</h2>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  {recommendedSpecialists.map((specialist) => (
-                    <Link
-                      key={specialist.id}
-                      href={`/${lang}/specialist/${encodeURIComponent(specialist.slug || specialist.id)}`}
-                      className="rounded-2xl bg-white p-4 shadow-sm transition hover:shadow-md"
-                    >
-                      <div className="mb-3 h-14 w-14 overflow-hidden rounded-full bg-gray-100">
-                        {specialist.avatar_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={specialist.avatar_url} alt={specialist.name || "specialist"} className="h-full w-full object-cover" loading="lazy" />
-                        ) : null}
-                      </div>
-                      <p className="line-clamp-1 text-base font-semibold text-gray-900">{specialist.name || "Специалист"}</p>
-                      <p className="mt-1 text-sm text-gray-600 line-clamp-1">{specialist.category_title || "Услуги"}</p>
-                      <p className="mt-1 text-xs text-gray-500 line-clamp-1">
-                        {[specialist.city, specialist.languages[0]].filter(Boolean).join(" • ")}
-                      </p>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ) : null}
+            ) : (
+              renderRecommendedSpecialists()
+            )}
           </div>
         </div>
       </section>
