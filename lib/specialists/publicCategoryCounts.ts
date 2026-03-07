@@ -48,15 +48,18 @@ export async function getPublicSpecialistCountsByServiceCategory(
 
   if (normalizedServiceRows.length === 0) return new Map<string, number>();
 
-  const specialistIds = Array.from(
-    new Set(normalizedServiceRows.map((row) => row.specialist_id))
+  const specialistIdSet = new Set(
+    normalizedServiceRows.map((row) => row.specialist_id)
   );
   const publicStatuses = new Set<string>([...VISIBLE_PUBLIC_SPECIALIST_STATUSES]);
 
   const { data: visibleSpecialists, error: specialistsError } = await supabase
     .from("specialists")
     .select("id,status,is_active,is_visible,is_test")
-    .in("id", specialistIds);
+    .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
+    .eq("is_active", true)
+    .eq("is_visible", true)
+    .or("is_test.is.null,is_test.eq.false");
 
   if (specialistsError) {
     throw specialistsError;
@@ -67,6 +70,7 @@ export async function getPublicSpecialistCountsByServiceCategory(
       .filter(
         (row) =>
           typeof row.id === "string" &&
+          specialistIdSet.has(row.id) &&
           publicStatuses.has(row.status ?? "") &&
           row.is_active === true &&
           row.is_visible === true &&
