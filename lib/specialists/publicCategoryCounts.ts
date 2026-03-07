@@ -46,13 +46,15 @@ export async function getPublicSpecialistCountsByServiceCategory(
   }
 
   const normalizedServiceRows = ((serviceRows ?? []) as ServiceCategoryRow[]).filter(
-    (row) =>
+    (
+      row
+    ): row is ServiceCategoryRow & {
+      specialist_id: string;
+      category_id: string;
+    } =>
       typeof row.specialist_id === "string" &&
       typeof row.category_id === "string"
-  ) as Array<{
-    specialist_id: string;
-    category_id: string;
-  }>;
+  );
 
   if (normalizedServiceRows.length === 0) return new Map<string, number>();
 
