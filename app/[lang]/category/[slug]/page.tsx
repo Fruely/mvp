@@ -225,6 +225,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
         : [];
       const meta = (result?.meta ?? {}) as SpecialistsMeta;
 
+      console.log("incoming specialists", incoming);
       setSpecialists((prev) => (reset ? incoming : mergeUniqueSpecialists(prev, incoming)));
       setHasMore(Boolean(meta.has_more));
       setNextOffset(Number(meta.next_offset ?? offset + incoming.length));

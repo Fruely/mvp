@@ -19,7 +19,7 @@ export async function GET() {
     .from("specialists")
     .select("id")
     .eq("is_featured", true)
-    .eq("status", "published_verified")
+    .eq("status", "featured_verified")
     .limit(10);
 
   if (featuredError) {
