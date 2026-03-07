@@ -54,7 +54,8 @@ export async function getPublicSpecialistCountsByServiceCategory(
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
     .eq("is_active", true)
     .eq("is_visible", true)
-    .neq("is_test", true);
+    // Treat NULL as non-test; exclude only explicitly marked test specialists.
+    .or("is_test.is.null,is_test.eq.false");
 
   if (specialistsError) {
     throw specialistsError;
