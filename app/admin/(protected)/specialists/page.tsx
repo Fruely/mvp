@@ -19,6 +19,8 @@ type Application = {
   claim_token_used_at?: string | null;
   specialist_id?: string | null;
   is_active?: boolean | null;
+  source?: "application" | "specialist";
+  can_resend_claim?: boolean;
 };
 
 type ApiResponse = { data: Application[] } | { error: string };
@@ -743,14 +745,16 @@ export default function AdminSpecialistsPage() {
                                     )}
                                   </>
                                 )}
-                                <button
-                                  type="button"
-                                  onClick={() => handleResendClaim(app.id)}
-                                  disabled={!!resendingById[app.id] || !hasToken}
-                                  className="px-3 py-1 rounded-md border border-blue-300 text-xs font-semibold text-blue-700 hover:bg-blue-50 disabled:opacity-50"
-                                >
-                                  {resendingById[app.id] ? "…" : "Выслать ссылку повторно"}
-                                </button>
+                                {app.can_resend_claim !== false ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleResendClaim(app.id)}
+                                    disabled={!!resendingById[app.id] || !hasToken}
+                                    className="px-3 py-1 rounded-md border border-blue-300 text-xs font-semibold text-blue-700 hover:bg-blue-50 disabled:opacity-50"
+                                  >
+                                    {resendingById[app.id] ? "…" : "Выслать ссылку повторно"}
+                                  </button>
+                                ) : null}
                               </>
                             )}
                             {activeStatus !== "pending_review" && !isRejected && !app.claim_url && !app.email && "—"}

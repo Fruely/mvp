@@ -19,16 +19,30 @@ export async function GET(request: NextRequest) {
     const supabase = createSupabaseServerClient();
 
     const cols = 'id, email, name, phone, category_id, stoir_number, about_short, proof_link, created_at, status, rejection_reason, rejected_at';
-    let query = supabase.from('specialist_applications').select(cols);
 
-    if (status === 'pending_review') {
-      query = query.in('status', ['pending_review']);
-      query = query.not('email_confirmed_at', 'is', null);
+    let rows: Array<Record<string, unknown>> = [];
+    let error: { message?: string } | null = null;
+
+    if (status === 'approved') {
+      // Admin approved list must come directly from specialists and include all rows.
+      const result = await supabase
+        .from('specialists')
+        .select('*')
+        .order('created_at', { ascending: false });
+      rows = (result.data ?? []) as Array<Record<string, unknown>>;
+      error = result.error as { message?: string } | null;
     } else {
-      query = query.eq('status', status);
+      let query = supabase.from('specialist_applications').select(cols);
+      if (status === 'pending_review') {
+        query = query.in('status', ['pending_review']);
+        query = query.not('email_confirmed_at', 'is', null);
+      } else {
+        query = query.eq('status', status);
+      }
+      const result = await query.order('created_at', { ascending: false });
+      rows = (result.data ?? []) as Array<Record<string, unknown>>;
+      error = result.error as { message?: string } | null;
     }
-
-    const { data: rows, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('[admin] Error fetching applications:', error);
@@ -107,13 +121,18 @@ export async function GET(request: NextRequest) {
           : null;
       const claim_token_used_at = status === 'approved' && email ? claimUsedMap[email] : null;
 
+      const isSpecialistRow = status === 'approved';
       return {
         ...row,
         category: row.category_id ? (categoryMap[row.category_id] ?? DEFAULT_CATEGORY_LABEL) : null,
-        specialist_id,
-        is_active,
+        specialist_id: isSpecialistRow ? (typeof row.id === 'string' ? row.id : specialist_id) : specialist_id,
+        is_active: isSpecialistRow
+          ? (typeof row.is_active === 'boolean' ? row.is_active : is_active)
+          : is_active,
         claim_url,
         claim_token_used_at,
+        source: isSpecialistRow ? 'specialist' : 'application',
+        can_resend_claim: !isSpecialistRow,
       };
     });
 
