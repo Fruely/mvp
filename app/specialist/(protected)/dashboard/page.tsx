@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import SetPasswordBlock from "./SetPasswordBlock";
-import LogoutButton from "./LogoutButton";
 import KpiCards from "@/components/dashboard/KpiCards";
 import LeadsChart from "@/components/dashboard/LeadsChart";
 import RecentLeads from "@/components/dashboard/RecentLeads";
@@ -148,9 +147,6 @@ export default async function SpecialistDashboardPage() {
           <p className="mt-1 text-sm text-gray-500">
             Добро пожаловать{firstName ? `, ${firstName}` : ""}. Ключевые показатели и последние заявки.
           </p>
-        </div>
-        <div className="shrink-0">
-          <LogoutButton />
         </div>
       </div>
 

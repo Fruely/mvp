@@ -1,5 +1,7 @@
 "use client";
 
+import TopBarLogoutButton from "./TopBarLogoutButton";
+
 type SpecialistTopBarData = {
   name?: string | null;
   first_name?: string | null;
@@ -60,6 +62,7 @@ export default function TopBar({
         </div>
 
         <div className="flex items-center gap-3">
+          <TopBarLogoutButton />
           <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getStatusBadgeClass(subscriptionStatus)}`}>
             {subscriptionStatus}
           </span>
