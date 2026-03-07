@@ -286,8 +286,8 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     return map;
   }, [mosaicImages]);
 
-  const renderRecommendedSpecialists = () => {
-    if (!recommendedSpecialists || recommendedSpecialists.length === 0) return null;
+  const renderRecommendedSpecialists = (data: RecommendedSpecialist[] | null | undefined) => {
+    if (!data || data.length === 0) return null;
 
     return (
       <div className="mt-10">
@@ -295,7 +295,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Рекомендованные специалисты</h2>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {recommendedSpecialists.map((specialist) => (
+          {data.map((specialist) => (
             <Link
               key={specialist.id}
               href={`/${lang}/specialist/${encodeURIComponent(specialist.slug || specialist.id)}`}
@@ -491,7 +491,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 </div>
               </div>
             ) : (
-              renderRecommendedSpecialists()
+              renderRecommendedSpecialists(recommendedSpecialists)
             )}
           </div>
         </div>
