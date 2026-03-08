@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { jsonNoStore } from "@/lib/api/response";
+import { displayName } from "@/lib/specialists/displayName";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 export const dynamic = "force-dynamic";
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     const data = {
       ...specialist,
-      name: specialist.name ?? null,
+      name: displayName(specialist.name) ?? "Специалист",
       avatar_url: profile?.photo_url ?? specialist.avatar_url ?? null,
       video_url: profile?.video_url ?? null,
       gallery_urls: profile?.gallery_urls ?? [],

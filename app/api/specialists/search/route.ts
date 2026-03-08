@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
+import { displayName } from "@/lib/specialists/displayName";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 export const dynamic = "force-dynamic";
@@ -253,7 +254,7 @@ export async function GET(request: NextRequest) {
 
     const data = filtered.map((s) => ({
       id: s.id,
-      name: s.name,
+      name: displayName(s.name) ?? "Specialist",
       bio: s.bio,
       avatar_url: s.avatar_url,
       category_id: s.category_id,
