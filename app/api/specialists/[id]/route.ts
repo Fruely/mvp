@@ -75,7 +75,13 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     console.log("DEBUG RESPONSE DATA:", data);
     console.log("DEBUG RESPONSE NAME:", data?.name);
 
-    return jsonNoStore({ data });
+    return jsonNoStore({
+      data: {
+        ...data,
+        debug_marker: "specialist-route-v3",
+        debug_db_name: specialist?.name ?? null,
+      },
+    });
   } catch (error: any) {
     console.error('[api/specialists/detail] Unexpected error:', error);
     return jsonNoStore(
