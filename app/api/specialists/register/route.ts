@@ -20,14 +20,6 @@ function normalizePassword(value: unknown): string | null {
   return password.length >= 8 ? password : null;
 }
 
-function makeFallbackName(email: string): string {
-  const local = email.split("@")[0] || "specialist";
-  return local
-    .replace(/[^a-zA-Z0-9._-]+/g, " ")
-    .trim()
-    .slice(0, 64) || "Specialist";
-}
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => null);
@@ -71,7 +63,7 @@ export async function POST(request: NextRequest) {
       .from("specialists")
       .insert({
         user_id: createdUser.user.id,
-        name: makeFallbackName(email),
+        name: null,
         email,
         phone,
         status: "draft",

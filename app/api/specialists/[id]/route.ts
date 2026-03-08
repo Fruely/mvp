@@ -1,6 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { jsonNoStore } from "@/lib/api/response";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -22,15 +25,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     if (error || !specialist) {
       console.error('[api/specialists/detail] Error:', error);
-      return NextResponse.json(
-        { error: 'Specialist not found' },
-        { status: 404 }
-      );
+      return jsonNoStore({ error: 'Specialist not found' }, { status: 404 });
     }
 
     const { data: profile } = await supabase
       .from('specialist_profiles')
-      .select('photo_url, video_url, gallery_urls, certificate_urls')
+      .select('photo_url, video_url, gallery_urls, certificate_urls, about_me, city')
       .eq('specialist_id', specialist.id)
       .maybeSingle();
 
@@ -42,18 +42,22 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     const data = {
       ...specialist,
+      name: specialist.name ?? null,
       avatar_url: profile?.photo_url ?? specialist.avatar_url ?? null,
       video_url: profile?.video_url ?? null,
       gallery_urls: profile?.gallery_urls ?? [],
       certificate_urls: profile?.certificate_urls ?? [],
+      city: profile?.city ?? specialist.city ?? null,
+      description: profile?.about_me ?? specialist.description ?? specialist.bio ?? null,
+      bio: profile?.about_me ?? specialist.bio ?? null,
       plan_code: typeof plan?.plan_code === "string" ? plan.plan_code : "free",
       plan_status: typeof plan?.plan_status === "string" ? plan.plan_status : "active",
     };
 
-    return NextResponse.json({ data }, { status: 200 });
+    return jsonNoStore({ data });
   } catch (error: any) {
     console.error('[api/specialists/detail] Unexpected error:', error);
-    return NextResponse.json(
+    return jsonNoStore(
       { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
