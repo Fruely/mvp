@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { createClient } from "@supabase/supabase-js";
 import { jsonNoStore } from "@/lib/api/response";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
@@ -16,7 +17,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         process.env.SUPABASE_SERVICE_KEY?.slice(0, 40)
     );
 
-    const supabase = createSupabaseServerClient();
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
     console.log("DEBUG QUERY TABLE:", "specialists");
 
