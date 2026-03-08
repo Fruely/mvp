@@ -20,16 +20,35 @@ function normalizePassword(value: unknown): string | null {
   return password.length >= 8 ? password : null;
 }
 
+function normalizeName(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const name = value.trim().replace(/\s+/g, " ");
+  if (!name) return null;
+
+  const parts = name.split(" ").filter(Boolean);
+  if (parts.length < 2) return null;
+
+  const firstName = parts[0];
+  const lastName = parts[1];
+  if (firstName.length < 2 || lastName.length < 2) return null;
+
+  return name;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => null);
+    const name = normalizeName(body?.name);
     const email = normalizeEmail(body?.email);
     const phone = normalizePhone(body?.phone);
     const password = normalizePassword(body?.password);
 
-    if (!email || !phone || !password) {
+    if (!name || !email || !phone || !password) {
       return jsonNoStore(
-        { error: "email, phone и password обязательны; password минимум 8 символов." },
+        {
+          error:
+            "name, email, phone и password обязательны; name требует имя и фамилию (минимум 2 символа), password минимум 8 символов.",
+        },
         { status: 400 }
       );
     }
@@ -63,7 +82,7 @@ export async function POST(request: NextRequest) {
       .from("specialists")
       .insert({
         user_id: createdUser.user.id,
-        name: null,
+        name,
         email,
         phone,
         status: "draft",
@@ -71,7 +90,7 @@ export async function POST(request: NextRequest) {
         is_visible: false,
         created_at: now,
       })
-      .select("id, email, phone, status")
+      .select("id, name, email, phone, status")
       .single();
 
     if (specialistError || !specialist) {

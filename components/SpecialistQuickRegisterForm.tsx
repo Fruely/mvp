@@ -10,6 +10,8 @@ type Props = {
 
 export default function SpecialistQuickRegisterForm({}: Props) {
   const router = useRouter();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -19,12 +21,21 @@ export default function SpecialistQuickRegisterForm({}: Props) {
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
+
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    if (trimmedFirstName.length < 2 || trimmedLastName.length < 2) {
+      setError("Имя и фамилия должны быть не короче 2 символов.");
+      return;
+    }
+
+    const name = `${trimmedFirstName} ${trimmedLastName}`.trim();
     setLoading(true);
     try {
       const res = await fetch("/api/specialists/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, phone, password }),
+        body: JSON.stringify({ email, phone, password, name }),
       });
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -59,6 +70,32 @@ export default function SpecialistQuickRegisterForm({}: Props) {
         Минимальные шаги: email, телефон и пароль. После создания аккаунта вы сразу попадете в кабинет.
       </p>
       <form className="mt-6 space-y-4" onSubmit={onSubmit}>
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700">First name</label>
+          <input
+            type="text"
+            name="firstName"
+            required
+            minLength={2}
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            placeholder="Anna"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700">Last name</label>
+          <input
+            type="text"
+            name="lastName"
+            required
+            minLength={2}
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            placeholder="Muller"
+          />
+        </div>
         <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700">Email</label>
           <input
