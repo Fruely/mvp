@@ -1,5 +1,8 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { useEffect, useMemo, useState } from "react";
 import LeadForm from "@/components/LeadForm";
 import Image from "next/image";
@@ -78,7 +81,10 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     const fetchSpecialist = async () => {
       try {
-        const response = await fetch(`/api/specialists/${params.id}`);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_SITE_URL}/api/specialists/${params.id}`,
+          { cache: "no-store" }
+        );
         const result = await response.json();
 
         if (!response.ok) {
