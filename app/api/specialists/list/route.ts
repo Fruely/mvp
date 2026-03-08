@@ -180,13 +180,55 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const specialists = rows ?? [];
+    let specialists = rows ?? [];
     const uniqueById = new Map<string, SpecialistRow>();
     for (const row of specialists) {
       if (!row?.id || uniqueById.has(row.id)) continue;
       uniqueById.set(row.id, row);
     }
-    const uniqueSpecialists = Array.from(uniqueById.values());
+    let uniqueSpecialists = Array.from(uniqueById.values());
+
+    // Fallback: when specialist_services.category_id is null/empty, use specialists.category_id
+    if (uniqueSpecialists.length === 0) {
+      const { data: directSpecialists, error: directError } = await supabase
+        .from("specialists")
+        .select("id,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at")
+        .eq("category_id", categoryId)
+        .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
+        .eq("is_active", true)
+        .eq("is_visible", true);
+
+      if (!directError && Array.isArray(directSpecialists) && directSpecialists.length > 0) {
+        const ids = directSpecialists.map((r) => r?.id).filter((id): id is string => Boolean(id));
+        const { data: servicesForFallback } = await supabase
+          .from("specialist_services")
+          .select("specialist_id")
+          .in("specialist_id", ids)
+          .eq("is_active", true)
+          .gte("price_from", 0);
+
+        const specialistIdsWithServices = new Set(
+          (servicesForFallback ?? [])
+            .filter((r) => typeof r.specialist_id === "string")
+            .map((r) => r.specialist_id as string)
+        );
+
+        uniqueSpecialists = directSpecialists
+          .filter((r) => r?.id && specialistIdsWithServices.has(r.id))
+          .map((r) => ({
+            id: r.id,
+            name: r.name ?? null,
+            bio: r.bio ?? null,
+            avatar_url: r.avatar_url ?? null,
+            category_id: r.category_id ?? null,
+            languages: r.languages ?? null,
+            work_format: r.work_format ?? null,
+            approved_at: r.approved_at ?? null,
+            created_at: r.created_at ?? null,
+          })) as SpecialistRow[];
+      }
+    }
+
     const specialistIds = uniqueSpecialists.map((row) => row.id);
 
     const categoryTitlePromise = supabase

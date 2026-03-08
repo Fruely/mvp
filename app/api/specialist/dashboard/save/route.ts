@@ -79,7 +79,7 @@ export async function PUT(request: NextRequest) {
 
   const { data: specialist, error: specialistError } = await supabase
     .from("specialists")
-    .select("id")
+    .select("id, category_id")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -88,6 +88,10 @@ export async function PUT(request: NextRequest) {
   }
 
   const specialistId = specialist.id as string;
+  const effectiveCategoryId =
+    body.category_id !== undefined
+      ? (typeof body.category_id === "string" ? body.category_id.trim() || null : null)
+      : (typeof specialist.category_id === "string" ? specialist.category_id : null) ?? null;
   const languages = Array.isArray(body.languages)
     ? body.languages.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
     : [];
@@ -197,31 +201,39 @@ export async function PUT(request: NextRequest) {
   for (const service of normalizedServices) {
     if (service.id && existingIds.has(service.id)) {
       keepIds.add(service.id);
+      const updatePayload: Record<string, unknown> = {
+        title: service.title,
+        pricing_type: "fixed",
+        price_from: service.price_from,
+        price_to: null,
+        currency: service.currency,
+        is_active: service.is_active,
+      };
+      if (effectiveCategoryId !== null) {
+        updatePayload.category_id = effectiveCategoryId;
+      }
       const { error } = await supabase
         .from("specialist_services")
-        .update({
-          title: service.title,
-          pricing_type: "fixed",
-          price_from: service.price_from,
-          price_to: null,
-          currency: service.currency,
-          is_active: service.is_active,
-        })
+        .update(updatePayload)
         .eq("id", service.id)
         .eq("specialist_id", specialistId);
       if (error) return jsonNoStore({ error: "Failed to update services" }, { status: 500 });
     } else {
+      const insertPayload: Record<string, unknown> = {
+        specialist_id: specialistId,
+        title: service.title,
+        pricing_type: "fixed",
+        price_from: service.price_from,
+        price_to: null,
+        currency: service.currency,
+        is_active: service.is_active,
+      };
+      if (effectiveCategoryId !== null) {
+        insertPayload.category_id = effectiveCategoryId;
+      }
       const { data, error } = await supabase
         .from("specialist_services")
-        .insert({
-          specialist_id: specialistId,
-          title: service.title,
-          pricing_type: "fixed",
-          price_from: service.price_from,
-          price_to: null,
-          currency: service.currency,
-          is_active: service.is_active,
-        })
+        .insert(insertPayload)
         .select("id")
         .single();
       if (error) return jsonNoStore({ error: "Failed to create services" }, { status: 500 });

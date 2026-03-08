@@ -35,7 +35,7 @@ function hasValidServicePrice(args: {
   return true;
 }
 
-async function getCurrentSpecialistId() {
+async function getCurrentSpecialistContext() {
   const supabase = createSupabaseServerClient();
   const {
     data: { user },
@@ -43,12 +43,12 @@ async function getCurrentSpecialistId() {
   } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    return { error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }), supabase: null, specialistId: null };
+    return { error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }), supabase: null, specialistId: null, categoryId: null };
   }
 
   const { data: specialist, error: specialistError } = await supabase
     .from("specialists")
-    .select("id")
+    .select("id, category_id")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -57,18 +57,20 @@ async function getCurrentSpecialistId() {
       error: NextResponse.json({ error: "Failed to verify specialist access" }, { status: 500 }),
       supabase: null,
       specialistId: null,
+      categoryId: null,
     };
   }
 
   if (!specialist?.id) {
-    return { error: NextResponse.json({ error: "Specialist not found" }, { status: 404 }), supabase: null, specialistId: null };
+    return { error: NextResponse.json({ error: "Specialist not found" }, { status: 404 }), supabase: null, specialistId: null, categoryId: null };
   }
 
-  return { error: null, supabase, specialistId: specialist.id as string };
+  const categoryId = typeof specialist.category_id === "string" ? specialist.category_id : null;
+  return { error: null, supabase, specialistId: specialist.id as string, categoryId };
 }
 
 export async function GET() {
-  const ctx = await getCurrentSpecialistId();
+  const ctx = await getCurrentSpecialistContext();
   if (ctx.error || !ctx.supabase || !ctx.specialistId) return ctx.error!;
 
   const { data, error } = await ctx.supabase
@@ -86,7 +88,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const ctx = await getCurrentSpecialistId();
+  const ctx = await getCurrentSpecialistContext();
   if (ctx.error || !ctx.supabase || !ctx.specialistId) return ctx.error!;
 
   const body = await request.json().catch(() => null);
@@ -125,7 +127,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const payload = {
+  const payload: Record<string, unknown> = {
     specialist_id: ctx.specialistId,
     title,
     description,
@@ -136,6 +138,7 @@ export async function POST(request: NextRequest) {
     duration_minutes: durationMinutes,
     is_active: validPrice ? requestedActive : false,
   };
+  if (ctx.categoryId) payload.category_id = ctx.categoryId;
 
   const { data, error } = await ctx.supabase
     .from("specialist_services")
@@ -152,7 +155,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const ctx = await getCurrentSpecialistId();
+  const ctx = await getCurrentSpecialistContext();
   if (ctx.error || !ctx.supabase || !ctx.specialistId) return ctx.error!;
 
   const body = await request.json().catch(() => null);
@@ -238,6 +241,7 @@ export async function PATCH(request: NextRequest) {
   if (!validPrice) {
     patch.is_active = false;
   }
+  if (ctx.categoryId) patch.category_id = ctx.categoryId;
 
   const { data, error } = await ctx.supabase
     .from("specialist_services")
@@ -259,7 +263,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const ctx = await getCurrentSpecialistId();
+  const ctx = await getCurrentSpecialistContext();
   if (ctx.error || !ctx.supabase || !ctx.specialistId) return ctx.error!;
 
   const body = await request.json().catch(() => null);
