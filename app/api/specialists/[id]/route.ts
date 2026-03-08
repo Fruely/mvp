@@ -18,6 +18,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     const supabase = createSupabaseServerClient();
 
+    console.log("DEBUG QUERY TABLE:", "specialists");
+
     let specialistQuery = supabase
       .from('specialists')
       .select('*')
@@ -29,6 +31,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     specialistQuery = isUuidLike ? specialistQuery.eq("id", raw) : specialistQuery.eq("slug", raw);
 
     const { data: specialist, error } = await specialistQuery.single();
+
+    console.log("DEBUG RAW SPECIALIST ROW:", specialist);
+    console.log("DEBUG DB NAME:", specialist?.name);
+    console.log("DEBUG DB EMAIL:", specialist?.email);
 
     if (process.env.NODE_ENV === "development" && specialist) {
       console.log("[api/specialists/[id]] Specialist name from DB:", specialist.id, "->", specialist.name);
@@ -65,6 +71,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       plan_code: typeof plan?.plan_code === "string" ? plan.plan_code : "free",
       plan_status: typeof plan?.plan_status === "string" ? plan.plan_status : "active",
     };
+
+    console.log("DEBUG RESPONSE DATA:", data);
+    console.log("DEBUG RESPONSE NAME:", data?.name);
 
     return jsonNoStore({ data });
   } catch (error: any) {
