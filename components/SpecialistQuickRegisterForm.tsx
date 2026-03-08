@@ -3,12 +3,14 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabase, SPECIALIST_OFFICE_PATH } from "@/lib/supabaseClient";
+import { t, type Dictionary } from "@/lib/i18n";
 
 type Props = {
   lang?: string;
+  dict: Dictionary;
 };
 
-export default function SpecialistQuickRegisterForm({}: Props) {
+export default function SpecialistQuickRegisterForm({ dict }: Props) {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -71,7 +73,7 @@ export default function SpecialistQuickRegisterForm({}: Props) {
       </p>
       <form className="mt-6 space-y-4" onSubmit={onSubmit}>
         <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">First name</label>
+          <label className="text-sm font-medium text-gray-700">{t(dict, "auth.first_name")}</label>
           <input
             type="text"
             name="firstName"
@@ -80,11 +82,11 @@ export default function SpecialistQuickRegisterForm({}: Props) {
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            placeholder="Anna"
+            placeholder={t(dict, "auth.first_name_placeholder")}
           />
         </div>
         <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Last name</label>
+          <label className="text-sm font-medium text-gray-700">{t(dict, "auth.last_name")}</label>
           <input
             type="text"
             name="lastName"
@@ -93,7 +95,7 @@ export default function SpecialistQuickRegisterForm({}: Props) {
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            placeholder="Muller"
+            placeholder={t(dict, "auth.last_name_placeholder")}
           />
         </div>
         <div className="space-y-1">

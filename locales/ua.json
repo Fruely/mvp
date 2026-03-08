@@ -90,6 +90,12 @@
     "unknownError": "Невідома помилка",
     "retry": "Спробувати ще раз"
   },
+  "auth": {
+    "first_name": "Ім'я",
+    "last_name": "Прізвище",
+    "first_name_placeholder": "Анна",
+    "last_name_placeholder": "Мюллер"
+  },
   "lead": {
     "name": "Ваше ім'я",
     "email": "Email",

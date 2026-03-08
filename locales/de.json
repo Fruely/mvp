@@ -90,6 +90,12 @@
     "unknownError": "Unbekannter Fehler",
     "retry": "Erneut versuchen"
   },
+  "auth": {
+    "first_name": "Vorname",
+    "last_name": "Nachname",
+    "first_name_placeholder": "Anna",
+    "last_name_placeholder": "Müller"
+  },
   "lead": {
     "name": "Ihr Name",
     "email": "E-Mail",

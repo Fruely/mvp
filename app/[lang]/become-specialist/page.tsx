@@ -59,7 +59,7 @@ export default async function BecomeSpecialistPage({
   const dict = await getDictionary(lang);
 
   if (featureFlags.newSpecialistFunnel) {
-    return <SpecialistQuickRegisterForm lang={lang} />;
+    return <SpecialistQuickRegisterForm lang={lang} dict={dict} />;
   }
 
   return <SpecialistApplicationForm lang={lang} dict={dict} />;

@@ -98,6 +98,12 @@
     "unknownError": "Неизвестная ошибка",
     "retry": "Повторить попытку"
   },
+  "auth": {
+    "first_name": "Имя",
+    "last_name": "Фамилия",
+    "first_name_placeholder": "Анна",
+    "last_name_placeholder": "Мюллер"
+  },
   "lead": {
     "name": "Ваше имя",
     "email": "Email",
