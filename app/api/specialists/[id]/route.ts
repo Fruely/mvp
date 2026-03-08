@@ -70,6 +70,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       bio: profile?.about_me ?? specialist.bio ?? null,
       plan_code: typeof plan?.plan_code === "string" ? plan.plan_code : "free",
       plan_status: typeof plan?.plan_status === "string" ? plan.plan_status : "active",
+      debug_specialist_name: specialist?.name ?? null,
+      debug_profile_name: (profile as any)?.name ?? null,
     };
 
     console.log("DEBUG RESPONSE DATA:", data);
