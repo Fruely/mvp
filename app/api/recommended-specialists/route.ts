@@ -110,7 +110,7 @@ export async function GET() {
     return {
       id: row.id,
       slug: row.slug ?? null,
-      name: displayName(row.name) ?? null,
+      name: displayName(row.name) ?? "Специалист",
       avatar_url: row.avatar_url ?? profile?.photo_url ?? null,
       city: profile?.city ?? null,
       languages: Array.isArray(row.languages) ? row.languages : [],

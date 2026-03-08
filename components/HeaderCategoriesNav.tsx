@@ -26,8 +26,9 @@ function parsePositiveInt(value: string | undefined): number | null {
 }
 
 export default async function HeaderCategoriesNav({ lang }: { lang: string }) {
-  const supabase = createSupabaseServerClient();
-  const dict = await getDictionary(lang as Lang);
+  try {
+    const supabase = createSupabaseServerClient();
+    const dict = await getDictionary(lang as Lang);
   const getCategoryLabel = (category: NavCategory) =>
     category.title ??
     t(dict, `categories.${category.slug}`, { defaultValue: t(dict, "categories.default") });
@@ -140,7 +141,7 @@ export default async function HeaderCategoriesNav({ lang }: { lang: string }) {
 
   if (!categories.length) return null;
 
-  return (
+    return (
     <div className="min-w-[260px] max-h-[70vh] overflow-y-auto py-2">
       <ul className="space-y-0.5 px-2">
         {categories.map((cat) => (
@@ -166,4 +167,8 @@ export default async function HeaderCategoriesNav({ lang }: { lang: string }) {
       </ul>
     </div>
   );
+  } catch (error) {
+    console.error("[HeaderCategoriesNav]", error);
+    return null;
+  }
 }

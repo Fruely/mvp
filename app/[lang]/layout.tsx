@@ -18,7 +18,13 @@ export default async function LangLayout({
   }
 
   const lang = params.lang as Lang;
-  const dict = await getDictionary(lang);
+  let dict;
+  try {
+    dict = await getDictionary(lang);
+  } catch (e) {
+    console.error("[LangLayout] getDictionary failed", e);
+    dict = (await import("@/locales/ua.json")).default as Record<string, unknown>;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F4F6FF] via-[#EEF1FF] to-[#E9ECFF]">
