@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
       "id, name, bio, avatar_url, category_id, languages, postal_code";
 
     const res = await supabase
-      .from("search_specialists")
+      .from("specialists")
       .select(fullSelect)
       .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
       .eq("is_active", true)
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
 
     if (specError && /column.*does not exist/i.test(specError.message ?? "")) {
       const fallback = await supabase
-        .from("search_specialists")
+        .from("specialists")
         .select(minimalSelect)
         .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
         .eq("is_active", true)

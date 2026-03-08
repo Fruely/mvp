@@ -32,18 +32,34 @@ export async function GET() {
 
   if (featuredIds.length === 0) return jsonNoStore({ data: [] });
 
-  const { data: rows, error } = await supabase
-    .from("search_specialists")
-    .select("*")
+  const { data: specRows, error: specError } = await supabase
+    .from("specialists")
+    .select("id, slug, name, avatar_url, category_id, languages, featured_priority")
     .in("id", featuredIds)
     .limit(10);
 
-  if (error) {
-    return jsonNoStore({ error: error.message }, { status: 500 });
+  if (specError) {
+    return jsonNoStore({ error: specError.message }, { status: 500 });
   }
 
-  const specialists = rows ?? [];
+  const specialists = specRows ?? [];
   if (specialists.length === 0) return jsonNoStore({ data: [] });
+
+  const specialistIds = specialists.map((r) => r.id);
+  const { data: profiles } = await supabase
+    .from("specialist_profiles")
+    .select("specialist_id, city, photo_url")
+    .in("specialist_id", specialistIds);
+
+  const profileBySpecialistId = new Map<string, { city: string | null; photo_url: string | null }>();
+  for (const p of profiles ?? []) {
+    if (p?.specialist_id) {
+      profileBySpecialistId.set(p.specialist_id, {
+        city: typeof p.city === "string" ? p.city : null,
+        photo_url: typeof p.photo_url === "string" ? p.photo_url : null,
+      });
+    }
+  }
 
   const categoryIds = Array.from(
     new Set(
@@ -87,14 +103,15 @@ export async function GET() {
   }
 
   const data = mixed.slice(0, 8).map((row) => {
+    const profile = profileBySpecialistId.get(row.id);
     const category =
       typeof row.category_id === "string" ? categoryById.get(row.category_id) : undefined;
     return {
       id: row.id,
-      slug: row.slug,
-      name: row.name,
-      avatar_url: row.avatar_url,
-      city: row.city,
+      slug: row.slug ?? null,
+      name: row.name ?? null,
+      avatar_url: row.avatar_url ?? profile?.photo_url ?? null,
+      city: profile?.city ?? null,
       languages: Array.isArray(row.languages) ? row.languages : [],
       category_title: category?.title ?? null,
       category_slug: category?.slug ?? null,
