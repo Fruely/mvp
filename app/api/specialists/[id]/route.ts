@@ -23,6 +23,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     const { data: specialist, error } = await specialistQuery.single();
 
+    if (process.env.NODE_ENV === "development" && specialist) {
+      console.log("[api/specialists/[id]] Specialist name from DB:", specialist.id, "->", specialist.name);
+    }
+
     if (error || !specialist) {
       console.error('[api/specialists/detail] Error:', error);
       return jsonNoStore({ error: 'Specialist not found' }, { status: 404 });
@@ -40,9 +44,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       .eq("specialist_id", specialist.id)
       .maybeSingle();
 
+    const nameFromDb = typeof specialist.name === "string" && specialist.name.trim() ? specialist.name.trim() : null;
     const data = {
       ...specialist,
-      name: typeof specialist.name === "string" && specialist.name.trim() ? specialist.name.trim() : null,
+      name: nameFromDb,
       avatar_url: profile?.photo_url ?? specialist.avatar_url ?? null,
       video_url: profile?.video_url ?? null,
       gallery_urls: profile?.gallery_urls ?? [],

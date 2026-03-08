@@ -230,6 +230,24 @@ export async function GET(request: NextRequest) {
 
     const specialistIds = uniqueSpecialists.map((row) => row.id);
 
+    // Explicitly fetch name from specialists table to guarantee correct source
+    let nameBySpecialistId = new Map<string, string | null>();
+    if (specialistIds.length > 0) {
+      const { data: nameRows } = await supabase
+        .from("specialists")
+        .select("id, name")
+        .in("id", specialistIds);
+      for (const r of nameRows ?? []) {
+        if (r?.id) {
+          const n = typeof r.name === "string" && r.name.trim() ? r.name.trim() : null;
+          nameBySpecialistId.set(r.id, n);
+          if (process.env.NODE_ENV === "development") {
+            console.log("[api/specialists/list] Specialist name from DB:", r.id, "->", n);
+          }
+        }
+      }
+    }
+
     const categoryTitlePromise = supabase
       .from('categories')
       .select('title')
@@ -330,11 +348,12 @@ export async function GET(request: NextRequest) {
         ? approvedTs + 14 * 24 * 60 * 60 * 1000
         : null;
       const newUntil = newUntilTs ? new Date(newUntilTs).toISOString() : null;
+      const nameFromDb = nameBySpecialistId.get(row.id) ?? (typeof row.name === "string" && row.name.trim() ? row.name.trim() : null);
 
       return {
         id: row.id,
-        slug: normalizeSlug(row.name?.trim() || '', row.id),
-        name: typeof row.name === "string" && row.name.trim() ? row.name.trim() : null,
+        slug: normalizeSlug(nameFromDb || '', row.id),
+        name: nameFromDb,
         avatar_url: profile?.photo_url ?? row.avatar_url ?? null,
         about_line: pickAboutLine({
           profileAbout: profile?.about_me ?? null,

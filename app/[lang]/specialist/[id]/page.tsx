@@ -91,10 +91,14 @@ export default function SpecialistPage() {
           return;
         }
 
-        setSpecialist(result.data);
+        const data = result.data;
+        if (process.env.NODE_ENV === "development") {
+          console.log("Specialist page name:", data?.name);
+        }
+        setSpecialist(data);
         const canonicalSlug =
-          result?.data && typeof result.data.slug === "string"
-            ? result.data.slug.trim()
+          data && typeof data.slug === "string"
+            ? data.slug.trim()
             : "";
         if (canonicalSlug && canonicalSlug !== id) {
           router.replace(`/${lang}/specialist/${encodeURIComponent(canonicalSlug)}`);
