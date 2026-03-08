@@ -304,10 +304,10 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               <div className="mb-3 h-14 w-14 overflow-hidden rounded-full bg-gray-100">
                 {specialist.avatar_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={specialist.avatar_url} alt={specialist.name || "specialist"} className="h-full w-full object-cover" loading="lazy" />
+                  <img src={specialist.avatar_url} alt={specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")} className="h-full w-full object-cover" loading="lazy" />
                 ) : null}
               </div>
-              <p className="line-clamp-1 text-base font-semibold text-gray-900">{specialist.name || "Специалист"}</p>
+              <p className="line-clamp-1 text-base font-semibold text-gray-900">{specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}</p>
               <p className="mt-1 text-sm text-gray-600 line-clamp-1">{specialist.category_title || "Услуги"}</p>
               <p className="mt-1 text-xs text-gray-500 line-clamp-1">
                 {[specialist.city, specialist.languages[0]].filter(Boolean).join(" • ")}

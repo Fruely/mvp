@@ -8,7 +8,7 @@ import { t, type Dictionary } from "@/lib/i18n";
 type SpecialistPreview = {
   id: string;
   slug?: string | null;
-  name: string;
+  name: string | null;
   avatar_url: string | null;
   specialization_line?: string | null;
   about_line?: string | null;
@@ -99,7 +99,7 @@ export default function SpecialistPreviewCard({
         {specialist.avatar_url ? (
           <Image
             src={specialist.avatar_url}
-            alt={specialist.name || "Специалист"}
+            alt={specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             className="object-cover"
@@ -150,7 +150,7 @@ export default function SpecialistPreviewCard({
       <div className="space-y-4 p-5">
         <div>
           <div className="flex items-start justify-between gap-3">
-            <h3 className="text-lg font-semibold text-gray-900">{specialist.name || "Специалист"}</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}</h3>
             {socialProofVisible ? (
               <div className="shrink-0 text-right">
                 <div className="text-xs font-semibold text-amber-600">{starsText}</div>

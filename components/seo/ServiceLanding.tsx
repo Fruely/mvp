@@ -20,7 +20,7 @@ export default function ServiceLanding({
     url: `https://freuly.de${canonicalPath}`,
     mainEntity: specialists.map((specialist) => ({
       "@type": "Person",
-      name: specialist.name || "Specialist",
+      name: specialist.name?.trim() ? specialist.name : "Специалист",
       url: `https://freuly.de/ru/specialist/${encodeURIComponent(specialist.slug || specialist.id)}`,
       address: specialist.city || undefined,
     })),
@@ -38,7 +38,7 @@ export default function ServiceLanding({
             href={`/ru/specialist/${encodeURIComponent(specialist.slug || specialist.id)}`}
             className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow"
           >
-            <div className="text-base font-semibold text-gray-900">{specialist.name || "Специалист"}</div>
+            <div className="text-base font-semibold text-gray-900">{specialist.name?.trim() ? specialist.name : "Специалист"}</div>
             <p className="mt-1 text-sm text-gray-600">{specialist.city || "Online"}</p>
             <p className="mt-2 line-clamp-2 text-sm text-gray-500">{specialist.services.slice(0, 3).join(", ")}</p>
           </Link>

@@ -1,5 +1,4 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { displayName } from "@/lib/specialists/displayName";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 export type SeoSpecialistCard = {
@@ -95,7 +94,7 @@ export async function getSeoSpecialists(params: {
       return {
         id: String(specialist.id),
         slug: typeof specialist.slug === "string" ? specialist.slug : null,
-        name: displayName(specialist.name),
+        name: typeof specialist.name === "string" && specialist.name.trim() ? specialist.name.trim() : null,
         city: typeof specialist.city === "string" ? specialist.city : null,
         avatar_url: typeof specialist.avatar_url === "string" ? specialist.avatar_url : null,
         languages: Array.isArray(specialist.languages)

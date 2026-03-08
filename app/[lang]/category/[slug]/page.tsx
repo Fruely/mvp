@@ -9,7 +9,7 @@ import SpecialistPreviewCard from "@/components/specialist/SpecialistPreviewCard
 interface SpecialistPreview {
   id: string;
   slug?: string | null;
-  name: string;
+  name: string | null;
   avatar_url: string | null;
   specialization_line?: string | null;
   about_line?: string | null;
@@ -100,7 +100,7 @@ function normalizeSpecialistPreview(input: unknown): SpecialistPreview | null {
   const row = input as Record<string, unknown>;
   const id = typeof row.id === "string" ? row.id : "";
   if (!id) return null;
-  const name = typeof row.name === "string" && row.name.trim() ? row.name.trim() : "Specialist";
+  const name = typeof row.name === "string" && row.name.trim() ? row.name.trim() : null;
   const slug =
     typeof row.slug === "string" && row.slug.trim()
       ? row.slug.trim()

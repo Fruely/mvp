@@ -1,6 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
-import { displayName } from "@/lib/specialists/displayName";
 
 export const dynamic = "force-dynamic";
 
@@ -110,7 +109,7 @@ export async function GET() {
     return {
       id: row.id,
       slug: row.slug ?? null,
-      name: displayName(row.name) ?? "Специалист",
+      name: typeof row.name === "string" && row.name.trim() ? row.name.trim() : null,
       avatar_url: row.avatar_url ?? profile?.photo_url ?? null,
       city: profile?.city ?? null,
       languages: Array.isArray(row.languages) ? row.languages : [],

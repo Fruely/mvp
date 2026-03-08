@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { jsonNoStore } from "@/lib/api/response";
-import { displayName } from "@/lib/specialists/displayName";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 // Force dynamic so Next.js does not attempt to prerender this API route
@@ -335,7 +334,7 @@ export async function GET(request: NextRequest) {
       return {
         id: row.id,
         slug: normalizeSlug(row.name?.trim() || '', row.id),
-        name: displayName(row.name) ?? 'Specialist',
+        name: typeof row.name === "string" && row.name.trim() ? row.name.trim() : null,
         avatar_url: profile?.photo_url ?? row.avatar_url ?? null,
         about_line: pickAboutLine({
           profileAbout: profile?.about_me ?? null,
@@ -373,7 +372,7 @@ export async function GET(request: NextRequest) {
     } else if (sort === 'experience') {
       filtered.sort((a, b) => (b._sort_experience ?? -1) - (a._sort_experience ?? -1));
     } else {
-      filtered.sort((a, b) => a.name.localeCompare(b.name, 'uk'));
+      filtered.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'uk'));
     }
 
     const total = filtered.length;

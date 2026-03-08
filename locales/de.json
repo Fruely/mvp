@@ -69,6 +69,7 @@
   },
   "specialist": {
     "badge": "Spezialist",
+    "fallback": "Spezialist",
     "fallbackDescription": "Professioneller Spezialist mit umfangreicher Erfahrung",
     "cta": "Anfrage senden",
     "loading": "Wird geladen...",

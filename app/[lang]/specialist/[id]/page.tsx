@@ -14,7 +14,7 @@ import MobileStickyCTA from "@/components/MobileStickyCTA";
 interface Specialist {
   id: string;
   slug?: string | null;
-  name: string;
+  name: string | null;
   description?: string;
   bio?: string;
   avatar_url: string | null;
@@ -158,6 +158,7 @@ export default function SpecialistPage() {
     const twoWeeksMs = 14 * 24 * 60 * 60 * 1000;
     return Date.now() - createdTs <= twoWeeksMs;
   })();
+  const displayName = specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback");
   const aboutText = (specialist.description ?? specialist.bio)?.trim() || "";
   const specializationText = specialist.category || t(dict, "specialist.about", { defaultValue: "Спеціаліст" });
   const galleryPlaceholders = Array.from({ length: 4 }, (_, idx) => idx);
@@ -372,7 +373,7 @@ export default function SpecialistPage() {
                   <div onTouchStart={onTouchStartPortfolio} onTouchEnd={onTouchEndPortfolio} className="h-full w-full">
                     <Image
                       src={activePortfolioImage}
-                      alt={`${specialist.name} work ${normalizedActivePortfolioIndex + 1}`}
+                      alt={`${displayName} work ${normalizedActivePortfolioIndex + 1}`}
                       fill
                       className="object-cover"
                       unoptimized
@@ -412,7 +413,7 @@ export default function SpecialistPage() {
             <SectionCard title={sectionText.profilePhotoTitle} subtitle={sectionText.profilePhotoSubtitle}>
               {specialist.avatar_url ? (
                 <div className="relative overflow-hidden rounded-xl bg-slate-100 aspect-[4/3] sm:aspect-[16/10]">
-                  <Image src={specialist.avatar_url} alt={specialist.name} fill className="object-cover" unoptimized />
+                  <Image src={specialist.avatar_url} alt={displayName} fill className="object-cover" unoptimized />
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3">
@@ -430,7 +431,7 @@ export default function SpecialistPage() {
 
         <aside className="mt-6 md:col-start-2 md:row-span-2 md:row-start-1 md:mt-0 md:self-start md:sticky md:top-6">
           <SpecialistHero
-            name={specialist.name}
+            name={displayName}
             specialization={specializationText}
             city={specialist.city ?? null}
             languages={Array.isArray(specialist.languages) ? specialist.languages : []}
@@ -557,7 +558,7 @@ export default function SpecialistPage() {
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {portfolioImages.map((src, idx) => (
                   <div key={`${src}-${idx}`} className="relative overflow-hidden rounded-xl bg-slate-100 aspect-[4/3]">
-                    <Image src={src} alt={`${specialist.name} work ${idx + 1}`} fill className="object-cover" unoptimized />
+                    <Image src={src} alt={`${displayName} work ${idx + 1}`} fill className="object-cover" unoptimized />
                   </div>
                 ))}
               </div>
