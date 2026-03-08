@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import LeadForm from "@/components/LeadForm";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import uaDict from "@/locales/ua.json";
 import SectionCard from "@/components/specialist/SectionCard";
@@ -43,7 +43,9 @@ interface Specialist {
   work_format?: string | null;
 }
 
-export default function SpecialistPage({ params }: { params: { id: string } }) {
+export default function SpecialistPage() {
+  const params = useParams();
+  const id = (params?.id as string) ?? "";
   const [specialist, setSpecialist] = useState<Specialist | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,7 +84,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
     const fetchSpecialist = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_SITE_URL}/api/specialists/${params.id}`,
+          `/api/specialists/${id}`,
           { cache: "no-store" }
         );
         const result = await response.json();
@@ -97,7 +99,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
           result?.data && typeof result.data.slug === "string"
             ? result.data.slug.trim()
             : "";
-        if (canonicalSlug && canonicalSlug !== params.id) {
+        if (canonicalSlug && canonicalSlug !== id) {
           router.replace(`/${lang}/specialist/${encodeURIComponent(canonicalSlug)}`);
         }
       } catch (err: any) {
@@ -108,7 +110,7 @@ export default function SpecialistPage({ params }: { params: { id: string } }) {
     };
 
     fetchSpecialist();
-  }, [params.id, router, lang]);
+  }, [id, router, lang]);
 
   // Auto-open form by query param
   useEffect(() => {

@@ -11,13 +11,14 @@ export default async function LangLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { lang: string };
+  params: { lang: string } | Promise<{ lang: string }>;
 }) {
-  if (!isSupportedLang(params.lang)) {
+  const resolved = await Promise.resolve(params);
+  if (!isSupportedLang(resolved.lang)) {
     redirect("/ua");
   }
 
-  const lang = params.lang as Lang;
+  const lang = resolved.lang as Lang;
   let dict;
   try {
     dict = await getDictionary(lang);
