@@ -67,6 +67,7 @@ type RecommendedSpecialist = {
   city: string | null;
   languages: string[];
   category_title: string | null;
+  about_line?: string | null;
 };
 
 const CATEGORY_ICON_HINTS = [
@@ -237,6 +238,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               ? item.languages.filter((lang: unknown): lang is string => typeof lang === "string" && lang.trim().length > 0)
               : [],
             category_title: typeof item.category_title === "string" ? item.category_title : null,
+            about_line: typeof item.about_line === "string" ? item.about_line : null,
           }));
         setRecommendedSpecialists(normalized);
       } catch {
@@ -292,19 +294,39 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
             <Link
               key={specialist.id}
               href={`/${lang}/specialist/${encodeURIComponent(specialist.slug || specialist.id)}`}
-              className="rounded-2xl bg-white p-4 shadow-sm transition hover:shadow-md"
+              className="rounded-xl border bg-white aspect-[4/3] p-4 flex flex-col justify-between hover:shadow-md transition"
             >
-              <div className="mb-3 h-14 w-14 overflow-hidden rounded-full bg-gray-100">
-                {specialist.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={specialist.avatar_url} alt={specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")} className="h-full w-full object-cover" loading="lazy" />
+              <div className="flex flex-col h-full justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-14 w-14 overflow-hidden rounded-full bg-gray-100 shrink-0">
+                    {specialist.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={specialist.avatar_url}
+                        alt={specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : null}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="line-clamp-1 text-base font-semibold text-gray-900">
+                      {specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
+                    </p>
+                    <p className="line-clamp-1 text-sm text-gray-600">
+                      {specialist.category_title || "Услуги"}
+                    </p>
+                    <p className="line-clamp-1 text-sm text-gray-500">
+                      {[specialist.city, specialist.languages[0]].filter(Boolean).join(" • ")}
+                    </p>
+                  </div>
+                </div>
+                {specialist.about_line ? (
+                  <p className="mt-3 line-clamp-2 text-sm text-gray-600">
+                    {specialist.about_line}
+                  </p>
                 ) : null}
               </div>
-              <p className="line-clamp-1 text-base font-semibold text-gray-900">{specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}</p>
-              <p className="mt-1 text-sm text-gray-600 line-clamp-1">{specialist.category_title || "Услуги"}</p>
-              <p className="mt-1 text-xs text-gray-500 line-clamp-1">
-                {[specialist.city, specialist.languages[0]].filter(Boolean).join(" • ")}
-              </p>
             </Link>
           ))}
         </div>
@@ -476,10 +498,18 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 <div className="mb-4 h-8 w-80 rounded-lg bg-gray-200/80 animate-pulse" />
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, idx) => (
-                    <div key={`recommended-skeleton-${idx}`} className="rounded-2xl bg-white p-4 shadow-sm">
-                      <div className="mb-3 h-14 w-14 rounded-full bg-gray-200/80 animate-pulse" />
-                      <div className="h-4 w-2/3 rounded bg-gray-200/80 animate-pulse" />
-                      <div className="mt-2 h-3 w-1/2 rounded bg-gray-200/80 animate-pulse" />
+                    <div
+                      key={`recommended-skeleton-${idx}`}
+                      className="rounded-xl border bg-white aspect-[4/3] p-4"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="h-14 w-14 rounded-full bg-gray-200/80 animate-pulse shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="h-4 w-2/3 rounded bg-gray-200/80 animate-pulse" />
+                          <div className="mt-2 h-3 w-1/2 rounded bg-gray-200/80 animate-pulse" />
+                          <div className="mt-2 h-3 w-3/4 rounded bg-gray-200/80 animate-pulse" />
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
