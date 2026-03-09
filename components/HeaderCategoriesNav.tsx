@@ -152,10 +152,10 @@ export default async function HeaderCategoriesNav({ lang }: { lang: string }) {
                 className="flex items-center justify-between gap-3 text-sm text-gray-700 hover:text-blue-600 hover:bg-gray-50 py-1.5 px-2 -mx-2 rounded transition"
               >
                 <span className="truncate">{getCategoryLabel(cat)}</span>
-                <span className="shrink-0 text-xs text-gray-400">{cat.specialists_count}</span>
+                <span className="shrink-0 text-xs text-textSecondary">{cat.specialists_count}</span>
               </Link>
             ) : (
-              <span className="flex items-center justify-between gap-3 text-sm text-gray-400 py-1.5 px-2 -mx-2 rounded cursor-default">
+              <span className="flex items-center justify-between gap-3 text-sm text-textSecondary py-1.5 px-2 -mx-2 rounded cursor-default">
                 <span className="truncate">{getCategoryLabel(cat)}</span>
                 <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-500">
                   {t(dict, "common.soon")}

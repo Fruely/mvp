@@ -566,7 +566,7 @@ function ItemModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded p-1 text-textSecondary hover:bg-gray-100 hover:text-gray-600"
             aria-label="Close"
           >
             ×

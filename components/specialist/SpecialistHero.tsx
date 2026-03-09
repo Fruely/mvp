@@ -34,19 +34,19 @@ export default function SpecialistHero({
   formNode: ReactNode;
 }) {
   return (
-    <aside className="rounded-2xl border border-black/5 bg-white p-4 shadow-md sm:p-6">
+    <aside className="rounded-xl border border-black/5 bg-white p-4 shadow-card sm:p-6">
       <div className="space-y-4">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-bold leading-tight text-gray-900">{name}</h1>
+            <h1 className="text-2xl font-semibold leading-tight tracking-tight text-textPrimary">{name}</h1>
             {isNew ? (
               <span className="rounded-full bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white">{newBadgeLabel}</span>
             ) : null}
           </div>
-          {specialization ? <p className="text-sm font-medium text-slate-600">{specialization}</p> : null}
+          {specialization ? <p className="text-sm font-medium text-textSecondary">{specialization}</p> : null}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+        <div className="flex flex-wrap items-center gap-2 text-sm font-normal text-textSecondary">
           {city ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1">
               <span aria-hidden>📍</span>
@@ -75,7 +75,7 @@ export default function SpecialistHero({
 
         {aboutPreview ? (
           <div className="rounded-xl bg-slate-50 p-3 sm:p-4">
-            <p className="line-clamp-4 text-sm leading-relaxed text-gray-700">{aboutPreview}</p>
+            <p className="line-clamp-4 text-sm font-normal leading-relaxed text-textSecondary">{aboutPreview}</p>
             <a href={aboutHref} className="mt-2 inline-flex text-sm font-medium text-blue-600 transition hover:text-blue-700">
               {readMoreLabel}
             </a>

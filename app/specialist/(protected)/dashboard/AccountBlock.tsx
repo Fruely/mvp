@@ -100,7 +100,7 @@ export default function AccountBlock({
             readOnly
             className="w-full cursor-not-allowed rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700"
           />
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-textSecondary">
             Email используется для входа и уведомлений.
           </p>
         </div>
@@ -113,10 +113,10 @@ export default function AccountBlock({
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-textSecondary focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
             placeholder="+49 ..."
           />
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-textSecondary">
             Номер телефона виден только клиентам, которые оставили вам запрос.
           </p>
         </div>
@@ -127,7 +127,7 @@ export default function AccountBlock({
           <button
             type="submit"
             disabled={isSaving}
-            className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex items-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-soft hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSaving ? "Сохранение..." : "Сохранить изменения"}
           </button>
@@ -136,7 +136,7 @@ export default function AccountBlock({
             type="button"
             onClick={handlePause}
             disabled={isPausing}
-            className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex items-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-card hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isPausing ? "Обработка..." : "Поставить профиль на паузу"}
           </button>

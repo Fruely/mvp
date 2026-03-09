@@ -216,7 +216,7 @@ export default async function SpecialistsPage({
                       {s.bio || "Specialist profile."}
                     </p>
                     {s.postal_code && (
-                      <p className="text-xs text-gray-400 mt-2">
+                      <p className="text-xs text-textSecondary mt-2">
                         {s.postal_code}
                         {s.work_format && s.work_format !== "online" && (
                           <span> · {s.work_format}</span>
@@ -226,7 +226,7 @@ export default async function SpecialistsPage({
                     <div className="flex flex-wrap gap-3 mt-4">
                       <Link
                         href={`/${uiLang}/specialist/${s.id}?open=form`}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-xl shadow-soft hover:bg-gray-800 transition"
                       >
                         Send request
                       </Link>

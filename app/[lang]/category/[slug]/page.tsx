@@ -490,7 +490,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                         {t(dict, "common.more")}
                       </Link>
                     ) : (
-                      <span className="inline-flex items-center text-gray-400 font-medium">
+                      <span className="inline-flex items-center text-textSecondary font-medium">
                         {t(dict, "category.comingSoon.title")}
                       </span>
                     )}

@@ -1,5 +1,11 @@
 import '@/styles/globals.css'
-import { cookies } from 'next/headers'
+import { Inter } from "next/font/google"
+
+const inter = Inter({
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+  variable: "--font-inter",
+})
 
 export const metadata = {
   title: 'Freuly - Специалист на твоём языке',
@@ -11,11 +17,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const langCookie = cookies().get('freuly_lang')?.value
-  const lang = langCookie === 'ua' || langCookie === 'ru' || langCookie === 'de' ? langCookie : 'ua'
   return (
-    <html lang={lang}>
-      <body className="min-h-screen">{children}</body>
+    <html lang="en" className={inter.variable}>
+      <body className="min-h-screen font-sans text-textPrimary antialiased bg-white">{children}</body>
     </html>
   )
 }

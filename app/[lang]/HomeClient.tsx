@@ -301,14 +301,14 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     return (
       <div className="mt-10">
         <div className="mb-4 md:mb-6 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Рекомендованные специалисты</h2>
+          <h2 className="text-2xl md:text-3xl font-semibold text-textPrimary">Рекомендованные специалисты</h2>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {data.map((specialist) => (
             <Link
               key={specialist.id}
               href={`/${lang}/specialist/${encodeURIComponent(specialist.slug || specialist.id)}`}
-              className="rounded-xl border bg-white overflow-hidden flex h-full flex-col hover:shadow-md transition"
+              className="rounded-xl border bg-white shadow-card overflow-hidden flex h-full flex-col hover:shadow-soft transition"
             >
               <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
                 {specialist.avatar_url ? (
@@ -324,17 +324,17 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 )}
               </div>
               <div className="p-4 flex flex-col gap-1">
-                <p className="font-semibold line-clamp-1 text-gray-900">
+                <p className="font-semibold line-clamp-1 text-textPrimary">
                   {specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
                 </p>
-                <p className="text-sm text-gray-600 line-clamp-1">
+                <p className="text-sm font-normal text-textSecondary line-clamp-1">
                   {specialist.category_title || "Услуги"}
                 </p>
-                <p className="text-sm text-gray-500 line-clamp-1">
+                <p className="text-sm font-normal text-textSecondary line-clamp-1">
                   {[specialist.city, specialist.languages[0]].filter(Boolean).join(" • ")}
                 </p>
                 {specialist.about_line ? (
-                  <p className="mt-1 text-sm text-gray-600 line-clamp-2">
+                  <p className="mt-1 text-sm font-normal text-textSecondary line-clamp-2">
                     {specialist.about_line}
                   </p>
                 ) : null}
@@ -409,14 +409,14 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       <>
       <section className="py-16 sm:py-24 bg-gradient-to-b from-white to-blue-50">
         <div className="max-w-6xl mx-auto px-6 text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight">
+          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight text-textPrimary">
             {copy.title}
           </h1>
-          <p className="text-lg text-gray-600 mt-4 max-w-2xl mx-auto">
+          <p className="text-lg font-normal text-textSecondary mt-4 max-w-2xl mx-auto">
             {copy.subtitle}
           </p>
 
-          <div className="mt-8 bg-white shadow-lg rounded-xl p-3 flex flex-col sm:flex-row gap-3">
+          <div className="mt-8 bg-white shadow-soft rounded-xl p-3 flex flex-col sm:flex-row gap-3">
             <select
               value={heroCategorySlug}
               onChange={(e) => setHeroCategorySlug(e.target.value)}
@@ -454,13 +454,13 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
             <button
               type="button"
               onClick={handleHeroSearch}
-              className="h-14 px-6 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+              className="h-14 px-6 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-medium shadow-soft"
             >
               {copy.search}
             </button>
           </div>
 
-          <div className="mt-4 text-sm text-gray-500 flex flex-wrap justify-center gap-3">
+          <div className="mt-4 text-sm font-normal text-textSecondary flex flex-wrap justify-center gap-3">
             <span>Popular categories:</span>
             <span>Психологи • Юристы • Репетиторы • Миграция</span>
           </div>
@@ -473,7 +473,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
             {t(dict, "transitional.line1")}
           </p>
 
-          <p className="mt-4 max-w-3xl mx-auto text-lg md:text-xl text-gray-500 leading-relaxed">
+          <p className="mt-4 max-w-3xl mx-auto text-lg md:text-xl font-normal text-textSecondary leading-relaxed">
             {t(dict, "transitional.line2")}<br />
             {t(dict, "transitional.line3")}
           </p>
@@ -540,7 +540,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                   {Array.from({ length: 6 }).map((_, idx) => (
                     <div
                       key={`popular-skeleton-${idx}`}
-                      className="rounded-2xl bg-white shadow-sm overflow-hidden"
+                      className="rounded-2xl bg-white shadow-card overflow-hidden"
                     >
                       <div className="w-full aspect-square bg-gray-200/80 animate-pulse" />
                       <div className="px-4 py-3 space-y-2">
@@ -570,7 +570,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                       <Link
                         key={category.slug}
                         href={href}
-                        className="rounded-2xl bg-white shadow-sm transition hover:shadow-md overflow-hidden flex flex-col"
+                        className="rounded-2xl bg-white shadow-card transition hover:shadow-soft overflow-hidden flex flex-col"
                       >
                         <div className="w-full aspect-square overflow-hidden">
                           {imageUrl ? (
@@ -589,10 +589,10 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                         </div>
 
                         <div className="px-4 py-3">
-                          <p className="text-base font-semibold text-gray-900 line-clamp-1">
+                          <p className="text-base font-semibold text-textPrimary line-clamp-1">
                             {category.title || category.slug}
                           </p>
-                          <p className="mt-1 text-sm text-gray-600">
+                          <p className="mt-1 text-sm font-normal text-textSecondary">
                             {t(dict, "category.parent.found").replace(
                               /\{\{\s*count\s*\}\}/g,
                               String(category.specialists_count)

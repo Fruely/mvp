@@ -167,14 +167,14 @@ export default function MediaBlock({
           <div className="flex-1">
             <input
               type="url"
-              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-textSecondary focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
               value={photoUrl}
               onChange={(e) => setPhotoUrl(e.target.value)}
               placeholder="https://... (ссылка на фото)"
             />
           </div>
         </div>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-textSecondary">
           Вставьте ссылку на фото или загрузите файл с устройства — он заменит
           текущий аватар.
         </p>
@@ -190,7 +190,7 @@ export default function MediaBlock({
             type="button"
             disabled={uploadPending}
             onClick={() => fileInputRef.current?.click()}
-            className="rounded-lg border-2 border-emerald-600 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100 disabled:opacity-70"
+            className="rounded-xl border-2 border-emerald-600 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100 disabled:opacity-70"
           >
             {uploadPending ? "Загрузка…" : "Загрузить фото с устройства"}
           </button>
@@ -226,7 +226,7 @@ export default function MediaBlock({
             <div key={index} className="flex gap-2">
               <input
                 type="url"
-                className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-textSecondary focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
                 value={url}
                 onChange={(e) => setCertificateAt(index, e.target.value)}
                 placeholder="https://... (ссылка на фото сертификата)"
@@ -234,7 +234,7 @@ export default function MediaBlock({
               <button
                 type="button"
                 onClick={() => removeCertificateAt(index)}
-                className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
                 aria-label="Удалить"
               >
                 Удалить
@@ -242,7 +242,7 @@ export default function MediaBlock({
             </div>
           ))}
         </div>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-textSecondary">
           Ссылки на изображения сертификатов, дипломов, квалификаций. Они
           отобразятся в блоке «Сертификаты» на вашей карточке.
         </p>
@@ -255,7 +255,7 @@ export default function MediaBlock({
         </label>
         <input
           type="url"
-          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-textSecondary focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
           value={videoUrl}
           onChange={(e) => setVideoUrl(e.target.value)}
           placeholder="https://www.youtube.com/... или https://vimeo.com/..."
@@ -288,7 +288,7 @@ export default function MediaBlock({
             <div key={index} className="flex gap-2">
               <input
                 type="url"
-                className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-textSecondary focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
                 value={url}
                 onChange={(e) => setGalleryAt(index, e.target.value)}
                 placeholder="https://www.youtube.com/... или https://vimeo.com/..."
@@ -296,7 +296,7 @@ export default function MediaBlock({
               <button
                 type="button"
                 onClick={() => removeGalleryAt(index)}
-                className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
                 aria-label="Удалить"
               >
                 Удалить
@@ -313,7 +313,7 @@ export default function MediaBlock({
         <button
           type="submit"
           disabled={isPending}
-          className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70"
+          className="inline-flex items-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-soft hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isPending ? "Сохранение..." : "Сохранить аватар, сертификаты и видео"}
         </button>

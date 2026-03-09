@@ -389,7 +389,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
                 className="h-16 w-16 rounded-full border border-gray-200 object-cover"
               />
             ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full border border-dashed border-gray-300 text-xs text-gray-400">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full border border-dashed border-gray-300 text-xs text-textSecondary">
                 нет фото
               </div>
             )}

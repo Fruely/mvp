@@ -91,17 +91,17 @@ export default function ProfileEditor({ initialProfile }: ProfileEditorProps) {
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm font-medium text-gray-700">
             <span>Обо мне</span>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-textSecondary">
               {aboutMe.length}/{MAX_TEXT_LENGTH}
             </span>
           </div>
           <textarea
-            className="min-h-[96px] w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+            className="min-h-[96px] w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-textSecondary focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
             value={aboutMe}
             onChange={(e) => setAboutMe(e.target.value)}
             maxLength={MAX_TEXT_LENGTH}
           />
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-textSecondary">
             Кратко расскажите о себе и своём подходе.
           </p>
         </div>
@@ -109,17 +109,17 @@ export default function ProfileEditor({ initialProfile }: ProfileEditorProps) {
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm font-medium text-gray-700">
             <span>Услуги</span>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-textSecondary">
               {services.length}/{MAX_TEXT_LENGTH}
             </span>
           </div>
           <textarea
-            className="min-h-[96px] w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+            className="min-h-[96px] w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-textSecondary focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
             value={services}
             onChange={(e) => setServices(e.target.value)}
             maxLength={MAX_TEXT_LENGTH}
           />
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-textSecondary">
             Перечислите основные направления и форматы вашей работы.
           </p>
         </div>
@@ -129,17 +129,17 @@ export default function ProfileEditor({ initialProfile }: ProfileEditorProps) {
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm font-medium text-gray-700">
             <span>Как я работаю</span>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-textSecondary">
               {howIWork.length}/{MAX_TEXT_LENGTH}
             </span>
           </div>
           <textarea
-            className="min-h-[96px] w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+            className="min-h-[96px] w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-textSecondary focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
             value={howIWork}
             onChange={(e) => setHowIWork(e.target.value)}
             maxLength={MAX_TEXT_LENGTH}
           />
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-textSecondary">
             Опишите формат сессий, продолжительность и особенности работы.
           </p>
         </div>
@@ -147,17 +147,17 @@ export default function ProfileEditor({ initialProfile }: ProfileEditorProps) {
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm font-medium text-gray-700">
             <span>Опыт</span>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-textSecondary">
               {experience.length}/{MAX_TEXT_LENGTH}
             </span>
           </div>
           <textarea
-            className="min-h-[96px] w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+            className="min-h-[96px] w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-textSecondary focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
             value={experience}
             onChange={(e) => setExperience(e.target.value)}
             maxLength={MAX_TEXT_LENGTH}
           />
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-textSecondary">
             Укажите ваш опыт, образование и дополнительные квалификации.
           </p>
         </div>
@@ -170,7 +170,7 @@ export default function ProfileEditor({ initialProfile }: ProfileEditorProps) {
           </label>
           <input
             type="text"
-            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-textSecondary focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
             value={city}
             onChange={(e) => setCity(e.target.value)}
             placeholder="Например: Берлин"
@@ -184,12 +184,12 @@ export default function ProfileEditor({ initialProfile }: ProfileEditorProps) {
           <input
             type="number"
             min={0}
-            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-textSecondary focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
             value={radiusKm}
             onChange={(e) => setRadiusKm(e.target.value)}
             placeholder="Например: 10"
           />
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-textSecondary">
             Если вы работаете только онлайн, можете оставить поле пустым или
             указать 0.
           </p>
@@ -202,12 +202,12 @@ export default function ProfileEditor({ initialProfile }: ProfileEditorProps) {
         </label>
         <input
           type="text"
-          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-textSecondary focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
           value={categoriesInput}
           onChange={(e) => setCategoriesInput(e.target.value)}
           placeholder="Например: психотерапия, коучинг, семейные консультации"
         />
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-textSecondary">
           Укажите несколько категорий через запятую. Это поможет клиентам
           находить вас по нужным темам.
         </p>
@@ -218,7 +218,7 @@ export default function ProfileEditor({ initialProfile }: ProfileEditorProps) {
           <button
             type="submit"
             disabled={isPending}
-            className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex items-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-soft hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isPending ? "Сохранение..." : "Сохранить профиль"}
           </button>

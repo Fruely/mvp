@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -14,15 +12,25 @@ html, body, #__next {
 }
 
 body {
-  @apply bg-white text-gray-900 font-inter;
+  @apply font-sans;
+  color: #111827;
+  background: #ffffff;
+}
+
+p {
+  line-height: 1.6;
+}
+
+h1, h2, h3 {
+  letter-spacing: -0.02em;
 }
 
 .btn-primary {
-  @apply bg-primary text-white px-4 py-2 rounded-full font-semibold transition transform hover:scale-105 hover:shadow-lg;
+  @apply bg-primary text-white px-4 py-2 rounded-xl font-medium shadow-soft transition transform hover:scale-105 hover:shadow-lg;
 }
 
 .btn-accent {
-  @apply bg-accent text-white px-4 py-2 rounded-full font-semibold transition transform hover:scale-105 hover:shadow-lg;
+  @apply bg-accent text-white px-4 py-2 rounded-xl font-medium shadow-soft transition transform hover:scale-105 hover:shadow-lg;
 }
 
 /* card hover */

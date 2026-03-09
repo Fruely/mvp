@@ -87,7 +87,7 @@ export default function Sidebar({
             const stateClass = isActive
               ? "bg-blue-50 text-blue-700"
               : item.disabled
-                ? "cursor-not-allowed text-gray-400"
+                ? "cursor-not-allowed text-textSecondary"
                 : "text-gray-700 hover:bg-gray-50 hover:text-gray-900";
 
             if (!item.href || item.disabled) {
@@ -137,7 +137,7 @@ export default function Sidebar({
             const stateClass = isActive
               ? "bg-blue-50 text-blue-700"
               : item.disabled
-                ? "cursor-not-allowed text-gray-400"
+                ? "cursor-not-allowed text-textSecondary"
                 : "text-gray-700 hover:bg-gray-50 hover:text-gray-900";
 
             if (!item.href || item.disabled) {
