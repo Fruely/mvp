@@ -409,7 +409,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       <>
       <section className="py-16 sm:py-24 bg-gradient-to-b from-white to-blue-50">
         <div className="max-w-6xl mx-auto px-6 text-center">
-          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight text-textPrimary">
+          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-tight text-textPrimary">
             {copy.title}
           </h1>
           <p className="text-lg font-normal text-textSecondary mt-4 max-w-2xl mx-auto">
@@ -435,8 +435,8 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               type="text"
               value={heroCity}
               onChange={(e) => setHeroCity(e.target.value)}
-              placeholder={t(dict, "filters.city.label", { defaultValue: "Город" })}
-              className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 sm:flex-1"
+              placeholder="PLZ"
+              className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 placeholder:text-gray-500 sm:flex-1"
               aria-label={t(dict, "filters.city.label", { defaultValue: "Город" })}
             />
 
@@ -454,14 +454,14 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
             <button
               type="button"
               onClick={handleHeroSearch}
-              className="h-14 px-6 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-medium shadow-soft"
+              className="h-14 px-6 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-soft"
             >
               {copy.search}
             </button>
           </div>
 
           <div className="mt-4 text-sm font-normal text-textSecondary flex flex-wrap justify-center gap-3">
-            <span>Popular categories:</span>
+            <span>Популярные категории:</span>
             <span>Психологи • Юристы • Репетиторы • Миграция</span>
           </div>
         </div>
