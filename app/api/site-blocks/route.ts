@@ -2,7 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminToken } from '@/lib/adminApiAuth';
 
-export const revalidate = 300;
+export const revalidate = 0;
+export const dynamic = "force-dynamic";
 
 function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -90,7 +91,7 @@ export async function GET() {
       { blocks: data },
       {
         headers: {
-          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=59",
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
         },
       }
     );

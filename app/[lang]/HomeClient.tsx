@@ -373,7 +373,42 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     return options.sort((a, b) => a.title.localeCompare(b.title, "uk"));
   }, [categories]);
 
-  const quickCategories = ["Психологи", "Юристы", "Репетиторы", "Миграция"];
+  const quickCategories = [
+    t(dict, "home.heroQuick.psychologists", { defaultValue: "Психологи" }),
+    t(dict, "home.heroQuick.lawyers", { defaultValue: "Юристы" }),
+    t(dict, "home.heroQuick.tutors", { defaultValue: "Репетиторы" }),
+    t(dict, "home.heroQuick.migration", { defaultValue: "Миграция" }),
+  ];
+
+  function getLocalizedHeroText(value: unknown): string | null {
+    if (value && typeof value === "object") {
+      const localized = value as Record<string, unknown>;
+      const byLang = localized[lang];
+      if (typeof byLang === "string" && byLang.trim().length > 0) {
+        return byLang.trim();
+      }
+      const byUk = localized.uk;
+      if (lang === "ua" && typeof byUk === "string" && byUk.trim().length > 0) {
+        return byUk.trim();
+      }
+      const byRu = localized.ru;
+      if (typeof byRu === "string" && byRu.trim().length > 0) {
+        return byRu.trim();
+      }
+      return null;
+    }
+
+    if (typeof value === "string" && value.trim().length > 0) {
+      // Backward compatibility for old CMS schema with plain string values.
+      // Keep them only on RU to avoid untranslated hero on UA/DE pages.
+      return lang === "ru" ? value.trim() : null;
+    }
+
+    return null;
+  }
+
+  const heroTitle = getLocalizedHeroText(heroContent.title) || t(dict, "hero.title");
+  const heroSubtitle = getLocalizedHeroText(heroContent.subtitle) || t(dict, "hero.subtitle");
 
   function handleHeroSearch() {
     const locale = heroLanguage === "uk" ? "ua" : heroLanguage;
@@ -403,10 +438,10 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       <section className="py-16 sm:py-24 bg-gradient-to-b from-white to-blue-50">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight">
-            {heroContent.title || mosaicContent.title || t(dict, "hero.title")}
+            {heroTitle}
           </h1>
           <p className="text-lg text-gray-600 mt-4 max-w-2xl mx-auto">
-            {heroContent.subtitle || mosaicContent.subtitle || t(dict, "hero.subtitle")}
+            {heroSubtitle}
           </p>
 
           <div className="mt-8 bg-white shadow-lg rounded-xl p-3 flex flex-col sm:flex-row gap-3">
@@ -414,9 +449,9 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               value={heroCategorySlug}
               onChange={(e) => setHeroCategorySlug(e.target.value)}
               className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 sm:flex-1"
-              aria-label="Категория"
+              aria-label={t(dict, "categories.default", { defaultValue: "Категория" })}
             >
-              <option value="">Категория</option>
+              <option value="">{t(dict, "categories.default", { defaultValue: "Категория" })}</option>
               {heroCategoryOptions.map((option) => (
                 <option key={option.slug} value={option.slug}>
                   {option.title}
@@ -428,19 +463,19 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               type="text"
               value={heroCity}
               onChange={(e) => setHeroCity(e.target.value)}
-              placeholder="PLZ или город"
+              placeholder={t(dict, "filters.city.label", { defaultValue: "Город" })}
               className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 sm:flex-1"
-              aria-label="Город"
+              aria-label={t(dict, "filters.city.label", { defaultValue: "Город" })}
             />
 
             <select
               value={heroLanguage}
               onChange={(e) => setHeroLanguage((e.target.value as "ru" | "uk" | "de") || "ru")}
               className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 sm:w-48"
-              aria-label="Язык"
+              aria-label={t(dict, "filters.language.label", { defaultValue: "Язык" })}
             >
-              <option value="ru">Русский</option>
-              <option value="uk">Українська</option>
+              <option value="ru">{t(dict, "home.heroLang.ru", { defaultValue: "Русский" })}</option>
+              <option value="uk">{t(dict, "home.heroLang.uk", { defaultValue: "Українська" })}</option>
               <option value="de">Deutsch</option>
             </select>
 
@@ -449,12 +484,12 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               onClick={handleHeroSearch}
               className="h-14 px-6 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-semibold"
             >
-              Найти специалиста
+              {t(dict, "hero.primaryCta")}
             </button>
           </div>
 
           <div className="mt-4 text-sm text-gray-500 flex flex-wrap justify-center gap-3">
-            <span>Популярные:</span>
+            <span>{t(dict, "home.heroPopularLabel", { defaultValue: "Популярные:" })}</span>
             {quickCategories.map((item) => (
               <span key={item}>{item}</span>
             ))}
