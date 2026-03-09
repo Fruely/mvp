@@ -7,7 +7,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const raw = params.id;
+    const { id } = await Promise.resolve(params);
+    const raw = id;
 
     console.log("SUPABASE URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
     console.log(
