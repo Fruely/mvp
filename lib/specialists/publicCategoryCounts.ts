@@ -9,6 +9,7 @@ type SupabaseLike = {
 type ServiceRow = {
   category_id: string | null;
   specialist_id: string | null;
+  specialists?: { is_test?: boolean | null } | Array<{ is_test?: boolean | null }> | null;
 };
 
 export async function getPublicSpecialistCountsByServiceCategory(
@@ -35,8 +36,7 @@ export async function getPublicSpecialistCountsByServiceCategory(
     .gte("price_from", 0)
     .in("specialists.status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
     .eq("specialists.is_active", true)
-    .eq("specialists.is_visible", true)
-    .or("specialists.is_test.is.null,specialists.is_test.eq.false");
+    .eq("specialists.is_visible", true);
 
   if (error) {
     throw error;
@@ -46,6 +46,11 @@ export async function getPublicSpecialistCountsByServiceCategory(
   const counts = new Map<string, number>();
 
   for (const row of (data ?? []) as ServiceRow[]) {
+    const specialist = Array.isArray(row.specialists)
+      ? row.specialists[0] ?? null
+      : row.specialists ?? null;
+    if (specialist?.is_test === true) continue;
+
     const categoryId = row.category_id;
     const specialistId = row.specialist_id;
     if (!categoryId || !specialistId) continue;
