@@ -380,35 +380,28 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     t(dict, "home.heroQuick.migration", { defaultValue: "Миграция" }),
   ];
 
-  function getLocalizedHeroText(value: unknown): string | null {
+  function getLocalizedHeroText(value: unknown, currentLang: Lang): string {
     if (value && typeof value === "object") {
       const localized = value as Record<string, unknown>;
-      const byLang = localized[lang];
+      const byLang = localized[currentLang];
       if (typeof byLang === "string" && byLang.trim().length > 0) {
         return byLang.trim();
-      }
-      const byUk = localized.uk;
-      if (lang === "ua" && typeof byUk === "string" && byUk.trim().length > 0) {
-        return byUk.trim();
       }
       const byRu = localized.ru;
       if (typeof byRu === "string" && byRu.trim().length > 0) {
         return byRu.trim();
       }
-      return null;
     }
 
     if (typeof value === "string" && value.trim().length > 0) {
-      // Backward compatibility for old CMS schema with plain string values.
-      // Keep them only on RU to avoid untranslated hero on UA/DE pages.
-      return lang === "ru" ? value.trim() : null;
+      return value.trim();
     }
 
-    return null;
+    return "";
   }
 
-  const heroTitle = getLocalizedHeroText(heroContent.title) || t(dict, "hero.title");
-  const heroSubtitle = getLocalizedHeroText(heroContent.subtitle) || t(dict, "hero.subtitle");
+  const heroTitle = getLocalizedHeroText(heroContent.title, lang) || t(dict, "hero.title");
+  const heroSubtitle = getLocalizedHeroText(heroContent.subtitle, lang) || t(dict, "hero.subtitle");
 
   function handleHeroSearch() {
     const locale = heroLanguage === "uk" ? "ua" : heroLanguage;
