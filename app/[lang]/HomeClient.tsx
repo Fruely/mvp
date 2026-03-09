@@ -270,12 +270,14 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     return () => window.removeEventListener("storage", handler);
   }, [featuredHomeBlockEnabled]);
 
+  const hero = useMemo(() => blocks.find((b) => b.key === "homepage_hero"), [blocks]);
   const mosaic = useMemo(() => blocks.find((b) => b.key === "homepage_mosaic"), [blocks]);
   const textImage = useMemo(
     () => blocks.find((b) => b.key === "homepage_text_image"),
     [blocks]
   );
 
+  const heroContent = (hero?.content as ImageBlockContent) || {};
   const mosaicContent = (mosaic?.content as MosaicBlockContent) || {};
   const textImageContent = (textImage?.content as TextImageBlockContent) || {};
   const mosaicImages = useMemo(
@@ -401,10 +403,10 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       <section className="py-16 sm:py-24 bg-gradient-to-b from-white to-blue-50">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight">
-            {mosaicContent.title || t(dict, "hero.title")}
+            {heroContent.title || mosaicContent.title || t(dict, "hero.title")}
           </h1>
           <p className="text-lg text-gray-600 mt-4 max-w-2xl mx-auto">
-            {mosaicContent.subtitle || t(dict, "hero.subtitle")}
+            {heroContent.subtitle || mosaicContent.subtitle || t(dict, "hero.subtitle")}
           </p>
 
           <div className="mt-8 bg-white shadow-lg rounded-xl p-3 flex flex-col sm:flex-row gap-3">
