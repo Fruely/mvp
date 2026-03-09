@@ -4,6 +4,15 @@ import { getPublicSpecialistCountsByServiceCategory } from "@/lib/specialists/pu
 
 export const dynamic = "force-dynamic";
 
+type PopularCategoryItem = {
+  id: string;
+  slug: string | null;
+  title: string | null;
+  image_url: string | null;
+  specialists_count: number;
+  sort_order: number | null;
+};
+
 export async function GET() {
   const supabase = createSupabaseServerClient();
 
@@ -89,7 +98,7 @@ export async function GET() {
   }
 
   const dataByManualOrder = normalizedHomepageRows
-    .map((item) => {
+    .map((item): PopularCategoryItem | null => {
       const category =
         (item.category_id ? categoryById.get(item.category_id) : undefined) ||
         (item.category_slug ? categoryBySlug.get(item.category_slug) : undefined);
@@ -107,18 +116,7 @@ export async function GET() {
         sort_order: item.sort_order,
       };
     })
-    .filter(
-      (
-        item
-      ): item is {
-        id: string;
-        slug: string | null;
-        title: string | null;
-        image_url: string | null;
-        specialists_count: number;
-        sort_order: number | null;
-      } => item !== null
-    );
+    .filter((item): item is PopularCategoryItem => item !== null);
 
   const seenCategoryIds = new Set<string>();
   const manualOrdered = dataByManualOrder
@@ -136,7 +134,7 @@ export async function GET() {
 
   // Auto-fill the block with top categories so funnel does not depend on manual rows only.
   const autoCandidates = categoryList
-    .map((category) => {
+    .map((category): PopularCategoryItem | null => {
       if (seenCategoryIds.has(category.id)) return null;
       const specialistsCount = specialistsCountByCategoryId.get(category.id) ?? 0;
       if (specialistsCount < 1) return null;
@@ -149,18 +147,7 @@ export async function GET() {
         sort_order: null,
       };
     })
-    .filter(
-      (
-        item
-      ): item is {
-        id: string;
-        slug: string | null;
-        title: string | null;
-        image_url: string | null;
-        specialists_count: number;
-        sort_order: number | null;
-      } => item !== null
-    )
+    .filter((item): item is PopularCategoryItem => item !== null)
     .sort((a, b) => {
       if (a.specialists_count !== b.specialists_count) {
         return b.specialists_count - a.specialists_count;
