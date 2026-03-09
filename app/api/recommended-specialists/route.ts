@@ -15,27 +15,12 @@ function shuffle<T>(items: T[]): T[] {
 export async function GET() {
   const supabase = createSupabaseServerClient();
 
-  const { data: featuredRows, error: featuredError } = await supabase
-    .from("specialists")
-    .select("id")
-    .eq("is_featured", true)
-    .eq("status", "featured_verified")
-    .limit(10);
-
-  if (featuredError) {
-    return jsonNoStore({ error: featuredError.message }, { status: 500 });
-  }
-
-  const featuredIds = (featuredRows ?? [])
-    .map((row) => (row && typeof row.id === "string" ? row.id : null))
-    .filter((id): id is string => Boolean(id));
-
-  if (featuredIds.length === 0) return jsonNoStore({ data: [] });
-
   const { data: specRows, error: specError } = await supabase
     .from("specialists")
     .select("id, slug, name, avatar_url, category_id, languages, featured_priority")
-    .in("id", featuredIds)
+    .eq("status", "featured_verified")
+    .order("is_featured", { ascending: false })
+    .order("created_at", { ascending: false })
     .limit(10);
 
   if (specError) {
