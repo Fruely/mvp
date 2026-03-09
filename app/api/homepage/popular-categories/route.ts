@@ -52,27 +52,10 @@ export async function GET() {
     return { category_id: categoryId, category_slug: categorySlug, sort_order: sortOrder };
   });
 
-  if (normalizedHomepageRows.length === 0) {
-    return jsonNoStore({ data: [] });
-  }
-
-  const requestedCategoryIds = normalizedHomepageRows
-    .map((item) => item.category_id)
-    .filter((id): id is string => Boolean(id));
-  const requestedCategorySlugs = normalizedHomepageRows
-    .map((item) => item.category_slug)
-    .filter((slug): slug is string => Boolean(slug));
-
-  let categoriesQuery = supabase
+  const categoriesQuery = supabase
     .from("categories")
     .select("id, slug, title, image_url, parent_id")
     .not("parent_id", "is", null);
-
-  if (requestedCategoryIds.length > 0) {
-    categoriesQuery = categoriesQuery.in("id", requestedCategoryIds);
-  } else if (requestedCategorySlugs.length > 0) {
-    categoriesQuery = categoriesQuery.in("slug", requestedCategorySlugs);
-  }
 
   const { data: categories, error: categoriesError } = await categoriesQuery;
   if (categoriesError) {
@@ -105,7 +88,7 @@ export async function GET() {
     return jsonNoStore({ error: message }, { status: 500 });
   }
 
-  const data = normalizedHomepageRows
+  const dataByManualOrder = normalizedHomepageRows
     .map((item) => {
       const category =
         (item.category_id ? categoryById.get(item.category_id) : undefined) ||
@@ -135,8 +118,57 @@ export async function GET() {
         specialists_count: number;
         sort_order: number | null;
       } => item !== null
+    );
+
+  const seenCategoryIds = new Set<string>();
+  const manualOrdered = dataByManualOrder
+    .filter((item) => {
+      if (seenCategoryIds.has(item.id)) return false;
+      seenCategoryIds.add(item.id);
+      return true;
+    })
+    .sort((a, b) => {
+      const aOrder = typeof a.sort_order === "number" ? a.sort_order : Number.MAX_SAFE_INTEGER;
+      const bOrder = typeof b.sort_order === "number" ? b.sort_order : Number.MAX_SAFE_INTEGER;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return a.title?.localeCompare(b.title ?? "", "uk") ?? 0;
+    });
+
+  // Auto-fill the block with top categories so funnel does not depend on manual rows only.
+  const autoCandidates = categoryList
+    .map((category) => {
+      if (seenCategoryIds.has(category.id)) return null;
+      const specialistsCount = specialistsCountByCategoryId.get(category.id) ?? 0;
+      if (specialistsCount < 1) return null;
+      return {
+        id: category.id,
+        slug: category.slug,
+        title: category.title,
+        image_url: category.image_url,
+        specialists_count: specialistsCount,
+        sort_order: null,
+      };
+    })
+    .filter(
+      (
+        item
+      ): item is {
+        id: string;
+        slug: string | null;
+        title: string | null;
+        image_url: string | null;
+        specialists_count: number;
+        sort_order: number | null;
+      } => item !== null
     )
-    .slice(0, 10);
+    .sort((a, b) => {
+      if (a.specialists_count !== b.specialists_count) {
+        return b.specialists_count - a.specialists_count;
+      }
+      return a.title?.localeCompare(b.title ?? "", "uk") ?? 0;
+    });
+
+  const data = [...manualOrdered, ...autoCandidates].slice(0, 10);
 
   return jsonNoStore({ data });
 }
