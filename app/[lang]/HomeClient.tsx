@@ -289,6 +289,26 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     return map;
   }, [mosaicImages]);
 
+  const parentSlugByChildSlug = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const parent of categories) {
+      const parentSlug =
+        typeof parent.slug === "string" && parent.slug.trim()
+          ? parent.slug.trim().toLowerCase()
+          : "";
+      if (!parentSlug || !Array.isArray(parent.children)) continue;
+      for (const child of parent.children) {
+        const childSlug =
+          typeof child.slug === "string" && child.slug.trim()
+            ? child.slug.trim().toLowerCase()
+            : "";
+        if (!childSlug || map.has(childSlug)) continue;
+        map.set(childSlug, parentSlug);
+      }
+    }
+    return map;
+  }, [categories]);
+
   const renderRecommendedSpecialists = (data: RecommendedSpecialist[] | null | undefined) => {
     if (!data || data.length === 0) return null;
 
@@ -439,8 +459,10 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                     const href = placeFromUrl
                       ? `/specialists?lang=${encodeURIComponent(specialistLang)}&place=${encodeURIComponent(placeFromUrl)}&category=${encodeURIComponent(category.slug)}`
                       : `/${lang}/category/${category.slug}`;
+                    const parentSlugFallback = parentSlugByChildSlug.get(category.slug.trim().toLowerCase());
                     const mosaicFallback =
                       mosaicImageByCategory.get(category.slug.trim().toLowerCase())?.url ??
+                      (parentSlugFallback ? mosaicImageByCategory.get(parentSlugFallback)?.url : null) ??
                       mosaicImageByCategory.get(category.id.trim().toLowerCase())?.url ??
                       null;
                     const imageUrl = category.image_url ?? mosaicFallback;
