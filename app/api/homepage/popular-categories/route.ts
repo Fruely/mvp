@@ -10,7 +10,7 @@ export async function GET() {
   const { data: homepageRows, error: homepageError } = await supabase
     .from("homepage_popular_categories")
     .select("*")
-    .order("specialists_count", { ascending: false })
+    .order("sort_order", { ascending: true })
     .limit(10);
 
   if (homepageError) {
