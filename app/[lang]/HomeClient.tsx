@@ -145,7 +145,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
 
     async function loadBlocks() {
       try {
-        const res = await fetch("/api/site-blocks", { cache: "no-store" });
+        const res = await fetch(`/api/site-blocks?ts=${Date.now()}`, { cache: "no-store" });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || "Ошибка загрузки блоков");
         setBlocks(json.blocks || []);
