@@ -81,6 +81,24 @@ const FALLBACK_PLACEHOLDERS = [
   { id: "placeholder-3", icon: "🫶" },
 ];
 
+const HERO_COPY: Record<Lang, { title: string; subtitle: string; search: string }> = {
+  ru: {
+    title: "Выберите специалиста на вашем языке в Германии",
+    subtitle: "Профессионалы рядом и онлайн — на вашем языке",
+    search: "Найти специалиста",
+  },
+  ua: {
+    title: "Знайдіть спеціаліста у Німеччині своєю мовою",
+    subtitle: "Фахівці поруч і онлайн — вашою мовою",
+    search: "Знайти спеціаліста",
+  },
+  de: {
+    title: "Fachkräfte in Deutschland – in Ihrer Sprache",
+    subtitle: "Online oder vor Ort – Profis, die Sie verstehen",
+    search: "Spezialist finden",
+  },
+};
+
 export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionary }) {
   const router = useRouter();
   const featuredHomeBlockEnabled =
@@ -270,23 +288,12 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     return () => window.removeEventListener("storage", handler);
   }, [featuredHomeBlockEnabled]);
 
-  const hero = useMemo(() => blocks.find((b) => b.key === "homepage_hero"), [blocks]);
-  const mosaic = useMemo(() => blocks.find((b) => b.key === "homepage_mosaic"), [blocks]);
   const textImage = useMemo(
     () => blocks.find((b) => b.key === "homepage_text_image"),
     [blocks]
   );
 
-  const heroContent = (hero?.content as ImageBlockContent) || {};
-  const mosaicContent = (mosaic?.content as MosaicBlockContent) || {};
   const textImageContent = (textImage?.content as TextImageBlockContent) || {};
-  const mosaicImages = useMemo(
-    () =>
-      (Array.isArray(mosaicContent.images) ? mosaicContent.images : []).filter(
-        (item): item is MosaicImage => Boolean(item && typeof item.url === "string" && item.url)
-      ),
-    [mosaicContent.images]
-  );
 
   const renderRecommendedSpecialists = (data: RecommendedSpecialist[] | null | undefined) => {
     if (!data || data.length === 0) return null;
@@ -373,35 +380,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     return options.sort((a, b) => a.title.localeCompare(b.title, "uk"));
   }, [categories]);
 
-  const quickCategories = [
-    t(dict, "home.heroQuick.psychologists", { defaultValue: "Психологи" }),
-    t(dict, "home.heroQuick.lawyers", { defaultValue: "Юристы" }),
-    t(dict, "home.heroQuick.tutors", { defaultValue: "Репетиторы" }),
-    t(dict, "home.heroQuick.migration", { defaultValue: "Миграция" }),
-  ];
-
-  function getLocalizedHeroText(value: unknown, currentLang: Lang): string {
-    if (value && typeof value === "object") {
-      const localized = value as Record<string, unknown>;
-      const byLang = localized[currentLang];
-      if (typeof byLang === "string" && byLang.trim().length > 0) {
-        return byLang.trim();
-      }
-      const byRu = localized.ru;
-      if (typeof byRu === "string" && byRu.trim().length > 0) {
-        return byRu.trim();
-      }
-    }
-
-    if (typeof value === "string" && value.trim().length > 0) {
-      return value.trim();
-    }
-
-    return "";
-  }
-
-  const heroTitle = getLocalizedHeroText(heroContent.title, lang) || t(dict, "hero.title");
-  const heroSubtitle = getLocalizedHeroText(heroContent.subtitle, lang) || t(dict, "hero.subtitle");
+  const copy = HERO_COPY[lang] ?? HERO_COPY.ru;
 
   function handleHeroSearch() {
     const locale = heroLanguage === "uk" ? "ua" : heroLanguage;
@@ -431,10 +410,10 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       <section className="py-16 sm:py-24 bg-gradient-to-b from-white to-blue-50">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight">
-            {heroTitle}
+            {copy.title}
           </h1>
           <p className="text-lg text-gray-600 mt-4 max-w-2xl mx-auto">
-            {heroSubtitle}
+            {copy.subtitle}
           </p>
 
           <div className="mt-8 bg-white shadow-lg rounded-xl p-3 flex flex-col sm:flex-row gap-3">
@@ -477,15 +456,13 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               onClick={handleHeroSearch}
               className="h-14 px-6 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-semibold"
             >
-              {t(dict, "hero.primaryCta")}
+              {copy.search}
             </button>
           </div>
 
           <div className="mt-4 text-sm text-gray-500 flex flex-wrap justify-center gap-3">
-            <span>{t(dict, "home.heroPopularLabel", { defaultValue: "Популярные:" })}</span>
-            {quickCategories.map((item) => (
-              <span key={item}>{item}</span>
-            ))}
+            <span>Popular categories:</span>
+            <span>Психологи • Юристы • Репетиторы • Миграция</span>
           </div>
         </div>
       </section>
