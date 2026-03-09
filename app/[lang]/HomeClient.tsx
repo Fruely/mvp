@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
-import HeroSearch from "@/components/HeroSearch";
+
+type MosaicImage = { url: string; alt?: string; category_id?: string };
 
 type ImageBlockContent = {
   url?: string;
@@ -13,8 +14,6 @@ type ImageBlockContent = {
   subtitle?: string;
   alt?: string;
 };
-
-type MosaicImage = { url: string; alt?: string; category_id?: string };
 
 type MosaicBlockContent = {
   title?: string;
@@ -83,6 +82,7 @@ const FALLBACK_PLACEHOLDERS = [
 ];
 
 export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionary }) {
+  const router = useRouter();
   const featuredHomeBlockEnabled =
     process.env.NEXT_PUBLIC_FEATURED_HOME_BLOCK_ENABLED === "1" ||
     process.env.NEXT_PUBLIC_FEATURED_HOME_BLOCK_ENABLED === "true";
@@ -94,9 +94,16 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
   const [isPopularLoading, setIsPopularLoading] = useState(true);
   const [isRecommendedLoading, setIsRecommendedLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [heroCategorySlug, setHeroCategorySlug] = useState("");
+  const [heroCity, setHeroCity] = useState("");
+  const [heroLanguage, setHeroLanguage] = useState<"ru" | "uk" | "de">("ru");
   const searchParams = useSearchParams();
   const placeFromUrl = searchParams?.get("place")?.trim() ?? "";
   const specialistLang = lang === "ua" ? "uk" : lang;
+
+  useEffect(() => {
+    setHeroLanguage(lang === "ua" ? "uk" : lang === "de" ? "de" : "ru");
+  }, [lang]);
 
   useEffect(() => {
     function normalizeCategories(rawData: any[]): CategoryStat[] {
@@ -263,14 +270,12 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     return () => window.removeEventListener("storage", handler);
   }, [featuredHomeBlockEnabled]);
 
-  const hero = useMemo(() => blocks.find((b) => b.key === "homepage_hero"), [blocks]);
   const mosaic = useMemo(() => blocks.find((b) => b.key === "homepage_mosaic"), [blocks]);
   const textImage = useMemo(
     () => blocks.find((b) => b.key === "homepage_text_image"),
     [blocks]
   );
 
-  const heroContent = (hero?.content as ImageBlockContent) || {};
   const mosaicContent = (mosaic?.content as MosaicBlockContent) || {};
   const textImageContent = (textImage?.content as TextImageBlockContent) || {};
   const mosaicImages = useMemo(
@@ -340,17 +345,120 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     []
   );
 
+  const heroCategoryOptions = useMemo(() => {
+    const options: Array<{ slug: string; title: string }> = [];
+    const seen = new Set<string>();
+
+    for (const category of categories) {
+      if (Array.isArray(category.children) && category.children.length > 0) {
+        for (const child of category.children) {
+          const slug = child.slug?.trim();
+          const title = child.title?.trim();
+          if (!slug || !title || seen.has(slug)) continue;
+          seen.add(slug);
+          options.push({ slug, title });
+        }
+        continue;
+      }
+
+      const slug = category.slug?.trim();
+      const title = category.title?.trim();
+      if (!slug || !title || seen.has(slug)) continue;
+      seen.add(slug);
+      options.push({ slug, title });
+    }
+
+    return options.sort((a, b) => a.title.localeCompare(b.title, "uk"));
+  }, [categories]);
+
+  const quickCategories = ["Психологи", "Юристы", "Репетиторы", "Миграция"];
+
+  function handleHeroSearch() {
+    const locale = heroLanguage === "uk" ? "ua" : heroLanguage;
+    const trimmedCity = heroCity.trim();
+
+    if (trimmedCity) {
+      const params = new URLSearchParams({
+        lang: heroLanguage,
+        place: trimmedCity,
+      });
+      if (heroCategorySlug) params.set("category", heroCategorySlug);
+      router.push(`/specialists?${params.toString()}`);
+      return;
+    }
+
+    if (heroCategorySlug) {
+      router.push(`/${locale}/category/${heroCategorySlug}?lang=${heroLanguage}`);
+      return;
+    }
+
+    router.push(`/${locale}`);
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <>
-      <HeroSearch
-        lang={lang}
-        title={t(dict, "hero.title")}
-        subtitle={t(dict, "hero.subtitle")}
-        primaryCta={t(dict, "hero.primaryCta")}
-        heroImageUrl={heroContent.url}
-        isHeroLoading={isBlocksLoading}
-      />
+      <section className="py-16 sm:py-24 bg-gradient-to-b from-white to-blue-50">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight">
+            {mosaicContent.title || t(dict, "hero.title")}
+          </h1>
+          <p className="text-lg text-gray-600 mt-4 max-w-2xl mx-auto">
+            {mosaicContent.subtitle || t(dict, "hero.subtitle")}
+          </p>
+
+          <div className="mt-8 bg-white shadow-lg rounded-xl p-3 flex flex-col sm:flex-row gap-3">
+            <select
+              value={heroCategorySlug}
+              onChange={(e) => setHeroCategorySlug(e.target.value)}
+              className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 sm:flex-1"
+              aria-label="Категория"
+            >
+              <option value="">Категория</option>
+              {heroCategoryOptions.map((option) => (
+                <option key={option.slug} value={option.slug}>
+                  {option.title}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="text"
+              value={heroCity}
+              onChange={(e) => setHeroCity(e.target.value)}
+              placeholder="PLZ или город"
+              className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 sm:flex-1"
+              aria-label="Город"
+            />
+
+            <select
+              value={heroLanguage}
+              onChange={(e) => setHeroLanguage((e.target.value as "ru" | "uk" | "de") || "ru")}
+              className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 sm:w-48"
+              aria-label="Язык"
+            >
+              <option value="ru">Русский</option>
+              <option value="uk">Українська</option>
+              <option value="de">Deutsch</option>
+            </select>
+
+            <button
+              type="button"
+              onClick={handleHeroSearch}
+              className="h-14 px-6 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+            >
+              Найти специалиста
+            </button>
+          </div>
+
+          <div className="mt-4 text-sm text-gray-500 flex flex-wrap justify-center gap-3">
+            <span>Популярные:</span>
+            {quickCategories.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="pt-12 pb-10 md:pt-16 md:pb-12">
         <div className="max-w-5xl mx-auto px-6 text-center">
