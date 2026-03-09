@@ -439,7 +439,10 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                     const href = placeFromUrl
                       ? `/specialists?lang=${encodeURIComponent(specialistLang)}&place=${encodeURIComponent(placeFromUrl)}&category=${encodeURIComponent(category.slug)}`
                       : `/${lang}/category/${category.slug}`;
-                    const mosaicFallback = mosaicImageByCategory.get(category.id.trim().toLowerCase())?.url ?? null;
+                    const mosaicFallback =
+                      mosaicImageByCategory.get(category.slug.trim().toLowerCase())?.url ??
+                      mosaicImageByCategory.get(category.id.trim().toLowerCase())?.url ??
+                      null;
                     const imageUrl = category.image_url ?? mosaicFallback;
 
                     return (
