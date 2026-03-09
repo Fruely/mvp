@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 
+export const dynamic = "force-dynamic";
+
 function getStatusClass(status: string): string {
   if (status === "early_access") return "bg-emerald-50 text-emerald-700";
   if (status === "active") return "bg-blue-50 text-blue-700";

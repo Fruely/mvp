@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getSupabase } from "@/lib/supabaseClient";
+
+export const dynamic = "force-dynamic";
 
 function extractTokensFromUrl(
   searchParams: URLSearchParams | null,
@@ -19,7 +21,7 @@ function extractTokensFromUrl(
   return { accessToken, refreshToken };
 }
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const [sessionReady, setSessionReady] = useState(false);
   const [loadingSession, setLoadingSession] = useState(true);
@@ -171,6 +173,23 @@ export default function ResetPasswordPage() {
         )}
       </section>
     </main>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="mx-auto w-full max-w-lg px-4 py-12">
+          <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h1 className="text-2xl font-semibold text-gray-900">Сброс пароля</h1>
+            <p className="mt-4 text-sm text-gray-600">Загрузка...</p>
+          </section>
+        </main>
+      }
+    >
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
 
