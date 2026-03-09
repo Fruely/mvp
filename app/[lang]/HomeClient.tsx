@@ -51,6 +51,7 @@ type CategoryStat = {
 };
 
 type PopularCategory = {
+  id: string;
   slug: string;
   title: string | null;
   image_url?: string | null;
@@ -191,14 +192,16 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         }
         const normalized = json.data
           .filter(
-            (item: { slug?: unknown; title?: unknown; image_url?: unknown; specialists_count?: unknown; sort_order?: unknown }) =>
+            (item: { id?: unknown; slug?: unknown; title?: unknown; image_url?: unknown; specialists_count?: unknown; sort_order?: unknown }) =>
               item &&
+              typeof item.id === "string" &&
               typeof item.slug === "string" &&
               item.slug.trim().length > 0 &&
               (typeof item.title === "string" || item.title == null) &&
               typeof item.specialists_count === "number"
           )
-          .map((item: { slug: string; title: string | null; image_url?: string | null; specialists_count: number; sort_order?: number | null }) => ({
+          .map((item: { id: string; slug: string; title: string | null; image_url?: string | null; specialists_count: number; sort_order?: number | null }) => ({
+            id: item.id,
             slug: item.slug,
             title: item.title,
             image_url: typeof item.image_url === "string" ? item.image_url : null,
@@ -436,6 +439,8 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                     const href = placeFromUrl
                       ? `/specialists?lang=${encodeURIComponent(specialistLang)}&place=${encodeURIComponent(placeFromUrl)}&category=${encodeURIComponent(category.slug)}`
                       : `/${lang}/category/${category.slug}`;
+                    const mosaicFallback = mosaicImageByCategory.get(category.id.trim().toLowerCase())?.url ?? null;
+                    const imageUrl = category.image_url ?? mosaicFallback;
 
                     return (
                       <Link
@@ -444,11 +449,11 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                         className="rounded-2xl bg-white shadow-sm transition hover:shadow-md overflow-hidden flex flex-col"
                       >
                         <div className="w-full aspect-square overflow-hidden">
-                          {category.image_url ? (
+                          {imageUrl ? (
                             <>
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
-                                src={category.image_url}
+                                src={imageUrl}
                                 alt={category.title ?? category.slug}
                                 className="w-full h-full object-cover"
                                 loading="lazy"
