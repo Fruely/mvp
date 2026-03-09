@@ -294,35 +294,33 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
             <Link
               key={specialist.id}
               href={`/${lang}/specialist/${encodeURIComponent(specialist.slug || specialist.id)}`}
-              className="rounded-xl border bg-white aspect-[4/3] p-4 flex flex-col justify-between hover:shadow-md transition"
+              className="rounded-xl border bg-white overflow-hidden flex h-full flex-col hover:shadow-md transition"
             >
-              <div className="flex flex-col h-full justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-14 w-14 overflow-hidden rounded-full bg-gray-100 shrink-0">
-                    {specialist.avatar_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={specialist.avatar_url}
-                        alt={specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                      />
-                    ) : null}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="line-clamp-1 text-base font-semibold text-gray-900">
-                      {specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
-                    </p>
-                    <p className="line-clamp-1 text-sm text-gray-600">
-                      {specialist.category_title || "Услуги"}
-                    </p>
-                    <p className="line-clamp-1 text-sm text-gray-500">
-                      {[specialist.city, specialist.languages[0]].filter(Boolean).join(" • ")}
-                    </p>
-                  </div>
-                </div>
+              <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
+                {specialist.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={specialist.avatar_url}
+                    alt={specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-gray-100" />
+                )}
+              </div>
+              <div className="p-4 flex flex-col gap-1">
+                <p className="font-semibold line-clamp-1 text-gray-900">
+                  {specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
+                </p>
+                <p className="text-sm text-gray-600 line-clamp-1">
+                  {specialist.category_title || "Услуги"}
+                </p>
+                <p className="text-sm text-gray-500 line-clamp-1">
+                  {[specialist.city, specialist.languages[0]].filter(Boolean).join(" • ")}
+                </p>
                 {specialist.about_line ? (
-                  <p className="mt-3 line-clamp-2 text-sm text-gray-600">
+                  <p className="mt-1 text-sm text-gray-600 line-clamp-2">
                     {specialist.about_line}
                   </p>
                 ) : null}
