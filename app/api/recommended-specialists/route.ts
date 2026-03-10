@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
+import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +18,10 @@ export async function GET() {
 
   const { data: specRows, error: specError } = await supabase
     .from("specialists")
-    .select("id, slug, name, avatar_url, category_id, languages, featured_priority")
-    .eq("status", "featured_verified")
+    .select("id, slug, name, avatar_url, category_id, languages, featured_priority, is_featured")
+    .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
+    .eq("is_active", true)
+    .eq("is_visible", true)
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(10);

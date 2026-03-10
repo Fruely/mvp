@@ -29,6 +29,17 @@ export async function POST(request: NextRequest) {
     }
 
     const patch: Record<string, unknown> = {};
+    const supabase = createSupabaseServerClient();
+
+    let currentStatus: string | null = null;
+    if (action === "activate") {
+      const { data: current } = await supabase
+        .from("specialists")
+        .select("status")
+        .eq("id", id)
+        .maybeSingle();
+      currentStatus = typeof current?.status === "string" ? current.status : null;
+    }
 
     if (action === "verify") {
       patch.is_verified = true;
@@ -61,7 +72,11 @@ export async function POST(request: NextRequest) {
       patch.is_active = isActive;
       patch.is_visible = isActive;
       if (isActive) {
-        patch.status = "published_unverified";
+        // Do not downgrade verified/featured specialists on re-activation.
+        // Only restore blocked specialists to the baseline published status.
+        if (currentStatus === "blocked") {
+          patch.status = "published_unverified";
+        }
       }
     }
 
@@ -71,7 +86,6 @@ export async function POST(request: NextRequest) {
       patch.status = "blocked";
     }
 
-    const supabase = createSupabaseServerClient();
     const { data, error } = await supabase
       .from("specialists")
       .update(patch)
