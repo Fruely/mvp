@@ -36,6 +36,7 @@ export default function SpecialistPasswordSignIn() {
         return;
       }
       if (data.session) {
+        router.refresh();
         router.replace(SPECIALIST_OFFICE_PATH);
       }
     } catch {

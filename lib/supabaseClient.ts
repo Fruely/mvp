@@ -1,5 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr';
 
 /** Redirect path for the specialist office (cabinet). Used after auth so specialists land in dashboard. */
 export const SPECIALIST_OFFICE_PATH = '/specialist/dashboard';
@@ -14,7 +14,14 @@ export const SPECIALIST_OFFICE_PATH = '/specialist/dashboard';
  * - {NEXT_PUBLIC_SITE_URL}/specialist/claim
  */
 export function getSupabase(): SupabaseClient {
-  return createClientComponentClient() as unknown as SupabaseClient;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !anonKey) {
+    throw new Error('Missing Supabase public environment variables');
+  }
+
+  return createBrowserClient(supabaseUrl, anonKey) as unknown as SupabaseClient;
 }
 
 // Export supabase instance that works both client and server-side

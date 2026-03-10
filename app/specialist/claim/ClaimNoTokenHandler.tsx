@@ -51,6 +51,7 @@ export default function ClaimNoTokenHandler() {
     const goToDashboard = () => {
       if (handled.current) return;
       handled.current = true;
+      router.refresh();
       router.replace(SPECIALIST_OFFICE_PATH);
     };
 
