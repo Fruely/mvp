@@ -127,10 +127,11 @@ export default function ClaimNoTokenHandler() {
       };
     }
 
-    // No hash: check if session exists. If not, don't redirect — show password form on page.
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // No hash: verify user with getUser() (not getSession()).
+    // getSession() can be stale locally and cause loop: claim -> dashboard -> login -> claim.
+    supabase.auth.getUser().then(({ data: { user } }) => {
       if (handled.current) return;
-      if (session) goToDashboard();
+      if (user) goToDashboard();
       else stopLoading();
     });
   }, [router]);

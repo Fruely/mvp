@@ -1,9 +1,41 @@
 import { redirect } from "next/navigation";
+import SpecialistPasswordSignIn from "@/app/specialist/claim/SpecialistPasswordSignIn";
+import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
+import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 
 /**
- * Generic login route. Specialists are sent here by getCurrentUserAndSpecialist() when no session.
- * Redirect to specialist claim so they can use their magic link or re-request access.
+ * Stable login route:
+ * - not logged in -> show login form
+ * - logged in with specialist -> dashboard
+ * - logged in without specialist -> claim flow
  */
-export default function LoginPage() {
-  redirect("/specialist/claim");
+export const dynamic = "force-dynamic";
+
+export default async function LoginPage() {
+  const authClient = createSupabaseServerClient();
+  const serviceClient = createServiceClient();
+
+  const {
+    data: { user },
+  } = await authClient.auth.getUser();
+
+  if (user) {
+    const { data: specialist } = await serviceClient
+      .from("specialists")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (specialist?.id) {
+      redirect("/specialist/dashboard");
+    }
+
+    redirect("/specialist/claim");
+  }
+
+  return (
+    <div className="min-h-[40vh] px-4 py-10">
+      <SpecialistPasswordSignIn />
+    </div>
+  );
 }
