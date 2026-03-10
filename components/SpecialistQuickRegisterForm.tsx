@@ -56,8 +56,8 @@ export default function SpecialistQuickRegisterForm({ dict }: Props) {
         return;
       }
 
-      router.push(SPECIALIST_OFFICE_PATH);
       router.refresh();
+      router.replace(SPECIALIST_OFFICE_PATH);
     } catch {
       setError("Не удалось создать аккаунт. Попробуйте позже.");
     } finally {
