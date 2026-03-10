@@ -19,9 +19,9 @@ type CategoryRow = {
   image_url: string | null;
 };
 
-type CountRow = {
+type SpecialistCountRow = {
   category_id: string | null;
-  specialists_count: number | null;
+  id: string;
 };
 
 export async function GET() {
@@ -53,23 +53,22 @@ export async function GET() {
 
   const ids = categoryRows.map((r) => r.id);
 
-  const { data: countsRows, error: countsError } = await supabase
-    .from("category_specialist_counts")
-    .select("category_id, specialists_count")
-    .in("category_id", ids);
+  const { data: specialistsRows, error: specialistsError } = await supabase
+    .from("specialists")
+    .select("id, category_id")
+    .in("category_id", ids)
+    .eq("is_active", true)
+    .eq("is_visible", true);
 
-  if (countsError) {
-    return jsonNoStore({ error: countsError.message }, { status: 500 });
+  if (specialistsError) {
+    return jsonNoStore({ error: specialistsError.message }, { status: 500 });
   }
 
-  const counts = new Map(
-    ((countsRows ?? []) as CountRow[])
-      .filter(
-        (row): row is { category_id: string; specialists_count: number } =>
-          typeof row.category_id === "string" && typeof row.specialists_count === "number"
-      )
-      .map((row) => [row.category_id, row.specialists_count])
-  );
+  const counts = new Map<string, number>();
+  for (const row of (specialistsRows ?? []) as SpecialistCountRow[]) {
+    if (typeof row.category_id !== "string") continue;
+    counts.set(row.category_id, (counts.get(row.category_id) ?? 0) + 1);
+  }
 
   const unique = new Map<string, PopularCategoryItem>();
 
