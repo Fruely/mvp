@@ -96,13 +96,6 @@ export default function SpecialistPage() {
           console.log("Specialist page name:", data?.name);
         }
         setSpecialist(data);
-        const canonicalSlug =
-          data && typeof data.slug === "string"
-            ? data.slug.trim()
-            : "";
-        if (canonicalSlug && canonicalSlug !== id) {
-          router.replace(`/${lang}/specialist/${encodeURIComponent(canonicalSlug)}`);
-        }
       } catch (err: any) {
         setError(null);
       } finally {
