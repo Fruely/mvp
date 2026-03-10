@@ -12,18 +12,11 @@ type PopularCategoryItem = {
   sort_order: number | null;
 };
 
-type JoinedCategory = {
+type CategoryRow = {
   id: string;
   slug: string | null;
   title: string | null;
   image_url: string | null;
-  parent_id: string | null;
-};
-
-type HomepagePopularRow = {
-  sort_order: number | null;
-  category_id: string | null;
-  categories: JoinedCategory | JoinedCategory[] | null;
 };
 
 type CountRow = {
@@ -34,57 +27,31 @@ type CountRow = {
 export async function GET() {
   const supabase = createSupabaseServerClient();
 
-  const { data: rows, error } = await supabase
-    .from("homepage_popular_categories")
-    .select(`
-      sort_order,
-      category_id,
-      categories!inner (
-        id,
-        slug,
-        title,
-        image_url,
-        parent_id
-      )
-    `)
+  const { data: categories, error } = await supabase
+    .from("categories")
+    .select("id, slug, title, image_url")
     .eq("is_active", true)
-    .order("sort_order", { ascending: true });
+    .not("image_url", "is", null)
+    .order("title", { ascending: true });
 
   if (error) {
     return jsonNoStore({ error: error.message }, { status: 500 });
   }
 
-  const categoryRows = ((rows ?? []) as HomepagePopularRow[])
-    .map((r) => {
-      const category = Array.isArray(r.categories) ? r.categories[0] : r.categories;
-      if (!category) return null;
-
-      return {
-        sort_order: typeof r.sort_order === "number" ? r.sort_order : null,
-        category,
-      };
-    })
-    .filter(
-      (
-        r
-      ): r is {
-        sort_order: number | null;
-        category: JoinedCategory;
-      } =>
-        Boolean(
-          r &&
-          r.category &&
-          typeof r.category.id === "string" &&
-          typeof r.category.parent_id === "string" &&
-          r.category.parent_id.trim().length > 0
-        )
-    );
+  const categoryRows = ((categories ?? []) as CategoryRow[]).filter(
+    (row): row is CategoryRow =>
+      typeof row.id === "string" &&
+      typeof row.slug === "string" &&
+      row.slug.trim().length > 0 &&
+      (typeof row.title === "string" || row.title == null) &&
+      (typeof row.image_url === "string" || row.image_url == null)
+  );
 
   if (categoryRows.length === 0) {
     return jsonNoStore({ data: [] });
   }
 
-  const ids = categoryRows.map((r) => r.category.id);
+  const ids = categoryRows.map((r) => r.id);
 
   const { data: countsRows, error: countsError } = await supabase
     .from("category_specialist_counts")
@@ -107,15 +74,14 @@ export async function GET() {
   const unique = new Map<string, PopularCategoryItem>();
 
   for (const item of categoryRows
-    .map(({ sort_order, category }): PopularCategoryItem => ({
+    .map((category): PopularCategoryItem => ({
       id: category.id,
       slug: category.slug,
       title: category.title,
       image_url: category.image_url ?? null,
       specialists_count: counts.get(category.id) ?? 0,
-      sort_order,
+      sort_order: null,
     }))
-    .filter((item) => item.specialists_count > 0)
   ) {
     if (!unique.has(item.id)) {
       unique.set(item.id, item);
