@@ -128,7 +128,15 @@ export async function POST(request: NextRequest) {
         await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: tgChatId, text }),
+          body: JSON.stringify({
+            chat_id: tgChatId,
+            text,
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: "Открыть заявку", url: `${process.env.APP_URL || "https://freuly.com"}/specialist/leads` }],
+              ],
+            },
+          }),
         });
       } catch (tgErr) {
         console.error("[leads/create] Telegram notification failed", tgErr);
