@@ -52,6 +52,12 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
       return;
     }
 
+    if (!client_name.trim()) {
+      setStatus(`error:${t(dict, "lead.nameRequired")}`);
+      setLoading(false);
+      return;
+    }
+
     if (!client_email && !client_phone) {
       setStatus(`error:${t(dict, "lead.needContact")}`);
       setLoading(false);
@@ -106,6 +112,7 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
         placeholder={t(dict, "lead.name")}
         value={client_name}
         onChange={(e) => setName(e.target.value)}
+        required
         className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
       />
 

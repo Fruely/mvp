@@ -28,6 +28,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!client_name || typeof client_name !== "string" || !client_name.trim()) {
+      return Response.json(
+        { error: "client_name is required" },
+        { status: 400 }
+      );
+    }
+
     if (!client_email && !client_phone) {
       return Response.json(
         { error: "client_email or client_phone is required" },

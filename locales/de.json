@@ -113,6 +113,7 @@
     "success": "Anfrage gesendet!",
     "error": "Fehler beim Senden",
     "noSpecialist": "Spezialist konnte nicht bestimmt werden",
+    "nameRequired": "Bitte geben Sie Ihren Namen ein",
     "needContact": "Bitte E-Mail oder Telefon angeben"
   },
   "categories.title": "Fachkraft-Kategorien",

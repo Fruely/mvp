@@ -121,6 +121,7 @@
     "success": "Заявка отправлена!",
     "error": "Ошибка отправки",
     "noSpecialist": "Не удалось определить специалиста",
+    "nameRequired": "Укажите ваше имя",
     "needContact": "Укажите email или телефон"
   },
   "application": {
