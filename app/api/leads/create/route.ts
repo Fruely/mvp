@@ -35,9 +35,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!client_email && !client_phone) {
+    if (!client_phone || typeof client_phone !== "string" || !client_phone.trim()) {
       return Response.json(
-        { error: "client_email or client_phone is required" },
+        { error: "client_phone is required" },
         { status: 400 }
       );
     }

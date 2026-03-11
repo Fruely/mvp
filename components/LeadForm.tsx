@@ -58,8 +58,8 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
       return;
     }
 
-    if (!client_email && !client_phone) {
-      setStatus(`error:${t(dict, "lead.needContact")}`);
+    if (!client_phone.trim()) {
+      setStatus(`error:${t(dict, "lead.phoneRequired")}`);
       setLoading(false);
       return;
     }
@@ -129,8 +129,10 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
         placeholder={t(dict, "lead.phone")}
         value={client_phone}
         onChange={(e) => setPhone(e.target.value)}
+        required
         className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
       />
+      <p className="-mt-1 text-xs text-gray-400">{t(dict, "lead.phoneHint")}</p>
 
       <textarea
         placeholder={t(dict, "lead.message")}

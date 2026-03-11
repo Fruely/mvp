@@ -122,6 +122,8 @@
     "error": "Ошибка отправки",
     "noSpecialist": "Не удалось определить специалиста",
     "nameRequired": "Укажите ваше имя",
+    "phoneRequired": "Укажите номер телефона",
+    "phoneHint": "Укажите номер для быстрой связи. Лучше тот, к которому привязаны WhatsApp или Telegram.",
     "needContact": "Укажите email или телефон"
   },
   "application": {

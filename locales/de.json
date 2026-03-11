@@ -114,6 +114,8 @@
     "error": "Fehler beim Senden",
     "noSpecialist": "Spezialist konnte nicht bestimmt werden",
     "nameRequired": "Bitte geben Sie Ihren Namen ein",
+    "phoneRequired": "Bitte Telefonnummer angeben",
+    "phoneHint": "Geben Sie eine Nummer für schnelle Kontaktaufnahme an. Am besten die, die mit WhatsApp oder Telegram verknüpft ist.",
     "needContact": "Bitte E-Mail oder Telefon angeben"
   },
   "categories.title": "Fachkraft-Kategorien",
