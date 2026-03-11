@@ -110,7 +110,7 @@
     "message": "Nachricht",
     "submit": "Anfrage senden",
     "sending": "Wird gesendet...",
-    "success": "Anfrage gesendet!",
+    "success": "Ihre Anfrage wurde an den Spezialisten gesendet. Sobald der Spezialist den Erhalt bestätigt, werden wir Sie benachrichtigen.",
     "error": "Fehler beim Senden",
     "noSpecialist": "Spezialist konnte nicht bestimmt werden",
     "nameRequired": "Bitte geben Sie Ihren Namen ein",
