@@ -58,6 +58,12 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
       return;
     }
 
+    if (!client_email.trim()) {
+      setStatus(`error:${t(dict, "lead.emailRequired")}`);
+      setLoading(false);
+      return;
+    }
+
     if (!client_phone.trim()) {
       setStatus(`error:${t(dict, "lead.phoneRequired")}`);
       setLoading(false);
@@ -121,8 +127,10 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
         placeholder={t(dict, "lead.email")}
         value={client_email}
         onChange={(e) => setEmail(e.target.value)}
+        required
         className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
       />
+      <p className="-mt-1 text-xs text-gray-400">{t(dict, "lead.emailHint")}</p>
 
       <input
         type="tel"
