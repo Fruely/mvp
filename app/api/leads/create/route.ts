@@ -120,6 +120,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const tgToken = process.env.TELEGRAM_BOT_TOKEN;
+    const tgChatId = process.env.TELEGRAM_CHAT_ID;
+    if (tgToken && tgChatId) {
+      const text = `🔔 Новая заявка Freuly\n\nИмя: ${client_name || "—"}\nТелефон: ${client_phone || "—"}\nEmail: ${client_email || "—"}\n\nСообщение:\n${message || "—"}`;
+      try {
+        await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: tgChatId, text }),
+        });
+      } catch (tgErr) {
+        console.error("[leads/create] Telegram notification failed", tgErr);
+      }
+    }
+
     return Response.json({ data }, { status: 200 });
   } catch (err: any) {
     return Response.json(
