@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
   if (tgToken && tgChatId && leads) {
     for (const lead of leads) {
-      const text = `⏰ Напоминание Freuly\n\nУ вас есть непринятая заявка.\n\nИмя: ${lead.client_name || "—"}\nТелефон: ${lead.client_phone || "—"}\n\nОткройте кабинет:\n${appUrl}/specialist/leads`;
+      const text = `⏰ Напоминание Freuly\n\nУ вас есть непринятая заявка.\n\nИмя: ${lead.client_name || "—"}\nТелефон: ${lead.client_phone || "—"}\n\nОткройте кабинет:\n${appUrl}/ua/specialist/dashboard/leads`;
       try {
         const res = await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
           method: "POST",
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
             text,
             reply_markup: {
               inline_keyboard: [
-                [{ text: "Открыть заявку", url: `${appUrl}/specialist/leads` }],
+                [{ text: "Открыть заявку", url: `${appUrl}/ua/specialist/dashboard/leads` }],
               ],
             },
           }),

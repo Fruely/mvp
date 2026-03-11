@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
             text,
             reply_markup: {
               inline_keyboard: [
-                [{ text: "Открыть заявку", url: `${process.env.APP_URL || "https://freuly.com"}/specialist/leads` }],
+                [{ text: "Открыть заявку", url: `${process.env.APP_URL || "https://freuly.com"}/ua/specialist/dashboard/leads` }],
               ],
             },
           }),
