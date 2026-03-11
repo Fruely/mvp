@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
+import { sendEmail } from "@/lib/email";
 
 const ALLOWED_STATUSES = ["new", "accepted", "contacted", "closed"] as const;
 type LeadStatus = (typeof ALLOWED_STATUSES)[number];
@@ -70,7 +71,7 @@ export async function PATCH(request: NextRequest) {
       .update({ status: nextStatus })
       .eq("id", leadId)
       .eq("specialist_id", specialist.id)
-      .select("id, status, created_at")
+      .select("id, status, client_email, created_at")
       .maybeSingle();
 
     if (error) {
@@ -86,6 +87,18 @@ export async function PATCH(request: NextRequest) {
         { error: "Lead not found" },
         { status: 404, headers: { "Cache-Control": "no-store" } }
       );
+    }
+
+    if (nextStatus === "accepted" && typeof data.client_email === "string" && data.client_email.trim()) {
+      try {
+        await sendEmail({
+          to: data.client_email.trim(),
+          subject: "Специалист принял вашу заявку",
+          html: "<p>Здравствуйте!</p><p>Специалист подтвердил получение вашей заявки и свяжется с вами в ближайшее время.</p>",
+        });
+      } catch (emailErr) {
+        console.error("[specialist/leads/status] failed to send accepted email", emailErr);
+      }
     }
 
     return NextResponse.json(
