@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 
-const ALLOWED_STATUSES = ["new", "contacted", "closed"] as const;
+const ALLOWED_STATUSES = ["new", "accepted", "contacted", "closed"] as const;
 type LeadStatus = (typeof ALLOWED_STATUSES)[number];
 
 export async function PATCH(request: NextRequest) {

@@ -3,11 +3,12 @@
 import { useMemo, useState } from "react";
 import type { DashboardLead } from "@/lib/dashboard/getDashboardData";
 
-const ALLOWED_STATUSES = ["new", "contacted", "closed"] as const;
+const ALLOWED_STATUSES = ["new", "accepted", "contacted", "closed"] as const;
 type LeadStatus = (typeof ALLOWED_STATUSES)[number];
 
 function statusStyles(status: string | null): string {
   if (status === "new") return "bg-blue-50 text-blue-700";
+  if (status === "accepted") return "bg-amber-50 text-amber-700";
   if (status === "contacted") return "bg-violet-50 text-violet-700";
   if (status === "closed") return "bg-emerald-50 text-emerald-700";
   return "bg-gray-100 text-gray-700";
@@ -90,6 +91,7 @@ export default function LeadsTable({
           >
             <option value="all">Все статусы</option>
             <option value="new">new</option>
+            <option value="accepted">accepted</option>
             <option value="contacted">contacted</option>
             <option value="closed">closed</option>
           </select>
@@ -147,6 +149,16 @@ export default function LeadsTable({
                         <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusStyles(currentStatus)}`}>
                           {currentStatus}
                         </span>
+                        {currentStatus === "new" && (
+                          <button
+                            type="button"
+                            disabled={Boolean(updatingById[lead.id])}
+                            onClick={() => void changeLeadStatus(lead.id, "accepted")}
+                            className="inline-flex h-8 items-center rounded-md bg-amber-500 px-2.5 text-xs font-medium text-white transition hover:bg-amber-600 disabled:opacity-60"
+                          >
+                            Принять
+                          </button>
+                        )}
                         <select
                           value={currentStatus}
                           disabled={Boolean(updatingById[lead.id])}
@@ -158,6 +170,7 @@ export default function LeadsTable({
                           className="h-8 rounded-md border border-gray-300 bg-white px-2 text-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
                         >
                           <option value="new">new</option>
+                          <option value="accepted">accepted</option>
                           <option value="contacted">contacted</option>
                           <option value="closed">closed</option>
                         </select>
