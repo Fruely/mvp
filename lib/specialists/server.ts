@@ -51,29 +51,9 @@ export async function getCurrentUserAndSpecialist() {
     .from("specialists")
     .select(COLS)
     .eq("user_id", user.id)
+    .neq("status", "blocked")
     .maybeSingle()
     .then((r) => toSpecialistRow(r.data));
-
-  if (!specialist && user.email) {
-    const normalizedEmail = user.email.trim().toLowerCase();
-    const { data: byEmail } = await service
-      .from("specialists")
-      .select(COLS)
-      .eq("email", normalizedEmail)
-      .maybeSingle();
-
-    const row = toSpecialistRow(byEmail);
-    if (row) {
-      // Recover broken linkage: specialist exists by email, but user_id can be stale.
-      if (row.user_id !== user.id) {
-        await service
-          .from("specialists")
-          .update({ user_id: user.id })
-          .eq("id", row.id);
-      }
-      specialist = { ...row, user_id: user.id };
-    }
-  }
 
   if (!specialist) {
     const normalizedEmail = typeof user.email === "string" ? user.email.trim().toLowerCase() : null;
