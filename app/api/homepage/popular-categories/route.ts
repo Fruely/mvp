@@ -24,10 +24,7 @@ export async function GET() {
   }
 
   const rows = ((data ?? []) as PopularCategoryItem[]).filter(
-    (row) =>
-      typeof row.id === "string" &&
-      typeof row.slug === "string" &&
-      row.slug.trim().length > 0
+    (row) => typeof row.id === "string"
   );
 
   return jsonNoStore({ data: rows });

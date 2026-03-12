@@ -218,20 +218,14 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         }
         const normalized = json.data
           .filter(
-            (item: { id?: unknown; slug?: unknown; title?: unknown; image_url?: unknown; specialists_count?: unknown; sort_order?: unknown }) =>
-              item &&
-              typeof item.id === "string" &&
-              typeof item.slug === "string" &&
-              item.slug.trim().length > 0 &&
-              (typeof item.title === "string" || item.title == null) &&
-              typeof item.specialists_count === "number"
+            (item: { id?: unknown }) => item && typeof item.id === "string"
           )
-          .map((item: { id: string; slug: string; title: string | null; image_url?: string | null; specialists_count: number; sort_order?: number | null }) => ({
+          .map((item: { id: string; slug?: string | null; title?: string | null; image_url?: string | null; specialists_count?: number | null; sort_order?: number | null }) => ({
             id: item.id,
-            slug: item.slug,
-            title: item.title,
+            slug: typeof item.slug === "string" && item.slug.trim() ? item.slug : item.id,
+            title: typeof item.title === "string" ? item.title : null,
             image_url: typeof item.image_url === "string" ? item.image_url : null,
-            specialists_count: item.specialists_count,
+            specialists_count: typeof item.specialists_count === "number" ? item.specialists_count : 0,
             sort_order: item.sort_order ?? null,
           }));
         setPopularCategories(normalized);
