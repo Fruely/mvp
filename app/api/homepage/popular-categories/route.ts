@@ -17,7 +17,8 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("homepage_popular_categories_view")
-    .select("id, slug, title, image_url, specialists_count, sort_order");
+    .select("id, slug, title, image_url, specialists_count, sort_order")
+    .order("sort_order", { ascending: true });
 
   if (error) {
     return jsonNoStore({ error: error.message }, { status: 500 });
