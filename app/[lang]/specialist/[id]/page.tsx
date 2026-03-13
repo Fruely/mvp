@@ -52,6 +52,7 @@ export default function SpecialistPage() {
   const [activePortfolioIndex, setActivePortfolioIndex] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [mapCoords, setMapCoords] = useState<{ lat: number; lon: number } | null>(null);
+  const [reviews, setReviews] = useState<Array<{ id: string; author_name: string; rating: number; comment: string; created_at: string }>>([]);
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname() || "/";
@@ -138,6 +139,19 @@ export default function SpecialistPage() {
 
     return () => { cancelled = true; };
   }, [specialist?.address, specialist?.city]);
+
+  useEffect(() => {
+    if (!specialist?.id) return;
+    let cancelled = false;
+    fetch(`/api/specialists/${specialist.id}/reviews`, { cache: "no-store" })
+      .then((res) => res.json())
+      .then((json) => {
+        if (cancelled || !Array.isArray(json?.data)) return;
+        setReviews(json.data);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [specialist?.id]);
 
   if (loading) {
     return (
@@ -489,15 +503,34 @@ export default function SpecialistPage() {
                 {Array.from({ length: 5 }, (_, idx) => renderStar(normalizedRating - idx, idx))}
               </div>
               {hasRating ? <p className="text-2xl font-bold">{specialist.rating?.toFixed(1)}</p> : null}
-              {reviewsCount > 0 ? (
+              {(reviewsCount > 0 || reviews.length > 0) ? (
                 <p className="text-sm text-gray-600">
-                  ({reviewsCount} {sectionText.reviewsWord})
+                  ({reviews.length || reviewsCount} {sectionText.reviewsWord})
                 </p>
               ) : null}
             </div>
-            {!hasRating && reviewsCount === 0 ? (
+            {reviews.length > 0 ? (
+              <div className="mt-4 space-y-4">
+                {reviews.map((review) => (
+                  <div key={review.id} className="rounded-xl border border-gray-200 bg-slate-50 p-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-gray-900">{review.author_name}</p>
+                      <time className="text-xs text-gray-500" dateTime={review.created_at}>
+                        {new Date(review.created_at).toLocaleDateString(lang === "de" ? "de-DE" : lang === "ru" ? "ru-RU" : "uk-UA", { day: "numeric", month: "short", year: "numeric" })}
+                      </time>
+                    </div>
+                    <div className="mt-1 flex items-center gap-0.5">
+                      {Array.from({ length: 5 }, (_, idx) => (
+                        <span key={idx} className={idx < review.rating ? "text-yellow-400" : "text-gray-300"}>★</span>
+                      ))}
+                    </div>
+                    <p className="mt-2 text-sm leading-relaxed text-gray-700">{review.comment}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
               <p className="text-sm text-gray-600">{sectionText.noReviews}</p>
-            ) : null}
+            )}
           </SectionCard>
 
           {servicesList.length > 0 ? (
