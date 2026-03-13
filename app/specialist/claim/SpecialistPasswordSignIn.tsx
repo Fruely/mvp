@@ -93,6 +93,12 @@ export default function SpecialistPasswordSignIn() {
         >
           {loading ? "Вход…" : "Войти"}
         </button>
+        <a
+          href="/reset-password"
+          className="mt-1 block text-center text-sm text-blue-600 hover:underline"
+        >
+          Забули пароль?
+        </a>
       </form>
       <p className="mt-4 text-xs text-gray-500">
         Нет пароля? Откройте ссылку из письма или запросите новую на{" "}
