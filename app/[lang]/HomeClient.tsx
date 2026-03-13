@@ -67,6 +67,8 @@ type RecommendedSpecialist = {
   languages: string[];
   category_title: string | null;
   about_line?: string | null;
+  rating_avg: number | null;
+  reviews_count: number;
 };
 
 const CATEGORY_ICON_HINTS = [
@@ -258,6 +260,8 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               : [],
             category_title: typeof item.category_title === "string" ? item.category_title : null,
             about_line: typeof item.about_line === "string" ? item.about_line : null,
+            rating_avg: typeof item.rating_avg === "number" ? item.rating_avg : null,
+            reviews_count: typeof item.reviews_count === "number" ? item.reviews_count : 0,
           }));
         setRecommendedSpecialists(normalized);
       } catch {
@@ -321,6 +325,21 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 <p className="font-semibold line-clamp-1 text-textPrimary">
                   {specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
                 </p>
+                <div className="flex items-center gap-1 text-sm">
+                  <span className="flex gap-0.5">
+                    {Array.from({ length: 5 }, (_, idx) => (
+                      <span key={idx} style={{ color: idx < Math.round(specialist.rating_avg ?? 0) ? "#f5b301" : "#d1d5db" }}>★</span>
+                    ))}
+                  </span>
+                  {specialist.reviews_count > 0 ? (
+                    <>
+                      <span className="font-medium text-textPrimary">{specialist.rating_avg?.toFixed(1)}</span>
+                      <span className="text-textSecondary">({specialist.reviews_count})</span>
+                    </>
+                  ) : (
+                    <span className="text-textSecondary">Новий спеціаліст</span>
+                  )}
+                </div>
                 <p className="text-sm font-normal text-textSecondary line-clamp-1">
                   {specialist.category_title || "Услуги"}
                 </p>
