@@ -19,6 +19,7 @@ interface Specialist {
   bio?: string;
   avatar_url: string | null;
   city?: string | null;
+  address?: string | null;
   category?: string;
   category_id?: string;
   video_url?: string | null;
