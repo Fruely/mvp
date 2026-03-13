@@ -53,6 +53,10 @@ export default function SpecialistPage() {
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [mapCoords, setMapCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [reviews, setReviews] = useState<Array<{ id: string; author_name: string; rating: number; comment: string; created_at: string }>>([]);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewForm, setReviewForm] = useState({ author_name: "", rating: 0, comment: "" });
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewMsg, setReviewMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname() || "/";
@@ -255,6 +259,14 @@ export default function SpecialistPage() {
       reviewsSubtitle: "Досвід клієнтів та соціальний доказ",
       noReviews: "Відгуки поки не додані.",
       reviewsWord: "відгуків",
+      leaveReview: "Залишити відгук",
+      reviewName: "Ваше ім'я",
+      reviewRating: "Оцінка",
+      reviewComment: "Ваш відгук",
+      reviewSubmit: "Надіслати",
+      reviewSuccess: "Дякуємо за відгук!",
+      reviewError: "Не вдалося надіслати відгук.",
+      reviewFillAll: "Заповніть усі поля та оберіть оцінку.",
       servicesTitle: "Послуги",
       servicesSubtitle: "Список послуг з'явиться після наступного оновлення профілю",
       contactsTitle: "Додаткова інформація",
@@ -280,6 +292,14 @@ export default function SpecialistPage() {
       reviewsSubtitle: "Опыт клиентов и социальное доказательство",
       noReviews: "Отзывы пока не добавлены.",
       reviewsWord: "отзывов",
+      leaveReview: "Оставить отзыв",
+      reviewName: "Ваше имя",
+      reviewRating: "Оценка",
+      reviewComment: "Ваш отзыв",
+      reviewSubmit: "Отправить",
+      reviewSuccess: "Спасибо за отзыв!",
+      reviewError: "Не удалось отправить отзыв.",
+      reviewFillAll: "Заполните все поля и выберите оценку.",
       servicesTitle: "Услуги",
       servicesSubtitle: "Список услуг появится после следующего обновления профиля",
       contactsTitle: "Дополнительная информация",
@@ -305,6 +325,14 @@ export default function SpecialistPage() {
       reviewsSubtitle: "Kundenerfahrung und sozialer Nachweis",
       noReviews: "Noch keine Bewertungen vorhanden.",
       reviewsWord: "Bewertungen",
+      leaveReview: "Bewertung schreiben",
+      reviewName: "Ihr Name",
+      reviewRating: "Bewertung",
+      reviewComment: "Ihre Bewertung",
+      reviewSubmit: "Absenden",
+      reviewSuccess: "Vielen Dank für Ihre Bewertung!",
+      reviewError: "Bewertung konnte nicht gesendet werden.",
+      reviewFillAll: "Bitte füllen Sie alle Felder aus und wählen Sie eine Bewertung.",
       servicesTitle: "Leistungen",
       servicesSubtitle: "Die Liste der Leistungen erscheint nach dem nächsten Profil-Update",
       contactsTitle: "Zusätzliche Informationen",
@@ -531,6 +559,107 @@ export default function SpecialistPage() {
             ) : (
               <p className="text-sm text-gray-600">{sectionText.noReviews}</p>
             )}
+
+            <div className="mt-4">
+              {reviewMsg ? (
+                <p className={`mb-3 text-sm ${reviewMsg.type === "ok" ? "text-emerald-600" : "text-red-600"}`}>{reviewMsg.text}</p>
+              ) : null}
+
+              {!showReviewForm ? (
+                <button
+                  type="button"
+                  onClick={() => { setShowReviewForm(true); setReviewMsg(null); }}
+                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+                >
+                  {sectionText.leaveReview}
+                </button>
+              ) : (
+                <div className="rounded-xl border border-gray-200 bg-slate-50 p-4 space-y-3">
+                  <label className="block space-y-1 text-sm">
+                    <span className="font-medium text-gray-700">{sectionText.reviewName}</span>
+                    <input
+                      value={reviewForm.author_name}
+                      onChange={(e) => setReviewForm((prev) => ({ ...prev, author_name: e.target.value.slice(0, 100) }))}
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2"
+                    />
+                  </label>
+                  <div className="space-y-1 text-sm">
+                    <span className="font-medium text-gray-700">{sectionText.reviewRating}</span>
+                    <div className="flex gap-1">
+                      {Array.from({ length: 5 }, (_, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setReviewForm((prev) => ({ ...prev, rating: idx + 1 }))}
+                          className={`text-2xl transition ${idx < reviewForm.rating ? "text-yellow-400" : "text-gray-300"} hover:text-yellow-400`}
+                        >
+                          ★
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <label className="block space-y-1 text-sm">
+                    <span className="font-medium text-gray-700">{sectionText.reviewComment}</span>
+                    <textarea
+                      value={reviewForm.comment}
+                      onChange={(e) => setReviewForm((prev) => ({ ...prev, comment: e.target.value.slice(0, 1000) }))}
+                      rows={3}
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2"
+                    />
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      disabled={reviewSubmitting}
+                      onClick={async () => {
+                        setReviewMsg(null);
+                        if (!reviewForm.author_name.trim() || reviewForm.rating < 1 || !reviewForm.comment.trim()) {
+                          setReviewMsg({ type: "err", text: sectionText.reviewFillAll });
+                          return;
+                        }
+                        setReviewSubmitting(true);
+                        try {
+                          const res = await fetch(`/api/specialists/${specialist.id}/reviews`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              author_name: reviewForm.author_name.trim(),
+                              rating: reviewForm.rating,
+                              comment: reviewForm.comment.trim(),
+                            }),
+                          });
+                          const json = await res.json().catch(() => ({}));
+                          if (!res.ok) {
+                            setReviewMsg({ type: "err", text: sectionText.reviewError });
+                            return;
+                          }
+                          if (json.data) {
+                            setReviews((prev) => [json.data, ...prev]);
+                          }
+                          setReviewForm({ author_name: "", rating: 0, comment: "" });
+                          setShowReviewForm(false);
+                          setReviewMsg({ type: "ok", text: sectionText.reviewSuccess });
+                        } catch {
+                          setReviewMsg({ type: "err", text: sectionText.reviewError });
+                        } finally {
+                          setReviewSubmitting(false);
+                        }
+                      }}
+                      className="inline-flex h-9 items-center justify-center rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+                    >
+                      {reviewSubmitting ? "..." : sectionText.reviewSubmit}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowReviewForm(false); setReviewMsg(null); }}
+                      className="text-sm text-gray-500 hover:text-gray-700"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </SectionCard>
 
           {servicesList.length > 0 ? (
