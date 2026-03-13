@@ -48,7 +48,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     const { data: profile } = await supabase
       .from('specialist_profiles')
-      .select('photo_url, video_url, gallery_urls, certificate_urls, about_me, city')
+      .select('photo_url, video_url, gallery_urls, certificate_urls, about_me, city, address')
       .eq('specialist_id', specialist.id)
       .maybeSingle();
 
@@ -67,6 +67,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       gallery_urls: profile?.gallery_urls ?? [],
       certificate_urls: profile?.certificate_urls ?? [],
       city: profile?.city ?? specialist.city ?? null,
+      address: typeof profile?.address === "string" && profile.address.trim() ? profile.address.trim() : null,
       description: profile?.about_me ?? specialist.description ?? specialist.bio ?? null,
       bio: profile?.about_me ?? specialist.bio ?? null,
       plan_code: typeof plan?.plan_code === "string" ? plan.plan_code : "free",

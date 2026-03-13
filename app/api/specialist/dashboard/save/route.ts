@@ -146,6 +146,7 @@ export async function PUT(request: NextRequest) {
   const profilePatch = {
     about_me: typeof body.about_me === "string" ? body.about_me.trim() || null : null,
     city: typeof body.city === "string" ? body.city.trim() || null : null,
+    address: typeof body.address === "string" ? body.address.trim() || null : null,
     video_url: typeof body.video_url === "string" ? body.video_url.trim() || null : null,
     photo_url: typeof body.photo_url === "string" ? body.photo_url.trim() || null : null,
     gallery_urls: Array.isArray(body.gallery_urls)

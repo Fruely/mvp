@@ -22,6 +22,7 @@ type Props = {
     about_me: string;
     video_url: string;
     city: string;
+    address: string;
     photo_url: string;
     gallery_urls: string[];
     services: ServiceInput[];
@@ -337,6 +338,16 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
               onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
               className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2"
             />
+          </label>
+          <label className="space-y-1 text-sm">
+            <span className="font-medium text-gray-700">Адреса прийому</span>
+            <input
+              value={form.address || ""}
+              placeholder="Наприклад: Friedrich-Ebert-Straße 12"
+              onChange={(e) => setForm((prev) => ({ ...prev, address: e.target.value }))}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2"
+            />
+            <p className="text-xs text-gray-500">Необов&apos;язково. Якщо вказано адресу, маршрут буде будуватись до точного місця.</p>
           </label>
           <label className="space-y-1 text-sm">
             <span className="font-medium text-gray-700">Формат</span>

@@ -500,6 +500,25 @@ export default function SpecialistPage() {
                     {specialist.city}
                   </p>
                 ) : null}
+                {specialist.address ? (
+                  <p>
+                    <span className="font-medium">Адреса прийому: </span>
+                    {specialist.address}
+                  </p>
+                ) : null}
+                {(specialist.address || specialist.city) ? (() => {
+                  const destination = [specialist.address, specialist.city].filter(Boolean).join(", ");
+                  return (
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 transition"
+                    >
+                      Побудувати маршрут
+                    </a>
+                  );
+                })() : null}
                 {specialist.languages && specialist.languages.length > 0 ? (
                   <p>
                     <span className="font-medium">{sectionText.contactsLineLanguages}: </span>

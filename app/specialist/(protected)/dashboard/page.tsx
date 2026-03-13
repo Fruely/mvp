@@ -29,7 +29,7 @@ export default async function SpecialistDashboardPage() {
   if (featureFlags.newSpecialistDashboard) {
     const { data: profile } = await supabase
       .from("specialist_profiles")
-      .select("photo_url, about_me, city, gallery_urls, video_url")
+      .select("photo_url, about_me, city, address, gallery_urls, video_url")
       .eq("specialist_id", specialist.id)
       .maybeSingle();
     const { data: servicesRows } = await supabase
@@ -69,6 +69,7 @@ export default async function SpecialistDashboardPage() {
           about_me: typeof profile?.about_me === "string" ? profile.about_me : "",
           video_url: typeof profile?.video_url === "string" ? profile.video_url : "",
           city: typeof profile?.city === "string" ? profile.city : "",
+          address: typeof profile?.address === "string" ? profile.address : "",
           photo_url: typeof profile?.photo_url === "string" ? profile.photo_url : "",
           gallery_urls: Array.isArray(profile?.gallery_urls)
             ? profile.gallery_urls.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
