@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
   const tgToken = process.env.TELEGRAM_BOT_TOKEN;
   const tgChatId = process.env.TELEGRAM_CHAT_ID;
-  const appUrl = process.env.APP_URL || "https://freuly.com";
+  const appUrl = process.env.APP_URL || "https://freuly.de";
 
   if (tgToken && tgChatId && leads) {
     for (const lead of leads) {
