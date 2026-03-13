@@ -9,6 +9,7 @@ type Payload = {
   work_format?: "online" | "offline" | "hybrid";
   languages?: string[];
   city?: string;
+  address?: string;
   about_me?: string;
   video_url?: string;
   photo_url?: string;
