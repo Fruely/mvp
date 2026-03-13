@@ -51,6 +51,7 @@ export default function SpecialistPage() {
   const [leadSuccessMessage, setLeadSuccessMessage] = useState<string | null>(null);
   const [activePortfolioIndex, setActivePortfolioIndex] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [mapCoords, setMapCoords] = useState<{ lat: number; lon: number } | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname() || "/";
@@ -118,6 +119,25 @@ export default function SpecialistPage() {
       }, 200);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!specialist) return;
+    const query = specialist.address
+      ? [specialist.address, specialist.city].filter(Boolean).join(", ")
+      : specialist.city || "";
+    if (!query) return;
+
+    let cancelled = false;
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`)
+      .then((res) => res.json())
+      .then((results: Array<{ lat: string; lon: string }>) => {
+        if (cancelled || !results?.[0]) return;
+        setMapCoords({ lat: parseFloat(results[0].lat), lon: parseFloat(results[0].lon) });
+      })
+      .catch(() => {});
+
+    return () => { cancelled = true; };
+  }, [specialist?.address, specialist?.city]);
 
   if (loading) {
     return (
@@ -510,14 +530,28 @@ export default function SpecialistPage() {
                 {(specialist.address || specialist.city) ? (() => {
                   const destination = [specialist.address, specialist.city].filter(Boolean).join(", ");
                   return (
-                    <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 transition"
-                    >
-                      Побудувати маршрут
-                    </a>
+                    <>
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 transition"
+                      >
+                        Побудувати маршрут
+                      </a>
+                      {mapCoords ? (
+                        <div className="mt-3 overflow-hidden rounded-xl border border-gray-200">
+                          <iframe
+                            title="Map"
+                            src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapCoords.lon - 0.01},${mapCoords.lat - 0.007},${mapCoords.lon + 0.01},${mapCoords.lat + 0.007}&layer=mapnik&marker=${mapCoords.lat},${mapCoords.lon}`}
+                            width="100%"
+                            height="200"
+                            style={{ border: 0 }}
+                            loading="lazy"
+                          />
+                        </div>
+                      ) : null}
+                    </>
                   );
                 })() : null}
                 {specialist.languages && specialist.languages.length > 0 ? (
