@@ -58,6 +58,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       .eq("specialist_id", specialist.id)
       .maybeSingle();
 
+    const { data: ratingStats } = await supabase
+      .from("specialist_rating_stats")
+      .select("rating_avg, reviews_count")
+      .eq("specialist_id", specialist.id)
+      .maybeSingle();
+
     const nameFromDb = typeof specialist.name === "string" && specialist.name.trim() ? specialist.name.trim() : null;
     const data = {
       ...specialist,
@@ -72,6 +78,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       bio: profile?.about_me ?? specialist.bio ?? null,
       plan_code: typeof plan?.plan_code === "string" ? plan.plan_code : "free",
       plan_status: typeof plan?.plan_status === "string" ? plan.plan_status : "active",
+      rating_avg: typeof ratingStats?.rating_avg === "number" ? ratingStats.rating_avg : null,
+      reviews_count: typeof ratingStats?.reviews_count === "number" ? ratingStats.reviews_count : 0,
     };
 
     console.log("DEBUG RESPONSE DATA:", data);

@@ -74,6 +74,21 @@ export async function GET() {
     );
   }
 
+  const { data: ratingRows } = await supabase
+    .from("specialist_rating_stats")
+    .select("specialist_id, rating_avg, reviews_count")
+    .in("specialist_id", specialistIds);
+
+  const ratingBySpecialistId = new Map<string, { rating_avg: number | null; reviews_count: number }>();
+  for (const r of ratingRows ?? []) {
+    if (typeof r?.specialist_id === "string") {
+      ratingBySpecialistId.set(r.specialist_id, {
+        rating_avg: typeof r.rating_avg === "number" ? r.rating_avg : null,
+        reviews_count: typeof r.reviews_count === "number" ? r.reviews_count : 0,
+      });
+    }
+  }
+
   const grouped = new Map<number, typeof specialists>();
   for (const specialist of specialists) {
     const priority = Number.isFinite(specialist.featured_priority)
@@ -104,6 +119,8 @@ export async function GET() {
       category_title: category?.title ?? null,
       category_slug: category?.slug ?? null,
       featured_priority: row.featured_priority ?? 0,
+      rating_avg: ratingBySpecialistId.get(row.id)?.rating_avg ?? null,
+      reviews_count: ratingBySpecialistId.get(row.id)?.reviews_count ?? 0,
     };
   });
 
