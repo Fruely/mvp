@@ -103,9 +103,6 @@ const HERO_COPY: Record<Lang, { title: string; subtitle: string; search: string 
 
 export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionary }) {
   const router = useRouter();
-  const featuredHomeBlockEnabled =
-    process.env.NEXT_PUBLIC_FEATURED_HOME_BLOCK_ENABLED === "1" ||
-    process.env.NEXT_PUBLIC_FEATURED_HOME_BLOCK_ENABLED === "true";
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [categories, setCategories] = useState<CategoryStat[]>([]);
   const [popularCategories, setPopularCategories] = useState<PopularCategory[]>([]);
@@ -274,17 +271,13 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     loadBlocks();
     loadCategories();
     loadPopularCategories();
-    if (featuredHomeBlockEnabled) {
-      loadRecommendedSpecialists();
-    } else {
-      setIsRecommendedLoading(false);
-    }
+    loadRecommendedSpecialists();
 
     // Быстрая реакция на публикацию из админки
     const handler = () => loadBlocks();
     window.addEventListener("storage", handler);
     return () => window.removeEventListener("storage", handler);
-  }, [featuredHomeBlockEnabled]);
+  }, []);
 
   const textImage = useMemo(
     () => blocks.find((b) => b.key === "homepage_text_image"),
