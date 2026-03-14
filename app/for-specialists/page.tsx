@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import Header from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "Для специалистов — Freuly",
@@ -43,8 +44,16 @@ export default function ForSpecialistsPage() {
     forSpecialists: "Для специалистов",
     tagline: "Freuly — место, где люди находят профессионалов, говорящих на их языке."
   };
+  const headerDict = {
+    "header.nav.categories": "Категории",
+    "header.nav.about": "О нас",
+    "header.nav.contacts": "Контакты",
+    "header.cabinet": "Кабинет специалиста",
+    "header.joinButton": "Приєднатися до Freuly"
+  };
   return (
     <>
+      <Header lang="ru" dict={headerDict} />
       <main className="min-h-screen bg-white text-gray-900">
         {/* Hero */}
         <section className="px-4 pb-20 pt-24 text-center sm:px-6 lg:px-8">
