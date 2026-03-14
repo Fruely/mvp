@@ -39,6 +39,7 @@ interface Specialist {
   online?: boolean;
   format?: string | null;
   work_format?: string | null;
+  specialist_services?: Array<{ id: string; title: string; price_from: number; price_to: number; currency: string }>;
 }
 
 export default function SpecialistPage() {
@@ -290,8 +291,8 @@ export default function SpecialistPage() {
       gallerySubtitle: "Раздел подготовлен для будущего медиа-контента",
       reviewsTitle: "Отзывы и рейтинг",
       reviewsSubtitle: "Опыт клиентов и социальное доказательство",
-      noReviews: "Отзывы пока не добавлены.",
-      reviewsWord: "отзывов",
+      noReviews: "Noch keine Bewertungen vorhanden.",
+      reviewsWord: "Bewertungen",
       leaveReview: "Оставить отзыв",
       reviewName: "Ваше имя",
       reviewRating: "Оценка",
@@ -673,6 +674,23 @@ export default function SpecialistPage() {
               </div>
             </SectionCard>
           ) : null}
+
+          {(Array.isArray(specialist?.specialist_services) && specialist.specialist_services.length > 0) && (
+            <SectionCard title={sectionText.servicesTitle} subtitle={sectionText.servicesSubtitle}>
+              <div className="space-y-3">
+                {(specialist.specialist_services ?? []).map((service: any) => (
+                  <div key={service.id} className="flex justify-between border-b pb-2">
+                    <span>{service.title}</span>
+                    <span className="font-medium">
+                      {service.price_to
+                        ? `${service.price_from}–${service.price_to} ${service.currency}`
+                        : `${service.price_from} ${service.currency}`}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+          )}
 
           {(specialist.city || (specialist.languages && specialist.languages.length > 0) || workModeLabel) ? (
             <SectionCard title={sectionText.contactsTitle} subtitle={sectionText.contactsSubtitle}>

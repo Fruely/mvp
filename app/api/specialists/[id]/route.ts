@@ -23,7 +23,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     let specialistQuery = supabase
       .from('specialists')
-      .select('*')
+      .select(`*, specialist_services(id, title, price_from, price_to, currency, duration_minutes, specialist_id, is_active)`) // fetch related services
       .in('status', [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
       .eq("is_active", true)
       .eq("is_visible", true);
@@ -32,6 +32,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     specialistQuery = isUuidLike ? specialistQuery.eq("id", raw) : specialistQuery.eq("slug", raw);
 
     const { data: specialist, error } = await specialistQuery.single();
+
+    // Filter only active services
+    if (specialist && Array.isArray(specialist.specialist_services)) {
+      specialist.specialist_services = specialist.specialist_services.filter(s => s.is_active);
+    }
 
     console.log("DEBUG RAW SPECIALIST ROW:", specialist);
     console.log("DEBUG DB NAME:", specialist?.name);
