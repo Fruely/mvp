@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { t } from "@/lib/i18n";
+import FreulySocialIcons from "./FreulySocialIcons";
 
 /**
  * @typedef {'ua'|'ru'|'de'} Lang
@@ -25,6 +26,10 @@ export default function Footer(props) {
           </Link>
           <div className="text-sm text-white/50 mt-2 max-w-sm">
             {t(dict, "footer.tagline")}
+          </div>
+          <div className="mt-8">
+            <h4 className="font-semibold mb-2 text-white/90">Мы в соцсетях</h4>
+            <FreulySocialIcons />
           </div>
         </div>
 
