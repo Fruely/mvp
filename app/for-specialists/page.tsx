@@ -73,6 +73,33 @@ export default function ForSpecialistsPage() {
           </Link>
         </div>
       </section>
+        {/* Push notification section */}
+        <section className="max-w-6xl mx-auto py-20 grid md:grid-cols-2 gap-12 items-center px-4 sm:px-6 lg:px-8">
+          <div>
+            <h2 className="text-2xl font-bold sm:text-3xl mb-4">Не пропустите нового клиента</h2>
+            <p className="text-lg text-gray-700 mb-6">После регистрации вы сможете включить push-уведомления и сразу узнавать о новых заявках на телефон или компьютер.</p>
+            <ul className="mb-6 space-y-2 text-gray-600 text-base">
+              <li className="flex items-center gap-2"><span className="text-emerald-600">•</span> Узнавайте о новой заявке мгновенно</li>
+              <li className="flex items-center gap-2"><span className="text-emerald-600">•</span> Отвечайте клиенту быстрее</li>
+              <li className="flex items-center gap-2"><span className="text-emerald-600">•</span> Получайте больше шансов на заказ</li>
+            </ul>
+            <Link
+              href="/become-specialist"
+              className="inline-flex h-12 items-center justify-center rounded-xl bg-emerald-600 px-7 text-base font-semibold text-white transition hover:bg-emerald-700"
+            >
+              Создать профиль специалиста
+            </Link>
+          </div>
+          <div className="flex justify-center md:justify-end">
+            <img
+              src="/images/push-notification.jpeg"
+              alt="Push уведомление о новой заявке Freuly"
+              width={360}
+              height={360}
+              className="rounded-3xl shadow-2xl max-w-xs w-full"
+            />
+          </div>
+        </section>
 
       {/* How it works */}
       <section className="px-4 py-20 sm:px-6 lg:px-8">
