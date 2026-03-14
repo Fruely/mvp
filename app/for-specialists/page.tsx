@@ -43,7 +43,7 @@ export default function ForSpecialistsPage() {
           Freuly помогает специалистам находить клиентов в&nbsp;Германии&nbsp;— онлайн и&nbsp;рядом с&nbsp;вами.
         </p>
         <Link
-          href="/specialists/apply"
+          href="/become-specialist"
           className="mt-8 inline-flex h-12 items-center justify-center rounded-xl bg-emerald-600 px-7 text-base font-semibold text-white transition hover:bg-emerald-700"
         >
           Создать профиль специалиста
@@ -66,7 +66,7 @@ export default function ForSpecialistsPage() {
         </div>
         <div className="mt-12 text-center">
           <Link
-            href="/specialists/apply"
+            href="/become-specialist"
             className="inline-flex h-12 items-center justify-center rounded-xl bg-emerald-600 px-7 text-base font-semibold text-white transition hover:bg-emerald-700"
           >
             Создать профиль
@@ -90,7 +90,7 @@ export default function ForSpecialistsPage() {
         </div>
         <div className="mt-12 text-center">
           <Link
-            href="/specialists/apply"
+            href="/become-specialist"
             className="inline-flex h-12 items-center justify-center rounded-xl bg-emerald-600 px-7 text-base font-semibold text-white transition hover:bg-emerald-700"
           >
             Создать профиль специалиста
@@ -104,7 +104,7 @@ export default function ForSpecialistsPage() {
           Начните получать клиентов уже&nbsp;сегодня
         </h2>
         <Link
-          href="/specialists/apply"
+          href="/become-specialist"
           className="mt-8 inline-flex h-12 items-center justify-center rounded-xl bg-emerald-600 px-7 text-base font-semibold text-white transition hover:bg-emerald-700"
         >
           Создать профиль специалиста
