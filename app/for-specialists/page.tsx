@@ -11,17 +11,17 @@ const WHY_CARDS = [
   {
     title: "Клиенты уже ищут услуги",
     description:
-      "Люди приходят на Freuly, чтобы найти специалиста на своём языке. Ваш профиль — ваша витрина.",
+      "Люди приходят на Freuly, чтобы найти специалиста для конкретной задачи.",
   },
   {
     title: "Вас легко найти",
     description:
-      "Профиль оптимизирован для поиска по городу, категории и языку. Клиенты находят вас за минуту.",
+      "Клиенты могут найти специалиста на удобном языке и рядом с собой.",
   },
   {
     title: "Без посредников",
     description:
-      "Заявки приходят напрямую. Вы общаетесь с клиентом без комиссий и лишних звеньев.",
+      "Вы общаетесь с клиентом напрямую и сами договариваетесь о работе.",
   },
 ] as const;
 
@@ -64,6 +64,14 @@ export default function ForSpecialistsPage() {
             </div>
           ))}
         </div>
+        <div className="mt-12 text-center">
+          <Link
+            href="/specialists/apply"
+            className="inline-flex h-12 items-center justify-center rounded-xl bg-emerald-600 px-7 text-base font-semibold text-white transition hover:bg-emerald-700"
+          >
+            Создать профиль
+          </Link>
+        </div>
       </section>
 
       {/* How it works */}
@@ -90,22 +98,8 @@ export default function ForSpecialistsPage() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="bg-gray-50 px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-2xl font-bold sm:text-3xl">Стоимость</h2>
-          <p className="mt-4 text-gray-600">
-            Создание профиля и&nbsp;размещение на&nbsp;платформе&nbsp;— <span className="font-semibold text-gray-900">бесплатно</span>.
-          </p>
-          <p className="mt-2 text-sm text-gray-500">
-            В&nbsp;будущем появятся платные опции продвижения: приоритет в&nbsp;поиске, выделение профиля и&nbsp;расширенная аналитика.
-            Базовое размещение останется бесплатным.
-          </p>
-        </div>
-      </section>
-
       {/* Final CTA */}
-      <section className="px-4 py-20 text-center sm:px-6 lg:px-8">
+      <section className="bg-gray-50 px-4 py-20 text-center sm:px-6 lg:px-8">
         <h2 className="text-2xl font-bold sm:text-3xl">
           Начните получать клиентов уже&nbsp;сегодня
         </h2>
@@ -113,7 +107,7 @@ export default function ForSpecialistsPage() {
           href="/specialists/apply"
           className="mt-8 inline-flex h-12 items-center justify-center rounded-xl bg-emerald-600 px-7 text-base font-semibold text-white transition hover:bg-emerald-700"
         >
-          Создать профиль
+          Создать профиль специалиста
         </Link>
       </section>
     </main>

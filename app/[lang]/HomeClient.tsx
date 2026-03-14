@@ -646,14 +646,15 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       <section className="bg-gray-50 px-4 py-16 text-center sm:px-6 lg:px-8">
         <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Вы специалист?</h2>
         <p className="mx-auto mt-3 max-w-lg text-gray-600">
-          Freuly помогает специалистам находить клиентов и&nbsp;развивать свой бизнес в&nbsp;Германии.
+          Freuly помогает специалистам находить клиентов и&nbsp;развивать свой бизнес.
         </p>
         <Link
           href="/for-specialists"
           className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-emerald-600 px-6 text-sm font-semibold text-white transition hover:bg-emerald-700"
         >
-          Узнать подробнее
+          Стать специалистом
         </Link>
+        <p className="mt-3 text-xs text-gray-500">Уже 30+ специалистов присоединились к&nbsp;Freuly</p>
       </section>
 
       {error && (
