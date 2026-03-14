@@ -642,6 +642,20 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
 
       </>
 
+      {/* CTA for specialists */}
+      <section className="bg-gray-50 px-4 py-16 text-center sm:px-6 lg:px-8">
+        <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Вы специалист?</h2>
+        <p className="mx-auto mt-3 max-w-lg text-gray-600">
+          Freuly помогает специалистам находить клиентов и&nbsp;развивать свой бизнес в&nbsp;Германии.
+        </p>
+        <Link
+          href="/for-specialists"
+          className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-emerald-600 px-6 text-sm font-semibold text-white transition hover:bg-emerald-700"
+        >
+          Узнать подробнее
+        </Link>
+      </section>
+
       {error && (
         <div className="fixed bottom-4 right-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg shadow">
           {error}
