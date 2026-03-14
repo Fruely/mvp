@@ -72,9 +72,18 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
         form.category_id.trim() &&
         form.city.trim() &&
         form.about_me.trim() &&
-        form.photo_url.trim()
+        form.photo_url.trim() &&
+        form.services.some((s) => s.title.trim().length > 0)
     );
   }, [form]);
+
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   useEffect(() => {
     const postalCode = (form.postal_code || "").trim();
@@ -217,6 +226,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
         return;
       }
       setSuccess("Изменения сохранены.");
+      setToast({ message: "Изменения сохранены", type: "success" });
     } catch {
       setError("Не удалось сохранить профиль.");
     } finally {
@@ -250,6 +260,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
       }
       if (typeof json.status === "string") setStatus(json.status);
       setSuccess("Профиль опубликован.");
+      setToast({ message: "Профиль опубликован. Клиенты теперь могут вас найти.", type: "success" });
     } catch {
       setError("Не удалось опубликовать профиль.");
     } finally {
@@ -258,22 +269,33 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
   }
 
   return (
+    <>
+    {toast && (
+      <div
+        className={`fixed left-1/2 top-6 z-50 -translate-x-1/2 rounded-lg px-5 py-3 text-sm font-medium text-white shadow-lg transition-opacity ${
+          toast.type === "success" ? "bg-emerald-600" : "bg-red-600"
+        }`}
+      >
+        {toast.message}
+      </div>
+    )}
     <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
-        <div>
+      <div className="mb-5">
+        <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-semibold text-gray-900">Профиль специалиста</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Все поля редактируются на одной странице. Профиль в статусе: <span className="font-medium">{status}</span>.
-          </p>
+          <span
+            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+              status === "published"
+                ? "bg-emerald-100 text-emerald-700"
+                : "bg-yellow-100 text-yellow-700"
+            }`}
+          >
+            {status === "published" ? "Опубликован" : "Черновик"}
+          </span>
         </div>
-        <button
-          type="button"
-          onClick={publish}
-          disabled={publishing}
-          className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
-        >
-          {publishing ? "Публикация..." : "Опубликовать"}
-        </button>
+        <p className="mt-1 text-sm text-gray-500">
+          Все поля редактируются на одной странице.
+        </p>
       </div>
 
       <div className="space-y-6">
@@ -517,21 +539,37 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-4">
+        <div className="space-y-3">
           <div className="text-sm">
             {error ? <p className="text-red-600">{error}</p> : null}
             {success ? <p className="text-emerald-600">{success}</p> : null}
           </div>
-          <button
-            type="button"
-            onClick={save}
-            disabled={!isDirty || saving}
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
-          >
-            {saving ? "Сохранение..." : "Сохранить"}
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={save}
+              disabled={!isDirty || saving}
+              className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 px-5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-60"
+            >
+              {saving ? "Сохранение..." : "Сохранить изменения"}
+            </button>
+            <button
+              type="button"
+              onClick={publish}
+              disabled={publishing || !publicationReady}
+              className="inline-flex h-10 items-center justify-center rounded-lg bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+            >
+              {publishing ? "Публикация..." : "Опубликовать профиль"}
+            </button>
+          </div>
+          {!publicationReady && (
+            <p className="text-xs text-gray-500">
+              Заполните обязательные поля (имя, категория, город, описание, фото, хотя бы одна услуга), чтобы опубликовать профиль.
+            </p>
+          )}
         </div>
       </div>
     </section>
+    </>
   );
 }
