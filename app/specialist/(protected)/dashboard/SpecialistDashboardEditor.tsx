@@ -54,6 +54,11 @@ function toSnapshot(data: Props["initialData"]) {
 
 export default function SpecialistDashboardEditor({ initialData, initialStatus, categories }: Props) {
   const [form, setForm] = useState(initialData);
+
+  // Ensure form state is updated when initialData changes (prefill languages, work_format, etc.)
+  useEffect(() => {
+    setForm(initialData);
+  }, [initialData]);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
