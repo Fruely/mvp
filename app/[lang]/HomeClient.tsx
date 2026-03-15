@@ -301,7 +301,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               href={`/${lang}/specialist/${encodeURIComponent(specialist.id)}`}
               className="rounded-xl border bg-white shadow-card overflow-hidden flex h-full flex-col hover:shadow-soft transition"
             >
-              <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
+              <div className="aspect-square w-full overflow-hidden bg-gray-100">
                 {specialist.avatar_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
