@@ -95,7 +95,7 @@ export default function SpecialistPreviewCard({
 
   return (
     <article className="overflow-hidden rounded-xl border border-black/5 bg-white shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-soft">
-      <div className="relative aspect-[4/3] overflow-hidden">
+      <div className="relative aspect-square overflow-hidden">
         {specialist.avatar_url ? (
           <Image
             src={specialist.avatar_url}
