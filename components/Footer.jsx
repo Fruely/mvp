@@ -38,7 +38,7 @@ export default function Footer(props) {
             <h4 className="font-semibold mb-2 text-white/90">{t(dict, "footer.companyHeading")}</h4>
             <ul className="text-sm text-white/70 space-y-1">
               <li>
-                <Link href={`${prefix}/about`} className="hover:text-white">
+                <Link href="/about" className="hover:text-white">
                   {t(dict, "footer.about")}
                 </Link>
               </li>
