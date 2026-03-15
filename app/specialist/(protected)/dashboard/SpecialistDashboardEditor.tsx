@@ -441,6 +441,9 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
                 disabled={avatarUploading}
               />
             </label>
+            <div className="text-sm text-gray-500 mt-2">
+              Чтобы фото красиво выглядело в карточке специалиста, используйте квадратное изображение. Рекомендуемый размер: 800 × 800 px.
+            </div>
           </div>
         </div>
 
