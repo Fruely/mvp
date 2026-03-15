@@ -275,8 +275,14 @@ export default function SpecialistPage() {
       contactsLineLocation: "Локація",
       contactsLineLanguages: "Мови",
       contactsLineFormat: "Формат роботи",
-    }
-  }[lang];
+    },
+    de: {
+      topGalleryTitle: "Galerie der Arbeiten",
+      topGallerySubtitle: "Arbeitsbeispiele und Materialien des Spezialisten",
+      profilePhotoTitle: "Foto des Spezialisten",
+      profilePhotoSubtitle: "Portfolio noch nicht hinzugefügt",
+      leadFormTitle: "Schnellanfrage",
+      galleryTitle: "Galerie und Video",
       gallerySubtitle: "Dieser Bereich ist für künftige Medieninhalte vorbereitet",
       reviewsTitle: "Bewertungen und Rating",
       reviewsSubtitle: "Kundenerfahrung und sozialer Nachweis",
@@ -301,8 +307,8 @@ export default function SpecialistPage() {
       offline: "Offline",
       hybrid: "Online • Offline",
       readMore: "Vollständig lesen",
-      newBadge: "Neu",
-    },
+      newBadge: "Neu"
+    }
   }[lang];
 
   const goToPrevPortfolio = () => {
