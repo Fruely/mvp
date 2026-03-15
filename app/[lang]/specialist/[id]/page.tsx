@@ -275,48 +275,8 @@ export default function SpecialistPage() {
       contactsLineLocation: "Локація",
       contactsLineLanguages: "Мови",
       contactsLineFormat: "Формат роботи",
-        ) : (
-          <section className="md:col-start-1">
-            <SectionCard title={sectionText.profilePhotoTitle} subtitle={sectionText.profilePhotoSubtitle}>
-              {!hasPortfolio && specialist.avatar_url && (
-                <div className="relative rounded-xl bg-slate-100 aspect-[4/3] flex items-center justify-center">
-                  <Image
-                    src={specialist.avatar_url}
-                    alt={displayName}
-                    fill
-                    className="object-contain object-center"
-                  />
-                  {(() => {
-                    const authUserId = typeof window !== "undefined" ? window.localStorage.getItem("authUserId") : null;
-                    const handleAddPhotos = () => {
-                      // Placeholder: open upload dialog or similar
-                      alert("Добавить фото: функция в разработке");
-                    };
-                    return authUserId === specialist.user_id && (
-                      <button
-                        className="absolute bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-full shadow text-sm font-medium"
-                        type="button"
-                        onClick={handleAddPhotos}
-                      >
-                        Добавить фото
-                      </button>
-                    );
-                  })()}
-                </div>
-              )}
-              {!hasPortfolio && !specialist.avatar_url && (
-                <div className="grid grid-cols-2 gap-3">
-                  {galleryPlaceholders.map((item) => (
-                    <div
-                      key={item}
-                      className={item === 0 ? "col-span-2 aspect-[16/10] rounded-xl border border-dashed border-slate-300 bg-slate-100/70" : "aspect-[4/3] rounded-xl border border-dashed border-slate-300 bg-slate-100/70"}
-                    />
-                  ))}
-                </div>
-              )}
-            </SectionCard>
-          </section>
-        )}
+    }
+  }[lang];
       gallerySubtitle: "Dieser Bereich ist für künftige Medieninhalte vorbereitet",
       reviewsTitle: "Bewertungen und Rating",
       reviewsSubtitle: "Kundenerfahrung und sozialer Nachweis",
@@ -433,12 +393,9 @@ export default function SpecialistPage() {
                       alt={`${displayName} work ${normalizedActivePortfolioIndex + 1}`}
                       fill
                       className="object-cover"
-                      unoptimized
-                      sizes="(min-width: 768px) 66vw, 100vw"
                     />
                   </div>
                 ) : null}
-
                 {portfolioCount > 1 ? (
                   <>
                     <button
@@ -467,6 +424,55 @@ export default function SpecialistPage() {
           </section>
         ) : (
           <section className="md:col-start-1">
+            <SectionCard title={sectionText.profilePhotoTitle} subtitle={sectionText.profilePhotoSubtitle}>
+              {!hasPortfolio && specialist.avatar_url && (
+                <div className="relative rounded-xl bg-slate-100 aspect-[4/3] flex items-center justify-center">
+                  <Image
+                    src={specialist.avatar_url}
+                    alt={displayName}
+                    fill
+                    className="object-contain object-center"
+                  />
+                  {(() => {
+                    const authUserId = typeof window !== "undefined" ? window.localStorage.getItem("authUserId") : null;
+                    const handleAddPhotos = () => {
+                      // Placeholder: open upload dialog or similar
+                      alert("Добавить фото: функция в разработке");
+                    };
+                    return authUserId === specialist.user_id && (
+                      <button
+                        className="absolute bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-full shadow text-sm font-medium"
+                        type="button"
+                        onClick={handleAddPhotos}
+                      >
+                        Добавить фото
+                      </button>
+                    );
+                  })()}
+                </div>
+              )}
+              {!hasPortfolio && !specialist.avatar_url && (
+                <div className="grid grid-cols-2 gap-3">
+                  {galleryPlaceholders.map((item) => (
+                    <div
+                      key={item}
+                      className={item === 0 ? "col-span-2 aspect-[16/10] rounded-xl border border-dashed border-slate-300 bg-slate-100/70" : "aspect-[4/3] rounded-xl border border-dashed border-slate-300 bg-slate-100/70"}
+                    />
+                  ))}
+                </div>
+              )}
+            </SectionCard>
+          </section>
+        )}
+                        contactsLineLanguages: "Sprachen",
+                        contactsLineFormat: "Arbeitsformat",
+                        online: "Online",
+                        offline: "Offline",
+                        hybrid: "Online • Offline",
+                        readMore: "Vollständig lesen",
+                        newBadge: "Neu"
+                      }
+                    }[lang];
             <SectionCard title={sectionText.profilePhotoTitle} subtitle={sectionText.profilePhotoSubtitle}>
               {specialist.avatar_url ? (
                 <div className="relative overflow-hidden rounded-xl bg-slate-100 aspect-[4/3] sm:aspect-[16/10]">
