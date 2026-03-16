@@ -39,6 +39,7 @@ interface Specialist {
   online?: boolean;
   format?: string | null;
   work_format?: string | null;
+  user_id?: string | null;
   specialist_services?: Array<{ id: string; title: string; price_from: number; price_to: number; currency: string }>;
 }
 
@@ -458,33 +459,6 @@ export default function SpecialistPage() {
                 </div>
               )}
               {!hasPortfolio && !specialist.avatar_url && (
-                <div className="grid grid-cols-2 gap-3">
-                  {galleryPlaceholders.map((item) => (
-                    <div
-                      key={item}
-                      className={item === 0 ? "col-span-2 aspect-[16/10] rounded-xl border border-dashed border-slate-300 bg-slate-100/70" : "aspect-[4/3] rounded-xl border border-dashed border-slate-300 bg-slate-100/70"}
-                    />
-                  ))}
-                </div>
-              )}
-            </SectionCard>
-          </section>
-        )}
-                        contactsLineLanguages: "Sprachen",
-                        contactsLineFormat: "Arbeitsformat",
-                        online: "Online",
-                        offline: "Offline",
-                        hybrid: "Online • Offline",
-                        readMore: "Vollständig lesen",
-                        newBadge: "Neu"
-                      }
-                    }[lang];
-            <SectionCard title={sectionText.profilePhotoTitle} subtitle={sectionText.profilePhotoSubtitle}>
-              {specialist.avatar_url ? (
-                <div className="relative overflow-hidden rounded-xl bg-slate-100 aspect-[4/3] sm:aspect-[16/10]">
-                  <Image src={specialist.avatar_url} alt={displayName} fill className="object-cover" unoptimized />
-                </div>
-              ) : (
                 <div className="grid grid-cols-2 gap-3">
                   {galleryPlaceholders.map((item) => (
                     <div
