@@ -40,10 +40,16 @@ async function fetchSpecialists(
     process.env.NEXT_PUBLIC_APP_URL ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
     "http://localhost:3000";
-  const res = await fetch(`${base}/api/specialists/search?${params.toString()}`, {
+  const url = `${base}/api/specialists/search?${params.toString()}`;
+  const res = await fetch(url, {
     cache: "no-store",
   });
-  if (!res.ok) {
+  console.log("Search URL:", url);
+  console.log("Response status:", res.status);
+
+  const contentType = res.headers.get("content-type") ?? "";
+
+  if (!res.ok || !contentType.includes("application/json")) {
     const text = await res.text();
     let errorMsg = "Request failed";
     try {
@@ -51,9 +57,11 @@ async function fetchSpecialists(
       errorMsg = parsed.error || errorMsg;
     } catch {
       // response was not JSON (e.g. HTML error page)
+      console.error("Non-JSON response from search API:", text.slice(0, 200));
     }
     return { error: errorMsg };
   }
+
   const json = await res.json();
   return { data: json.data ?? [] };
 }
