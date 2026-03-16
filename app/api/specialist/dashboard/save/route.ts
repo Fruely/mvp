@@ -2,6 +2,27 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { jsonNoStore } from "@/lib/api/response";
 
+async function geocodePlz(
+  postalCode: string
+): Promise<{ lat: number; lng: number } | null> {
+  const url = `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(postalCode)}&country=Germany&format=json&limit=1`;
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": "Freuly-App" },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { lat?: string; lon?: string }[];
+    if (!Array.isArray(data) || !data[0]?.lat || !data[0]?.lon) return null;
+    return {
+      lat: parseFloat(data[0].lat),
+      lng: parseFloat(data[0].lon),
+    };
+  } catch {
+    return null;
+  }
+}
+
 type Payload = {
   name?: string;
   phone?: string;
@@ -80,7 +101,7 @@ export async function PUT(request: NextRequest) {
 
   const { data: specialist, error: specialistError } = await supabase
     .from("specialists")
-    .select("id, category_id")
+    .select("id, category_id, postal_code, lat, lng")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -129,6 +150,29 @@ export async function PUT(request: NextRequest) {
         { error: "Invalid postal code" },
         { status: 400 }
       );
+    }
+  }
+
+  // Geocode postal_code → lat/lng when postal_code is new or changed, or coords are missing
+  const newPlz =
+    typeof specialistPatch.postal_code === "string"
+      ? (specialistPatch.postal_code as string)
+      : null;
+  const oldPlz =
+    typeof specialist.postal_code === "string" ? specialist.postal_code : null;
+  const plzChanged = newPlz !== null && newPlz !== oldPlz;
+  const coordsMissing =
+    (newPlz ?? oldPlz) !== null &&
+    (specialist.lat == null || specialist.lng == null);
+
+  if (plzChanged || coordsMissing) {
+    const plzToGeocode = newPlz ?? oldPlz;
+    if (plzToGeocode) {
+      const coords = await geocodePlz(plzToGeocode);
+      if (coords) {
+        specialistPatch.lat = coords.lat;
+        specialistPatch.lng = coords.lng;
+      }
     }
   }
 
