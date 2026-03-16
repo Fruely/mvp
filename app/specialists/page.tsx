@@ -43,8 +43,18 @@ async function fetchSpecialists(
   const res = await fetch(`${base}/api/specialists/search?${params.toString()}`, {
     cache: "no-store",
   });
+  if (!res.ok) {
+    const text = await res.text();
+    let errorMsg = "Request failed";
+    try {
+      const parsed = JSON.parse(text);
+      errorMsg = parsed.error || errorMsg;
+    } catch {
+      // response was not JSON (e.g. HTML error page)
+    }
+    return { error: errorMsg };
+  }
   const json = await res.json();
-  if (!res.ok) return { error: json.error || "Request failed" };
   return { data: json.data ?? [] };
 }
 
