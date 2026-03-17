@@ -32,7 +32,7 @@ async function fetchSpecialists(
   place: string,
   q: string | null,
   category: string | null
-): Promise<{ data?: Specialist[]; error?: string }> {
+): Promise<{ data: Specialist[]; error: string | null }> {
   const params = new URLSearchParams({ lang, place });
   if (q) params.set("q", q);
   if (category) params.set("category", category);
@@ -41,29 +41,25 @@ async function fetchSpecialists(
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
     "http://localhost:3000";
   const url = `${base}/api/specialists/search?${params.toString()}`;
-  const res = await fetch(url, {
-    cache: "no-store",
-  });
-  console.log("Search URL:", url);
-  console.log("Response status:", res.status);
 
-  const contentType = res.headers.get("content-type") ?? "";
-
-  if (!res.ok || !contentType.includes("application/json")) {
-    const text = await res.text();
-    let errorMsg = "Request failed";
-    try {
-      const parsed = JSON.parse(text);
-      errorMsg = parsed.error || errorMsg;
-    } catch {
-      // response was not JSON (e.g. HTML error page)
-      console.error("Non-JSON response from search API:", text.slice(0, 200));
-    }
-    return { error: errorMsg };
+  let res: Response;
+  try {
+    res = await fetch(url, { cache: "no-store" });
+  } catch {
+    return { data: [], error: "Network error" };
   }
 
-  const json = await res.json();
-  return { data: json.data ?? [] };
+  let json: any = null;
+  try {
+    json = await res.json();
+  } catch {
+    return { data: [], error: "Invalid response" };
+  }
+
+  return {
+    data: Array.isArray(json?.data) ? json.data : [],
+    error: json?.error || null,
+  };
 }
 
 type SearchParams = { lang?: string; place?: string; q?: string; category?: string };
@@ -119,7 +115,7 @@ export default async function SpecialistsPage({
   const { data: specialists, error } = await fetchSpecialists(lang, place, q, category);
   const uiLang = toUiLang(lang);
 
-  if (error) {
+  if (error && specialists.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
@@ -138,7 +134,7 @@ export default async function SpecialistsPage({
     );
   }
 
-  const empty = !specialists || specialists.length === 0;
+  const empty = specialists.length === 0;
 
   if (empty) {
     return (
