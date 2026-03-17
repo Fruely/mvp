@@ -1,0 +1,35 @@
+export type Translations = {
+  topGalleryTitle: string;
+  topGallerySubtitle: string;
+  profilePhotoTitle: string;
+  profilePhotoSubtitle: string;
+  leadFormTitle: string;
+  galleryTitle: string;
+  gallerySubtitle: string;
+  reviewsTitle: string;
+  reviewsSubtitle: string;
+  noReviews: string;
+  reviewsWord: string;
+  leaveReview: string;
+  reviewName: string;
+  reviewRating: string;
+  reviewComment: string;
+  reviewSubmit: string;
+  reviewSuccess: string;
+  reviewError: string;
+  reviewFillAll: string;
+  servicesTitle: string;
+  servicesSubtitle: string;
+  contactsTitle: string;
+  contactsSubtitle: string;
+  contactsLineLocation: string;
+  contactsLineLanguages: string;
+  contactsLineFormat: string;
+  work_format: {
+    online: string;
+    offline: string;
+    hybrid: string;
+  };
+  readMore: string;
+  newBadge: string;
+};

@@ -1,11 +1,19 @@
+import type { Translations } from "./types";
 import { specialistPageTranslations } from "./translations";
 
 const fallback = specialistPageTranslations["en"];
 
-export function getSpecialistPageTranslations(lang: string): Record<string, string> {
+export function getSpecialistPageTranslations(lang: string): Translations {
   return specialistPageTranslations[lang] ?? fallback;
 }
 
-export function safeT(obj: Record<string, string> | undefined, key: string, fallback: string): string {
-  return obj?.[key] ?? fallback;
+const VALID_FORMATS = new Set(["online", "offline", "hybrid"] as const);
+
+export function getWorkFormat(value?: string | null): "online" | "offline" | "hybrid" | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim().toLowerCase();
+  if (VALID_FORMATS.has(normalized as "online" | "offline" | "hybrid")) {
+    return normalized as "online" | "offline" | "hybrid";
+  }
+  return null;
 }

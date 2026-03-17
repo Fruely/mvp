@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import uaDict from "@/locales/ua.json";
-import { getSpecialistPageTranslations } from "@/lib/i18n/getTranslations";
+import { getSpecialistPageTranslations, getWorkFormat } from "@/lib/i18n/getTranslations";
 import SectionCard from "@/components/specialist/SectionCard";
 import SpecialistHero from "@/components/specialist/SpecialistHero";
 import MobileStickyCTA from "@/components/MobileStickyCTA";
@@ -201,19 +201,10 @@ export default function SpecialistPage() {
   const aboutText = (specialist.description ?? specialist.bio)?.trim() || "";
   const specializationText = specialist.category || t(dict, "specialist.about", { defaultValue: "Спеціаліст" });
   const galleryPlaceholders = Array.from({ length: 4 }, (_, idx) => idx);
-  const workMode = (() => {
-    if (typeof specialist.format === "string") {
-      const normalized = specialist.format.trim().toLowerCase();
-      if (normalized === "online" || normalized === "offline" || normalized === "hybrid") return normalized;
-    }
-    if (typeof specialist.work_format === "string") {
-      const normalized = specialist.work_format.trim().toLowerCase();
-      if (normalized === "online" || normalized === "offline" || normalized === "hybrid") return normalized;
-    }
-    if (typeof specialist.is_online === "boolean") return specialist.is_online ? "online" : "offline";
-    if (typeof specialist.online === "boolean") return specialist.online ? "online" : "offline";
-    return null;
-  })();
+  const workMode = getWorkFormat(specialist.format)
+    ?? getWorkFormat(specialist.work_format)
+    ?? (typeof specialist.is_online === "boolean" ? (specialist.is_online ? "online" : "offline") : null)
+    ?? (typeof specialist.online === "boolean" ? (specialist.online ? "online" : "offline") : null);
   const parseList = (value: unknown): string[] => {
     if (Array.isArray(value)) return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
     if (typeof value === "string" && value.trim()) {
@@ -280,14 +271,7 @@ export default function SpecialistPage() {
     const el = document.getElementById("lead-form");
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
-  const workModeLabel =
-    workMode === "online"
-      ? sectionText.online
-      : workMode === "offline"
-        ? sectionText.offline
-        : workMode === "hybrid"
-          ? sectionText.hybrid
-          : null;
+  const workModeLabel = workMode ? sectionText.work_format[workMode] : null;
   const canonicalSlug = typeof specialist.slug === "string" && specialist.slug.trim().length > 0 ? specialist.slug : specialist.id;
   const specialistUrl =
     typeof window !== "undefined"

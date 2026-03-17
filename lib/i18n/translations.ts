@@ -1,4 +1,6 @@
-export const specialistPageTranslations: Record<string, Record<string, string>> = {
+import type { Translations } from "./types";
+
+export const specialistPageTranslations: Record<string, Translations> = {
   ua: {
     topGalleryTitle: "Галерея робіт",
     topGallerySubtitle: "Приклади робіт та матеріали спеціаліста",
@@ -26,9 +28,7 @@ export const specialistPageTranslations: Record<string, Record<string, string>> 
     contactsLineLocation: "Локація",
     contactsLineLanguages: "Мови",
     contactsLineFormat: "Формат роботи",
-    online: "Онлайн",
-    offline: "Офлайн",
-    hybrid: "Онлайн • Офлайн",
+    work_format: { online: "Онлайн", offline: "Офлайн", hybrid: "Онлайн • Офлайн" },
     readMore: "Читати повністю",
     newBadge: "Новий",
   },
@@ -59,9 +59,7 @@ export const specialistPageTranslations: Record<string, Record<string, string>> 
     contactsLineLocation: "Локация",
     contactsLineLanguages: "Языки",
     contactsLineFormat: "Формат работы",
-    online: "Онлайн",
-    offline: "Офлайн",
-    hybrid: "Онлайн • Офлайн",
+    work_format: { online: "Онлайн", offline: "Офлайн", hybrid: "Онлайн • Офлайн" },
     readMore: "Читать полностью",
     newBadge: "Новый",
   },
@@ -92,9 +90,7 @@ export const specialistPageTranslations: Record<string, Record<string, string>> 
     contactsLineLocation: "Standort",
     contactsLineLanguages: "Sprachen",
     contactsLineFormat: "Arbeitsformat",
-    online: "Online",
-    offline: "Offline",
-    hybrid: "Online • Offline",
+    work_format: { online: "Online", offline: "Offline", hybrid: "Online • Offline" },
     readMore: "Vollständig lesen",
     newBadge: "Neu",
   },
@@ -125,9 +121,7 @@ export const specialistPageTranslations: Record<string, Record<string, string>> 
     contactsLineLocation: "Location",
     contactsLineLanguages: "Languages",
     contactsLineFormat: "Work format",
-    online: "Online",
-    offline: "Offline",
-    hybrid: "Online • Offline",
+    work_format: { online: "Online", offline: "Offline", hybrid: "Online • Offline" },
     readMore: "Read more",
     newBadge: "New",
   },
