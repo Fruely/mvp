@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
-import HeroSearch from "@/components/HeroSearch";
+
+type MosaicImage = { url: string; alt?: string; category_id?: string };
 
 type ImageBlockContent = {
   url?: string;
@@ -13,8 +14,6 @@ type ImageBlockContent = {
   subtitle?: string;
   alt?: string;
 };
-
-type MosaicImage = { url: string; alt?: string; category_id?: string };
 
 type MosaicBlockContent = {
   title?: string;
@@ -51,6 +50,7 @@ type CategoryStat = {
 };
 
 type PopularCategory = {
+  id: string;
   slug: string;
   title: string | null;
   image_url?: string | null;
@@ -66,6 +66,7 @@ type RecommendedSpecialist = {
   city: string | null;
   languages: string[];
   category_title: string | null;
+  about_line?: string | null;
   rating_avg: number | null;
   reviews_count: number;
 };
@@ -82,7 +83,26 @@ const FALLBACK_PLACEHOLDERS = [
   { id: "placeholder-3", icon: "🫶" },
 ];
 
+const HERO_COPY: Record<Lang, { title: string; subtitle: string; search: string }> = {
+  ru: {
+    title: "Выберите специалиста на вашем языке в Германии",
+    subtitle: "Профессионалы рядом и онлайн — на вашем языке",
+    search: "Найти специалиста",
+  },
+  ua: {
+    title: "Знайдіть спеціаліста у Німеччині своєю мовою",
+    subtitle: "Фахівці поруч і онлайн — вашою мовою",
+    search: "Знайти спеціаліста",
+  },
+  de: {
+    title: "Fachkräfte in Deutschland – in Ihrer Sprache",
+    subtitle: "Online oder vor Ort – Profis, die Sie verstehen",
+    search: "Spezialist finden",
+  },
+};
+
 export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionary }) {
+  const router = useRouter();
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [categories, setCategories] = useState<CategoryStat[]>([]);
   const [popularCategories, setPopularCategories] = useState<PopularCategory[]>([]);
@@ -91,22 +111,28 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
   const [isPopularLoading, setIsPopularLoading] = useState(true);
   const [isRecommendedLoading, setIsRecommendedLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [heroCategorySlug, setHeroCategorySlug] = useState("");
+  const [heroCity, setHeroCity] = useState("");
+  const [heroLanguage, setHeroLanguage] = useState<"ru" | "uk" | "de">("ru");
   const searchParams = useSearchParams();
   const placeFromUrl = searchParams?.get("place")?.trim() ?? "";
   const specialistLang = lang === "ua" ? "uk" : lang;
 
-  // Stable top positions (sort_order 1-3), rotate the rest, cap at 12
   function buildDisplayCategories(all: PopularCategory[]): PopularCategory[] {
     const MAX = 12;
     const featured = all.filter((c) => typeof c.sort_order === "number" && c.sort_order <= 3);
     const rest = all.filter((c) => typeof c.sort_order !== "number" || c.sort_order > 3);
-    const pool = rest.slice();
-    for (let i = pool.length - 1; i > 0; i--) {
+    const restCopy = [...rest];
+    for (let i = restCopy.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
+      [restCopy[i], restCopy[j]] = [restCopy[j], restCopy[i]];
     }
-    return [...featured.slice(0, 4), ...pool.slice(0, MAX - Math.min(featured.length, 4))].slice(0, MAX);
+    return [...featured.slice(0, 4), ...restCopy.slice(0, 8)].slice(0, MAX);
   }
+
+  useEffect(() => {
+    setHeroLanguage(lang === "ua" ? "uk" : lang === "de" ? "de" : "ru");
+  }, [lang]);
 
   useEffect(() => {
     function normalizeCategories(rawData: any[]): CategoryStat[] {
@@ -203,18 +229,14 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         }
         const normalized = json.data
           .filter(
-            (item: { slug?: unknown; title?: unknown; image_url?: unknown; specialists_count?: unknown; sort_order?: unknown }) =>
-              item &&
-              typeof item.slug === "string" &&
-              item.slug.trim().length > 0 &&
-              (typeof item.title === "string" || item.title == null) &&
-              typeof item.specialists_count === "number"
+            (item: { id?: unknown }) => item && typeof item.id === "string"
           )
-          .map((item: { slug: string; title: string | null; image_url?: string | null; specialists_count: number; sort_order?: number | null }) => ({
-            slug: item.slug,
-            title: item.title,
+          .map((item: { id: string; slug?: string | null; title?: string | null; image_url?: string | null; specialists_count?: number | null; sort_order?: number | null }) => ({
+            id: item.id,
+            slug: typeof item.slug === "string" && item.slug.trim() ? item.slug : item.id,
+            title: typeof item.title === "string" ? item.title : null,
             image_url: typeof item.image_url === "string" ? item.image_url : null,
-            specialists_count: item.specialists_count,
+            specialists_count: typeof item.specialists_count === "number" ? item.specialists_count : 0,
             sort_order: item.sort_order ?? null,
           }));
         setPopularCategories(normalized);
@@ -246,6 +268,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               ? item.languages.filter((lang: unknown): lang is string => typeof lang === "string" && lang.trim().length > 0)
               : [],
             category_title: typeof item.category_title === "string" ? item.category_title : null,
+            about_line: typeof item.about_line === "string" ? item.about_line : null,
             rating_avg: typeof item.rating_avg === "number" ? item.rating_avg : null,
             reviews_count: typeof item.reviews_count === "number" ? item.reviews_count : 0,
           }));
@@ -268,33 +291,78 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     return () => window.removeEventListener("storage", handler);
   }, []);
 
-  const hero = useMemo(() => blocks.find((b) => b.key === "homepage_hero"), [blocks]);
-  const mosaic = useMemo(() => blocks.find((b) => b.key === "homepage_mosaic"), [blocks]);
   const textImage = useMemo(
     () => blocks.find((b) => b.key === "homepage_text_image"),
     [blocks]
   );
 
-  const heroContent = (hero?.content as ImageBlockContent) || {};
-  const mosaicContent = (mosaic?.content as MosaicBlockContent) || {};
   const textImageContent = (textImage?.content as TextImageBlockContent) || {};
-  const mosaicImages = useMemo(
-    () =>
-      (Array.isArray(mosaicContent.images) ? mosaicContent.images : []).filter(
-        (item): item is MosaicImage => Boolean(item && typeof item.url === "string" && item.url)
-      ),
-    [mosaicContent.images]
-  );
 
-  const mosaicImageByCategory = useMemo(() => {
-    const map = new Map<string, MosaicImage>();
-    for (const img of mosaicImages) {
-      const raw = typeof img.category_id === "string" ? img.category_id.trim().toLowerCase() : "";
-      if (!raw || map.has(raw)) continue;
-      map.set(raw, img);
-    }
-    return map;
-  }, [mosaicImages]);
+  const renderRecommendedSpecialists = (data: RecommendedSpecialist[] | null | undefined) => {
+    if (!data || data.length === 0) return null;
+
+    return (
+      <div className="mt-10">
+        <div className="mb-4 md:mb-6 text-center">
+          <h2 className="text-2xl md:text-3xl font-semibold text-textPrimary">Рекомендованные специалисты</h2>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {data.map((specialist) => (
+            <Link
+              key={specialist.id}
+              href={`/${lang}/specialist/${encodeURIComponent(specialist.id)}`}
+              className="rounded-xl border bg-white shadow-card overflow-hidden flex h-full flex-col hover:shadow-soft transition"
+            >
+              <div className="aspect-square w-full overflow-hidden bg-gray-100">
+                {specialist.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={specialist.avatar_url}
+                    alt={specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-gray-100" />
+                )}
+              </div>
+              <div className="p-4 flex flex-col gap-1">
+                <p className="font-semibold line-clamp-1 text-textPrimary">
+                  {specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
+                </p>
+                <div className="flex items-center gap-1 text-sm">
+                  <span className="flex gap-0.5">
+                    {Array.from({ length: 5 }, (_, idx) => (
+                      <span key={idx} style={{ color: idx < Math.round(specialist.rating_avg ?? 0) ? "#f5b301" : "#d1d5db" }}>★</span>
+                    ))}
+                  </span>
+                  {specialist.reviews_count > 0 ? (
+                    <>
+                      <span className="font-medium text-textPrimary">{specialist.rating_avg?.toFixed(1)}</span>
+                      <span className="text-textSecondary">({specialist.reviews_count})</span>
+                    </>
+                  ) : (
+                    <span className="text-textSecondary">Новий спеціаліст</span>
+                  )}
+                </div>
+                <p className="text-sm font-normal text-textSecondary line-clamp-1">
+                  {specialist.category_title || "Услуги"}
+                </p>
+                <p className="text-sm font-normal text-textSecondary line-clamp-1">
+                  {[specialist.city, specialist.languages[0]].filter(Boolean).join(" • ")}
+                </p>
+                {specialist.about_line ? (
+                  <p className="mt-1 text-sm font-normal text-textSecondary line-clamp-2">
+                    {specialist.about_line}
+                  </p>
+                ) : null}
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   const placeholderIconByCategoryId = useMemo(
     () =>
@@ -304,17 +372,118 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     []
   );
 
+  const heroCategoryOptions = useMemo(() => {
+    const options: Array<{ slug: string; title: string }> = [];
+    const seen = new Set<string>();
+
+    for (const category of categories) {
+      if (Array.isArray(category.children) && category.children.length > 0) {
+        for (const child of category.children) {
+          const slug = child.slug?.trim();
+          const title = child.title?.trim();
+          if (!slug || !title || seen.has(slug)) continue;
+          seen.add(slug);
+          options.push({ slug, title });
+        }
+        continue;
+      }
+
+      const slug = category.slug?.trim();
+      const title = category.title?.trim();
+      if (!slug || !title || seen.has(slug)) continue;
+      seen.add(slug);
+      options.push({ slug, title });
+    }
+
+    return options.sort((a, b) => a.title.localeCompare(b.title, "uk"));
+  }, [categories]);
+
+  const copy = HERO_COPY[lang] ?? HERO_COPY.ru;
+
+  function handleHeroSearch() {
+    const locale = heroLanguage === "uk" ? "ua" : heroLanguage;
+    const trimmedCity = heroCity.trim();
+
+    if (trimmedCity) {
+      const params = new URLSearchParams({
+        lang: heroLanguage,
+        place: trimmedCity,
+      });
+      if (heroCategorySlug) params.set("category", heroCategorySlug);
+      router.push(`/specialists?${params.toString()}`);
+      return;
+    }
+
+    if (heroCategorySlug) {
+      router.push(`/${locale}/category/${heroCategorySlug}?lang=${heroLanguage}`);
+      return;
+    }
+
+    router.push(`/${locale}`);
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <>
-      <HeroSearch
-        lang={lang}
-        title={t(dict, "hero.title")}
-        subtitle={t(dict, "hero.subtitle")}
-        primaryCta={t(dict, "hero.primaryCta")}
-        heroImageUrl={heroContent.url}
-        isHeroLoading={isBlocksLoading}
-      />
+      <section className="py-16 sm:py-24 bg-gradient-to-b from-white to-blue-50">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-tight text-textPrimary">
+            {copy.title}
+          </h1>
+          <p className="text-lg font-normal text-textSecondary mt-4 max-w-2xl mx-auto">
+            {copy.subtitle}
+          </p>
+
+          <div className="mt-8 bg-white shadow-soft rounded-xl p-3 flex flex-col sm:flex-row gap-3">
+            <select
+              value={heroCategorySlug}
+              onChange={(e) => setHeroCategorySlug(e.target.value)}
+              className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 sm:flex-1"
+              aria-label={t(dict, "categories.default", { defaultValue: "Категория" })}
+            >
+              <option value="">{t(dict, "categories.default", { defaultValue: "Категория" })}</option>
+              {heroCategoryOptions.map((option) => (
+                <option key={option.slug} value={option.slug}>
+                  {option.title}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="text"
+              value={heroCity}
+              onChange={(e) => setHeroCity(e.target.value)}
+              placeholder="PLZ"
+              className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 placeholder:text-gray-500 sm:flex-1"
+              aria-label={t(dict, "filters.city.label", { defaultValue: "Город" })}
+            />
+
+            <select
+              value={heroLanguage}
+              onChange={(e) => setHeroLanguage((e.target.value as "ru" | "uk" | "de") || "ru")}
+              className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 sm:w-48"
+              aria-label={t(dict, "filters.language.label", { defaultValue: "Язык" })}
+            >
+              <option value="ru">{t(dict, "home.heroLang.ru", { defaultValue: "Русский" })}</option>
+              <option value="uk">{t(dict, "home.heroLang.uk", { defaultValue: "Українська" })}</option>
+              <option value="de">Deutsch</option>
+            </select>
+
+            <button
+              type="button"
+              onClick={handleHeroSearch}
+              className="h-14 px-6 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-soft"
+            >
+              {copy.search}
+            </button>
+          </div>
+
+          <div className="mt-4 text-sm font-normal text-textSecondary flex flex-wrap justify-center gap-3">
+            <span>Популярные категории:</span>
+            <span>Психологи • Юристы • Репетиторы • Миграция</span>
+          </div>
+        </div>
+      </section>
 
       <section className="pt-12 pb-10 md:pt-16 md:pb-12">
         <div className="max-w-5xl mx-auto px-6 text-center">
@@ -322,7 +491,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
             {t(dict, "transitional.line1")}
           </p>
 
-          <p className="mt-4 max-w-3xl mx-auto text-lg md:text-xl text-gray-500 leading-relaxed">
+          <p className="mt-4 max-w-3xl mx-auto text-lg md:text-xl font-normal text-textSecondary leading-relaxed">
             {t(dict, "transitional.line2")}<br />
             {t(dict, "transitional.line3")}
           </p>
@@ -389,7 +558,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                   {Array.from({ length: 6 }).map((_, idx) => (
                     <div
                       key={`popular-skeleton-${idx}`}
-                      className="rounded-2xl bg-white shadow-sm overflow-hidden"
+                      className="rounded-2xl bg-white shadow-card overflow-hidden"
                     >
                       <div className="w-full aspect-square bg-gray-200/80 animate-pulse" />
                       <div className="px-4 py-3 space-y-2">
@@ -413,19 +582,20 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                     const href = placeFromUrl
                       ? `/specialists?lang=${encodeURIComponent(specialistLang)}&place=${encodeURIComponent(placeFromUrl)}&category=${encodeURIComponent(category.slug)}`
                       : `/${lang}/category/${category.slug}`;
+                    const imageUrl = category.image_url ?? null;
 
                     return (
                       <Link
                         key={category.slug}
                         href={href}
-                        className="rounded-2xl bg-white shadow-sm transition hover:shadow-md overflow-hidden flex flex-col"
+                        className="rounded-2xl bg-white shadow-card transition hover:shadow-soft overflow-hidden flex flex-col"
                       >
                         <div className="w-full aspect-square overflow-hidden">
-                          {category.image_url ? (
+                          {imageUrl ? (
                             <>
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
-                                src={category.image_url}
+                                src={imageUrl}
                                 alt={category.title ?? category.slug}
                                 className="w-full h-full object-cover"
                                 loading="lazy"
@@ -437,10 +607,10 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                         </div>
 
                         <div className="px-4 py-3">
-                          <p className="text-base font-semibold text-gray-900 line-clamp-1">
+                          <p className="text-base font-semibold text-textPrimary line-clamp-1">
                             {category.title || category.slug}
                           </p>
-                          <p className="mt-1 text-sm text-gray-600">
+                          <p className="mt-1 text-sm font-normal text-textSecondary">
                             {t(dict, "category.parent.found").replace(
                               /\{\{\s*count\s*\}\}/g,
                               String(category.specialists_count)
@@ -459,47 +629,45 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                 <div className="mb-4 h-8 w-80 rounded-lg bg-gray-200/80 animate-pulse" />
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, idx) => (
-                    <div key={`recommended-skeleton-${idx}`} className="rounded-2xl bg-white p-4 shadow-sm">
-                      <div className="mb-3 h-14 w-14 rounded-full bg-gray-200/80 animate-pulse" />
-                      <div className="h-4 w-2/3 rounded bg-gray-200/80 animate-pulse" />
-                      <div className="mt-2 h-3 w-1/2 rounded bg-gray-200/80 animate-pulse" />
+                    <div
+                      key={`recommended-skeleton-${idx}`}
+                      className="rounded-xl border bg-white aspect-[4/3] p-4"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="h-14 w-14 rounded-full bg-gray-200/80 animate-pulse shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="h-4 w-2/3 rounded bg-gray-200/80 animate-pulse" />
+                          <div className="mt-2 h-3 w-1/2 rounded bg-gray-200/80 animate-pulse" />
+                          <div className="mt-2 h-3 w-3/4 rounded bg-gray-200/80 animate-pulse" />
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
-            ) : recommendedSpecialists.length > 0 ? (
-              <div className="mt-10">
-                <div className="mb-4 md:mb-6 text-center">
-                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Рекомендованные специалисты</h2>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  {recommendedSpecialists.map((specialist) => (
-                    <Link
-                      key={specialist.id}
-                      href={`/${lang}/specialist/${encodeURIComponent(specialist.slug || specialist.id)}`}
-                      className="rounded-2xl bg-white p-4 shadow-sm transition hover:shadow-md"
-                    >
-                      <div className="mb-3 h-14 w-14 overflow-hidden rounded-full bg-gray-100">
-                        {specialist.avatar_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={specialist.avatar_url} alt={specialist.name || "specialist"} className="h-full w-full object-cover" loading="lazy" />
-                        ) : null}
-                      </div>
-                      <p className="line-clamp-1 text-base font-semibold text-gray-900">{specialist.name || "Специалист"}</p>
-                      <p className="mt-1 text-sm text-gray-600 line-clamp-1">{specialist.category_title || "Услуги"}</p>
-                      <p className="mt-1 text-xs text-gray-500 line-clamp-1">
-                        {[specialist.city, specialist.languages[0]].filter(Boolean).join(" • ")}
-                      </p>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ) : null}
+            ) : (
+              renderRecommendedSpecialists(recommendedSpecialists)
+            )}
           </div>
         </div>
       </section>
 
       </>
+
+      {/* CTA for specialists */}
+      <section className="bg-gray-50 px-4 py-16 text-center sm:px-6 lg:px-8">
+        <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Вы специалист?</h2>
+        <p className="mx-auto mt-3 max-w-lg text-gray-600">
+          Freuly помогает специалистам находить клиентов и&nbsp;развивать свой бизнес.
+        </p>
+        <Link
+          href="/for-specialists"
+          className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-emerald-600 px-6 text-sm font-semibold text-white transition hover:bg-emerald-700"
+        >
+          Стать специалистом
+        </Link>
+        <p className="mt-3 text-xs text-gray-500">Уже 30+ специалистов присоединились к&nbsp;Freuly</p>
+      </section>
 
       {error && (
         <div className="fixed bottom-4 right-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg shadow">
