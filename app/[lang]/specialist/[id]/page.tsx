@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import uaDict from "@/locales/ua.json";
+import { getSpecialistPageTranslations } from "@/lib/i18n/getTranslations";
 import SectionCard from "@/components/specialist/SectionCard";
 import SpecialistHero from "@/components/specialist/SpecialistHero";
 import MobileStickyCTA from "@/components/MobileStickyCTA";
@@ -248,69 +249,7 @@ export default function SpecialistPage() {
   const hasRating = specialist.rating != null && Number.isFinite(specialist.rating);
   const reviewsCount = specialist.reviews_count ?? 0;
   const normalizedRating = hasRating ? Math.max(0, Math.min(5, specialist.rating ?? 0)) : 0;
-  const sectionText = {
-    ua: {
-      topGalleryTitle: "Галерея робіт",
-      topGallerySubtitle: "Приклади робіт та матеріали спеціаліста",
-      profilePhotoTitle: "Фото спеціаліста",
-      profilePhotoSubtitle: "Портфоліо поки не додано",
-      leadFormTitle: "Швидка заявка",
-      galleryTitle: "Галерея і відео",
-      gallerySubtitle: "Розділ підготовлено для майбутнього медіа-контенту",
-      reviewsTitle: "Відгуки і рейтинг",
-      reviewsSubtitle: "Досвід клієнтів та соціальний доказ",
-      noReviews: "Відгуки поки не додані.",
-      reviewsWord: "відгуків",
-      leaveReview: "Залишити відгук",
-      reviewName: "Ваше ім'я",
-      reviewRating: "Оцінка",
-      reviewComment: "Ваш відгук",
-      reviewSubmit: "Надіслати",
-      reviewSuccess: "Дякуємо за відгук!",
-      reviewError: "Не вдалося надіслати відгук.",
-      reviewFillAll: "Заповніть усі поля та оберіть оцінку.",
-      servicesTitle: "Послуги",
-      servicesSubtitle: "Список послуг з'явиться після наступного оновлення профілю",
-      contactsTitle: "Додаткова інформація",
-      contactsSubtitle: "Ключові деталі профілю",
-      contactsLineLocation: "Локація",
-      contactsLineLanguages: "Мови",
-      contactsLineFormat: "Формат роботи",
-    },
-    de: {
-      topGalleryTitle: "Galerie der Arbeiten",
-      topGallerySubtitle: "Arbeitsbeispiele und Materialien des Spezialisten",
-      profilePhotoTitle: "Foto des Spezialisten",
-      profilePhotoSubtitle: "Portfolio noch nicht hinzugefügt",
-      leadFormTitle: "Schnellanfrage",
-      galleryTitle: "Galerie und Video",
-      gallerySubtitle: "Dieser Bereich ist für künftige Medieninhalte vorbereitet",
-      reviewsTitle: "Bewertungen und Rating",
-      reviewsSubtitle: "Kundenerfahrung und sozialer Nachweis",
-      noReviews: "Noch keine Bewertungen vorhanden.",
-      reviewsWord: "Bewertungen",
-      leaveReview: "Bewertung schreiben",
-      reviewName: "Ihr Name",
-      reviewRating: "Bewertung",
-      reviewComment: "Ihre Bewertung",
-      reviewSubmit: "Absenden",
-      reviewSuccess: "Vielen Dank für Ihre Bewertung!",
-      reviewError: "Bewertung konnte nicht gesendet werden.",
-      reviewFillAll: "Bitte füllen Sie alle Felder aus und wählen Sie eine Bewertung.",
-      servicesTitle: "Leistungen",
-      servicesSubtitle: "Die Liste der Leistungen erscheint nach dem nächsten Profil-Update",
-      contactsTitle: "Zusätzliche Informationen",
-      contactsSubtitle: "Wichtige Profildetails",
-      contactsLineLocation: "Standort",
-      contactsLineLanguages: "Sprachen",
-      contactsLineFormat: "Arbeitsformat",
-      online: "Online",
-      offline: "Offline",
-      hybrid: "Online • Offline",
-      readMore: "Vollständig lesen",
-      newBadge: "Neu"
-    }
-  }[lang];
+  const sectionText = getSpecialistPageTranslations(lang);
 
   const goToPrevPortfolio = () => {
     if (portfolioCount <= 1) return;
