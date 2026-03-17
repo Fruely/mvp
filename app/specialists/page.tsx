@@ -112,7 +112,9 @@ export default async function SpecialistsPage({
     );
   }
 
-  const { data: specialists, error } = await fetchSpecialists(lang, place, q, category);
+  const result = await fetchSpecialists(lang, place, q, category);
+  const specialists = Array.isArray(result?.data) ? result.data : [];
+  const error = result?.error || null;
   const uiLang = toUiLang(lang);
 
   if (error && specialists.length === 0) {
