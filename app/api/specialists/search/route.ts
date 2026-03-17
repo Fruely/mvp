@@ -10,18 +10,11 @@ type CategoryRow = { id: string; slug: string; title: string | null };
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const lang = searchParams.get("lang")?.trim();
-    const place = searchParams.get("place")?.trim();
+    const lang = searchParams.get("lang")?.trim() || null;
+    const place = searchParams.get("place")?.trim() || null;
     const category = searchParams.get("category")?.trim() || null;
     const offsetRaw = Number.parseInt(searchParams.get("offset") ?? "0", 10);
     const offset = Number.isFinite(offsetRaw) && offsetRaw > 0 ? offsetRaw : 0;
-
-    if (!lang || !place) {
-      return jsonNoStore(
-        { error: "lang and place are required" },
-        { status: 400 }
-      );
-    }
 
     const supabase = createSupabaseServerClient();
 
@@ -51,10 +44,14 @@ export async function GET(request: NextRequest) {
       .eq("is_visible", true);
 
     // Filter by language (Postgres array contains)
-    query = query.contains("languages", [lang]);
+    if (lang) {
+      query = query.contains("languages", [lang]);
+    }
 
     // Filter by postal code
-    query = query.eq("postal_code", place);
+    if (place) {
+      query = query.eq("postal_code", place);
+    }
 
     // Filter by category via category_id
     if (categoryId) {
