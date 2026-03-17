@@ -33,14 +33,16 @@ async function fetchSpecialists(
   q: string | null,
   category: string | null
 ): Promise<{ data: Specialist[]; error: string | null }> {
-  const params = new URLSearchParams({ lang, place });
+  const params = new URLSearchParams();
+  if (lang) params.set("lang", lang);
+  if (place) params.set("place", place);
   if (q) params.set("q", q);
   if (category) params.set("category", category);
-  const base =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
-    "http://localhost:3000";
-  const url = `${base}/api/specialists/search?${params.toString()}`;
+  const baseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    "https://freuly.de";
+  const url = `${baseUrl}/api/specialists/search?${params.toString()}`;
+  console.log("FETCH URL:", url);
 
   let res: Response;
   try {
