@@ -83,21 +83,30 @@ const FALLBACK_PLACEHOLDERS = [
   { id: "placeholder-3", icon: "🫶" },
 ];
 
-const HERO_COPY: Record<Lang, { title: string; subtitle: string; search: string }> = {
+const HERO_COPY: Record<Lang, { title1: string; title2: string; subtitle: string; search: string; plzLabel: string; popularLabel: string }> = {
   ru: {
-    title: "Выберите специалиста на вашем языке в Германии",
-    subtitle: "Профессионалы рядом и онлайн — на вашем языке",
+    title1: "Вы уже на Freuly —",
+    title2: "найдите специалиста на вашем языке в Германии",
+    subtitle: "Рядом с вами и онлайн. Выберите того, с кем вам удобно.",
     search: "Найти специалиста",
+    plzLabel: "PLZ / почтовый индекс",
+    popularLabel: "Популярные категории:",
   },
   ua: {
-    title: "Знайдіть спеціаліста у Німеччині своєю мовою",
-    subtitle: "Фахівці поруч і онлайн — вашою мовою",
+    title1: "Ви вже на Freuly —",
+    title2: "знайдіть спеціаліста вашою мовою в Німеччині",
+    subtitle: "Поруч із вами та онлайн. Оберіть того, з ким вам зручно.",
     search: "Знайти спеціаліста",
+    plzLabel: "PLZ / поштовий індекс",
+    popularLabel: "Популярні категорії:",
   },
   de: {
-    title: "Fachkräfte in Deutschland – in Ihrer Sprache",
-    subtitle: "Online oder vor Ort – Profis, die Sie verstehen",
-    search: "Spezialist finden",
+    title1: "Sie sind schon bei Freuly —",
+    title2: "finden Sie einen Spezialisten in Deutschland in Ihrer Sprache",
+    subtitle: "In Ihrer Nähe und online. Wählen Sie jemanden, mit dem Sie sich wohlfühlen.",
+    search: "Spezialisten finden",
+    plzLabel: "PLZ / Postleitzahl",
+    popularLabel: "Beliebte Kategorien:",
   },
 };
 
@@ -428,7 +437,8 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       <section className="py-16 sm:py-24 bg-gradient-to-b from-white to-blue-50">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-tight text-textPrimary">
-            {copy.title}
+            {copy.title1}<br />
+            <span className="block">{copy.title2}</span>
           </h1>
           <p className="text-lg font-normal text-textSecondary mt-4 max-w-2xl mx-auto">
             {copy.subtitle}
@@ -453,9 +463,9 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               type="text"
               value={heroCity}
               onChange={(e) => setHeroCity(e.target.value)}
-              placeholder="PLZ"
+              placeholder="10115"
               className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 placeholder:text-gray-500 sm:flex-1"
-              aria-label={t(dict, "filters.city.label", { defaultValue: "Город" })}
+              aria-label={copy.plzLabel}
             />
 
             <select
@@ -479,7 +489,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
           </div>
 
           <div className="mt-4 text-sm font-normal text-textSecondary flex flex-wrap justify-center gap-3">
-            <span>Популярные категории:</span>
+            <span>{copy.popularLabel}</span>
             <span>Психологи • Юристы • Репетиторы • Миграция</span>
           </div>
         </div>
