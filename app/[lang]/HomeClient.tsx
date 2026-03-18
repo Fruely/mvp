@@ -83,26 +83,23 @@ const FALLBACK_PLACEHOLDERS = [
   { id: "placeholder-3", icon: "🫶" },
 ];
 
-const HERO_COPY: Record<Lang, { title1: string; title2: string; subtitle: string; search: string; plzLabel: string; popularLabel: string }> = {
+const HERO_COPY: Record<Lang, { titleLines: [string, string, string]; subtitle: string; search: string; plzLabel: string; popularLabel: string }> = {
   ru: {
-    title1: "Вы уже на Freuly —",
-    title2: "найдите специалиста на вашем языке в Германии",
+    titleLines: ["Найдите специалиста", "на вашем языке", "в Германии"],
     subtitle: "Рядом с вами и онлайн. Выберите того, с кем вам удобно.",
     search: "Найти специалиста",
     plzLabel: "PLZ / почтовый индекс",
     popularLabel: "Популярные категории:",
   },
   ua: {
-    title1: "Ви вже на Freuly —",
-    title2: "знайдіть спеціаліста вашою мовою в Німеччині",
+    titleLines: ["Знайдіть спеціаліста", "вашою мовою", "в Німеччині"],
     subtitle: "Поруч із вами та онлайн. Оберіть того, з ким вам зручно.",
     search: "Знайти спеціаліста",
     plzLabel: "PLZ / поштовий індекс",
     popularLabel: "Популярні категорії:",
   },
   de: {
-    title1: "Sie sind schon bei Freuly —",
-    title2: "finden Sie einen Spezialisten in Deutschland in Ihrer Sprache",
+    titleLines: ["Finden Sie einen Spezialisten", "in Ihrer Sprache", "in\u00a0Deutschland"],
     subtitle: "In Ihrer Nähe und online. Wählen Sie jemanden, mit dem Sie sich wohlfühlen.",
     search: "Spezialisten finden",
     plzLabel: "PLZ / Postleitzahl",
@@ -437,8 +434,9 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       <section className="py-16 sm:py-24 bg-gradient-to-b from-white to-blue-50">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-tight text-textPrimary">
-            {copy.title1}<br />
-            <span className="block">{copy.title2}</span>
+            <span className="block">{copy.titleLines[0]}</span>
+            <span className="block">{copy.titleLines[1]}</span>
+            <span className="block">{copy.titleLines[2]}</span>
           </h1>
           <p className="text-lg font-normal text-textSecondary mt-4 max-w-2xl mx-auto">
             {copy.subtitle}
