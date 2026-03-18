@@ -461,7 +461,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               type="text"
               value={heroCity}
               onChange={(e) => setHeroCity(e.target.value)}
-              placeholder="10115"
+              placeholder={copy.plzLabel}
               className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 placeholder:text-gray-500 sm:flex-1"
               aria-label={copy.plzLabel}
             />
