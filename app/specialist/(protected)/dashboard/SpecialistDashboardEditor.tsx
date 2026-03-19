@@ -192,6 +192,11 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
   }
 
   async function publish() {
+    if (isDirty) {
+      setError("Сначала сохраните изменения, затем публикуйте профиль.");
+      setSuccess(null);
+      return;
+    }
     if (!publicationReady) {
       setError("Заполните обязательные поля");
       setSuccess(null);
@@ -225,14 +230,19 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
             Все поля редактируются на одной странице. Профиль в статусе: <span className="font-medium">{status}</span>.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={publish}
-          disabled={publishing}
-          className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
-        >
-          {publishing ? "Публикация..." : "Опубликовать"}
-        </button>
+        <div className="flex flex-col items-end gap-1">
+          {isDirty && (
+            <p className="text-xs font-medium text-amber-600">У вас есть несохранённые изменения</p>
+          )}
+          <button
+            type="button"
+            onClick={publish}
+            disabled={publishing || isDirty}
+            className="inline-flex h-10 items-center justify-center rounded-lg border border-blue-600 px-4 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 disabled:opacity-60"
+          >
+            {publishing ? "Публикация..." : "Опубликовать профиль"}
+          </button>
+        </div>
       </div>
 
       <div className="space-y-6">
@@ -463,6 +473,14 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
           </div>
         </div>
 
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+          <p className="font-medium">⚠️ Важно:</p>
+          <p className="mt-1">
+            После внесения изменений сначала нажмите «Сохранить изменения»,
+            затем — «Опубликовать профиль».
+          </p>
+        </div>
+
         <div className="flex items-center justify-between gap-4">
           <div className="text-sm">
             {error ? <p className="text-red-600">{error}</p> : null}
@@ -472,9 +490,9 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
             type="button"
             onClick={save}
             disabled={!isDirty || saving}
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-orange-500 px-5 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60"
           >
-            {saving ? "Сохранение..." : "Сохранить"}
+            {saving ? "Сохранение..." : "Сохранить изменения"}
           </button>
         </div>
       </div>
