@@ -1,107 +1,98 @@
-import { NextRequest } from 'next/server';
-import { createSupabaseServerClient } from '@/lib/supabase/server';
+export const dynamic = "force-dynamic";
+
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
-export const dynamic = "force-dynamic";
-
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const { id } = await Promise.resolve(params);
-    const raw = id;
-
-    console.log("SUPABASE URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
-    console.log(
-      "SUPABASE KEY ISSUER:",
-      process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0, 40) ??
-        process.env.SUPABASE_SERVICE_KEY?.slice(0, 40)
-    );
-
-    const supabase = createSupabaseServerClient();
-
-    console.log("DEBUG QUERY TABLE:", "specialists");
-
-    let specialistQuery = supabase
-      .from('specialists')
-      .select(`*, specialist_services(id, title, price_from, price_to, currency, duration_minutes, specialist_id, is_active)`) // fetch related services
-      .in('status', [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
-      .eq("is_active", true)
-      .eq("is_visible", true);
-
-    const isUuidLike = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(raw);
-    specialistQuery = isUuidLike ? specialistQuery.eq("id", raw) : specialistQuery.eq("slug", raw);
-
-    const { data: specialist, error } = await specialistQuery.single();
-
-    // Filter only active services
-    if (specialist && Array.isArray(specialist.specialist_services)) {
-      specialist.specialist_services = specialist.specialist_services.filter(s => s.is_active);
-    }
-
-    console.log("DEBUG RAW SPECIALIST ROW:", specialist);
-    console.log("DEBUG DB NAME:", specialist?.name);
-    console.log("DEBUG DB EMAIL:", specialist?.email);
-
-    if (process.env.NODE_ENV === "development" && specialist) {
-      console.log("[api/specialists/[id]] Specialist name from DB:", specialist.id, "->", specialist.name);
-    }
-
-    if (error || !specialist) {
-      console.error('[api/specialists/detail] Error:', error);
-      return jsonNoStore({ error: 'Specialist not found' }, { status: 404 });
-    }
-
-    const { data: profile } = await supabase
-      .from('specialist_profiles')
-      .select('photo_url, video_url, gallery_urls, certificate_urls, about_me, city, address')
-      .eq('specialist_id', specialist.id)
-      .maybeSingle();
-
-    const { data: plan } = await supabase
-      .from("specialist_plan")
-      .select("plan_code, plan_status")
-      .eq("specialist_id", specialist.id)
-      .maybeSingle();
-
-    const { data: ratingStats } = await supabase
-      .from("specialist_rating_stats")
-      .select("rating_avg, reviews_count")
-      .eq("specialist_id", specialist.id)
-      .maybeSingle();
-
-    const nameFromDb = typeof specialist.name === "string" && specialist.name.trim() ? specialist.name.trim() : null;
-    const data = {
-      ...specialist,
-      name: nameFromDb,
-      avatar_url: profile?.photo_url ?? specialist.avatar_url ?? null,
-      video_url: profile?.video_url ?? null,
-      gallery_urls: profile?.gallery_urls ?? [],
-      certificate_urls: profile?.certificate_urls ?? [],
-      city: profile?.city ?? specialist.city ?? null,
-      address: typeof profile?.address === "string" && profile.address.trim() ? profile.address.trim() : null,
-      description: profile?.about_me ?? specialist.description ?? specialist.bio ?? null,
-      bio: profile?.about_me ?? specialist.bio ?? null,
-      plan_code: typeof plan?.plan_code === "string" ? plan.plan_code : "free",
-      plan_status: typeof plan?.plan_status === "string" ? plan.plan_status : "active",
-      rating_avg: typeof ratingStats?.rating_avg === "number" ? ratingStats.rating_avg : null,
-      reviews_count: typeof ratingStats?.reviews_count === "number" ? ratingStats.reviews_count : 0,
-    };
-
-    console.log("DEBUG RESPONSE DATA:", data);
-    console.log("DEBUG RESPONSE NAME:", data?.name);
-
-    return jsonNoStore({
-      data: {
-        ...data,
-        debug_marker: "specialist-route-v3",
-        debug_db_name: specialist?.name ?? null,
-      },
-    });
-  } catch (error: any) {
-    console.error('[api/specialists/detail] Unexpected error:', error);
-    return jsonNoStore(
-      { error: 'Internal server error', details: error.message },
-      { status: 500 }
-    );
+export async function GET(
+  _request: Request,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params;
+  if (!id) {
+    return jsonNoStore({ error: "Missing specialist id" }, { status: 400 });
   }
+
+  const supabase = createSupabaseServerClient();
+
+  const { data: specialist, error: specError } = await supabase
+    .from("specialists")
+    .select(
+      "id, slug, name, avatar_url, category_id, status, is_active, is_visible, languages, work_format, created_at, user_id"
+    )
+    .eq("id", id)
+    .maybeSingle();
+
+  if (specError) {
+    return jsonNoStore({ error: "Failed to fetch specialist" }, { status: 500 });
+  }
+
+  if (
+    !specialist ||
+    !specialist.is_active ||
+    !specialist.is_visible ||
+    !(VISIBLE_PUBLIC_SPECIALIST_STATUSES as readonly string[]).includes(specialist.status ?? "")
+  ) {
+    return jsonNoStore({ error: "Specialist not found" }, { status: 404 });
+  }
+
+  const { data: profile } = await supabase
+    .from("specialist_profiles")
+    .select(
+      "photo_url, video_url, gallery_urls, certificate_urls, about_me, city, address"
+    )
+    .eq("specialist_id", id)
+    .maybeSingle();
+
+  const { data: category } = specialist.category_id
+    ? await supabase
+        .from("categories")
+        .select("title, slug")
+        .eq("id", specialist.category_id)
+        .maybeSingle()
+    : { data: null };
+
+  const { data: services } = await supabase
+    .from("specialist_services")
+    .select("id, title, price_from, price_to, currency, is_active")
+    .eq("specialist_id", id)
+    .eq("is_active", true);
+
+  const { data: ratingRow } = await supabase
+    .from("specialist_rating_stats")
+    .select("rating_avg, reviews_count")
+    .eq("specialist_id", id)
+    .maybeSingle();
+
+  const result = {
+    id: specialist.id,
+    slug: specialist.slug,
+    name: specialist.name,
+    avatar_url: specialist.avatar_url,
+    category: category?.title ?? null,
+    category_id: specialist.category_id,
+    category_slug: category?.slug ?? null,
+    languages: specialist.languages ?? [],
+    work_format: specialist.work_format,
+    created_at: specialist.created_at,
+    user_id: specialist.user_id,
+    city: profile?.city ?? null,
+    address: profile?.address ?? null,
+    description: profile?.about_me ?? null,
+    video_url: profile?.video_url ?? null,
+    gallery_urls: Array.isArray(profile?.gallery_urls) ? profile.gallery_urls : [],
+    certificate_urls: Array.isArray(profile?.certificate_urls) ? profile.certificate_urls : [],
+    photo_url: profile?.photo_url ?? null,
+    rating: ratingRow?.rating_avg ?? null,
+    reviews_count: ratingRow?.reviews_count ?? 0,
+    specialist_services: (services ?? []).map((s) => ({
+      id: s.id,
+      title: s.title,
+      price_from: s.price_from,
+      price_to: s.price_to,
+      currency: s.currency ?? "EUR",
+    })),
+  };
+
+  return jsonNoStore({ data: result });
 }

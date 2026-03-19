@@ -31,6 +31,7 @@ export const specialistPageTranslations: Record<string, Translations> = {
     work_format: { online: "Онлайн", offline: "Офлайн", hybrid: "Онлайн • Офлайн" },
     readMore: "Читати повністю",
     newBadge: "Новий",
+    videoTitle: "Відео спеціаліста",
   },
   ru: {
     topGalleryTitle: "Галерея работ",
@@ -62,6 +63,7 @@ export const specialistPageTranslations: Record<string, Translations> = {
     work_format: { online: "Онлайн", offline: "Офлайн", hybrid: "Онлайн • Офлайн" },
     readMore: "Читать полностью",
     newBadge: "Новый",
+    videoTitle: "Видео специалиста",
   },
   de: {
     topGalleryTitle: "Galerie der Arbeiten",
@@ -93,6 +95,7 @@ export const specialistPageTranslations: Record<string, Translations> = {
     work_format: { online: "Online", offline: "Offline", hybrid: "Online • Offline" },
     readMore: "Vollständig lesen",
     newBadge: "Neu",
+    videoTitle: "Video des Spezialisten",
   },
   en: {
     topGalleryTitle: "Gallery",
@@ -124,5 +127,6 @@ export const specialistPageTranslations: Record<string, Translations> = {
     work_format: { online: "Online", offline: "Offline", hybrid: "Online • Offline" },
     readMore: "Read more",
     newBadge: "New",
+    videoTitle: "Specialist video",
   },
 };

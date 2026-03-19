@@ -271,6 +271,32 @@ export default function SpecialistPage() {
     const el = document.getElementById("lead-form");
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+
+  const parseVideoEmbedUrl = (url: string | null | undefined): string | null => {
+    if (!url || typeof url !== "string") return null;
+    try {
+      const u = new URL(url.trim());
+      const host = u.hostname.toLowerCase();
+      if (host.includes("youtube.com") || host.includes("www.youtube.com")) {
+        const v = u.searchParams.get("v");
+        if (v) return `https://www.youtube.com/embed/${encodeURIComponent(v)}`;
+      }
+      if (host === "youtu.be") {
+        const videoId = u.pathname.slice(1);
+        if (videoId) return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`;
+      }
+      if (host.includes("vimeo.com")) {
+        const match = u.pathname.match(/\/(\d+)/);
+        if (match) return `https://player.vimeo.com/video/${match[1]}`;
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  };
+
+  const videoEmbedUrl = parseVideoEmbedUrl(specialist?.video_url);
+
   const workModeLabel = workMode ? sectionText.work_format[workMode] : null;
   const canonicalSlug = typeof specialist.slug === "string" && specialist.slug.trim().length > 0 ? specialist.slug : specialist.id;
   const specialistUrl =
@@ -685,6 +711,20 @@ export default function SpecialistPage() {
                     </button>
                   </>
                 ) : null}
+              </div>
+            </SectionCard>
+          ) : null}
+
+          {videoEmbedUrl ? (
+            <SectionCard title={sectionText.videoTitle} subtitle="">
+              <div className="relative w-full overflow-hidden rounded-xl bg-slate-100 aspect-video">
+                <iframe
+                  src={videoEmbedUrl}
+                  className="absolute inset-0 h-full w-full rounded-xl"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="Видео специалиста"
+                />
               </div>
             </SectionCard>
           ) : null}

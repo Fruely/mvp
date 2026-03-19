@@ -32,4 +32,5 @@ export type Translations = {
   };
   readMore: string;
   newBadge: string;
+  videoTitle: string;
 };
