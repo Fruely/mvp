@@ -275,19 +275,37 @@ export default function SpecialistPage() {
   const parseVideoEmbedUrl = (url: string | null | undefined): string | null => {
     if (!url || typeof url !== "string") return null;
     try {
-      const u = new URL(url.trim());
-      const host = u.hostname.toLowerCase();
-      if (host.includes("youtube.com") || host.includes("www.youtube.com")) {
-        const v = u.searchParams.get("v");
-        if (v) return `https://www.youtube.com/embed/${encodeURIComponent(v)}`;
+      const parsed = new URL(url.trim());
+      const host = parsed.hostname.toLowerCase();
+
+      // YouTube
+      if (host.includes("youtube.com") || host.includes("youtu.be")) {
+        let videoId: string | null = null;
+
+        if (host.includes("youtu.be")) {
+          videoId = parsed.pathname.slice(1);
+        }
+        if (parsed.searchParams.get("v")) {
+          videoId = parsed.searchParams.get("v");
+        }
+        if (parsed.pathname.includes("/shorts/")) {
+          videoId = parsed.pathname.split("/shorts/")[1] ?? null;
+        }
+        if (parsed.pathname.includes("/embed/")) {
+          videoId = parsed.pathname.split("/embed/")[1] ?? null;
+        }
+
+        if (videoId) {
+          videoId = videoId.split("?")[0].split("&")[0];
+          return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`;
+        }
       }
-      if (host === "youtu.be") {
-        const videoId = u.pathname.slice(1);
-        if (videoId) return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`;
-      }
+
+      // Vimeo
       if (host.includes("vimeo.com")) {
-        const match = u.pathname.match(/\/(\d+)/);
-        if (match) return `https://player.vimeo.com/video/${match[1]}`;
+        const parts = parsed.pathname.split("/");
+        const id = parts.find((p) => /^\d+$/.test(p));
+        if (id) return `https://player.vimeo.com/video/${id}`;
       }
     } catch {
       return null;
