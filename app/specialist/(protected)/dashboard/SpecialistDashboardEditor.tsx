@@ -240,6 +240,10 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
 
   return (
     <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="mb-5 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+        Заполните профиль, сохраните изменения и опубликуйте его, чтобы клиенты могли вас найти.
+      </div>
+
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Профиль специалиста</h1>
