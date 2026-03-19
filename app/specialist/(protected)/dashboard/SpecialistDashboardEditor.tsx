@@ -247,22 +247,9 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Профиль специалиста</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-600">
             Все поля редактируются на одной странице. Профиль в статусе: <span className="font-medium">{status}</span>.
           </p>
-        </div>
-        <div className="flex flex-col items-end gap-1">
-          {isDirty && (
-            <p className="text-xs font-medium text-amber-600">У вас есть несохранённые изменения</p>
-          )}
-          <button
-            type="button"
-            onClick={publish}
-            disabled={publishing || isDirty}
-            className="inline-flex h-10 items-center justify-center rounded-lg border border-blue-600 px-4 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 disabled:opacity-60"
-          >
-            {publishing ? "Публикация..." : "Опубликовать профиль"}
-          </button>
         </div>
       </div>
 
@@ -482,7 +469,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
                       priceErrors[idx] ? "border-red-400" : "border-gray-200"
                     }`}
                   />
-                  <p className="mt-0.5 text-[11px] text-gray-400">
+                  <p className="mt-0.5 text-[11px] text-gray-600 font-medium">
                     Только цифры. Не: &quot;2,5 тыс&quot;, &quot;полторы&quot;
                   </p>
                   {priceErrors[idx] && (
@@ -507,27 +494,40 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
           </div>
         </div>
 
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-          <p className="font-medium">⚠️ Важно:</p>
-          <p className="mt-1">
+        <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+          <p className="font-semibold">⚠️ Важно:</p>
+          <p className="mt-1 font-medium">
             После внесения изменений сначала нажмите «Сохранить изменения»,
             затем — «Опубликовать профиль».
           </p>
         </div>
 
-        <div className="flex items-center justify-between gap-4">
+        <div className="space-y-3">
           <div className="text-sm">
             {error ? <p className="text-red-600">{error}</p> : null}
             {success ? <p className="text-emerald-600">{success}</p> : null}
           </div>
-          <button
-            type="button"
-            onClick={save}
-            disabled={!isDirty || saving}
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-orange-500 px-5 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60"
-          >
-            {saving ? "Сохранение..." : "Сохранить изменения"}
-          </button>
+          {isDirty && (
+            <p className="text-sm font-medium text-amber-600">У вас есть несохранённые изменения</p>
+          )}
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={save}
+              disabled={!isDirty || saving}
+              className="inline-flex h-10 items-center justify-center rounded-lg bg-orange-500 px-5 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60"
+            >
+              {saving ? "Сохранение..." : "Сохранить изменения"}
+            </button>
+            <button
+              type="button"
+              onClick={publish}
+              disabled={publishing || isDirty}
+              className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+            >
+              {publishing ? "Публикация..." : "Опубликовать профиль"}
+            </button>
+          </div>
         </div>
       </div>
     </section>
