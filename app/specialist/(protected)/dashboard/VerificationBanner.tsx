@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
+import { getDashboardHelpers } from "@/lib/i18n/dashboardHelpers";
 
 type Props = {
   status: string | null | undefined;
@@ -79,6 +80,15 @@ export default function VerificationBanner({ status }: Props) {
         >
           Загрузить документы
         </button>
+      </div>
+
+      <div className="mt-3 space-y-1">
+        <p className="text-xs text-amber-800">{getDashboardHelpers().verification.line1}</p>
+        <ul className="text-xs text-amber-800 list-disc list-inside">
+          <li>{getDashboardHelpers().verification.bullet1}</li>
+          <li>{getDashboardHelpers().verification.bullet2}</li>
+        </ul>
+        <p className="text-xs text-amber-700 mt-1">{getDashboardHelpers().verification.footer}</p>
       </div>
 
       {open && (

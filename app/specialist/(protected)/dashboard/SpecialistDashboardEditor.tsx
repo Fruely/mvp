@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { useMemo, useState, type ChangeEvent } from "react";
+import { getDashboardHelpers } from "@/lib/i18n/dashboardHelpers";
 
 type ServiceInput = {
   id?: string;
@@ -18,7 +19,6 @@ type Props = {
     category_id: string;
     work_format: "online" | "offline" | "hybrid";
     languages: string[];
-    postal_code?: string;
     about_me: string;
     video_url: string;
     city: string;
@@ -32,11 +32,6 @@ type Props = {
 };
 
 const MAX_GALLERY_IMAGES = 5;
-const LANGUAGE_OPTIONS = [
-  { label: "Русский", value: "ru" },
-  { label: "Українська", value: "uk" },
-  { label: "Deutsch", value: "de" },
-] as const;
 
 function toSnapshot(data: Props["initialData"]) {
   return JSON.stringify({
@@ -54,11 +49,6 @@ function toSnapshot(data: Props["initialData"]) {
 
 export default function SpecialistDashboardEditor({ initialData, initialStatus, categories }: Props) {
   const [form, setForm] = useState(initialData);
-
-  // Ensure form state is updated when initialData changes (prefill languages, work_format, etc.)
-  useEffect(() => {
-    setForm(initialData);
-  }, [initialData]);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -77,45 +67,9 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
         form.category_id.trim() &&
         form.city.trim() &&
         form.about_me.trim() &&
-        form.photo_url.trim() &&
-        form.services.some((s) => s.title.trim().length > 0)
+        form.photo_url.trim()
     );
   }, [form]);
-
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-
-  useEffect(() => {
-    if (!toast) return;
-    const timer = setTimeout(() => setToast(null), 4000);
-    return () => clearTimeout(timer);
-  }, [toast]);
-
-  useEffect(() => {
-    const postalCode = (form.postal_code || "").trim();
-    if (postalCode.length !== 5 || !/^\d{5}$/.test(postalCode)) return;
-
-    let isCancelled = false;
-
-    const fetchCityByPostalCode = async () => {
-      try {
-        const response = await fetch(`https://api.zippopotam.us/de/${postalCode}`);
-        if (!response.ok) return;
-        const data = (await response.json().catch(() => null)) as
-          | { places?: Array<{ "place name"?: string }> }
-          | null;
-        const cityName = data?.places?.[0]?.["place name"];
-        if (!cityName || isCancelled) return;
-        setForm((prev) => ({ ...prev, city: cityName }));
-      } catch {
-      }
-    };
-
-    fetchCityByPostalCode();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [form.postal_code]);
 
   function updateService(index: number, patch: Partial<ServiceInput>) {
     setForm((prev) => {
@@ -204,7 +158,6 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
     try {
       const payload = {
         ...form,
-        postal_code: form.postal_code,
         category_id: form.category_id || null,
         video_url: form.video_url.trim(),
         languages: form.languages.map((lang) => lang.trim()).filter(Boolean),
@@ -231,7 +184,6 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
         return;
       }
       setSuccess("Изменения сохранены.");
-      setToast({ message: "Изменения сохранены", type: "success" });
     } catch {
       setError("Не удалось сохранить профиль.");
     } finally {
@@ -252,20 +204,11 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
       const res = await fetch("/api/specialist/dashboard/publish", { method: "POST" });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        if (res.status === 400 && Array.isArray((json as { fields?: unknown }).fields)) {
-          const fields = (json as { fields: unknown[] }).fields
-            .filter((item): item is string => typeof item === "string" && item.trim().length > 0);
-          if (fields.length > 0) {
-            setError("Заполните обязательные поля:\n" + fields.join("\n"));
-            return;
-          }
-        }
         setError(typeof json.error === "string" ? json.error : "Не удалось опубликовать профиль.");
         return;
       }
       if (typeof json.status === "string") setStatus(json.status);
       setSuccess("Профиль опубликован.");
-      setToast({ message: "Профиль опубликован. Клиенты теперь могут вас найти.", type: "success" });
     } catch {
       setError("Не удалось опубликовать профиль.");
     } finally {
@@ -274,33 +217,22 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
   }
 
   return (
-    <>
-    {toast && (
-      <div
-        className={`fixed left-1/2 top-6 z-50 -translate-x-1/2 rounded-lg px-5 py-3 text-sm font-medium text-white shadow-lg transition-opacity ${
-          toast.type === "success" ? "bg-emerald-600" : "bg-red-600"
-        }`}
-      >
-        {toast.message}
-      </div>
-    )}
     <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="mb-5">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+        <div>
           <h1 className="text-2xl font-semibold text-gray-900">Профиль специалиста</h1>
-          <span
-            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-              status === "published"
-                ? "bg-emerald-100 text-emerald-700"
-                : "bg-yellow-100 text-yellow-700"
-            }`}
-          >
-            {status === "published" ? "Опубликован" : "Черновик"}
-          </span>
+          <p className="mt-1 text-sm text-gray-500">
+            Все поля редактируются на одной странице. Профиль в статусе: <span className="font-medium">{status}</span>.
+          </p>
         </div>
-        <p className="mt-1 text-sm text-gray-500">
-          Все поля редактируются на одной странице.
-        </p>
+        <button
+          type="button"
+          onClick={publish}
+          disabled={publishing}
+          className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+        >
+          {publishing ? "Публикация..." : "Опубликовать"}
+        </button>
       </div>
 
       <div className="space-y-6">
@@ -345,25 +277,11 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
             />
           </label>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">Почтовый индекс (PLZ)</span>
-            <input
-              value={form.postal_code || ""}
-              placeholder="Например: 57399"
-              inputMode="numeric"
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, postal_code: e.target.value }))
-              }
-              className="w-full rounded-lg border border-gray-200 px-3 py-2"
-            />
-          </label>
-          <label className="space-y-1 text-sm">
             <span className="font-medium text-gray-700">Город / локация</span>
             <input
-              value={form.city || ""}
-              disabled={!form.postal_code}
-              placeholder="Введите сначала PLZ"
+              value={form.city}
               onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
-              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2"
             />
           </label>
           <label className="space-y-1 text-sm">
@@ -388,32 +306,22 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
               <option value="hybrid">Онлайн/Офлайн</option>
             </select>
           </label>
-          <div className="space-y-2 text-sm md:col-span-2">
-            <span className="font-medium text-gray-700">Языки</span>
-            <div className="flex flex-wrap gap-4">
-              {LANGUAGE_OPTIONS.map((option) => {
-                const checked = form.languages.includes(option.value);
-                return (
-                  <label key={option.value} className="inline-flex items-center gap-2 text-gray-700">
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          languages: e.target.checked
-                            ? Array.from(new Set([...prev.languages, option.value]))
-                            : prev.languages.filter((lang) => lang !== option.value),
-                        }))
-                      }
-                      className="h-4 w-4 rounded border-gray-300"
-                    />
-                    <span>{option.label}</span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
+          <label className="space-y-1 text-sm md:col-span-2">
+            <span className="font-medium text-gray-700">Языки (через запятую)</span>
+            <input
+              value={form.languages.join(", ")}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  languages: e.target.value
+                    .split(",")
+                    .map((item) => item.trim())
+                    .filter(Boolean),
+                }))
+              }
+              className="w-full rounded-lg border border-gray-200 px-3 py-2"
+            />
+          </label>
         </div>
 
         <div className="space-y-2">
@@ -441,9 +349,6 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
                 disabled={avatarUploading}
               />
             </label>
-            <div className="text-sm text-gray-500 mt-2">
-              Чтобы фото красиво выглядело в карточке специалиста, используйте квадратное изображение. Рекомендуемый размер: 800 × 800 px.
-            </div>
           </div>
         </div>
 
@@ -464,6 +369,15 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
             placeholder="https://www.youtube.com/... или https://vimeo.com/..."
             className="w-full rounded-lg border border-gray-200 px-3 py-2"
           />
+          <div className="mt-1 space-y-0.5">
+            <p className="text-xs text-gray-500">{getDashboardHelpers().video.line1}</p>
+            <ul className="text-xs text-gray-500 list-disc list-inside">
+              <li>{getDashboardHelpers().video.bullet1}</li>
+              <li>{getDashboardHelpers().video.bullet2}</li>
+              <li>{getDashboardHelpers().video.bullet3}</li>
+            </ul>
+            <p className="text-xs text-gray-400">{getDashboardHelpers().video.footer}</p>
+          </div>
         </label>
 
         <div className="space-y-2">
@@ -481,6 +395,8 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
             </label>
           </div>
           <p className="text-xs text-gray-500">До 5 изображений.</p>
+          <p className="text-xs text-gray-500">{getDashboardHelpers().gallery.line1}</p>
+          <p className="text-xs text-gray-400">{getDashboardHelpers().gallery.line2}</p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {form.gallery_urls.map((url, index) => (
               <div key={`${url}-${index}`} className="relative overflow-hidden rounded-lg border border-gray-200">
@@ -547,37 +463,21 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="flex items-center justify-between gap-4">
           <div className="text-sm">
             {error ? <p className="text-red-600">{error}</p> : null}
             {success ? <p className="text-emerald-600">{success}</p> : null}
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={save}
-              disabled={!isDirty || saving}
-              className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 px-5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-60"
-            >
-              {saving ? "Сохранение..." : "Сохранить изменения"}
-            </button>
-            <button
-              type="button"
-              onClick={publish}
-              disabled={publishing || !publicationReady}
-              className="inline-flex h-10 items-center justify-center rounded-lg bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
-            >
-              {publishing ? "Публикация..." : "Опубликовать профиль"}
-            </button>
-          </div>
-          {!publicationReady && (
-            <p className="text-xs text-gray-500">
-              Заполните обязательные поля (имя, категория, город, описание, фото, хотя бы одна услуга), чтобы опубликовать профиль.
-            </p>
-          )}
+          <button
+            type="button"
+            onClick={save}
+            disabled={!isDirty || saving}
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+          >
+            {saving ? "Сохранение..." : "Сохранить"}
+          </button>
         </div>
       </div>
     </section>
-    </>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, FormEvent } from "react";
+import { getDashboardHelpers } from "@/lib/i18n/dashboardHelpers";
 
 type MediaBlockProps = {
   initialPhotoUrl: string;
@@ -265,6 +266,15 @@ export default function MediaBlock({
           Загрузите видео на YouTube или Vimeo (доступ — «по ссылке» или «публичный»), затем вставьте ссылку сюда.
           Мы не принимаем загрузку видеофайлов напрямую.
         </p>
+        <div className="mt-2 space-y-0.5">
+          <p className="text-xs text-gray-500">{getDashboardHelpers().video.line1}</p>
+          <ul className="text-xs text-gray-500 list-disc list-inside">
+            <li>{getDashboardHelpers().video.bullet1}</li>
+            <li>{getDashboardHelpers().video.bullet2}</li>
+            <li>{getDashboardHelpers().video.bullet3}</li>
+          </ul>
+          <p className="text-xs text-gray-400 mt-1">{getDashboardHelpers().video.footer}</p>
+        </div>
       </div>
 
       {/* Video gallery (works) */}
