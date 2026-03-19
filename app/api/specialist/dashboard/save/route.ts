@@ -226,7 +226,9 @@ export async function PUT(request: NextRequest) {
         .map((service) => ({
           id: typeof service.id === "string" ? service.id : null,
           title: service.title.trim(),
-          price_from: Number(service.price_from),
+          price_from: Number(
+            String(service.price_from ?? "").replace(/\s/g, "").replace(",", ".")
+          ),
           currency:
             typeof service.currency === "string" && service.currency.trim().length > 0
               ? service.currency.trim().toUpperCase()

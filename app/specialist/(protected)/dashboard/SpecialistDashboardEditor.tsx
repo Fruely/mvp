@@ -56,6 +56,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [status, setStatus] = useState(initialStatus);
+  const [priceErrors, setPriceErrors] = useState<Record<number, string | null>>({});
 
   const initialSnapshot = useMemo(() => toSnapshot(initialData), [initialData]);
   const currentSnapshot = useMemo(() => toSnapshot(form), [form]);
@@ -71,7 +72,23 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
     );
   }, [form]);
 
+  function sanitizePrice(raw: string): string {
+    return raw.replace(/\s/g, "").replace(",", ".");
+  }
+
+  function validatePrice(value: string): string | null {
+    if (value === "") return null;
+    const sanitized = sanitizePrice(value);
+    if (!/^\d+(\.\d+)?$/.test(sanitized)) {
+      return "Введите цену только цифрами (например: 2500)";
+    }
+    return null;
+  }
+
   function updateService(index: number, patch: Partial<ServiceInput>) {
+    if (patch.price_from !== undefined) {
+      setPriceErrors((prev) => ({ ...prev, [index]: validatePrice(patch.price_from!) }));
+    }
     setForm((prev) => {
       const next = [...prev.services];
       next[index] = { ...next[index], ...patch };
@@ -166,7 +183,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
           .map((service) => ({
             id: service.id,
             title: service.title.trim(),
-            price_from: service.price_from.trim(),
+            price_from: sanitizePrice(service.price_from.trim()),
             currency: (service.currency || "EUR").trim().toUpperCase(),
             is_active: service.is_active,
           }))
@@ -449,12 +466,25 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
                   placeholder="Название услуги"
                   className="rounded-lg border border-gray-200 px-3 py-2 text-sm"
                 />
-                <input
-                  value={service.price_from}
-                  onChange={(e) => updateService(idx, { price_from: e.target.value })}
-                  placeholder="Цена"
-                  className="rounded-lg border border-gray-200 px-3 py-2 text-sm"
-                />
+                <div>
+                  <input
+                    value={service.price_from}
+                    onChange={(e) => updateService(idx, { price_from: e.target.value })}
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="Цена (например: 2500)"
+                    className={`rounded-lg border px-3 py-2 text-sm ${
+                      priceErrors[idx] ? "border-red-400" : "border-gray-200"
+                    }`}
+                  />
+                  <p className="mt-0.5 text-[11px] text-gray-400">
+                    Только цифры. Не: &quot;2,5 тыс&quot;, &quot;полторы&quot;
+                  </p>
+                  {priceErrors[idx] && (
+                    <p className="mt-0.5 text-xs text-red-600">{priceErrors[idx]}</p>
+                  )}
+                </div>
                 <input
                   value={service.currency}
                   onChange={(e) => updateService(idx, { currency: e.target.value })}
