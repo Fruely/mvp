@@ -581,7 +581,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               <div className="mt-8 md:mt-10">
                 <div className="mb-4 md:mb-6 text-center">
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-                    {t(dict, "home.popularServices.title", { defaultValue: "Популярные услуги" })}
+                    {t(dict, "home.popularServices.title")}
                   </h2>
                 </div>
 
