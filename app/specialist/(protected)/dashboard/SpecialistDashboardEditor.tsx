@@ -21,6 +21,7 @@ type Props = {
     languages: string[];
     about_me: string;
     video_url: string;
+    postal_code: string;
     city: string;
     address: string;
     photo_url: string;
@@ -59,7 +60,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
     return Boolean(
       form.name.trim() &&
         form.category_id.trim() &&
-        form.city.trim() &&
+        /^\d{5}$/.test(form.postal_code.trim()) &&
         form.about_me.trim() &&
         form.photo_url.trim()
     );
@@ -209,7 +210,13 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
       return;
     }
     if (!publicationReady) {
-      setError("Заполните обязательные поля");
+      const missing: string[] = [];
+      if (!form.name.trim()) missing.push("Имя");
+      if (!form.category_id.trim()) missing.push("Категория");
+      if (!/^\d{5}$/.test(form.postal_code.trim())) missing.push("PLZ (почтовый индекс)");
+      if (!form.about_me.trim()) missing.push("О себе");
+      if (!form.photo_url.trim()) missing.push("Фото");
+      setError(missing.length ? `Заполните обязательные поля: ${missing.join(", ")}` : "Заполните обязательные поля");
       setSuccess(null);
       return;
     }
@@ -220,7 +227,9 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
       const res = await fetch("/api/specialist/dashboard/publish", { method: "POST" });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(typeof json.error === "string" ? json.error : "Не удалось опубликовать профиль.");
+        const fields = Array.isArray(json.fields) ? json.fields.join(", ") : "";
+        const msg = typeof json.error === "string" ? json.error : "Не удалось опубликовать профиль.";
+        setError(fields ? `${msg}: ${fields}` : msg);
         return;
       }
       if (typeof json.status === "string") setStatus(json.status);
@@ -289,14 +298,29 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
             />
           </label>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">PLZ / Город</span>
+            <span className="font-medium text-gray-700">PLZ (Postleitzahl) <span className="text-red-500">*</span></span>
+            <input
+              value={form.postal_code}
+              onChange={(e) => {
+                const v = e.target.value.replace(/\D/g, "").slice(0, 5);
+                setForm((prev) => ({ ...prev, postal_code: v }));
+              }}
+              inputMode="numeric"
+              pattern="\d{5}"
+              maxLength={5}
+              placeholder="z.B. 34117"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2"
+            />
+            <p className="text-xs text-gray-500">5-значный почтовый индекс Германии. Обязателен для публикации.</p>
+          </label>
+          <label className="space-y-1 text-sm">
+            <span className="font-medium text-gray-700">Город</span>
             <input
               value={form.city}
               onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
-              placeholder="z.B. 34117 Kassel"
+              placeholder="z.B. Kassel"
               className="w-full rounded-lg border border-gray-200 px-3 py-2"
             />
-            <p className="text-xs text-gray-500">Введите почтовый индекс (PLZ) и город</p>
           </label>
           <label className="space-y-1 text-sm">
             <span className="font-medium text-gray-700">Адрес приёма</span>

@@ -29,6 +29,7 @@ type Payload = {
   category_id?: string | null;
   work_format?: "online" | "offline" | "hybrid";
   languages?: string[];
+  postal_code?: string;
   city?: string;
   address?: string;
   about_me?: string;
@@ -80,10 +81,9 @@ export async function PUT(request: NextRequest) {
     return jsonNoStore({ error: "Invalid payload: work_format is not supported" }, { status: 400 });
   }
 
-  const postalCodeValue = (body as Record<string, unknown>).postal_code;
   if (
-    typeof postalCodeValue !== "undefined" &&
-    (typeof postalCodeValue !== "string" || !/^\d{5}$/.test(postalCodeValue))
+    typeof body.postal_code !== "undefined" &&
+    (typeof body.postal_code !== "string" || !/^\d{5}$/.test(body.postal_code))
   ) {
     return jsonNoStore({ error: "Invalid payload: postal_code must match /^\\d{5}$/" }, { status: 400 });
   }
@@ -129,9 +129,8 @@ export async function PUT(request: NextRequest) {
   if (body.work_format === "online" || body.work_format === "offline" || body.work_format === "hybrid") {
     specialistPatch.work_format = body.work_format;
   }
-  const specialistPostalCodeValue = (body as Record<string, unknown>).postal_code;
-  if (typeof specialistPostalCodeValue === "string") {
-    specialistPatch.postal_code = specialistPostalCodeValue.trim() || null;
+  if (typeof body.postal_code === "string") {
+    specialistPatch.postal_code = body.postal_code.trim() || null;
   }
 
   const avatarUrlValue = (body as Record<string, unknown>).avatar_url;
