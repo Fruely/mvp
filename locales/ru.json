@@ -95,6 +95,14 @@
     "sendRequest": "Сделать заявку",
     "hideForm": "Скрыть форму"
   },
+  "about": { "title": "О платформе Freuly" },
+  "support": { "title": "Поддержка Freuly" },
+  "page": {
+    "notice": {
+      "originalRuTitle": "",
+      "originalRuBody": ""
+    }
+  },
   "common": {
     "toHome": "На главную",
     "backToHome": "← На главную",

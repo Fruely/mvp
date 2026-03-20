@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Metadata } from "next";
+import { getDictionary, t, isSupportedLang, type Lang } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "О платформе Freuly",
@@ -7,14 +8,26 @@ export const metadata: Metadata = {
     "Freuly — платформа, которая помогает людям находить специалистов, говорящих на их языке.",
 };
 
-export default function AboutPage() {
+export default async function AboutPage({ params }: { params: { lang: string } }) {
+  const lang: Lang = isSupportedLang(params.lang) ? params.lang : "ua";
+  const dict = await getDictionary(lang);
+  const noticeTitle = t(dict, "page.notice.originalRuTitle");
+  const noticeBody = t(dict, "page.notice.originalRuBody");
+
   return (
     <div className="max-w-[900px] mx-auto px-6 py-16">
+
+      {noticeTitle && (
+        <div className="mb-8 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+          <p className="font-medium">{noticeTitle}</p>
+          {noticeBody && <p className="mt-1">{noticeBody}</p>}
+        </div>
+      )}
 
       {/* Hero */}
       <section className="mb-16">
         <h1 className="text-3xl font-bold mb-4">
-          О платформе Freuly
+          {t(dict, "about.title")}
         </h1>
 
         <p className="text-lg text-gray-600 leading-relaxed">

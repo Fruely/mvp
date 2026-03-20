@@ -95,6 +95,14 @@
     "sendRequest": "Anfrage senden",
     "hideForm": "Formular ausblenden"
   },
+  "about": { "title": "Über die Plattform Freuly" },
+  "support": { "title": "Freuly-Support" },
+  "page": {
+    "notice": {
+      "originalRuTitle": "Diese Seite ist nur auf Russisch verfügbar",
+      "originalRuBody": "Die Übersetzung wird in Kürze hinzugefügt."
+    }
+  },
   "common": {
     "toHome": "Zur Startseite",
     "backToHome": "← Zur Startseite",

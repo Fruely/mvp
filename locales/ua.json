@@ -87,6 +87,14 @@
     "sendRequest": "Зробити заявку",
     "hideForm": "Сховати форму"
   },
+  "about": { "title": "Про платформу Freuly" },
+  "support": { "title": "Підтримка Freuly" },
+  "page": {
+    "notice": {
+      "originalRuTitle": "Ця сторінка доступна лише російською мовою",
+      "originalRuBody": "Переклад буде додано найближчим часом."
+    }
+  },
   "common": {
     "toHome": "На головну",
     "backToHome": "← На головну",
