@@ -1,5 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { Dictionary } from "@/lib/i18n";
+import { t } from "@/lib/i18n";
 
 export type Specialist = {
   id: string;
@@ -15,9 +17,10 @@ export type Specialist = {
 interface Props {
   specialists: Specialist[];
   isLoading: boolean;
+  dict?: Dictionary;
 }
 
-export default function SpecialistsList({ specialists, isLoading }: Props) {
+export default function SpecialistsList({ specialists, isLoading, dict }: Props) {
   if (isLoading) {
     return (
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -34,7 +37,7 @@ export default function SpecialistsList({ specialists, isLoading }: Props) {
   if (!specialists.length) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-surface p-6 text-center font-normal text-textSecondary">
-        Ничего не найдено. Попробуйте изменить фильтры.
+        {dict ? t(dict, "list.notFound") : "Nothing found."}
       </div>
     );
   }
@@ -91,7 +94,7 @@ export default function SpecialistsList({ specialists, isLoading }: Props) {
               href={`/specialist/${specialist.id}`}
               className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:text-blue-800"
             >
-              Подробнее
+              {dict ? t(dict, "list.readMore") : "More"}
               <span aria-hidden>→</span>
             </Link>
           </div>

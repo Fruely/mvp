@@ -4,15 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-const LANG_OPTIONS = [
-  { value: "ru", label: "Русский" },
-  { value: "uk", label: "Українська" },
-  { value: "de", label: "Deutsch" },
-] as const;
+import type { Dictionary } from "@/lib/i18n";
+import { t } from "@/lib/i18n";
 
 type HeroSearchProps = {
   lang: string;
+  dict: Dictionary;
   title?: string;
   subtitle?: string;
   primaryCta?: string;
@@ -20,9 +17,9 @@ type HeroSearchProps = {
   isHeroLoading?: boolean;
 };
 
-const defaultTitle = "Специалисты в Германии на вашем языке.";
-const defaultSubtitle = "Локально или онлайн.";
-const defaultPrimaryCta = "Найти специалиста";
+const defaultTitle = "";
+const defaultSubtitle = "";
+const defaultPrimaryCta = "";
 
 type CategoryOption = {
   slug: string;
@@ -42,13 +39,24 @@ function getCategoryIcon(slug: string): string {
 
 export default function HeroSearch({
   lang: currentLocale,
-  title = defaultTitle,
-  subtitle = defaultSubtitle,
-  primaryCta = defaultPrimaryCta,
+  dict,
+  title,
+  subtitle,
+  primaryCta,
   heroImageUrl,
   isHeroLoading = false,
 }: HeroSearchProps) {
   const router = useRouter();
+
+  const resolvedTitle = title || t(dict, "hero.title");
+  const resolvedSubtitle = subtitle || t(dict, "hero.subtitle");
+  const resolvedPrimaryCta = primaryCta || t(dict, "hero.searchButton");
+
+  const LANG_OPTIONS = [
+    { value: "ru" as const, label: t(dict, "language.ru", { defaultValue: "Русский" }) },
+    { value: "uk" as const, label: t(dict, "language.uk", { defaultValue: "Українська" }) },
+    { value: "de" as const, label: t(dict, "language.de", { defaultValue: "Deutsch" }) },
+  ];
   const [language, setLanguage] = useState<"" | "ru" | "uk" | "de">("");
   const [location, setLocation] = useState("");
   const [categoryQuery, setCategoryQuery] = useState("");
@@ -128,7 +136,7 @@ export default function HeroSearch({
 
   function handleRedirect() {
     if (!language) {
-      setInlineError("Выберите язык общения");
+      setInlineError(t(dict, "heroSearch.selectLanguage"));
       return;
     }
 
@@ -171,9 +179,9 @@ export default function HeroSearch({
           <div className="order-2 md:order-1">
             <div className="rounded-3xl bg-white/30 px-6 py-8 backdrop-blur-md md:px-12 md:py-10">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-2 leading-tight">
-              {title}
+              {resolvedTitle}
             </h1>
-            <p className="text-lg text-gray-700 mb-6">{subtitle}</p>
+            <p className="text-lg text-gray-700 mb-6">{resolvedSubtitle}</p>
 
             <form
               onSubmit={(e) => {
@@ -190,9 +198,9 @@ export default function HeroSearch({
                     if (inlineError) setInlineError("");
                   }}
                   className="w-full min-h-[2.25rem] py-1.5 text-sm bg-transparent border-none outline-none text-gray-800"
-                  aria-label="Язык"
+                  aria-label={t(dict, "heroSearch.languageLabel")}
                 >
-                  <option value="">Язык</option>
+                  <option value="">{t(dict, "heroSearch.languagePlaceholder")}</option>
                   {LANG_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
@@ -219,9 +227,9 @@ export default function HeroSearch({
                       chooseCategory(filteredCategories[0]);
                     }
                   }}
-                  placeholder="Категория"
+                  placeholder={t(dict, "heroSearch.categoryPlaceholder")}
                   className="w-full min-h-[2.25rem] py-1.5 text-sm bg-transparent border-none outline-none text-gray-800 placeholder-gray-400"
-                  aria-label="Категория"
+                  aria-label={t(dict, "heroSearch.categoryPlaceholder")}
                   autoComplete="off"
                 />
                 {filteredCategories.length > 0 ? (
@@ -252,9 +260,9 @@ export default function HeroSearch({
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="PLZ или город"
+                  placeholder={t(dict, "heroSearch.locationPlaceholder")}
                   className="w-full min-h-[2.25rem] py-1.5 text-sm bg-transparent border-none outline-none text-gray-800 placeholder-gray-400"
-                  aria-label="Локация"
+                  aria-label={t(dict, "heroSearch.locationPlaceholder")}
                 />
               </div>
               <div className="p-3 flex items-center shrink-0">
@@ -263,7 +271,7 @@ export default function HeroSearch({
                   disabled={!canSubmit}
                   className="w-full sm:w-auto px-5 py-2 min-h-[2.25rem] text-sm font-semibold rounded-lg bg-[#3B5BDB] text-white hover:bg-[#364FC7] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#3B5BDB]"
                 >
-                  {primaryCta}
+                  {resolvedPrimaryCta}
                 </button>
               </div>
             </form>
@@ -271,12 +279,12 @@ export default function HeroSearch({
               <p className="mt-2 text-sm text-red-600">{inlineError}</p>
             ) : null}
             <div className="mt-4 text-sm text-gray-500">
-              Вы специалист?{" "}
+              {t(dict, "heroSearch.specialistQuestion")}{" "}
               <Link
                 href="/specialist"
                 className="text-blue-600 hover:text-blue-700 font-medium"
               >
-                Добавить услуги →
+                {t(dict, "heroSearch.addServices")}
               </Link>
             </div>
             </div>

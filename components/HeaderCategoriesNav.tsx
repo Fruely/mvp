@@ -29,9 +29,11 @@ export default async function HeaderCategoriesNav({ lang }: { lang: string }) {
   try {
     const supabase = createSupabaseServerClient();
     const dict = await getDictionary(lang as Lang);
-  const getCategoryLabel = (category: NavCategory) =>
-    category.title ??
-    t(dict, `categories.${category.slug}`, { defaultValue: t(dict, "categories.default") });
+  const getCategoryLabel = (category: NavCategory) => {
+    const translated = t(dict, `categories.${category.slug}`, { defaultValue: "" });
+    if (translated) return translated;
+    return category.title ?? t(dict, "categories.default");
+  };
 
   const withParent = await supabase
     .from("categories")

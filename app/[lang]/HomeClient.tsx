@@ -83,29 +83,6 @@ const FALLBACK_PLACEHOLDERS = [
   { id: "placeholder-3", icon: "🫶" },
 ];
 
-const HERO_COPY: Record<Lang, { titleLines: [string, string, string]; subtitle: string; search: string; plzLabel: string; popularLabel: string }> = {
-  ru: {
-    titleLines: ["Найдите специалиста", "на вашем языке", "в Германии"],
-    subtitle: "Рядом с вами и онлайн. Выберите того, с кем вам удобно.",
-    search: "Найти специалиста",
-    plzLabel: "PLZ / почтовый индекс",
-    popularLabel: "Популярные категории:",
-  },
-  ua: {
-    titleLines: ["Знайдіть спеціаліста", "вашою мовою", "в Німеччині"],
-    subtitle: "Поруч із вами та онлайн. Оберіть того, з ким вам зручно.",
-    search: "Знайти спеціаліста",
-    plzLabel: "PLZ / поштовий індекс",
-    popularLabel: "Популярні категорії:",
-  },
-  de: {
-    titleLines: ["Finden Sie einen Spezialisten", "in Ihrer Sprache", "in\u00a0Deutschland"],
-    subtitle: "In Ihrer Nähe und online. Wählen Sie jemanden, mit dem Sie sich wohlfühlen.",
-    search: "Spezialisten finden",
-    plzLabel: "PLZ / Postleitzahl",
-    popularLabel: "Beliebte Kategorien:",
-  },
-};
 
 export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionary }) {
   const router = useRouter();
@@ -182,10 +159,10 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       try {
         const res = await fetch(`/api/site-blocks?ts=${Date.now()}`, { cache: "no-store" });
         const json = await res.json();
-        if (!res.ok) throw new Error(json.error || "Ошибка загрузки блоков");
+        if (!res.ok) throw new Error(json.error || t(dict, "errors.loadingBlocks"));
         setBlocks(json.blocks || []);
       } catch (e: any) {
-        setError(e.message || "Ошибка загрузки блоков");
+        setError(e.message || t(dict, "errors.loadingBlocks"));
       } finally {
         setIsBlocksLoading(false);
       }
@@ -199,7 +176,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         );
         const parentJson = await parentRes.json();
         if (!parentRes.ok) {
-          throw new Error(parentJson.error || "Ошибка загрузки parent-категорий");
+          throw new Error(parentJson.error || t(dict, "errors.loadingCategories"));
         }
         const parentData = normalizeCategories(
           Array.isArray(parentJson.data) ? parentJson.data : []
@@ -215,13 +192,13 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
         });
         const childJson = await childRes.json();
         if (!childRes.ok) {
-          throw new Error(childJson.error || "Ошибка загрузки категорий");
+          throw new Error(childJson.error || t(dict, "errors.loadingCategories"));
         }
         setCategories(
           normalizeCategories(Array.isArray(childJson.data) ? childJson.data : [])
         );
       } catch (e: any) {
-        setError((prev) => prev || e.message || "Ошибка загрузки категорий");
+        setError((prev) => prev || e.message || t(dict, "errors.loadingCategories"));
       }
     }
 
@@ -310,7 +287,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     return (
       <div className="mt-10">
         <div className="mb-4 md:mb-6 text-center">
-          <h2 className="text-2xl md:text-3xl font-semibold text-textPrimary">Рекомендованные специалисты</h2>
+          <h2 className="text-2xl md:text-3xl font-semibold text-textPrimary">{t(dict, "recommended.title")}</h2>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {data.map((specialist) => (
@@ -348,11 +325,11 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                       <span className="text-textSecondary">({specialist.reviews_count})</span>
                     </>
                   ) : (
-                    <span className="text-textSecondary">Новий спеціаліст</span>
+                    <span className="text-textSecondary">{t(dict, "recommended.newSpecialist")}</span>
                   )}
                 </div>
                 <p className="text-sm font-normal text-textSecondary line-clamp-1">
-                  {specialist.category_title || "Услуги"}
+                  {specialist.category_title || t(dict, "recommended.services")}
                 </p>
                 <p className="text-sm font-normal text-textSecondary line-clamp-1">
                   {[specialist.city, specialist.languages[0]].filter(Boolean).join(" • ")}
@@ -404,8 +381,6 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     return options.sort((a, b) => a.title.localeCompare(b.title, "uk"));
   }, [categories]);
 
-  const copy = HERO_COPY[lang] ?? HERO_COPY.ru;
-
   function handleHeroSearch() {
     const locale = heroLanguage === "uk" ? "ua" : heroLanguage;
     const trimmedCity = heroCity.trim();
@@ -434,12 +409,12 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
       <section className="py-16 sm:py-24 bg-gradient-to-b from-white to-blue-50">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-tight text-textPrimary">
-            <span className="block">{copy.titleLines[0]}</span>
-            <span className="block">{copy.titleLines[1]}</span>
-            <span className="block">{copy.titleLines[2]}</span>
+            <span className="block">{t(dict, "hero.titleLine1")}</span>
+            <span className="block">{t(dict, "hero.titleLine2")}</span>
+            <span className="block">{t(dict, "hero.titleLine3")}</span>
           </h1>
           <p className="text-lg font-normal text-textSecondary mt-4 max-w-2xl mx-auto">
-            {copy.subtitle}
+            {t(dict, "hero.heroSubtitle")}
           </p>
 
           <div className="mt-8 bg-white shadow-soft rounded-xl p-3 flex flex-col sm:flex-row gap-3">
@@ -447,9 +422,9 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               value={heroCategorySlug}
               onChange={(e) => setHeroCategorySlug(e.target.value)}
               className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 sm:flex-1"
-              aria-label={t(dict, "categories.default", { defaultValue: "Категория" })}
+              aria-label={t(dict, "categories.default")}
             >
-              <option value="">{t(dict, "categories.default", { defaultValue: "Категория" })}</option>
+              <option value="">{t(dict, "categories.default")}</option>
               {heroCategoryOptions.map((option) => (
                 <option key={option.slug} value={option.slug}>
                   {option.title}
@@ -461,20 +436,20 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               type="text"
               value={heroCity}
               onChange={(e) => setHeroCity(e.target.value)}
-              placeholder={copy.plzLabel}
+              placeholder={t(dict, "hero.plzLabel")}
               className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 placeholder:text-gray-500 sm:flex-1"
-              aria-label={copy.plzLabel}
+              aria-label={t(dict, "hero.plzLabel")}
             />
 
             <select
               value={heroLanguage}
               onChange={(e) => setHeroLanguage((e.target.value as "ru" | "uk" | "de") || "ru")}
               className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 sm:w-48"
-              aria-label={t(dict, "filters.language.label", { defaultValue: "Язык" })}
+              aria-label={t(dict, "filters.language.label")}
             >
-              <option value="ru">{t(dict, "home.heroLang.ru", { defaultValue: "Русский" })}</option>
-              <option value="uk">{t(dict, "home.heroLang.uk", { defaultValue: "Українська" })}</option>
-              <option value="de">Deutsch</option>
+              <option value="ru">{t(dict, "home.heroLang.ru")}</option>
+              <option value="uk">{t(dict, "home.heroLang.uk")}</option>
+              <option value="de">{t(dict, "language.de", { defaultValue: "Deutsch" })}</option>
             </select>
 
             <button
@@ -482,13 +457,13 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               onClick={handleHeroSearch}
               className="h-14 px-6 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-soft"
             >
-              {copy.search}
+              {t(dict, "hero.searchButton")}
             </button>
           </div>
 
           <div className="mt-4 text-sm font-normal text-textSecondary flex flex-wrap justify-center gap-3">
-            <span>{copy.popularLabel}</span>
-            <span>Психологи • Юристы • Репетиторы • Миграция</span>
+            <span>{t(dict, "home.heroPopularLabel")}</span>
+            <span>{t(dict, "hero.popularTags")}</span>
           </div>
         </div>
       </section>
@@ -581,7 +556,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               <div className="mt-8 md:mt-10">
                 <div className="mb-4 md:mb-6 text-center">
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-                    {t(dict, "home.popularServices.title", { defaultValue: "Популярные услуги" })}
+                    {t(dict, "home.popularServices.title")}
                   </h2>
                 </div>
 
@@ -664,17 +639,17 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
 
       {/* CTA for specialists */}
       <section className="bg-gray-50 px-4 py-16 text-center sm:px-6 lg:px-8">
-        <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Вы специалист?</h2>
+        <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">{t(dict, "cta.specialist")}</h2>
         <p className="mx-auto mt-3 max-w-lg text-gray-600">
-          Freuly помогает специалистам находить клиентов и&nbsp;развивать свой бизнес.
+          {t(dict, "cta.specialistText")}
         </p>
         <Link
           href="/for-specialists"
           className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-emerald-600 px-6 text-sm font-semibold text-white transition hover:bg-emerald-700"
         >
-          Стать специалистом
+          {t(dict, "cta.becomeSpecialist")}
         </Link>
-        <p className="mt-3 text-xs text-gray-500">Уже 30+ специалистов присоединились к&nbsp;Freuly</p>
+        <p className="mt-3 text-xs text-gray-500">{t(dict, "cta.joinCount")}</p>
       </section>
 
       {error && (

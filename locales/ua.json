@@ -36,7 +36,14 @@
     "psychologists": "Психологи",
     "masseurs": "Масажисти",
     "tutors": "Репетитори",
-    "default": "Категорія"
+    "default": "Категорія",
+    "lawyers": "Юристи",
+    "migration": "Міграція",
+    "cleaning": "Прибирання",
+    "housemaster": "Домашній майстер",
+    "coaching": "Коучинг",
+    "beauty": "Краса",
+    "transport": "Транспорт"
   },
   "category": {
     "loading": "Завантаження...",
@@ -63,8 +70,14 @@
     }
   },
   "filters": {
-    "language": { "label": "Мова", "all": "Усі мови" },
-    "city": { "label": "Місто", "all": "Усі міста" },
+    "language": {
+      "label": "Мова",
+      "all": "Усі мови"
+    },
+    "city": {
+      "label": "Місто",
+      "all": "Усі міста"
+    },
     "sort": {
       "label": "Сортування",
       "best_match": "Найкраща відповідність",
@@ -215,5 +228,31 @@
       "languagesRequired": "Виберіть хоча б одну мову",
       "submitFailed": "Помилка при відправці заявки"
     }
-  }
+  },
+  "specialist.shareProfile": "Профіль спеціаліста",
+  "specialist.addPhoto": "Додати фото",
+  "specialist.addPhotoSoon": "Додати фото: функція в розробці",
+  "specialist.aboutSubtitle": "Досвід, підхід та ключові компетенції",
+  "specialist.getDirections": "Побудувати маршрут",
+  "filter.category": "Категорія",
+  "filter.allCategories": "Усі категорії",
+  "filter.postalCode": "Поштовий індекс",
+  "filter.anyPostalCode": "Будь-який індекс",
+  "filter.language": "Мова спілкування",
+  "filter.anyLanguage": "Будь-яка мова",
+  "filter.reset": "Скинути",
+  "footer.socialTitle": "Ми в соцмережах",
+  "preview.offline": "Офлайн",
+  "preview.hybrid": "Гібрид",
+  "preview.online": "Онлайн",
+  "preview.from": "від",
+  "preview.experience": "років досвіду",
+  "preview.perHour": "/год",
+  "preview.removeFromSaved": "Видалити зі збережених",
+  "preview.saveSpecialist": "Зберегти спеціаліста",
+  "preview.remove": "Видалити",
+  "preview.save": "Зберегти",
+  "preview.verified": "Перевірено",
+  "becomeSpecialist.title": "Подати заявку як спеціаліст | Freuly",
+  "becomeSpecialist.description": "Подайте заявку як спеціаліст на платформі Freuly. B2B-платформа для реальних спеціалістів."
 }

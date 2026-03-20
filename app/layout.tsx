@@ -8,8 +8,8 @@ const inter = Inter({
 })
 
 export const metadata = {
-  title: 'Freuly - Специалист на твоём языке',
-  description: 'Найди специалиста, который говорит на твоём языке',
+  title: 'Freuly',
+  description: 'Freuly — find a specialist who speaks your language',
 }
 
 export default function RootLayout({

@@ -1,6 +1,17 @@
 import Image from "next/image";
 
-export default function ServiceCard({ id, title, description, price, duration, image }) {
+export default function ServiceCard({ id, title, description, price, duration, image, dict }) {
+  const tSafe = (key, fallback) => {
+    if (!dict) return fallback;
+    const parts = key.split(".");
+    let val = dict;
+    for (const p of parts) {
+      if (val && typeof val === "object") val = val[p];
+      else return fallback;
+    }
+    return typeof val === "string" ? val : fallback;
+  };
+
   return (
     <div className="card group">
       {/* Image Placeholder */}
@@ -17,26 +28,26 @@ export default function ServiceCard({ id, title, description, price, duration, i
         ) : (
           <div className="text-white text-center">
             <div className="text-4xl mb-2">🧘</div>
-            <span className="text-sm">Изображение услуги</span>
+            <span className="text-sm">{tSafe("serviceCard.imagePlaceholder", "Service image")}</span>
           </div>
         )}
       </div>
 
       {/* Content */}
       <div className="mb-4">
-        <h3 className="text-xl font-bold text-primary mb-2">{title || 'Название услуги'}</h3>
+        <h3 className="text-xl font-bold text-primary mb-2">{title || tSafe("serviceCard.titleFallback", "Service")}</h3>
         <p className="text-gray-600 text-sm mb-3 line-clamp-3">
-          {description || 'Описание услуги будет здесь. Это placeholder текст.'}
+          {description || tSafe("serviceCard.descriptionFallback", "")}
         </p>
         <div className="flex justify-between items-center text-sm text-gray-500 mb-3">
-          <span>⏱️ {duration || '60'} мин</span>
-          <span>💰 {price || '0'} ₽</span>
+          <span>⏱️ {duration || '60'} {tSafe("serviceCard.minutes", "min")}</span>
+          <span>💰 {price || '0'} €</span>
         </div>
       </div>
 
       {/* Button */}
       <button className="btn-primary w-full">
-        Записаться
+        {tSafe("serviceCard.book", "Book")}
       </button>
     </div>
   );

@@ -167,18 +167,18 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
   const [sort, setSort] = useState<SortKey>("best_match");
   const [loadError, setLoadError] = useState<string | null>(null);
   const getCategoryLabel = (title: string | null, categorySlug: string) => {
+    // Always prefer i18n translation over DB title to avoid language mixing
     const translated = t(dict, `categories.${categorySlug}`, { defaultValue: "" }).trim();
-    if (lang === "de") {
-      if (typeof title === "string" && title.trim() && !hasCyrillic(title)) return title.trim();
-      if (translated) return translated;
-      return slugToTitleCase(categorySlug);
+    if (translated) return translated;
+    // For DE: use DB title only if it's not Cyrillic
+    if (lang === "de" && typeof title === "string" && title.trim() && !hasCyrillic(title)) {
+      return title.trim();
     }
-    return (
-      title ??
-      t(dict, `categories.${categorySlug}`, {
-        defaultValue: t(dict, "categories.default"),
-      })
-    );
+    // Fallback: if DB title matches current language, use it; otherwise use slug
+    if (typeof title === "string" && title.trim()) {
+      return title.trim();
+    }
+    return slugToTitleCase(categorySlug);
   };
 
   const mergeUniqueSpecialists = (
@@ -402,16 +402,12 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
 
   const uspHeading = useMemo(() => {
     if (!categoryLabel) return "";
-    if (lang === "ru") return `${categoryLabel} в Германии на вашем языке`;
-    if (lang === "de") return `${categoryLabel} in Deutschland – in Ihrer Sprache`;
-    return `${categoryLabel} в Німеччині вашою мовою`;
-  }, [categoryLabel, lang]);
+    return t(dict, "category.uspHeading").replace(/\{\{\s*category\s*\}\}/g, categoryLabel);
+  }, [categoryLabel, dict]);
 
   const uspSubtext = useMemo(() => {
-    if (lang === "ru") return "Выберите специалиста и отправьте заявку напрямую.";
-    if (lang === "de") return "Wählen Sie einen Spezialisten und senden Sie direkt eine Anfrage.";
-    return "Оберіть фахівця та надішліть заявку напряму.";
-  }, [lang]);
+    return t(dict, "category.uspSubtext");
+  }, [dict]);
 
   if (loading) {
     return (

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
+import { getDictionary, isSupportedLang, t, type Lang } from "@/lib/i18n";
 import SpecialistApplicationForm from "@/components/SpecialistApplicationForm";
 import SpecialistQuickRegisterForm from "@/components/SpecialistQuickRegisterForm";
 import { featureFlags } from "@/lib/featureFlags";
@@ -11,30 +11,13 @@ export const revalidate = 0;
 const DOMAIN = "https://freuly.de";
 
 export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
-  const byLang = {
-    ua: {
-      title: "Подати заявку як спеціаліст | Freuly",
-      description:
-        "Подайте заявку як спеціаліст на платформі Freuly. B2B-платформа для реальних спеціалістів.",
-    },
-    ru: {
-      title: "Подать заявку как специалист | Freuly",
-      description:
-        "Подайте заявку как специалист на платформе Freuly. B2B-платформа для реальных специалистов.",
-    },
-    de: {
-      title: "Als Spezialist bewerben | Freuly",
-      description:
-        "Bewerben Sie sich als Spezialist auf der Freuly-Plattform. B2B-Plattform für echte Fachkräfte.",
-    },
-  } as const;
-
-  const lang = (params.lang === "ua" || params.lang === "ru" || params.lang === "de" ? params.lang : "ua") as keyof typeof byLang;
+  const lang = (params.lang === "ua" || params.lang === "ru" || params.lang === "de" ? params.lang : "ua") as Lang;
+  const dict = await getDictionary(lang);
   const canonical = `${DOMAIN}/${lang}/become-specialist`;
 
   return {
-    title: byLang[lang].title,
-    description: byLang[lang].description,
+    title: t(dict, "becomeSpecialist.title"),
+    description: t(dict, "becomeSpecialist.description"),
     alternates: {
       canonical,
       languages: {

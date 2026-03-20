@@ -199,7 +199,7 @@ export default function SpecialistPage() {
   })();
   const displayName = specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback");
   const aboutText = (specialist.description ?? specialist.bio)?.trim() || "";
-  const specializationText = specialist.category || t(dict, "specialist.about", { defaultValue: "Спеціаліст" });
+  const specializationText = specialist.category || t(dict, "specialist.about", { defaultValue: "Specialist" });
   const galleryPlaceholders = Array.from({ length: 4 }, (_, idx) => idx);
   const workMode = getWorkFormat(specialist.format)
     ?? getWorkFormat(specialist.work_format)
@@ -332,7 +332,7 @@ export default function SpecialistPage() {
       }
       return;
     }
-    const text = encodeURIComponent(`Профиль специалиста: ${specialistUrl}`);
+    const text = encodeURIComponent(`${t(dict, "specialist.shareProfile", { defaultValue: "Specialist profile" })}: ${specialistUrl}`);
     if (channel === "whatsapp") window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
     if (channel === "telegram") window.open(`https://t.me/share/url?url=${encodeURIComponent(specialistUrl)}`, "_blank", "noopener,noreferrer");
     if (channel === "instagram") window.open(`https://www.instagram.com/`, "_blank", "noopener,noreferrer");
@@ -411,7 +411,7 @@ export default function SpecialistPage() {
                     const authUserId = typeof window !== "undefined" ? window.localStorage.getItem("authUserId") : null;
                     const handleAddPhotos = () => {
                       // Placeholder: open upload dialog or similar
-                      alert("Добавить фото: функция в разработке");
+                      alert(t(dict, "specialist.addPhotoSoon", { defaultValue: "Add photo: feature in development" }));
                     };
                     return authUserId === specialist.user_id && (
                       <button
@@ -419,7 +419,7 @@ export default function SpecialistPage() {
                         type="button"
                         onClick={handleAddPhotos}
                       >
-                        Добавить фото
+                        {t(dict, "specialist.addPhoto", { defaultValue: "Add photo" })}
                       </button>
                     );
                   })()}
@@ -468,7 +468,7 @@ export default function SpecialistPage() {
 
         <main className="mt-6 space-y-6 md:col-start-1 md:mt-6">
           {aboutText ? (
-            <SectionCard title={t(dict, "specialist.about")} subtitle={lang === "ru" ? "Опыт, подход и ключевые компетенции" : lang === "de" ? "Erfahrung, Ansatz und Schlüsselkompetenzen" : "Досвід, підхід та ключові компетенції"}>
+            <SectionCard title={t(dict, "specialist.about")} subtitle={t(dict, "specialist.aboutSubtitle", { defaultValue: "" })}>
               <div id="about" className="scroll-mt-24">
                 <p className="whitespace-pre-wrap leading-relaxed text-gray-700">{aboutText}</p>
               </div>
@@ -652,7 +652,7 @@ export default function SpecialistPage() {
                 ) : null}
                 {specialist.address ? (
                   <p>
-                    <span className="font-medium">Адреса прийому: </span>
+                    <span className="font-medium">{sectionText.contactsLineLocation}: </span>
                     {specialist.address}
                   </p>
                 ) : null}
@@ -666,7 +666,7 @@ export default function SpecialistPage() {
                         rel="noopener noreferrer"
                         className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 transition"
                       >
-                        Побудувати маршрут
+                        {t(dict, "specialist.getDirections", { defaultValue: "Get directions" })}
                       </a>
                       {mapCoords ? (
                         <div className="mt-3 overflow-hidden rounded-xl border border-gray-200">
@@ -741,7 +741,7 @@ export default function SpecialistPage() {
                   className="absolute inset-0 h-full w-full rounded-xl"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                  title="Видео специалиста"
+                  title={sectionText.videoTitle}
                 />
               </div>
             </SectionCard>

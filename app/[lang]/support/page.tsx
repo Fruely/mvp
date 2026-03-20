@@ -1,34 +1,40 @@
 import Link from "next/link";
-import { Metadata } from "next";
+import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
+import { t } from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "Поддержка Freuly",
-  description:
-    "Свяжитесь с поддержкой Freuly и получите помощь по работе платформы.",
-};
+export async function generateMetadata({ params }: { params: { lang: string } }) {
+  const lang = isSupportedLang(params.lang) ? params.lang : "ua";
+  const dict = await getDictionary(lang as Lang);
+  return {
+    title: t(dict, "support.title"),
+    description: t(dict, "support.description"),
+  };
+}
 
-export default function SupportPage() {
+export default async function SupportPage({ params }: { params: { lang: string } }) {
+  const lang = (isSupportedLang(params.lang) ? params.lang : "ua") as Lang;
+  const dict = await getDictionary(lang);
+
   return (
     <div className="max-w-[900px] mx-auto px-6 py-16">
 
       <section className="mb-16">
         <h1 className="text-3xl font-bold mb-4">
-          Поддержка Freuly
+          {t(dict, "support.title")}
         </h1>
 
         <p className="text-lg text-gray-600">
-          Если у вас возникли вопросы о работе платформы или поиске специалиста —
-          мы готовы помочь.
+          {t(dict, "support.intro")}
         </p>
       </section>
 
       <section className="mb-12">
         <h2 className="text-xl font-semibold mb-4">
-          Как связаться с нами
+          {t(dict, "support.contactTitle")}
         </h2>
 
         <p className="text-gray-700 mb-2">
-          Напишите нам на email:
+          {t(dict, "support.contactText")}
         </p>
 
         <p className="text-blue-600 font-semibold">
@@ -36,56 +42,56 @@ export default function SupportPage() {
         </p>
 
         <p className="text-gray-700 mt-4">
-          Мы стараемся отвечать на сообщения в течение 24 часов.
+          {t(dict, "support.responseTime")}
         </p>
       </section>
 
       <section className="mb-12">
         <h2 className="text-xl font-semibold mb-4">
-          Частые вопросы
+          {t(dict, "support.faqTitle")}
         </h2>
 
         <p className="text-gray-700 mb-3">
-          <b>Как найти специалиста?</b>
+          <b>{t(dict, "support.faq1q")}</b>
         </p>
 
         <p className="text-gray-700 mb-6">
-          Выберите категорию услуг и отправьте заявку через страницу специалиста.
+          {t(dict, "support.faq1a")}
         </p>
 
         <p className="text-gray-700 mb-3">
-          <b>Берёт ли Freuly комиссию?</b>
+          <b>{t(dict, "support.faq2q")}</b>
         </p>
 
         <p className="text-gray-700 mb-6">
-          Нет. Вы договариваетесь со специалистом напрямую.
+          {t(dict, "support.faq2a")}
         </p>
 
         <p className="text-gray-700 mb-3">
-          <b>Как стать специалистом?</b>
+          <b>{t(dict, "support.faq3q")}</b>
         </p>
 
         <p className="text-gray-700">
-          Создайте профиль специалиста и разместите свои услуги.
+          {t(dict, "support.faq3a")}
         </p>
       </section>
 
       <section className="mb-12 text-center">
         <h2 className="text-xl font-semibold mb-4">
-          Вы специалист?
+          {t(dict, "cta.specialist")}
         </h2>
 
         <Link
-          href="/register"
+          href="/for-specialists"
           className="inline-block bg-blue-600 text-white px-6 py-3 rounded-full"
         >
-          Присоединиться к Freuly
+          {t(dict, "cta.joinButton")}
         </Link>
       </section>
 
       <div className="text-center">
-        <Link href="/" className="text-blue-600 hover:underline">
-          Вернуться на главную
+        <Link href={`/${lang}`} className="text-blue-600 hover:underline">
+          {t(dict, "support.backToHome")}
         </Link>
       </div>
 

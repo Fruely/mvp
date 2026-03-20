@@ -64,11 +64,11 @@ export default function SpecialistApplicationForm({
       .catch(() => setCategories([]));
   }, []);
 
-  const getCategoryLabel = (category: Category) =>
-    category.title ??
-    t(dict, `categories.${category.slug}`, {
-      defaultValue: t(dict, "categories.default"),
-    });
+  const getCategoryLabel = (category: Category) => {
+    const translated = t(dict, `categories.${category.slug}`, { defaultValue: "" });
+    if (typeof translated === "string" && translated.trim()) return translated;
+    return category.title ?? t(dict, "categories.default");
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>

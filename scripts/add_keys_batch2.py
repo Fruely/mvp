@@ -1,0 +1,133 @@
+import json
+
+# New keys to add to locale files
+new_keys = {
+    "locales/ru.json": {
+        "specialist.shareProfile": "Профиль специалиста",
+        "specialist.addPhoto": "Добавить фото",
+        "specialist.addPhotoSoon": "Добавить фото: функция в разработке",
+        "specialist.aboutSubtitle": "Опыт, подход и ключевые компетенции",
+        "specialist.getDirections": "Построить маршрут",
+        # FilterBlock
+        "filter.category": "Категория",
+        "filter.allCategories": "Все категории",
+        "filter.postalCode": "Почтовый индекс",
+        "filter.anyPostalCode": "Любой индекс",
+        "filter.language": "Язык общения",
+        "filter.anyLanguage": "Любой язык",
+        "filter.reset": "Сбросить",
+        # Footer
+        "footer.socialTitle": "Мы в соцсетях",
+        # SpecialistPreviewCard
+        "preview.offline": "Офлайн",
+        "preview.hybrid": "Гибрид",
+        "preview.online": "Онлайн",
+        "preview.from": "от",
+        "preview.experience": "лет опыта",
+        "preview.perHour": "/час",
+        "preview.removeFromSaved": "Удалить из сохраненных",
+        "preview.saveSpecialist": "Сохранить специалиста",
+        "preview.remove": "Удалить",
+        "preview.save": "Сохранить",
+        "preview.verified": "Проверено",
+        # become-specialist metadata
+        "becomeSpecialist.title": "Подать заявку как специалист | Freuly",
+        "becomeSpecialist.description": "Подайте заявку как специалист на платформе Freuly. B2B-платформа для реальных специалистов.",
+    },
+    "locales/de.json": {
+        "specialist.shareProfile": "Spezialistenprofil",
+        "specialist.addPhoto": "Foto hinzufügen",
+        "specialist.addPhotoSoon": "Foto hinzufügen: Funktion in Entwicklung",
+        "specialist.aboutSubtitle": "Erfahrung, Ansatz und Schlüsselkompetenzen",
+        "specialist.getDirections": "Route berechnen",
+        "filter.category": "Kategorie",
+        "filter.allCategories": "Alle Kategorien",
+        "filter.postalCode": "Postleitzahl",
+        "filter.anyPostalCode": "Beliebig",
+        "filter.language": "Sprache",
+        "filter.anyLanguage": "Beliebige Sprache",
+        "filter.reset": "Zurücksetzen",
+        "footer.socialTitle": "Soziale Medien",
+        "preview.offline": "Offline",
+        "preview.hybrid": "Hybrid",
+        "preview.online": "Online",
+        "preview.from": "ab",
+        "preview.experience": "Jahre Erfahrung",
+        "preview.perHour": "/Std.",
+        "preview.removeFromSaved": "Aus Gespeicherten entfernen",
+        "preview.saveSpecialist": "Spezialist speichern",
+        "preview.remove": "Entfernen",
+        "preview.save": "Speichern",
+        "preview.verified": "Verifiziert",
+        "becomeSpecialist.title": "Als Spezialist bewerben | Freuly",
+        "becomeSpecialist.description": "Bewerben Sie sich als Spezialist auf der Freuly-Plattform. B2B-Plattform für echte Fachkräfte.",
+    },
+    "locales/ua.json": {
+        "specialist.shareProfile": "Профіль спеціаліста",
+        "specialist.addPhoto": "Додати фото",
+        "specialist.addPhotoSoon": "Додати фото: функція в розробці",
+        "specialist.aboutSubtitle": "Досвід, підхід та ключові компетенції",
+        "specialist.getDirections": "Побудувати маршрут",
+        "filter.category": "Категорія",
+        "filter.allCategories": "Усі категорії",
+        "filter.postalCode": "Поштовий індекс",
+        "filter.anyPostalCode": "Будь-який індекс",
+        "filter.language": "Мова спілкування",
+        "filter.anyLanguage": "Будь-яка мова",
+        "filter.reset": "Скинути",
+        "footer.socialTitle": "Ми в соцмережах",
+        "preview.offline": "Офлайн",
+        "preview.hybrid": "Гібрид",
+        "preview.online": "Онлайн",
+        "preview.from": "від",
+        "preview.experience": "років досвіду",
+        "preview.perHour": "/год",
+        "preview.removeFromSaved": "Видалити зі збережених",
+        "preview.saveSpecialist": "Зберегти спеціаліста",
+        "preview.remove": "Видалити",
+        "preview.save": "Зберегти",
+        "preview.verified": "Перевірено",
+        "becomeSpecialist.title": "Подати заявку як спеціаліст | Freuly",
+        "becomeSpecialist.description": "Подайте заявку як спеціаліст на платформі Freuly. B2B-платформа для реальних спеціалістів.",
+    },
+    "locales/en.json": {
+        "specialist.shareProfile": "Specialist profile",
+        "specialist.addPhoto": "Add photo",
+        "specialist.addPhotoSoon": "Add photo: feature in development",
+        "specialist.aboutSubtitle": "Experience, approach and key competences",
+        "specialist.getDirections": "Get directions",
+        "filter.category": "Category",
+        "filter.allCategories": "All categories",
+        "filter.postalCode": "Postal code",
+        "filter.anyPostalCode": "Any postal code",
+        "filter.language": "Language",
+        "filter.anyLanguage": "Any language",
+        "filter.reset": "Reset",
+        "footer.socialTitle": "Social media",
+        "preview.offline": "Offline",
+        "preview.hybrid": "Hybrid",
+        "preview.online": "Online",
+        "preview.from": "from",
+        "preview.experience": "years of experience",
+        "preview.perHour": "/hr",
+        "preview.removeFromSaved": "Remove from saved",
+        "preview.saveSpecialist": "Save specialist",
+        "preview.remove": "Remove",
+        "preview.save": "Save",
+        "preview.verified": "Verified",
+        "becomeSpecialist.title": "Apply as a specialist | Freuly",
+        "becomeSpecialist.description": "Apply as a specialist on the Freuly platform. B2B platform for real professionals.",
+    },
+}
+
+for fname, keys in new_keys.items():
+    with open(fname, "r") as f:
+        data = json.load(f)
+    for k, v in keys.items():
+        if k not in data:
+            data[k] = v
+    with open(fname, "w") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+
+print("All new keys added.")

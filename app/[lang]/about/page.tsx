@@ -1,169 +1,146 @@
 import Link from "next/link";
-import { Metadata } from "next";
+import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
+import { t } from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "О платформе Freuly",
-  description:
-    "Freuly — платформа, которая помогает людям находить специалистов, говорящих на их языке.",
-};
+export async function generateMetadata({ params }: { params: { lang: string } }) {
+  const lang = isSupportedLang(params.lang) ? params.lang : "ua";
+  const dict = await getDictionary(lang as Lang);
+  return {
+    title: t(dict, "about.title"),
+    description: t(dict, "about.description"),
+  };
+}
 
-export default function AboutPage() {
+export default async function AboutPage({ params }: { params: { lang: string } }) {
+  const lang = (isSupportedLang(params.lang) ? params.lang : "ua") as Lang;
+  const dict = await getDictionary(lang);
+
   return (
     <div className="max-w-[900px] mx-auto px-6 py-16">
 
-      {/* Hero */}
       <section className="mb-16">
         <h1 className="text-3xl font-bold mb-4">
-          О платформе Freuly
+          {t(dict, "about.title")}
         </h1>
 
         <p className="text-lg text-gray-600 leading-relaxed">
-          Freuly — это платформа, которая помогает людям находить специалистов,
-          говорящих на их языке. Мы создаём пространство, где клиенты и
-          профессионалы могут легко находить друг друга и общаться без
-          языкового барьера.
+          {t(dict, "about.intro")}
         </p>
       </section>
 
-
-      {/* Почему появился Freuly */}
       <section className="mb-12">
         <h2 className="text-xl font-semibold mb-4">
-          Почему появился Freuly?
+          {t(dict, "about.whyTitle")}
         </h2>
 
         <p className="text-gray-700 leading-relaxed mb-4">
-          Миллионы людей живут за пределами своей родной страны. Переезд,
-          адаптация и жизнь в новой культурной среде часто сопровождаются
-          языковыми трудностями.
+          {t(dict, "about.whyText1")}
         </p>
 
         <p className="text-gray-700 leading-relaxed">
-          Когда человеку нужен специалист — психолог, мастер, преподаватель
-          или консультант — ему важно чувствовать понимание и доверие.
-          Общение на родном языке часто становится ключевым фактором
-          такого доверия.
+          {t(dict, "about.whyText2")}
         </p>
       </section>
 
-
-      {/* Что такое Freuly */}
       <section className="mb-12">
         <h2 className="text-xl font-semibold mb-4">
-          Что такое Freuly?
+          {t(dict, "about.whatTitle")}
         </h2>
 
         <p className="text-gray-700 mb-4">
-          Freuly — это платформа, где можно найти специалистов различных
-          сфер услуг:
+          {t(dict, "about.whatText")}
         </p>
 
         <ul className="list-disc pl-6 text-gray-700 space-y-1">
-          <li>психологи и консультанты</li>
-          <li>специалисты для дома</li>
-          <li>мастера услуг</li>
-          <li>преподаватели и наставники</li>
-          <li>другие профессионалы</li>
+          <li>{t(dict, "about.whatList1")}</li>
+          <li>{t(dict, "about.whatList2")}</li>
+          <li>{t(dict, "about.whatList3")}</li>
+          <li>{t(dict, "about.whatList4")}</li>
+          <li>{t(dict, "about.whatList5")}</li>
         </ul>
 
         <p className="text-gray-700 mt-4">
-          Специалисты могут работать как онлайн, так и локально в своём городе.
+          {t(dict, "about.whatOnlineNote")}
         </p>
       </section>
 
-
-      {/* Как работает платформа */}
       <section className="mb-12">
         <h2 className="text-xl font-semibold mb-4">
-          Как работает платформа
+          {t(dict, "about.howTitle")}
         </h2>
 
         <ol className="list-decimal pl-6 text-gray-700 space-y-2">
-          <li>Вы выбираете категорию услуг</li>
-          <li>Находите специалиста</li>
-          <li>Оставляете заявку</li>
-          <li>Связываетесь напрямую</li>
+          <li>{t(dict, "about.howStep1")}</li>
+          <li>{t(dict, "about.howStep2")}</li>
+          <li>{t(dict, "about.howStep3")}</li>
+          <li>{t(dict, "about.howStep4")}</li>
         </ol>
 
         <p className="text-gray-700 mt-4">
-          Freuly помогает людям находить специалистов проще и быстрее.
+          {t(dict, "about.howNote")}
         </p>
       </section>
 
-
-      {/* Для кого создан Freuly */}
       <section className="mb-12">
         <h2 className="text-xl font-semibold mb-4">
-          Для кого создан Freuly
+          {t(dict, "about.forWhomTitle")}
         </h2>
 
         <p className="text-gray-700 leading-relaxed mb-4">
-          Платформа создана как для клиентов, так и для специалистов.
+          {t(dict, "about.forWhomText")}
         </p>
 
         <ul className="list-disc pl-6 text-gray-700 space-y-2">
-          <li>для людей, которым важно получать услуги на понятном языке</li>
-          <li>для специалистов, которые хотят работать с клиентами своего языка</li>
-          <li>для профессионалов, которые хотят расширить свою практику</li>
+          <li>{t(dict, "about.forWhomList1")}</li>
+          <li>{t(dict, "about.forWhomList2")}</li>
+          <li>{t(dict, "about.forWhomList3")}</li>
         </ul>
       </section>
 
-
-      {/* Почему специалистам стоит присоединиться */}
       <section className="mb-12">
         <h2 className="text-xl font-semibold mb-4">
-          Почему специалистам стоит присоединиться
+          {t(dict, "about.whyJoinTitle")}
         </h2>
 
         <p className="text-gray-700 leading-relaxed mb-4">
-          Freuly — это не только возможность получать новых клиентов.
-          Это также пространство, где специалисты могут помогать людям,
-          которые находятся в похожей жизненной ситуации.
+          {t(dict, "about.whyJoinText1")}
         </p>
 
         <p className="text-gray-700 leading-relaxed">
-          Многие специалисты сами проходили путь переезда и адаптации.
-          Поэтому помощь людям, говорящим на их языке, становится
-          не только работой, но и важной человеческой миссией.
+          {t(dict, "about.whyJoinText2")}
         </p>
       </section>
 
-
-      {/* Миссия */}
       <section className="mb-12">
         <h2 className="text-xl font-semibold mb-4">
-          Наша миссия
+          {t(dict, "about.missionTitle")}
         </h2>
 
         <p className="text-gray-700 leading-relaxed">
-          Мы хотим сделать поиск специалистов простым, прозрачным и
-          доступным для людей в любой стране.
+          {t(dict, "about.missionText")}
         </p>
       </section>
 
-
-      {/* CTA */}
       <section className="mb-12 text-center">
         <h2 className="text-xl font-semibold mb-4">
-          Вы специалист?
+          {t(dict, "cta.specialist")}
         </h2>
 
         <p className="text-gray-700 mb-6">
-          Создайте профиль на Freuly и начните получать заявки от клиентов.
+          {t(dict, "about.ctaText")}
         </p>
 
         <Link
-          href="/register"
+          href="/for-specialists"
           className="inline-block bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700 transition"
         >
-          Присоединиться к Freuly
+          {t(dict, "cta.joinButton")}
         </Link>
       </section>
 
-
       <div className="text-center">
-        <Link href="/" className="text-blue-600 hover:underline">
-          Вернуться на главную
+        <Link href={`/${lang}`} className="text-blue-600 hover:underline">
+          {t(dict, "support.backToHome")}
         </Link>
       </div>
 

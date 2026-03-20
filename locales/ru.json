@@ -44,7 +44,14 @@
     "psychologists": "Психологи",
     "masseurs": "Массажисты",
     "tutors": "Репетиторы",
-    "default": "Категория"
+    "default": "Категория",
+    "lawyers": "Юристы",
+    "migration": "Миграция",
+    "cleaning": "Уборка",
+    "housemaster": "Домашний мастер",
+    "coaching": "Коучинг",
+    "beauty": "Красота",
+    "transport": "Транспорт"
   },
   "category": {
     "loading": "Загрузка...",
@@ -71,8 +78,14 @@
     }
   },
   "filters": {
-    "language": { "label": "Язык", "all": "Все языки" },
-    "city": { "label": "Город", "all": "Все города" },
+    "language": {
+      "label": "Язык",
+      "all": "Все языки"
+    },
+    "city": {
+      "label": "Город",
+      "all": "Все города"
+    },
     "sort": {
       "label": "Сортировка",
       "best_match": "Лучшая релевантность",
@@ -166,5 +179,31 @@
       "languagesRequired": "Выберите хотя бы один язык",
       "submitFailed": "Ошибка при отправке заявки"
     }
-  }
+  },
+  "specialist.shareProfile": "Профиль специалиста",
+  "specialist.addPhoto": "Добавить фото",
+  "specialist.addPhotoSoon": "Добавить фото: функция в разработке",
+  "specialist.aboutSubtitle": "Опыт, подход и ключевые компетенции",
+  "specialist.getDirections": "Построить маршрут",
+  "filter.category": "Категория",
+  "filter.allCategories": "Все категории",
+  "filter.postalCode": "Почтовый индекс",
+  "filter.anyPostalCode": "Любой индекс",
+  "filter.language": "Язык общения",
+  "filter.anyLanguage": "Любой язык",
+  "filter.reset": "Сбросить",
+  "footer.socialTitle": "Мы в соцсетях",
+  "preview.offline": "Офлайн",
+  "preview.hybrid": "Гибрид",
+  "preview.online": "Онлайн",
+  "preview.from": "от",
+  "preview.experience": "лет опыта",
+  "preview.perHour": "/час",
+  "preview.removeFromSaved": "Удалить из сохраненных",
+  "preview.saveSpecialist": "Сохранить специалиста",
+  "preview.remove": "Удалить",
+  "preview.save": "Сохранить",
+  "preview.verified": "Проверено",
+  "becomeSpecialist.title": "Подать заявку как специалист | Freuly",
+  "becomeSpecialist.description": "Подайте заявку как специалист на платформе Freuly. B2B-платформа для реальных специалистов."
 }

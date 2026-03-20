@@ -1,4 +1,6 @@
 import type { ChangeEvent } from "react";
+import type { Dictionary } from "@/lib/i18n";
+import { t } from "@/lib/i18n";
 
 export type FilterOption = {
   id: string;
@@ -15,6 +17,7 @@ interface Props {
   onCategoryChange: (value: string) => void;
   onPostalCodeChange: (value: string) => void;
   onLanguageChange: (value: string) => void;
+  dict?: Dictionary;
 }
 
 const inputClass =
@@ -58,7 +61,9 @@ export default function FilterBlock({
   onCategoryChange,
   onPostalCodeChange,
   onLanguageChange,
+  dict,
 }: Props) {
+  const tSafe = (key: string, fallback: string) => dict ? t(dict, key) : fallback;
   const handleReset = () => {
     onCategoryChange("");
     onPostalCodeChange("");
@@ -69,26 +74,26 @@ export default function FilterBlock({
     <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-end">
         <SelectField
-          label="Категория"
+          label={tSafe("filter.category", "Category")}
           value={selectedCategory}
           options={categories}
-          placeholder="Все категории"
+          placeholder={tSafe("filter.allCategories", "All categories")}
           onChange={(e) => onCategoryChange(e.target.value)}
         />
 
         <SelectField
-          label="Почтовый индекс"
+          label={tSafe("filter.postalCode", "Postal code")}
           value={selectedPostalCode}
           options={postalCodes}
-          placeholder="Любой индекс"
+          placeholder={tSafe("filter.anyPostalCode", "Any")}
           onChange={(e) => onPostalCodeChange(e.target.value)}
         />
 
         <SelectField
-          label="Язык общения"
+          label={tSafe("filter.language", "Language")}
           value={selectedLanguage}
           options={languages}
-          placeholder="Любой язык"
+          placeholder={tSafe("filter.anyLanguage", "Any language")}
           onChange={(e) => onLanguageChange(e.target.value)}
         />
 
@@ -98,7 +103,7 @@ export default function FilterBlock({
             onClick={handleReset}
             className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 md:w-auto"
           >
-            Сбросить
+            {tSafe("filter.reset", "Reset")}
           </button>
         </div>
       </div>

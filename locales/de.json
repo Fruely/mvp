@@ -36,7 +36,14 @@
     "psychologists": "Psychologen",
     "masseurs": "Masseure",
     "tutors": "Nachhilfelehrer",
-    "default": "Kategorie"
+    "default": "Kategorie",
+    "lawyers": "Anwälte",
+    "migration": "Migration",
+    "cleaning": "Reinigung",
+    "housemaster": "Hausmeister",
+    "coaching": "Coaching",
+    "beauty": "Schönheit",
+    "transport": "Transport"
   },
   "category": {
     "loading": "Wird geladen...",
@@ -63,8 +70,14 @@
     }
   },
   "filters": {
-    "language": { "label": "Sprache", "all": "Alle Sprachen" },
-    "city": { "label": "Stadt", "all": "Alle Städte" },
+    "language": {
+      "label": "Sprache",
+      "all": "Alle Sprachen"
+    },
+    "city": {
+      "label": "Stadt",
+      "all": "Alle Städte"
+    },
     "sort": {
       "label": "Sortierung",
       "best_match": "Beste Übereinstimmung",
@@ -215,5 +228,31 @@
       "languagesRequired": "Wählen Sie mindestens eine Sprache",
       "submitFailed": "Fehler beim Senden der Bewerbung"
     }
-  }
+  },
+  "specialist.shareProfile": "Spezialistenprofil",
+  "specialist.addPhoto": "Foto hinzufügen",
+  "specialist.addPhotoSoon": "Foto hinzufügen: Funktion in Entwicklung",
+  "specialist.aboutSubtitle": "Erfahrung, Ansatz und Schlüsselkompetenzen",
+  "specialist.getDirections": "Route berechnen",
+  "filter.category": "Kategorie",
+  "filter.allCategories": "Alle Kategorien",
+  "filter.postalCode": "Postleitzahl",
+  "filter.anyPostalCode": "Beliebig",
+  "filter.language": "Sprache",
+  "filter.anyLanguage": "Beliebige Sprache",
+  "filter.reset": "Zurücksetzen",
+  "footer.socialTitle": "Soziale Medien",
+  "preview.offline": "Offline",
+  "preview.hybrid": "Hybrid",
+  "preview.online": "Online",
+  "preview.from": "ab",
+  "preview.experience": "Jahre Erfahrung",
+  "preview.perHour": "/Std.",
+  "preview.removeFromSaved": "Aus Gespeicherten entfernen",
+  "preview.saveSpecialist": "Spezialist speichern",
+  "preview.remove": "Entfernen",
+  "preview.save": "Speichern",
+  "preview.verified": "Verifiziert",
+  "becomeSpecialist.title": "Als Spezialist bewerben | Freuly",
+  "becomeSpecialist.description": "Bewerben Sie sich als Spezialist auf der Freuly-Plattform. B2B-Plattform für echte Fachkräfte."
 }
