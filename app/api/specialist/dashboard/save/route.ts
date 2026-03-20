@@ -60,7 +60,7 @@ export async function PUT(request: NextRequest) {
   const body = (await request.json().catch(() => null)) as Payload | null;
   if (!body) return jsonNoStore({ error: "Invalid payload" }, { status: 400 });
 
-  const allowedLanguages = new Set(["ru", "uk", "de"]);
+  const allowedLanguages = new Set(["ru", "uk", "de", "en", "pl"]);
   if (!Array.isArray(body.languages)) {
     return jsonNoStore({ error: "Invalid payload: languages must be an array" }, { status: 400 });
   }

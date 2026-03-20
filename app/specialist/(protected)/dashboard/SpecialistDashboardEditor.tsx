@@ -303,14 +303,14 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
             />
           </label>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">Адреса прийому</span>
+            <span className="font-medium text-gray-700">Адрес приёма</span>
             <input
               value={form.address || ""}
-              placeholder="Наприклад: Friedrich-Ebert-Straße 12"
+              placeholder="Например: Friedrich-Ebert-Straße 12"
               onChange={(e) => setForm((prev) => ({ ...prev, address: e.target.value }))}
               className="w-full rounded-lg border border-gray-200 px-3 py-2"
             />
-            <p className="text-xs text-gray-500">Необов&apos;язково. Якщо вказано адресу, маршрут буде будуватись до точного місця.</p>
+            <p className="text-xs text-gray-600 font-medium">Необязательно. Если указан адрес, маршрут будет строиться до точного места.</p>
           </label>
           <label className="space-y-1 text-sm">
             <span className="font-medium text-gray-700">Формат</span>
@@ -324,22 +324,35 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
               <option value="hybrid">Онлайн/Офлайн</option>
             </select>
           </label>
-          <label className="space-y-1 text-sm md:col-span-2">
-            <span className="font-medium text-gray-700">Языки (через запятую)</span>
-            <input
-              value={form.languages.join(", ")}
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  languages: e.target.value
-                    .split(",")
-                    .map((item) => item.trim())
-                    .filter(Boolean),
-                }))
-              }
-              className="w-full rounded-lg border border-gray-200 px-3 py-2"
-            />
-          </label>
+          <fieldset className="space-y-2 text-sm md:col-span-2">
+            <legend className="font-medium text-gray-700">Языки</legend>
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
+              {([
+                { code: "ru", label: "Русский" },
+                { code: "uk", label: "Украинский" },
+                { code: "de", label: "Немецкий" },
+                { code: "en", label: "Английский" },
+                { code: "pl", label: "Польский" },
+              ] as const).map((lang) => (
+                <label key={lang.code} className="inline-flex items-center gap-1.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={form.languages.includes(lang.code)}
+                    onChange={(e) => {
+                      setForm((prev) => ({
+                        ...prev,
+                        languages: e.target.checked
+                          ? [...prev.languages, lang.code]
+                          : prev.languages.filter((l) => l !== lang.code),
+                      }));
+                    }}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-gray-800">{lang.label}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
         </div>
 
         <div className="space-y-2">
