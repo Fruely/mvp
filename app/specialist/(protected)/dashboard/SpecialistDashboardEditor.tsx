@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { useMemo, useState, useCallback, type ChangeEvent } from "react";
 import { getDashboardHelpers } from "@/lib/i18n/dashboardHelpers";
 
 type ServiceInput = {
@@ -33,22 +33,10 @@ type Props = {
 
 const MAX_GALLERY_IMAGES = 5;
 
-function toSnapshot(data: Props["initialData"]) {
-  return JSON.stringify({
-    ...data,
-    services: data.services.map((service) => ({
-      ...service,
-      title: service.title.trim(),
-      price_from: service.price_from.trim(),
-      currency: service.currency.trim().toUpperCase(),
-    })),
-    languages: data.languages.map((lang) => lang.trim()).filter(Boolean),
-    gallery_urls: data.gallery_urls.map((url) => url.trim()).filter(Boolean),
-  });
-}
 
 export default function SpecialistDashboardEditor({ initialData, initialStatus, categories }: Props) {
-  const [form, setForm] = useState(initialData);
+  const [form, _setFormRaw] = useState(initialData);
+  const [isDirty, setIsDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -58,19 +46,14 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
   const [status, setStatus] = useState(initialStatus);
   const [priceErrors, setPriceErrors] = useState<Record<number, string | null>>({});
 
-  const baselineFromProps = useMemo(() => toSnapshot(initialData), [initialData]);
-  const [lastSavedSnapshot, setLastSavedSnapshot] = useState(baselineFromProps);
-
-  useEffect(() => {
-    setLastSavedSnapshot(baselineFromProps);
-  }, [baselineFromProps]);
-
-  const currentSnapshot = useMemo(() => toSnapshot(form), [form]);
-  const isDirty = currentSnapshot !== lastSavedSnapshot;
-
-  useEffect(() => {
-    if (isDirty) setSuccess(null);
-  }, [isDirty]);
+  const setForm = useCallback(
+    (updater: Props["initialData"] | ((prev: Props["initialData"]) => Props["initialData"])) => {
+      _setFormRaw(updater);
+      setIsDirty(true);
+      setSuccess(null);
+    },
+    [],
+  );
 
   const publicationReady = useMemo(() => {
     return Boolean(
@@ -210,7 +193,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
         setError(typeof json.error === "string" ? json.error : "Не удалось сохранить профиль.");
         return;
       }
-      setLastSavedSnapshot(toSnapshot(form));
+      setIsDirty(false);
       setSuccess("Изменения сохранены.");
     } catch {
       setError("Не удалось сохранить профиль.");
@@ -306,12 +289,14 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
             />
           </label>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">Город / локация</span>
+            <span className="font-medium text-gray-700">PLZ / Город</span>
             <input
               value={form.city}
               onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
+              placeholder="z.B. 34117 Kassel"
               className="w-full rounded-lg border border-gray-200 px-3 py-2"
             />
+            <p className="text-xs text-gray-500">Введите почтовый индекс (PLZ) и город</p>
           </label>
           <label className="space-y-1 text-sm">
             <span className="font-medium text-gray-700">Адрес приёма</span>
@@ -529,11 +514,12 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
         <div className="space-y-3">
           <div className="text-sm">
             {error ? <p className="text-red-600">{error}</p> : null}
-            {success ? <p className="text-emerald-600">{success}</p> : null}
+            {isDirty ? (
+              <p className="font-medium text-amber-600">У вас есть несохранённые изменения</p>
+            ) : success ? (
+              <p className="text-emerald-600">{success}</p>
+            ) : null}
           </div>
-          {isDirty && (
-            <p className="text-sm font-medium text-amber-600">У вас есть несохранённые изменения</p>
-          )}
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
             <button
               type="button"
