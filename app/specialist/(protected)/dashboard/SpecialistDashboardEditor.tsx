@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { getDashboardHelpers } from "@/lib/i18n/dashboardHelpers";
 
 type ServiceInput = {
@@ -58,9 +58,19 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
   const [status, setStatus] = useState(initialStatus);
   const [priceErrors, setPriceErrors] = useState<Record<number, string | null>>({});
 
-  const initialSnapshot = useMemo(() => toSnapshot(initialData), [initialData]);
+  const baselineFromProps = useMemo(() => toSnapshot(initialData), [initialData]);
+  const [lastSavedSnapshot, setLastSavedSnapshot] = useState(baselineFromProps);
+
+  useEffect(() => {
+    setLastSavedSnapshot(baselineFromProps);
+  }, [baselineFromProps]);
+
   const currentSnapshot = useMemo(() => toSnapshot(form), [form]);
-  const isDirty = initialSnapshot !== currentSnapshot;
+  const isDirty = currentSnapshot !== lastSavedSnapshot;
+
+  useEffect(() => {
+    if (isDirty) setSuccess(null);
+  }, [isDirty]);
 
   const publicationReady = useMemo(() => {
     return Boolean(
@@ -200,6 +210,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
         setError(typeof json.error === "string" ? json.error : "Не удалось сохранить профиль.");
         return;
       }
+      setLastSavedSnapshot(toSnapshot(form));
       setSuccess("Изменения сохранены.");
     } catch {
       setError("Не удалось сохранить профиль.");
