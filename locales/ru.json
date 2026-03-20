@@ -51,6 +51,13 @@
     "psychologists": "Психологи",
     "masseurs": "Массажисты",
     "tutors": "Репетиторы",
+    "business_analytics": "Бизнес-аналитика",
+    "it_specialists": "IT-специалисты",
+    "cosmetology": "Косметология",
+    "cleaning": "Уборка",
+    "nutritionists": "Диетологи",
+    "housemaster": "Мастер на дом",
+    "manicure": "Маникюр",
     "default": "Категория"
   },
   "category": {

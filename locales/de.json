@@ -45,6 +45,13 @@
     "psychologists": "Psychologen",
     "masseurs": "Masseure",
     "tutors": "Nachhilfelehrer",
+    "business_analytics": "Business-Analytik",
+    "it_specialists": "IT-Spezialisten",
+    "cosmetology": "Kosmetologie",
+    "cleaning": "Reinigung",
+    "nutritionists": "Ernährungsberater",
+    "housemaster": "Hausmeister",
+    "manicure": "Maniküre",
     "default": "Kategorie"
   },
   "category": {

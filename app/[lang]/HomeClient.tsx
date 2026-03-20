@@ -108,6 +108,12 @@ const HERO_COPY: Record<Lang, { titleLines: [string, string, string]; subtitle: 
 };
 
 export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionary }) {
+  const catName = (slug: string, fallback: string | null) => {
+    const key = `categories.${slug}`;
+    const val = t(dict, key);
+    return val === key ? (fallback || slug) : val;
+  };
+
   const router = useRouter();
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [categories, setCategories] = useState<CategoryStat[]>([]);
@@ -452,7 +458,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
               <option value="">{t(dict, "categories.default", { defaultValue: "Категория" })}</option>
               {heroCategoryOptions.map((option) => (
                 <option key={option.slug} value={option.slug}>
-                  {option.title}
+                  {catName(option.slug, option.title)}
                 </option>
               ))}
             </select>
@@ -604,7 +610,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
                                 src={imageUrl}
-                                alt={category.title ?? category.slug}
+                                alt={catName(category.slug, category.title)}
                                 className="w-full h-full object-cover"
                                 loading="lazy"
                               />
@@ -616,7 +622,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
 
                         <div className="px-4 py-3">
                           <p className="text-base font-semibold text-textPrimary line-clamp-1">
-                            {category.title || category.slug}
+                            {catName(category.slug, category.title)}
                           </p>
                           <p className="mt-1 text-sm font-normal text-textSecondary">
                             {t(dict, "category.parent.found").replace(
