@@ -70,7 +70,7 @@ export default function SpecialistPreviewCard({
   const starsText = "★".repeat(starsFilled) + "☆".repeat(5 - starsFilled);
   const experienceText =
     specialist.years_of_experience != null && specialist.years_of_experience > 0
-      ? `${specialist.years_of_experience} років досвіду`
+      ? `${specialist.years_of_experience} ${t(dict, "specialist.yearsExperience")}`
       : null;
   const specializationText =
     specialist.specialization_line
@@ -118,7 +118,7 @@ export default function SpecialistPreviewCard({
           onClick={() => setSaved((value) => !value)}
           className="group absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-textSecondary shadow-card ring-1 ring-black/10 transition hover:bg-white"
           aria-label={saved ? "Unsave specialist" : "Save specialist"}
-          title={saved ? "Видалити зі збережених" : "Зберегти спеціаліста"}
+          title={saved ? t(dict, "specialist.unsaveTooltip") : t(dict, "specialist.saveTooltip")}
         >
           <svg
             viewBox="0 0 24 24"
@@ -129,19 +129,19 @@ export default function SpecialistPreviewCard({
             <path d="M12 21s-6.5-3.9-9.2-8a5.7 5.7 0 0 1 .7-7.1A5.6 5.6 0 0 1 12 6a5.6 5.6 0 0 1 8.5-.1 5.7 5.7 0 0 1 .7 7.1C18.5 17.1 12 21 12 21Z" />
           </svg>
           <span className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-[10px] font-medium text-white opacity-0 transition group-hover:opacity-100">
-            {saved ? "Видалити" : "Зберегти"}
+            {saved ? t(dict, "specialist.unsave") : t(dict, "specialist.save")}
           </span>
         </button>
 
         <div className="absolute left-3 top-3 flex flex-col gap-2">
           {specialist.is_verified ? (
             <span className="rounded-full bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white shadow">
-              Перевірено
+              {t(dict, "specialist.verified")}
             </span>
           ) : null}
           {isNewActive ? (
             <span className="rounded-full bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white shadow">
-              Новий
+              {t(dict, "specialist.new")}
             </span>
           ) : null}
         </div>

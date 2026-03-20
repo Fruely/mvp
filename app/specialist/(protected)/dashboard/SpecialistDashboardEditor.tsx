@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useCallback, type ChangeEvent } from "react";
-import { getDashboardHelpers } from "@/lib/i18n/dashboardHelpers";
+import { t, type Dictionary } from "@/lib/i18n";
 
 type ServiceInput = {
   id?: string;
@@ -12,6 +12,7 @@ type ServiceInput = {
 };
 
 type Props = {
+  dict: Dictionary;
   initialData: {
     name: string;
     email: string;
@@ -35,7 +36,7 @@ type Props = {
 const MAX_GALLERY_IMAGES = 5;
 
 
-export default function SpecialistDashboardEditor({ initialData, initialStatus, categories }: Props) {
+export default function SpecialistDashboardEditor({ dict, initialData, initialStatus, categories }: Props) {
   const [form, _setFormRaw] = useState(initialData);
   const [isDirty, setIsDirty] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -74,7 +75,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
     if (value === "") return null;
     const sanitized = sanitizePrice(value);
     if (!/^\d+(\.\d+)?$/.test(sanitized)) {
-      return "Введите цену только цифрами (например: 2500)";
+      return t(dict, "dashboard.messages.priceDigitsOnly");
     }
     return null;
   }
@@ -114,7 +115,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
     });
     const json = await res.json().catch(() => ({}));
     if (!res.ok || typeof json.url !== "string") {
-      throw new Error(typeof json.error === "string" ? json.error : "Не удалось загрузить изображение.");
+      throw new Error(typeof json.error === "string" ? json.error : t(dict, "dashboard.messages.uploadFailed"));
     }
     return json.url;
   }
@@ -129,9 +130,9 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
     try {
       const url = await uploadSingleImage("/api/specialist/avatar/upload", file);
       setForm((prev) => ({ ...prev, photo_url: url }));
-      setSuccess("Аватар загружен.");
+      setSuccess(t(dict, "dashboard.messages.avatarUploaded"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Не удалось загрузить аватар.");
+      setError(err instanceof Error ? err.message : t(dict, "dashboard.messages.avatarFailed"));
     } finally {
       setAvatarUploading(false);
     }
@@ -142,7 +143,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
     event.target.value = "";
     if (!file) return;
     if (form.gallery_urls.length >= MAX_GALLERY_IMAGES) {
-      setError("Можно загрузить до 5 изображений.");
+      setError(t(dict, "dashboard.messages.galleryLimit"));
       return;
     }
     setGalleryUploading(true);
@@ -154,9 +155,9 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
         ...prev,
         gallery_urls: [...prev.gallery_urls, url].slice(0, MAX_GALLERY_IMAGES),
       }));
-      setSuccess("Изображение добавлено в галерею.");
+      setSuccess(t(dict, "dashboard.messages.galleryAdded"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Не удалось загрузить изображение.");
+      setError(err instanceof Error ? err.message : t(dict, "dashboard.messages.uploadFailed"));
     } finally {
       setGalleryUploading(false);
     }
@@ -191,13 +192,13 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(typeof json.error === "string" ? json.error : "Не удалось сохранить профиль.");
+        setError(typeof json.error === "string" ? json.error : t(dict, "dashboard.messages.saveFailed"));
         return;
       }
       setIsDirty(false);
-      setSuccess("Изменения сохранены.");
+      setSuccess(t(dict, "dashboard.messages.saved"));
     } catch {
-      setError("Не удалось сохранить профиль.");
+      setError(t(dict, "dashboard.messages.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -205,18 +206,18 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
 
   async function publish() {
     if (isDirty) {
-      setError("Сначала сохраните изменения, затем публикуйте профиль.");
+      setError(t(dict, "dashboard.messages.saveFirst"));
       setSuccess(null);
       return;
     }
     if (!publicationReady) {
       const missing: string[] = [];
-      if (!form.name.trim()) missing.push("Имя");
-      if (!form.category_id.trim()) missing.push("Категория");
-      if (!/^\d{5}$/.test(form.postal_code.trim())) missing.push("PLZ (почтовый индекс)");
-      if (!form.about_me.trim()) missing.push("О себе");
-      if (!form.photo_url.trim()) missing.push("Фото");
-      setError(missing.length ? `Заполните обязательные поля: ${missing.join(", ")}` : "Заполните обязательные поля");
+      if (!form.name.trim()) missing.push(t(dict, "dashboard.fields.name"));
+      if (!form.category_id.trim()) missing.push(t(dict, "dashboard.fields.category"));
+      if (!/^\d{5}$/.test(form.postal_code.trim())) missing.push(t(dict, "dashboard.fields.plz"));
+      if (!form.about_me.trim()) missing.push(t(dict, "dashboard.fields.aboutMe"));
+      if (!form.photo_url.trim()) missing.push(t(dict, "dashboard.fields.photo"));
+      setError(missing.length ? `${t(dict, "dashboard.messages.fillRequired")}: ${missing.join(", ")}` : t(dict, "dashboard.messages.fillRequired"));
       setSuccess(null);
       return;
     }
@@ -228,14 +229,14 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
         const fields = Array.isArray(json.fields) ? json.fields.join(", ") : "";
-        const msg = typeof json.error === "string" ? json.error : "Не удалось опубликовать профиль.";
+        const msg = typeof json.error === "string" ? json.error : t(dict, "dashboard.messages.publishFailed");
         setError(fields ? `${msg}: ${fields}` : msg);
         return;
       }
       if (typeof json.status === "string") setStatus(json.status);
-      setSuccess("Профиль опубликован.");
+      setSuccess(t(dict, "dashboard.messages.published"));
     } catch {
-      setError("Не удалось опубликовать профиль.");
+      setError(t(dict, "dashboard.messages.publishFailed"));
     } finally {
       setPublishing(false);
     }
@@ -391,7 +392,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
               </div>
             )}
             <label className="inline-flex cursor-pointer items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-              {avatarUploading ? "Загрузка..." : "Загрузить фото"}
+              {avatarUploading ? t(dict, "dashboard.buttons.uploading") : t(dict, "dashboard.buttons.uploadPhoto")}
               <input
                 type="file"
                 accept="image/jpeg,image/jpg,image/png,image/webp"
@@ -421,13 +422,13 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
             className="w-full rounded-lg border border-gray-200 px-3 py-2"
           />
           <div className="mt-1 space-y-0.5">
-            <p className="text-xs text-gray-500">{getDashboardHelpers().video.line1}</p>
+            <p className="text-xs text-gray-500">{t(dict, "dashboard.helpers.video.line1")}</p>
             <ul className="text-xs text-gray-500 list-disc list-inside">
-              <li>{getDashboardHelpers().video.bullet1}</li>
-              <li>{getDashboardHelpers().video.bullet2}</li>
-              <li>{getDashboardHelpers().video.bullet3}</li>
+              <li>{t(dict, "dashboard.helpers.video.bullet1")}</li>
+              <li>{t(dict, "dashboard.helpers.video.bullet2")}</li>
+              <li>{t(dict, "dashboard.helpers.video.bullet3")}</li>
             </ul>
-            <p className="text-xs text-gray-400">{getDashboardHelpers().video.footer}</p>
+            <p className="text-xs text-gray-400">{t(dict, "dashboard.helpers.video.footer")}</p>
           </div>
         </label>
 
@@ -435,7 +436,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-gray-700">Галерея</p>
             <label className="inline-flex cursor-pointer items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-              {galleryUploading ? "Загрузка..." : "Добавить изображение"}
+              {galleryUploading ? t(dict, "dashboard.buttons.uploading") : t(dict, "dashboard.buttons.addImage")}
               <input
                 type="file"
                 accept="image/jpeg,image/jpg,image/png,image/webp"
@@ -446,8 +447,8 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
             </label>
           </div>
           <p className="text-xs text-gray-500">До 5 изображений.</p>
-          <p className="text-xs text-gray-500">{getDashboardHelpers().gallery.line1}</p>
-          <p className="text-xs text-gray-400">{getDashboardHelpers().gallery.line2}</p>
+          <p className="text-xs text-gray-500">{t(dict, "dashboard.helpers.gallery.line1")}</p>
+          <p className="text-xs text-gray-400">{t(dict, "dashboard.helpers.gallery.line2")}</p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {form.gallery_urls.map((url, index) => (
               <div key={`${url}-${index}`} className="relative overflow-hidden rounded-lg border border-gray-200">
@@ -463,7 +464,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
                   }
                   className="absolute right-2 top-2 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-gray-700"
                 >
-                  Удалить
+                  {t(dict, "dashboard.buttons.delete")}
                 </button>
               </div>
             ))}
@@ -478,7 +479,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
               onClick={addService}
               className="text-sm font-medium text-blue-600 hover:text-blue-700"
             >
-              + Добавить услугу
+              {t(dict, "dashboard.buttons.addService")}
             </button>
           </div>
           <div className="space-y-3">
@@ -520,7 +521,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
                   onClick={() => removeService(idx)}
                   className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-700 hover:bg-red-50"
                 >
-                  Удалить
+                  {t(dict, "dashboard.buttons.delete")}
                 </button>
               </div>
             ))}
@@ -539,7 +540,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
           <div className="text-sm">
             {error ? <p className="text-red-600">{error}</p> : null}
             {isDirty ? (
-              <p className="font-medium text-amber-600">У вас есть несохранённые изменения</p>
+              <p className="font-medium text-amber-600">{t(dict, "dashboard.messages.unsavedChanges")}</p>
             ) : success ? (
               <p className="text-emerald-600">{success}</p>
             ) : null}
@@ -551,7 +552,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
               disabled={!isDirty || saving}
               className="inline-flex h-10 items-center justify-center rounded-lg bg-orange-500 px-5 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60"
             >
-              {saving ? "Сохранение..." : "Сохранить изменения"}
+              {saving ? t(dict, "dashboard.buttons.saving") : t(dict, "dashboard.buttons.save")}
             </button>
             <button
               type="button"
@@ -559,7 +560,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
               disabled={publishing || isDirty}
               className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
             >
-              {publishing ? "Публикация..." : "Опубликовать профиль"}
+              {publishing ? t(dict, "dashboard.buttons.publishing") : t(dict, "dashboard.buttons.publish")}
             </button>
           </div>
         </div>

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import { getDashboardHelpers } from "@/lib/i18n/dashboardHelpers";
+import { t, type Dictionary } from "@/lib/i18n";
 
 type Props = {
   status: string | null | undefined;
+  dict: Dictionary;
 };
 
-export default function VerificationBanner({ status }: Props) {
+export default function VerificationBanner({ status, dict }: Props) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -26,7 +27,7 @@ export default function VerificationBanner({ status }: Props) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!file) {
-      setError("Выберите файл для загрузки.");
+      setError(t(dict, "dashboard.verification.selectFile"));
       return;
     }
 
@@ -45,15 +46,15 @@ export default function VerificationBanner({ status }: Props) {
 
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(typeof json.error === "string" ? json.error : "Не удалось загрузить документ.");
+        setError(typeof json.error === "string" ? json.error : t(dict, "dashboard.verification.uploadFailed"));
         return;
       }
 
-      setSuccess("Документ загружен. Статус проверки обновлен на pending.");
+      setSuccess(t(dict, "dashboard.verification.uploadSuccess"));
       setFile(null);
       setOpen(false);
     } catch {
-      setError("Не удалось загрузить документ.");
+      setError(t(dict, "dashboard.verification.uploadFailed"));
     } finally {
       setUploading(false);
     }
@@ -62,10 +63,10 @@ export default function VerificationBanner({ status }: Props) {
   return (
     <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
       <p className="text-sm font-medium text-amber-900">
-        Ваш профиль опубликован.
+        {t(dict, "dashboard.verification.published")}
       </p>
       <p className="mt-1 text-sm text-amber-800">
-        Чтобы попасть в блок «Рекомендуемые специалисты», необходимо пройти проверку.
+        {t(dict, "dashboard.verification.recommendedHint")}
       </p>
 
       <div className="mt-3">
@@ -78,17 +79,17 @@ export default function VerificationBanner({ status }: Props) {
           }}
           className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700"
         >
-          Загрузить документы
+          {t(dict, "dashboard.verification.uploadDocuments")}
         </button>
       </div>
 
       <div className="mt-3 space-y-1">
-        <p className="text-xs text-amber-800">{getDashboardHelpers().verification.line1}</p>
+        <p className="text-xs text-amber-800">{t(dict, "dashboard.helpers.verification.line1")}</p>
         <ul className="text-xs text-amber-800 list-disc list-inside">
-          <li>{getDashboardHelpers().verification.bullet1}</li>
-          <li>{getDashboardHelpers().verification.bullet2}</li>
+          <li>{t(dict, "dashboard.helpers.verification.bullet1")}</li>
+          <li>{t(dict, "dashboard.helpers.verification.bullet2")}</li>
         </ul>
-        <p className="text-xs text-amber-700 mt-1">{getDashboardHelpers().verification.footer}</p>
+        <p className="text-xs text-amber-700 mt-1">{t(dict, "dashboard.helpers.verification.footer")}</p>
       </div>
 
       {open && (
@@ -100,7 +101,7 @@ export default function VerificationBanner({ status }: Props) {
               disabled={!file || uploading}
               className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-60"
             >
-              {uploading ? "Загрузка..." : "Отправить документ"}
+              {uploading ? t(dict, "dashboard.buttons.uploading") : t(dict, "dashboard.buttons.submitDocument")}
             </button>
           </div>
         </form>

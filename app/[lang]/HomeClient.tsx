@@ -310,7 +310,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
     return (
       <div className="mt-10">
         <div className="mb-4 md:mb-6 text-center">
-          <h2 className="text-2xl md:text-3xl font-semibold text-textPrimary">Рекомендованные специалисты</h2>
+          <h2 className="text-2xl md:text-3xl font-semibold text-textPrimary">{t(dict, "home.recommended.title")}</h2>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {data.map((specialist) => (
@@ -348,11 +348,11 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
                       <span className="text-textSecondary">({specialist.reviews_count})</span>
                     </>
                   ) : (
-                    <span className="text-textSecondary">Новий спеціаліст</span>
+                    <span className="text-textSecondary">{t(dict, "home.recommended.newSpecialist")}</span>
                   )}
                 </div>
                 <p className="text-sm font-normal text-textSecondary line-clamp-1">
-                  {specialist.category_title || "Услуги"}
+                  {specialist.category_title || t(dict, "home.recommended.defaultCategory")}
                 </p>
                 <p className="text-sm font-normal text-textSecondary line-clamp-1">
                   {[specialist.city, specialist.languages[0]].filter(Boolean).join(" • ")}
@@ -488,7 +488,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
 
           <div className="mt-4 text-sm font-normal text-textSecondary flex flex-wrap justify-center gap-3">
             <span>{copy.popularLabel}</span>
-            <span>Психологи • Юристы • Репетиторы • Миграция</span>
+            <span>{t(dict, "home.hero.popularTags")}</span>
           </div>
         </div>
       </section>
@@ -664,17 +664,17 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
 
       {/* CTA for specialists */}
       <section className="bg-gray-50 px-4 py-16 text-center sm:px-6 lg:px-8">
-        <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Вы специалист?</h2>
+        <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">{t(dict, "home.cta.title")}</h2>
         <p className="mx-auto mt-3 max-w-lg text-gray-600">
-          Freuly помогает специалистам находить клиентов и&nbsp;развивать свой бизнес.
+          {t(dict, "home.cta.subtitle")}
         </p>
         <Link
           href="/for-specialists"
           className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-emerald-600 px-6 text-sm font-semibold text-white transition hover:bg-emerald-700"
         >
-          Стать специалистом
+          {t(dict, "home.cta.button")}
         </Link>
-        <p className="mt-3 text-xs text-gray-500">Уже 30+ специалистов присоединились к&nbsp;Freuly</p>
+        <p className="mt-3 text-xs text-gray-500">{t(dict, "home.cta.socialProof")}</p>
       </section>
 
       {error && (

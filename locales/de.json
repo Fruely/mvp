@@ -28,6 +28,14 @@
   "home.heroQuick.lawyers": "Anwälte",
   "home.heroQuick.tutors": "Nachhilfe",
   "home.heroQuick.migration": "Migration",
+  "home.recommended.title": "Empfohlene Spezialisten",
+  "home.recommended.newSpecialist": "Neuer Spezialist",
+  "home.recommended.defaultCategory": "Dienstleistungen",
+  "home.hero.popularTags": "Psychologen • Anwälte • Nachhilfe • Migration",
+  "home.cta.title": "Sie sind Spezialist?",
+  "home.cta.subtitle": "Freuly hilft Fachkräften, Kunden zu finden und ihr Geschäft auszubauen.",
+  "home.cta.button": "Spezialist werden",
+  "home.cta.socialProof": "Bereits 30+ Spezialisten haben sich Freuly angeschlossen",
   "transitional.line1": "Manchmal erklären Sie etwas — aber man versteht Sie nicht.",
   "transitional.line2": "Sie zögern — weil es schwer ist, eine Frage zu stellen.",
   "transitional.line3": "Sie verschieben Wichtiges — aus Angst, missverstanden zu werden.",
@@ -214,6 +222,69 @@
       "proofLinkInvalid": "Ungültiges Link-Format",
       "languagesRequired": "Wählen Sie mindestens eine Sprache",
       "submitFailed": "Fehler beim Senden der Bewerbung"
+    }
+  },
+  "dashboard": {
+    "helpers": {
+      "verification": {
+        "line1": "Bitte laden Sie eines der folgenden Dokumente hoch:",
+        "bullet1": "Gewerbeanmeldung",
+        "bullet2": "oder ein anderes Dokument, das Ihre Tätigkeit bestätigt",
+        "footer": "Das stärkt das Vertrauen der Kunden und ist für die Arbeit in Deutschland erforderlich."
+      },
+      "video": {
+        "line1": "Fügen Sie einen Link zu einem Video (YouTube oder Vimeo) hinzu, wenn Sie haben:",
+        "bullet1": "Präsentation Ihrer Dienstleistungen",
+        "bullet2": "Arbeitsbeispiele",
+        "bullet3": "Video über Sie",
+        "footer": "Das Video wird in Ihrem Spezialistenprofil angezeigt."
+      },
+      "gallery": {
+        "line1": "Fügen Sie Fotos oder Videos hinzu, um Ihre Arbeit oder Ihren Prozess zu zeigen.",
+        "line2": "Sie werden als Karussell in Ihrem Profil angezeigt und stärken das Vertrauen der Kunden."
+      }
+    },
+    "messages": {
+      "priceDigitsOnly": "Geben Sie den Preis nur in Zahlen ein (z.B. 2500)",
+      "uploadFailed": "Bild konnte nicht hochgeladen werden.",
+      "avatarUploaded": "Avatar hochgeladen.",
+      "avatarFailed": "Avatar konnte nicht hochgeladen werden.",
+      "galleryLimit": "Maximal 5 Bilder möglich.",
+      "galleryAdded": "Bild zur Galerie hinzugefügt.",
+      "saveFailed": "Profil konnte nicht gespeichert werden.",
+      "saved": "Änderungen gespeichert.",
+      "saveFirst": "Bitte speichern Sie zuerst die Änderungen, bevor Sie das Profil veröffentlichen.",
+      "fillRequired": "Bitte füllen Sie die Pflichtfelder aus",
+      "publishFailed": "Profil konnte nicht veröffentlicht werden.",
+      "published": "Profil veröffentlicht.",
+      "unsavedChanges": "Sie haben ungespeicherte Änderungen"
+    },
+    "buttons": {
+      "save": "Änderungen speichern",
+      "saving": "Speichern...",
+      "publish": "Profil veröffentlichen",
+      "publishing": "Veröffentlichen...",
+      "uploadPhoto": "Foto hochladen",
+      "uploading": "Hochladen...",
+      "addImage": "Bild hinzufügen",
+      "delete": "Löschen",
+      "addService": "+ Leistung hinzufügen",
+      "submitDocument": "Dokument einreichen"
+    },
+    "fields": {
+      "name": "Name",
+      "category": "Kategorie",
+      "plz": "PLZ (Postleitzahl)",
+      "aboutMe": "Über mich",
+      "photo": "Foto"
+    },
+    "verification": {
+      "published": "Ihr Profil ist veröffentlicht.",
+      "recommendedHint": "Um in den Block «Empfohlene Spezialisten» aufgenommen zu werden, ist eine Überprüfung erforderlich.",
+      "uploadDocuments": "Dokumente hochladen",
+      "selectFile": "Bitte wählen Sie eine Datei zum Hochladen.",
+      "uploadFailed": "Dokument konnte nicht hochgeladen werden.",
+      "uploadSuccess": "Dokument hochgeladen. Überprüfungsstatus aktualisiert."
     }
   }
 }

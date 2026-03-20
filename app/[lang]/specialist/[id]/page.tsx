@@ -332,7 +332,7 @@ export default function SpecialistPage() {
       }
       return;
     }
-    const text = encodeURIComponent(`Профиль специалиста: ${specialistUrl}`);
+    const text = encodeURIComponent(`${t(dict, "specialistPage.shareText")}: ${specialistUrl}`);
     if (channel === "whatsapp") window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
     if (channel === "telegram") window.open(`https://t.me/share/url?url=${encodeURIComponent(specialistUrl)}`, "_blank", "noopener,noreferrer");
     if (channel === "instagram") window.open(`https://www.instagram.com/`, "_blank", "noopener,noreferrer");
@@ -652,7 +652,7 @@ export default function SpecialistPage() {
                 ) : null}
                 {specialist.address ? (
                   <p>
-                    <span className="font-medium">Адреса прийому: </span>
+                    <span className="font-medium">{t(dict, "specialistPage.contactsLineAddress")}: </span>
                     {specialist.address}
                   </p>
                 ) : null}
@@ -666,7 +666,7 @@ export default function SpecialistPage() {
                         rel="noopener noreferrer"
                         className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 transition"
                       >
-                        Побудувати маршрут
+                        {t(dict, "specialistPage.buildRoute")}
                       </a>
                       {mapCoords ? (
                         <div className="mt-3 overflow-hidden rounded-xl border border-gray-200">
@@ -702,7 +702,7 @@ export default function SpecialistPage() {
                   onClick={() => void handleShare("copy")}
                   className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
                 >
-                  Copy link
+                  {t(dict, "specialistPage.copyLink")}
                 </button>
                 {isProPlan ? (
                   <>
@@ -741,7 +741,7 @@ export default function SpecialistPage() {
                   className="absolute inset-0 h-full w-full rounded-xl"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                  title="Видео специалиста"
+                  title={t(dict, "specialistPage.videoTitle")}
                 />
               </div>
             </SectionCard>

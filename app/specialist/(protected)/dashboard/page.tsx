@@ -1,13 +1,19 @@
 export const dynamic = "force-dynamic";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
+import { getDictionary, isSupportedLang, type Dictionary } from "@/lib/i18n";
 import SpecialistDashboardEditor from "./SpecialistDashboardEditor";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import VerificationBanner from "./VerificationBanner";
 
 export default async function SpecialistDashboardPage() {
   const { supabase, user, specialist } = await getCurrentUserAndSpecialist();
+
+  const langCookie = cookies().get("freuly_lang")?.value;
+  const lang = langCookie && isSupportedLang(langCookie) ? langCookie : "ru";
+  const dict: Dictionary = await getDictionary(lang);
 
   const status = specialist.status;
 
@@ -37,8 +43,9 @@ export default async function SpecialistDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <VerificationBanner status={status} />
+      <VerificationBanner status={status} dict={dict} />
       <SpecialistDashboardEditor
+        dict={dict}
         initialStatus={status || "draft"}
         initialData={{
           name: specialist.first_name?.trim() || specialist.name?.trim() || "",
