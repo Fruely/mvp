@@ -529,7 +529,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
 
                   <div className="absolute left-6 top-6 w-[calc(80%-1.6rem)] md:left-8 md:top-8 md:w-auto max-w-[22.4rem] bg-white/90 rounded-2xl shadow-sm p-[1.6rem] backdrop-blur-sm z-10">
                     <h2 className="text-3xl font-bold text-gray-900 mb-8">
-                      {textImageContent?.title || t(dict, "home.howItWorks.title")}
+                      {t(dict, "home.howItWorks.title")}
                     </h2>
 
                     <div className="space-y-6 text-gray-700">
