@@ -53,6 +53,7 @@ export function middleware(request: NextRequest) {
   const isLangRoute = first && isLang(first);
 
   const isWhitelisted =
+    pathname === "/" ||
     pathname === "/__dev" ||
     pathname === "/__closed" ||
     isLangRoute ||
