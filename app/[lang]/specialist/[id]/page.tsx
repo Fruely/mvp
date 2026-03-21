@@ -41,6 +41,8 @@ interface Specialist {
   format?: string | null;
   work_format?: string | null;
   user_id?: string | null;
+  lat?: number | null;
+  lng?: number | null;
   specialist_services?: Array<{ id: string; title: string; price_from: number; price_to: number; currency: string }>;
 }
 
@@ -130,6 +132,12 @@ export default function SpecialistPage() {
 
   useEffect(() => {
     if (!specialist) return;
+
+    if (specialist.lat != null && specialist.lng != null) {
+      setMapCoords({ lat: Number(specialist.lat), lon: Number(specialist.lng) });
+      return;
+    }
+
     const query = specialist.address
       ? [specialist.address, specialist.city].filter(Boolean).join(", ")
       : specialist.city || "";
@@ -145,7 +153,7 @@ export default function SpecialistPage() {
       .catch(() => {});
 
     return () => { cancelled = true; };
-  }, [specialist?.address, specialist?.city]);
+  }, [specialist?.lat, specialist?.lng, specialist?.address, specialist?.city]);
 
   useEffect(() => {
     if (!specialist?.id) return;

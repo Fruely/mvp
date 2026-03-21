@@ -18,7 +18,7 @@ export async function GET(
   const { data: specialist, error: specError } = await supabase
     .from("specialists")
     .select(
-      "id, slug, name, avatar_url, category_id, status, is_active, is_visible, languages, work_format, created_at, user_id"
+      "id, slug, name, avatar_url, category_id, status, is_active, is_visible, languages, work_format, created_at, user_id, lat, lng"
     )
     .eq("id", id)
     .maybeSingle();
@@ -83,6 +83,8 @@ export async function GET(
     gallery_urls: Array.isArray(profile?.gallery_urls) ? profile.gallery_urls : [],
     certificate_urls: Array.isArray(profile?.certificate_urls) ? profile.certificate_urls : [],
     photo_url: profile?.photo_url ?? null,
+    lat: specialist.lat ?? null,
+    lng: specialist.lng ?? null,
     rating: ratingRow?.rating_avg ?? null,
     reviews_count: ratingRow?.reviews_count ?? 0,
     specialist_services: (services ?? []).map((s) => ({
