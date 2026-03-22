@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Datenschutzerklärung | Freuly",
+  description: "Datenschutzerklärung – Informationen zum Umgang mit personenbezogenen Daten auf freuly.de",
+};
+
 export default function DatenschutzPage() {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-10 md:px-6 md:py-14">

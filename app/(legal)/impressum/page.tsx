@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Impressum | Freuly",
+  description: "Impressum – Angaben gemäß § 5 TMG für freuly.de",
+};
+
 export default function ImpressumPage() {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-10 md:px-6 md:py-14">
