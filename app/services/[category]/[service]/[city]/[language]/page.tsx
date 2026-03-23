@@ -11,7 +11,7 @@ export async function generateMetadata({
 }: {
   params: { category: string; service: string; city: string; language: string };
 }): Promise<Metadata> {
-  const canonical = `/services/${encodeURIComponent(params.category)}/${encodeURIComponent(params.service)}/${encodeURIComponent(params.city)}/${encodeURIComponent(params.language)}`;
+  const canonical = `https://freuly.de/services/${encodeURIComponent(params.category)}/${encodeURIComponent(params.service)}/${encodeURIComponent(params.city)}/${encodeURIComponent(params.language)}`;
   return {
     title: `${params.service}, ${params.city}, язык ${params.language} | Freuly`,
     description: `Специалисты по услуге ${params.service} в городе ${params.city} с языком ${params.language}.`,

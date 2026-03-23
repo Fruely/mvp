@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Impressum | Freuly",
   description: "Impressum – Angaben gemäß § 5 TMG für freuly.de",
+  alternates: {
+    canonical: "https://freuly.de/impressum",
+  },
 };
 
 export default function ImpressumPage() {

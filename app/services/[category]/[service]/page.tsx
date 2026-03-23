@@ -12,7 +12,7 @@ export async function generateMetadata({
   params: { category: string; service: string };
 }): Promise<Metadata> {
   const title = `${params.service} в категории ${params.category} | Freuly`;
-  const canonical = `/services/${encodeURIComponent(params.category)}/${encodeURIComponent(params.service)}`;
+  const canonical = `https://freuly.de/services/${encodeURIComponent(params.category)}/${encodeURIComponent(params.service)}`;
   return {
     title,
     description: `Подбор специалистов по услуге ${params.service}.`,
