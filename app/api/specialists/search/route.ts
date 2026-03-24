@@ -48,9 +48,9 @@ export async function GET(request: NextRequest) {
       query = query.contains("languages", [lang]);
     }
 
-    // Filter by postal code
+    // Filter by postal code — online/hybrid always included
     if (place) {
-      query = query.eq("postal_code", place);
+      query = query.or(`postal_code.eq.${place},work_format.eq.online,work_format.eq.hybrid`);
     }
 
     // Filter by category via category_id
