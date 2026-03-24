@@ -169,6 +169,7 @@ export default function SpecialistDashboardEditor({ initialData, initialStatus, 
       const payload = {
         ...form,
         category_id: form.category_id || null,
+        country_code: "DE",
         video_url: form.video_url.trim(),
         languages: form.languages.map((lang) => lang.trim()).filter(Boolean),
         gallery_urls: form.gallery_urls.map((url) => url.trim()).filter(Boolean),

@@ -140,6 +140,9 @@ export async function PUT(request: NextRequest) {
   }
 
   specialistPatch.languages = Array.isArray(languages) ? languages : [];
+  specialistPatch.country_code = typeof (body as Record<string, unknown>).country_code === "string"
+    ? ((body as Record<string, unknown>).country_code as string).trim().toUpperCase() || "DE"
+    : "DE";
   specialistPatch.updated_at = new Date().toISOString();
 
   if (specialistPatch.postal_code) {
