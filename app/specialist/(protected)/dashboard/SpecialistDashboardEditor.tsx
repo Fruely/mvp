@@ -57,15 +57,16 @@ export default function SpecialistDashboardEditor({ dict, initialData, initialSt
     [],
   );
 
+  const needsPostalCode = form.work_format !== "online";
   const publicationReady = useMemo(() => {
     return Boolean(
       form.name.trim() &&
         form.category_id.trim() &&
-        /^\d{5}$/.test(form.postal_code.trim()) &&
+        (!needsPostalCode || /^\d{5}$/.test(form.postal_code.trim())) &&
         form.about_me.trim() &&
         form.photo_url.trim()
     );
-  }, [form]);
+  }, [form, needsPostalCode]);
 
   function sanitizePrice(raw: string): string {
     return raw.replace(/\s/g, "").replace(",", ".");
@@ -214,7 +215,7 @@ export default function SpecialistDashboardEditor({ dict, initialData, initialSt
       const missing: string[] = [];
       if (!form.name.trim()) missing.push(t(dict, "dashboard.fields.name"));
       if (!form.category_id.trim()) missing.push(t(dict, "dashboard.fields.category"));
-      if (!/^\d{5}$/.test(form.postal_code.trim())) missing.push(t(dict, "dashboard.fields.plz"));
+      if (needsPostalCode && !/^\d{5}$/.test(form.postal_code.trim())) missing.push(t(dict, "dashboard.fields.plz"));
       if (!form.about_me.trim()) missing.push(t(dict, "dashboard.fields.aboutMe"));
       if (!form.photo_url.trim()) missing.push(t(dict, "dashboard.fields.photo"));
       setError(missing.length ? `${t(dict, "dashboard.messages.fillRequired")}: ${missing.join(", ")}` : t(dict, "dashboard.messages.fillRequired"));
@@ -299,7 +300,7 @@ export default function SpecialistDashboardEditor({ dict, initialData, initialSt
             />
           </label>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">PLZ (Postleitzahl) <span className="text-red-500">*</span></span>
+            <span className="font-medium text-gray-700">PLZ (Postleitzahl) {needsPostalCode && <span className="text-red-500">*</span>}</span>
             <input
               value={form.postal_code}
               onChange={(e) => {
@@ -312,7 +313,7 @@ export default function SpecialistDashboardEditor({ dict, initialData, initialSt
               placeholder="z.B. 34117"
               className="w-full rounded-lg border border-gray-200 px-3 py-2"
             />
-            <p className="text-xs text-gray-500">5-значный почтовый индекс Германии. Обязателен для публикации.</p>
+            {needsPostalCode && <p className="text-xs text-gray-500">5-значный почтовый индекс Германии. Обязателен для публикации.</p>}
           </label>
           <label className="space-y-1 text-sm">
             <span className="font-medium text-gray-700">Город</span>

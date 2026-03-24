@@ -83,6 +83,8 @@ export async function PUT(request: NextRequest) {
 
   if (
     typeof body.postal_code !== "undefined" &&
+    body.postal_code !== "" &&
+    body.postal_code !== null &&
     (typeof body.postal_code !== "string" || !/^\d{5}$/.test(body.postal_code))
   ) {
     return jsonNoStore({ error: "Invalid payload: postal_code must match /^\\d{5}$/" }, { status: 400 });
