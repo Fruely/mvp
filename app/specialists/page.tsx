@@ -173,28 +173,18 @@ export default async function SpecialistsPage({
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <Link
-            href={`/${uiLang}`}
-            className="text-gray-600 hover:text-gray-900 text-sm font-medium inline-flex items-center gap-1 mb-4"
-          >
-            ← Back to search
-          </Link>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            Specialists
-          </h1>
-          <p className="text-gray-600 mt-1">
-            {specialists.length} {specialists.length === 1 ? "result" : "results"}{" "}
-            for language &quot;{lang}&quot; in &quot;{place}&quot;
-            {q ? ` matching "${q}"` : ""}.
-          </p>
-        </div>
+  const localSpecialists = specialists.filter(
+    (s) => s.work_format !== "online" && s.postal_code === place
+  );
+  const onlineSpecialists = specialists.filter(
+    (s) => s.work_format === "online" || s.work_format === "hybrid"
+  );
+  const otherSpecialists = specialists.filter(
+    (s) =>
+      !localSpecialists.includes(s) && !onlineSpecialists.includes(s)
+  );
 
-        <ul className="space-y-4">
-          {specialists.map((s) => {
+  const renderCard = (s: Specialist) => {
             const hasCategory = Boolean(s.category_title || s.category_slug);
             const categoryLabel = s.category_title || "Category";
 
@@ -260,8 +250,51 @@ export default async function SpecialistsPage({
               </div>
             </li>
             );
-          })}
-        </ul>
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <Link
+            href={`/${uiLang}`}
+            className="text-gray-600 hover:text-gray-900 text-sm font-medium inline-flex items-center gap-1 mb-4"
+          >
+            ← Back to search
+          </Link>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Specialists
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {specialists.length} {specialists.length === 1 ? "result" : "results"}{" "}
+            for language &quot;{lang}&quot; in &quot;{place}&quot;
+            {q ? ` matching "${q}"` : ""}.
+          </p>
+        </div>
+
+        {localSpecialists.length > 0 && (
+          <>
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">Рядом с вами</h2>
+            <ul className="space-y-4 mb-8">
+              {localSpecialists.map(renderCard)}
+            </ul>
+          </>
+        )}
+
+        {onlineSpecialists.length > 0 && (
+          <>
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">Работают онлайн</h2>
+            <ul className="space-y-4 mb-8">
+              {onlineSpecialists.map(renderCard)}
+            </ul>
+          </>
+        )}
+
+        {otherSpecialists.length > 0 && (
+          <ul className="space-y-4">
+            {otherSpecialists.map(renderCard)}
+          </ul>
+        )}
       </div>
     </div>
   );
