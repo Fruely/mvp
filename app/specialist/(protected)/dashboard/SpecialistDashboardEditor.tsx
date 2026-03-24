@@ -23,6 +23,7 @@ type Props = {
     about_me: string;
     video_url: string;
     postal_code: string;
+    country_code: string;
     city: string;
     address: string;
     photo_url: string;
@@ -333,6 +334,20 @@ export default function SpecialistDashboardEditor({ dict, initialData, initialSt
               className="w-full rounded-lg border border-gray-200 px-3 py-2"
             />
             <p className="text-xs text-gray-600 font-medium">Необязательно. Если указан адрес, маршрут будет строиться до точного места.</p>
+          </label>
+          <label className="space-y-1 text-sm">
+            <span className="font-medium text-gray-700">Country</span>
+            <select
+              value={form.country_code}
+              onChange={(e) => setForm((prev) => ({ ...prev, country_code: e.target.value }))}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2"
+            >
+              <option value="DE">Germany (DE)</option>
+              <option value="GR">Greece (GR)</option>
+              <option value="IT">Italy (IT)</option>
+              <option value="PL">Poland (PL)</option>
+              <option value="XX">Other (XX)</option>
+            </select>
           </label>
           <label className="space-y-1 text-sm">
             <span className="font-medium text-gray-700">Формат</span>

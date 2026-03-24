@@ -23,7 +23,7 @@ export default async function SpecialistDashboardPage() {
 
   const { data: specExtra } = await supabase
     .from("specialists")
-    .select("postal_code")
+    .select("postal_code, country_code")
     .eq("id", specialist.id)
     .maybeSingle();
   const { data: profile } = await supabase
@@ -69,6 +69,7 @@ export default async function SpecialistDashboardPage() {
           about_me: typeof profile?.about_me === "string" ? profile.about_me : "",
           video_url: typeof profile?.video_url === "string" ? profile.video_url : "",
           postal_code: typeof specExtra?.postal_code === "string" ? specExtra.postal_code : "",
+          country_code: typeof specExtra?.country_code === "string" ? specExtra.country_code : "DE",
           city: typeof profile?.city === "string" ? profile.city : "",
           address: typeof profile?.address === "string" ? profile.address : "",
           photo_url: typeof profile?.photo_url === "string" ? profile.photo_url : "",
