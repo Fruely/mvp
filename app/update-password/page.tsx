@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabase } from "@/lib/supabaseClient";
 
@@ -11,6 +11,24 @@ export default function UpdatePasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  // On mount: exchange PKCE code (if present) or let the client pick up hash tokens
+  useEffect(() => {
+    const supabase = getSupabase();
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error: err }) => {
+        if (err) setError("Посилання недійсне або прострочене");
+        setReady(true);
+      });
+    } else {
+      // Implicit flow: tokens in hash are handled automatically by createBrowserClient
+      setReady(true);
+    }
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -103,7 +121,7 @@ export default function UpdatePasswordPage() {
           )}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !ready}
             className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
           >
             {loading ? "Оновлення…" : "Зберегти пароль"}
