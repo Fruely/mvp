@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 
@@ -107,7 +107,7 @@ const HERO_COPY: Record<Lang, { titleLines: [string, string, string]; subtitle: 
   },
 };
 
-export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionary }) {
+export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Dictionary; place?: string }) {
   const catName = (slug: string, fallback: string | null) => {
     const key = `categories.${slug}`;
     const val = t(dict, key);
@@ -126,8 +126,7 @@ export default function HomeClient({ lang, dict }: { lang: Lang; dict: Dictionar
   const [heroCategorySlug, setHeroCategorySlug] = useState("");
   const [heroCity, setHeroCity] = useState("");
   const [heroLanguage, setHeroLanguage] = useState<"ru" | "uk" | "de">("ru");
-  const searchParams = useSearchParams();
-  const placeFromUrl = searchParams?.get("place")?.trim() ?? "";
+  const placeFromUrl = place?.trim() ?? "";
   const specialistLang = lang === "ua" ? "uk" : lang;
 
   function buildDisplayCategories(all: PopularCategory[]): PopularCategory[] {

@@ -25,8 +25,10 @@ export async function generateMetadata({ params }: { params: { lang: string } })
 
 export default async function LangHomePage({
   params,
+  searchParams,
 }: {
   params: { lang: string };
+  searchParams: { [key: string]: string | string[] | undefined };
 }) {
   if (!isSupportedLang(params.lang)) {
     redirect("/ua");
@@ -34,6 +36,7 @@ export default async function LangHomePage({
 
   const lang = params.lang as Lang;
   const dict = await getDictionary(lang);
+  const place = typeof searchParams?.place === "string" ? searchParams.place : undefined;
 
-  return <HomeClient lang={lang} dict={dict} />;
+  return <HomeClient lang={lang} dict={dict} place={place} />;
 }
