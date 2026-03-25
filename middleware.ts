@@ -65,6 +65,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/services") ||
     pathname.startsWith("/client") ||
     pathname.startsWith("/login") ||
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/update-password") ||
     pathname.startsWith("/_next") ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
@@ -86,6 +88,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/services") ||
     pathname.startsWith("/client") ||
     pathname.startsWith("/login") ||
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/update-password") ||
     pathname.startsWith("/_next") ||
     pathname === "/favicon.ico" ||
     pathname === "/robots.txt" ||

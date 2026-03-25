@@ -5,9 +5,10 @@ import { cookies } from "next/headers";
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const code = searchParams.get("code");
+  const token = searchParams.get("token");
   const next = searchParams.get("next") ?? "/update-password";
 
-  if (code) {
+  if (code || token) {
     const cookieStore = cookies();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,12 +27,14 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.exchangeCodeForSession(
+      code ?? token!
+    );
 
     if (!error) {
       return NextResponse.redirect(new URL(next, request.url));
     }
   }
 
-  return NextResponse.redirect(new URL("/reset-password", request.url));
+  return NextResponse.redirect(new URL("/ua/reset-password", request.url));
 }
