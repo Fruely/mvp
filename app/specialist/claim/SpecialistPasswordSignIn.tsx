@@ -94,7 +94,7 @@ export default function SpecialistPasswordSignIn() {
           {loading ? "Вход…" : "Войти"}
         </button>
         <a
-          href="/reset-password"
+          href="/ua/reset-password"
           className="mt-1 block text-center text-sm text-blue-600 hover:underline"
         >
           Забули пароль?
