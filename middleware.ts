@@ -99,16 +99,14 @@ export function middleware(request: NextRequest) {
     return res;
   }
 
+  // Root "/" → single redirect to /ua
+  if (pathname === "/") {
+    return NextResponse.redirect(new URL("/ua", request.url), 301);
+  }
+
   // i18n logic (only for language routes)
   const segmentsForI18n = pathname.split("/").filter(Boolean);
   const firstI18n = segmentsForI18n[0];
-
-  // Root: always redirect to default lang (/ua)
-  if (pathname === "/") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/ua";
-    return NextResponse.redirect(url);
-  }
 
   const cookieLang = request.cookies.get(LANG_COOKIE)?.value;
   const preferredLang: Lang = isLang(cookieLang || "") ? (cookieLang as Lang) : "ua";
