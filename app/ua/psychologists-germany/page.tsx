@@ -2,9 +2,9 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Психологи в Германии на украинском | Freuly",
+  title: "Психологи в Германии — украинский и русский язык | Freuly",
   description:
-    "Найдите психолога в Германии, который говорит на украинском языке. Онлайн и офлайн консультации.",
+    "Найдите психолога в Германии, который говорит на украинском или русском языке. Онлайн и офлайн консультации. Платформа Freuly.",
   alternates: {
     canonical: "https://freuly.de/ua/psychologists-germany",
   },
@@ -69,27 +69,79 @@ export default function PsychologistsGermanyPage() {
         </p>
       </section>
 
-      <section className="mt-12 rounded-2xl bg-blue-50 px-6 py-8 text-center">
-        <p className="text-lg font-medium text-gray-900">
+      {/* Main CTA */}
+      <section className="mt-12 rounded-2xl bg-blue-50 px-6 py-10 text-center">
+        <h2 className="text-xl font-semibold text-gray-900">
+          Готовы найти своего психолога?
+        </h2>
+        <p className="mx-auto mt-2 max-w-md text-gray-600">
           Выберите специалиста и отправьте заявку — это первый шаг к решению
           вашей ситуации.
         </p>
         <Link
-          href="/ua"
-          className="mt-5 inline-flex h-11 items-center justify-center rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white transition hover:bg-blue-700"
+          href="/ua/category/psychologists"
+          className="mt-5 inline-flex h-12 items-center justify-center rounded-xl bg-blue-600 px-8 text-base font-semibold text-white transition hover:bg-blue-700"
         >
-          Перейти к поиску
+          Найти психолога
         </Link>
       </section>
 
-      <nav className="mt-10 flex flex-wrap gap-4 text-sm text-blue-600">
-        <Link href="/ua" className="hover:underline">
-          ← Главная
-        </Link>
-        <Link href="/become-specialist" className="hover:underline">
-          Стать специалистом
-        </Link>
-      </nav>
+      {/* Other categories */}
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold text-gray-900">
+          Другие категории специалистов
+        </h2>
+        <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+          <li>
+            <Link href="/ua/category/masseurs" className="text-blue-600 hover:underline">
+              Масажисти
+            </Link>
+          </li>
+          <li>
+            <Link href="/ua/category/tutors" className="text-blue-600 hover:underline">
+              Репетитори
+            </Link>
+          </li>
+          <li>
+            <Link href="/ua/category/cosmetology" className="text-blue-600 hover:underline">
+              Косметологія
+            </Link>
+          </li>
+          <li>
+            <Link href="/ua/category/nutritionists" className="text-blue-600 hover:underline">
+              Дієтологи
+            </Link>
+          </li>
+          <li>
+            <Link href="/ua/category/it_specialists" className="text-blue-600 hover:underline">
+              IT-спеціалісти
+            </Link>
+          </li>
+          <li>
+            <Link href="/ua/category/cleaning" className="text-blue-600 hover:underline">
+              Прибирання
+            </Link>
+          </li>
+        </ul>
+      </section>
+
+      {/* See also */}
+      <section className="mt-10 border-t border-gray-200 pt-8">
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+          Дивіться також
+        </h3>
+        <nav className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+          <Link href="/ua" className="text-blue-600 hover:underline">
+            Головна сторінка
+          </Link>
+          <Link href="/specialists?lang=uk" className="text-blue-600 hover:underline">
+            Усі спеціалісти
+          </Link>
+          <Link href="/become-specialist" className="text-blue-600 hover:underline">
+            Стати спеціалістом
+          </Link>
+        </nav>
+      </section>
     </main>
   );
 }
