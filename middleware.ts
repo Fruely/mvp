@@ -103,9 +103,9 @@ export function middleware(request: NextRequest) {
     return res;
   }
 
-  // Root "/" → single redirect to /ua
+  // Root "/" → serve directly (no redirect, SEO requirement)
   if (pathname === "/") {
-    return NextResponse.redirect(new URL("/ua", request.url), 301);
+    return NextResponse.next();
   }
 
   // i18n logic (only for language routes)
