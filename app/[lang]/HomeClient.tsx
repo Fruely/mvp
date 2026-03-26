@@ -682,16 +682,14 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
         <p className="mt-3 text-xs text-gray-500">{t(dict, "home.cta.socialProof")}</p>
       </section>
 
-      {lang === "ua" && (
-        <div className="mt-10 text-center">
-          <a
-            href="/ua/psychologists-germany"
-            className="text-blue-600 underline hover:text-blue-800"
-          >
-            Психологи в Германии
-          </a>
-        </div>
-      )}
+      <div className="mt-10 text-center">
+        <a
+          href={`/${lang}/psychologists-germany`}
+          className="text-blue-600 underline hover:text-blue-800"
+        >
+          {t(dict, "categories.psychologists")}
+        </a>
+      </div>
 
       {error && (
         <div className="fixed bottom-4 right-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg shadow">
