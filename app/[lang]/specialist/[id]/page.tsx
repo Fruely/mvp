@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import { getSpecialistUrl } from "@/lib/urls";
+import { getSupabase } from "@/lib/supabaseClient";
 import uaDict from "@/locales/ua.json";
 import { getSpecialistPageTranslations, getWorkFormat } from "@/lib/i18n/getTranslations";
 import SectionCard from "@/components/specialist/SectionCard";
@@ -91,10 +92,29 @@ export default function SpecialistPage() {
   }, [lang]);
 
   useEffect(() => {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(id);
+
     const fetchSpecialist = async () => {
       try {
+        let resolvedId = id;
+
+        if (!isUuid) {
+          const { data: row } = await getSupabase()
+            .from("specialists")
+            .select("id")
+            .eq("slug", id)
+            .maybeSingle();
+
+          if (row?.id) {
+            resolvedId = row.id;
+          } else {
+            setError("Specialist not found");
+            return;
+          }
+        }
+
         const response = await fetch(
-          `/api/specialists/${id}`,
+          `/api/specialists/${resolvedId}`,
           { cache: "no-store" }
         );
         const result = await response.json();
@@ -105,9 +125,11 @@ export default function SpecialistPage() {
         }
 
         const data = result.data;
-        if (process.env.NODE_ENV === "development") {
-          console.log("Specialist page name:", data?.name);
+
+        if (isUuid && data?.slug?.trim() && id !== data.slug) {
+          router.replace(`/${lang}/specialist/${data.slug}`, { scroll: false });
         }
+
         setSpecialist(data);
       } catch (err: any) {
         setError(null);
