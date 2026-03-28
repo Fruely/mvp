@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { t, type Dictionary } from "@/lib/i18n";
+import { getSpecialistUrl } from "@/lib/urls";
 
 type SpecialistPreview = {
   id: string;
@@ -55,8 +56,8 @@ export default function SpecialistPreviewCard({
   const languageList = Array.isArray(specialist.languages) ? specialist.languages : [];
   const chips = languageList.slice(0, 3);
   const extraLangCount = Math.max(languageList.length - chips.length, 0);
-  const detailsHref = `/${lang}/specialist/${specialist.id}`;
-  const leadHref = `/${lang}/specialist/${specialist.id}?open=form`;
+  const detailsHref = getSpecialistUrl(lang, specialist);
+  const leadHref = `${getSpecialistUrl(lang, specialist)}?open=form`;
   const isNewActive = useMemo(() => {
     if (!specialist.is_new || !specialist.new_until) return false;
     const untilTs = Date.parse(specialist.new_until);

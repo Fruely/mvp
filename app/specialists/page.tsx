@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { getSpecialistUrl } from "@/lib/urls";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,7 @@ function toUiLang(lang: string): UiLang {
 
 type Specialist = {
   id: string;
+  slug?: string | null;
   name: string;
   bio: string | null;
   avatar_url: string | null;
@@ -233,13 +235,13 @@ export default async function SpecialistsPage({
                     )}
                     <div className="flex flex-wrap gap-3 mt-4">
                       <Link
-                        href={`/${uiLang}/specialist/${s.id}?open=form`}
+                        href={`${getSpecialistUrl(uiLang, s)}?open=form`}
                         className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-xl shadow-soft hover:bg-gray-800 transition"
                       >
                         Send request
                       </Link>
                       <Link
-                        href={`/${uiLang}/specialist/${s.id}`}
+                        href={getSpecialistUrl(uiLang, s)}
                         className="inline-flex items-center gap-1 px-4 py-2 text-gray-700 text-sm font-medium hover:text-gray-900 transition"
                       >
                         View profile →

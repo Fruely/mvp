@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { SeoSpecialistCard } from "@/lib/servicesSeo";
+import { getSpecialistUrl } from "@/lib/urls";
 
 export default function ServiceLanding({
   title,
@@ -21,7 +22,7 @@ export default function ServiceLanding({
     mainEntity: specialists.map((specialist) => ({
       "@type": "Person",
       name: specialist.name?.trim() ? specialist.name : "Специалист",
-      url: `https://freuly.de/ru/specialist/${encodeURIComponent(specialist.slug || specialist.id)}`,
+      url: `https://freuly.de${getSpecialistUrl("ru", specialist)}`,
       address: specialist.city || undefined,
     })),
   };
@@ -35,7 +36,7 @@ export default function ServiceLanding({
         {specialists.map((specialist) => (
           <Link
             key={specialist.id}
-            href={`/ru/specialist/${encodeURIComponent(specialist.slug || specialist.id)}`}
+            href={getSpecialistUrl("ru", specialist)}
             className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow"
           >
             <div className="text-base font-semibold text-gray-900">{specialist.name?.trim() ? specialist.name : "Специалист"}</div>

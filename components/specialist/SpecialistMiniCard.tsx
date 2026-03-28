@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { getSpecialistUrl } from "@/lib/urls";
 
 const MAX_DESC = 175;
 
 type SpecialistMiniCardProps = {
   id: string;
+  slug?: string | null;
   lang: string;
   name: string;
   title: string;
@@ -24,6 +26,7 @@ function truncate(s: string, max: number) {
 
 export default function SpecialistMiniCard({
   id,
+  slug,
   lang,
   name,
   title,
@@ -31,7 +34,7 @@ export default function SpecialistMiniCard({
   city,
   avatar_url,
 }: SpecialistMiniCardProps) {
-  const href = `/${lang}/specialist/${id}`;
+  const href = getSpecialistUrl(lang, { id, slug });
   const text = truncate(description, MAX_DESC);
 
   return (

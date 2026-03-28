@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
+import { getSpecialistUrl } from "@/lib/urls";
 import uaDict from "@/locales/ua.json";
 import { getSpecialistPageTranslations, getWorkFormat } from "@/lib/i18n/getTranslations";
 import SectionCard from "@/components/specialist/SectionCard";
@@ -324,11 +325,11 @@ export default function SpecialistPage() {
   const videoEmbedUrl = parseVideoEmbedUrl(specialist?.video_url);
 
   const workModeLabel = workMode ? sectionText.work_format[workMode] : null;
-  const canonicalSlug = typeof specialist.slug === "string" && specialist.slug.trim().length > 0 ? specialist.slug : specialist.id;
+  const specialistPath = getSpecialistUrl(lang, specialist);
   const specialistUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}/${lang}/specialist/${encodeURIComponent(canonicalSlug)}`
-      : `https://freuly.de/${lang}/specialist/${encodeURIComponent(canonicalSlug)}`;
+      ? `${window.location.origin}${specialistPath}`
+      : `https://freuly.de${specialistPath}`;
   const planCode = typeof specialist.plan_code === "string" ? specialist.plan_code : "free";
   const isProPlan = planCode.toLowerCase() === "pro";
   const handleShare = async (channel: "copy" | "whatsapp" | "telegram" | "instagram") => {

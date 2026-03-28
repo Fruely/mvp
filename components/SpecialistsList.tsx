@@ -1,8 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
+import { getSpecialistUrl } from "@/lib/urls";
 
 export type Specialist = {
   id: string;
+  slug?: string | null;
   name: string;
   category: string;
   city: string;
@@ -88,7 +90,7 @@ export default function SpecialistsList({ specialists, isLoading }: Props) {
 
           <div className="mt-auto pt-4">
             <Link
-              href={`/specialist/${specialist.id}`}
+              href={`/specialist/${encodeURIComponent(specialist.slug?.trim() || specialist.id)}`}
               className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:text-blue-800"
             >
               Подробнее

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
+import { getSpecialistUrl } from "@/lib/urls";
 
 type MosaicImage = { url: string; alt?: string; category_id?: string };
 
@@ -321,7 +322,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
           {data.map((specialist) => (
             <Link
               key={specialist.id}
-              href={`/${lang}/specialist/${encodeURIComponent(specialist.id)}`}
+              href={getSpecialistUrl(lang, specialist)}
               className="rounded-xl border bg-white shadow-card overflow-hidden flex h-full flex-col hover:shadow-soft transition"
             >
               <div className="aspect-square w-full overflow-hidden bg-gray-100">

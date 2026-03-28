@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     // Build query with SQL filters
     const selectCols =
-      "id, name, bio, avatar_url, category_id, languages, work_format, postal_code";
+      "id, slug, name, bio, avatar_url, category_id, languages, work_format, postal_code";
 
     let query = supabase
       .from("specialists")
@@ -75,6 +75,7 @@ export async function GET(request: NextRequest) {
       id: string;
       name: string | null;
       bio: string | null;
+      slug: string | null;
       avatar_url: string | null;
       category_id: string | null;
       languages: string[] | null;
@@ -104,6 +105,7 @@ export async function GET(request: NextRequest) {
       const cat = s.category_id ? categoryMap[s.category_id] : null;
       return {
         id: s.id,
+        slug: s.slug ?? null,
         name: typeof s.name === "string" && s.name.trim() ? s.name.trim() : null,
         bio: s.bio,
         avatar_url: s.avatar_url,
