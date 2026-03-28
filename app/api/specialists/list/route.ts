@@ -11,6 +11,7 @@ type SortMode = 'relevance' | 'new' | 'experience';
 
 type SpecialistRow = {
   id: string;
+  slug?: string | null;
   name: string | null;
   bio: string | null;
   avatar_url: string | null;
@@ -125,14 +126,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    type SelectCols =
-      | 'specialist_id,specialists!inner(id,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at)'
-      | 'specialist_id,specialists!inner(id,name,bio,avatar_url,category_id,languages,created_at)';
-
-    const fullSelect: SelectCols =
-      'specialist_id,specialists!inner(id,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at)';
-    const fallbackSelect: SelectCols =
-      'specialist_id,specialists!inner(id,name,bio,avatar_url,category_id,languages,created_at)';
+    const fullSelect =
+      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at)';
+    const fallbackSelect =
+      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,created_at)';
 
     let rows: SpecialistRow[] | null = null;
     let queryError: { message?: string } | null = null;
@@ -191,7 +188,7 @@ export async function GET(request: NextRequest) {
     if (uniqueSpecialists.length === 0) {
       const { data: directSpecialists, error: directError } = await supabase
         .from("specialists")
-        .select("id,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at")
+        .select("id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at")
         .eq("category_id", categoryId)
         .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
         .eq("is_active", true)
@@ -352,7 +349,7 @@ export async function GET(request: NextRequest) {
 
       return {
         id: row.id,
-        slug: normalizeSlug(nameFromDb || '', row.id),
+        slug: (typeof row.slug === 'string' && row.slug.trim()) ? row.slug.trim() : normalizeSlug(nameFromDb || '', row.id),
         name: nameFromDb,
         avatar_url: profile?.photo_url ?? row.avatar_url ?? null,
         about_line: pickAboutLine({
