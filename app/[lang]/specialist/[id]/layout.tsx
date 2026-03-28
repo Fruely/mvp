@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const DOMAIN = "https://freuly.de";
 
@@ -8,10 +9,25 @@ export async function generateMetadata({
   params: { lang: string; id: string };
 }): Promise<Metadata> {
   const { lang, id } = params;
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(id);
+
+  let slug = isUuid ? null : id;
+
+  if (isUuid) {
+    const supabase = createSupabaseServerClient();
+    const { data } = await supabase
+      .from("specialists")
+      .select("slug")
+      .eq("id", id)
+      .maybeSingle();
+    if (data?.slug) slug = data.slug;
+  }
+
+  const segment = slug || id;
 
   return {
     alternates: {
-      canonical: `${DOMAIN}/${lang}/specialist/${id}`,
+      canonical: `${DOMAIN}/${lang}/specialist/${segment}`,
     },
   };
 }
