@@ -14,6 +14,12 @@ import SectionCard from "@/components/specialist/SectionCard";
 import SpecialistHero from "@/components/specialist/SpecialistHero";
 import MobileStickyCTA from "@/components/MobileStickyCTA";
 
+const LEGACY_SLUGS: Record<string, string> = {
+  "zkeiy-lbztieh": "cosmetologists-kassel-irina-melnik",
+  "nhliy-oyimbzeae": "psychologists-oksana-pantelidi",
+  "mymyzth-sbtbih": "business-kirchhundem-natalya-sheshenya",
+};
+
 interface Specialist {
   id: string;
   slug?: string | null;
@@ -92,6 +98,14 @@ export default function SpecialistPage() {
   }, [lang]);
 
   useEffect(() => {
+    if (id in LEGACY_SLUGS) {
+      redirected.current = true;
+      window.location.replace(`/${lang}/specialist/${LEGACY_SLUGS[id]}`);
+    }
+  }, [id, lang]);
+
+  useEffect(() => {
+    if (redirected.current) return;
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(id);
 
     const fetchSpecialist = async () => {
