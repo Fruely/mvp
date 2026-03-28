@@ -8,10 +8,12 @@ export async function GET(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
-  const { id } = params;
-  if (!id) {
+  const param = params.id;
+  if (!param) {
     return jsonNoStore({ error: "Missing specialist id" }, { status: 400 });
   }
+
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(param);
 
   const supabase = createSupabaseServerClient();
 
@@ -20,7 +22,7 @@ export async function GET(
     .select(
       "id, slug, name, avatar_url, category_id, status, is_active, is_visible, languages, work_format, created_at, user_id, lat, lng"
     )
-    .eq("id", id)
+    .eq(isUuid ? "id" : "slug", param)
     .maybeSingle();
 
   if (specError) {
@@ -41,7 +43,7 @@ export async function GET(
     .select(
       "photo_url, video_url, gallery_urls, certificate_urls, about_me, city, address"
     )
-    .eq("specialist_id", id)
+    .eq("specialist_id", specialist.id)
     .maybeSingle();
 
   const { data: category } = specialist.category_id
@@ -55,13 +57,13 @@ export async function GET(
   const { data: services } = await supabase
     .from("specialist_services")
     .select("id, title, price_from, price_to, currency, is_active")
-    .eq("specialist_id", id)
+    .eq("specialist_id", specialist.id)
     .eq("is_active", true);
 
   const { data: ratingRow } = await supabase
     .from("specialist_rating_stats")
     .select("rating_avg, reviews_count")
-    .eq("specialist_id", id)
+    .eq("specialist_id", specialist.id)
     .maybeSingle();
 
   const result = {
