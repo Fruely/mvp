@@ -30,7 +30,9 @@ export async function POST() {
   if (!specialist.category_id) missing.push("Категория");
   if (!specialist.languages || specialist.languages.length === 0) missing.push("Языки");
   if (!specialist.work_format) missing.push("Формат работы");
-  if (!specialist.postal_code) missing.push("Почтовый индекс");
+  if (specialist.work_format !== "online" && !specialist.postal_code) {
+    missing.push("Почтовый индекс");
+  }
 
   if (missing.length) {
     return NextResponse.json(
