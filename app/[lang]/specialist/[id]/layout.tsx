@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const DOMAIN = "https://freuly.de";
+
+const LEGACY_SLUGS: Record<string, string> = {
+  "zkeiy-lbztieh": "cosmetologists-kassel-irina-melnik",
+  "nhliy-oyimbzeae": "psychologists-oksana-pantelidi",
+  "mymyzth-sbtbih": "business-kirchhundem-natalya-sheshenya",
+};
 
 export async function generateMetadata({
   params,
@@ -9,6 +16,10 @@ export async function generateMetadata({
   params: { lang: string; id: string };
 }): Promise<Metadata> {
   const { lang, id } = params;
+
+  if (id in LEGACY_SLUGS) {
+    redirect(`/${lang}/specialist/${LEGACY_SLUGS[id]}`);
+  }
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(id);
 
   let slug = isUuid ? null : id;
