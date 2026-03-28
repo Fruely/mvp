@@ -29,6 +29,7 @@ export async function generateMetadata({
     alternates: {
       canonical: `${DOMAIN}/${lang}/specialist/${segment}`,
       languages: {
+        "x-default": `${DOMAIN}/ru/specialist/${segment}`,
         ru: `${DOMAIN}/ru/specialist/${segment}`,
         uk: `${DOMAIN}/ua/specialist/${segment}`,
         de: `${DOMAIN}/de/specialist/${segment}`,
