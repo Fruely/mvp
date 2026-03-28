@@ -1,9 +1,11 @@
 import type { MetadataRoute } from "next";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 const DOMAIN = "https://freuly.de";
 const LANGS = ["ua", "ru", "de"] as const;
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
 
   const entries: MetadataRoute.Sitemap = [];
@@ -58,6 +60,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: "yearly",
     priority: 0.3,
   });
+
+  const supabase = createSupabaseServerClient();
+  const { data: specialists } = await supabase
+    .from("specialists")
+    .select("slug, updated_at")
+    .not("slug", "is", null)
+    .neq("slug", "")
+    .eq("is_active", true)
+    .eq("is_visible", true)
+    .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES]);
+
+  if (specialists) {
+    for (const sp of specialists) {
+      for (const lang of LANGS) {
+        entries.push({
+          url: `${DOMAIN}/${lang}/specialist/${encodeURIComponent(sp.slug)}`,
+          lastModified: sp.updated_at ? new Date(sp.updated_at) : lastModified,
+          changeFrequency: "weekly",
+          priority: 0.8,
+        });
+      }
+    }
+  }
 
   return entries;
 }
