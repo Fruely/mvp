@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import LeadForm from "@/components/LeadForm";
 import Image from "next/image";
 import Link from "next/link";
-import { redirect, useParams, usePathname, useSearchParams } from "next/navigation";
+import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import { getSpecialistUrl } from "@/lib/urls";
 import { getSupabase } from "@/lib/supabaseClient";
@@ -63,6 +63,7 @@ export default function SpecialistPage() {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewForm, setReviewForm] = useState({ author_name: "", rating: 0, comment: "" });
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const redirected = useRef(false);
   const [reviewMsg, setReviewMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const searchParams = useSearchParams();
   const pathname = usePathname() || "/";
@@ -135,6 +136,14 @@ export default function SpecialistPage() {
     fetchSpecialist();
   }, [id, lang]);
 
+  useEffect(() => {
+    if (redirected.current) return;
+    if (specialist?.slug && id !== specialist.slug) {
+      redirected.current = true;
+      window.location.replace(`/${lang}/specialist/${specialist.slug}`);
+    }
+  }, [specialist, id, lang]);
+
   // Auto-open form by query param
   useEffect(() => {
     const open = searchParams?.get("open");
@@ -194,10 +203,6 @@ export default function SpecialistPage() {
         </div>
       </div>
     );
-  }
-
-  if (specialist?.slug?.trim() && id !== specialist.slug) {
-    redirect(`/${lang}/specialist/${specialist.slug}`);
   }
 
   if (error || !specialist) {
