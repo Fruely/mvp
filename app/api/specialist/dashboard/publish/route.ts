@@ -58,16 +58,35 @@ export async function POST() {
       categorySlug = cat?.slug ?? null;
     }
 
-    let city: string | null = null;
-    const { data: profile } = await supabase
-      .from("specialist_profiles")
-      .select("city")
-      .eq("specialist_id", specialistId)
-      .maybeSingle();
-    city = profile?.city ?? null;
+    let citySlug: string | null = null;
+
+    if (specialist.postal_code) {
+      const { data: cityRow } = await supabase
+        .from("cities")
+        .select("slug")
+        .eq("postal_code", specialist.postal_code)
+        .maybeSingle();
+      citySlug = cityRow?.slug ?? null;
+    }
+
+    if (!citySlug) {
+      const { data: profile } = await supabase
+        .from("specialist_profiles")
+        .select("city")
+        .eq("specialist_id", specialistId)
+        .maybeSingle();
+      if (profile?.city) {
+        const { data: cityRow } = await supabase
+          .from("cities")
+          .select("slug")
+          .eq("name", profile.city)
+          .maybeSingle();
+        citySlug = cityRow?.slug ?? null;
+      }
+    }
 
     if (specialist.name) {
-      const base = buildSpecialistSlug(categorySlug, city, specialist.name);
+      const base = buildSpecialistSlug(categorySlug, citySlug, specialist.name);
       let candidate = base;
       let suffix = 2;
       while (true) {
