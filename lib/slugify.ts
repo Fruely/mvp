@@ -38,5 +38,5 @@ export function buildSpecialistSlug(
   if (categorySlug) parts.push(categorySlug);
   if (city) parts.push(toSlug(city));
   parts.push(toSlug(name));
-  return parts.join("-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+  return parts.join("-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 100).replace(/-$/g, "");
 }
