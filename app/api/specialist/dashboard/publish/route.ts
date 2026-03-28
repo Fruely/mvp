@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { jsonNoStore } from "@/lib/api/response";
+import { buildSpecialistSlug } from "@/lib/slugify";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export async function POST() {
 
   const { data: specialist, error: specialistError } = await supabase
     .from("specialists")
-    .select("id, status, name, category_id, languages, work_format, postal_code")
+    .select("id, slug, status, name, category_id, languages, work_format, postal_code")
     .eq("user_id", user.id)
     .maybeSingle();
   if (specialistError || !specialist?.id) {
@@ -44,14 +45,56 @@ export async function POST() {
     );
   }
 
+  let generatedSlug: string | null = null;
+
+  if (!specialist.slug) {
+    let categorySlug: string | null = null;
+    if (specialist.category_id) {
+      const { data: cat } = await supabase
+        .from("categories")
+        .select("slug")
+        .eq("id", specialist.category_id)
+        .maybeSingle();
+      categorySlug = cat?.slug ?? null;
+    }
+
+    let city: string | null = null;
+    const { data: profile } = await supabase
+      .from("specialist_profiles")
+      .select("city")
+      .eq("specialist_id", specialistId)
+      .maybeSingle();
+    city = profile?.city ?? null;
+
+    if (specialist.name) {
+      const base = buildSpecialistSlug(categorySlug, city, specialist.name);
+      let candidate = base;
+      let suffix = 2;
+      while (true) {
+        const { data: existing } = await supabase
+          .from("specialists")
+          .select("id")
+          .eq("slug", candidate)
+          .maybeSingle();
+        if (!existing) break;
+        candidate = `${base}-${suffix}`;
+        suffix++;
+      }
+      generatedSlug = candidate;
+    }
+  }
+
+  const updatePayload: Record<string, unknown> = {
+    status: "published_unverified",
+    is_active: true,
+    is_visible: true,
+    published_at: new Date().toISOString(),
+  };
+  if (generatedSlug) updatePayload.slug = generatedSlug;
+
   const { data: updated, error: updateError } = await supabase
     .from("specialists")
-    .update({
-      status: "published_unverified",
-      is_active: true,
-      is_visible: true,
-      published_at: new Date().toISOString(),
-    })
+    .update(updatePayload)
     .eq("id", specialistId)
     .select("id, status")
     .single();
