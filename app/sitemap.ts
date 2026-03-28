@@ -75,10 +75,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const sp of specialists) {
       for (const lang of LANGS) {
         entries.push({
-          url: `${DOMAIN}/${lang}/specialist/${encodeURIComponent(sp.slug)}`,
+          url: `${DOMAIN}/${lang}/specialist/${sp.slug}`,
           lastModified: sp.updated_at ? new Date(sp.updated_at) : lastModified,
           changeFrequency: "weekly",
-          priority: 0.8,
+          priority: 0.7,
         });
       }
     }
