@@ -448,7 +448,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             {copy.subtitle}
           </p>
 
-          <div className="mt-8 max-w-4xl mx-auto bg-white shadow-soft rounded-xl p-3 flex flex-col sm:flex-row gap-3">
+          <div className="mt-8 max-w-4xl mx-auto bg-white shadow-soft rounded-md p-3 flex flex-col sm:flex-row gap-3">
             <select
               value={heroCategorySlug}
               onChange={(e) => setHeroCategorySlug(e.target.value)}
@@ -486,7 +486,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             <button
               type="button"
               onClick={handleHeroSearch}
-              className="h-14 px-6 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-soft"
+              className="h-14 px-6 rounded-md bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-soft"
             >
               {copy.search}
             </button>
@@ -521,19 +521,19 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
           <div className="rounded-3xl bg-[#EEF1FF] px-6 py-8 md:px-12 md:py-10">
             {true && (
               <div className="mt-7 md:mt-8 overflow-x-hidden">
-                <div className="relative min-h-[520px] overflow-hidden rounded-2xl">
+                <div className="relative min-h-[520px] overflow-hidden rounded-md">
                   {textImageContent?.url ? (
                     <>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={textImageContent.url}
                         alt={textImageContent.title || ""}
-                        className="absolute inset-0 w-full h-full object-cover object-right rounded-2xl z-0"
+                        className="absolute inset-0 w-full h-full object-cover object-right rounded-md z-0"
                       />
                     </>
                   ) : null}
 
-                  <div className="absolute left-6 top-6 w-[calc(80%-1.6rem)] md:left-8 md:top-8 md:w-auto max-w-[22.4rem] bg-white/90 rounded-2xl shadow-sm p-[1.6rem] backdrop-blur-sm z-10">
+                  <div className="absolute left-6 top-6 w-[calc(80%-1.6rem)] md:left-8 md:top-8 md:w-auto max-w-[22.4rem] bg-white/90 rounded-md shadow-sm p-[1.6rem] backdrop-blur-sm z-10">
                     <h2 className="text-3xl font-bold text-gray-900 mb-8">
                       {t(dict, "home.howItWorks.title")}
                     </h2>
@@ -676,7 +676,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
         </p>
         <Link
           href="/for-specialists"
-          className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-emerald-600 px-6 text-sm font-semibold text-white transition hover:bg-emerald-700"
+          className="mt-6 inline-flex h-11 items-center justify-center rounded-md bg-emerald-600 px-6 text-sm font-semibold text-white transition hover:bg-emerald-700"
         >
           {t(dict, "home.cta.button")}
         </Link>
