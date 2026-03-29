@@ -574,7 +574,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                       key={`popular-skeleton-${idx}`}
                       className="rounded-md bg-white shadow-card overflow-hidden"
                     >
-                      <div className="w-full aspect-square bg-gray-200/80 animate-pulse" />
+                      <div className="w-full aspect-[3/2] bg-gray-200/80 animate-pulse" />
                       <div className="px-4 py-3 space-y-2">
                         <div className="h-4 w-3/4 rounded bg-gray-200/80 animate-pulse" />
                         <div className="h-3 w-1/2 rounded bg-gray-200/80 animate-pulse" />
@@ -604,7 +604,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                         href={href}
                         className="group rounded-md bg-white shadow-card overflow-hidden flex flex-col transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
                       >
-                        <div className="w-full aspect-square overflow-hidden">
+                        <div className="w-full aspect-[3/2] overflow-hidden">
                           {imageUrl ? (
                             <>
                               {/* eslint-disable-next-line @next/next/no-img-element */}
