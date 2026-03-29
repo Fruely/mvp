@@ -514,7 +514,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
 
             {categories.filter((cat) => Array.isArray(cat.children) && cat.children.length > 0).map((parent) => (
               <section key={parent.id} className="mb-12">
-                <h2 className="text-lg font-semibold text-gray-900 mb-3">
+                <h2 className="text-[17px] leading-6 font-semibold text-gray-900 mb-3 pl-1">
                   {catName(parent.slug, parent.title)}
                 </h2>
 
@@ -523,7 +523,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                     <Link
                       key={child.id}
                       href={`/${lang}/category/${child.slug}`}
-                      className="group rounded-xl overflow-hidden bg-white border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-300 ease-out hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+                      className="group rounded-xl overflow-hidden bg-white border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-300 ease-out hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:-translate-y-[2px]"
                     >
                       <div className="relative w-full aspect-[4/3] overflow-hidden bg-gray-100 flex items-center justify-center">
                         <span className="text-[13px] text-gray-400 px-3 text-center line-clamp-2">
