@@ -599,19 +599,17 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                     <div key={child.id} className="p-1.5">
                       <Link
                         href={`/${lang}/category/${child.slug}`}
-                        className="group rounded-xl overflow-hidden bg-white border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.04)] flex flex-col transition-all duration-300 ease-out hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
+                        className="group block"
                       >
-                        <div className="w-full aspect-[3/2] overflow-hidden bg-gray-100 flex items-center justify-center">
+                        <div className="w-full aspect-[3/2] overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
                           <span className="text-sm text-gray-400 px-3 text-center line-clamp-2">
                             {catName(child.slug, child.title)}
                           </span>
                         </div>
 
-                        <div className="px-4 py-3">
-                          <p className="text-base font-semibold text-textPrimary line-clamp-1">
-                            {catName(child.slug, child.title)}
-                          </p>
-                        </div>
+                        <p className="mt-2 px-1 text-base font-medium text-gray-900 line-clamp-1">
+                          {catName(child.slug, child.title)}
+                        </p>
                       </Link>
                     </div>
                   ))}
