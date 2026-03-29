@@ -584,9 +584,9 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                 </div>
               </div>
             ) : popularCategories.length > 0 ? (
-              <div className="mt-8 md:mt-10">
-                <div className="mb-4 md:mb-6 text-center">
-                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+              <div className="pt-10">
+                <div className="mb-3">
+                  <h2 className="text-[17px] leading-6 font-semibold text-gray-900 pl-1">
                     {t(dict, "home.popularServices.title")}
                   </h2>
                 </div>
