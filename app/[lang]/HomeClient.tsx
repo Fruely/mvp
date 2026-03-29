@@ -589,32 +589,31 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
               .map((slug) => categories.find((cat) => cat.slug === slug && Array.isArray(cat.children) && cat.children.length > 0))
               .filter((cat): cat is CategoryStat => !!cat)
               .map((parent) => (
-              <section key={parent.id} className="pt-10">
-                <div className="mb-3">
-                  <h2 className="text-[17px] leading-6 font-semibold text-gray-900 pl-1">
-                    {catName(parent.slug, parent.title)}
-                  </h2>
-                </div>
+              <section key={parent.id} className="mt-12">
+                <h2 className="text-[17px] leading-6 font-semibold text-gray-900 pl-1 pb-2">
+                  {catName(parent.slug, parent.title)}
+                </h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 pb-12">
                   {parent.children!.slice(0, 3).map((child) => (
-                    <Link
-                      key={child.id}
-                      href={`/${lang}/category/${child.slug}`}
-                      className="group rounded-xl overflow-hidden bg-white border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.04)] flex flex-col transition-all duration-300 ease-out hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
-                    >
-                      <div className="w-full aspect-[3/2] overflow-hidden bg-gray-100 flex items-center justify-center">
-                        <span className="text-sm text-gray-400 px-3 text-center line-clamp-2">
-                          {catName(child.slug, child.title)}
-                        </span>
-                      </div>
+                    <div key={child.id} className="p-1.5">
+                      <Link
+                        href={`/${lang}/category/${child.slug}`}
+                        className="group rounded-xl overflow-hidden bg-white border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.04)] flex flex-col transition-all duration-300 ease-out hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
+                      >
+                        <div className="w-full aspect-[3/2] overflow-hidden bg-gray-100 flex items-center justify-center">
+                          <span className="text-sm text-gray-400 px-3 text-center line-clamp-2">
+                            {catName(child.slug, child.title)}
+                          </span>
+                        </div>
 
-                      <div className="px-4 py-3">
-                        <p className="text-base font-semibold text-textPrimary line-clamp-1">
-                          {catName(child.slug, child.title)}
-                        </p>
-                      </div>
-                    </Link>
+                        <div className="px-4 py-3">
+                          <p className="text-base font-semibold text-textPrimary line-clamp-1">
+                            {catName(child.slug, child.title)}
+                          </p>
+                        </div>
+                      </Link>
+                    </div>
                   ))}
                 </div>
               </section>
