@@ -9,6 +9,7 @@ type CategoryRow = {
   slug: string | null;
   title: string | null;
   parent_id?: string | null;
+  image_url?: string | null;
 };
 
 function parsePositiveInt(value: string | null | undefined): number | null {
@@ -73,7 +74,7 @@ async function loadCategoriesWithOptionalHierarchy() {
 
   const withParent = await supabase
     .from("categories")
-    .select("id, slug, title, parent_id")
+    .select("id, slug, title, parent_id, image_url")
     .order("title", { ascending: true });
 
   if (!withParent.error) {
@@ -86,7 +87,7 @@ async function loadCategoriesWithOptionalHierarchy() {
 
   const fallback = await supabase
     .from("categories")
-    .select("id, slug, title")
+    .select("id, slug, title, image_url")
     .order("title", { ascending: true });
 
   if (fallback.error) {
@@ -199,6 +200,7 @@ export async function GET(request: NextRequest) {
           slug: category.slug,
           title: category.title,
           parent_id: category.parent_id ?? null,
+          image_url: category.image_url ?? null,
           specialists_count: specialistsCount,
           is_clickable: isCategoryClickable(specialistsCount, minCount),
         };
@@ -249,6 +251,7 @@ export async function GET(request: NextRequest) {
             id: child.id,
             slug: child.slug,
             title: child.title,
+            image_url: child.image_url ?? null,
             specialists_count: specialistsCount,
             is_clickable: isCategoryClickable(specialistsCount, minCount),
           };
@@ -264,6 +267,7 @@ export async function GET(request: NextRequest) {
           slug: parent.slug,
           title: parent.title,
           parent_id: null,
+          image_url: parent.image_url ?? null,
           specialists_count: parentCount,
           is_clickable: isCategoryClickable(parentCount, minCount),
           ...(includeChildren ? { children: mappedChildren } : {}),
