@@ -438,17 +438,17 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
     <div className="min-h-screen flex flex-col">
       <>
       <section className="py-16 sm:py-24 bg-gradient-to-b from-white to-blue-50">
-        <div className="max-w-6xl mx-auto px-3 md:px-4 text-center">
+        <div className="max-w-7xl mx-auto px-3 md:px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-tight text-textPrimary">
             <span className="block">{copy.titleLines[0]}</span>
             <span className="block">{copy.titleLines[1]}</span>
             <span className="block">{copy.titleLines[2]}</span>
           </h1>
-          <p className="text-lg font-normal text-textSecondary mt-4 max-w-2xl mx-auto">
+          <p className="text-lg font-normal text-textSecondary mt-6 max-w-2xl mx-auto">
             {copy.subtitle}
           </p>
 
-          <div className="mt-8 bg-white shadow-soft rounded-xl p-3 flex flex-col sm:flex-row gap-3">
+          <div className="mt-8 max-w-4xl mx-auto bg-white shadow-soft rounded-xl p-3 flex flex-col sm:flex-row gap-3">
             <select
               value={heroCategorySlug}
               onChange={(e) => setHeroCategorySlug(e.target.value)}
@@ -492,7 +492,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             </button>
           </div>
 
-          <div className="mt-4 text-sm font-normal text-textSecondary flex flex-wrap justify-center gap-3">
+          <div className="mt-6 text-sm font-normal text-textSecondary flex flex-wrap justify-center gap-3">
             <span>{copy.popularLabel}</span>
             <span>{t(dict, "home.hero.popularTags")}</span>
           </div>
