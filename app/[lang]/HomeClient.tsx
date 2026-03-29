@@ -514,25 +514,26 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
 
             {categories.filter((cat) => Array.isArray(cat.children) && cat.children.length > 0).map((parent) => (
               <section key={parent.id} className="mb-12">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                <h2 className="text-lg font-semibold text-gray-900 mb-3">
                   {catName(parent.slug, parent.title)}
                 </h2>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
                   {parent.children!.map((child) => (
                     <Link
                       key={child.id}
                       href={`/${lang}/category/${child.slug}`}
-                      className="group rounded-xl overflow-hidden bg-white shadow-sm flex flex-col transition-all duration-200 ease-out hover:scale-[1.02] hover:shadow-md"
+                      className="group rounded-xl overflow-hidden bg-white border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-300 ease-out hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
                     >
-                      <div className="w-full aspect-[4/3] overflow-hidden bg-gray-100 flex items-center justify-center">
-                        <span className="text-sm text-gray-400 px-3 text-center line-clamp-2">
+                      <div className="relative w-full aspect-[4/3] overflow-hidden bg-gray-100 flex items-center justify-center">
+                        <span className="text-[13px] text-gray-400 px-3 text-center line-clamp-2">
                           {catName(child.slug, child.title)}
                         </span>
+                        <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/[0.03]" />
                       </div>
 
                       <div className="px-3 py-2">
-                        <p className="text-sm font-medium text-gray-900 line-clamp-1">
+                        <p className="text-[14px] leading-5 font-medium text-gray-900 tracking-[-0.01em] line-clamp-1">
                           {catName(child.slug, child.title)}
                         </p>
                       </div>
