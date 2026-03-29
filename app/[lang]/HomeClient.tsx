@@ -438,7 +438,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
     <div className="min-h-screen flex flex-col">
       <>
       <section className="py-16 sm:py-24 bg-gradient-to-b from-white to-blue-50">
-        <div className="max-w-6xl mx-auto px-6 text-center">
+        <div className="max-w-6xl mx-auto px-3 md:px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-tight text-textPrimary">
             <span className="block">{copy.titleLines[0]}</span>
             <span className="block">{copy.titleLines[1]}</span>
@@ -500,7 +500,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
       </section>
 
       <section className="pt-12 pb-10 md:pt-16 md:pb-12">
-        <div className="max-w-5xl mx-auto px-6 text-center">
+        <div className="max-w-5xl mx-auto px-3 md:px-4 text-center">
           <p className="max-w-3xl mx-auto text-2xl md:text-3xl font-medium text-gray-900 leading-snug">
             {t(dict, "transitional.line1")}
           </p>
@@ -517,7 +517,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
       </section>
 
       <section className="pt-14 pb-10 md:pt-16 md:pb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-3 md:px-4">
           <div className="rounded-3xl bg-[#EEF1FF] px-6 py-8 md:px-12 md:py-10">
             {true && (
               <div className="mt-7 md:mt-8 overflow-x-hidden">
@@ -669,7 +669,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
       </>
 
       {/* CTA for specialists */}
-      <section className="bg-gray-50 px-4 py-16 text-center sm:px-6 lg:px-8">
+      <section className="bg-gray-50 px-3 py-16 text-center md:px-4">
         <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">{t(dict, "home.cta.title")}</h2>
         <p className="mx-auto mt-3 max-w-lg text-gray-600">
           {t(dict, "home.cta.subtitle")}
