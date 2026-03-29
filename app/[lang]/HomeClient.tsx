@@ -583,60 +583,42 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                   ))}
                 </div>
               </div>
-            ) : popularCategories.length > 0 ? (
-              <div className="pt-10">
+            ) : null}
+
+            {categories
+              .filter((cat) => Array.isArray(cat.children) && cat.children.length > 0)
+              .slice(0, 4)
+              .map((parent) => (
+              <section key={parent.id} className="pt-10">
                 <div className="mb-3">
                   <h2 className="text-[17px] leading-6 font-semibold text-gray-900 pl-1">
-                    {t(dict, "home.popularServices.title")}
+                    {catName(parent.slug, parent.title)}
                   </h2>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {buildDisplayCategories(popularCategories).map((category) => {
-                    const href = placeFromUrl
-                      ? `/specialists?lang=${encodeURIComponent(specialistLang)}&place=${encodeURIComponent(placeFromUrl)}&category=${encodeURIComponent(category.slug)}`
-                      : `/${lang}/category/${category.slug}`;
-                    const imageUrl = category.image_url ?? null;
+                  {parent.children!.slice(0, 3).map((child) => (
+                    <Link
+                      key={child.id}
+                      href={`/${lang}/category/${child.slug}`}
+                      className="group rounded-xl overflow-hidden bg-white border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.04)] flex flex-col transition-all duration-300 ease-out hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
+                    >
+                      <div className="w-full aspect-[3/2] overflow-hidden bg-gray-100 flex items-center justify-center">
+                        <span className="text-sm text-gray-400 px-3 text-center line-clamp-2">
+                          {catName(child.slug, child.title)}
+                        </span>
+                      </div>
 
-                    return (
-                      <Link
-                        key={category.slug}
-                        href={href}
-                        className="group rounded-xl overflow-hidden bg-white border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.04)] flex flex-col transition-all duration-300 ease-out hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
-                      >
-                        <div className="w-full aspect-[3/2] overflow-hidden">
-                          {imageUrl ? (
-                            <>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={imageUrl}
-                                alt={catName(category.slug, category.title)}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                              />
-                            </>
-                          ) : (
-                            <div className="w-full h-full bg-gray-100" aria-hidden />
-                          )}
-                        </div>
-
-                        <div className="px-4 py-3">
-                          <p className="text-base font-semibold text-textPrimary line-clamp-1">
-                            {catName(category.slug, category.title)}
-                          </p>
-                          <p className="mt-1 text-sm font-normal text-textSecondary">
-                            {t(dict, "category.parent.found").replace(
-                              /\{\{\s*count\s*\}\}/g,
-                              String(category.specialists_count)
-                            )}
-                          </p>
-                        </div>
-                      </Link>
-                    );
-                  })}
+                      <div className="px-4 py-3">
+                        <p className="text-base font-semibold text-textPrimary line-clamp-1">
+                          {catName(child.slug, child.title)}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
-              </div>
-            ) : null}
+              </section>
+            ))}
 
             {isRecommendedLoading ? (
               <div className="mt-10">
