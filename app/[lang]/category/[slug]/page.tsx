@@ -442,7 +442,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
             </div>
 
             {parentCategory.children.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-lg p-12 text-center max-w-2xl mx-auto">
+              <div className="bg-white rounded-md shadow-lg p-12 text-center max-w-2xl mx-auto">
                 <div className="text-6xl mb-4">⏳</div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">
                   {t(dict, "category.parent.empty.title")}
@@ -462,7 +462,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                 {parentCategory.children.map((child) => (
                   <div
                     key={child.id}
-                    className={`bg-white rounded-xl border border-gray-100 shadow-sm p-6 ${
+                    className={`bg-white rounded-md border border-gray-100 shadow-sm p-6 ${
                       child.is_clickable ? "hover:shadow-md transition" : "opacity-80"
                     }`}
                   >
@@ -533,7 +533,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
         </div>
 
         <div className="space-y-6">
-            <div className="sticky top-0 z-20 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+            <div className="sticky top-0 z-20 rounded-md border border-gray-100 bg-white p-4 shadow-sm">
               <div className="grid grid-cols-1 gap-4 items-end md:mx-auto md:flex md:max-w-4xl md:flex-wrap md:items-end md:justify-center md:gap-3">
                 <label className="text-sm md:flex-none">
                   <span className="mb-2 block text-xs font-medium text-gray-600 md:sr-only">
@@ -618,7 +618,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
             </div>
 
             {loadError ? (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 {loadError}
               </div>
             ) : null}
@@ -642,7 +642,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
             </div>
 
             {!loadingSpecialists && specialists.length === 0 ? (
-              <div className="rounded-2xl border border-gray-200 bg-white px-6 py-10 text-center text-gray-600">
+              <div className="rounded-md border border-gray-200 bg-white px-6 py-10 text-center text-gray-600">
                 {t(dict, "category.empty.subtitle")}
               </div>
             ) : null}

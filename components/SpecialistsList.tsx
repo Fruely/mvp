@@ -26,7 +26,7 @@ export default function SpecialistsList({ specialists, isLoading }: Props) {
         {Array.from({ length: 6 }).map((_, idx) => (
           <div
             key={idx}
-            className="h-48 rounded-lg bg-gray-100 animate-pulse border border-gray-200"
+            className="h-48 rounded-md bg-gray-100 animate-pulse border border-gray-200"
           />
         ))}
       </div>
@@ -35,7 +35,7 @@ export default function SpecialistsList({ specialists, isLoading }: Props) {
 
   if (!specialists.length) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-surface p-6 text-center font-normal text-textSecondary">
+      <div className="rounded-md border border-gray-200 bg-surface p-6 text-center font-normal text-textSecondary">
         Ничего не найдено. Попробуйте изменить фильтры.
       </div>
     );
@@ -46,7 +46,7 @@ export default function SpecialistsList({ specialists, isLoading }: Props) {
       {specialists.map((specialist) => (
         <div
           key={specialist.id}
-          className="group flex h-full flex-col rounded-lg border border-gray-200 bg-white p-6 shadow-card transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
+          className="group flex h-full flex-col rounded-md border border-gray-200 bg-white p-6 shadow-card transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
         >
           <div className="flex items-center gap-4">
             <div className="h-14 w-14 flex-none overflow-hidden rounded-full bg-gray-100">
