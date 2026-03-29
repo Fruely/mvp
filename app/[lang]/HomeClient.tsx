@@ -323,7 +323,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             <Link
               key={specialist.id}
               href={getSpecialistUrl(lang, specialist)}
-              className="rounded-xl border bg-white shadow-card overflow-hidden flex h-full flex-col hover:shadow-soft transition"
+              className="rounded-lg border bg-white shadow-card overflow-hidden flex h-full flex-col hover:shadow-soft transition"
             >
               <div className="aspect-square w-full overflow-hidden bg-gray-100">
                 {specialist.avatar_url ? (
@@ -572,7 +572,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                   {Array.from({ length: 6 }).map((_, idx) => (
                     <div
                       key={`popular-skeleton-${idx}`}
-                      className="rounded-2xl bg-white shadow-card overflow-hidden"
+                      className="rounded-lg bg-white shadow-card overflow-hidden"
                     >
                       <div className="w-full aspect-square bg-gray-200/80 animate-pulse" />
                       <div className="px-4 py-3 space-y-2">
@@ -602,7 +602,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                       <Link
                         key={category.slug}
                         href={href}
-                        className="rounded-2xl bg-white shadow-card transition hover:shadow-soft overflow-hidden flex flex-col"
+                        className="rounded-lg bg-white shadow-card transition hover:shadow-soft overflow-hidden flex flex-col"
                       >
                         <div className="w-full aspect-square overflow-hidden">
                           {imageUrl ? (
@@ -645,7 +645,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                   {Array.from({ length: 4 }).map((_, idx) => (
                     <div
                       key={`recommended-skeleton-${idx}`}
-                      className="rounded-xl border bg-white aspect-[4/3] p-4"
+                      className="rounded-lg border bg-white aspect-[4/3] p-4"
                     >
                       <div className="flex items-center gap-3">
                         <div className="h-14 w-14 rounded-full bg-gray-200/80 animate-pulse shrink-0" />

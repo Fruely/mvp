@@ -40,9 +40,9 @@ export default function SpecialistMiniCard({
   return (
     <Link
       href={href}
-      className="group flex w-full flex-col rounded-xl border border-gray-100 bg-white p-5 shadow-card transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-soft md:max-w-[300px] md:min-h-[350px]"
+      className="group flex w-full flex-col rounded-lg border border-gray-100 bg-white p-5 shadow-card transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-soft md:max-w-[300px] md:min-h-[350px]"
     >
-      <div className="mx-auto mb-4 flex h-[112px] w-[112px] shrink-0 overflow-hidden rounded-xl bg-gray-100">
+      <div className="mx-auto mb-4 flex h-[112px] w-[112px] shrink-0 overflow-hidden rounded-lg bg-gray-100">
         {avatar_url ? (
           <Image
             src={avatar_url}
