@@ -323,7 +323,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             <Link
               key={specialist.id}
               href={getSpecialistUrl(lang, specialist)}
-              className="rounded-lg border bg-white shadow-card overflow-hidden flex h-full flex-col hover:shadow-soft transition"
+              className="rounded-lg border bg-white shadow-card overflow-hidden flex h-full flex-col transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
             >
               <div className="aspect-square w-full overflow-hidden bg-gray-100">
                 {specialist.avatar_url ? (
@@ -602,7 +602,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                       <Link
                         key={category.slug}
                         href={href}
-                        className="rounded-lg bg-white shadow-card transition hover:shadow-soft overflow-hidden flex flex-col"
+                        className="rounded-lg bg-white shadow-card overflow-hidden flex flex-col transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
                       >
                         <div className="w-full aspect-square overflow-hidden">
                           {imageUrl ? (

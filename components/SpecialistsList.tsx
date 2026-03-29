@@ -46,7 +46,7 @@ export default function SpecialistsList({ specialists, isLoading }: Props) {
       {specialists.map((specialist) => (
         <div
           key={specialist.id}
-          className="flex h-full flex-col rounded-lg border border-gray-200 bg-white p-6 shadow-card"
+          className="flex h-full flex-col rounded-lg border border-gray-200 bg-white p-6 shadow-card transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
         >
           <div className="flex items-center gap-4">
             <div className="h-14 w-14 flex-none overflow-hidden rounded-full bg-gray-100">
