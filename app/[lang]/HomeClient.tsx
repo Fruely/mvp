@@ -602,7 +602,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                       <Link
                         key={category.slug}
                         href={href}
-                        className="group rounded-md bg-white shadow-card overflow-hidden flex flex-col transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
+                        className="group rounded-xl overflow-hidden bg-white border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.04)] flex flex-col transition-all duration-300 ease-out hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
                       >
                         <div className="w-full aspect-[3/2] overflow-hidden">
                           {imageUrl ? (
@@ -611,7 +611,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                               <img
                                 src={imageUrl}
                                 alt={catName(category.slug, category.title)}
-                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                className="w-full h-full object-cover"
                                 loading="lazy"
                               />
                             </>
