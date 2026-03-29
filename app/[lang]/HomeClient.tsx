@@ -585,9 +585,9 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
               </div>
             ) : null}
 
-            {categories
-              .filter((cat) => Array.isArray(cat.children) && cat.children.length > 0)
-              .slice(0, 4)
+            {["health-psychology", "beauty-care", "house-garden", "business-consulting"]
+              .map((slug) => categories.find((cat) => cat.slug === slug && Array.isArray(cat.children) && cat.children.length > 0))
+              .filter((cat): cat is CategoryStat => !!cat)
               .map((parent) => (
               <section key={parent.id} className="pt-10">
                 <div className="mb-3">
