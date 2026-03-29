@@ -591,7 +591,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                   </h2>
                 </div>
 
-                <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-5 md:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                   {buildDisplayCategories(popularCategories).map((category) => {
                     const href = placeFromUrl
                       ? `/specialists?lang=${encodeURIComponent(specialistLang)}&place=${encodeURIComponent(placeFromUrl)}&category=${encodeURIComponent(category.slug)}`
