@@ -95,7 +95,7 @@ export default function SpecialistPreviewCard({
       : null;
 
   return (
-    <article className="overflow-hidden rounded-lg border border-black/5 bg-white shadow-card transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg">
+    <article className="group overflow-hidden rounded-lg border border-black/5 bg-white shadow-card transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg">
       <div className="relative aspect-square overflow-hidden">
         {specialist.avatar_url ? (
           <Image
@@ -103,7 +103,7 @@ export default function SpecialistPreviewCard({
             alt={specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-            className="object-cover"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
             unoptimized
           />
         ) : (

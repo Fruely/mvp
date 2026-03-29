@@ -323,7 +323,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             <Link
               key={specialist.id}
               href={getSpecialistUrl(lang, specialist)}
-              className="rounded-lg border bg-white shadow-card overflow-hidden flex h-full flex-col transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
+              className="group rounded-lg border bg-white shadow-card overflow-hidden flex h-full flex-col transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
             >
               <div className="aspect-square w-full overflow-hidden bg-gray-100">
                 {specialist.avatar_url ? (
@@ -331,7 +331,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                   <img
                     src={specialist.avatar_url}
                     alt={specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
                 ) : (
@@ -602,7 +602,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                       <Link
                         key={category.slug}
                         href={href}
-                        className="rounded-lg bg-white shadow-card overflow-hidden flex flex-col transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
+                        className="group rounded-lg bg-white shadow-card overflow-hidden flex flex-col transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
                       >
                         <div className="w-full aspect-square overflow-hidden">
                           {imageUrl ? (
@@ -611,7 +611,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                               <img
                                 src={imageUrl}
                                 alt={catName(category.slug, category.title)}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                 loading="lazy"
                               />
                             </>
