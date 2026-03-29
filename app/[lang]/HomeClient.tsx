@@ -585,37 +585,39 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
               </div>
             ) : null}
 
-            {["health-psychology", "beauty-care", "house-garden", "business-consulting"]
-              .map((slug) => categories.find((cat) => cat.slug === slug && Array.isArray(cat.children) && cat.children.length > 0))
-              .filter((cat): cat is CategoryStat => !!cat)
-              .map((parent) => (
-              <section key={parent.id} className="mt-12">
-                <h2 className="text-[17px] leading-6 font-semibold text-gray-900 pl-1 pb-2">
-                  {catName(parent.slug, parent.title)}
-                </h2>
+            <div className="max-w-6xl mx-auto px-4 md:px-6">
+              {["health-psychology", "beauty-care", "house-garden", "business-consulting"]
+                .map((slug) => categories.find((cat) => cat.slug === slug && Array.isArray(cat.children) && cat.children.length > 0))
+                .filter((cat): cat is CategoryStat => !!cat)
+                .map((parent) => (
+                <section key={parent.id} className="mt-12">
+                  <h2 className="text-[17px] leading-6 font-semibold text-gray-900 pl-1 pb-2">
+                    {catName(parent.slug, parent.title)}
+                  </h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 pb-12">
-                  {parent.children!.slice(0, 3).map((child) => (
-                    <div key={child.id} className="p-1.5">
-                      <Link
-                        href={`/${lang}/category/${child.slug}`}
-                        className="group block"
-                      >
-                        <div className="w-full aspect-[3/2] overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
-                          <span className="text-sm text-gray-400 px-3 text-center line-clamp-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 pb-12">
+                    {parent.children!.slice(0, 3).map((child) => (
+                      <div key={child.id} className="p-1.5">
+                        <Link
+                          href={`/${lang}/category/${child.slug}`}
+                          className="group block"
+                        >
+                          <div className="w-full aspect-[3/2] overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
+                            <span className="text-sm text-gray-400 px-3 text-center line-clamp-2">
+                              {catName(child.slug, child.title)}
+                            </span>
+                          </div>
+
+                          <p className="mt-2 px-1 text-base font-medium text-gray-900 line-clamp-1">
                             {catName(child.slug, child.title)}
-                          </span>
-                        </div>
-
-                        <p className="mt-2 px-1 text-base font-medium text-gray-900 line-clamp-1">
-                          {catName(child.slug, child.title)}
-                        </p>
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            ))}
+                          </p>
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
 
             {isRecommendedLoading ? (
               <div className="mt-10">
