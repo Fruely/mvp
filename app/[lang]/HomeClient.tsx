@@ -318,7 +318,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
         <div className="mb-4 md:mb-6 text-center">
           <h2 className="text-2xl md:text-3xl font-semibold text-textPrimary">{t(dict, "home.recommended.title")}</h2>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {data.map((specialist) => (
             <Link
               key={specialist.id}
@@ -568,7 +568,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             {isPopularLoading ? (
               <div className="mt-8 md:mt-10" aria-hidden>
                 <div className="mb-6 h-8 w-64 rounded-lg bg-gray-200/80 animate-pulse" />
-                <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-4">
+                <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-5 md:gap-6">
                   {Array.from({ length: 6 }).map((_, idx) => (
                     <div
                       key={`popular-skeleton-${idx}`}
@@ -591,7 +591,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                   </h2>
                 </div>
 
-                <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-4">
+                <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-5 md:gap-6">
                   {buildDisplayCategories(popularCategories).map((category) => {
                     const href = placeFromUrl
                       ? `/specialists?lang=${encodeURIComponent(specialistLang)}&place=${encodeURIComponent(placeFromUrl)}&category=${encodeURIComponent(category.slug)}`
@@ -641,7 +641,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             {isRecommendedLoading ? (
               <div className="mt-10">
                 <div className="mb-4 h-8 w-80 rounded-lg bg-gray-200/80 animate-pulse" />
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, idx) => (
                     <div
                       key={`recommended-skeleton-${idx}`}
