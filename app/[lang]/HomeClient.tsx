@@ -178,6 +178,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                   id: String(child.id),
                   slug: String(child.slug),
                   title: child.title ? String(child.title) : null,
+                  image_url: typeof child.image_url === "string" ? child.image_url : null,
                   specialists_count: Number(child.specialists_count || 0),
                   is_clickable: Boolean(child.is_clickable),
                 }))
@@ -597,7 +598,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                   </h2>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 pb-12">
-                    {parent.children!.filter((c) => c.image_url).slice(0, 3).map((child) => (
+                    {parent.children!.slice(0, 3).map((child) => (
                       <div key={child.id} className="p-1.5">
                         <Link
                           href={`/${lang}/category/${child.slug}`}
