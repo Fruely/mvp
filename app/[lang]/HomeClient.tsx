@@ -592,7 +592,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                 .slice(0, 4)
                 .map((parent) => (
                 <section key={parent.id} className="mt-12">
-                  <h2 className="text-[17px] leading-6 font-semibold text-gray-900 pl-1 pb-2">
+                  <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 pl-1 pb-2">
                     {catName(parent.slug, parent.title)}
                   </h2>
 
