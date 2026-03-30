@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 import { getSpecialistUrl } from "@/lib/urls";
+import GermanyMapCTA from "@/components/home/GermanyMapCTA";
 
 type MosaicImage = { url: string; alt?: string; category_id?: string };
 
@@ -663,6 +664,16 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
       </section>
 
       </>
+
+      {/* Map CTA */}
+      <GermanyMapCTA
+        title={t(dict, "home.mapCta.title")}
+        subtitle={t(dict, "home.mapCta.subtitle")}
+        body={t(dict, "home.mapCta.body")}
+        spark={t(dict, "home.mapCta.spark")}
+        button={t(dict, "home.mapCta.button")}
+        lang={lang}
+      />
 
       {/* CTA for specialists */}
       <section className="bg-gray-50 px-3 py-16 text-center md:px-4">
