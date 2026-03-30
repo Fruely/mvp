@@ -16,16 +16,7 @@ type PopularCategoryItem = {
 export async function GET() {
   const supabase = createSupabaseServerClient();
 
-  const { data: popularData } = await supabase
-    .from("homepage_popular_categories_view")
-    .select("id, slug, title, image_url, specialists_count, sort_order")
-    .order("sort_order", { ascending: true });
-
-  const popularRows = ((popularData ?? []) as PopularCategoryItem[]).filter(
-    (row) => typeof row.id === "string"
-  );
-  const seenIds = new Set(popularRows.map((r) => r.id));
-
+  // 1. Count specialists per category
   const { data: serviceData } = await supabase
     .from("specialist_services")
     .select(`
@@ -50,26 +41,49 @@ export async function GET() {
     countByCategory.set(row.category_id, (countByCategory.get(row.category_id) ?? 0) + 1);
   }
 
-  const extraCategoryIds = Array.from(countByCategory.keys()).filter((id) => !seenIds.has(id));
+  const activeCategoryIds = Array.from(countByCategory.keys());
+  if (activeCategoryIds.length === 0) {
+    return jsonNoStore({ data: [] });
+  }
 
-  if (extraCategoryIds.length > 0) {
-    const { data: catData } = await supabase
-      .from("categories")
-      .select("id, slug, title, image_url")
-      .in("id", extraCategoryIds);
+  // 2. Fetch categories that have specialists
+  const { data: catData } = await supabase
+    .from("categories")
+    .select("id, slug, title, image_url")
+    .in("id", activeCategoryIds);
 
-    for (const cat of (catData ?? []) as Array<{ id: string; slug: string | null; title: string | null; image_url: string | null }>) {
-      popularRows.push({
-        id: cat.id,
-        slug: cat.slug,
-        title: cat.title,
-        image_url: cat.image_url,
-        specialists_count: countByCategory.get(cat.id) ?? 0,
-        sort_order: null,
-      });
+  // 3. Optional: get sort_order from homepage_popular_categories_view
+  const { data: popularData } = await supabase
+    .from("homepage_popular_categories_view")
+    .select("id, sort_order");
+
+  const sortOrderById = new Map<string, number>();
+  for (const row of (popularData ?? []) as Array<{ id: string; sort_order: number | null }>) {
+    if (typeof row.sort_order === "number") {
+      sortOrderById.set(row.id, row.sort_order);
     }
   }
 
-  return jsonNoStore({ data: popularRows });
+  // 4. Build result: only categories with image_url
+  const rows: PopularCategoryItem[] = ((catData ?? []) as Array<{ id: string; slug: string | null; title: string | null; image_url: string | null }>)
+    .filter((cat) => cat.image_url)
+    .map((cat) => ({
+      id: cat.id,
+      slug: cat.slug,
+      title: cat.title,
+      image_url: cat.image_url,
+      specialists_count: countByCategory.get(cat.id) ?? 0,
+      sort_order: sortOrderById.get(cat.id) ?? null,
+    }));
+
+  // 5. Sort: curated first (by sort_order), then by specialists_count desc
+  rows.sort((a, b) => {
+    const aOrder = a.sort_order ?? 9999;
+    const bOrder = b.sort_order ?? 9999;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return b.specialists_count - a.specialists_count;
+  });
+
+  return jsonNoStore({ data: rows });
 }
 
