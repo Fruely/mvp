@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SEO_CATEGORY_SLUGS } from "@/content/seo/categories";
 import type { Lang } from "@/lib/i18n";
 import type { ReactNode } from "react";
 
@@ -56,6 +57,11 @@ export default function CategorySeoPage({
   specialists,
   seoContent,
 }: Props) {
+  const currentSlug = slug;
+  const otherCategories = SEO_CATEGORY_SLUGS.filter(
+    (s) => s !== currentSlug
+  ).slice(0, 4);
+
   return (
     <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
       <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
@@ -110,6 +116,28 @@ export default function CategorySeoPage({
       <article className="mt-14 space-y-8 text-base leading-relaxed text-gray-700">
         {seoContent}
       </article>
+
+      <div className="mt-10">
+        <h3 className="text-lg font-semibold mb-4">
+          {lang === "de"
+            ? "Ähnliche Kategorien"
+            : lang === "ua"
+              ? "Схожі категорії"
+              : "Похожие категории"}
+        </h3>
+
+        <div className="flex flex-wrap gap-3">
+          {otherCategories.map((catSlug) => (
+            <a
+              key={catSlug}
+              href={`/${lang}/${catSlug}`}
+              className="px-4 py-2 rounded-xl border hover:shadow-md transition"
+            >
+              {catSlug}
+            </a>
+          ))}
+        </div>
+      </div>
 
       <section className="mt-12 rounded-2xl bg-teal-50 px-6 py-10 text-center">
         <h2 className="text-xl font-semibold text-gray-900">{copy.ctaHeading}</h2>
