@@ -113,7 +113,11 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
   const catName = (slug: string, fallback: string | null) => {
     const key = `categories.${slug}`;
     const val = t(dict, key);
-    return val === key ? (fallback || slug) : val;
+    if (val === key) {
+      console.warn("Missing i18n key:", key);
+      return fallback || slug;
+    }
+    return val;
   };
 
   const router = useRouter();
