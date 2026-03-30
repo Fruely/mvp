@@ -38,7 +38,7 @@ export default function GermanyMapCTA({ title, body, spark, button }: Props) {
               {body}
             </p>
 
-            <p className="mt-3 text-gray-400 text-sm italic">
+            <p className="mt-4 text-teal-600 text-base font-semibold tracking-tight">
               {spark}
             </p>
 
