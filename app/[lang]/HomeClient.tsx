@@ -588,9 +588,8 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             ) : null}
 
             <div className="max-w-6xl mx-auto px-4 md:px-6">
-              {["health-psychology", "beauty-care", "house-garden", "business-consulting"]
-                .map((slug) => categories.find((cat) => cat.slug === slug && Array.isArray(cat.children) && cat.children.length > 0))
-                .filter((cat): cat is CategoryStat => !!cat)
+              {categories
+                .filter((cat) => Array.isArray(cat.children) && cat.children.length > 0)
                 .map((parent) => (
                 <section key={parent.id} className="mt-12">
                   <h2 className="text-[17px] leading-6 font-semibold text-gray-900 pl-1 pb-2">
