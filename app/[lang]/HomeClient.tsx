@@ -519,8 +519,8 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
       </section>
 
       <section className="pt-14 pb-10 md:pt-16 md:pb-12">
-        <div className="max-w-7xl mx-auto px-3 md:px-4">
-          <div className="rounded-3xl bg-[#EEF1FF] px-6 py-8 md:px-12 md:py-10">
+        <div className="max-w-[1280px] mx-auto px-3 md:px-6">
+          <div className="rounded-xl bg-[#EEF1FF] px-6 py-8 md:px-12 md:py-10">
             {true && (
               <div className="mt-7 md:mt-8 overflow-x-hidden">
                 <div className="relative min-h-[520px] overflow-hidden rounded-md">
@@ -587,7 +587,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
               </div>
             ) : null}
 
-            <div className="max-w-6xl mx-auto px-4 md:px-6">
+            <div className="max-w-[1280px] mx-auto px-3 md:px-6">
               {categories
                 .filter((cat) => Array.isArray(cat.children) && cat.children.some((c) => c.specialists_count > 0))
                 .slice(0, 4)
@@ -597,19 +597,19 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                     {catName(parent.slug, parent.title)}
                   </h2>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 pb-12">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 pb-12">
                     {[...parent.children!].sort((a, b) => b.specialists_count - a.specialists_count).slice(0, 3).map((child) => (
-                      <div key={child.id} className="p-1.5">
+                      <div key={child.id}>
                         <Link
                           href={`/${lang}/category/${child.slug}`}
                           className="group block"
                         >
-                          <div className="w-full aspect-[3/2] overflow-hidden rounded-lg bg-gray-100">
+                          <div className="w-full aspect-[3/2] overflow-hidden rounded-xl bg-gray-100">
                             {child.image_url ? (
                               <img
                                 src={child.image_url}
                                 alt={catName(child.slug, child.title)}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                                 loading="lazy"
                               />
                             ) : (
