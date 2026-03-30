@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { SEO_CATEGORY_SLUGS } from "@/content/seo/categories";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
@@ -45,6 +46,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.5,
     });
+
+    for (const slug of SEO_CATEGORY_SLUGS) {
+      entries.push({
+        url: `${DOMAIN}/${lang}/${slug}`,
+        lastModified,
+        changeFrequency: "weekly",
+        priority: 0.7,
+      });
+    }
   }
 
   entries.push({
