@@ -604,10 +604,21 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                           href={`/${lang}/category/${child.slug}`}
                           className="group block"
                         >
-                          <div className="w-full aspect-[3/2] overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
-                            <span className="text-sm text-gray-400 px-3 text-center line-clamp-2">
-                              {catName(child.slug, child.title)}
-                            </span>
+                          <div className="w-full aspect-[3/2] overflow-hidden rounded-lg bg-gray-100">
+                            {child.image_url ? (
+                              <img
+                                src={child.image_url}
+                                alt={catName(child.slug, child.title)}
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <span className="text-sm text-gray-400 px-3 text-center line-clamp-2">
+                                  {catName(child.slug, child.title)}
+                                </span>
+                              </div>
+                            )}
                           </div>
 
                           <p className="mt-2 px-1 text-base font-medium text-gray-900 line-clamp-1">
