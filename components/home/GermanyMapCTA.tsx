@@ -213,7 +213,7 @@ export default function GermanyMapCTA({ title, subtitle, body, spark, button, la
             </p>
 
             <Link
-              href={`/${lang}/become-specialist`}
+              href="/for-specialists"
               className="mt-8 inline-flex h-12 items-center justify-center rounded-lg bg-teal-600 px-8 text-sm font-semibold text-white transition-all duration-300 hover:bg-teal-700 hover:shadow-lg"
             >
               {button}
