@@ -20,7 +20,10 @@ function project(lat: number, lng: number): { x: number; y: number } {
   };
 }
 
-// Simplified but recognizable Germany silhouette
+function toPercent(x: number, y: number) {
+  return { left: `${(x / MAP_W) * 100}%`, top: `${(y / MAP_H) * 100}%` };
+}
+
 const GERMANY_PATH =
   "M168,12 L180,10 195,14 210,20 228,18 240,22 255,30 268,28 " +
   "280,35 290,45 298,58 305,72 310,88 315,100 318,115 " +
@@ -83,144 +86,175 @@ export default function GermanyMapCTA({ title, subtitle, body, spark, button, la
       : null;
 
   return (
-    <section className="py-16 md:py-24">
-      <div className="max-w-[1280px] mx-auto px-4 md:px-6">
-        <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
+    <>
+      <style jsx>{`
+        .map-point {
+          position: absolute;
+          width: 6px;
+          height: 6px;
+          background: #00E0FF;
+          border-radius: 50%;
+          transform: translate(-50%, -50%) scale(0);
+          z-index: 2;
+          opacity: 0;
+        }
+        .map-point.visible {
+          animation: popIn 0.6s ease-out forwards;
+        }
+        .map-point::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: #AFFFFF;
+          border-radius: 50%;
+          box-shadow:
+            0 0 6px #00E0FF,
+            0 0 12px #00E0FF,
+            0 0 20px rgba(0,224,255,0.8);
+          animation: flicker 3s infinite;
+        }
+        .map-point::after {
+          content: '';
+          position: absolute;
+          width: 24px;
+          height: 24px;
+          background: radial-gradient(
+            circle,
+            rgba(0,224,255,0.4) 0%,
+            rgba(0,224,255,0.15) 40%,
+            transparent 70%
+          );
+          border-radius: 50%;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) scale(0.8);
+          animation: pulse 2.5s infinite ease-out;
+        }
+        .map-point.new-point {
+          width: 8px;
+          height: 8px;
+        }
+        .map-point.new-point::before {
+          box-shadow:
+            0 0 8px #00E0FF,
+            0 0 16px #00E0FF,
+            0 0 28px rgba(0,224,255,0.9);
+        }
+        .map-point.new-point::after {
+          width: 32px;
+          height: 32px;
+        }
+        @keyframes pulse {
+          0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.8; }
+          70% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+          100% { opacity: 0; }
+        }
+        @keyframes flicker {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+        @keyframes popIn {
+          0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+          70% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+          100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+      `}</style>
 
-          {/* Map card */}
-          <div className="relative w-full md:w-[45%] shrink-0">
-            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[20px] bg-[#0B1220] group cursor-default select-none transition-transform duration-500 hover:scale-[1.015]">
-              <svg
-                viewBox={`0 0 ${MAP_W} ${MAP_H}`}
-                className="absolute inset-0 w-full h-full"
-                aria-hidden
-              >
-                <defs>
-                  {CITY_GLOWS.map((_, i) => (
-                    <radialGradient key={i} id={`mg-${i}`} cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#4FD1C5" stopOpacity="0.08" />
-                      <stop offset="100%" stopColor="#4FD1C5" stopOpacity="0" />
-                    </radialGradient>
-                  ))}
-                  <filter id="dg">
-                    <feGaussianBlur stdDeviation="2.5" result="b" />
-                    <feMerge>
-                      <feMergeNode in="b" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-                </defs>
+      <section className="py-16 md:py-24">
+        <div className="max-w-[1280px] mx-auto px-4 md:px-6">
+          <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
 
-                {/* Germany outline */}
-                <path
-                  d={GERMANY_PATH}
-                  fill="rgba(255,255,255,0.02)"
-                  stroke="rgba(255,255,255,0.07)"
-                  strokeWidth="1.2"
-                  strokeLinejoin="round"
-                />
+            {/* Map card */}
+            <div className="relative w-full md:w-[45%] shrink-0">
+              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[20px] bg-[#0B1220] group cursor-default select-none transition-transform duration-500 hover:scale-[1.015]">
 
-                {/* Ambient city glow */}
-                {CITY_GLOWS.map((g, i) => (
-                  <circle
-                    key={i}
-                    cx={g.x}
-                    cy={g.y}
-                    r={g.r}
-                    fill={`url(#mg-${i})`}
-                    className="transition-opacity duration-700 group-hover:opacity-125"
+                {/* SVG layer: outline + ambient glow */}
+                <svg
+                  viewBox={`0 0 ${MAP_W} ${MAP_H}`}
+                  className="absolute inset-0 w-full h-full"
+                  aria-hidden
+                >
+                  <defs>
+                    {CITY_GLOWS.map((_, i) => (
+                      <radialGradient key={i} id={`mg-${i}`} cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="#4FD1C5" stopOpacity="0.08" />
+                        <stop offset="100%" stopColor="#4FD1C5" stopOpacity="0" />
+                      </radialGradient>
+                    ))}
+                  </defs>
+
+                  <path
+                    d={GERMANY_PATH}
+                    fill="rgba(255,255,255,0.02)"
+                    stroke="rgba(255,255,255,0.07)"
+                    strokeWidth="1.2"
+                    strokeLinejoin="round"
                   />
-                ))}
 
-                {/* Specialist dots */}
+                  {CITY_GLOWS.map((g, i) => (
+                    <circle
+                      key={i}
+                      cx={g.x}
+                      cy={g.y}
+                      r={g.r}
+                      fill={`url(#mg-${i})`}
+                      className="transition-opacity duration-700 group-hover:opacity-125"
+                    />
+                  ))}
+                </svg>
+
+                {/* CSS dot layer */}
                 {points.map((p, i) => {
                   const { x, y } = project(p.lat, p.lng);
+                  const pos = toPercent(x, y);
                   const isLast = i === points.length - 1;
-                  const delay = i * 70;
+                  const delay = isLast ? 1800 : i * 70;
 
                   return (
-                    <g key={i} filter="url(#dg)">
-                      <circle
-                        cx={x}
-                        cy={y}
-                        r={isLast ? 4.5 : 3}
-                        fill={isLast ? "#00E0FF" : "#4FD1C5"}
-                        className="transition-all duration-700"
-                        style={{
-                          transitionDelay: `${delay}ms`,
-                          opacity: visible ? (isLast ? 1 : 0.8) : 0,
-                        }}
-                      >
-                        {isLast && (
-                          <animate
-                            attributeName="r"
-                            values="0;6;4.5"
-                            dur="1s"
-                            begin={`${delay}ms`}
-                            fill="freeze"
-                          />
-                        )}
-                      </circle>
-                      <circle
-                        cx={x}
-                        cy={y}
-                        r="3"
-                        fill="none"
-                        stroke={isLast ? "#00E0FF" : "#4FD1C5"}
-                        strokeWidth="0.4"
-                        opacity="0"
-                      >
-                        <animate
-                          attributeName="r"
-                          values="3;14"
-                          dur="3.5s"
-                          begin={`${delay + 600}ms`}
-                          repeatCount="indefinite"
-                        />
-                        <animate
-                          attributeName="opacity"
-                          values="0.4;0"
-                          dur="3.5s"
-                          begin={`${delay + 600}ms`}
-                          repeatCount="indefinite"
-                        />
-                      </circle>
-                    </g>
+                    <div
+                      key={i}
+                      className={`map-point${visible ? " visible" : ""}${isLast ? " new-point" : ""}`}
+                      style={{
+                        left: pos.left,
+                        top: pos.top,
+                        animationDelay: `${delay}ms`,
+                      }}
+                    />
                   );
                 })}
-              </svg>
+              </div>
+            </div>
+
+            {/* CTA Text */}
+            <div className="flex-1 text-center md:text-left">
+              <h2 className="text-2xl md:text-4xl font-bold text-gray-900 leading-tight">
+                {title}
+              </h2>
+
+              {dynamicText && (
+                <p className="mt-4 text-teal-600 text-sm md:text-base font-medium">
+                  {dynamicText}
+                </p>
+              )}
+
+              <p className="mt-4 text-gray-600 text-base md:text-lg leading-relaxed max-w-md">
+                {body}
+              </p>
+
+              <p className="mt-3 text-gray-400 text-sm italic">
+                {spark}
+              </p>
+
+              <Link
+                href="/for-specialists"
+                className="mt-8 inline-flex h-12 items-center justify-center rounded-lg bg-teal-600 px-8 text-sm font-semibold text-white transition-all duration-300 hover:bg-teal-700 hover:shadow-lg"
+              >
+                {button}
+              </Link>
             </div>
           </div>
-
-          {/* CTA Text */}
-          <div className="flex-1 text-center md:text-left">
-            <h2 className="text-2xl md:text-4xl font-bold text-gray-900 leading-tight">
-              {title}
-            </h2>
-
-            {dynamicText && (
-              <p className="mt-4 text-teal-600 text-sm md:text-base font-medium">
-                {dynamicText}
-              </p>
-            )}
-
-            <p className="mt-4 text-gray-600 text-base md:text-lg leading-relaxed max-w-md">
-              {body}
-            </p>
-
-            <p className="mt-3 text-gray-400 text-sm italic">
-              {spark}
-            </p>
-
-            <Link
-              href="/for-specialists"
-              className="mt-8 inline-flex h-12 items-center justify-center rounded-lg bg-teal-600 px-8 text-sm font-semibold text-white transition-all duration-300 hover:bg-teal-700 hover:shadow-lg"
-            >
-              {button}
-            </Link>
-          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }
