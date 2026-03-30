@@ -597,7 +597,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                   </h2>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 pb-12">
-                    {parent.children!.slice(0, 3).map((child) => (
+                    {[...parent.children!].sort((a, b) => b.specialists_count - a.specialists_count).slice(0, 3).map((child) => (
                       <div key={child.id} className="p-1.5">
                         <Link
                           href={`/${lang}/category/${child.slug}`}
