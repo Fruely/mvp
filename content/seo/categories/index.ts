@@ -3,6 +3,7 @@
  */
 export const SEO_CATEGORY_SLUGS = [
   "pflege-betreuung",
+  "health-psychology",
   "psychologists-germany",
   "reisen-tourismus",
   "reiseberatung",
