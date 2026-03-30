@@ -127,9 +127,60 @@ function positionDot(
   el.style.top = `${y}px`;
 }
 
-/* ---------- component ---------- */
+/* ---------- types & ambient fallback ---------- */
 
 type PointData = { id: string; lat: number; lng: number };
+
+const AMBIENT_POINTS: PointData[] = [
+  { id: "amb-berlin", lat: 52.52, lng: 13.405 },
+  { id: "amb-muenchen", lat: 48.135, lng: 11.582 },
+  { id: "amb-koeln", lat: 50.938, lng: 6.96 },
+  { id: "amb-hamburg", lat: 53.551, lng: 9.994 },
+  { id: "amb-frankfurt", lat: 50.111, lng: 8.682 },
+  { id: "amb-duesseldorf", lat: 51.228, lng: 6.774 },
+  { id: "amb-stuttgart", lat: 48.776, lng: 9.183 },
+  { id: "amb-leipzig", lat: 51.34, lng: 12.375 },
+  { id: "amb-dresden", lat: 51.051, lng: 13.738 },
+  { id: "amb-hannover", lat: 52.376, lng: 9.732 },
+  { id: "amb-nuernberg", lat: 49.454, lng: 11.077 },
+  { id: "amb-kassel", lat: 51.313, lng: 9.497 },
+];
+
+const MIN_POINTS = 5;
+
+/* ---------- render dots helper ---------- */
+
+function renderDots(
+  pts: PointData[],
+  realCount: number,
+  map: maplibregl.Map,
+  overlay: HTMLDivElement,
+  dotsArr: { el: HTMLDivElement; lng: number; lat: number }[],
+) {
+  const lastIdx = pts.length - 1;
+  pts.forEach((pt, i) => {
+    const isNewest = i === lastIdx && realCount > 0;
+    const dot = createDot(isNewest);
+    positionDot(dot, map, pt.lng, pt.lat);
+    overlay.appendChild(dot);
+    dotsArr.push({ el: dot, lng: pt.lng, lat: pt.lat });
+    const delay = isNewest ? lastIdx * 80 + 1600 : i * 80;
+    setTimeout(() => dot.classList.add("visible"), delay);
+  });
+}
+
+function mergeWithAmbient(real: PointData[]): PointData[] {
+  if (real.length >= MIN_POINTS) return real;
+  const used = new Set(
+    real.map((p) => `${p.lat.toFixed(2)},${p.lng.toFixed(2)}`),
+  );
+  const fillers = AMBIENT_POINTS.filter(
+    (a) => !used.has(`${a.lat.toFixed(2)},${a.lng.toFixed(2)}`),
+  );
+  return [...real, ...fillers].slice(0, 12);
+}
+
+/* ---------- component ---------- */
 
 export default function CTAGermanyMap() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -170,23 +221,20 @@ export default function CTAGermanyMap() {
       fetch("/api/map/points")
         .then((r) => r.json())
         .then((json) => {
-          const pts: PointData[] = json.data ?? [];
+          const real: PointData[] = json.data ?? [];
+          const pts = mergeWithAmbient(real);
           if (!pts.length) return;
-
-          const lastIdx = pts.length - 1;
-
-          pts.forEach((pt, i) => {
-            const isNewest = i === lastIdx;
-            const dot = createDot(isNewest);
-            positionDot(dot, map, pt.lng, pt.lat);
-            overlay.appendChild(dot);
-            dotsRef.current.push({ el: dot, lng: pt.lng, lat: pt.lat });
-
-            const delay = isNewest ? lastIdx * 80 + 1600 : i * 80;
-            setTimeout(() => dot.classList.add("visible"), delay);
-          });
+          renderDots(pts, real.length, map, overlay, dotsRef.current);
         })
-        .catch(() => {});
+        .catch(() => {
+          renderDots(
+            AMBIENT_POINTS.slice(0, 8),
+            0,
+            map,
+            overlay,
+            dotsRef.current,
+          );
+        });
     });
 
     const ro = new ResizeObserver(() => {

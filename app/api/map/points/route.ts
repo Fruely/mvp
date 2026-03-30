@@ -13,7 +13,6 @@ export async function GET() {
     .eq("is_active", true)
     .eq("is_visible", true)
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
-    .in("work_format", ["offline", "hybrid"])
     .not("lat", "is", null)
     .not("lng", "is", null)
     .limit(50);
