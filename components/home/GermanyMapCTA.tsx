@@ -1,6 +1,11 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
+
+const CTAGermanyMap = dynamic(() => import("@/components/maps/CTAGermanyMap"), {
+  ssr: false,
+});
 
 type Props = {
   title: string;
@@ -17,9 +22,10 @@ export default function GermanyMapCTA({ title, body, spark, button }: Props) {
       <div className="max-w-[1280px] mx-auto px-4 md:px-6">
         <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
 
-          {/* Map container (empty — ready for real map engine) */}
           <div className="relative w-full md:w-[45%] shrink-0">
-            <div className="w-full min-h-[320px] rounded-2xl overflow-hidden bg-[#0F172A]" />
+            <div className="w-full min-h-[320px] rounded-2xl overflow-hidden bg-[#0F172A]">
+              <CTAGermanyMap />
+            </div>
           </div>
 
           {/* CTA Text */}
