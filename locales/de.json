@@ -42,17 +42,62 @@
   "transitional.line3": "Sie verschieben Wichtiges — aus Angst, missverstanden zu werden.",
   "transitional.final": "Deshalb verbindet Freuly Sie mit Fachkräften, die Ihre Muttersprache sprechen.",
   "categories": {
+    "default": "Kategorie",
+
+    "health-psychology": "Gesundheit & Psychologie",
+    "beauty-care": "Schönheit & Pflege",
+    "house-garden": "Haus & Garten",
+    "business-consulting": "Business & Beratung",
+    "education-development": "Bildung & Entwicklung",
+    "moving-transport": "Umzüge & Transport",
+    "tech-it-support": "Technik & IT-Support",
+    "legal-consulting": "Recht & Beratung",
+    "other-specialization": "Andere Spezialisierung",
+
     "psychologists": "Psychologen",
-    "masseurs": "Masseure",
-    "tutors": "Nachhilfelehrer",
-    "business_analytics": "Business-Analytik",
-    "it_specialists": "IT-Spezialisten",
-    "cosmetology": "Kosmetologie",
-    "cleaning": "Reinigung",
+    "psychotherapists": "Psychotherapeuten",
+    "speech-therapists": "Logopäden",
+    "massage-therapists": "Masseure",
     "nutritionists": "Ernährungsberater",
+
+    "cosmetologists": "Kosmetiker",
+    "nails": "Maniküre & Pediküre",
+    "hairdressers": "Friseure",
+    "barbers": "Barbiere",
+    "makeup-artists": "Visagisten",
+    "brows-lashes": "Augenbrauen & Wimpern",
+
+    "cleaning": "Reinigung",
+    "furniture-assembly": "Möbelmontage",
+    "gardening": "Gartenarbeit",
     "housemaster": "Hausmeister",
-    "manicure": "Maniküre",
-    "default": "Kategorie"
+    "moving-help": "Umzugshilfe",
+    "small-repairs": "Kleinreparaturen",
+
+    "business-analytics": "Business-Analytik",
+    "coaches": "Coaches",
+    "buchfuehrung": "Buchhaltung",
+
+    "tutors": "Nachhilfelehrer",
+    "language-teachers": "Sprachlehrer",
+    "music-teachers": "Musiklehrer",
+    "online-education": "Online-Bildung",
+    "exam-prep": "Prüfungsvorbereitung",
+
+    "apartment-moving": "Wohnungsumzüge",
+    "furniture-removal": "Möbelentsorgung",
+    "movers": "Möbelpacker",
+    "international-moving": "Internationale Umzüge",
+    "taxi-transfer": "Taxi & Transfer",
+
+    "it-support": "IT-Spezialisten",
+    "network-setup": "Netzwerk & Internet",
+    "computer-repair": "Computerreparatur",
+    "printer-repair": "Drucker & Bürotechnik",
+
+    "lawyers": "Anwälte",
+    "migration-consultants": "Migrationsberater",
+    "tax-consultants": "Steuerberater"
   },
   "category": {
     "loading": "Wird geladen...",

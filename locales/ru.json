@@ -48,17 +48,62 @@
   "transitional.line3": "Откладываете важное — боясь быть непонятым.",
   "transitional.final": "Поэтому Freuly соединяет вас со специалистами, которые говорят на вашем родном языке.",
   "categories": {
+    "default": "Категория",
+
+    "health-psychology": "Здоровье и психология",
+    "beauty-care": "Красота и уход",
+    "house-garden": "Дом и сад",
+    "business-consulting": "Бизнес и консалтинг",
+    "education-development": "Образование и развитие",
+    "moving-transport": "Переезды и перевозки",
+    "tech-it-support": "Техника и IT-поддержка",
+    "legal-consulting": "Юристы и право",
+    "other-specialization": "Другая специализация",
+
     "psychologists": "Психологи",
-    "masseurs": "Массажисты",
-    "tutors": "Репетиторы",
-    "business_analytics": "Бизнес-аналитика",
-    "it_specialists": "IT-специалисты",
-    "cosmetology": "Косметология",
-    "cleaning": "Уборка",
+    "psychotherapists": "Психотерапевты",
+    "speech-therapists": "Логопеды",
+    "massage-therapists": "Массажисты",
     "nutritionists": "Диетологи",
+
+    "cosmetologists": "Косметологи",
+    "nails": "Маникюр и педикюр",
+    "hairdressers": "Парикмахеры",
+    "barbers": "Барберы",
+    "makeup-artists": "Визажисты",
+    "brows-lashes": "Брови и ресницы",
+
+    "cleaning": "Уборка",
+    "furniture-assembly": "Сборка мебели",
+    "gardening": "Садоводство",
     "housemaster": "Мастер на дом",
-    "manicure": "Маникюр",
-    "default": "Категория"
+    "moving-help": "Помощь при переезде",
+    "small-repairs": "Мелкий ремонт",
+
+    "business-analytics": "Бизнес-аналитика",
+    "coaches": "Коучи",
+    "buchfuehrung": "Бухгалтерия",
+
+    "tutors": "Репетиторы",
+    "language-teachers": "Языковые преподаватели",
+    "music-teachers": "Музыкальные преподаватели",
+    "online-education": "Онлайн-обучение",
+    "exam-prep": "Подготовка к экзаменам",
+
+    "apartment-moving": "Квартирные переезды",
+    "furniture-removal": "Вывоз мебели",
+    "movers": "Грузчики",
+    "international-moving": "Международные перевозки",
+    "taxi-transfer": "Такси и трансфер",
+
+    "it-support": "IT-специалисты",
+    "network-setup": "Настройка интернета и сети",
+    "computer-repair": "Ремонт компьютеров",
+    "printer-repair": "Ремонт принтеров и оргтехники",
+
+    "lawyers": "Адвокаты",
+    "migration-consultants": "Миграционные консультанты",
+    "tax-consultants": "Налоговые консультанты"
   },
   "category": {
     "loading": "Загрузка...",

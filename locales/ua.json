@@ -41,17 +41,62 @@
   "transitional.line3": "Ви відкладаєте важливе — боячись бути неправильно зрозумілими.",
   "transitional.final": "Тому Freuly з’єднує вас зі спеціалістами, які говорять вашою рідною мовою.",
   "categories": {
+    "default": "Категорія",
+
+    "health-psychology": "Здоров'я та психологія",
+    "beauty-care": "Краса та догляд",
+    "house-garden": "Дім та сад",
+    "business-consulting": "Бізнес та консалтинг",
+    "education-development": "Освіта та розвиток",
+    "moving-transport": "Переїзди та перевезення",
+    "tech-it-support": "Техніка та IT-підтримка",
+    "legal-consulting": "Юристи та право",
+    "other-specialization": "Інша спеціалізація",
+
     "psychologists": "Психологи",
-    "masseurs": "Масажисти",
-    "tutors": "Репетитори",
-    "business_analytics": "Бізнес-аналітика",
-    "it_specialists": "IT-спеціалісти",
-    "cosmetology": "Косметологія",
-    "cleaning": "Прибирання",
+    "psychotherapists": "Психотерапевти",
+    "speech-therapists": "Логопеди",
+    "massage-therapists": "Масажисти",
     "nutritionists": "Дієтологи",
+
+    "cosmetologists": "Косметологи",
+    "nails": "Манікюр та педикюр",
+    "hairdressers": "Перукарі",
+    "barbers": "Барбери",
+    "makeup-artists": "Візажисти",
+    "brows-lashes": "Брови та вії",
+
+    "cleaning": "Прибирання",
+    "furniture-assembly": "Складання меблів",
+    "gardening": "Садівництво",
     "housemaster": "Майстер додому",
-    "manicure": "Манікюр",
-    "default": "Категорія"
+    "moving-help": "Допомога при переїзді",
+    "small-repairs": "Дрібний ремонт",
+
+    "business-analytics": "Бізнес-аналітика",
+    "coaches": "Коучі",
+    "buchfuehrung": "Бухгалтерія",
+
+    "tutors": "Репетитори",
+    "language-teachers": "Мовні викладачі",
+    "music-teachers": "Музичні викладачі",
+    "online-education": "Онлайн-навчання",
+    "exam-prep": "Підготовка до іспитів",
+
+    "apartment-moving": "Квартирні переїзди",
+    "furniture-removal": "Вивезення меблів",
+    "movers": "Вантажники",
+    "international-moving": "Міжнародні перевезення",
+    "taxi-transfer": "Таксі та трансфер",
+
+    "it-support": "IT-спеціалісти",
+    "network-setup": "Налаштування інтернету та мережі",
+    "computer-repair": "Ремонт комп'ютерів",
+    "printer-repair": "Ремонт принтерів та оргтехніки",
+
+    "lawyers": "Адвокати",
+    "migration-consultants": "Міграційні консультанти",
+    "tax-consultants": "Податкові консультанти"
   },
   "category": {
     "loading": "Завантаження...",
