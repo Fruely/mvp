@@ -9,7 +9,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("specialists")
-    .select("lat, lng, city")
+    .select("id, lat, lng, city")
     .eq("is_active", true)
     .eq("is_visible", true)
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
@@ -28,6 +28,7 @@ export async function GET() {
   const points = (data ?? [])
     .filter((r) => typeof r.lat === "number" && typeof r.lng === "number")
     .map((r) => ({
+      id: r.id as string,
       lat: r.lat as number,
       lng: r.lng as number,
       city: typeof r.city === "string" ? r.city : null,
