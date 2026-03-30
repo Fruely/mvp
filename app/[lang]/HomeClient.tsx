@@ -603,7 +603,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                           href={`/${lang}/category/${child.slug}`}
                           className="group block"
                         >
-                          <div className="w-full aspect-[3/2] overflow-hidden rounded-xl bg-gray-100">
+                          <div className="w-full aspect-[3/2] overflow-hidden rounded-[4px] bg-gray-100">
                             {child.image_url ? (
                               <img
                                 src={child.image_url}
