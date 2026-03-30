@@ -587,8 +587,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
               </div>
             ) : null}
 
-            <div className="max-w-[1280px] mx-auto px-3 md:px-6">
-              {categories
+            {categories
                 .filter((cat) => Array.isArray(cat.children) && cat.children.some((c) => c.specialists_count > 0))
                 .slice(0, 4)
                 .map((parent) => (
@@ -630,7 +629,6 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                   </div>
                 </section>
               ))}
-            </div>
 
             {isRecommendedLoading ? (
               <div className="mt-10">
