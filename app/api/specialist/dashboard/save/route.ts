@@ -120,6 +120,20 @@ export async function PUT(request: NextRequest) {
     ? body.languages.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
     : [];
 
+  if (effectiveCategoryId) {
+    const { data: category } = await supabase
+      .from("categories")
+      .select("id, parent_id")
+      .eq("id", effectiveCategoryId)
+      .maybeSingle();
+    if (!category || !category.parent_id) {
+      return jsonNoStore(
+        { error: "Invalid category: parent category cannot be selected" },
+        { status: 400 }
+      );
+    }
+  }
+
   const specialistPatch: Record<string, unknown> = {};
   if (typeof body.name === "string") specialistPatch.name = body.name.trim() || null;
   if (typeof body.phone === "string") specialistPatch.phone = body.phone.trim() || null;

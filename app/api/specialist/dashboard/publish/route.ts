@@ -45,6 +45,18 @@ export async function POST() {
     );
   }
 
+  const { data: category } = await supabase
+    .from("categories")
+    .select("id, parent_id")
+    .eq("id", specialist.category_id)
+    .maybeSingle();
+  if (!category || !category.parent_id) {
+    return jsonNoStore(
+      { error: "Invalid category: parent category cannot be selected" },
+      { status: 400 }
+    );
+  }
+
   let generatedSlug: string | null = null;
 
   if (!specialist.slug) {
