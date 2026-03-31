@@ -3,9 +3,6 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
 type TelegramUpdate = {
   message?: {
     text?: string;
@@ -14,12 +11,19 @@ type TelegramUpdate = {
 };
 
 function parseStartSpecialistId(text: string | undefined): string | null {
-  if (!text || typeof text !== "string") return null;
+  if (!text) return null;
+
   const trimmed = text.trim();
-  const m = trimmed.match(/^\/start(?:@[\w_]+)?(?:\s+(.+))?$/);
-  if (!m) return null;
-  const payload = m[1]?.trim();
-  return payload && payload.length > 0 ? payload : null;
+
+  // убираем /start или /start@bot
+  const withoutCommand = trimmed.replace(/^\/start(@[\w_]+)?/, "").trim();
+
+  if (!withoutCommand) return null;
+
+  // берём первый аргумент как ID
+  const parts = withoutCommand.split(/\s+/);
+
+  return parts[0] || null;
 }
 
 async function sendTelegramChatMessage(chatId: number, text: string) {
@@ -52,18 +56,14 @@ export async function POST(request: Request) {
   const chatId = message.chat.id;
   const specialistId = parseStartSpecialistId(message.text);
 
+  console.log("TELEGRAM TEXT:", message.text);
+  console.log("PARSED ID:", specialistId);
+  console.log("CHAT ID:", chatId);
+
   if (!specialistId) {
     await sendTelegramChatMessage(
       chatId,
-      "Не удалось привязать: откройте ссылку из кабинета специалиста (команда /start с кодом)."
-    );
-    return NextResponse.json({ ok: true });
-  }
-
-  if (!UUID_REGEX.test(specialistId)) {
-    await sendTelegramChatMessage(
-      chatId,
-      "Некорректная ссылка. Откройте бота по кнопке из личного кабинета Freuly."
+      "Откройте бота по кнопке из кабинета (не вручную)"
     );
     return NextResponse.json({ ok: true });
   }
@@ -80,15 +80,12 @@ export async function POST(request: Request) {
   if (error || !updated) {
     await sendTelegramChatMessage(
       chatId,
-      "Специалист не найден. Проверьте, что вы открыли актуальную ссылку из кабинета."
+      "Специалист не найден. Откройте ссылку заново из кабинета"
     );
     return NextResponse.json({ ok: true });
   }
 
-  await sendTelegramChatMessage(
-    chatId,
-    "✅ Telegram подключен. Теперь вы будете получать заявки"
-  );
+  await sendTelegramChatMessage(chatId, "✅ Telegram подключен");
 
   return NextResponse.json({ ok: true });
 }
