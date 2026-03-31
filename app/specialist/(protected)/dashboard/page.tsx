@@ -38,7 +38,8 @@ export default async function SpecialistDashboardPage() {
     .order("created_at", { ascending: false });
   const { data: categoriesRows } = await supabase
     .from("categories")
-    .select("id, title")
+    .select("id, title, parent_id, slug")
+    .or("parent_id.not.is.null,slug.eq.other")
     .order("title", { ascending: true });
 
   return (
@@ -88,8 +89,24 @@ export default async function SpecialistDashboardPage() {
           })),
         }}
         categories={(categoriesRows ?? [])
-          .filter((category): category is { id: string; title: string } => typeof category?.id === "string" && typeof category?.title === "string")
-          .map((category) => ({ id: category.id, title: category.title }))}
+          .filter(
+            (category): category is {
+              id: string;
+              title: string;
+              parent_id: string | null;
+              slug: string;
+            } =>
+              typeof category?.id === "string" &&
+              typeof category?.title === "string" &&
+              (category.parent_id === null || typeof category.parent_id === "string") &&
+              typeof category?.slug === "string"
+          )
+          .map((category) => ({
+            id: category.id,
+            title: category.title,
+            parent_id: category.parent_id,
+            slug: category.slug,
+          }))}
       />
     </div>
   );
