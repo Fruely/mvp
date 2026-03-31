@@ -4,7 +4,7 @@ export default function FreulySocialIcons() {
   return (
     <div className="mt-6 flex items-center gap-6 text-gray-500">
       <a
-        href="https://www.instagram.com/freuly.pro"
+        href="https://www.instagram.com/bezillyuziy.de?igsh=MTU1cDhtZjdrNm9zcg=="
         target="_blank"
         rel="noopener noreferrer"
         className="hover:text-black transition"
@@ -12,7 +12,7 @@ export default function FreulySocialIcons() {
         <Instagram size={20} />
       </a>
       <a
-        href="https://www.tiktok.com/@freuly.pro"
+        href="https://www.tiktok.com/@bezillyuziy.de?_r=1&_t=ZG-959o8XDtFSb"
         target="_blank"
         rel="noopener noreferrer"
         className="hover:text-black transition"
@@ -30,7 +30,7 @@ export default function FreulySocialIcons() {
         <Youtube size={20} />
       </a>
       <a
-        href="https://www.facebook.com/share/1XhLFqiz8G/"
+        href="https://www.facebook.com/share/1H8deT9E39/"
         target="_blank"
         rel="noopener noreferrer"
         className="hover:text-black transition"
