@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { sendTelegramMessage } from "@/lib/telegram/sendMessage";
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -12,7 +13,7 @@ export async function GET(request: NextRequest) {
 
   const { data: leads, error } = await supabase
     .from("leads")
-    .select("id, client_name, client_phone")
+    .select("id, client_name, client_phone, specialist_id")
     .eq("status", "new")
     .lt("created_at", thirtyMinAgo)
     .order("created_at", { ascending: true })
@@ -26,31 +27,38 @@ export async function GET(request: NextRequest) {
   const checked = leads?.length ?? 0;
   let reminded = 0;
 
-  const tgToken = process.env.TELEGRAM_BOT_TOKEN;
-  const tgChatId = process.env.TELEGRAM_CHAT_ID;
   const appUrl = process.env.APP_URL || "https://freuly.de";
+  const leadsUrl = `${appUrl}/specialist/dashboard/leads`;
 
-  if (tgToken && tgChatId && leads) {
+  const specialistIds = Array.from(
+    new Set(
+      (leads ?? [])
+        .map((l) => l.specialist_id)
+        .filter((id): id is string => typeof id === "string" && id.length > 0)
+    )
+  );
+
+  let chatBySpecialistId = new Map<string, number | string | null>();
+  if (specialistIds.length > 0) {
+    const { data: specialists } = await supabase
+      .from("specialists")
+      .select("id, telegram_chat_id")
+      .in("id", specialistIds);
+    chatBySpecialistId = new Map(
+      (specialists ?? []).map((s) => [s.id as string, s.telegram_chat_id])
+    );
+  }
+
+  if (leads?.length) {
     for (const lead of leads) {
-      const text = `⏰ Напоминание Freuly\n\nУ вас есть непринятая заявка.\n\nИмя: ${lead.client_name || "—"}\nТелефон: ${lead.client_phone || "—"}\n\nОткройте кабинет:\n${appUrl}/specialist/dashboard/leads`;
-      try {
-        const res = await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: tgChatId,
-            text,
-            reply_markup: {
-              inline_keyboard: [
-                [{ text: "Открыть заявку", url: `${appUrl}/specialist/dashboard/leads` }],
-              ],
-            },
-          }),
-        });
-        if (res.ok) reminded++;
-      } catch (tgErr) {
-        console.error("[cron/remind-leads] Telegram send failed", tgErr);
-      }
+      const sid = typeof lead.specialist_id === "string" ? lead.specialist_id : null;
+      const tgChatId = sid ? chatBySpecialistId.get(sid) : undefined;
+      if (tgChatId == null) continue;
+
+      const text = `⏰ Напоминание Freuly\n\nУ вас есть непринятая заявка.\n\nИмя: ${lead.client_name || "—"}\nТелефон: ${lead.client_phone || "—"}\n\nОткройте кабинет:\n${leadsUrl}`;
+      const ok = await sendTelegramMessage(tgChatId, text, leadsUrl);
+      if (ok) reminded++;
+      else console.error("[cron/remind-leads] Telegram send failed");
     }
   }
 

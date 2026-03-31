@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 import { consumeLeadRateLimit, getLeadRateLimitKey } from "@/lib/leads/rateLimit";
+import { sendTelegramMessage } from "@/lib/telegram/sendMessage";
 
 export async function POST(request: NextRequest) {
   try {
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     const { data: specialist, error: specialistError } = await supabase
       .from("specialists")
-      .select("id")
+      .select("id, telegram_chat_id")
       .eq("id", specialist_id)
       .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
       .eq("is_active", true)
@@ -120,26 +121,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const tgToken = process.env.TELEGRAM_BOT_TOKEN;
-    const tgChatId = process.env.TELEGRAM_CHAT_ID;
-    if (tgToken && tgChatId) {
+    const tgChatId = specialist.telegram_chat_id;
+    if (tgChatId != null) {
+      const appUrl = process.env.APP_URL || "https://freuly.de";
       const text = `🔔 Новая заявка Freuly\n\nИмя: ${client_name || "—"}\nТелефон: ${client_phone || "—"}\nEmail: ${client_email || "—"}\n\nСообщение:\n${message || "—"}`;
-      try {
-        await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: tgChatId,
-            text,
-            reply_markup: {
-              inline_keyboard: [
-                [{ text: "Открыть заявку", url: `${process.env.APP_URL || "https://freuly.de"}/specialist/dashboard/leads` }],
-              ],
-            },
-          }),
-        });
-      } catch (tgErr) {
-        console.error("[leads/create] Telegram notification failed", tgErr);
+      const ok = await sendTelegramMessage(
+        tgChatId,
+        text,
+        `${appUrl}/specialist/dashboard/leads`
+      );
+      if (!ok) {
+        console.error("[leads/create] Telegram notification failed");
       }
     }
 
