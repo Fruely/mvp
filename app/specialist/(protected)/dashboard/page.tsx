@@ -23,9 +23,16 @@ export default async function SpecialistDashboardPage() {
 
   const { data: specExtra } = await supabase
     .from("specialists")
-    .select("postal_code, country_code")
+    .select("postal_code, country_code, telegram_chat_id")
     .eq("id", specialist.id)
     .maybeSingle();
+
+  const botUsername = process.env.TELEGRAM_BOT_USERNAME?.replace(/^@/, "").trim() ?? "";
+  const telegramConnectHref =
+    botUsername.length > 0
+      ? `https://t.me/${botUsername}?start=${encodeURIComponent(specialist.id)}`
+      : null;
+  const telegramConnected = Boolean(specExtra?.telegram_chat_id?.trim());
   const { data: profile } = await supabase
     .from("specialist_profiles")
     .select("photo_url, about_me, city, address, gallery_urls, video_url")
@@ -48,6 +55,8 @@ export default async function SpecialistDashboardPage() {
       <SpecialistDashboardEditor
         dict={dict}
         initialStatus={status || "draft"}
+        telegramConnected={telegramConnected}
+        telegramConnectHref={telegramConnectHref}
         initialData={{
           name: specialist.first_name?.trim() || specialist.name?.trim() || "",
           email: specialist.email || "",

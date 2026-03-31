@@ -13,6 +13,8 @@ type ServiceInput = {
 
 type Props = {
   dict: Dictionary;
+  telegramConnected: boolean;
+  telegramConnectHref: string | null;
   initialData: {
     name: string;
     email: string;
@@ -37,7 +39,14 @@ type Props = {
 const MAX_GALLERY_IMAGES = 5;
 
 
-export default function SpecialistDashboardEditor({ dict, initialData, initialStatus, categories }: Props) {
+export default function SpecialistDashboardEditor({
+  dict,
+  initialData,
+  initialStatus,
+  categories,
+  telegramConnected,
+  telegramConnectHref,
+}: Props) {
   const filteredCategories = categories.filter(
     (cat) => cat.parent_id !== null || cat.slug === "other"
   );
@@ -260,6 +269,24 @@ export default function SpecialistDashboardEditor({ dict, initialData, initialSt
             Все поля редактируются на одной странице. Профиль в статусе: <span className="font-medium">{status}</span>.
           </p>
         </div>
+        {(telegramConnected || telegramConnectHref) && (
+          <div className="flex flex-shrink-0 flex-col items-end gap-2 sm:items-end">
+            {telegramConnected ? (
+              <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
+                Telegram подключен
+              </span>
+            ) : telegramConnectHref ? (
+              <a
+                href={telegramConnectHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-10 items-center justify-center rounded-lg bg-teal-600 px-4 text-sm font-semibold text-white transition hover:bg-teal-700"
+              >
+                Подключить Telegram
+              </a>
+            ) : null}
+          </div>
+        )}
       </div>
 
       <div className="space-y-6">
