@@ -3,13 +3,15 @@ export const dynamic = "force-dynamic";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
+import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { getDictionary, isSupportedLang, type Dictionary } from "@/lib/i18n";
 import SpecialistDashboardEditor from "./SpecialistDashboardEditor";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import VerificationBanner from "./VerificationBanner";
 
 export default async function SpecialistDashboardPage() {
-  const { supabase, user, specialist } = await getCurrentUserAndSpecialist();
+  const { specialist } = await getCurrentUserAndSpecialist();
+  const service = createServiceClient();
 
   const langCookie = cookies().get("freuly_lang")?.value;
   const lang = langCookie && isSupportedLang(langCookie) ? langCookie : "ru";
@@ -21,7 +23,7 @@ export default async function SpecialistDashboardPage() {
     redirect(specialistLangHomePath());
   }
 
-  const { data: specExtra } = await supabase
+  const { data: specExtra } = await service
     .from("specialists")
     .select("postal_code, country_code, telegram_chat_id")
     .eq("id", specialist.id)
@@ -33,17 +35,17 @@ export default async function SpecialistDashboardPage() {
       ? `https://t.me/${botUsername}?start=${encodeURIComponent(specialist.id)}`
       : null;
   const telegramConnected = Boolean(specExtra?.telegram_chat_id?.trim());
-  const { data: profile } = await supabase
+  const { data: profile } = await service
     .from("specialist_profiles")
     .select("photo_url, about_me, city, address, gallery_urls, video_url")
     .eq("specialist_id", specialist.id)
     .maybeSingle();
-  const { data: servicesRows } = await supabase
+  const { data: servicesRows } = await service
     .from("specialist_services")
     .select("id, title, price_from, currency, is_active")
     .eq("specialist_id", specialist.id)
     .order("created_at", { ascending: false });
-  const { data: categoriesRows } = await supabase
+  const { data: categoriesRows } = await service
     .from("categories")
     .select("id, title, parent_id, slug")
     .or("parent_id.not.is.null,slug.eq.other")

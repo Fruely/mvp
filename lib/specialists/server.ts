@@ -47,13 +47,18 @@ export async function getCurrentUserAndSpecialist() {
     redirect("/login");
   }
 
-  let specialist: SpecialistRow | null = await service
+  const { data: specRow, error: specError } = await service
     .from("specialists")
     .select(COLS)
     .eq("user_id", user.id)
     .neq("status", "blocked")
-    .maybeSingle()
-    .then((r) => toSpecialistRow(r.data));
+    .maybeSingle();
+
+  if (specError) {
+    console.error("[specialists/server] failed to load specialist", specError);
+  }
+
+  let specialist: SpecialistRow | null = toSpecialistRow(specRow);
 
   if (!specialist) {
     const normalizedEmail = typeof user.email === "string" ? user.email.trim().toLowerCase() : null;
@@ -81,7 +86,6 @@ export async function getCurrentUserAndSpecialist() {
   }
 
   return {
-    supabase,
     user,
     specialist,
   };

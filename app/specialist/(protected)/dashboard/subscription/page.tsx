@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
+import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 
 export const dynamic = "force-dynamic";
@@ -20,14 +21,15 @@ function formatDate(value: string | null): string {
 }
 
 export default async function SpecialistDashboardSubscriptionPage() {
-  const { specialist, supabase } = await getCurrentUserAndSpecialist();
+  const { specialist } = await getCurrentUserAndSpecialist();
+  const service = createServiceClient();
 
   if (specialist.status === "blocked") {
     redirect(specialistLangHomePath());
   }
 
   const specialistRecord = specialist as unknown as Record<string, unknown>;
-  const { data: planRow } = await supabase
+  const { data: planRow } = await service
     .from("specialist_plan")
     .select("plan_code, plan_status, expires_at")
     .eq("specialist_id", specialist.id)

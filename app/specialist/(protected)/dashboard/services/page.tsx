@@ -3,17 +3,19 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import ServicesTable from "@/components/dashboard/ServicesTable";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
+import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import type { SpecialistService } from "@/lib/dashboard/services";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 
 export default async function SpecialistDashboardServicesPage() {
-  const { supabase, specialist } = await getCurrentUserAndSpecialist();
+  const { specialist } = await getCurrentUserAndSpecialist();
+  const service = createServiceClient();
 
   if (specialist.status === "blocked") {
     redirect(specialistLangHomePath());
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("specialist_services")
     .select(
       "id, title, description, pricing_type, price_from, price_to, currency, duration_minutes, is_active, created_at, updated_at"

@@ -3,18 +3,20 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import LeadsTable from "@/components/dashboard/LeadsTable";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
+import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { isContactsLocked } from "@/lib/dashboard/isContactsLocked";
 import type { DashboardLead } from "@/lib/dashboard/getDashboardData";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 
 export default async function SpecialistDashboardLeadsPage() {
-  const { supabase, specialist } = await getCurrentUserAndSpecialist();
+  const { specialist } = await getCurrentUserAndSpecialist();
+  const service = createServiceClient();
 
   if (specialist.status === "blocked") {
     redirect(specialistLangHomePath());
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("leads")
     .select("id, client_name, client_email, client_phone, message, status, created_at")
     .eq("specialist_id", specialist.id)
