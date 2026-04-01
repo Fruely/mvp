@@ -28,8 +28,11 @@ export function createSupabaseServerClient() {
           for (const cookie of cookiesToSet) {
             cookieStore.set(cookie.name, cookie.value, cookie.options);
           }
-        } catch {
-          // In Server Components, setting cookies can throw; reads still work for RLS.
+        } catch (err) {
+          console.error(
+            "[supabase/auth-server] Failed to persist auth cookies (Server Components may forbid cookie writes in this context). Session refresh might not be saved.",
+            err
+          );
         }
       },
     },

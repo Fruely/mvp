@@ -4,6 +4,8 @@ import { createBrowserClient } from '@supabase/ssr';
 /** Redirect path for the specialist office (cabinet). Used after auth so specialists land in dashboard. */
 export const SPECIALIST_OFFICE_PATH = '/specialist/dashboard';
 
+let browserClient: SupabaseClient | null = null;
+
 /**
  * Browser Supabase client. Uses createClientComponentClient so session is stored in cookies —
  * then the server (auth-server) can read the same session after magic link.
@@ -14,6 +16,10 @@ export const SPECIALIST_OFFICE_PATH = '/specialist/dashboard';
  * - {NEXT_PUBLIC_SITE_URL}/specialist/claim
  */
 export function getSupabase(): SupabaseClient {
+  if (browserClient) {
+    return browserClient;
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -21,7 +27,8 @@ export function getSupabase(): SupabaseClient {
     throw new Error('Missing Supabase public environment variables');
   }
 
-  return createBrowserClient(supabaseUrl, anonKey) as unknown as SupabaseClient;
+  browserClient = createBrowserClient(supabaseUrl, anonKey) as unknown as SupabaseClient;
+  return browserClient;
 }
 
 // Export supabase instance that works both client and server-side

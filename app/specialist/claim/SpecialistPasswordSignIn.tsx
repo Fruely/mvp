@@ -38,6 +38,10 @@ export default function SpecialistPasswordSignIn() {
       if (data.session) {
         router.refresh();
         router.replace(SPECIALIST_OFFICE_PATH);
+      } else {
+        setError(
+          "Вход выполнен, но сессия не создана. Проверьте подтверждение email в письме или попробуйте ещё раз."
+        );
       }
     } catch {
       setError("Ошибка сети");
