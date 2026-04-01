@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import SpecialistPasswordSignIn from "@/app/specialist/claim/SpecialistPasswordSignIn";
+import LoginSessionReset from "./LoginSessionReset";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 
@@ -35,6 +36,7 @@ export default async function LoginPage() {
 
   return (
     <div className="min-h-[40vh] px-4 py-10">
+      <LoginSessionReset />
       <SpecialistPasswordSignIn />
     </div>
   );
