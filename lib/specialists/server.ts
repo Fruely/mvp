@@ -39,9 +39,19 @@ export async function getCurrentUserAndSpecialist() {
   const supabase = createSupabaseServerClient();
   const service = createServiceClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user;
+  try {
+    const { data, error } = await supabase.auth.getUser();
+
+    if (error || !data?.user) {
+      redirect("/login");
+    }
+
+    user = data.user;
+  } catch (e) {
+    console.error("[auth] getUser crash", e);
+    redirect("/login");
+  }
 
   if (!user) {
     redirect("/login");
