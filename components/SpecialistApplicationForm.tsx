@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { t } from "@/lib/i18n";
+import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import type { Dictionary } from "@/lib/i18n";
 
 type SpecialistApplicationFormProps = {
@@ -11,7 +12,14 @@ type SpecialistApplicationFormProps = {
   dict: Dictionary;
 };
 
-type Category = { id: string; slug: string; title: string | null };
+type Category = {
+  id: string;
+  slug: string;
+  title: string | null;
+  title_ru?: string | null;
+  title_de?: string | null;
+  title_ua?: string | null;
+};
 
 type FormData = {
   email: string;
@@ -65,10 +73,10 @@ export default function SpecialistApplicationForm({
   }, []);
 
   const getCategoryLabel = (category: Category) =>
-    category.title ??
-    t(dict, `categories.${category.slug}`, {
-      defaultValue: t(dict, "categories.default"),
-    });
+    getCategoryTitle(
+      category,
+      lang === "ru" || lang === "ua" || lang === "de" ? lang : "ru"
+    );
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>

@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { getCategoryTitle } from "@/lib/getCategoryTitle";
 
 type ImageBlockContent = {
   url?: string;
@@ -12,7 +13,14 @@ type ImageBlockContent = {
 };
 
 type MosaicImage = { url: string; alt?: string; category_id?: string };
-type CategoryOption = { id: string; slug: string; title: string | null };
+type CategoryOption = {
+  id: string;
+  slug: string;
+  title: string | null;
+  title_ru?: string | null;
+  title_de?: string | null;
+  title_ua?: string | null;
+};
 
 type MosaicBlockContent = {
   title?: string;
@@ -270,7 +278,7 @@ export default function AdminSiteBlocksPage() {
       new Map(
         categories.map((category) => [
           category.slug,
-          category.title || DEFAULT_CATEGORY_LABEL,
+          getCategoryTitle(category, "ru") || DEFAULT_CATEGORY_LABEL,
         ] as const)
       ),
     [categories]

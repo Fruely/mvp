@@ -47,7 +47,7 @@ export default async function SpecialistDashboardPage() {
     .order("created_at", { ascending: false });
   const { data: categoriesRows } = await service
     .from("categories")
-    .select("id, title, parent_id, slug")
+    .select("id, title, title_ru, title_de, title_ua, parent_id, slug")
     .or("parent_id.not.is.null,slug.eq.other")
     .order("title", { ascending: true });
 
@@ -56,6 +56,7 @@ export default async function SpecialistDashboardPage() {
       <VerificationBanner status={status} dict={dict} />
       <SpecialistDashboardEditor
         dict={dict}
+        lang={lang}
         initialStatus={status || "draft"}
         telegramConnected={telegramConnected}
         telegramConnectHref={telegramConnectHref}
@@ -101,23 +102,32 @@ export default async function SpecialistDashboardPage() {
         }}
         categories={(categoriesRows ?? [])
           .filter(
-            (category): category is {
-              id: string;
-              title: string;
-              parent_id: string | null;
-              slug: string;
-            } =>
+            (category) =>
               typeof category?.id === "string" &&
               typeof category?.title === "string" &&
               (category.parent_id === null || typeof category.parent_id === "string") &&
               typeof category?.slug === "string"
           )
-          .map((category) => ({
-            id: category.id,
-            title: category.title,
-            parent_id: category.parent_id,
-            slug: category.slug,
-          }))}
+          .map((category) => {
+            const row = category as {
+              id: string;
+              title: string;
+              title_ru?: string | null;
+              title_de?: string | null;
+              title_ua?: string | null;
+              parent_id: string | null;
+              slug: string;
+            };
+            return {
+              id: row.id,
+              title: row.title,
+              title_ru: row.title_ru,
+              title_de: row.title_de,
+              title_ua: row.title_ua,
+              parent_id: row.parent_id,
+              slug: row.slug,
+            };
+          })}
       />
     </div>
   );

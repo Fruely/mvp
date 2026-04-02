@@ -2,11 +2,15 @@ import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPublicSpecialistCountsByServiceCategory } from "@/lib/specialists/publicCategoryCounts";
 import { getDictionary, t, type Lang } from "@/lib/i18n";
+import { getCategoryTitle } from "@/lib/getCategoryTitle";
 
 type CategoryRow = {
   id: string;
   slug: string;
   title: string | null;
+  title_ru?: string | null;
+  title_de?: string | null;
+  title_ua?: string | null;
   parent_id?: string | null;
 };
 
@@ -14,6 +18,9 @@ type NavCategory = {
   id: string;
   slug: string;
   title: string | null;
+  title_ru?: string | null;
+  title_de?: string | null;
+  title_ua?: string | null;
   specialists_count: number;
   is_clickable: boolean;
 };
@@ -30,12 +37,11 @@ export default async function HeaderCategoriesNav({ lang }: { lang: string }) {
     const supabase = createSupabaseServerClient();
     const dict = await getDictionary(lang as Lang);
   const getCategoryLabel = (category: NavCategory) =>
-    category.title ??
-    t(dict, `categories.${category.slug}`, { defaultValue: t(dict, "categories.default") });
+    getCategoryTitle(category, lang).trim() || category.slug;
 
   const withParent = await supabase
     .from("categories")
-    .select("id, slug, title, parent_id")
+    .select("id, slug, title, title_ru, title_de, title_ua, parent_id")
     .order("title", { ascending: true });
 
   let rawCategories: CategoryRow[] = [];
@@ -47,7 +53,7 @@ export default async function HeaderCategoriesNav({ lang }: { lang: string }) {
   } else {
     const fallback = await supabase
       .from("categories")
-      .select("id, slug, title")
+      .select("id, slug, title, title_ru, title_de, title_ua")
       .order("title", { ascending: true });
 
     if (fallback.error) {
@@ -108,24 +114,27 @@ export default async function HeaderCategoriesNav({ lang }: { lang: string }) {
 
     categories = normalized
       .filter((category) => !category.parent_id)
-      .map((parent) => {
+      .flatMap((parent) => {
         const children = childrenByParentId.get(parent.id) ?? [];
-        if (!children.length) return null;
+        if (!children.length) return [];
 
         const specialistsCount = children.reduce(
           (sum, child) => sum + (countsByCategoryId.get(child.id) ?? 0),
           0
         );
 
-        return {
+        const item: NavCategory = {
           id: parent.id,
           slug: parent.slug,
           title: parent.title,
+          title_ru: parent.title_ru,
+          title_de: parent.title_de,
+          title_ua: parent.title_ua,
           specialists_count: specialistsCount,
           is_clickable: specialistsCount >= minCount,
         };
-      })
-      .filter((item): item is NavCategory => Boolean(item));
+        return [item];
+      });
   } else {
     categories = childCategories.map((category) => {
       const specialistsCount = countsByCategoryId.get(category.id) ?? 0;
@@ -133,6 +142,9 @@ export default async function HeaderCategoriesNav({ lang }: { lang: string }) {
         id: category.id,
         slug: category.slug,
         title: category.title,
+        title_ru: category.title_ru,
+        title_de: category.title_de,
+        title_ua: category.title_ua,
         specialists_count: specialistsCount,
         is_clickable: specialistsCount >= minCount,
       };

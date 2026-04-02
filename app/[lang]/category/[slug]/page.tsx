@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
+import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import uaDict from "@/locales/ua.json";
 import SpecialistPreviewCard from "@/components/specialist/SpecialistPreviewCard";
 
@@ -33,6 +34,9 @@ interface Category {
   id: string;
   slug: string;
   title: string | null;
+  title_ru?: string | null;
+  title_de?: string | null;
+  title_ua?: string | null;
   specialists_count: number;
   is_clickable: boolean;
 }
@@ -41,6 +45,9 @@ interface ParentChildCategory {
   id: string;
   slug: string;
   title: string | null;
+  title_ru?: string | null;
+  title_de?: string | null;
+  title_ua?: string | null;
   specialists_count: number;
   is_clickable: boolean;
 }
@@ -49,6 +56,9 @@ interface ParentCategory {
   id: string;
   slug: string;
   title: string | null;
+  title_ru?: string | null;
+  title_de?: string | null;
+  title_ua?: string | null;
   specialists_count: number;
   is_clickable: boolean;
   children: ParentChildCategory[];
@@ -73,18 +83,6 @@ const SORT_TO_API: Record<SortKey, "relevance" | "new" | "experience"> = {
   price_low: "relevance",
   price_high: "relevance",
 };
-
-function slugToTitleCase(value: string): string {
-  return value
-    .split("-")
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
-function hasCyrillic(value: string): boolean {
-  return /[А-Яа-яЁёІіЇїЄє]/.test(value);
-}
 
 function toNullableNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -166,21 +164,6 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
   const [selectedCity, setSelectedCity] = useState("");
   const [sort, setSort] = useState<SortKey>("best_match");
   const [loadError, setLoadError] = useState<string | null>(null);
-  const getCategoryLabel = (title: string | null, categorySlug: string) => {
-    const translated = t(dict, `categories.${categorySlug}`, { defaultValue: "" }).trim();
-    if (lang === "de") {
-      if (typeof title === "string" && title.trim() && !hasCyrillic(title)) return title.trim();
-      if (translated) return translated;
-      return slugToTitleCase(categorySlug);
-    }
-    return (
-      title ??
-      t(dict, `categories.${categorySlug}`, {
-        defaultValue: t(dict, "categories.default"),
-      })
-    );
-  };
-
   const mergeUniqueSpecialists = (
     current: SpecialistPreview[],
     incoming: SpecialistPreview[]
@@ -305,6 +288,9 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
             id: String(parentData.id),
             slug: String(parentData.slug),
             title: parentData.title ? String(parentData.title) : null,
+            title_ru: parentData.title_ru != null ? String(parentData.title_ru) : null,
+            title_de: parentData.title_de != null ? String(parentData.title_de) : null,
+            title_ua: parentData.title_ua != null ? String(parentData.title_ua) : null,
             specialists_count: Number(parentData.specialists_count || 0),
             is_clickable: Boolean(parentData.is_clickable),
             children: (Array.isArray(parentData.children) ? parentData.children : [])
@@ -318,6 +304,9 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                 id: String(child.id),
                 slug: String(child.slug),
                 title: child.title ? String(child.title) : null,
+                title_ru: child.title_ru != null ? String(child.title_ru) : null,
+                title_de: child.title_de != null ? String(child.title_de) : null,
+                title_ua: child.title_ua != null ? String(child.title_ua) : null,
                 specialists_count: Number(child.specialists_count || 0),
                 is_clickable: Boolean(child.is_clickable),
               })),
@@ -355,6 +344,9 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
           id: String(catData.id),
           slug: String(catData.slug),
           title: catData.title ? String(catData.title) : null,
+          title_ru: catData.title_ru != null ? String(catData.title_ru) : null,
+          title_de: catData.title_de != null ? String(catData.title_de) : null,
+          title_ua: catData.title_ua != null ? String(catData.title_ua) : null,
           specialists_count: Number(catData.specialists_count || 0),
           is_clickable: Boolean(catData.is_clickable),
         };
@@ -398,7 +390,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
     return String(template).replace(/\{\{\s*count\s*\}\}/g, String(visibleCount));
   }, [dict, totalSpecialists, category]);
 
-  const categoryLabel = category ? getCategoryLabel(category.title, category.slug) : "";
+  const categoryLabel = category ? getCategoryTitle(category, lang) : "";
 
   const uspHeading = useMemo(() => {
     if (!categoryLabel) return "";
@@ -434,7 +426,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                 {t(dict, "common.backToHome")}
               </Link>
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-                {getCategoryLabel(parentCategory.title, parentCategory.slug)}
+                {getCategoryTitle(parentCategory, lang)}
               </h1>
               <p className="text-lg text-gray-600 mt-2">
                 {t(dict, "category.parent.subtitle")}
@@ -468,7 +460,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                   >
                     <div className="flex items-center justify-between gap-2 mb-3">
                       <h3 className="text-xl font-semibold text-gray-900">
-                        {getCategoryLabel(child.title, child.slug)}
+                        {getCategoryTitle(child, lang)}
                       </h3>
                       {!child.is_clickable ? (
                         <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] font-semibold text-gray-600">

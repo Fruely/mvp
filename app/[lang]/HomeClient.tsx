@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 import { getSpecialistUrl } from "@/lib/urls";
+import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import GermanyMapCTA from "@/components/home/GermanyMapCTA";
 
 type MosaicImage = { url: string; alt?: string; category_id?: string };
@@ -39,6 +40,9 @@ type CategoryStat = {
   id: string;
   slug: string;
   title: string | null;
+  title_ru?: string | null;
+  title_de?: string | null;
+  title_ua?: string | null;
   parent_id?: string | null;
   specialists_count: number;
   is_clickable: boolean;
@@ -46,6 +50,9 @@ type CategoryStat = {
     id: string;
     slug: string;
     title: string | null;
+    title_ru?: string | null;
+    title_de?: string | null;
+    title_ua?: string | null;
     image_url?: string | null;
     specialists_count: number;
     is_clickable: boolean;
@@ -111,16 +118,6 @@ const HERO_COPY: Record<Lang, { titleLines: [string, string, string]; subtitle: 
 };
 
 export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Dictionary; place?: string }) {
-  const catName = (slug: string, fallback: string | null) => {
-    const key = `categories.${slug}`;
-    const val = t(dict, key);
-    if (val === key) {
-      console.warn("Missing i18n key:", key);
-      return fallback || slug;
-    }
-    return val;
-  };
-
   const router = useRouter();
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [categories, setCategories] = useState<CategoryStat[]>([]);
@@ -166,6 +163,9 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
           id: String(item.id),
           slug: String(item.slug),
           title: item.title ? String(item.title) : null,
+          title_ru: item.title_ru != null ? String(item.title_ru) : null,
+          title_de: item.title_de != null ? String(item.title_de) : null,
+          title_ua: item.title_ua != null ? String(item.title_ua) : null,
           parent_id:
             typeof item.parent_id === "string" ? item.parent_id : null,
           specialists_count: Number(item.specialists_count || 0),
@@ -183,6 +183,9 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                   id: String(child.id),
                   slug: String(child.slug),
                   title: child.title ? String(child.title) : null,
+                  title_ru: child.title_ru != null ? String(child.title_ru) : null,
+                  title_de: child.title_de != null ? String(child.title_de) : null,
+                  title_ua: child.title_ua != null ? String(child.title_ua) : null,
                   image_url: typeof child.image_url === "string" ? child.image_url : null,
                   specialists_count: Number(child.specialists_count || 0),
                   is_clickable: Boolean(child.is_clickable),
@@ -392,30 +395,39 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
   );
 
   const heroCategoryOptions = useMemo(() => {
-    const options: Array<{ slug: string; title: string }> = [];
+    const heroLangForTitle = heroLanguage === "uk" ? "ua" : heroLanguage;
+    const options: Array<{
+      slug: string;
+      cat: CategoryStat | NonNullable<CategoryStat["children"]>[number];
+    }> = [];
     const seen = new Set<string>();
 
     for (const category of categories) {
       if (Array.isArray(category.children) && category.children.length > 0) {
         for (const child of category.children) {
           const slug = child.slug?.trim();
-          const title = child.title?.trim();
-          if (!slug || !title || seen.has(slug)) continue;
+          const label = getCategoryTitle(child, heroLangForTitle).trim();
+          if (!slug || !label || seen.has(slug)) continue;
           seen.add(slug);
-          options.push({ slug, title });
+          options.push({ slug, cat: child });
         }
         continue;
       }
 
       const slug = category.slug?.trim();
-      const title = category.title?.trim();
-      if (!slug || !title || seen.has(slug)) continue;
+      const label = getCategoryTitle(category, heroLangForTitle).trim();
+      if (!slug || !label || seen.has(slug)) continue;
       seen.add(slug);
-      options.push({ slug, title });
+      options.push({ slug, cat: category });
     }
 
-    return options.sort((a, b) => a.title.localeCompare(b.title, "uk"));
-  }, [categories]);
+    return options.sort((a, b) =>
+      getCategoryTitle(a.cat, heroLangForTitle).localeCompare(
+        getCategoryTitle(b.cat, heroLangForTitle),
+        "uk"
+      )
+    );
+  }, [categories, heroLanguage]);
 
   const copy = HERO_COPY[lang] ?? HERO_COPY.ru;
 
@@ -465,7 +477,10 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
               <option value="">{t(dict, "categories.default", { defaultValue: "Категория" })}</option>
               {heroCategoryOptions.map((option) => (
                 <option key={option.slug} value={option.slug}>
-                  {catName(option.slug, option.title)}
+                  {getCategoryTitle(
+                    option.cat,
+                    heroLanguage === "uk" ? "ua" : heroLanguage
+                  )}
                 </option>
               ))}
             </select>
@@ -598,7 +613,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                 .map((parent) => (
                 <section key={parent.id} className="mt-12">
                   <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 pl-1 pb-2">
-                    {catName(parent.slug, parent.title)}
+                    {getCategoryTitle(parent, lang)}
                   </h2>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 pb-12">
@@ -612,21 +627,21 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                             {child.image_url ? (
                               <img
                                 src={child.image_url}
-                                alt={catName(child.slug, child.title)}
+                                alt={getCategoryTitle(child, lang)}
                                 className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                                 loading="lazy"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
                                 <span className="text-sm text-gray-400 px-3 text-center line-clamp-2">
-                                  {catName(child.slug, child.title)}
+                                  {getCategoryTitle(child, lang)}
                                 </span>
                               </div>
                             )}
                           </div>
 
                           <p className="mt-2 px-1 text-base font-medium text-gray-900 line-clamp-1">
-                            {catName(child.slug, child.title)}
+                            {getCategoryTitle(child, lang)}
                           </p>
                         </Link>
                       </div>

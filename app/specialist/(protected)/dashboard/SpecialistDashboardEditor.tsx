@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useCallback, type ChangeEvent } from "react";
 import { t, type Dictionary } from "@/lib/i18n";
+import { getCategoryTitle } from "@/lib/getCategoryTitle";
 
 type ServiceInput = {
   id?: string;
@@ -13,6 +14,7 @@ type ServiceInput = {
 
 type Props = {
   dict: Dictionary;
+  lang: string;
   telegramConnected: boolean;
   telegramConnectHref: string | null;
   initialData: {
@@ -33,7 +35,15 @@ type Props = {
     services: ServiceInput[];
   };
   initialStatus: string;
-  categories: Array<{ id: string; title: string; parent_id: string | null; slug: string }>;
+  categories: Array<{
+    id: string;
+    title: string;
+    title_ru?: string | null;
+    title_de?: string | null;
+    title_ua?: string | null;
+    parent_id: string | null;
+    slug: string;
+  }>;
 };
 
 const MAX_GALLERY_IMAGES = 5;
@@ -41,6 +51,7 @@ const MAX_GALLERY_IMAGES = 5;
 
 export default function SpecialistDashboardEditor({
   dict,
+  lang,
   initialData,
   initialStatus,
   categories,
@@ -317,7 +328,7 @@ export default function SpecialistDashboardEditor({
               <option value="">Выберите категорию</option>
               {filteredCategories.map((category) => (
                 <option key={category.id} value={category.id}>
-                  {category.title}
+                  {getCategoryTitle(category, lang)}
                 </option>
               ))}
             </select>
