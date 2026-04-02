@@ -1,13 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getSupabase } from "@/lib/supabaseClient";
+import { isSupportedLang } from "@/lib/i18n";
+
+function readFreulyLangFromCookie(): string {
+  if (typeof document === "undefined") return "ua";
+  const match = document.cookie.match(/(?:^|;\s*)freuly_lang=([^;]*)/);
+  if (!match?.[1]) return "ua";
+  const v = decodeURIComponent(match[1].trim());
+  return isSupportedLang(v) ? v : "ua";
+}
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loginHref, setLoginHref] = useState("/ua/login");
+
+  useEffect(() => {
+    setLoginHref(`/${readFreulyLangFromCookie()}/login`);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,7 +58,7 @@ export default function ResetPasswordPage() {
             Ми надіслали лист для відновлення пароля.
           </p>
           <a
-            href="/login"
+            href={loginHref}
             className="mt-4 inline-block text-sm text-blue-600 hover:underline"
           >
             Повернутися до входу
@@ -90,7 +104,7 @@ export default function ResetPasswordPage() {
           </button>
         </form>
         <a
-          href="/login"
+          href={loginHref}
           className="mt-4 block text-center text-sm text-blue-600 hover:underline"
         >
           Повернутися до входу
