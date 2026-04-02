@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import type { Dictionary } from "@/lib/i18n";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
 
@@ -15,18 +16,20 @@ export default function DashboardShell({
   specialist,
   children,
   lang,
+  dict,
 }: {
   specialist: SpecialistShellData;
   children: ReactNode;
   lang: string;
+  dict: Dictionary;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar lang={lang} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar dict={dict} lang={lang} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex min-h-screen min-w-0 flex-1 flex-col bg-[#f5f7fa]">
-        <TopBar specialist={specialist} onMenuClick={() => setSidebarOpen((prev) => !prev)} />
+        <TopBar dict={dict} specialist={specialist} onMenuClick={() => setSidebarOpen((prev) => !prev)} />
         <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">{children}</main>
       </div>
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { t, type Dictionary } from "@/lib/i18n";
 import TopBarLogoutButton from "./TopBarLogoutButton";
 
 type SpecialistTopBarData = {
@@ -27,9 +28,11 @@ function getStatusBadgeClass(status: string): string {
 }
 
 export default function TopBar({
+  dict,
   specialist,
   onMenuClick,
 }: {
+  dict: Dictionary;
   specialist: SpecialistTopBarData;
   onMenuClick: () => void;
 }) {
@@ -49,20 +52,20 @@ export default function TopBar({
             type="button"
             onClick={onMenuClick}
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 md:hidden"
-            aria-label="Toggle menu"
+            aria-label={t(dict, "dashboard.topBar.toggleMenu")}
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
               <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
           <div>
-            <p className="text-sm text-gray-500">Кабинет специалиста</p>
+            <p className="text-sm text-gray-500">{t(dict, "header.cabinet")}</p>
             <p className="text-sm font-semibold text-gray-900">{name}</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <TopBarLogoutButton />
+          <TopBarLogoutButton dict={dict} />
           <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getStatusBadgeClass(subscriptionStatus)}`}>
             {subscriptionStatus}
           </span>

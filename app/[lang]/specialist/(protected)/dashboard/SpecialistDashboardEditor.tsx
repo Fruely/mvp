@@ -271,21 +271,22 @@ export default function SpecialistDashboardEditor({
   return (
     <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
       <div className="mb-5 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-        Заполните профиль, сохраните изменения и опубликуйте его, чтобы клиенты могли вас найти.
+        {t(dict, "dashboard.introBanner")}
       </div>
 
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Профиль специалиста</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">{t(dict, "dashboard.profilePageTitle")}</h1>
           <p className="mt-1 text-sm text-gray-600">
-            Все поля редактируются на одной странице. Профиль в статусе: <span className="font-medium">{status}</span>.
+            {t(dict, "dashboard.profileStatusIntro")} <span className="font-medium">{status}</span>
+            {t(dict, "dashboard.profileStatusOutro")}
           </p>
         </div>
         {(telegramConnected || telegramConnectHref) && (
           <div className="flex flex-shrink-0 flex-col items-end gap-2 sm:items-end">
             {telegramConnected ? (
               <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
-                Telegram подключен
+                {t(dict, "dashboard.telegram.connected")}
               </span>
             ) : telegramConnectHref ? (
               <a
@@ -294,7 +295,7 @@ export default function SpecialistDashboardEditor({
                 rel="noopener noreferrer"
                 className="inline-flex h-10 items-center justify-center rounded-lg bg-teal-600 px-4 text-sm font-semibold text-white transition hover:bg-teal-700"
               >
-                Подключить Telegram
+                {t(dict, "dashboard.telegram.connect")}
               </a>
             ) : null}
           </div>
@@ -304,7 +305,7 @@ export default function SpecialistDashboardEditor({
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">Имя</span>
+            <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.name")}</span>
             <input
               value={form.name}
               onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
@@ -312,7 +313,7 @@ export default function SpecialistDashboardEditor({
             />
           </label>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">Телефон</span>
+            <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.phone")}</span>
             <input
               value={form.phone}
               onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
@@ -320,13 +321,13 @@ export default function SpecialistDashboardEditor({
             />
           </label>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">Категория</span>
+            <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.category")}</span>
             <select
               value={form.category_id}
               onChange={(e) => setForm((prev) => ({ ...prev, category_id: e.target.value }))}
               className="w-full rounded-lg border border-gray-200 px-3 py-2"
             >
-              <option value="">Выберите категорию</option>
+              <option value="">{t(dict, "dashboard.categoryPlaceholder")}</option>
               {filteredCategories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {getCategoryTitle(category, normalizeLang(lang))}
@@ -335,7 +336,7 @@ export default function SpecialistDashboardEditor({
             </select>
           </label>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">Email</span>
+            <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.email")}</span>
             <input
               value={form.email}
               readOnly
@@ -343,7 +344,9 @@ export default function SpecialistDashboardEditor({
             />
           </label>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">PLZ (Postleitzahl) {needsPostalCode && <span className="text-red-500">*</span>}</span>
+            <span className="font-medium text-gray-700">
+              {t(dict, "dashboard.fields.plzLabel")} {needsPostalCode && <span className="text-red-500">*</span>}
+            </span>
             <input
               value={form.postal_code}
               onChange={(e) => {
@@ -353,81 +356,75 @@ export default function SpecialistDashboardEditor({
               inputMode="numeric"
               pattern="\d{5}"
               maxLength={5}
-              placeholder="z.B. 34117"
+              placeholder={t(dict, "dashboard.fields.plzPlaceholder")}
               className="w-full rounded-lg border border-gray-200 px-3 py-2"
             />
-            {needsPostalCode && <p className="text-xs text-gray-500">5-значный почтовый индекс Германии. Обязателен для публикации.</p>}
+            {needsPostalCode && <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.plzHint")}</p>}
           </label>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">Город</span>
+            <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.city")}</span>
             <input
               value={form.city}
               onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
-              placeholder="z.B. Kassel"
+              placeholder={t(dict, "dashboard.fields.cityPlaceholder")}
               className="w-full rounded-lg border border-gray-200 px-3 py-2"
             />
           </label>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">Адрес приёма</span>
+            <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.address")}</span>
             <input
               value={form.address || ""}
-              placeholder="Например: Friedrich-Ebert-Straße 12"
+              placeholder={t(dict, "dashboard.fields.addressPlaceholder")}
               onChange={(e) => setForm((prev) => ({ ...prev, address: e.target.value }))}
               className="w-full rounded-lg border border-gray-200 px-3 py-2"
             />
-            <p className="text-xs text-gray-600 font-medium">Необязательно. Если указан адрес, маршрут будет строиться до точного места.</p>
+            <p className="text-xs text-gray-600 font-medium">{t(dict, "dashboard.fields.addressHint")}</p>
           </label>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">Country</span>
+            <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.country")}</span>
             <select
               value={form.country_code}
               onChange={(e) => setForm((prev) => ({ ...prev, country_code: e.target.value }))}
               className="w-full rounded-lg border border-gray-200 px-3 py-2"
             >
-              <option value="DE">Germany (DE)</option>
-              <option value="GR">Greece (GR)</option>
-              <option value="IT">Italy (IT)</option>
-              <option value="PL">Poland (PL)</option>
-              <option value="XX">Other (XX)</option>
+              <option value="DE">{t(dict, "dashboard.country.DE")}</option>
+              <option value="GR">{t(dict, "dashboard.country.GR")}</option>
+              <option value="IT">{t(dict, "dashboard.country.IT")}</option>
+              <option value="PL">{t(dict, "dashboard.country.PL")}</option>
+              <option value="XX">{t(dict, "dashboard.country.XX")}</option>
             </select>
           </label>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">Формат</span>
+            <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.format")}</span>
             <select
               value={form.work_format}
               onChange={(e) => setForm((prev) => ({ ...prev, work_format: e.target.value as Props["initialData"]["work_format"] }))}
               className="w-full rounded-lg border border-gray-200 px-3 py-2"
             >
-              <option value="online">Онлайн</option>
-              <option value="offline">Офлайн</option>
-              <option value="hybrid">Онлайн/Офлайн</option>
+              <option value="online">{t(dict, "dashboard.workFormat.online")}</option>
+              <option value="offline">{t(dict, "dashboard.workFormat.offline")}</option>
+              <option value="hybrid">{t(dict, "dashboard.workFormat.hybrid")}</option>
             </select>
           </label>
           <fieldset className="space-y-2 text-sm md:col-span-2">
-            <legend className="font-medium text-gray-700">Языки</legend>
+            <legend className="font-medium text-gray-700">{t(dict, "dashboard.fields.languages")}</legend>
             <div className="flex flex-wrap gap-x-5 gap-y-2">
-              {([
-                { code: "ru", label: "Русский" },
-                { code: "uk", label: "Украинский" },
-                { code: "de", label: "Немецкий" },
-                { code: "en", label: "Английский" },
-                { code: "pl", label: "Польский" },
-              ] as const).map((lang) => (
-                <label key={lang.code} className="inline-flex items-center gap-1.5 cursor-pointer select-none">
+              {(["ru", "uk", "de", "en", "pl"] as const).map((code) => (
+                <label key={code} className="inline-flex items-center gap-1.5 cursor-pointer select-none">
                   <input
                     type="checkbox"
-                    checked={form.languages.includes(lang.code)}
+                    checked={form.languages.includes(code)}
                     onChange={(e) => {
                       setForm((prev) => ({
                         ...prev,
                         languages: e.target.checked
-                          ? [...prev.languages, lang.code]
-                          : prev.languages.filter((l) => l !== lang.code),
+                          ? [...prev.languages, code]
+                          : prev.languages.filter((l) => l !== code),
                       }));
                     }}
                     className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-gray-800">{lang.label}</span>
+                  <span className="text-gray-800">{t(dict, `dashboard.lang.${code}`)}</span>
                 </label>
               ))}
             </div>
@@ -435,18 +432,18 @@ export default function SpecialistDashboardEditor({
         </div>
 
         <div className="space-y-2">
-          <p className="text-sm font-medium text-gray-700">Аватар</p>
+          <p className="text-sm font-medium text-gray-700">{t(dict, "dashboard.fields.avatar")}</p>
           <div className="flex items-center gap-3">
             {form.photo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={form.photo_url}
-                alt="Аватар"
+                alt={t(dict, "dashboard.avatar.alt")}
                 className="h-16 w-16 rounded-full border border-gray-200 object-cover"
               />
             ) : (
               <div className="flex h-16 w-16 items-center justify-center rounded-full border border-dashed border-gray-300 text-xs text-textSecondary">
-                нет фото
+                {t(dict, "dashboard.avatar.noPhoto")}
               </div>
             )}
             <label className="inline-flex cursor-pointer items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
@@ -463,7 +460,7 @@ export default function SpecialistDashboardEditor({
         </div>
 
         <label className="block space-y-1 text-sm">
-          <span className="font-medium text-gray-700">Описание</span>
+          <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.description")}</span>
           <textarea
             value={form.about_me}
             onChange={(e) => setForm((prev) => ({ ...prev, about_me: e.target.value }))}
@@ -472,11 +469,11 @@ export default function SpecialistDashboardEditor({
         </label>
 
         <label className="block space-y-1 text-sm">
-          <span className="font-medium text-gray-700">Видео (YouTube / Vimeo URL)</span>
+          <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.video")}</span>
           <input
             value={form.video_url}
             onChange={(e) => setForm((prev) => ({ ...prev, video_url: e.target.value }))}
-            placeholder="https://www.youtube.com/... или https://vimeo.com/..."
+            placeholder={t(dict, "dashboard.fields.videoPlaceholder")}
             className="w-full rounded-lg border border-gray-200 px-3 py-2"
           />
           <div className="mt-1 space-y-0.5">
@@ -492,7 +489,7 @@ export default function SpecialistDashboardEditor({
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-700">Галерея</p>
+            <p className="text-sm font-medium text-gray-700">{t(dict, "dashboard.fields.gallery")}</p>
             <label className="inline-flex cursor-pointer items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
               {galleryUploading ? t(dict, "dashboard.buttons.uploading") : t(dict, "dashboard.buttons.addImage")}
               <input
@@ -504,14 +501,18 @@ export default function SpecialistDashboardEditor({
               />
             </label>
           </div>
-          <p className="text-xs text-gray-500">До 5 изображений.</p>
+          <p className="text-xs text-gray-500">{t(dict, "dashboard.gallery.maxImagesNote")}</p>
           <p className="text-xs text-gray-500">{t(dict, "dashboard.helpers.gallery.line1")}</p>
           <p className="text-xs text-gray-400">{t(dict, "dashboard.helpers.gallery.line2")}</p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {form.gallery_urls.map((url, index) => (
               <div key={`${url}-${index}`} className="relative overflow-hidden rounded-lg border border-gray-200">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt={`Галерея ${index + 1}`} className="h-28 w-full object-cover" />
+                <img
+                  src={url}
+                  alt={t(dict, "dashboard.gallery.imageAlt").replace("{{n}}", String(index + 1))}
+                  className="h-28 w-full object-cover"
+                />
                 <button
                   type="button"
                   onClick={() =>
@@ -531,7 +532,7 @@ export default function SpecialistDashboardEditor({
 
         <div className="rounded-lg border border-gray-200 p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-900">Услуги и цены</h2>
+            <h2 className="text-base font-semibold text-gray-900">{t(dict, "dashboard.servicesSection.title")}</h2>
             <button
               type="button"
               onClick={addService}
@@ -546,7 +547,7 @@ export default function SpecialistDashboardEditor({
                 <input
                   value={service.title}
                   onChange={(e) => updateService(idx, { title: e.target.value })}
-                  placeholder="Название услуги"
+                  placeholder={t(dict, "dashboard.service.placeholderTitle")}
                   className="rounded-lg border border-gray-200 px-3 py-2 text-sm"
                 />
                 <div>
@@ -556,14 +557,12 @@ export default function SpecialistDashboardEditor({
                     type="number"
                     min="0"
                     step="0.01"
-                    placeholder="Цена (например: 2500)"
+                    placeholder={t(dict, "dashboard.service.placeholderPrice")}
                     className={`rounded-lg border px-3 py-2 text-sm ${
                       priceErrors[idx] ? "border-red-400" : "border-gray-200"
                     }`}
                   />
-                  <p className="mt-0.5 text-[11px] text-gray-600 font-medium">
-                    Только цифры. Не: &quot;2,5 тыс&quot;, &quot;полторы&quot;
-                  </p>
+                  <p className="mt-0.5 text-[11px] text-gray-600 font-medium">{t(dict, "dashboard.service.priceHint")}</p>
                   {priceErrors[idx] && (
                     <p className="mt-0.5 text-xs text-red-600">{priceErrors[idx]}</p>
                   )}
@@ -587,11 +586,8 @@ export default function SpecialistDashboardEditor({
         </div>
 
         <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-          <p className="font-semibold">⚠️ Важно:</p>
-          <p className="mt-1 font-medium">
-            После внесения изменений сначала нажмите «Сохранить изменения»,
-            затем — «Опубликовать профиль».
-          </p>
+          <p className="font-semibold">{t(dict, "dashboard.important.title")}</p>
+          <p className="mt-1 font-medium">{t(dict, "dashboard.important.body")}</p>
         </div>
 
         <div className="space-y-3">

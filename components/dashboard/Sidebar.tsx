@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
+import { t, type Dictionary } from "@/lib/i18n";
 
 type NavItem = {
   label: string;
@@ -15,11 +16,11 @@ function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-function buildNavItems(lang: string): NavItem[] {
+function buildNavItems(lang: string, dict: Dictionary): NavItem[] {
   const base = `/${lang}/specialist/dashboard`;
   return [
   {
-    label: "Дашборд",
+    label: t(dict, "dashboard.sidebar.nav.dashboard"),
     href: base,
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
@@ -28,7 +29,7 @@ function buildNavItems(lang: string): NavItem[] {
     ),
   },
   {
-    label: "Запросы",
+    label: t(dict, "dashboard.sidebar.nav.leads"),
     href: `${base}/leads`,
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
@@ -37,7 +38,7 @@ function buildNavItems(lang: string): NavItem[] {
     ),
   },
   {
-    label: "Мой абонемент",
+    label: t(dict, "dashboard.sidebar.nav.subscription"),
     href: `${base}/subscription`,
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
@@ -46,7 +47,7 @@ function buildNavItems(lang: string): NavItem[] {
     ),
   },
   {
-    label: "Услуги",
+    label: t(dict, "dashboard.sidebar.nav.services"),
     href: `${base}/services`,
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
@@ -55,7 +56,7 @@ function buildNavItems(lang: string): NavItem[] {
     ),
   },
   {
-    label: "Настройки",
+    label: t(dict, "dashboard.sidebar.nav.settings"),
     href: `${base}/settings`,
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
@@ -67,23 +68,25 @@ function buildNavItems(lang: string): NavItem[] {
 }
 
 export default function Sidebar({
+  dict,
   lang,
   open,
   onClose,
 }: {
+  dict: Dictionary;
   lang: string;
   open: boolean;
   onClose: () => void;
 }) {
   const pathname = usePathname();
   const currentPath = pathname ?? "";
-  const navItems = buildNavItems(lang);
+  const navItems = useMemo(() => buildNavItems(lang, dict), [lang, dict]);
 
   return (
     <>
       <aside className="hidden h-screen w-[240px] shrink-0 border-r border-gray-200 bg-white md:sticky md:top-0 md:block">
         <div className="flex h-16 items-center border-b border-gray-100 px-5">
-          <span className="text-base font-semibold text-gray-900">Freuly CRM</span>
+          <span className="text-base font-semibold text-gray-900">{t(dict, "dashboard.sidebar.brand")}</span>
         </div>
         <nav className="space-y-1 p-3">
           {navItems.map((item) => {
@@ -98,7 +101,7 @@ export default function Sidebar({
 
             if (!item.href || item.disabled) {
               return (
-                <span key={item.label} className={cn(baseClass, stateClass)}>
+                <span key={item.href ?? item.label} className={cn(baseClass, stateClass)}>
                   <span className="text-current">{item.icon}</span>
                   {item.label}
                 </span>
@@ -106,7 +109,7 @@ export default function Sidebar({
             }
 
             return (
-              <Link key={item.label} href={item.href} className={cn(baseClass, stateClass)}>
+              <Link key={item.href} href={item.href} className={cn(baseClass, stateClass)}>
                 <span className="text-current">{item.icon}</span>
                 {item.label}
               </Link>
@@ -123,12 +126,12 @@ export default function Sidebar({
         )}
       >
         <div className="flex h-16 items-center justify-between border-b border-gray-100 px-5">
-          <span className="text-base font-semibold text-gray-900">Freuly CRM</span>
+          <span className="text-base font-semibold text-gray-900">{t(dict, "dashboard.sidebar.brand")}</span>
           <button
             type="button"
             onClick={onClose}
             className="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-            aria-label="Close menu"
+            aria-label={t(dict, "dashboard.sidebar.closeMenu")}
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
               <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -148,7 +151,7 @@ export default function Sidebar({
 
             if (!item.href || item.disabled) {
               return (
-                <span key={item.label} className={cn(baseClass, stateClass)}>
+                <span key={item.href ?? item.label} className={cn(baseClass, stateClass)}>
                   <span className="text-current">{item.icon}</span>
                   {item.label}
                 </span>
@@ -156,7 +159,7 @@ export default function Sidebar({
             }
 
             return (
-              <Link key={item.label} href={item.href} onClick={onClose} className={cn(baseClass, stateClass)}>
+              <Link key={item.href} href={item.href} onClick={onClose} className={cn(baseClass, stateClass)}>
                 <span className="text-current">{item.icon}</span>
                 {item.label}
               </Link>

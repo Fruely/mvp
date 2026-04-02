@@ -1,6 +1,6 @@
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import DashboardShell from "@/components/dashboard/DashboardShell";
-import { isSupportedLang, type Lang } from "@/lib/i18n";
+import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
 
 export default async function SpecialistProtectedLayout({
   children,
@@ -12,9 +12,10 @@ export default async function SpecialistProtectedLayout({
   const resolved = await Promise.resolve(params);
   const lang: Lang = isSupportedLang(resolved.lang) ? resolved.lang : "ua";
   const { specialist } = await getCurrentUserAndSpecialist();
+  const dict = await getDictionary(lang);
 
   return (
-    <DashboardShell specialist={specialist} lang={lang}>
+    <DashboardShell specialist={specialist} lang={lang} dict={dict}>
       {children}
     </DashboardShell>
   );
