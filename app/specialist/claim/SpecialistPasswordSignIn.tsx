@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabase, SPECIALIST_OFFICE_PATH } from "@/lib/supabaseClient";
+import { getSupabase } from "@/lib/supabaseClient";
+import { specialistDashboardHrefClient } from "@/lib/specialists/dashboardHref";
 
 export default function SpecialistPasswordSignIn() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function SpecialistPasswordSignIn() {
         return;
       }
       if (data.session) {
-        router.replace(SPECIALIST_OFFICE_PATH);
+        router.replace(specialistDashboardHrefClient());
         router.refresh();
       } else {
         setError(

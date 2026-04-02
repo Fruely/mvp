@@ -3,8 +3,10 @@ import { isProfilePublished, type PublicationService } from "@/lib/dashboard/isP
 
 export default function ProfilePublicationStatus({
   services,
+  lang = "ua",
 }: {
   services: PublicationService[];
+  lang?: string;
 }) {
   const published = isProfilePublished(services);
 
@@ -30,7 +32,7 @@ export default function ProfilePublicationStatus({
         <br />• Укажите цену
       </p>
       <Link
-        href="/specialist/dashboard/services"
+        href={`/${lang}/specialist/dashboard/services`}
         className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-rose-600 px-4 text-sm font-semibold text-white transition hover:bg-rose-700"
       >
         Перейти к услугам

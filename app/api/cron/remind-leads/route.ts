@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { sendTelegramMessage } from "@/lib/telegram/sendMessage";
+import { specialistDashboardPath } from "@/lib/specialists/navigation";
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
   let reminded = 0;
 
   const appUrl = process.env.APP_URL || "https://freuly.de";
-  const leadsUrl = `${appUrl}/specialist/dashboard/leads`;
+  const leadsUrl = `${appUrl}${specialistDashboardPath("leads")}`;
 
   const specialistIds = Array.from(
     new Set(

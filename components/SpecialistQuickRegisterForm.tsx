@@ -2,7 +2,8 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabase, SPECIALIST_OFFICE_PATH } from "@/lib/supabaseClient";
+import { getSupabase } from "@/lib/supabaseClient";
+import { specialistDashboardHref, specialistDashboardHrefClient } from "@/lib/specialists/dashboardHref";
 import { t, type Dictionary } from "@/lib/i18n";
 
 type Props = {
@@ -10,7 +11,7 @@ type Props = {
   dict: Dictionary;
 };
 
-export default function SpecialistQuickRegisterForm({ dict }: Props) {
+export default function SpecialistQuickRegisterForm({ dict, lang }: Props) {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -57,7 +58,7 @@ export default function SpecialistQuickRegisterForm({ dict }: Props) {
       }
 
       router.refresh();
-      router.replace(SPECIALIST_OFFICE_PATH);
+      router.replace(lang ? specialistDashboardHref(lang) : specialistDashboardHrefClient());
     } catch {
       setError("Не удалось создать аккаунт. Попробуйте позже.");
     } finally {

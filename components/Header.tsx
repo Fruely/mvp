@@ -4,8 +4,6 @@ import { ReactNode, useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { t } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/i18n";
-import { SPECIALIST_OFFICE_PATH } from "@/lib/supabaseClient";
-
 const fallbackDict: Dictionary = {
   "header.nav.categories": "Категорії",
   "header.nav.about": "Про нас",
@@ -73,7 +71,7 @@ export default function Header({ lang, dict = fallbackDict, children }: HeaderPr
             </div>
 
             <Link
-              href={SPECIALIST_OFFICE_PATH}
+              href={`/${lang}/specialist/dashboard`}
               className="hidden text-gray-700 hover:text-blue-600 font-medium transition sm:inline"
             >
               {t(d, "header.cabinet")}
@@ -89,7 +87,7 @@ export default function Header({ lang, dict = fallbackDict, children }: HeaderPr
 
         <div className="flex flex-wrap items-center justify-end gap-3 border-t border-gray-100 py-2.5 sm:hidden">
           <Link
-            href={SPECIALIST_OFFICE_PATH}
+            href={`/${lang}/specialist/dashboard`}
             className="text-sm font-medium text-gray-700 transition hover:text-blue-600"
           >
             {t(d, "header.cabinet")}

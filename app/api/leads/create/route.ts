@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 import { consumeLeadRateLimit, getLeadRateLimitKey } from "@/lib/leads/rateLimit";
 import { sendTelegramMessage } from "@/lib/telegram/sendMessage";
+import { specialistDashboardPath } from "@/lib/specialists/navigation";
 
 export async function POST(request: NextRequest) {
   try {
@@ -128,7 +129,7 @@ export async function POST(request: NextRequest) {
       const ok = await sendTelegramMessage(
         tgChatId,
         text,
-        `${appUrl}/specialist/dashboard/leads`
+        `${appUrl}${specialistDashboardPath("leads")}`
       );
       if (!ok) {
         console.error("[leads/create] Telegram notification failed");

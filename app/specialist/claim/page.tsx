@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServerClient as createAuthServerClient } from "@/lib/supabase/auth-server";
-import { SPECIALIST_OFFICE_PATH } from "@/lib/supabaseClient";
+import { specialistDashboardPath } from "@/lib/specialists/navigation";
 import ClaimNoTokenHandler from "./ClaimNoTokenHandler";
 import ClaimInitButton from "./ClaimInitButton";
 import SpecialistPasswordSignIn from "./SpecialistPasswordSignIn";
@@ -21,7 +21,7 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
     const authClient = createAuthServerClient();
     const { data: { user } } = await authClient.auth.getUser();
     if (user) {
-      redirect(SPECIALIST_OFFICE_PATH);
+      redirect(specialistDashboardPath());
     }
     return (
       <div className="min-h-[40vh] px-4 py-10">

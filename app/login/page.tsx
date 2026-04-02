@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { specialistDashboardPath } from "@/lib/specialists/navigation";
 import SpecialistPasswordSignIn from "@/app/specialist/claim/SpecialistPasswordSignIn";
 import LoginSessionReset from "./LoginSessionReset";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
@@ -28,7 +29,7 @@ export default async function LoginPage() {
       .maybeSingle();
 
     if (specialist?.id) {
-      redirect("/specialist/dashboard");
+      redirect(specialistDashboardPath());
     }
 
     redirect("/specialist/claim");

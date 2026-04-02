@@ -14,3 +14,12 @@ export function specialistLangHomePath(): string {
 export function specialistLangBecomePath(): string {
   return `/${getPreferredLang()}/become-specialist`;
 }
+
+/** Server (uses cookie): base path or e.g. `leads` → `/{lang}/specialist/dashboard/leads` */
+export function specialistDashboardPath(subpath?: string): string {
+  const lang = getPreferredLang();
+  const base = `/${lang}/specialist/dashboard`;
+  if (!subpath) return base;
+  const clean = subpath.replace(/^\/+/, "");
+  return `${base}/${clean}`;
+}

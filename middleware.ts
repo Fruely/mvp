@@ -20,6 +20,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Legacy specialist dashboard URLs → /{lang}/specialist/dashboard
+  if (pathname === "/specialist/dashboard" || pathname.startsWith("/specialist/dashboard/")) {
+    const cookieLang = request.cookies.get(LANG_COOKIE)?.value;
+    const preferredLang: Lang = isLang(cookieLang || "") ? (cookieLang as Lang) : "ua";
+    const rest = pathname.slice("/specialist/dashboard".length);
+    const url = request.nextUrl.clone();
+    url.pathname = `/${preferredLang}/specialist/dashboard${rest}`;
+    return NextResponse.redirect(url);
+  }
+
   if (pathname.startsWith("/__closed")) {
     return NextResponse.next();
   }

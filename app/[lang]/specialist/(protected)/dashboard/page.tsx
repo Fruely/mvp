@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
@@ -9,12 +8,16 @@ import SpecialistDashboardEditor from "./SpecialistDashboardEditor";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import VerificationBanner from "./VerificationBanner";
 
-export default async function SpecialistDashboardPage() {
+export default async function SpecialistDashboardPage({
+  params,
+}: {
+  params: { lang: string } | Promise<{ lang: string }>;
+}) {
+  const resolved = await Promise.resolve(params);
+  const lang = isSupportedLang(resolved.lang) ? resolved.lang : "ru";
   const { specialist } = await getCurrentUserAndSpecialist();
   const service = createServiceClient();
 
-  const langCookie = cookies().get("freuly_lang")?.value;
-  const lang = langCookie && isSupportedLang(langCookie) ? langCookie : "ru";
   const dict: Dictionary = await getDictionary(lang);
 
   const status = specialist.status;

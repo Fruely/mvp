@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabase, SPECIALIST_OFFICE_PATH } from "@/lib/supabaseClient";
+import { getSupabase } from "@/lib/supabaseClient";
+import { specialistDashboardHrefClient } from "@/lib/specialists/dashboardHref";
 
 /** Parse access_token and refresh_token from URL hash (e.g. #access_token=...&refresh_token=...) */
 function getTokensFromHash(): { access_token: string; refresh_token: string } | null {
@@ -52,7 +53,7 @@ export default function ClaimNoTokenHandler() {
       if (handled.current) return;
       handled.current = true;
       router.refresh();
-      router.replace(SPECIALIST_OFFICE_PATH);
+      router.replace(specialistDashboardHrefClient());
     };
 
     const stopLoading = () => {};
