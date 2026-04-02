@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
+import { normalizeLang } from "@/lib/normalizeLang";
 
 const LANG_OPTIONS = [
   { value: "ru", label: "Русский" },
@@ -105,15 +106,13 @@ export default function HeroSearch({
     };
   }, []);
 
-  const displayLang = language === "uk" ? "ua" : language || "ru";
-
   const filteredCategories = useMemo(() => {
     const query = categoryQuery.trim().toLowerCase();
     if (!query) return categories.slice(0, 8);
     return categories
       .filter(
         (item) => {
-          const translated = getCategoryTitle(item, displayLang).toLowerCase();
+          const translated = getCategoryTitle(item, normalizeLang(language || "ru")).toLowerCase();
           return (
             translated.includes(query) ||
             item.title.toLowerCase().includes(query) ||
@@ -122,7 +121,7 @@ export default function HeroSearch({
         }
       )
       .slice(0, 8);
-  }, [categories, categoryQuery, displayLang]);
+  }, [categories, categoryQuery, language]);
 
   const canSubmit = Boolean(language);
 
@@ -136,7 +135,7 @@ export default function HeroSearch({
     if (!query) return null;
     const match = categories.find(
       (item) =>
-        getCategoryTitle(item, displayLang).toLowerCase() === query ||
+        getCategoryTitle(item, normalizeLang(language || "ru")).toLowerCase() === query ||
         item.title.toLowerCase() === query ||
         item.slug.toLowerCase() === query
     );
@@ -175,7 +174,7 @@ export default function HeroSearch({
   }
 
   function chooseCategory(option: CategoryOption) {
-    setCategoryQuery(getCategoryTitle(option, displayLang));
+    setCategoryQuery(getCategoryTitle(option, normalizeLang(language || "ru")));
     setSelectedCategorySlug(option.slug);
     setCategoryOpen(false);
   }
@@ -258,7 +257,7 @@ export default function HeroSearch({
                         <span aria-hidden className="inline-flex w-5 items-center justify-center">
                           {getCategoryIcon(option.slug)}
                         </span>
-                        <span>{getCategoryTitle(option, displayLang)}</span>
+                        <span>{getCategoryTitle(option, normalizeLang(language || "ru"))}</span>
                       </button>
                     ))}
                   </div>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getSpecialistUrl } from "@/lib/urls";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
+import { normalizeLang } from "@/lib/normalizeLang";
 
 export const dynamic = "force-dynamic";
 
@@ -198,7 +199,7 @@ export default async function SpecialistsPage({
                 title_de: s.category_title_de,
                 title_ua: s.category_title_ua,
               },
-              uiLang
+              normalizeLang(uiLang)
             ) || "Category";
             const hasCategory = Boolean(categoryLabel && categoryLabel !== "Category");
 

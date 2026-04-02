@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { t } from "@/lib/i18n";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
+import { normalizeLang } from "@/lib/normalizeLang";
 import type { Dictionary } from "@/lib/i18n";
 
 type SpecialistApplicationFormProps = {
@@ -75,7 +76,7 @@ export default function SpecialistApplicationForm({
   const getCategoryLabel = (category: Category) =>
     getCategoryTitle(
       category,
-      lang === "ru" || lang === "ua" || lang === "de" ? lang : "ru"
+      normalizeLang(lang === "ru" || lang === "ua" || lang === "de" ? lang : "ru")
     );
 
   const handleChange = (

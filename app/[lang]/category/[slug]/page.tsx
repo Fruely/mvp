@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
+import { normalizeLang } from "@/lib/normalizeLang";
 import uaDict from "@/locales/ua.json";
 import SpecialistPreviewCard from "@/components/specialist/SpecialistPreviewCard";
 
@@ -390,7 +391,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
     return String(template).replace(/\{\{\s*count\s*\}\}/g, String(visibleCount));
   }, [dict, totalSpecialists, category]);
 
-  const categoryLabel = category ? getCategoryTitle(category, lang) : "";
+  const categoryLabel = category ? getCategoryTitle(category, normalizeLang(lang)) : "";
 
   const uspHeading = useMemo(() => {
     if (!categoryLabel) return "";
@@ -426,7 +427,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                 {t(dict, "common.backToHome")}
               </Link>
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-                {getCategoryTitle(parentCategory, lang)}
+                {getCategoryTitle(parentCategory, normalizeLang(lang))}
               </h1>
               <p className="text-lg text-gray-600 mt-2">
                 {t(dict, "category.parent.subtitle")}
@@ -460,7 +461,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                   >
                     <div className="flex items-center justify-between gap-2 mb-3">
                       <h3 className="text-xl font-semibold text-gray-900">
-                        {getCategoryTitle(child, lang)}
+                        {getCategoryTitle(child, normalizeLang(lang))}
                       </h3>
                       {!child.is_clickable ? (
                         <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] font-semibold text-gray-600">

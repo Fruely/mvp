@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPublicSpecialistCountsByServiceCategory } from "@/lib/specialists/publicCategoryCounts";
 import { getDictionary, t, type Lang } from "@/lib/i18n";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
+import { normalizeLang } from "@/lib/normalizeLang";
 
 type CategoryRow = {
   id: string;
@@ -37,7 +38,7 @@ export default async function HeaderCategoriesNav({ lang }: { lang: string }) {
     const supabase = createSupabaseServerClient();
     const dict = await getDictionary(lang as Lang);
   const getCategoryLabel = (category: NavCategory) =>
-    getCategoryTitle(category, lang).trim() || category.slug;
+    getCategoryTitle(category, normalizeLang(lang)).trim() || category.slug;
 
   const withParent = await supabase
     .from("categories")

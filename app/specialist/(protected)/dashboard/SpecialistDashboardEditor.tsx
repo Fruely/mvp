@@ -3,6 +3,7 @@
 import { useMemo, useState, useCallback, type ChangeEvent } from "react";
 import { t, type Dictionary } from "@/lib/i18n";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
+import { normalizeLang } from "@/lib/normalizeLang";
 
 type ServiceInput = {
   id?: string;
@@ -328,7 +329,7 @@ export default function SpecialistDashboardEditor({
               <option value="">Выберите категорию</option>
               {filteredCategories.map((category) => (
                 <option key={category.id} value={category.id}>
-                  {getCategoryTitle(category, lang)}
+                  {getCategoryTitle(category, normalizeLang(lang))}
                 </option>
               ))}
             </select>
