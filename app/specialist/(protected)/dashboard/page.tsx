@@ -34,7 +34,7 @@ export default async function SpecialistDashboardPage() {
     botUsername.length > 0
       ? `https://t.me/${botUsername}?start=${encodeURIComponent(specialist.id)}`
       : null;
-  const telegramConnected = Boolean(specExtra?.telegram_chat_id?.trim());
+  const telegramConnected = Boolean(String(specExtra?.telegram_chat_id ?? "").trim());
   const { data: profile } = await service
     .from("specialist_profiles")
     .select("photo_url, about_me, city, address, gallery_urls, video_url")
