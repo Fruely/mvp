@@ -8,6 +8,9 @@ type CategoryRow = {
   id: string;
   slug: string | null;
   title: string | null;
+  title_ru?: string | null;
+  title_de?: string | null;
+  title_ua?: string | null;
   parent_id?: string | null;
   image_url?: string | null;
 };
@@ -74,7 +77,7 @@ async function loadCategoriesWithOptionalHierarchy() {
 
   const withParent = await supabase
     .from("categories")
-    .select("id, slug, title, parent_id, image_url")
+    .select("id, slug, title, title_ru, title_de, title_ua, parent_id, image_url")
     .order("title", { ascending: true });
 
   if (!withParent.error) {
@@ -87,7 +90,7 @@ async function loadCategoriesWithOptionalHierarchy() {
 
   const fallback = await supabase
     .from("categories")
-    .select("id, slug, title, image_url")
+    .select("id, slug, title, title_ru, title_de, title_ua, image_url")
     .order("title", { ascending: true });
 
   if (fallback.error) {
@@ -199,6 +202,9 @@ export async function GET(request: NextRequest) {
           id: category.id,
           slug: category.slug,
           title: category.title,
+          title_ru: category.title_ru ?? null,
+          title_de: category.title_de ?? null,
+          title_ua: category.title_ua ?? null,
           parent_id: category.parent_id ?? null,
           image_url: category.image_url ?? null,
           specialists_count: specialistsCount,
@@ -251,6 +257,9 @@ export async function GET(request: NextRequest) {
             id: child.id,
             slug: child.slug,
             title: child.title,
+            title_ru: child.title_ru ?? null,
+            title_de: child.title_de ?? null,
+            title_ua: child.title_ua ?? null,
             image_url: child.image_url ?? null,
             specialists_count: specialistsCount,
             is_clickable: isCategoryClickable(specialistsCount, minCount),
@@ -266,6 +275,9 @@ export async function GET(request: NextRequest) {
           id: parent.id,
           slug: parent.slug,
           title: parent.title,
+          title_ru: parent.title_ru ?? null,
+          title_de: parent.title_de ?? null,
+          title_ua: parent.title_ua ?? null,
           parent_id: null,
           image_url: parent.image_url ?? null,
           specialists_count: parentCount,

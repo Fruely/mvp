@@ -49,7 +49,7 @@ export async function GET(
   const { data: category } = specialist.category_id
     ? await supabase
         .from("categories")
-        .select("title, slug")
+        .select("title, title_ru, title_de, title_ua, slug")
         .eq("id", specialist.category_id)
         .maybeSingle()
     : { data: null };
@@ -72,6 +72,9 @@ export async function GET(
     name: specialist.name,
     avatar_url: specialist.avatar_url,
     category: category?.title ?? null,
+    category_title_ru: category?.title_ru ?? null,
+    category_title_de: category?.title_de ?? null,
+    category_title_ua: category?.title_ua ?? null,
     category_id: specialist.category_id,
     category_slug: category?.slug ?? null,
     languages: specialist.languages ?? [],

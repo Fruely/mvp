@@ -62,9 +62,9 @@ export async function GET(request: NextRequest) {
     if (categoryIds.length > 0) {
       const { data: cats } = await supabase
         .from('categories')
-        .select('id, title, slug')
+        .select('id, title, title_ru, title_de, title_ua, slug')
         .in('id', categoryIds);
-      (cats || []).forEach((c: { id: string; title?: string; slug?: string }) => {
+      (cats || []).forEach((c: { id: string; title?: string; title_ru?: string; title_de?: string; title_ua?: string; slug?: string }) => {
         categoryMap[c.id] = c.title || DEFAULT_CATEGORY_LABEL;
       });
     }

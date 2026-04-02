@@ -5,7 +5,14 @@ import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 export const dynamic = "force-dynamic";
 
-type CategoryRow = { id: string; slug: string; title: string | null };
+type CategoryRow = {
+  id: string;
+  slug: string;
+  title: string | null;
+  title_ru: string | null;
+  title_de: string | null;
+  title_ua: string | null;
+};
 
 export async function GET(request: NextRequest) {
   try {
@@ -94,7 +101,7 @@ export async function GET(request: NextRequest) {
     if (categoryIds.length > 0) {
       const { data: cats } = await supabase
         .from("categories")
-        .select("id, slug, title")
+        .select("id, slug, title, title_ru, title_de, title_ua")
         .in("id", categoryIds);
       (cats ?? []).forEach((c: CategoryRow) => {
         categoryMap[c.id] = c;
@@ -112,6 +119,9 @@ export async function GET(request: NextRequest) {
         category_id: s.category_id,
         category_slug: cat?.slug ?? null,
         category_title: cat?.title ?? null,
+        category_title_ru: cat?.title_ru ?? null,
+        category_title_de: cat?.title_de ?? null,
+        category_title_ua: cat?.title_ua ?? null,
         languages: s.languages ?? [],
         work_format: s.work_format ?? "online",
         postal_code: s.postal_code,

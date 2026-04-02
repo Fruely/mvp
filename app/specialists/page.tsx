@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { getSpecialistUrl } from "@/lib/urls";
+import { getCategoryTitle } from "@/lib/getCategoryTitle";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,9 @@ type Specialist = {
   avatar_url: string | null;
   category_slug: string | null;
   category_title: string | null;
+  category_title_ru: string | null;
+  category_title_de: string | null;
+  category_title_ua: string | null;
   languages: string[];
   work_format: string;
   postal_code: string | null;
@@ -187,8 +191,16 @@ export default async function SpecialistsPage({
   );
 
   const renderCard = (s: Specialist) => {
-            const hasCategory = Boolean(s.category_title || s.category_slug);
-            const categoryLabel = s.category_title || "Category";
+            const categoryLabel = getCategoryTitle(
+              {
+                title: s.category_title,
+                title_ru: s.category_title_ru,
+                title_de: s.category_title_de,
+                title_ua: s.category_title_ua,
+              },
+              uiLang
+            ) || "Category";
+            const hasCategory = Boolean(categoryLabel && categoryLabel !== "Category");
 
             return (
             <li key={s.id}>

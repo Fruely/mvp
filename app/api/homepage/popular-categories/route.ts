@@ -8,6 +8,9 @@ type PopularCategoryItem = {
   id: string;
   slug: string | null;
   title: string | null;
+  title_ru: string | null;
+  title_de: string | null;
+  title_ua: string | null;
   image_url: string | null;
   specialists_count: number;
   sort_order: number | null;
@@ -49,7 +52,7 @@ export async function GET() {
   // 2. Fetch categories that have specialists
   const { data: catData } = await supabase
     .from("categories")
-    .select("id, slug, title, image_url")
+    .select("id, slug, title, title_ru, title_de, title_ua, image_url")
     .in("id", activeCategoryIds);
 
   // 3. Optional: get sort_order from homepage_popular_categories_view
@@ -65,12 +68,23 @@ export async function GET() {
   }
 
   // 4. Build result: only categories with image_url
-  const rows: PopularCategoryItem[] = ((catData ?? []) as Array<{ id: string; slug: string | null; title: string | null; image_url: string | null }>)
+  const rows: PopularCategoryItem[] = ((catData ?? []) as Array<{
+    id: string;
+    slug: string | null;
+    title: string | null;
+    title_ru?: string | null;
+    title_de?: string | null;
+    title_ua?: string | null;
+    image_url: string | null;
+  }>)
     .filter((cat) => cat.image_url)
     .map((cat) => ({
       id: cat.id,
       slug: cat.slug,
       title: cat.title,
+      title_ru: cat.title_ru ?? null,
+      title_de: cat.title_de ?? null,
+      title_ua: cat.title_ua ?? null,
       image_url: cat.image_url,
       specialists_count: countByCategory.get(cat.id) ?? 0,
       sort_order: sortOrderById.get(cat.id) ?? null,

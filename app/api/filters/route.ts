@@ -10,7 +10,7 @@ export async function GET() {
     // Categories list (slug + title)
     const { data: categoryData, error: categoryError } = await supabase
       .from('categories')
-      .select('slug,title')
+      .select('slug, title, title_ru, title_de, title_ua')
       .order('title', { ascending: true });
 
     if (categoryError) {

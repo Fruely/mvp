@@ -143,6 +143,9 @@ export default function AdminSiteBlocksPage() {
             id: String(item.id || ""),
             slug: String(item.slug || ""),
             title: item.title ? String(item.title) : null,
+            title_ru: item.title_ru != null ? String(item.title_ru) : null,
+            title_de: item.title_de != null ? String(item.title_de) : null,
+            title_ua: item.title_ua != null ? String(item.title_ua) : null,
           }))
           .filter((item: CategoryOption) => item.id && item.slug);
 

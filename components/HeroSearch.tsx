@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getCategoryTitle } from "@/lib/getCategoryTitle";
 
 const LANG_OPTIONS = [
   { value: "ru", label: "Русский" },
@@ -27,6 +28,9 @@ const defaultPrimaryCta = "Найти специалиста";
 type CategoryOption = {
   slug: string;
   title: string;
+  title_ru?: string | null;
+  title_de?: string | null;
+  title_ua?: string | null;
 };
 
 function getCategoryIcon(slug: string): string {
@@ -79,9 +83,12 @@ export default function HeroSearch({
               typeof item?.title === "string" &&
               item.title.trim().length > 0
           )
-          .map((item: { slug: string; title: string }) => ({
+          .map((item: any) => ({
             slug: item.slug.trim(),
             title: item.title.trim(),
+            title_ru: typeof item.title_ru === "string" ? item.title_ru : null,
+            title_de: typeof item.title_de === "string" ? item.title_de : null,
+            title_ua: typeof item.title_ua === "string" ? item.title_ua : null,
           }));
 
         if (!cancelled) {
@@ -98,17 +105,24 @@ export default function HeroSearch({
     };
   }, []);
 
+  const displayLang = language === "uk" ? "ua" : language || "ru";
+
   const filteredCategories = useMemo(() => {
     const query = categoryQuery.trim().toLowerCase();
     if (!query) return categories.slice(0, 8);
     return categories
       .filter(
-        (item) =>
-          item.title.toLowerCase().includes(query) ||
-          item.slug.toLowerCase().includes(query)
+        (item) => {
+          const translated = getCategoryTitle(item, displayLang).toLowerCase();
+          return (
+            translated.includes(query) ||
+            item.title.toLowerCase().includes(query) ||
+            item.slug.toLowerCase().includes(query)
+          );
+        }
       )
       .slice(0, 8);
-  }, [categories, categoryQuery]);
+  }, [categories, categoryQuery, displayLang]);
 
   const canSubmit = Boolean(language);
 
@@ -121,7 +135,10 @@ export default function HeroSearch({
     const query = categoryQuery.trim().toLowerCase();
     if (!query) return null;
     const match = categories.find(
-      (item) => item.title.toLowerCase() === query || item.slug.toLowerCase() === query
+      (item) =>
+        getCategoryTitle(item, displayLang).toLowerCase() === query ||
+        item.title.toLowerCase() === query ||
+        item.slug.toLowerCase() === query
     );
     return match?.slug ?? null;
   }
@@ -158,7 +175,7 @@ export default function HeroSearch({
   }
 
   function chooseCategory(option: CategoryOption) {
-    setCategoryQuery(option.title);
+    setCategoryQuery(getCategoryTitle(option, displayLang));
     setSelectedCategorySlug(option.slug);
     setCategoryOpen(false);
   }
@@ -241,7 +258,7 @@ export default function HeroSearch({
                         <span aria-hidden className="inline-flex w-5 items-center justify-center">
                           {getCategoryIcon(option.slug)}
                         </span>
-                        <span>{option.title}</span>
+                        <span>{getCategoryTitle(option, displayLang)}</span>
                       </button>
                     ))}
                   </div>

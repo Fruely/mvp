@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
+import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { getSpecialistUrl } from "@/lib/urls";
 import { getSupabase } from "@/lib/supabaseClient";
 import uaDict from "@/locales/ua.json";
@@ -30,6 +31,9 @@ interface Specialist {
   city?: string | null;
   address?: string | null;
   category?: string;
+  category_title_ru?: string | null;
+  category_title_de?: string | null;
+  category_title_ua?: string | null;
   category_id?: string;
   video_url?: string | null;
   gallery_urls?: string[];
@@ -247,7 +251,15 @@ export default function SpecialistPage() {
   })();
   const displayName = specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback");
   const aboutText = (specialist.description ?? specialist.bio)?.trim() || "";
-  const specializationText = specialist.category || t(dict, "specialist.about", { defaultValue: "Спеціаліст" });
+  const specializationText = getCategoryTitle(
+    {
+      title: specialist.category ?? null,
+      title_ru: specialist.category_title_ru ?? null,
+      title_de: specialist.category_title_de ?? null,
+      title_ua: specialist.category_title_ua ?? null,
+    },
+    lang
+  ) || t(dict, "specialist.about", { defaultValue: "Спеціаліст" });
   const galleryPlaceholders = Array.from({ length: 4 }, (_, idx) => idx);
   const workMode = getWorkFormat(specialist.format)
     ?? getWorkFormat(specialist.work_format)

@@ -247,7 +247,7 @@ export async function GET(request: NextRequest) {
 
     const categoryTitlePromise = supabase
       .from('categories')
-      .select('title')
+      .select('title, title_ru, title_de, title_ua')
       .eq('id', categoryId)
       .maybeSingle();
 

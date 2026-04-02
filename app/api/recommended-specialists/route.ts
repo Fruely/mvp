@@ -57,17 +57,26 @@ export async function GET() {
     )
   );
 
-  let categoryById = new Map<string, { title: string | null; slug: string | null }>();
+  let categoryById = new Map<string, {
+    title: string | null;
+    title_ru: string | null;
+    title_de: string | null;
+    title_ua: string | null;
+    slug: string | null;
+  }>();
   if (categoryIds.length > 0) {
     const { data: categories } = await supabase
       .from("categories")
-      .select("id, title, slug")
+      .select("id, title, title_ru, title_de, title_ua, slug")
       .in("id", categoryIds);
     categoryById = new Map(
       (categories ?? []).map((category) => [
         String(category.id),
         {
           title: typeof category.title === "string" ? category.title : null,
+          title_ru: typeof category.title_ru === "string" ? category.title_ru : null,
+          title_de: typeof category.title_de === "string" ? category.title_de : null,
+          title_ua: typeof category.title_ua === "string" ? category.title_ua : null,
           slug: typeof category.slug === "string" ? category.slug : null,
         },
       ])
@@ -117,6 +126,9 @@ export async function GET() {
       city: profile?.city ?? null,
       languages: Array.isArray(row.languages) ? row.languages : [],
       category_title: category?.title ?? null,
+      category_title_ru: category?.title_ru ?? null,
+      category_title_de: category?.title_de ?? null,
+      category_title_ua: category?.title_ua ?? null,
       category_slug: category?.slug ?? null,
       featured_priority: row.featured_priority ?? 0,
       rating_avg: ratingBySpecialistId.get(row.id)?.rating_avg ?? null,

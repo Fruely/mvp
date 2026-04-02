@@ -63,6 +63,9 @@ type PopularCategory = {
   id: string;
   slug: string;
   title: string | null;
+  title_ru?: string | null;
+  title_de?: string | null;
+  title_ua?: string | null;
   image_url?: string | null;
   specialists_count: number;
   sort_order?: number | null;
@@ -76,6 +79,9 @@ type RecommendedSpecialist = {
   city: string | null;
   languages: string[];
   category_title: string | null;
+  category_title_ru: string | null;
+  category_title_de: string | null;
+  category_title_ua: string | null;
   about_line?: string | null;
   rating_avg: number | null;
   reviews_count: number;
@@ -253,10 +259,13 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
           .filter(
             (item: { id?: unknown }) => item && typeof item.id === "string"
           )
-          .map((item: { id: string; slug?: string | null; title?: string | null; image_url?: string | null; specialists_count?: number | null; sort_order?: number | null }) => ({
+          .map((item: any) => ({
             id: item.id,
             slug: typeof item.slug === "string" && item.slug.trim() ? item.slug : item.id,
             title: typeof item.title === "string" ? item.title : null,
+            title_ru: typeof item.title_ru === "string" ? item.title_ru : null,
+            title_de: typeof item.title_de === "string" ? item.title_de : null,
+            title_ua: typeof item.title_ua === "string" ? item.title_ua : null,
             image_url: typeof item.image_url === "string" ? item.image_url : null,
             specialists_count: typeof item.specialists_count === "number" ? item.specialists_count : 0,
             sort_order: item.sort_order ?? null,
@@ -290,6 +299,9 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
               ? item.languages.filter((lang: unknown): lang is string => typeof lang === "string" && lang.trim().length > 0)
               : [],
             category_title: typeof item.category_title === "string" ? item.category_title : null,
+            category_title_ru: typeof item.category_title_ru === "string" ? item.category_title_ru : null,
+            category_title_de: typeof item.category_title_de === "string" ? item.category_title_de : null,
+            category_title_ua: typeof item.category_title_ua === "string" ? item.category_title_ua : null,
             about_line: typeof item.about_line === "string" ? item.about_line : null,
             rating_avg: typeof item.rating_avg === "number" ? item.rating_avg : null,
             reviews_count: typeof item.reviews_count === "number" ? item.reviews_count : 0,
@@ -368,7 +380,15 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                   )}
                 </div>
                 <p className="text-sm font-normal text-textSecondary line-clamp-1">
-                  {specialist.category_title || t(dict, "home.recommended.defaultCategory")}
+                  {getCategoryTitle(
+                    {
+                      title: specialist.category_title,
+                      title_ru: specialist.category_title_ru,
+                      title_de: specialist.category_title_de,
+                      title_ua: specialist.category_title_ua,
+                    },
+                    lang
+                  ) || t(dict, "home.recommended.defaultCategory")}
                 </p>
                 <p className="text-sm font-normal text-textSecondary line-clamp-1">
                   {[specialist.city, specialist.languages[0]].filter(Boolean).join(" • ")}
