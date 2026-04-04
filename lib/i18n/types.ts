@@ -20,6 +20,7 @@ export type Translations = {
   reviewFillAll: string;
   servicesTitle: string;
   servicesSubtitle: string;
+  servicePriceOnRequest: string;
   contactsTitle: string;
   contactsSubtitle: string;
   contactsLineLocation: string;

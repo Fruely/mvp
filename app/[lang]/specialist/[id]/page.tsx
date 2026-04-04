@@ -60,10 +60,48 @@ interface Specialist {
     id: string;
     title: string;
     price_from: number;
-    price_to: number;
+    price_to: number | null;
     currency: string;
     price_comment?: string | null;
   }>;
+}
+
+function getSpecialistServicePriceDisplay(
+  service: {
+    price_from: number;
+    price_to?: number | null;
+    currency?: string | null;
+    price_comment?: string | null;
+  },
+  priceOnRequestLabel: string
+): { main: string; commentBelow: string | null } {
+  const currency =
+    typeof service.currency === "string" && service.currency.trim() ? service.currency.trim() : "EUR";
+  const raw = service.price_from;
+  const pf =
+    typeof raw === "number" && Number.isFinite(raw)
+      ? raw
+      : typeof raw === "string" && String(raw).trim()
+        ? Number(String(raw).replace(/\s/g, "").replace(",", "."))
+        : NaN;
+  const comment =
+    typeof service.price_comment === "string" && service.price_comment.trim()
+      ? service.price_comment.trim()
+      : null;
+
+  if (Number.isFinite(pf) && pf > 0) {
+    const to = service.price_to;
+    const hasRange =
+      to != null && typeof to === "number" && Number.isFinite(to) && to > 0;
+    const main = hasRange ? `${pf}–${to} ${currency}` : `${pf} ${currency}`;
+    return { main, commentBelow: comment };
+  }
+
+  if (pf === 0 && comment) {
+    return { main: comment, commentBelow: null };
+  }
+
+  return { main: priceOnRequestLabel, commentBelow: null };
 }
 
 export default function SpecialistPage() {
@@ -695,16 +733,23 @@ export default function SpecialistPage() {
           {(Array.isArray(specialist?.specialist_services) && specialist.specialist_services.length > 0) && (
             <SectionCard title={sectionText.servicesTitle} subtitle={sectionText.servicesSubtitle}>
               <div className="space-y-3">
-                {(specialist.specialist_services ?? []).map((service) => (
-                  <div key={service.id} className="flex justify-between border-b pb-2">
-                    <span>{service.title}</span>
-                    <span className="font-medium">
-                      {service.price_to
-                        ? `${service.price_from}–${service.price_to} ${service.currency}`
-                        : `${service.price_from} ${service.currency}`}
-                    </span>
-                  </div>
-                ))}
+                {(specialist.specialist_services ?? []).map((service) => {
+                  const { main, commentBelow } = getSpecialistServicePriceDisplay(
+                    service,
+                    sectionText.servicePriceOnRequest
+                  );
+                  return (
+                    <div key={service.id} className="flex justify-between gap-3 border-b pb-2">
+                      <span className="min-w-0">{service.title}</span>
+                      <div className="shrink-0 max-w-[min(100%,18rem)] text-right">
+                        <span className="font-medium text-textPrimary">{main}</span>
+                        {commentBelow ? (
+                          <p className="mt-0.5 text-xs font-normal text-gray-500">{commentBelow}</p>
+                        ) : null}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </SectionCard>
           )}
