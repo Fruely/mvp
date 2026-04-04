@@ -92,6 +92,35 @@ function parseExperienceYears(value: string | null | undefined): number | null {
   return Number.isFinite(years) ? years : null;
 }
 
+function getDistanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+function parseOptionalCoord(value: string | null): number | null {
+  if (value == null || !String(value).trim()) return null;
+  const n = Number(String(value).trim().replace(",", "."));
+  return Number.isFinite(n) ? n : null;
+}
+
+function toSpecialistCoord(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const n = Number(value.trim().replace(",", "."));
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
@@ -104,6 +133,13 @@ export async function GET(request: NextRequest) {
     const language = searchParams.get('language')?.trim().toLowerCase() ?? '';
     const city = searchParams.get('city')?.trim().toLowerCase() ?? '';
     const sort = (searchParams.get('sort') as SortMode | null) ?? 'relevance';
+
+    const userLat =
+      parseOptionalCoord(searchParams.get("user_lat")) ??
+      parseOptionalCoord(searchParams.get("lat"));
+    const userLng =
+      parseOptionalCoord(searchParams.get("user_lng")) ??
+      parseOptionalCoord(searchParams.get("lng"));
 
     const supabase = createSupabaseServerClient();
 
@@ -355,6 +391,9 @@ export async function GET(request: NextRequest) {
       const newUntil = newUntilTs ? new Date(newUntilTs).toISOString() : null;
       const nameFromDb = nameBySpecialistId.get(row.id) ?? (typeof row.name === "string" && row.name.trim() ? row.name.trim() : null);
 
+      const specLat = toSpecialistCoord(row.lat);
+      const specLng = toSpecialistCoord(row.lng);
+
       return {
         id: row.id,
         slug: (typeof row.slug === 'string' && row.slug.trim()) ? row.slug.trim() : normalizeSlug(nameFromDb || '', row.id),
@@ -384,10 +423,52 @@ export async function GET(request: NextRequest) {
           typeof row.service_radius_km === 'number' && Number.isFinite(row.service_radius_km) && row.service_radius_km > 0
             ? row.service_radius_km
             : null,
+        lat: specLat,
+        lng: specLng,
       };
     });
 
-    const filtered = merged.filter((row) => {
+    const withDistance = merged.map((s) => {
+      if (
+        userLat == null ||
+        userLng == null ||
+        !Number.isFinite(userLat) ||
+        !Number.isFinite(userLng) ||
+        s.lat == null ||
+        s.lng == null ||
+        !Number.isFinite(s.lat) ||
+        !Number.isFinite(s.lng)
+      ) {
+        return { ...s, distance: null as number | null };
+      }
+
+      return {
+        ...s,
+        distance: getDistanceKm(userLat, userLng, s.lat, s.lng),
+      };
+    });
+
+    const geoFiltered = withDistance.filter((s) => {
+      if (s.work_format === "online") return true;
+
+      if (userLat == null || userLng == null || !Number.isFinite(userLat) || !Number.isFinite(userLng)) {
+        return true;
+      }
+
+      if (s.lat == null || s.lng == null || !Number.isFinite(s.lat) || !Number.isFinite(s.lng)) {
+        return true;
+      }
+
+      if (!s.mobile_service) return true;
+
+      if (s.service_radius_km == null || s.service_radius_km <= 0) return true;
+
+      if (s.distance === null) return true;
+
+      return s.distance <= s.service_radius_km;
+    });
+
+    const filtered = geoFiltered.filter((row) => {
       const languageMatch = !language
         || row.languages.some((value) => value?.toLowerCase() === language);
       const cityMatch = !city || row.city?.toLowerCase() === city;
@@ -405,26 +486,29 @@ export async function GET(request: NextRequest) {
     }
 
     const total = filtered.length;
-    const page = filtered.slice(offset, offset + limit).map((row) => ({
-      id: row.id,
-      slug: row.slug,
-      name: row.name,
-      avatar_url: row.avatar_url,
-      about_line: row.about_line,
-      city: row.city,
-      work_format: row.work_format,
-      languages: row.languages,
-      is_verified: row.is_verified,
-      is_new: row.is_new,
-      new_until: row.new_until,
-      min_price_from: row.min_price_from,
-      min_price_to: row.min_price_to,
-      min_pricing_type: row.min_pricing_type,
-      min_currency: row.min_currency,
-      active_services_count: row.active_services_count,
-      mobile_service: row.mobile_service,
-      service_radius_km: row.service_radius_km,
-    }));
+    const page = filtered.slice(offset, offset + limit).map((row) => {
+      const { distance: _d, lat: _lat, lng: _lng, ...rest } = row;
+      return {
+        id: rest.id,
+        slug: rest.slug,
+        name: rest.name,
+        avatar_url: rest.avatar_url,
+        about_line: rest.about_line,
+        city: rest.city,
+        work_format: rest.work_format,
+        languages: rest.languages,
+        is_verified: rest.is_verified,
+        is_new: rest.is_new,
+        new_until: rest.new_until,
+        min_price_from: rest.min_price_from,
+        min_price_to: rest.min_price_to,
+        min_pricing_type: rest.min_pricing_type,
+        min_currency: rest.min_currency,
+        active_services_count: rest.active_services_count,
+        mobile_service: rest.mobile_service,
+        service_radius_km: rest.service_radius_km,
+      };
+    });
     const hasMore = offset + page.length < total;
 
     const languageOptions = Array.from(
