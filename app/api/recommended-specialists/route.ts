@@ -13,25 +13,52 @@ function shuffle<T>(items: T[]): T[] {
   return next;
 }
 
+function hasValidServiceForRecommended(services: unknown): boolean {
+  if (!Array.isArray(services) || services.length === 0) return false;
+  return services.some((s) => {
+    const row = s as { title?: unknown; price_from?: unknown; is_active?: unknown };
+    const title = typeof row.title === "string" ? row.title.trim() : "";
+    if (!title) return false;
+    if (row.is_active !== true) return false;
+    const p = row.price_from;
+    const n =
+      typeof p === "number" && Number.isFinite(p)
+        ? p
+        : typeof p === "string" && p.trim()
+          ? Number(p.trim().replace(/\s/g, "").replace(",", "."))
+          : NaN;
+    return Number.isFinite(n) && n > 0;
+  });
+}
+
 export async function GET() {
   const supabase = createSupabaseServerClient();
 
   const { data: specRows, error: specError } = await supabase
     .from("specialists")
-    .select("id, slug, name, avatar_url, category_id, languages, featured_priority, is_featured")
+    .select(
+      "id, slug, name, avatar_url, category_id, languages, featured_priority, is_featured, specialist_services!inner(id, title, price_from, is_active)"
+    )
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
     .eq("is_active", true)
     .eq("is_visible", true)
     .eq("is_verified", true)
+    .eq("specialist_services.is_active", true)
+    .gt("specialist_services.price_from", 0)
+    .not("specialist_services.title", "eq", "")
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false })
-    .limit(10);
+    .limit(24);
 
   if (specError) {
     return jsonNoStore({ error: specError.message }, { status: 500 });
   }
 
-  const specialists = specRows ?? [];
+  const specialists = (specRows ?? []).filter((row) =>
+    hasValidServiceForRecommended(
+      (row as { specialist_services?: unknown }).specialist_services
+    )
+  );
   if (specialists.length === 0) return jsonNoStore({ data: [] });
 
   const specialistIds = specialists.map((r) => r.id);
