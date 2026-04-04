@@ -132,15 +132,16 @@ function parseServicePriceFromRow(rawPf: unknown): number | null {
 }
 
 type SpecialistServiceListMeta = {
-  min_price_from: number;
+  min_price_from: number | null;
   min_price_to: number | null;
   min_pricing_type: ServicePricingType;
   min_currency: string;
   active_services_count: number;
   price_comment: string | null;
+  has_real_price: boolean;
 };
 
-/** Prefer minimum of prices &gt; 0; use first price=0 row (and its comment) only when no positive prices exist. */
+/** Real prices (&gt; 0) determine min display and sorting; zero-priced rows only when no positive price exists. */
 function aggregateSpecialistServicesForList(rows: ServiceRow[]): SpecialistServiceListMeta | null {
   type Parsed = {
     priceFrom: number;
@@ -182,18 +183,28 @@ function aggregateSpecialistServicesForList(rows: ServiceRow[]): SpecialistServi
   const realPrices = parsed.filter((p) => p.priceFrom > 0);
   const zeroPrices = parsed.filter((p) => p.priceFrom === 0);
 
-  const chosen =
-    realPrices.length > 0
-      ? realPrices.reduce((best, p) => (p.priceFrom < best.priceFrom ? p : best))
-      : zeroPrices[0];
+  if (realPrices.length > 0) {
+    const chosen = realPrices.reduce((best, p) => (p.priceFrom < best.priceFrom ? p : best));
+    return {
+      min_price_from: chosen.priceFrom,
+      min_price_to: chosen.priceTo,
+      min_pricing_type: chosen.pricingType,
+      min_currency: chosen.currency,
+      active_services_count: parsed.length,
+      price_comment: chosen.rowComment,
+      has_real_price: true,
+    };
+  }
 
+  const chosen = zeroPrices[0];
   return {
-    min_price_from: chosen.priceFrom,
+    min_price_from: 0,
     min_price_to: chosen.priceTo,
     min_pricing_type: chosen.pricingType,
     min_currency: chosen.currency,
     active_services_count: parsed.length,
     price_comment: chosen.rowComment,
+    has_real_price: false,
   };
 }
 
@@ -518,6 +529,7 @@ export async function GET(request: NextRequest) {
         min_currency: serviceMeta?.min_currency ?? null,
         active_services_count: serviceMeta?.active_services_count ?? 0,
         price_comment: serviceMeta?.price_comment ?? null,
+        has_real_price: serviceMeta?.has_real_price ?? false,
         mobile_service: Boolean(row.mobile_service),
         service_radius_km:
           typeof row.service_radius_km === 'number' && Number.isFinite(row.service_radius_km) && row.service_radius_km > 0
@@ -600,7 +612,18 @@ export async function GET(request: NextRequest) {
     } else if (sort === 'experience') {
       filtered.sort((a, b) => (b._sort_experience ?? -1) - (a._sort_experience ?? -1));
     } else {
-      filtered.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'uk'));
+      filtered.sort((a, b) => {
+        const aReal = Boolean(a.has_real_price);
+        const bReal = Boolean(b.has_real_price);
+        if (aReal !== bReal) return aReal ? -1 : 1;
+
+        const ap = a.min_price_from ?? Number.POSITIVE_INFINITY;
+        const bp = b.min_price_from ?? Number.POSITIVE_INFINITY;
+        const diff = ap - bp;
+        if (diff !== 0 && !Number.isNaN(diff)) return diff;
+
+        return (a.name || '').localeCompare(b.name || '', 'uk');
+      });
     }
 
     const total = filtered.length;
@@ -624,6 +647,7 @@ export async function GET(request: NextRequest) {
         min_currency: rest.min_currency,
         active_services_count: rest.active_services_count,
         price_comment: rest.price_comment,
+        has_real_price: rest.has_real_price,
         mobile_service: rest.mobile_service,
         service_radius_km: rest.service_radius_km,
       };
