@@ -277,6 +277,10 @@ export async function PUT(request: NextRequest) {
         .filter((service) => Number.isFinite(service.price_from) && service.price_from >= 0)
     : [];
 
+  if (process.env.NODE_ENV === "development") {
+    console.log("SERVICES TO SAVE:", normalizedServices);
+  }
+
   const { data: existingServices } = await supabase
     .from("specialist_services")
     .select("id")

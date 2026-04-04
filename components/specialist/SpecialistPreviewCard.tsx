@@ -224,9 +224,9 @@ export default function SpecialistPreviewCard({
             ) : (
               <span />
             )}
-            {specialist.price_comment ? (
+            {specialist.price_comment && (
               <p className="mt-1 text-xs text-gray-500">{specialist.price_comment}</p>
-            ) : null}
+            )}
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
             <Link

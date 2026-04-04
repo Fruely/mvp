@@ -370,6 +370,7 @@ export async function GET(request: NextRequest) {
         .from('specialist_services')
         .select('specialist_id, pricing_type, price_from, price_to, currency, price_comment')
         .in('specialist_id', specialistIds)
+        .eq('category_id', categoryId)
         .eq('is_active', true);
 
       if (servicesResponse.error) {
@@ -398,8 +399,16 @@ export async function GET(request: NextRequest) {
     >();
     for (const row of serviceRows) {
       if (!row?.specialist_id) continue;
-      if (typeof row.price_from !== 'number' || !Number.isFinite(row.price_from)) continue;
-      if (row.price_from < 0) continue;
+      const rawPf = row.price_from as number | string | null;
+      let priceFromParsed: number;
+      if (typeof rawPf === "number" && Number.isFinite(rawPf)) {
+        priceFromParsed = rawPf;
+      } else if (typeof rawPf === "string" && rawPf.trim()) {
+        priceFromParsed = Number(rawPf.trim().replace(/\s/g, "").replace(",", "."));
+      } else {
+        continue;
+      }
+      if (!Number.isFinite(priceFromParsed) || priceFromParsed < 0) continue;
       const pricingType: ServicePricingType =
         row.pricing_type === 'range' || row.pricing_type === 'hourly' || row.pricing_type === 'fixed'
           ? row.pricing_type
@@ -409,14 +418,14 @@ export async function GET(request: NextRequest) {
       const nextPriceTo =
         typeof row.price_to === 'number' && Number.isFinite(row.price_to) ? row.price_to : null;
       const rowComment =
-        typeof row.price_comment === 'string' && row.price_comment.trim()
-          ? row.price_comment.trim().slice(0, 120)
+        row.price_comment != null && String(row.price_comment).trim()
+          ? String(row.price_comment).trim().slice(0, 120)
           : null;
 
       const prev = serviceMetaBySpecialistId.get(row.specialist_id);
       if (!prev) {
         serviceMetaBySpecialistId.set(row.specialist_id, {
-          min_price_from: row.price_from,
+          min_price_from: priceFromParsed,
           min_price_to: nextPriceTo,
           min_pricing_type: pricingType,
           min_currency: currency,
@@ -425,9 +434,9 @@ export async function GET(request: NextRequest) {
         });
         continue;
       }
-      const isBetter = row.price_from < prev.min_price_from;
+      const isBetter = priceFromParsed < prev.min_price_from;
       serviceMetaBySpecialistId.set(row.specialist_id, {
-        min_price_from: isBetter ? row.price_from : prev.min_price_from,
+        min_price_from: isBetter ? priceFromParsed : prev.min_price_from,
         min_price_to: isBetter ? nextPriceTo : prev.min_price_to,
         min_pricing_type: isBetter ? pricingType : prev.min_pricing_type,
         min_currency: isBetter ? currency : prev.min_currency,
@@ -488,6 +497,12 @@ export async function GET(request: NextRequest) {
         lng: specLng,
       };
     });
+
+    if (process.env.NODE_ENV === "development") {
+      for (const row of merged) {
+        console.log("PRICE COMMENT FLOW:", { id: row.id, price_comment: row.price_comment });
+      }
+    }
 
     _trace.merged = merged.length;
     if (debugEnabled) {
