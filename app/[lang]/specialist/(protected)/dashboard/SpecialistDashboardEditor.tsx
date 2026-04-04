@@ -49,6 +49,20 @@ type Props = {
 
 const MAX_GALLERY_IMAGES = 5;
 
+function sanitizePriceValue(raw: string): string {
+  return raw.replace(/\s/g, "").replace(",", ".");
+}
+
+function hasValidServicesForPublish(services: ServiceInput[]): boolean {
+  return services.some((s) => {
+    if (!s.title?.trim()) return false;
+    const sanitized = sanitizePriceValue(s.price_from.trim());
+    if (sanitized === "") return false;
+    if (!/^\d+(\.\d+)?$/.test(sanitized)) return false;
+    const n = Number(sanitized);
+    return Number.isFinite(n) && n >= 0;
+  });
+}
 
 export default function SpecialistDashboardEditor({
   dict,
@@ -83,18 +97,29 @@ export default function SpecialistDashboardEditor({
   );
 
   const needsPostalCode = form.work_format !== "online";
+  const hasValidService = useMemo(
+    () => hasValidServicesForPublish(form.services),
+    [form.services]
+  );
+  const publishServiceHint = useMemo((): "service" | "price" | null => {
+    if (hasValidService) return null;
+    const hasTitledRow = form.services.some((s) => s.title?.trim().length > 0);
+    return hasTitledRow ? "price" : "service";
+  }, [form.services, hasValidService]);
+
   const publicationReady = useMemo(() => {
     return Boolean(
       form.name.trim() &&
         form.category_id.trim() &&
         (!needsPostalCode || /^\d{5}$/.test(form.postal_code.trim())) &&
         form.about_me.trim() &&
-        form.photo_url.trim()
+        form.photo_url.trim() &&
+        hasValidService
     );
-  }, [form, needsPostalCode]);
+  }, [form, needsPostalCode, hasValidService]);
 
   function sanitizePrice(raw: string): string {
-    return raw.replace(/\s/g, "").replace(",", ".");
+    return sanitizePriceValue(raw);
   }
 
   function validatePrice(value: string): string | null {
@@ -243,6 +268,13 @@ export default function SpecialistDashboardEditor({
       if (needsPostalCode && !/^\d{5}$/.test(form.postal_code.trim())) missing.push(t(dict, "dashboard.fields.plz"));
       if (!form.about_me.trim()) missing.push(t(dict, "dashboard.fields.aboutMe"));
       if (!form.photo_url.trim()) missing.push(t(dict, "dashboard.fields.photo"));
+      if (!hasValidService) {
+        missing.push(
+          publishServiceHint === "price"
+            ? t(dict, "dashboard.messages.publishNeedsPrice")
+            : t(dict, "dashboard.messages.publishNeedsService")
+        );
+      }
       setError(missing.length ? `${t(dict, "dashboard.messages.fillRequired")}: ${missing.join(", ")}` : t(dict, "dashboard.messages.fillRequired"));
       setSuccess(null);
       return;
@@ -598,6 +630,13 @@ export default function SpecialistDashboardEditor({
             ) : success ? (
               <p className="text-emerald-600">{success}</p>
             ) : null}
+            {!isDirty && !hasValidService && publishServiceHint ? (
+              <p className="mt-2 text-sm font-medium text-amber-700">
+                {publishServiceHint === "price"
+                  ? t(dict, "dashboard.messages.publishNeedsPrice")
+                  : t(dict, "dashboard.messages.publishNeedsService")}
+              </p>
+            ) : null}
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
             <button
@@ -611,7 +650,7 @@ export default function SpecialistDashboardEditor({
             <button
               type="button"
               onClick={publish}
-              disabled={publishing || isDirty}
+              disabled={publishing || isDirty || !publicationReady}
               className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
             >
               {publishing ? t(dict, "dashboard.buttons.publishing") : t(dict, "dashboard.buttons.publish")}

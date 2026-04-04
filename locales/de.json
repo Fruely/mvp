@@ -254,6 +254,8 @@
   "dashboard.messages.publishFailed": "Veröffentlichung fehlgeschlagen",
   "dashboard.messages.published": "Profil veröffentlicht",
   "dashboard.messages.unsavedChanges": "Es gibt ungespeicherte Änderungen",
+  "dashboard.messages.publishNeedsService": "Fügen Sie mindestens eine Leistung hinzu",
+  "dashboard.messages.publishNeedsPrice": "Geben Sie einen Preis für die Leistung an",
   "dashboard.fields.name": "Name",
   "dashboard.fields.category": "Kategorie",
   "dashboard.fields.plz": "Postleitzahl (PLZ)",

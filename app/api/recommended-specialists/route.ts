@@ -22,6 +22,7 @@ export async function GET() {
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
     .eq("is_active", true)
     .eq("is_visible", true)
+    .eq("is_verified", true)
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(10);

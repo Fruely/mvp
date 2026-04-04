@@ -253,6 +253,8 @@
   "dashboard.messages.publishFailed": "Не вдалося опублікувати",
   "dashboard.messages.published": "Профіль опубліковано",
   "dashboard.messages.unsavedChanges": "Є незбережені зміни",
+  "dashboard.messages.publishNeedsService": "Додайте хоча б одну послугу",
+  "dashboard.messages.publishNeedsPrice": "Вкажіть ціну для послуги",
   "dashboard.fields.name": "Імʼя",
   "dashboard.fields.category": "Категорія",
   "dashboard.fields.plz": "Поштовий індекс (PLZ)",

@@ -269,6 +269,8 @@
   "dashboard.messages.publishFailed": "Не удалось опубликовать",
   "dashboard.messages.published": "Профиль опубликован",
   "dashboard.messages.unsavedChanges": "Есть несохранённые изменения",
+  "dashboard.messages.publishNeedsService": "Добавьте хотя бы одну услугу",
+  "dashboard.messages.publishNeedsPrice": "Укажите цену для услуги",
   "dashboard.fields.name": "Имя",
   "dashboard.fields.category": "Категория",
   "dashboard.fields.plz": "Почтовый индекс (PLZ)",
