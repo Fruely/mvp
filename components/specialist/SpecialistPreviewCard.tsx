@@ -86,16 +86,35 @@ export default function SpecialistPreviewCard({
   const pricingType = specialist.min_pricing_type;
   const currency = specialist.min_currency?.trim() || "EUR";
   const serviceCount = specialist.active_services_count ?? 0;
-  const priceText =
-    typeof minPrice === "number" && Number.isFinite(minPrice)
-      ? serviceCount > 1
-        ? `${fromLabel(lang)} ${minPrice}${currency === "EUR" ? "€" : ` ${currency}`}`
-        : pricingType === "range" && typeof minPriceTo === "number" && Number.isFinite(minPriceTo)
-          ? `${minPrice}–${minPriceTo}${currency === "EUR" ? "€" : ` ${currency}`}`
-          : pricingType === "hourly"
-            ? `${minPrice}${currency === "EUR" ? "€" : ` ${currency}`}/час`
-            : `${minPrice}${currency === "EUR" ? "€" : ` ${currency}`}`
+  const priceCommentTrimmed =
+    typeof specialist.price_comment === "string" && specialist.price_comment.trim()
+      ? specialist.price_comment.trim()
       : null;
+
+  const priceText = (() => {
+    if (typeof minPrice !== "number" || !Number.isFinite(minPrice)) return null;
+
+    if (minPrice > 0) {
+      if (serviceCount > 1) {
+        return `${fromLabel(lang)} ${minPrice}${currency === "EUR" ? "€" : ` ${currency}`}`;
+      }
+      if (pricingType === "range" && typeof minPriceTo === "number" && Number.isFinite(minPriceTo)) {
+        return `${minPrice}–${minPriceTo}${currency === "EUR" ? "€" : ` ${currency}`}`;
+      }
+      if (pricingType === "hourly") {
+        return `${minPrice}${currency === "EUR" ? "€" : ` ${currency}`}/час`;
+      }
+      return `${minPrice}${currency === "EUR" ? "€" : ` ${currency}`}`;
+    }
+
+    if (minPrice === 0 && priceCommentTrimmed) {
+      return priceCommentTrimmed;
+    }
+
+    return null;
+  })();
+
+  const showPriceCommentSecondary = Boolean(minPrice != null && Number.isFinite(minPrice) && minPrice > 0 && priceCommentTrimmed);
 
   return (
     <article className="group overflow-hidden rounded-md border border-black/5 bg-white shadow-card transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg">
@@ -224,9 +243,9 @@ export default function SpecialistPreviewCard({
             ) : (
               <span />
             )}
-            {specialist.price_comment && (
-              <p className="mt-1 text-xs text-gray-500">{specialist.price_comment}</p>
-            )}
+            {showPriceCommentSecondary ? (
+              <p className="mt-1 text-xs text-gray-500">{priceCommentTrimmed}</p>
+            ) : null}
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
             <Link
