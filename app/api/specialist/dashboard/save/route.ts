@@ -30,6 +30,8 @@ type Payload = {
   work_format?: "online" | "offline" | "hybrid";
   languages?: string[];
   postal_code?: string;
+  mobile_service?: boolean;
+  service_radius_km?: string;
   city?: string;
   address?: string;
   about_me?: string;
@@ -147,6 +149,20 @@ export async function PUT(request: NextRequest) {
   }
   if (typeof body.postal_code === "string") {
     specialistPatch.postal_code = body.postal_code.trim() || null;
+  }
+
+  if (typeof body.mobile_service === "boolean") {
+    specialistPatch.mobile_service = body.mobile_service;
+  }
+
+  if (typeof body.service_radius_km !== "undefined") {
+    const raw = String(body.service_radius_km ?? "").trim();
+    if (raw === "") {
+      specialistPatch.service_radius_km = null;
+    } else {
+      const n = Number(raw);
+      specialistPatch.service_radius_km = Number.isFinite(n) && n > 0 ? n : null;
+    }
   }
 
   const avatarUrlValue = (body as Record<string, unknown>).avatar_url;

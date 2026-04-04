@@ -20,6 +20,10 @@ type SpecialistRow = {
   work_format?: WorkFormat | null;
   approved_at?: string | null;
   created_at?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  mobile_service?: boolean | null;
+  service_radius_km?: number | null;
 };
 
 type ProfileRow = {
@@ -127,9 +131,9 @@ export async function GET(request: NextRequest) {
     }
 
     const fullSelect =
-      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at)';
+      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,lat,lng,mobile_service,service_radius_km)';
     const fallbackSelect =
-      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,created_at)';
+      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,created_at,lat,lng,mobile_service,service_radius_km)';
 
     let rows: SpecialistRow[] | null = null;
     let queryError: { message?: string } | null = null;
@@ -188,7 +192,7 @@ export async function GET(request: NextRequest) {
     if (uniqueSpecialists.length === 0) {
       const { data: directSpecialists, error: directError } = await supabase
         .from("specialists")
-        .select("id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at")
+        .select("id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,lat,lng,mobile_service,service_radius_km")
         .eq("category_id", categoryId)
         .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
         .eq("is_active", true)
@@ -221,6 +225,10 @@ export async function GET(request: NextRequest) {
             work_format: r.work_format ?? null,
             approved_at: r.approved_at ?? null,
             created_at: r.created_at ?? null,
+            lat: r.lat ?? null,
+            lng: r.lng ?? null,
+            mobile_service: r.mobile_service ?? null,
+            service_radius_km: r.service_radius_km ?? null,
           })) as SpecialistRow[];
       }
     }
@@ -371,6 +379,11 @@ export async function GET(request: NextRequest) {
         min_pricing_type: serviceMeta?.min_pricing_type ?? null,
         min_currency: serviceMeta?.min_currency ?? null,
         active_services_count: serviceMeta?.active_services_count ?? 0,
+        mobile_service: Boolean(row.mobile_service),
+        service_radius_km:
+          typeof row.service_radius_km === 'number' && Number.isFinite(row.service_radius_km) && row.service_radius_km > 0
+            ? row.service_radius_km
+            : null,
       };
     });
 
@@ -409,6 +422,8 @@ export async function GET(request: NextRequest) {
       min_pricing_type: row.min_pricing_type,
       min_currency: row.min_currency,
       active_services_count: row.active_services_count,
+      mobile_service: row.mobile_service,
+      service_radius_km: row.service_radius_km,
     }));
     const hasMore = offset + page.length < total;
 

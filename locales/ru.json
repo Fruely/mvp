@@ -342,5 +342,11 @@
   "dashboard.sidebar.nav.services": "Услуги",
   "dashboard.sidebar.nav.settings": "Настройки",
   "dashboard.sidebar.closeMenu": "Закрыть меню",
-  "dashboard.topBar.toggleMenu": "Открыть меню"
+  "dashboard.topBar.toggleMenu": "Открыть меню",
+  "dashboard.fields.mobileService": "Выезжаю к клиенту",
+  "dashboard.fields.mobileServiceHint": "Отметьте, если вы оказываете услуги с выездом к клиенту.",
+  "dashboard.fields.serviceRadius": "Радиус выезда (км)",
+  "dashboard.fields.serviceRadiusPlaceholder": "напр. 30",
+  "dashboard.fields.serviceRadiusHint": "Максимальное расстояние от вашего адреса, на которое вы готовы выехать.",
+  "specialist.radiusLabel": "Выезд до {{km}} км"
 }

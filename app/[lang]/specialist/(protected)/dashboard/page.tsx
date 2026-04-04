@@ -28,7 +28,7 @@ export default async function SpecialistDashboardPage({
 
   const { data: specExtra } = await service
     .from("specialists")
-    .select("postal_code, country_code, telegram_chat_id")
+    .select("postal_code, country_code, telegram_chat_id, mobile_service, service_radius_km")
     .eq("id", specialist.id)
     .maybeSingle();
 
@@ -86,6 +86,11 @@ export default async function SpecialistDashboardPage({
           video_url: typeof profile?.video_url === "string" ? profile.video_url : "",
           postal_code: typeof specExtra?.postal_code === "string" ? specExtra.postal_code : "",
           country_code: typeof specExtra?.country_code === "string" ? specExtra.country_code : "DE",
+          mobile_service: Boolean(specExtra?.mobile_service),
+          service_radius_km:
+            typeof specExtra?.service_radius_km === "number" && Number.isFinite(specExtra.service_radius_km)
+              ? String(specExtra.service_radius_km)
+              : "",
           city: typeof profile?.city === "string" ? profile.city : "",
           address: typeof profile?.address === "string" ? profile.address : "",
           photo_url: typeof profile?.photo_url === "string" ? profile.photo_url : "",

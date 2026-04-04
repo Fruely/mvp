@@ -27,6 +27,8 @@ type SpecialistPreview = {
   min_pricing_type?: "fixed" | "range" | "hourly" | null;
   min_currency?: string | null;
   active_services_count?: number | null;
+  mobile_service?: boolean;
+  service_radius_km?: number | null;
 };
 
 function workFormatLabel(workFormat: SpecialistPreview["work_format"]): string {
@@ -186,6 +188,12 @@ export default function SpecialistPreviewCard({
             <span className="inline-flex items-center gap-1">
               <span aria-hidden>🧭</span>
               {experienceText}
+            </span>
+          ) : null}
+          {specialist.mobile_service && specialist.service_radius_km != null && specialist.service_radius_km > 0 ? (
+            <span className="inline-flex items-center gap-1">
+              <span aria-hidden>🚗</span>
+              {t(dict, "specialist.radiusLabel").replace("{{km}}", String(specialist.service_radius_km))}
             </span>
           ) : null}
         </div>

@@ -29,6 +29,8 @@ type Props = {
     video_url: string;
     postal_code: string;
     country_code: string;
+    mobile_service: boolean;
+    service_radius_km: string;
     city: string;
     address: string;
     photo_url: string;
@@ -223,6 +225,8 @@ export default function SpecialistDashboardEditor({
         ...form,
         category_id: form.category_id || null,
         video_url: form.video_url.trim(),
+        mobile_service: form.mobile_service,
+        service_radius_km: form.mobile_service ? form.service_radius_km : "",
         languages: form.languages.map((lang) => lang.trim()).filter(Boolean),
         gallery_urls: form.gallery_urls.map((url) => url.trim()).filter(Boolean),
         services: form.services
@@ -438,6 +442,39 @@ export default function SpecialistDashboardEditor({
               <option value="hybrid">{t(dict, "dashboard.workFormat.hybrid")}</option>
             </select>
           </label>
+          {form.work_format !== "online" && (
+            <div className="space-y-2 text-sm md:col-span-2">
+              <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={form.mobile_service}
+                  onChange={(e) => setForm((prev) => ({ ...prev, mobile_service: e.target.checked }))}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.mobileService")}</span>
+              </label>
+              <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.mobileServiceHint")}</p>
+              {form.mobile_service && (
+                <label className="block space-y-1">
+                  <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.serviceRadius")}</span>
+                  <input
+                    value={form.service_radius_km}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/[^\d]/g, "").slice(0, 4);
+                      setForm((prev) => ({ ...prev, service_radius_km: v }));
+                    }}
+                    type="number"
+                    min="1"
+                    max="500"
+                    inputMode="numeric"
+                    placeholder={t(dict, "dashboard.fields.serviceRadiusPlaceholder")}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2"
+                  />
+                  <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.serviceRadiusHint")}</p>
+                </label>
+              )}
+            </div>
+          )}
           <fieldset className="space-y-2 text-sm md:col-span-2">
             <legend className="font-medium text-gray-700">{t(dict, "dashboard.fields.languages")}</legend>
             <div className="flex flex-wrap gap-x-5 gap-y-2">

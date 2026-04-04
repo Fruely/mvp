@@ -29,6 +29,8 @@ interface SpecialistPreview {
   min_pricing_type?: "fixed" | "range" | "hourly" | null;
   min_currency?: string | null;
   active_services_count?: number | null;
+  mobile_service?: boolean;
+  service_radius_km?: number | null;
 }
 
 interface Category {
@@ -141,6 +143,8 @@ function normalizeSpecialistPreview(input: unknown): SpecialistPreview | null {
         : null,
     min_currency: typeof row.min_currency === "string" && row.min_currency.trim() ? row.min_currency : null,
     active_services_count: toNullableNumber(row.active_services_count),
+    mobile_service: Boolean(row.mobile_service),
+    service_radius_km: toNullableNumber(row.service_radius_km),
   };
 }
 
