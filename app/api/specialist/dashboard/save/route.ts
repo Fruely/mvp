@@ -220,6 +220,19 @@ export async function PUT(request: NextRequest) {
     return jsonNoStore({ error: "Failed to update specialist profile" }, { status: 500 });
   }
 
+  const { data: specialistAfter, error: specialistAfterError } = await supabase
+    .from("specialists")
+    .select("category_id")
+    .eq("id", specialistId)
+    .maybeSingle();
+
+  if (specialistAfterError) {
+    return jsonNoStore({ error: "Failed to load specialist after save" }, { status: 500 });
+  }
+
+  const serviceCategoryId =
+    typeof specialistAfter?.category_id === "string" ? specialistAfter.category_id : null;
+
   const profilePatch = {
     about_me: typeof body.about_me === "string" ? body.about_me.trim() || null : null,
     city: typeof body.city === "string" ? body.city.trim() || null : null,
@@ -300,10 +313,8 @@ export async function PUT(request: NextRequest) {
         currency: service.currency,
         is_active: service.is_active,
         price_comment: service.price_comment,
+        category_id: serviceCategoryId,
       };
-      if (effectiveCategoryId !== null) {
-        updatePayload.category_id = effectiveCategoryId;
-      }
       const { error } = await supabase
         .from("specialist_services")
         .update(updatePayload)
@@ -320,10 +331,8 @@ export async function PUT(request: NextRequest) {
         currency: service.currency,
         is_active: service.is_active,
         price_comment: service.price_comment,
+        category_id: serviceCategoryId,
       };
-      if (effectiveCategoryId !== null) {
-        insertPayload.category_id = effectiveCategoryId;
-      }
       const { data, error } = await supabase
         .from("specialist_services")
         .insert(insertPayload)
@@ -341,6 +350,15 @@ export async function PUT(request: NextRequest) {
       .delete()
       .eq("specialist_id", specialistId)
       .in("id", idsToDelete);
+  }
+
+  const { error: syncCategoryError } = await supabase
+    .from("specialist_services")
+    .update({ category_id: serviceCategoryId })
+    .eq("specialist_id", specialistId);
+
+  if (syncCategoryError) {
+    return jsonNoStore({ error: "Failed to sync service categories" }, { status: 500 });
   }
 
   return jsonNoStore({ success: true });

@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
     duration_minutes: durationMinutes,
     is_active: validPrice ? requestedActive : false,
   };
-  if (ctx.categoryId) payload.category_id = ctx.categoryId;
+  payload.category_id = ctx.categoryId;
 
   const { data, error } = await ctx.supabase
     .from("specialist_services")
@@ -241,7 +241,7 @@ export async function PATCH(request: NextRequest) {
   if (!validPrice) {
     patch.is_active = false;
   }
-  if (ctx.categoryId) patch.category_id = ctx.categoryId;
+  patch.category_id = ctx.categoryId;
 
   const { data, error } = await ctx.supabase
     .from("specialist_services")
