@@ -61,6 +61,7 @@ export async function POST() {
     .from("specialist_services")
     .select("title, price_from, is_active")
     .eq("specialist_id", specialistId)
+    .eq("category_id", specialist.category_id as string)
     .eq("is_active", true);
 
   if (servicesCheckError) {
