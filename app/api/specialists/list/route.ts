@@ -168,11 +168,20 @@ export async function GET(request: NextRequest) {
 
     const fullSelect =
       'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,lat,lng,mobile_service,service_radius_km)';
+    const safeSelect =
+      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at)';
     const fallbackSelect =
-      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,created_at,lat,lng,mobile_service,service_radius_km)';
+      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,created_at)';
 
     let rows: SpecialistRow[] | null = null;
     let queryError: { message?: string } | null = null;
+
+    const extractRows = (data: unknown): SpecialistRow[] =>
+      ((data as ServiceWithSpecialistRow[] | null) ?? [])
+        .map((row) =>
+          Array.isArray(row.specialists) ? row.specialists[0] ?? null : row.specialists
+        )
+        .filter((row): row is SpecialistRow => Boolean(row));
 
     const initial = await supabase
       .from("specialist_services")
@@ -184,32 +193,45 @@ export async function GET(request: NextRequest) {
       .eq("specialists.is_active", true)
       .eq("specialists.is_visible", true);
 
-    rows = ((initial.data as ServiceWithSpecialistRow[] | null) ?? [])
-      .map((row) =>
-        Array.isArray(row.specialists) ? row.specialists[0] ?? null : row.specialists
-      )
-      .filter((row): row is SpecialistRow => Boolean(row));
+    rows = extractRows(initial.data);
     queryError = initial.error;
+    console.log("[specialists/list] primary query:", { rows: rows.length, error: queryError?.message ?? null });
 
-    if (queryError && /column.*does not exist/i.test(queryError.message ?? '')) {
-      const fallback = await supabase
+    if (queryError) {
+      console.log("[specialists/list] primary failed, trying safeSelect (no new columns)");
+      const safe = await supabase
         .from("specialist_services")
-        .select(fallbackSelect)
+        .select(safeSelect)
         .eq("category_id", categoryId)
         .eq("is_active", true)
         .gte("price_from", 0)
         .in("specialists.status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
         .eq("specialists.is_active", true)
         .eq("specialists.is_visible", true);
-      rows = ((fallback.data as ServiceWithSpecialistRow[] | null) ?? [])
-        .map((row) =>
-          Array.isArray(row.specialists) ? row.specialists[0] ?? null : row.specialists
-        )
-        .filter((row): row is SpecialistRow => Boolean(row));
-      queryError = fallback.error;
+
+      rows = extractRows(safe.data);
+      queryError = safe.error;
+      console.log("[specialists/list] safeSelect:", { rows: rows.length, error: queryError?.message ?? null });
+
+      if (queryError) {
+        console.log("[specialists/list] safeSelect failed, trying fallbackSelect (minimal)");
+        const fallback = await supabase
+          .from("specialist_services")
+          .select(fallbackSelect)
+          .eq("category_id", categoryId)
+          .eq("is_active", true)
+          .gte("price_from", 0)
+          .in("specialists.status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
+          .eq("specialists.is_active", true)
+          .eq("specialists.is_visible", true);
+        rows = extractRows(fallback.data);
+        queryError = fallback.error;
+        console.log("[specialists/list] fallbackSelect:", { rows: rows.length, error: queryError?.message ?? null });
+      }
     }
 
     if (queryError) {
+      console.error("[specialists/list] ALL queries failed:", queryError.message);
       return jsonNoStore(
         { error: 'Failed to fetch specialists' },
         { status: 500 }
@@ -226,13 +248,35 @@ export async function GET(request: NextRequest) {
 
     // Fallback: when specialist_services.category_id is null/empty, use specialists.category_id
     if (uniqueSpecialists.length === 0) {
-      const { data: directSpecialists, error: directError } = await supabase
+      let directSpecialists: Record<string, unknown>[] | null = null;
+      let directError: { message?: string } | null = null;
+
+      const fullDirect = await supabase
         .from("specialists")
         .select("id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,lat,lng,mobile_service,service_radius_km")
         .eq("category_id", categoryId)
         .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
         .eq("is_active", true)
         .eq("is_visible", true);
+
+      directSpecialists = fullDirect.data as Record<string, unknown>[] | null;
+      directError = fullDirect.error;
+
+      if (directError) {
+        console.log("[specialists/list] direct fullDirect failed, trying safe direct select:", directError.message);
+        const safeDirect = await supabase
+          .from("specialists")
+          .select("id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at")
+          .eq("category_id", categoryId)
+          .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
+          .eq("is_active", true)
+          .eq("is_visible", true);
+
+        directSpecialists = safeDirect.data as Record<string, unknown>[] | null;
+        directError = safeDirect.error;
+      }
+
+      console.log("[specialists/list] direct fallback:", { found: directSpecialists?.length ?? 0, error: directError?.message ?? null });
 
       if (!directError && Array.isArray(directSpecialists) && directSpecialists.length > 0) {
         const ids = directSpecialists.map((r) => r?.id).filter((id): id is string => Boolean(id));
@@ -250,21 +294,21 @@ export async function GET(request: NextRequest) {
         );
 
         uniqueSpecialists = directSpecialists
-          .filter((r) => r?.id && specialistIdsWithServices.has(r.id))
+          .filter((r) => r?.id && specialistIdsWithServices.has(String(r.id)))
           .map((r) => ({
-            id: r.id,
-            name: r.name ?? null,
-            bio: r.bio ?? null,
-            avatar_url: r.avatar_url ?? null,
-            category_id: r.category_id ?? null,
-            languages: r.languages ?? null,
-            work_format: r.work_format ?? null,
-            approved_at: r.approved_at ?? null,
-            created_at: r.created_at ?? null,
-            lat: r.lat ?? null,
-            lng: r.lng ?? null,
-            mobile_service: r.mobile_service ?? null,
-            service_radius_km: r.service_radius_km ?? null,
+            id: r.id as string,
+            name: (r.name as string) ?? null,
+            bio: (r.bio as string) ?? null,
+            avatar_url: (r.avatar_url as string) ?? null,
+            category_id: (r.category_id as string) ?? null,
+            languages: (r.languages as string[]) ?? null,
+            work_format: (r.work_format as WorkFormat) ?? null,
+            approved_at: (r.approved_at as string) ?? null,
+            created_at: (r.created_at as string) ?? null,
+            lat: (r.lat as number) ?? null,
+            lng: (r.lng as number) ?? null,
+            mobile_service: (r.mobile_service as boolean) ?? null,
+            service_radius_km: (r.service_radius_km as number) ?? null,
           })) as SpecialistRow[];
       }
     }
@@ -428,6 +472,8 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    console.log("STEP 1 merged:", merged.length, merged.map((s) => ({ id: s.id, name: s.name, lat: s.lat, lng: s.lng, mobile: s.mobile_service, radius: s.service_radius_km, price: s.min_price_from })));
+
     const withDistance = merged.map((s) => {
       if (
         userLat == null ||
@@ -468,14 +514,19 @@ export async function GET(request: NextRequest) {
       return s.distance <= s.service_radius_km;
     });
 
+    console.log("STEP 2 geoFiltered:", geoFiltered.length);
+    console.log("STEP 3 before final filter:", geoFiltered.length, "userLat:", userLat, "userLng:", userLng);
+
     const filtered = geoFiltered.filter((row) => {
       const languageMatch = !language
         || row.languages.some((value) => value?.toLowerCase() === language);
       const cityMatch = !city || row.city?.toLowerCase() === city;
-      const hasActiveServiceWithPrice =
-        typeof row.min_price_from === 'number' && Number.isFinite(row.min_price_from);
+      // TEMP: disabled price filter for diagnostics
+      const hasActiveServiceWithPrice = true;
       return languageMatch && cityMatch && hasActiveServiceWithPrice;
     });
+
+    console.log("STEP 4 final:", filtered.length);
 
     if (sort === 'new') {
       filtered.sort((a, b) => b._sort_new_ts - a._sort_new_ts);
