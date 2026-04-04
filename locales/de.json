@@ -256,6 +256,7 @@
   "dashboard.messages.unsavedChanges": "Es gibt ungespeicherte Änderungen",
   "dashboard.messages.publishNeedsService": "Fügen Sie mindestens eine Leistung hinzu",
   "dashboard.messages.publishNeedsPrice": "Geben Sie einen Preis für die Leistung an",
+  "dashboard.messages.publishNeedsServiceAndPricePositive": "Fügen Sie eine Leistung hinzu und geben Sie einen Preis größer als 0 an",
   "dashboard.fields.name": "Name",
   "dashboard.fields.category": "Kategorie",
   "dashboard.fields.plz": "Postleitzahl (PLZ)",

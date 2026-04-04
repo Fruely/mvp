@@ -57,32 +57,30 @@ export async function POST() {
     );
   }
 
-  const categoryId = specialist.category_id as string;
-  const { data: serviceRows, error: servicesCheckError } = await supabase
+  const { data: services, error: servicesCheckError } = await supabase
     .from("specialist_services")
-    .select("title, price_from, category_id, is_active")
+    .select("title, price_from, is_active")
     .eq("specialist_id", specialistId)
-    .eq("category_id", categoryId)
     .eq("is_active", true);
 
   if (servicesCheckError) {
     return jsonNoStore({ error: "Failed to validate services" }, { status: 500 });
   }
 
-  const hasPublishableService = (serviceRows ?? []).some((row) => {
-    const title = typeof row.title === "string" ? row.title.trim() : "";
+  const hasValid = services?.some((s) => {
+    const title = typeof s?.title === "string" ? s.title.trim() : "";
     if (!title) return false;
-    const p = row.price_from;
-    const n = typeof p === "number" ? p : typeof p === "string" ? Number(p.replace(/\s/g, "").replace(",", ".")) : NaN;
-    return Number.isFinite(n) && n >= 0;
+
+    const raw = String(s.price_from ?? "").trim();
+    if (!raw) return false;
+
+    const n = Number(raw.replace(",", "."));
+    return Number.isFinite(n) && n > 0;
   });
 
-  if (!hasPublishableService) {
+  if (!hasValid) {
     return jsonNoStore(
-      {
-        error: "Добавьте хотя бы одну активную услугу с ценой в выбранной категории",
-        fields: ["Услуги и цена"],
-      },
+      { error: "Добавьте хотя бы одну услугу с ценой больше 0" },
       { status: 400 }
     );
   }

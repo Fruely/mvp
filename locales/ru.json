@@ -271,6 +271,7 @@
   "dashboard.messages.unsavedChanges": "Есть несохранённые изменения",
   "dashboard.messages.publishNeedsService": "Добавьте хотя бы одну услугу",
   "dashboard.messages.publishNeedsPrice": "Укажите цену для услуги",
+  "dashboard.messages.publishNeedsServiceAndPricePositive": "Добавьте услугу и укажите цену больше 0",
   "dashboard.fields.name": "Имя",
   "dashboard.fields.category": "Категория",
   "dashboard.fields.plz": "Почтовый индекс (PLZ)",
