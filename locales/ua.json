@@ -311,6 +311,7 @@
   "dashboard.gallery.maxImagesNote": "До 5 зображень.",
   "dashboard.gallery.imageAlt": "Галерея {{n}}",
   "dashboard.servicesSection.title": "Послуги та ціни",
+  "dashboard.servicesSection.visibilityWarning": "Додайте послугу з ціною, інакше профіль не буде видно",
   "dashboard.service.placeholderTitle": "Назва послуги",
   "dashboard.service.placeholderPrice": "Ціна (наприклад: 2500)",
   "dashboard.service.priceHint": "Лише цифри. Не: «2,5 тис», «півтори»",

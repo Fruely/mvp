@@ -117,6 +117,18 @@ export default function SpecialistDashboardEditor({
     );
   }, [form, needsPostalCode, hasValidServiceFlag]);
 
+  const noServicesYet = form.services.length === 0;
+
+  const publishDisabledHint = useMemo(() => {
+    if (publishing) return null;
+    if (isDirty) return t(dict, "dashboard.messages.saveFirst");
+    if (!hasValidServiceFlag) return t(dict, "dashboard.servicesSection.visibilityWarning");
+    if (!publicationReady) return t(dict, "dashboard.messages.fillRequired");
+    return null;
+  }, [dict, publishing, isDirty, hasValidServiceFlag, publicationReady]);
+
+  const publishDisabled = publishing || isDirty || !publicationReady;
+
   function sanitizePrice(raw: string): string {
     return sanitizePriceValue(raw);
   }
@@ -595,13 +607,36 @@ export default function SpecialistDashboardEditor({
           </div>
         </div>
 
-        <div className="rounded-lg border border-gray-200 p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-900">{t(dict, "dashboard.servicesSection.title")}</h2>
+        {noServicesYet ? (
+          <div
+            className="rounded-lg border-2 border-red-300 bg-red-50 px-4 py-3 text-sm font-medium text-red-900 shadow-sm"
+            role="status"
+          >
+            {t(dict, "dashboard.servicesSection.visibilityWarning")}
+          </div>
+        ) : null}
+
+        <div
+          id="dashboard-services-section"
+          className={`rounded-lg border p-4 transition-colors ${
+            !hasValidServiceFlag
+              ? "border-amber-400 bg-amber-50/60 ring-2 ring-amber-300/80 shadow-[0_0_0_1px_rgba(251,191,36,0.35)]"
+              : "border-gray-200"
+          }`}
+        >
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold text-gray-900">{t(dict, "dashboard.servicesSection.title")}</h2>
+              {!hasValidServiceFlag && !noServicesYet ? (
+                <p className="mt-1 text-sm font-medium text-amber-900">
+                  {t(dict, "dashboard.servicesSection.visibilityWarning")}
+                </p>
+              ) : null}
+            </div>
             <button
               type="button"
               onClick={addService}
-              className="text-sm font-medium text-blue-600 hover:text-blue-700"
+              className="shrink-0 text-sm font-medium text-blue-600 hover:text-blue-700"
             >
               {t(dict, "dashboard.buttons.addService")}
             </button>
@@ -681,13 +716,8 @@ export default function SpecialistDashboardEditor({
             ) : success ? (
               <p className="text-emerald-600">{success}</p>
             ) : null}
-            {!isDirty && !hasValidServiceFlag ? (
-              <p className="mt-2 text-sm font-medium text-amber-700">
-                {t(dict, "dashboard.messages.publishNeedsServiceAndPricePositive")}
-              </p>
-            ) : null}
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-end sm:items-start">
             <button
               type="button"
               onClick={save}
@@ -696,14 +726,23 @@ export default function SpecialistDashboardEditor({
             >
               {saving ? t(dict, "dashboard.buttons.saving") : t(dict, "dashboard.buttons.save")}
             </button>
-            <button
-              type="button"
-              onClick={publish}
-              disabled={publishing || isDirty || !publicationReady}
-              className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
-            >
-              {publishing ? t(dict, "dashboard.buttons.publishing") : t(dict, "dashboard.buttons.publish")}
-            </button>
+            <div className="flex w-full min-w-0 flex-col items-stretch gap-2 sm:w-auto sm:items-end">
+              <button
+                type="button"
+                onClick={publish}
+                disabled={publishDisabled}
+                title={publishDisabledHint ?? undefined}
+                aria-describedby={publishDisabledHint ? "publish-disabled-hint" : undefined}
+                className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+              >
+                {publishing ? t(dict, "dashboard.buttons.publishing") : t(dict, "dashboard.buttons.publish")}
+              </button>
+              {publishDisabledHint ? (
+                <p id="publish-disabled-hint" className="max-w-md text-right text-sm font-medium text-gray-700">
+                  {publishDisabledHint}
+                </p>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>

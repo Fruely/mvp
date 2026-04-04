@@ -312,6 +312,7 @@
   "dashboard.gallery.maxImagesNote": "Bis zu 5 Bilder.",
   "dashboard.gallery.imageAlt": "Galerie {{n}}",
   "dashboard.servicesSection.title": "Leistungen und Preise",
+  "dashboard.servicesSection.visibilityWarning": "Fügen Sie eine Leistung mit Preis hinzu, sonst ist Ihr Profil nicht sichtbar",
   "dashboard.service.placeholderTitle": "Leistungsname",
   "dashboard.service.placeholderPrice": "Preis (z. B. 2500)",
   "dashboard.service.priceHint": "Nur Ziffern. Nicht: „2,5k“, umgangssprachliche Beträge",
