@@ -87,64 +87,38 @@ const SORT_TO_API: Record<SortKey, "relevance" | "new" | "experience"> = {
   price_high: "relevance",
 };
 
-function toNullableNumber(value: unknown): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string" && value.trim()) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  return null;
-}
+function normalizeSpecialistPreview(input: any): SpecialistPreview | null {
+  if (input == null) return null;
 
-function normalizeSpecialistPreview(input: unknown): SpecialistPreview | null {
-  if (!input || typeof input !== "object") return null;
-  const row = input as Record<string, unknown>;
-  const id = typeof row.id === "string" ? row.id : "";
-  if (!id) return null;
-  const name = typeof row.name === "string" && row.name.trim() ? row.name.trim() : null;
-  const slug =
-    typeof row.slug === "string" && row.slug.trim()
-      ? row.slug.trim()
-      : `specialist-${id.slice(0, 8)}`;
-  const workFormat =
-    row.work_format === "offline" || row.work_format === "hybrid" || row.work_format === "online"
-      ? row.work_format
+  const work_format: SpecialistPreview["work_format"] =
+    input.work_format === "offline" || input.work_format === "hybrid" || input.work_format === "online"
+      ? input.work_format
       : "online";
 
   return {
-    id,
-    slug,
-    name,
-    avatar_url: typeof row.avatar_url === "string" && row.avatar_url.trim() ? row.avatar_url : null,
-    specialization_line:
-      typeof row.specialization_line === "string" && row.specialization_line.trim()
-        ? row.specialization_line.trim()
-        : null,
-    about_line:
-      typeof row.about_line === "string" && row.about_line.trim() ? row.about_line.trim() : null,
-    city: typeof row.city === "string" && row.city.trim() ? row.city.trim() : null,
-    work_format: workFormat,
-    languages: Array.isArray(row.languages)
-      ? row.languages
-          .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-          .slice(0, 8)
-      : [],
-    is_verified: Boolean(row.is_verified),
-    rating: toNullableNumber(row.rating),
-    reviews_count: toNullableNumber(row.reviews_count),
-    years_of_experience: toNullableNumber(row.years_of_experience),
-    is_new: Boolean(row.is_new),
-    new_until: typeof row.new_until === "string" && row.new_until.trim() ? row.new_until : null,
-    min_price_from: toNullableNumber(row.min_price_from),
-    min_price_to: toNullableNumber(row.min_price_to),
-    min_pricing_type:
-      row.min_pricing_type === "fixed" || row.min_pricing_type === "range" || row.min_pricing_type === "hourly"
-        ? row.min_pricing_type
-        : null,
-    min_currency: typeof row.min_currency === "string" && row.min_currency.trim() ? row.min_currency : null,
-    active_services_count: toNullableNumber(row.active_services_count),
-    mobile_service: Boolean(row.mobile_service),
-    service_radius_km: toNullableNumber(row.service_radius_km),
+    id: String(input.id ?? ""),
+    slug: String(input.slug ?? ""),
+    name: String(input.name ?? ""),
+    avatar_url: input.avatar_url ?? null,
+    specialization_line: input.specialization_line ?? null,
+    about_line: input.about_line ?? null,
+    city: input.city ?? null,
+    work_format,
+    languages: Array.isArray(input.languages) ? input.languages : [],
+    is_verified: Boolean(input.is_verified),
+    rating: input.rating ?? null,
+    reviews_count: input.reviews_count ?? null,
+    years_of_experience: input.years_of_experience ?? null,
+    is_new: Boolean(input.is_new),
+    new_until: input.new_until ?? null,
+    min_price_from: input.min_price_from ?? null,
+    min_price_to: input.min_price_to ?? null,
+    min_pricing_type: input.min_pricing_type ?? null,
+    min_currency: input.min_currency ?? null,
+    active_services_count: input.active_services_count ?? 0,
+    mobile_service: Boolean(input.mobile_service),
+    service_radius_km:
+      typeof input.service_radius_km === "number" ? input.service_radius_km : null,
   };
 }
 
