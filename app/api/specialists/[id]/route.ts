@@ -56,7 +56,7 @@ export async function GET(
 
   const { data: services } = await supabase
     .from("specialist_services")
-    .select("id, title, price_from, price_to, currency, is_active")
+    .select("id, title, price_from, price_to, currency, is_active, price_comment")
     .eq("specialist_id", specialist.id)
     .eq("is_active", true);
 
@@ -98,6 +98,10 @@ export async function GET(
       price_from: s.price_from,
       price_to: s.price_to,
       currency: s.currency ?? "EUR",
+      price_comment:
+        typeof s.price_comment === "string" && s.price_comment.trim()
+          ? s.price_comment.trim()
+          : null,
     })),
   };
 

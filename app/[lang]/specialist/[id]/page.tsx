@@ -56,7 +56,14 @@ interface Specialist {
   user_id?: string | null;
   lat?: number | null;
   lng?: number | null;
-  specialist_services?: Array<{ id: string; title: string; price_from: number; price_to: number; currency: string }>;
+  specialist_services?: Array<{
+    id: string;
+    title: string;
+    price_from: number;
+    price_to: number;
+    currency: string;
+    price_comment?: string | null;
+  }>;
 }
 
 export default function SpecialistPage() {
@@ -688,7 +695,7 @@ export default function SpecialistPage() {
           {(Array.isArray(specialist?.specialist_services) && specialist.specialist_services.length > 0) && (
             <SectionCard title={sectionText.servicesTitle} subtitle={sectionText.servicesSubtitle}>
               <div className="space-y-3">
-                {(specialist.specialist_services ?? []).map((service: any) => (
+                {(specialist.specialist_services ?? []).map((service) => (
                   <div key={service.id} className="flex justify-between border-b pb-2">
                     <span>{service.title}</span>
                     <span className="font-medium">
