@@ -11,6 +11,7 @@ type ServiceInput = {
   price_from: string;
   currency: string;
   is_active: boolean;
+  price_comment?: string;
 };
 
 type Props = {
@@ -143,7 +144,10 @@ export default function SpecialistDashboardEditor({
   function addService() {
     setForm((prev) => ({
       ...prev,
-      services: [...prev.services, { title: "", price_from: "", currency: "EUR", is_active: true }],
+      services: [
+        ...prev.services,
+        { title: "", price_from: "", currency: "EUR", is_active: true, price_comment: "" },
+      ],
     }));
   }
 
@@ -604,43 +608,61 @@ export default function SpecialistDashboardEditor({
           </div>
           <div className="space-y-3">
             {form.services.map((service, idx) => (
-              <div key={service.id || `new-${idx}`} className="grid gap-2 md:grid-cols-[1fr_180px_110px_auto]">
-                <input
-                  value={service.title}
-                  onChange={(e) => updateService(idx, { title: e.target.value })}
-                  placeholder={t(dict, "dashboard.service.placeholderTitle")}
-                  className="rounded-lg border border-gray-200 px-3 py-2 text-sm"
-                />
-                <div>
+              <div
+                key={service.id || `new-${idx}`}
+                className="space-y-2 rounded-lg border border-gray-100 bg-gray-50/50 p-3"
+              >
+                <div className="grid gap-2 md:grid-cols-[1fr_180px_110px_auto]">
                   <input
-                    value={service.price_from}
-                    onChange={(e) => updateService(idx, { price_from: e.target.value })}
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder={t(dict, "dashboard.service.placeholderPrice")}
-                    className={`rounded-lg border px-3 py-2 text-sm ${
-                      priceErrors[idx] ? "border-red-400" : "border-gray-200"
-                    }`}
+                    value={service.title}
+                    onChange={(e) => updateService(idx, { title: e.target.value })}
+                    placeholder={t(dict, "dashboard.service.placeholderTitle")}
+                    className="rounded-lg border border-gray-200 px-3 py-2 text-sm"
                   />
-                  <p className="mt-0.5 text-[11px] text-gray-600 font-medium">{t(dict, "dashboard.service.priceHint")}</p>
-                  {priceErrors[idx] && (
-                    <p className="mt-0.5 text-xs text-red-600">{priceErrors[idx]}</p>
-                  )}
+                  <div>
+                    <input
+                      value={service.price_from}
+                      onChange={(e) => updateService(idx, { price_from: e.target.value })}
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder={t(dict, "dashboard.service.placeholderPrice")}
+                      className={`rounded-lg border px-3 py-2 text-sm ${
+                        priceErrors[idx] ? "border-red-400" : "border-gray-200"
+                      }`}
+                    />
+                    <p className="mt-0.5 text-[11px] text-gray-600 font-medium">{t(dict, "dashboard.service.priceHint")}</p>
+                    {priceErrors[idx] && (
+                      <p className="mt-0.5 text-xs text-red-600">{priceErrors[idx]}</p>
+                    )}
+                  </div>
+                  <input
+                    value={service.currency}
+                    onChange={(e) => updateService(idx, { currency: e.target.value })}
+                    placeholder="EUR"
+                    className="rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeService(idx)}
+                    className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-700 hover:bg-red-50"
+                  >
+                    {t(dict, "dashboard.buttons.delete")}
+                  </button>
                 </div>
-                <input
-                  value={service.currency}
-                  onChange={(e) => updateService(idx, { currency: e.target.value })}
-                  placeholder="EUR"
-                  className="rounded-lg border border-gray-200 px-3 py-2 text-sm"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeService(idx)}
-                  className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-700 hover:bg-red-50"
-                >
-                  {t(dict, "dashboard.buttons.delete")}
-                </button>
+                <label className="block space-y-1">
+                  <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.priceComment")}</span>
+                  <textarea
+                    value={service.price_comment || ""}
+                    onChange={(e) =>
+                      updateService(idx, { price_comment: e.target.value.slice(0, 120) })
+                    }
+                    placeholder={t(dict, "dashboard.fields.priceCommentPlaceholder")}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                    rows={2}
+                  />
+                  <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.priceCommentHint")}</p>
+                </label>
               </div>
             ))}
           </div>

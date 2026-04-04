@@ -44,6 +44,7 @@ type Payload = {
     price_from: string;
     currency?: string;
     is_active?: boolean;
+    price_comment?: string;
   }>;
 };
 
@@ -265,6 +266,13 @@ export async function PUT(request: NextRequest) {
               ? service.currency.trim().toUpperCase()
               : "EUR",
           is_active: service.is_active !== false,
+          price_comment:
+            typeof service.price_comment === "string"
+              ? (() => {
+                  const c = service.price_comment.trim().slice(0, 120);
+                  return c.length > 0 ? c : null;
+                })()
+              : null,
         }))
         .filter((service) => Number.isFinite(service.price_from) && service.price_from >= 0)
     : [];
@@ -287,6 +295,7 @@ export async function PUT(request: NextRequest) {
         price_to: null,
         currency: service.currency,
         is_active: service.is_active,
+        price_comment: service.price_comment,
       };
       if (effectiveCategoryId !== null) {
         updatePayload.category_id = effectiveCategoryId;
@@ -306,6 +315,7 @@ export async function PUT(request: NextRequest) {
         price_to: null,
         currency: service.currency,
         is_active: service.is_active,
+        price_comment: service.price_comment,
       };
       if (effectiveCategoryId !== null) {
         insertPayload.category_id = effectiveCategoryId;

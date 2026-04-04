@@ -27,6 +27,7 @@ type SpecialistPreview = {
   min_pricing_type?: "fixed" | "range" | "hourly" | null;
   min_currency?: string | null;
   active_services_count?: number | null;
+  price_comment?: string | null;
   mobile_service?: boolean;
   service_radius_km?: number | null;
 };
@@ -214,27 +215,34 @@ export default function SpecialistPreviewCard({
           ) : null}
         </div>
 
-        <div className="flex items-center justify-between gap-3 pt-1">
-          {priceText ? (
-            <div className="rounded-lg bg-blue-50 px-2.5 py-1 text-sm font-semibold text-blue-700">
-              {priceText}
-            </div>
-          ) : (
-            <span />
-          )}
-          <Link
-            href={leadHref}
-            className="inline-flex items-center justify-center gap-1 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-soft transition hover:from-blue-700 hover:to-indigo-700 hover:shadow-floating"
-          >
-            <span aria-hidden>⚡</span>
-            {t(dict, "lead.submit")}
-          </Link>
-          <Link
-            href={detailsHref}
-            className="text-sm font-medium text-blue-600 transition hover:text-blue-700"
-          >
-            {t(dict, "common.more")} →
-          </Link>
+        <div className="flex items-start justify-between gap-3 pt-1">
+          <div className="min-w-0 flex-1">
+            {priceText ? (
+              <div className="rounded-lg bg-blue-50 px-2.5 py-1 text-sm font-semibold text-blue-700">
+                {priceText}
+              </div>
+            ) : (
+              <span />
+            )}
+            {specialist.price_comment ? (
+              <p className="mt-1 text-xs text-gray-500">{specialist.price_comment}</p>
+            ) : null}
+          </div>
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
+            <Link
+              href={leadHref}
+              className="inline-flex items-center justify-center gap-1 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-soft transition hover:from-blue-700 hover:to-indigo-700 hover:shadow-floating"
+            >
+              <span aria-hidden>⚡</span>
+              {t(dict, "lead.submit")}
+            </Link>
+            <Link
+              href={detailsHref}
+              className="text-sm font-medium text-blue-600 transition hover:text-blue-700"
+            >
+              {t(dict, "common.more")} →
+            </Link>
+          </div>
         </div>
       </div>
     </article>

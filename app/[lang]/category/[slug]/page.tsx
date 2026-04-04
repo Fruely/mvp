@@ -29,6 +29,7 @@ interface SpecialistPreview {
   min_pricing_type?: "fixed" | "range" | "hourly" | null;
   min_currency?: string | null;
   active_services_count?: number | null;
+  price_comment?: string | null;
   mobile_service?: boolean;
   service_radius_km?: number | null;
 }
@@ -116,6 +117,7 @@ function normalizeSpecialistPreview(input: any): SpecialistPreview | null {
     min_pricing_type: input.min_pricing_type ?? null,
     min_currency: input.min_currency ?? null,
     active_services_count: input.active_services_count ?? 0,
+    price_comment: typeof input.price_comment === "string" ? input.price_comment : null,
     mobile_service: Boolean(input.mobile_service),
     service_radius_km:
       typeof input.service_radius_km === "number" ? input.service_radius_km : null,

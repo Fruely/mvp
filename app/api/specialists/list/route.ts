@@ -42,6 +42,7 @@ type ServiceRow = {
   price_from: number | null;
   price_to: number | null;
   currency: string | null;
+  price_comment?: string | null;
 };
 type ServiceWithSpecialistRow = {
   specialist_id: string | null;
@@ -367,7 +368,7 @@ export async function GET(request: NextRequest) {
 
       const servicesResponse = await supabase
         .from('specialist_services')
-        .select('specialist_id, pricing_type, price_from, price_to, currency')
+        .select('specialist_id, pricing_type, price_from, price_to, currency, price_comment')
         .in('specialist_id', specialistIds)
         .eq('is_active', true);
 
@@ -392,6 +393,7 @@ export async function GET(request: NextRequest) {
         min_pricing_type: ServicePricingType;
         min_currency: string;
         active_services_count: number;
+        price_comment: string | null;
       }
     >();
     for (const row of serviceRows) {
@@ -406,6 +408,10 @@ export async function GET(request: NextRequest) {
         typeof row.currency === 'string' && row.currency.trim() ? row.currency.trim() : 'EUR';
       const nextPriceTo =
         typeof row.price_to === 'number' && Number.isFinite(row.price_to) ? row.price_to : null;
+      const rowComment =
+        typeof row.price_comment === 'string' && row.price_comment.trim()
+          ? row.price_comment.trim().slice(0, 120)
+          : null;
 
       const prev = serviceMetaBySpecialistId.get(row.specialist_id);
       if (!prev) {
@@ -415,6 +421,7 @@ export async function GET(request: NextRequest) {
           min_pricing_type: pricingType,
           min_currency: currency,
           active_services_count: 1,
+          price_comment: rowComment,
         });
         continue;
       }
@@ -425,6 +432,7 @@ export async function GET(request: NextRequest) {
         min_pricing_type: isBetter ? pricingType : prev.min_pricing_type,
         min_currency: isBetter ? currency : prev.min_currency,
         active_services_count: prev.active_services_count + 1,
+        price_comment: isBetter ? rowComment : prev.price_comment,
       });
     }
 
@@ -470,6 +478,7 @@ export async function GET(request: NextRequest) {
         min_pricing_type: serviceMeta?.min_pricing_type ?? null,
         min_currency: serviceMeta?.min_currency ?? null,
         active_services_count: serviceMeta?.active_services_count ?? 0,
+        price_comment: serviceMeta?.price_comment ?? null,
         mobile_service: Boolean(row.mobile_service),
         service_radius_km:
           typeof row.service_radius_km === 'number' && Number.isFinite(row.service_radius_km) && row.service_radius_km > 0
@@ -569,6 +578,7 @@ export async function GET(request: NextRequest) {
         min_pricing_type: rest.min_pricing_type,
         min_currency: rest.min_currency,
         active_services_count: rest.active_services_count,
+        price_comment: rest.price_comment,
         mobile_service: rest.mobile_service,
         service_radius_km: rest.service_radius_km,
       };
