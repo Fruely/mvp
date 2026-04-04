@@ -122,6 +122,81 @@ function toSpecialistCoord(value: unknown): number | null {
   return null;
 }
 
+function parseServicePriceFromRow(rawPf: unknown): number | null {
+  if (typeof rawPf === "number" && Number.isFinite(rawPf)) return rawPf;
+  if (typeof rawPf === "string" && rawPf.trim()) {
+    const n = Number(rawPf.trim().replace(/\s/g, "").replace(",", "."));
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
+type SpecialistServiceListMeta = {
+  min_price_from: number;
+  min_price_to: number | null;
+  min_pricing_type: ServicePricingType;
+  min_currency: string;
+  active_services_count: number;
+  price_comment: string | null;
+};
+
+/** Prefer minimum of prices &gt; 0; use first price=0 row (and its comment) only when no positive prices exist. */
+function aggregateSpecialistServicesForList(rows: ServiceRow[]): SpecialistServiceListMeta | null {
+  type Parsed = {
+    priceFrom: number;
+    pricingType: ServicePricingType;
+    currency: string;
+    priceTo: number | null;
+    rowComment: string | null;
+  };
+
+  const parsed: Parsed[] = [];
+  for (const row of rows) {
+    const priceFromParsed = parseServicePriceFromRow(row.price_from);
+    if (priceFromParsed === null || priceFromParsed < 0) continue;
+
+    const pricingType: ServicePricingType =
+      row.pricing_type === "range" || row.pricing_type === "hourly" || row.pricing_type === "fixed"
+        ? row.pricing_type
+        : "fixed";
+    const currency =
+      typeof row.currency === "string" && row.currency.trim() ? row.currency.trim() : "EUR";
+    const nextPriceTo =
+      typeof row.price_to === "number" && Number.isFinite(row.price_to) ? row.price_to : null;
+    const rowComment =
+      row.price_comment != null && String(row.price_comment).trim()
+        ? String(row.price_comment).trim().slice(0, 120)
+        : null;
+
+    parsed.push({
+      priceFrom: priceFromParsed,
+      pricingType,
+      currency,
+      priceTo: nextPriceTo,
+      rowComment,
+    });
+  }
+
+  if (parsed.length === 0) return null;
+
+  const realPrices = parsed.filter((p) => p.priceFrom > 0);
+  const zeroPrices = parsed.filter((p) => p.priceFrom === 0);
+
+  const chosen =
+    realPrices.length > 0
+      ? realPrices.reduce((best, p) => (p.priceFrom < best.priceFrom ? p : best))
+      : zeroPrices[0];
+
+  return {
+    min_price_from: chosen.priceFrom,
+    min_price_to: chosen.priceTo,
+    min_pricing_type: chosen.pricingType,
+    min_currency: chosen.currency,
+    active_services_count: parsed.length,
+    price_comment: chosen.rowComment,
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
@@ -386,64 +461,19 @@ export async function GET(request: NextRequest) {
       profileBySpecialistId.set(row.specialist_id, row);
     }
 
-    const serviceMetaBySpecialistId = new Map<
-      string,
-      {
-        min_price_from: number;
-        min_price_to: number | null;
-        min_pricing_type: ServicePricingType;
-        min_currency: string;
-        active_services_count: number;
-        price_comment: string | null;
-      }
-    >();
+    const servicesBySpecialistId = new Map<string, ServiceRow[]>();
     for (const row of serviceRows) {
       if (!row?.specialist_id) continue;
-      const rawPf = row.price_from as number | string | null;
-      let priceFromParsed: number;
-      if (typeof rawPf === "number" && Number.isFinite(rawPf)) {
-        priceFromParsed = rawPf;
-      } else if (typeof rawPf === "string" && rawPf.trim()) {
-        priceFromParsed = Number(rawPf.trim().replace(/\s/g, "").replace(",", "."));
-      } else {
-        continue;
-      }
-      if (!Number.isFinite(priceFromParsed) || priceFromParsed < 0) continue;
-      const pricingType: ServicePricingType =
-        row.pricing_type === 'range' || row.pricing_type === 'hourly' || row.pricing_type === 'fixed'
-          ? row.pricing_type
-          : 'fixed';
-      const currency =
-        typeof row.currency === 'string' && row.currency.trim() ? row.currency.trim() : 'EUR';
-      const nextPriceTo =
-        typeof row.price_to === 'number' && Number.isFinite(row.price_to) ? row.price_to : null;
-      const rowComment =
-        row.price_comment != null && String(row.price_comment).trim()
-          ? String(row.price_comment).trim().slice(0, 120)
-          : null;
-
-      const prev = serviceMetaBySpecialistId.get(row.specialist_id);
-      if (!prev) {
-        serviceMetaBySpecialistId.set(row.specialist_id, {
-          min_price_from: priceFromParsed,
-          min_price_to: nextPriceTo,
-          min_pricing_type: pricingType,
-          min_currency: currency,
-          active_services_count: 1,
-          price_comment: rowComment,
-        });
-        continue;
-      }
-      const isBetter = priceFromParsed < prev.min_price_from;
-      serviceMetaBySpecialistId.set(row.specialist_id, {
-        min_price_from: isBetter ? priceFromParsed : prev.min_price_from,
-        min_price_to: isBetter ? nextPriceTo : prev.min_price_to,
-        min_pricing_type: isBetter ? pricingType : prev.min_pricing_type,
-        min_currency: isBetter ? currency : prev.min_currency,
-        active_services_count: prev.active_services_count + 1,
-        price_comment: isBetter ? rowComment : prev.price_comment,
-      });
+      const list = servicesBySpecialistId.get(row.specialist_id) ?? [];
+      list.push(row);
+      servicesBySpecialistId.set(row.specialist_id, list);
     }
+
+    const serviceMetaBySpecialistId = new Map<string, SpecialistServiceListMeta>();
+    servicesBySpecialistId.forEach((rows, specialistId) => {
+      const meta = aggregateSpecialistServicesForList(rows);
+      if (meta) serviceMetaBySpecialistId.set(specialistId, meta);
+    });
 
     const { data: categoryData } = await categoryTitlePromise;
     const categoryTitle = categoryData?.title ?? null;
