@@ -198,22 +198,24 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
       if (selectedLanguage) params.set("language", selectedLanguage);
       if (selectedCity) params.set("city", selectedCity);
 
-      const response = await fetch(`/api/specialists/list?${params.toString()}`, {
+      const apiUrl = `/api/specialists/list?${params.toString()}`;
+      console.log("[category page] fetch:", apiUrl, "category:", category.id, "slug:", slug);
+      const response = await fetch(apiUrl, {
         cache: "no-store",
       });
       const result = await response.json();
+      console.log("[category page] API response status:", response.status, "data length:", Array.isArray(result?.data) ? result.data.length : "N/A", "_trace:", result?._trace);
       if (!response.ok) {
         throw new Error(result?.error || "Failed to load specialists");
       }
 
-      const incoming: SpecialistPreview[] = Array.isArray(result?.data)
-        ? result.data
-            .map((item) => normalizeSpecialistPreview(item))
-            .filter((item): item is SpecialistPreview => Boolean(item))
-        : [];
+      const rawItems = Array.isArray(result?.data) ? result.data : [];
+      const incoming: SpecialistPreview[] = rawItems
+        .map((item: unknown) => normalizeSpecialistPreview(item))
+        .filter((item: SpecialistPreview | null): item is SpecialistPreview => Boolean(item));
       const meta = (result?.meta ?? {}) as SpecialistsMeta;
 
-      console.log("incoming specialists", incoming);
+      console.log("[category page] raw items:", rawItems.length, "after normalize:", incoming.length);
       setSpecialists((prev) => (reset ? incoming : mergeUniqueSpecialists(prev, incoming)));
       setHasMore(Boolean(meta.has_more));
       setNextOffset(Number(meta.next_offset ?? offset + incoming.length));

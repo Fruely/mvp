@@ -133,6 +133,7 @@ export async function GET(request: NextRequest) {
     const language = searchParams.get('language')?.trim().toLowerCase() ?? '';
     const city = searchParams.get('city')?.trim().toLowerCase() ?? '';
     const sort = (searchParams.get('sort') as SortMode | null) ?? 'relevance';
+    const debugEnabled = searchParams.get("debug") === "1";
 
     const userLat =
       parseOptionalCoord(searchParams.get("user_lat")) ??
@@ -140,6 +141,8 @@ export async function GET(request: NextRequest) {
     const userLng =
       parseOptionalCoord(searchParams.get("user_lng")) ??
       parseOptionalCoord(searchParams.get("lng"));
+
+    const _trace: Record<string, unknown> = {};
 
     const supabase = createSupabaseServerClient();
 
@@ -195,10 +198,10 @@ export async function GET(request: NextRequest) {
 
     rows = extractRows(initial.data);
     queryError = initial.error;
-    console.log("[specialists/list] primary query:", { rows: rows.length, error: queryError?.message ?? null });
+    _trace.q1_fullSelect = { rows: rows.length, error: queryError?.message ?? null };
+    console.log("[specialists/list] primary query:", _trace.q1_fullSelect);
 
     if (queryError) {
-      console.log("[specialists/list] primary failed, trying safeSelect (no new columns)");
       const safe = await supabase
         .from("specialist_services")
         .select(safeSelect)
@@ -211,10 +214,10 @@ export async function GET(request: NextRequest) {
 
       rows = extractRows(safe.data);
       queryError = safe.error;
-      console.log("[specialists/list] safeSelect:", { rows: rows.length, error: queryError?.message ?? null });
+      _trace.q2_safeSelect = { rows: rows.length, error: queryError?.message ?? null };
+      console.log("[specialists/list] safeSelect:", _trace.q2_safeSelect);
 
       if (queryError) {
-        console.log("[specialists/list] safeSelect failed, trying fallbackSelect (minimal)");
         const fallback = await supabase
           .from("specialist_services")
           .select(fallbackSelect)
@@ -226,25 +229,28 @@ export async function GET(request: NextRequest) {
           .eq("specialists.is_visible", true);
         rows = extractRows(fallback.data);
         queryError = fallback.error;
-        console.log("[specialists/list] fallbackSelect:", { rows: rows.length, error: queryError?.message ?? null });
+        _trace.q3_fallbackSelect = { rows: rows.length, error: queryError?.message ?? null };
+        console.log("[specialists/list] fallbackSelect:", _trace.q3_fallbackSelect);
       }
     }
 
     if (queryError) {
       console.error("[specialists/list] ALL queries failed:", queryError.message);
       return jsonNoStore(
-        { error: 'Failed to fetch specialists' },
+        { error: 'Failed to fetch specialists', _trace },
         { status: 500 }
       );
     }
 
     let specialists = rows ?? [];
+    _trace.rawRows = specialists.length;
     const uniqueById = new Map<string, SpecialistRow>();
     for (const row of specialists) {
       if (!row?.id || uniqueById.has(row.id)) continue;
       uniqueById.set(row.id, row);
     }
     let uniqueSpecialists = Array.from(uniqueById.values());
+    _trace.uniqueAfterServices = uniqueSpecialists.length;
 
     // Fallback: when specialist_services.category_id is null/empty, use specialists.category_id
     if (uniqueSpecialists.length === 0) {
@@ -276,7 +282,8 @@ export async function GET(request: NextRequest) {
         directError = safeDirect.error;
       }
 
-      console.log("[specialists/list] direct fallback:", { found: directSpecialists?.length ?? 0, error: directError?.message ?? null });
+      _trace.directFallback = { found: directSpecialists?.length ?? 0, error: directError?.message ?? null };
+      console.log("[specialists/list] direct fallback:", _trace.directFallback);
 
       if (!directError && Array.isArray(directSpecialists) && directSpecialists.length > 0) {
         const ids = directSpecialists.map((r) => r?.id).filter((id): id is string => Boolean(id));
@@ -292,6 +299,7 @@ export async function GET(request: NextRequest) {
             .filter((r) => typeof r.specialist_id === "string")
             .map((r) => r.specialist_id as string)
         );
+        _trace.directWithServices = specialistIdsWithServices.size;
 
         uniqueSpecialists = directSpecialists
           .filter((r) => r?.id && specialistIdsWithServices.has(String(r.id)))
@@ -472,7 +480,11 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    console.log("STEP 1 merged:", merged.length, merged.map((s) => ({ id: s.id, name: s.name, lat: s.lat, lng: s.lng, mobile: s.mobile_service, radius: s.service_radius_km, price: s.min_price_from })));
+    _trace.merged = merged.length;
+    if (debugEnabled) {
+      _trace.mergedDetails = merged.map((s) => ({ id: s.id, name: s.name, price: s.min_price_from }));
+    }
+    console.log("STEP 1 merged:", merged.length);
 
     const withDistance = merged.map((s) => {
       if (
@@ -514,8 +526,8 @@ export async function GET(request: NextRequest) {
       return s.distance <= s.service_radius_km;
     });
 
+    _trace.geoFiltered = geoFiltered.length;
     console.log("STEP 2 geoFiltered:", geoFiltered.length);
-    console.log("STEP 3 before final filter:", geoFiltered.length, "userLat:", userLat, "userLng:", userLng);
 
     const filtered = geoFiltered.filter((row) => {
       const languageMatch = !language
@@ -526,6 +538,7 @@ export async function GET(request: NextRequest) {
       return languageMatch && cityMatch && hasActiveServiceWithPrice;
     });
 
+    _trace.filtered = filtered.length;
     console.log("STEP 4 final:", filtered.length);
 
     if (sort === 'new') {
@@ -578,6 +591,11 @@ export async function GET(request: NextRequest) {
       )
     ).sort((a, b) => a.localeCompare(b, 'uk'));
 
+    _trace.page = page.length;
+    _trace.total = total;
+    _trace.categoryId = categoryId;
+    _trace.params = { language, city, sort, userLat, userLng };
+
     return jsonNoStore({
       data: page,
       meta: {
@@ -591,6 +609,7 @@ export async function GET(request: NextRequest) {
           cities: cityOptions,
         },
       },
+      _trace,
     });
   } catch (error: any) {
     console.error('[api/specialists] Unexpected error:', error);
