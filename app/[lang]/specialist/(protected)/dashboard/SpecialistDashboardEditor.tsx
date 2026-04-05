@@ -690,7 +690,14 @@ export default function SpecialistDashboardEditor({
                   <div>
                     <input
                       value={service.price_from}
-                      onChange={(e) => updateService(idx, { price_from: e.target.value })}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        updateService(idx, {
+                          price_from: value,
+                          price_comment:
+                            Number(value) > 0 ? "" : service.price_comment,
+                        });
+                      }}
                       type="number"
                       min="0"
                       step="0.01"
@@ -721,20 +728,28 @@ export default function SpecialistDashboardEditor({
                 <label className="block space-y-1">
                   <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.priceComment")}</span>
                   <div className="mb-2 flex flex-wrap gap-2">
-                    {PRICE_COMMENT_PRESETS.map((preset, i) => (
-                      <button
-                        key={preset}
-                        type="button"
-                        onClick={() =>
-                          updateService(idx, {
-                            price_comment: preset.slice(0, PRICE_COMMENT_MAX),
-                          })
-                        }
-                        className={`rounded-full px-3 py-1 text-xs font-medium transition ${CHIP_COLORS[i % CHIP_COLORS.length]}`}
-                      >
-                        {preset}
-                      </button>
-                    ))}
+                    {PRICE_COMMENT_PRESETS.map((preset, i) => {
+                      const isActive = (service.price_comment || "").trim() === preset;
+                      return (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() =>
+                            updateService(idx, {
+                              price_comment: preset.slice(0, PRICE_COMMENT_MAX),
+                              price_from: "0",
+                            })
+                          }
+                          className={`
+                            px-3 py-1 text-xs font-medium rounded-full transition
+                            ${CHIP_COLORS[i % CHIP_COLORS.length]}
+                            ${isActive ? "ring-2 ring-black/20" : ""}
+                          `}
+                        >
+                          {preset}
+                        </button>
+                      );
+                    })}
                   </div>
                   <textarea
                     value={service.price_comment || ""}
