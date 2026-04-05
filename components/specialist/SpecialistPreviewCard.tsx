@@ -87,8 +87,8 @@ export default function SpecialistPreviewCard({
   const currency = specialist.min_currency?.trim() || "EUR";
   const serviceCount = specialist.active_services_count ?? 0;
   const priceCommentTrimmed =
-    typeof specialist.price_comment === "string" && specialist.price_comment.trim()
-      ? specialist.price_comment.trim()
+    specialist.price_comment != null && String(specialist.price_comment).trim()
+      ? String(specialist.price_comment).trim()
       : null;
 
   const priceText = (() => {

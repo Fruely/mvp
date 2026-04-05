@@ -94,7 +94,7 @@ export async function getSeoSpecialists(params: {
       return {
         id: String(specialist.id),
         slug: typeof specialist.slug === "string" ? specialist.slug : null,
-        name: typeof specialist.name === "string" && specialist.name.trim() ? specialist.name.trim() : null,
+        name: specialist.name != null && String(specialist.name).trim() ? String(specialist.name).trim() : null,
         city: typeof specialist.city === "string" ? specialist.city : null,
         avatar_url: typeof specialist.avatar_url === "string" ? specialist.avatar_url : null,
         languages: Array.isArray(specialist.languages)

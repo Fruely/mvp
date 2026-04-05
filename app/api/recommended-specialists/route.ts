@@ -149,7 +149,7 @@ export async function GET() {
     return {
       id: row.id,
       slug: row.slug ?? null,
-      name: typeof row.name === "string" && row.name.trim() ? row.name.trim() : null,
+      name: row.name != null && String(row.name).trim() ? String(row.name).trim() : null,
       avatar_url: row.avatar_url ?? profile?.photo_url ?? null,
       city: profile?.city ?? null,
       languages: Array.isArray(row.languages) ? row.languages : [],

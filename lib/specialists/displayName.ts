@@ -18,5 +18,5 @@ export function looksLikeEmailLocalPart(name: string | null | undefined): boolea
  */
 export function displayName(raw: string | null | undefined): string | null {
   if (looksLikeEmailLocalPart(raw)) return null;
-  return typeof raw === "string" && raw.trim() ? raw.trim() : null;
+  return raw != null && String(raw).trim() ? String(raw).trim() : null;
 }

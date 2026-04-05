@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
       return {
         id: s.id,
         slug: s.slug ?? null,
-        name: typeof s.name === "string" && s.name.trim() ? s.name.trim() : null,
+        name: s.name != null && String(s.name).trim() ? String(s.name).trim() : null,
         bio: s.bio,
         avatar_url: s.avatar_url,
         category_id: s.category_id,

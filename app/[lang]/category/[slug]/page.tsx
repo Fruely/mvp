@@ -117,7 +117,7 @@ function normalizeSpecialistPreview(input: any): SpecialistPreview | null {
     min_pricing_type: input.min_pricing_type ?? null,
     min_currency: input.min_currency ?? null,
     active_services_count: input.active_services_count ?? 0,
-    price_comment: typeof input.price_comment === "string" ? input.price_comment : null,
+    price_comment: input.price_comment != null && String(input.price_comment).trim() ? String(input.price_comment).trim() : null,
     mobile_service: Boolean(input.mobile_service),
     service_radius_km:
       typeof input.service_radius_km === "number" ? input.service_radius_km : null,

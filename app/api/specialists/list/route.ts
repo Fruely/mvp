@@ -419,7 +419,7 @@ export async function GET(request: NextRequest) {
         .in("id", specialistIds);
       for (const r of nameRows ?? []) {
         if (r?.id) {
-          const n = typeof r.name === "string" && r.name.trim() ? r.name.trim() : null;
+          const n = r.name != null && String(r.name).trim() ? String(r.name).trim() : null;
           nameBySpecialistId.set(r.id, n);
           if (process.env.NODE_ENV === "development") {
             console.log("[api/specialists/list] Specialist name from DB:", r.id, "->", n);
@@ -499,7 +499,7 @@ export async function GET(request: NextRequest) {
         ? approvedTs + 14 * 24 * 60 * 60 * 1000
         : null;
       const newUntil = newUntilTs ? new Date(newUntilTs).toISOString() : null;
-      const nameFromDb = nameBySpecialistId.get(row.id) ?? (typeof row.name === "string" && row.name.trim() ? row.name.trim() : null);
+      const nameFromDb = nameBySpecialistId.get(row.id) ?? (row.name != null && String(row.name).trim() ? String(row.name).trim() : null);
 
       const specLat = toSpecialistCoord(row.lat);
       const specLng = toSpecialistCoord(row.lng);

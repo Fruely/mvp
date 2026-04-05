@@ -106,7 +106,7 @@ export default async function SpecialistDashboardPage({
                 : "",
             currency: typeof service.currency === "string" && service.currency.trim() ? service.currency : "EUR",
             is_active: Boolean(service.is_active),
-            price_comment: typeof service.price_comment === "string" ? service.price_comment : "",
+            price_comment: service.price_comment != null ? String(service.price_comment) : "",
           })),
         }}
         categories={(categoriesRows ?? [])

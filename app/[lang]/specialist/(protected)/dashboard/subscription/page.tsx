@@ -36,23 +36,23 @@ export default async function SpecialistDashboardSubscriptionPage() {
     .maybeSingle();
 
   const subscriptionStatusRaw =
-    typeof planRow?.plan_status === "string" ? planRow.plan_status : specialistRecord.subscription_status;
+    planRow?.plan_status != null ? String(planRow.plan_status) : specialistRecord.subscription_status;
   const planNameRaw =
-    typeof planRow?.plan_code === "string" ? planRow.plan_code : specialistRecord.plan_name;
+    planRow?.plan_code != null ? String(planRow.plan_code) : specialistRecord.plan_name;
   const subscriptionUntilRaw =
-    typeof planRow?.expires_at === "string" ? planRow.expires_at : specialistRecord.subscription_until;
+    planRow?.expires_at != null ? String(planRow.expires_at) : specialistRecord.subscription_until;
   const graceUntilRaw = specialistRecord.grace_until;
 
   const status =
-    typeof subscriptionStatusRaw === "string" && subscriptionStatusRaw.trim()
-      ? subscriptionStatusRaw.trim()
+    subscriptionStatusRaw != null && String(subscriptionStatusRaw).trim()
+      ? String(subscriptionStatusRaw).trim()
       : "—";
   const planName =
-    typeof planNameRaw === "string" && planNameRaw.trim() ? planNameRaw.trim() : "—";
+    planNameRaw != null && String(planNameRaw).trim() ? String(planNameRaw).trim() : "—";
   const subscriptionUntil =
-    typeof subscriptionUntilRaw === "string" && subscriptionUntilRaw.trim() ? subscriptionUntilRaw : null;
+    subscriptionUntilRaw != null && String(subscriptionUntilRaw).trim() ? String(subscriptionUntilRaw) : null;
   const graceUntil =
-    typeof graceUntilRaw === "string" && graceUntilRaw.trim() ? graceUntilRaw : null;
+    graceUntilRaw != null && String(graceUntilRaw).trim() ? String(graceUntilRaw) : null;
 
   const ctaLabel =
     status === "expired"
