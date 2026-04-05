@@ -52,6 +52,27 @@ type Props = {
 
 const MAX_GALLERY_IMAGES = 5;
 
+const PRICE_COMMENT_MAX = 50;
+
+const PRICE_COMMENT_PRESETS = [
+  "по договорённости",
+  "за час",
+  "за сессию",
+  "за м²",
+  "после замеров",
+  "после осмотра",
+  "оплачивается Jobcenter",
+] as const;
+
+const CHIP_COLORS = [
+  "bg-blue-50 text-blue-700 hover:bg-blue-100",
+  "bg-orange-50 text-orange-700 hover:bg-orange-100",
+  "bg-green-50 text-green-700 hover:bg-green-100",
+  "bg-purple-50 text-purple-700 hover:bg-purple-100",
+  "bg-pink-50 text-pink-700 hover:bg-pink-100",
+  "bg-indigo-50 text-indigo-700 hover:bg-indigo-100",
+];
+
 function sanitizePriceValue(raw: string): string {
   return raw.replace(/\s/g, "").replace(",", ".");
 }
@@ -233,6 +254,17 @@ export default function SpecialistDashboardEditor({
     setError(null);
     setSuccess(null);
     try {
+      for (const service of form.services) {
+        if (!service.title?.trim()) continue;
+        const pf = Number(
+          String(service.price_from ?? "").replace(/\s/g, "").replace(",", ".")
+        );
+        if (Number.isFinite(pf) && pf === 0 && !String(service.price_comment ?? "").trim()) {
+          setError(t(dict, "dashboard.messages.priceZeroNeedsComment"));
+          return;
+        }
+      }
+
       const payload = {
         ...form,
         category_id: form.category_id || null,
@@ -248,7 +280,7 @@ export default function SpecialistDashboardEditor({
             price_from: sanitizePrice(service.price_from.trim()),
             currency: (service.currency || "EUR").trim().toUpperCase(),
             is_active: service.is_active,
-            price_comment: service.price_comment?.slice(0, 120) ?? "",
+            price_comment: service.price_comment?.slice(0, PRICE_COMMENT_MAX) ?? "",
           }))
           .filter((service) => service.title.length > 0),
       };
@@ -688,16 +720,37 @@ export default function SpecialistDashboardEditor({
                 </div>
                 <label className="block space-y-1">
                   <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.priceComment")}</span>
+                  <div className="mb-2 flex flex-wrap gap-2">
+                    {PRICE_COMMENT_PRESETS.map((preset, i) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() =>
+                          updateService(idx, {
+                            price_comment: preset.slice(0, PRICE_COMMENT_MAX),
+                          })
+                        }
+                        className={`rounded-full px-3 py-1 text-xs font-medium transition ${CHIP_COLORS[i % CHIP_COLORS.length]}`}
+                      >
+                        {preset}
+                      </button>
+                    ))}
+                  </div>
                   <textarea
                     value={service.price_comment || ""}
+                    maxLength={PRICE_COMMENT_MAX}
                     onChange={(e) =>
-                      updateService(idx, { price_comment: e.target.value.slice(0, 120) })
+                      updateService(idx, {
+                        price_comment: e.target.value.slice(0, PRICE_COMMENT_MAX),
+                      })
                     }
-                    placeholder={t(dict, "dashboard.fields.priceCommentPlaceholder")}
+                    placeholder={t(dict, "dashboard.fields.priceCommentPlaceholder50")}
                     className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
                     rows={2}
                   />
-                  <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.priceCommentHint")}</p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    {t(dict, "dashboard.fields.priceCommentMicroHint")}
+                  </p>
                 </label>
               </div>
             ))}
