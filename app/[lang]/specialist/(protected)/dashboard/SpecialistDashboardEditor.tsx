@@ -248,6 +248,7 @@ export default function SpecialistDashboardEditor({
             price_from: sanitizePrice(service.price_from.trim()),
             currency: (service.currency || "EUR").trim().toUpperCase(),
             is_active: service.is_active,
+            price_comment: service.price_comment?.slice(0, 120) ?? "",
           }))
           .filter((service) => service.title.length > 0),
       };
