@@ -64,6 +64,13 @@ const PRICE_COMMENT_PRESETS = [
   "оплачивается Jobcenter",
 ] as const;
 
+const ZERO_PRICE_PRESETS = new Set([
+  "по договорённости",
+  "после замеров",
+  "после осмотра",
+  "оплачивается Jobcenter",
+]);
+
 const CHIP_COLORS = [
   "bg-blue-50 text-blue-700 hover:bg-blue-100",
   "bg-orange-50 text-orange-700 hover:bg-orange-100",
@@ -694,8 +701,7 @@ export default function SpecialistDashboardEditor({
                         const value = e.target.value;
                         updateService(idx, {
                           price_from: value,
-                          price_comment:
-                            Number(value) > 0 ? "" : service.price_comment,
+                          price_comment: service.price_comment,
                         });
                       }}
                       type="number"
@@ -737,7 +743,9 @@ export default function SpecialistDashboardEditor({
                           onClick={() =>
                             updateService(idx, {
                               price_comment: preset.slice(0, PRICE_COMMENT_MAX),
-                              price_from: "0",
+                              ...(ZERO_PRICE_PRESETS.has(preset)
+                                ? { price_from: "0" }
+                                : {}),
                             })
                           }
                           className={`
