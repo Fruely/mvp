@@ -99,8 +99,8 @@ export async function GET(
       price_to: s.price_to,
       currency: s.currency ?? "EUR",
       price_comment:
-        typeof s.price_comment === "string" && s.price_comment.trim()
-          ? s.price_comment.trim()
+        s.price_comment != null && String(s.price_comment).trim()
+          ? String(s.price_comment).trim()
           : null,
     })),
   };

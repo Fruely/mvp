@@ -85,8 +85,8 @@ function getSpecialistServicePriceDisplay(
         ? Number(String(raw).replace(/\s/g, "").replace(",", "."))
         : NaN;
   const comment =
-    typeof service.price_comment === "string" && service.price_comment.trim()
-      ? service.price_comment.trim()
+    service.price_comment != null && String(service.price_comment).trim()
+      ? String(service.price_comment).trim()
       : null;
 
   if (Number.isFinite(pf) && pf > 0) {
