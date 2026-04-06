@@ -142,7 +142,22 @@ export async function GET() {
     mixed.push(...shuffle(grouped.get(priority) ?? []));
   }
 
-  const data = mixed.slice(0, 8).map((row) => {
+  const ROW_SIZE = 4;
+  const MAX_ROWS = 3;
+  const maxItems = ROW_SIZE * MAX_ROWS;
+
+  let toShow: typeof specialists;
+
+  if (mixed.length < ROW_SIZE) {
+    toShow = mixed;
+  } else {
+    const roundedLength =
+      Math.floor(Math.min(mixed.length, maxItems) / ROW_SIZE) * ROW_SIZE;
+
+    toShow = mixed.slice(0, roundedLength);
+  }
+
+  const data = toShow.map((row) => {
     const profile = profileBySpecialistId.get(row.id);
     const category =
       typeof row.category_id === "string" ? categoryById.get(row.category_id) : undefined;
