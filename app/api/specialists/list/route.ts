@@ -20,6 +20,7 @@ type SpecialistRow = {
   work_format?: WorkFormat | null;
   approved_at?: string | null;
   created_at?: string | null;
+  is_featured?: boolean | null;
   lat?: number | null;
   lng?: number | null;
   mobile_service?: boolean | null;
@@ -208,6 +209,27 @@ function aggregateSpecialistServicesForList(rows: ServiceRow[]): SpecialistServi
   };
 }
 
+function mulberry32(a: number) {
+  return function () {
+    let t = (a += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seededShuffle<T>(array: T[], seed: number): T[] {
+  const result = [...array];
+  const random = mulberry32(seed);
+
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+
+  return result;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
@@ -257,11 +279,11 @@ export async function GET(request: NextRequest) {
     }
 
     const fullSelect =
-      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,lat,lng,mobile_service,service_radius_km)';
+      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,is_featured,lat,lng,mobile_service,service_radius_km)';
     const safeSelect =
-      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at)';
+      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,is_featured)';
     const fallbackSelect =
-      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,created_at)';
+      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,created_at,is_featured)';
 
     let rows: SpecialistRow[] | null = null;
     let queryError: { message?: string } | null = null;
@@ -346,7 +368,7 @@ export async function GET(request: NextRequest) {
 
       const fullDirect = await supabase
         .from("specialists")
-        .select("id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,lat,lng,mobile_service,service_radius_km")
+        .select("id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,is_featured,lat,lng,mobile_service,service_radius_km")
         .eq("category_id", categoryId)
         .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
         .eq("is_active", true)
@@ -359,7 +381,7 @@ export async function GET(request: NextRequest) {
         console.log("[specialists/list] direct fullDirect failed, trying safe direct select:", directError.message);
         const safeDirect = await supabase
           .from("specialists")
-          .select("id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at")
+          .select("id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,is_featured")
           .eq("category_id", categoryId)
           .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
           .eq("is_active", true)
@@ -400,6 +422,7 @@ export async function GET(request: NextRequest) {
             work_format: (r.work_format as WorkFormat) ?? null,
             approved_at: (r.approved_at as string) ?? null,
             created_at: (r.created_at as string) ?? null,
+            is_featured: typeof r.is_featured === "boolean" ? r.is_featured : null,
             lat: (r.lat as number) ?? null,
             lng: (r.lng as number) ?? null,
             mobile_service: (r.mobile_service as boolean) ?? null,
@@ -519,6 +542,8 @@ export async function GET(request: NextRequest) {
         work_format: (row.work_format ?? 'online') as WorkFormat,
         languages: Array.isArray(row.languages) ? row.languages.slice(0, 8) : [],
         is_verified: false,
+        is_featured: row.is_featured === true,
+        created_at: row.created_at ?? null,
         is_new: Boolean(newUntilTs && nowTs < newUntilTs),
         new_until: newUntil,
         _sort_new_ts: Number.isFinite(approvedTs) ? approvedTs : 0,
@@ -607,27 +632,29 @@ export async function GET(request: NextRequest) {
     _trace.filtered = filtered.length;
     console.log("STEP 4 final:", filtered.length);
 
-    if (sort === 'new') {
-      filtered.sort((a, b) => b._sort_new_ts - a._sort_new_ts);
-    } else if (sort === 'experience') {
-      filtered.sort((a, b) => (b._sort_experience ?? -1) - (a._sort_experience ?? -1));
+    const ROTATION_INTERVAL = 30 * 60;
+    const seed = Math.floor(Date.now() / (ROTATION_INTERVAL * 1000));
+
+    let ordered = [...filtered];
+
+    if (sort === "new") {
+      ordered.sort((a, b) => b._sort_new_ts - a._sort_new_ts);
+    } else if (sort === "experience") {
+      ordered.sort((a, b) => (b._sort_experience ?? -1) - (a._sort_experience ?? -1));
     } else {
-      filtered.sort((a, b) => {
-        const aReal = Boolean(a.has_real_price);
-        const bReal = Boolean(b.has_real_price);
-        if (aReal !== bReal) return aReal ? -1 : 1;
+      ordered.sort((a, b) => {
+        if (a.is_featured && !b.is_featured) return -1;
+        if (!a.is_featured && b.is_featured) return 1;
 
-        const ap = a.min_price_from ?? Number.POSITIVE_INFINITY;
-        const bp = b.min_price_from ?? Number.POSITIVE_INFINITY;
-        const diff = ap - bp;
-        if (diff !== 0 && !Number.isNaN(diff)) return diff;
-
-        return (a.name || '').localeCompare(b.name || '', 'uk');
+        const tb = b.created_at ? new Date(b.created_at).getTime() : 0;
+        const ta = a.created_at ? new Date(a.created_at).getTime() : 0;
+        return tb - ta;
       });
+      ordered = seededShuffle(ordered, seed);
     }
 
-    const total = filtered.length;
-    const page = filtered.slice(offset, offset + limit).map((row) => {
+    const total = ordered.length;
+    const page = ordered.slice(offset, offset + limit).map((row) => {
       const { distance: _d, lat: _lat, lng: _lng, ...rest } = row;
       return {
         id: rest.id,
@@ -639,6 +666,8 @@ export async function GET(request: NextRequest) {
         work_format: rest.work_format,
         languages: rest.languages,
         is_verified: rest.is_verified,
+        is_featured: rest.is_featured,
+        created_at: rest.created_at,
         is_new: rest.is_new,
         new_until: rest.new_until,
         min_price_from: rest.min_price_from,
