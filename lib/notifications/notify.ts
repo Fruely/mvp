@@ -1,6 +1,6 @@
 import { sendTelegramToOwners } from "@/lib/telegram/sendMessage";
 
-const errorCooldown = new Map<string, number>();
+const errorCooldown = new Map<string, { last: number; count: number }>();
 
 export type NotifyEventType = "NEW_SPECIALIST" | "NEW_LEAD" | "SYSTEM_ERROR";
 
@@ -37,22 +37,30 @@ export async function notify(
     const p = payload as { route: string; error?: unknown };
     const key = `${p.route}:${formatErrorForMessage(p.error)}`;
     const now = Date.now();
-    const last = errorCooldown.get(key);
-    if (last && now - last < 5 * 60 * 1000) {
-      return; // не отправлять повтор
+    const entry = errorCooldown.get(key);
+    if (entry && now - entry.last < 5 * 60 * 1000) {
+      entry.count += 1;
+      return;
     }
-    message = `Ошибка:\n${p.route}`;
-    if (p.error !== undefined) {
-      message += `\n${formatErrorForMessage(p.error)}`;
+    if (entry && entry.count >= 3) {
+      message = `🚨 Ошибка повторяется\n\n${p.route}\nповторений: ${entry.count}`;
+    } else {
+      message = `Ошибка:\n${p.route}`;
+      if (p.error !== undefined) {
+        message += `\n${formatErrorForMessage(p.error)}`;
+      }
     }
     sendTelegramToOwners(message).catch(() => {});
     const cutoff = now - 10 * 60 * 1000;
-    for (const [k, ts] of errorCooldown) {
-      if (ts < cutoff) {
+    for (const [k, e] of errorCooldown) {
+      if (e.last < cutoff) {
         errorCooldown.delete(k);
       }
     }
-    errorCooldown.set(key, now);
+    errorCooldown.set(key, {
+      last: now,
+      count: entry ? entry.count : 1,
+    });
     return;
   }
   sendTelegramToOwners(message).catch(() => {});
