@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { jsonNoStore } from "@/lib/api/response";
+import { notify } from "@/lib/notifications/notify";
 import { buildSpecialistSlug } from "@/lib/slugify";
 
 export const dynamic = "force-dynamic";
@@ -160,6 +161,22 @@ export async function POST() {
     .single();
   if (updateError) {
     return jsonNoStore({ error: "Failed to publish specialist profile" }, { status: 500 });
+  }
+
+  const { data: publishedRow } = await supabase
+    .from("specialists")
+    .select("id, name, published_at, is_active, is_visible")
+    .eq("id", specialistId)
+    .maybeSingle();
+
+  if (
+    publishedRow &&
+    (publishedRow.published_at ||
+      (publishedRow.is_active === true && publishedRow.is_visible === true))
+  ) {
+    await notify("NEW_SPECIALIST", {
+      name: `🟢 Опубликовался: ${publishedRow.name || "Без имени"}`,
+    });
   }
 
   return jsonNoStore({ success: true, status: updated.status });
