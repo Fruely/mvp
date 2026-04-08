@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 import { consumeLeadRateLimit, getLeadRateLimitKey } from "@/lib/leads/rateLimit";
+import { notify } from "@/lib/notifications/notify";
 import { sendTelegramMessage } from "@/lib/telegram/sendMessage";
 import { specialistDashboardPath } from "@/lib/specialists/navigation";
 
@@ -122,6 +123,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    await notify("NEW_LEAD", {
+      service:
+        typeof message === "string" && message.trim()
+          ? message.trim()
+          : "—",
+    });
+
     const tgChatId = specialist.telegram_chat_id;
     if (tgChatId != null) {
       const appUrl = process.env.APP_URL || "https://freuly.de";
@@ -138,6 +146,7 @@ export async function POST(request: NextRequest) {
 
     return Response.json({ data }, { status: 200 });
   } catch (err: any) {
+    await notify("SYSTEM_ERROR", { route: "/api/leads/create" });
     return Response.json(
       { error: "Unexpected error" },
       { status: 500 }

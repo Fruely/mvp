@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { requireAdminToken } from '@/lib/adminApiAuth';
+import { notify } from '@/lib/notifications/notify';
 import { sendEmail } from '@/lib/email';
 import crypto from 'crypto';
 
@@ -296,6 +297,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    await notify('NEW_SPECIALIST', { name: app.name.trim() });
+
     const baseUrl =
       process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://freuly.de');
@@ -349,6 +352,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error: unknown) {
     console.error('[admin] Unexpected error', error);
+    await notify('SYSTEM_ERROR', { route: '/api/admin/specialists/update' });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500, headers: { 'Cache-Control': 'no-store' } }

@@ -26,3 +26,32 @@ export async function sendTelegramMessage(
     return false;
   }
 }
+
+export async function sendTelegramToOwners(message: string): Promise<void> {
+  const raw = process.env.TELEGRAM_OWNER_CHAT_IDS;
+  if (!raw?.trim()) return;
+
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return;
+
+  const ids = raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  for (const chatId of ids) {
+    try {
+      const res = await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: message,
+        }),
+      });
+      if (res.ok) {
+        console.log(`[TELEGRAM] owner notified: ${chatId}`);
+      }
+    } catch {}
+  }
+}
