@@ -1,5 +1,7 @@
 import { sendTelegramToOwners } from "@/lib/telegram/sendMessage";
 
+const errorCooldown = new Map<string, number>();
+
 export type NotifyEventType = "NEW_SPECIALIST" | "NEW_LEAD" | "SYSTEM_ERROR";
 
 function formatErrorForMessage(error: unknown): string {
@@ -33,10 +35,19 @@ export async function notify(
     message = `Новая заявка:\n${(payload as { service: string }).service}`;
   } else {
     const p = payload as { route: string; error?: unknown };
+    const key = `${p.route}:${formatErrorForMessage(p.error)}`;
+    const now = Date.now();
+    const last = errorCooldown.get(key);
+    if (last && now - last < 5 * 60 * 1000) {
+      return; // не отправлять повтор
+    }
     message = `Ошибка:\n${p.route}`;
     if (p.error !== undefined) {
       message += `\n${formatErrorForMessage(p.error)}`;
     }
+    sendTelegramToOwners(message).catch(() => {});
+    errorCooldown.set(key, now);
+    return;
   }
   sendTelegramToOwners(message).catch(() => {});
 }
