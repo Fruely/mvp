@@ -1,3 +1,5 @@
+import { MessageCircle, Send } from "lucide-react";
+
 export default function SupportBlock() {
   const waHref =
     "https://wa.me/4916092686432?text=Здравствуйте,%20я%20специалист%20Freuly,%20нужна%20помощь%20с%20кабинетом";
@@ -10,22 +12,24 @@ export default function SupportBlock() {
       <p className="mt-1 text-sm text-gray-600">
         Мы поможем разобраться и довести профиль до публикации.
       </p>
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+      <div className="mt-4 flex flex-row gap-4">
         <a
           href={waHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-xl bg-green-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-green-700 sm:min-w-[200px] sm:flex-initial"
+          className="flex h-28 w-28 shrink-0 flex-col items-center justify-center rounded-3xl bg-gradient-to-br from-green-400 to-green-600 text-white shadow-sm transition hover:scale-[1.03] active:scale-95"
         >
-          WhatsApp
+          <MessageCircle className="h-8 w-8" strokeWidth={2} aria-hidden />
+          <span className="mt-2 text-center text-xs font-medium">WhatsApp</span>
         </a>
         <a
           href={tgHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-blue-700 sm:min-w-[200px] sm:flex-initial"
+          className="flex h-28 w-28 shrink-0 flex-col items-center justify-center rounded-3xl bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-sm transition hover:scale-[1.03] active:scale-95"
         >
-          Telegram
+          <Send className="h-8 w-8" strokeWidth={2} aria-hidden />
+          <span className="mt-2 text-center text-xs font-medium">Telegram</span>
         </a>
       </div>
     </div>
