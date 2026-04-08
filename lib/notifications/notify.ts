@@ -46,6 +46,12 @@ export async function notify(
       message += `\n${formatErrorForMessage(p.error)}`;
     }
     sendTelegramToOwners(message).catch(() => {});
+    const cutoff = now - 10 * 60 * 1000;
+    for (const [k, ts] of errorCooldown) {
+      if (ts < cutoff) {
+        errorCooldown.delete(k);
+      }
+    }
     errorCooldown.set(key, now);
     return;
   }
