@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
+import { notify } from "@/lib/notifications/notify";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { getDictionary, isSupportedLang, type Dictionary } from "@/lib/i18n";
 import SpecialistDashboardEditor from "./SpecialistDashboardEditor";
@@ -24,6 +25,25 @@ export default async function SpecialistDashboardPage({
 
   if (status === "blocked") {
     redirect(specialistLangHomePath());
+  }
+
+  const { data: visitCheck } = await service
+    .from("specialists")
+    .select("first_dashboard_visit_at")
+    .eq("id", specialist.id)
+    .maybeSingle();
+
+  if (!visitCheck?.first_dashboard_visit_at) {
+    await service
+      .from("specialists")
+      .update({
+        first_dashboard_visit_at: new Date().toISOString(),
+      })
+      .eq("id", specialist.id);
+
+    await notify("NEW_SPECIALIST", {
+      name: `🟡 Зашёл в кабинет: ${specialist.name || "Без имени"}`,
+    });
   }
 
   const { data: specExtra } = await service
