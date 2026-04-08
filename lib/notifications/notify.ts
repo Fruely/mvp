@@ -28,6 +28,7 @@ export async function notify(
     | { service: string }
     | { route: string; error?: unknown }
 ): Promise<void> {
+  console.log("[FREULY][EVENT]", eventType);
   let message: string;
   if (eventType === "NEW_SPECIALIST") {
     message = `Новый специалист:\n${(payload as { name: string }).name}`;
@@ -50,7 +51,7 @@ export async function notify(
         message += `\n${formatErrorForMessage(p.error)}`;
       }
     }
-    sendTelegramToOwners(message).catch(() => {});
+    await sendTelegramToOwners(message);
     const cutoff = now - 10 * 60 * 1000;
     errorCooldown.forEach((e, k) => {
       if (e.last < cutoff) {
@@ -63,5 +64,5 @@ export async function notify(
     });
     return;
   }
-  sendTelegramToOwners(message).catch(() => {});
+  await sendTelegramToOwners(message);
 }
