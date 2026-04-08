@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useCallback, type ChangeEvent } from "react";
 import { t, type Dictionary } from "@/lib/i18n";
+import SupportBlock from "@/components/support/SupportBlock";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { normalizeLang } from "@/lib/normalizeLang";
 
@@ -822,6 +823,8 @@ export default function SpecialistDashboardEditor({
             </div>
           </div>
         </div>
+
+        <SupportBlock />
       </div>
     </section>
   );
