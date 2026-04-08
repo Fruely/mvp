@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { jsonNoStore } from "@/lib/api/response";
+import { notify } from "@/lib/notifications/notify";
 
 async function geocodePlz(
   postalCode: string
@@ -359,6 +360,45 @@ export async function PUT(request: NextRequest) {
 
   if (syncCategoryError) {
     return jsonNoStore({ error: "Failed to sync service categories" }, { status: 500 });
+  }
+
+  const { data: notifyRow } = await supabase
+    .from("specialists")
+    .select(
+      "name, first_dashboard_visit_at, published_at, dashboard_save_count, category_blocked_notified_at"
+    )
+    .eq("id", specialistId)
+    .maybeSingle();
+
+  if (notifyRow) {
+    const newCount = (notifyRow.dashboard_save_count ?? 0) + 1;
+    const { error: saveCountError } = await supabase
+      .from("specialists")
+      .update({
+        dashboard_save_count: newCount,
+      })
+      .eq("id", specialistId);
+
+    if (!saveCountError) {
+      if (
+        notifyRow.first_dashboard_visit_at &&
+        !notifyRow.published_at &&
+        newCount >= 2 &&
+        !notifyRow.category_blocked_notified_at &&
+        Date.now() - new Date(String(notifyRow.first_dashboard_visit_at)).getTime() >
+          30 * 60 * 1000
+      ) {
+        await notify("NEW_SPECIALIST", {
+          name: `🟣 Не может опубликоваться (возможно категория): ${notifyRow.name || "Без имени"}`,
+        });
+        await supabase
+          .from("specialists")
+          .update({
+            category_blocked_notified_at: new Date().toISOString(),
+          })
+          .eq("id", specialistId);
+      }
+    }
   }
 
   return jsonNoStore({ success: true });
