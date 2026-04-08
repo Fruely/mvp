@@ -52,11 +52,11 @@ export async function notify(
     }
     sendTelegramToOwners(message).catch(() => {});
     const cutoff = now - 10 * 60 * 1000;
-    for (const [k, e] of errorCooldown) {
+    errorCooldown.forEach((e, k) => {
       if (e.last < cutoff) {
         errorCooldown.delete(k);
       }
-    }
+    });
     errorCooldown.set(key, {
       last: now,
       count: entry ? entry.count : 1,
