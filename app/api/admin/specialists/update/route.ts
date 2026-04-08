@@ -352,7 +352,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error: unknown) {
     console.error('[admin] Unexpected error', error);
-    await notify('SYSTEM_ERROR', { route: '/api/admin/specialists/update' });
+    await notify('SYSTEM_ERROR', { route: '/api/admin/specialists/update', error });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500, headers: { 'Cache-Control': 'no-store' } }

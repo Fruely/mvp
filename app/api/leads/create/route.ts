@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
 
     return Response.json({ data }, { status: 200 });
   } catch (err: any) {
-    await notify("SYSTEM_ERROR", { route: "/api/leads/create" });
+    await notify("SYSTEM_ERROR", { route: "/api/leads/create", error: err });
     return Response.json(
       { error: "Unexpected error" },
       { status: 500 }
