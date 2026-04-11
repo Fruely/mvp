@@ -250,7 +250,7 @@ export default async function SpecialistsPage({
                     )}
                     {typeof s.distance === "number" && Number.isFinite(s.distance) && (
                       <p className="text-xs text-textSecondary mt-1">
-                        {s.distance.toFixed(1)} км от вас
+                        {s.distance} км от вас
                       </p>
                     )}
                     <div className="flex flex-wrap gap-3 mt-4">
