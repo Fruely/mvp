@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
+import { normalizeLang } from "@/lib/normalizeLang";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 export const dynamic = "force-dynamic";
@@ -110,6 +111,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const lang = searchParams.get("lang")?.trim() || null;
+    const normalizedLang = lang ? normalizeLang(lang) : null;
     const place = searchParams.get("place")?.trim() || null;
     const category = searchParams.get("category")?.trim() || null;
     const mode = searchParams.get("mode")?.trim().toLowerCase() || null;
@@ -133,7 +135,7 @@ export async function GET(request: NextRequest) {
 
     if (mode === "online") {
       let query = buildSpecialistSearchQuery(supabase, {
-        lang,
+        lang: normalizedLang,
         categoryId,
         mode: "online",
         requireCoords: false,
@@ -154,7 +156,7 @@ export async function GET(request: NextRequest) {
 
     if (!place) {
       let query = buildSpecialistSearchQuery(supabase, {
-        lang,
+        lang: normalizedLang,
         categoryId,
         mode: null,
         requireCoords: false,
@@ -200,7 +202,7 @@ export async function GET(request: NextRequest) {
         refLat: plzLat,
         refLng: plzLng,
         radiusKm,
-        lang,
+        lang: normalizedLang,
         categoryId,
         offset,
       });
