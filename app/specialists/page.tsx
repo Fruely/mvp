@@ -231,7 +231,7 @@ export default async function SpecialistsPage({
               href={onlineHref}
               className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
             >
-              Показать онлайн
+              Показать онлайн-специалистов
             </Link>
           </div>
         </div>
