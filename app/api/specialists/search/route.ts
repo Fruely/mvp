@@ -74,7 +74,6 @@ async function fetchSpecialistsLocalByRadius(
     radiusKm: number;
     lang: string | null;
     categoryId: string | null;
-    mode: string | null;
     offset: number;
   }
 ) {
@@ -84,7 +83,7 @@ async function fetchSpecialistsLocalByRadius(
     p_radius_km: params.radiusKm,
     p_lang: params.lang,
     p_category_id: params.categoryId,
-    p_mode: params.mode,
+    p_mode: null,
     p_offset: params.offset,
     p_limit: 20,
   });
@@ -115,11 +114,32 @@ export async function GET(request: NextRequest) {
       categoryId = categoryRow.id;
     }
 
+    if (mode === "online") {
+      let query = buildSpecialistSearchQuery(supabase, {
+        lang,
+        categoryId,
+        mode: "online",
+        requireCoords: false,
+      });
+      query = query.range(offset, offset + 19).limit(20);
+
+      const { data: rows, error } = await query;
+
+      if (error) {
+        console.error("search error:", error);
+        return jsonNoStore({ data: [] });
+      }
+
+      const specialists = (rows ?? []) as SpecialistRow[];
+      const data = await mapSpecialistsWithCategories(supabase, specialists);
+      return jsonNoStore({ data, mode: "online" });
+    }
+
     if (!place) {
       let query = buildSpecialistSearchQuery(supabase, {
         lang,
         categoryId,
-        mode,
+        mode: null,
         requireCoords: false,
       });
       query = query.range(offset, offset + 19).limit(20);
@@ -165,7 +185,6 @@ export async function GET(request: NextRequest) {
         radiusKm,
         lang,
         categoryId,
-        mode,
         offset,
       });
 
