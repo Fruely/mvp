@@ -55,9 +55,9 @@ export async function GET(request: NextRequest) {
       query = query.contains("languages", [lang]);
     }
 
-    // Filter by postal code — online/hybrid always included
+    // Filter by postal code only (no automatic inclusion of online/hybrid)
     if (place) {
-      query = query.or(`postal_code.eq.${place},work_format.eq.online,work_format.eq.hybrid`);
+      query = query.eq("postal_code", place);
     }
 
     // Filter by category via category_id
@@ -71,11 +71,8 @@ export async function GET(request: NextRequest) {
     const { data: rows, error: specError } = await query;
 
     if (specError) {
-      console.error("[specialists/search] specialists fetch:", specError);
-      return jsonNoStore(
-        { error: "Failed to fetch specialists" },
-        { status: 500 }
-      );
+      console.error("specialists list error:", specError);
+      return jsonNoStore({ data: [] });
     }
 
     const specialists = (rows ?? []) as Array<{
