@@ -28,19 +28,8 @@ type SpecialistRow = {
   lng: number | null;
 };
 
-function getDistanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLng = ((lng2 - lng1) * Math.PI) / 180;
-
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) ** 2;
-
-  return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
+/** Progressive local search radii (km). Distance filtering runs in SQL via `distance_km`. */
+const LOCAL_SEARCH_RADII_KM = [10, 30, 50, 100] as const;
 
 const SELECT_COLS =
   "id, slug, name, bio, avatar_url, category_id, languages, work_format, postal_code, lat, lng";
@@ -74,6 +63,31 @@ function buildSpecialistSearchQuery(
     q = q.not("lat", "is", null).not("lng", "is", null);
   }
   return q;
+}
+
+/** Uses SQL `distance_km` inside DB function `search_specialists_local_radius` (see Supabase SQL). */
+async function fetchSpecialistsLocalByRadius(
+  supabase: ReturnType<typeof createSupabaseServerClient>,
+  params: {
+    refLat: number;
+    refLng: number;
+    radiusKm: number;
+    lang: string | null;
+    categoryId: string | null;
+    mode: string | null;
+    offset: number;
+  }
+) {
+  return supabase.rpc("search_specialists_local_radius", {
+    p_ref_lat: params.refLat,
+    p_ref_lng: params.refLng,
+    p_radius_km: params.radiusKm,
+    p_lang: params.lang,
+    p_category_id: params.categoryId,
+    p_mode: params.mode,
+    p_offset: params.offset,
+    p_limit: 20,
+  });
 }
 
 export async function GET(request: NextRequest) {
@@ -133,57 +147,40 @@ export async function GET(request: NextRequest) {
       return jsonNoStore({ data: [] });
     }
 
-    const plzLat =
-      plzData != null && plzData.lat != null ? Number(plzData.lat) : NaN;
-    const plzLng =
-      plzData != null && plzData.lng != null ? Number(plzData.lng) : NaN;
+    if (!plzData) {
+      return jsonNoStore({ data: [], fallback: "invalid_plz" });
+    }
+
+    const plzLat = plzData.lat != null ? Number(plzData.lat) : NaN;
+    const plzLng = plzData.lng != null ? Number(plzData.lng) : NaN;
 
     if (!Number.isFinite(plzLat) || !Number.isFinite(plzLng)) {
-      return jsonNoStore({
-        data: [],
-        fallback: "no_local_results",
-      });
+      return jsonNoStore({ data: [], fallback: "invalid_plz" });
     }
 
-    let coordQuery = buildSpecialistSearchQuery(supabase, {
-      lang,
-      categoryId,
-      mode,
-      requireCoords: true,
-    });
-
-    const { data: coordRows, error: coordError } = await coordQuery;
-
-    if (coordError) {
-      console.error("search error:", coordError);
-      return jsonNoStore({ data: [] });
-    }
-
-    const withCoords = (coordRows ?? []).filter((row): row is SpecialistRow => {
-      const r = row as SpecialistRow;
-      return (
-        typeof r.lat === "number" &&
-        typeof r.lng === "number" &&
-        Number.isFinite(r.lat) &&
-        Number.isFinite(r.lng)
-      );
-    });
-
-    const radiuses = [10, 30, 50, 100];
-
-    for (const radius of radiuses) {
-      const results = withCoords.filter((s) => {
-        const distance = getDistanceKm(plzLat, plzLng, s.lat as number, s.lng as number);
-        return distance <= radius;
+    for (const radiusKm of LOCAL_SEARCH_RADII_KM) {
+      const { data: rows, error: rpcError } = await fetchSpecialistsLocalByRadius(supabase, {
+        refLat: plzLat,
+        refLng: plzLng,
+        radiusKm,
+        lang,
+        categoryId,
+        mode,
+        offset,
       });
 
-      if (results.length > 0) {
-        const page = results.slice(offset, offset + 20);
-        const data = await mapSpecialistsWithCategories(supabase, page);
+      if (rpcError) {
+        console.error("search error:", rpcError);
+        return jsonNoStore({ data: [] });
+      }
+
+      const list = (rows ?? []) as SpecialistRow[];
+      if (list.length > 0) {
+        const data = await mapSpecialistsWithCategories(supabase, list);
         return jsonNoStore({
           data,
           mode: "local",
-          radius,
+          radius: radiusKm,
         });
       }
     }
@@ -193,8 +190,8 @@ export async function GET(request: NextRequest) {
       fallback: "no_local_results",
     });
   } catch (e: unknown) {
-    console.error("[specialists/search] unexpected:", e);
-    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
+    console.error("search error:", e);
+    return jsonNoStore({ data: [] });
   }
 }
 
