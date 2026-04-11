@@ -14,10 +14,10 @@ export function getCategoryTitle(category: Category | null | undefined, lang: st
   if (!category) return "";
 
   if (lang === "ru") {
-    const fromDb = category.title_ru?.trim();
-    if (fromDb) return fromDb;
     const slug = typeof category.slug === "string" ? category.slug.trim() : "";
     if (slug && ruCategoryLabels[slug]) return ruCategoryLabels[slug];
+    const fromDb = category.title_ru?.trim();
+    if (fromDb) return fromDb;
     return category.title?.trim() || "";
   }
   if (lang === "ua") return category.title_ua || category.title || "";
