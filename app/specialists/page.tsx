@@ -225,7 +225,7 @@ export default async function SpecialistsPage({
         <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
           <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-6">
-              В вашем регионе специалистов нет
+              В вашем регионе пока нет специалистов
             </h1>
             <Link
               href={onlineHref}
