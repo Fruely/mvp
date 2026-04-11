@@ -108,7 +108,28 @@
 
     "lawyers": "Адвокаты",
     "migration-consultants": "Миграционные консультанты",
-    "tax-consultants": "Налоговые консультанты"
+    "tax-consultants": "Налоговые консультанты",
+
+    "alltagshilfe": "Помощь в быту",
+    "begleitdienst": "Сопровождение",
+    "gruppenreisen": "Групповые туры",
+    "haushaltshilfe": "Домашняя помощь",
+    "individualreisen": "Индивидуальные туры",
+    "kinderbetreuung": "Присмотр за детьми",
+    "krankenpflege": "Медицинский уход",
+    "kreativ-retreats": "Творческие ретриты",
+    "meditation": "Медитация",
+    "pauschalreisen": "Пакетные туры",
+    "reiseberatung": "Консультации по путешествиям",
+    "retreats": "Ретриты",
+    "seniorenbetreuung": "Уход за пожилыми",
+    "stadtfuehrung": "Городские туры",
+    "tagesausfluege": "Однодневные поездки",
+    "thementouren": "Тематические туры",
+    "tourguide": "Гид",
+    "visa-hilfe": "Помощь с визой",
+    "wellness-spa": "Велнес и спа",
+    "yoga-retreats": "Йога-ретриты"
   },
   "category": {
     "loading": "Загрузка...",
