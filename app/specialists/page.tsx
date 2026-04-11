@@ -7,6 +7,9 @@ import { normalizeLang } from "@/lib/normalizeLang";
 
 export const dynamic = "force-dynamic";
 
+/** Used when `lang` query param is missing (e.g. `/specialists?mode=online`). */
+const DEFAULT_SPECIALISTS_SEARCH_LANG = "ru";
+
 const UI_LANGS = ["ua", "ru", "de"] as const;
 type UiLang = (typeof UI_LANGS)[number];
 
@@ -45,14 +48,16 @@ type SpecialistsSearchResponse = {
 };
 
 async function fetchSpecialists(
-  lang: string,
+  lang: string | null | undefined,
   place: string | null,
   q: string | null,
   category: string | null,
   apiOnlineOnly: boolean
 ): Promise<SpecialistsSearchResponse> {
+  const langForApi =
+    typeof lang === "string" && lang.trim() ? lang.trim() : DEFAULT_SPECIALISTS_SEARCH_LANG;
   const params = new URLSearchParams();
-  if (lang) params.set("lang", lang);
+  params.set("lang", langForApi);
   if (place) params.set("place", place);
   if (q) params.set("q", q);
   if (category) params.set("category", category);
@@ -105,12 +110,9 @@ export async function generateMetadata({
 }: {
   searchParams: SearchParams;
 }): Promise<Metadata> {
-  const lang = searchParams?.lang?.trim();
+  const lang = searchParams?.lang?.trim() || DEFAULT_SPECIALISTS_SEARCH_LANG;
   const place = searchParams?.place?.trim();
   const mode = searchParams?.mode?.trim().toLowerCase();
-  if (!lang) {
-    return { title: "Specialists | Freuly" };
-  }
   if (mode === "online") {
     return {
       title: "Specialists · online | Freuly",
@@ -131,34 +133,12 @@ export default async function SpecialistsPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const lang = searchParams?.lang?.trim();
+  const lang = searchParams?.lang?.trim() || DEFAULT_SPECIALISTS_SEARCH_LANG;
   const place = searchParams?.place?.trim();
   const q = searchParams?.q?.trim() || null;
   const category = searchParams?.category?.trim() || null;
   const pageMode = searchParams?.mode?.trim().toLowerCase() || null;
   const isOnlineList = pageMode === "online";
-
-  if (!lang) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
-          <h1 className="text-xl font-bold text-gray-900 mb-2">
-            Missing search parameters
-          </h1>
-          <p className="text-gray-600 mb-6">
-            Language and location are required. Please start your search from the
-            homepage.
-          </p>
-          <Link
-            href="/ua"
-            className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
-          >
-            Back to search
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   if (!isOnlineList && !place) {
     return (
@@ -183,7 +163,7 @@ export default async function SpecialistsPage({
   }
 
   const result = await fetchSpecialists(
-    lang,
+    searchParams?.lang?.trim(),
     isOnlineList ? null : place ?? null,
     q,
     category,
