@@ -143,21 +143,17 @@ export default async function SpecialistsPage({
   const uiLang = toUiLang(lang);
 
   if (!category) {
-    let message = "Выберите, какого специалиста вы ищете";
-    if (place && !isOnlineList) {
-      message = "Добавьте категорию";
-    } else if (isOnlineList) {
-      message = "Уточните категорию";
-    }
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
         <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">{message}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Выберите, какого специалиста вы ищете
+          </h1>
           <Link
             href={`/${uiLang}`}
             className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
           >
-            ← Back to search
+            Назад к поиску
           </Link>
         </div>
       </div>
