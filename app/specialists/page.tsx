@@ -37,6 +37,7 @@ type Specialist = {
   postal_code: string | null;
   /** From local radius search API; omitted for online/all lists. */
   distance?: number;
+  is_pro?: boolean;
 };
 
 type SpecialistsSearchResponse = {
@@ -302,7 +303,14 @@ export default async function SpecialistsPage({
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h2 className="text-lg font-bold text-gray-900">{s.name}</h2>
+                    <div className="flex flex-wrap items-baseline gap-2">
+                      <h2 className="text-lg font-bold text-gray-900">{s.name}</h2>
+                      {s.is_pro === true ? (
+                        <span className="rounded bg-gray-900 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                          PRO
+                        </span>
+                      ) : null}
+                    </div>
                     {hasCategory && (
                       <p className="text-sm text-gray-500 mt-0.5">
                         {categoryLabel}
