@@ -32,6 +32,8 @@ type Specialist = {
   languages: string[];
   work_format: string;
   postal_code: string | null;
+  /** From local radius search API; omitted for online/all lists. */
+  distance?: number;
 };
 
 async function fetchSpecialists(
@@ -244,6 +246,11 @@ export default async function SpecialistsPage({
                         {s.work_format && s.work_format !== "online" && (
                           <span> · {s.work_format}</span>
                         )}
+                      </p>
+                    )}
+                    {typeof s.distance === "number" && Number.isFinite(s.distance) && (
+                      <p className="text-xs text-textSecondary mt-1">
+                        {s.distance.toFixed(1)} км от вас
                       </p>
                     )}
                     <div className="flex flex-wrap gap-3 mt-4">

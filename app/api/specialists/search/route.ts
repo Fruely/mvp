@@ -26,10 +26,19 @@ type SpecialistRow = {
   postal_code: string | null;
   lat: number | null;
   lng: number | null;
+  /** Present when row comes from `search_specialists_local_radius` (RPC). */
+  distance?: number | null;
 };
 
 /** Progressive local search radii (km). Distance filtering runs in SQL via `distance_km`. */
 const LOCAL_SEARCH_RADII_KM = [10, 30, 50, 100] as const;
+
+function normalizeDistanceKmForResponse(raw: unknown): number | undefined {
+  if (raw == null) return undefined;
+  const n = typeof raw === "number" ? raw : Number(raw);
+  if (typeof n !== "number" || !Number.isFinite(n)) return undefined;
+  return Math.round(n * 10) / 10;
+}
 
 const SELECT_COLS =
   "id, slug, name, bio, avatar_url, category_id, languages, work_format, postal_code, lat, lng";
@@ -243,6 +252,9 @@ async function mapSpecialistsWithCategories(
 
   return specialists.map((s) => {
     const cat = s.category_id ? categoryMap[s.category_id] : null;
+    const distanceKm = normalizeDistanceKmForResponse(
+      (s as SpecialistRow).distance
+    );
     return {
       id: s.id,
       slug: s.slug ?? null,
@@ -258,6 +270,7 @@ async function mapSpecialistsWithCategories(
       languages: s.languages ?? [],
       work_format: s.work_format,
       postal_code: s.postal_code,
+      ...(distanceKm !== undefined ? { distance: distanceKm } : {}),
     };
   });
 }
