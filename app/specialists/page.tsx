@@ -36,12 +36,19 @@ type Specialist = {
   distance?: number;
 };
 
+type SpecialistsSearchResponse = {
+  data: Specialist[];
+  error: string | null;
+  mode?: string;
+  radius?: number;
+};
+
 async function fetchSpecialists(
   lang: string,
   place: string,
   q: string | null,
   category: string | null
-): Promise<{ data: Specialist[]; error: string | null }> {
+): Promise<SpecialistsSearchResponse> {
   const params = new URLSearchParams();
   if (lang) params.set("lang", lang);
   if (place) params.set("place", place);
@@ -67,9 +74,17 @@ async function fetchSpecialists(
     return { data: [], error: "Invalid response" };
   }
 
+  const radiusRaw = json?.radius;
+  const radius =
+    typeof radiusRaw === "number" && Number.isFinite(radiusRaw)
+      ? radiusRaw
+      : undefined;
+
   return {
     data: Array.isArray(json?.data) ? json.data : [],
     error: json?.error || null,
+    mode: typeof json?.mode === "string" ? json.mode : undefined,
+    radius,
   };
 }
 
@@ -126,6 +141,8 @@ export default async function SpecialistsPage({
   const result = await fetchSpecialists(lang, place, q, category);
   const specialists = Array.isArray(result?.data) ? result.data : [];
   const error = result?.error || null;
+  const searchMode = result.mode;
+  const searchRadius = result.radius;
   const uiLang = toUiLang(lang);
 
   if (error && specialists.length === 0) {
@@ -293,6 +310,14 @@ export default async function SpecialistsPage({
             {q ? ` matching "${q}"` : ""}.
           </p>
         </div>
+
+        {searchMode === "local" &&
+          typeof searchRadius === "number" &&
+          Number.isFinite(searchRadius) && (
+            <p className="text-sm text-gray-600 mb-6">
+              Найдено специалистов в радиусе {searchRadius} км
+            </p>
+          )}
 
         {localSpecialists.length > 0 && (
           <>
