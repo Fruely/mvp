@@ -41,19 +41,22 @@ type SpecialistsSearchResponse = {
   error: string | null;
   mode?: string;
   radius?: number;
+  fallback?: string;
 };
 
 async function fetchSpecialists(
   lang: string,
-  place: string,
+  place: string | null,
   q: string | null,
-  category: string | null
+  category: string | null,
+  apiOnlineOnly: boolean
 ): Promise<SpecialistsSearchResponse> {
   const params = new URLSearchParams();
   if (lang) params.set("lang", lang);
   if (place) params.set("place", place);
   if (q) params.set("q", q);
   if (category) params.set("category", category);
+  if (apiOnlineOnly) params.set("mode", "online");
   const baseUrl =
     process.env.NEXT_PUBLIC_SITE_URL ||
     "https://freuly.de";
@@ -85,10 +88,17 @@ async function fetchSpecialists(
     error: json?.error || null,
     mode: typeof json?.mode === "string" ? json.mode : undefined,
     radius,
+    fallback: typeof json?.fallback === "string" ? json.fallback : undefined,
   };
 }
 
-type SearchParams = { lang?: string; place?: string; q?: string; category?: string };
+type SearchParams = {
+  lang?: string;
+  place?: string;
+  q?: string;
+  category?: string;
+  mode?: string;
+};
 
 export async function generateMetadata({
   searchParams,
@@ -97,7 +107,17 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const lang = searchParams?.lang?.trim();
   const place = searchParams?.place?.trim();
-  if (!lang || !place) {
+  const mode = searchParams?.mode?.trim().toLowerCase();
+  if (!lang) {
+    return { title: "Specialists | Freuly" };
+  }
+  if (mode === "online") {
+    return {
+      title: "Specialists · online | Freuly",
+      description: `Find specialists by language.`,
+    };
+  }
+  if (!place) {
     return { title: "Specialists | Freuly" };
   }
   return {
@@ -115,8 +135,10 @@ export default async function SpecialistsPage({
   const place = searchParams?.place?.trim();
   const q = searchParams?.q?.trim() || null;
   const category = searchParams?.category?.trim() || null;
+  const pageMode = searchParams?.mode?.trim().toLowerCase() || null;
+  const isOnlineList = pageMode === "online";
 
-  if (!lang || !place) {
+  if (!lang) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
@@ -138,7 +160,35 @@ export default async function SpecialistsPage({
     );
   }
 
-  const result = await fetchSpecialists(lang, place, q, category);
+  if (!isOnlineList && !place) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+          <h1 className="text-xl font-bold text-gray-900 mb-2">
+            Missing search parameters
+          </h1>
+          <p className="text-gray-600 mb-6">
+            Language and location are required. Please start your search from the
+            homepage.
+          </p>
+          <Link
+            href="/ua"
+            className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
+          >
+            Back to search
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const result = await fetchSpecialists(
+    lang,
+    isOnlineList ? null : place ?? null,
+    q,
+    category,
+    isOnlineList
+  );
   const specialists = Array.isArray(result?.data) ? result.data : [];
   const error = result?.error || null;
   const searchMode = result.mode;
@@ -167,6 +217,27 @@ export default async function SpecialistsPage({
   const empty = specialists.length === 0;
 
   if (empty) {
+    if (result.fallback === "no_local_results" && place) {
+      const onlineHref = `/specialists?mode=online&lang=${encodeURIComponent(lang)}${
+        category ? `&category=${encodeURIComponent(category)}` : ""
+      }${q ? `&q=${encodeURIComponent(q)}` : ""}`;
+      return (
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
+          <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-6">
+              В вашем регионе специалистов нет
+            </h1>
+            <Link
+              href={onlineHref}
+              className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
+            >
+              Показать онлайн
+            </Link>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
         <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
@@ -200,7 +271,10 @@ export default async function SpecialistsPage({
   }
 
   const localSpecialists = specialists.filter(
-    (s) => s.work_format !== "online" && s.postal_code === place
+    (s) =>
+      place != null &&
+      s.work_format !== "online" &&
+      s.postal_code === place
   );
   const onlineSpecialists = specialists.filter(
     (s) => s.work_format === "online" || s.work_format === "hybrid"
@@ -306,7 +380,14 @@ export default async function SpecialistsPage({
           </h1>
           <p className="text-gray-600 mt-1">
             {specialists.length} {specialists.length === 1 ? "result" : "results"}{" "}
-            for language &quot;{lang}&quot; in &quot;{place}&quot;
+            for language &quot;{lang}&quot;
+            {place ? (
+              <>
+                {" "}
+                in &quot;{place}&quot;
+              </>
+            ) : null}
+            {isOnlineList ? " (online)" : null}
             {q ? ` matching "${q}"` : ""}.
           </p>
         </div>
