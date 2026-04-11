@@ -89,6 +89,14 @@ async function fetchSpecialistsLocalByRadius(
   });
 }
 
+/**
+ * Response contract (no implicit work_format switching; local search never mixes online/hybrid):
+ * - place + invalid PLZ → { data: [], fallback: "invalid_plz" }
+ * - place + valid PLZ, empty radii → { data: [], fallback: "no_local_results" }
+ * - place + hits → { data, mode: "local", radius }
+ * - no place, default → { data, mode: "all" }
+ * - mode=online → { data, mode: "online" } (ignores place; work_format = online only)
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -248,7 +256,7 @@ async function mapSpecialistsWithCategories(
       category_title_de: cat?.title_de ?? null,
       category_title_ua: cat?.title_ua ?? null,
       languages: s.languages ?? [],
-      work_format: s.work_format ?? "online",
+      work_format: s.work_format,
       postal_code: s.postal_code,
     };
   });
