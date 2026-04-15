@@ -33,6 +33,8 @@ export const specialistPageTranslations: Record<string, Translations> = {
     readMore: "Читати повністю",
     newBadge: "Новий",
     videoTitle: "Відео спеціаліста",
+    certificatesTitle: "Сертифікати та документи",
+    certificatesSubtitle: "Дипломи, ліцензії та підтвердження кваліфікації",
   },
   ru: {
     topGalleryTitle: "Галерея работ",
@@ -66,6 +68,8 @@ export const specialistPageTranslations: Record<string, Translations> = {
     readMore: "Читать полностью",
     newBadge: "Новый",
     videoTitle: "Видео специалиста",
+    certificatesTitle: "Сертификаты и документы",
+    certificatesSubtitle: "Дипломы, лицензии и подтверждение квалификации",
   },
   de: {
     topGalleryTitle: "Galerie der Arbeiten",
@@ -99,6 +103,8 @@ export const specialistPageTranslations: Record<string, Translations> = {
     readMore: "Vollständig lesen",
     newBadge: "Neu",
     videoTitle: "Video des Spezialisten",
+    certificatesTitle: "Zertifikate und Dokumente",
+    certificatesSubtitle: "Diplome, Lizenzen und Qualifikationsnachweise",
   },
   en: {
     topGalleryTitle: "Gallery",
@@ -132,5 +138,7 @@ export const specialistPageTranslations: Record<string, Translations> = {
     readMore: "Read more",
     newBadge: "New",
     videoTitle: "Specialist video",
+    certificatesTitle: "Certificates and documents",
+    certificatesSubtitle: "Diplomas, licenses and credentials",
   },
 };

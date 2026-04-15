@@ -14,6 +14,7 @@ import uaDict from "@/locales/ua.json";
 import { getSpecialistPageTranslations, getWorkFormat } from "@/lib/i18n/getTranslations";
 import SectionCard from "@/components/specialist/SectionCard";
 import SpecialistHero from "@/components/specialist/SpecialistHero";
+import SpecialistDocumentsLightbox from "@/components/specialist/SpecialistDocumentsLightbox";
 import MobileStickyCTA from "@/components/MobileStickyCTA";
 
 const LEGACY_SLUGS: Record<string, string> = {
@@ -118,6 +119,7 @@ export default function SpecialistPage() {
   const [reviews, setReviews] = useState<Array<{ id: string; author_name: string; rating: number; comment: string; created_at: string }>>([]);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewForm, setReviewForm] = useState({ author_name: "", rating: 0, comment: "" });
+  const [documentLightboxIndex, setDocumentLightboxIndex] = useState<number | null>(null);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const redirected = useRef(false);
   const [reviewMsg, setReviewMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
@@ -322,23 +324,15 @@ export default function SpecialistPage() {
     return [];
   };
   const servicesList = Array.from(new Set([...parseList(specialist.services), ...parseList(specialist.directions)])).slice(0, 8);
-  const asRecord = specialist as unknown as Record<string, unknown>;
   const parseImageList = (value: unknown): string[] => {
     if (!Array.isArray(value)) return [];
     return value
       .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
       .map((item) => item.trim());
   };
-  const portfolioImages = Array.from(
-    new Set([
-      ...parseImageList(specialist.gallery_urls),
-      ...parseImageList(specialist.portfolio_images),
-      ...parseImageList(specialist.works),
-      ...parseImageList(asRecord.portfolioImages),
-      ...parseImageList(asRecord.work_images),
-      ...parseImageList(asRecord.works_images),
-    ])
-  ).slice(0, 8);
+  /** Gallery slider + grid: only marketing photos from `gallery_urls` (not certificates or legacy merged fields). */
+  const portfolioImages = parseImageList(specialist.gallery_urls).slice(0, 8);
+  const certificateUrls = parseImageList(specialist.certificate_urls).slice(0, 10);
   const hasPortfolio = portfolioImages.length > 0;
   const portfolioCount = portfolioImages.length;
   const normalizedActivePortfolioIndex = portfolioCount > 0 ? Math.min(activePortfolioIndex, portfolioCount - 1) : 0;
@@ -420,6 +414,22 @@ export default function SpecialistPage() {
   };
 
   const videoEmbedUrl = parseVideoEmbedUrl(specialist?.video_url);
+
+  const goPrevDocument = () => {
+    if (certificateUrls.length === 0) return;
+    setDocumentLightboxIndex((prev) => {
+      if (prev === null) return null;
+      return (prev - 1 + certificateUrls.length) % certificateUrls.length;
+    });
+  };
+
+  const goNextDocument = () => {
+    if (certificateUrls.length === 0) return;
+    setDocumentLightboxIndex((prev) => {
+      if (prev === null) return null;
+      return (prev + 1) % certificateUrls.length;
+    });
+  };
 
   const workModeLabel = workMode ? sectionText.work_format[workMode] : null;
   const specialistPath = getSpecialistUrl(lang, specialist);
@@ -872,8 +882,44 @@ export default function SpecialistPage() {
             </SectionCard>
           ) : null}
 
+          {certificateUrls.length > 0 ? (
+            <SectionCard title={sectionText.certificatesTitle} subtitle={sectionText.certificatesSubtitle}>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {certificateUrls.map((src, idx) => (
+                  <button
+                    key={`${src}-${idx}`}
+                    type="button"
+                    onClick={() => setDocumentLightboxIndex(idx)}
+                    className="group relative overflow-hidden rounded-xl border border-slate-200/80 bg-neutral-100 shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  >
+                    <div className="relative aspect-[3/4] w-full">
+                      <Image
+                        src={src}
+                        alt={`${sectionText.certificatesTitle} ${idx + 1}`}
+                        fill
+                        className="object-contain p-2"
+                        sizes="(max-width: 640px) 45vw, 200px"
+                        unoptimized
+                      />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </SectionCard>
+          ) : null}
+
         </main>
       </div>
+
+      <SpecialistDocumentsLightbox
+        urls={certificateUrls}
+        activeIndex={documentLightboxIndex}
+        onClose={() => setDocumentLightboxIndex(null)}
+        onGoPrev={goPrevDocument}
+        onGoNext={goNextDocument}
+        ariaLabel={sectionText.certificatesTitle}
+      />
+
       <MobileStickyCTA
         onClick={() => {
           setLeadSuccessMessage(null);

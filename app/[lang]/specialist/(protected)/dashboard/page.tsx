@@ -60,7 +60,7 @@ export default async function SpecialistDashboardPage({
   const telegramConnected = Boolean(String(specExtra?.telegram_chat_id ?? "").trim());
   const { data: profile } = await service
     .from("specialist_profiles")
-    .select("photo_url, about_me, city, address, gallery_urls, video_url")
+    .select("photo_url, about_me, city, address, gallery_urls, certificate_urls, video_url")
     .eq("specialist_id", specialist.id)
     .maybeSingle();
   const { data: servicesRows } = await service
@@ -116,6 +116,9 @@ export default async function SpecialistDashboardPage({
           photo_url: typeof profile?.photo_url === "string" ? profile.photo_url : "",
           gallery_urls: Array.isArray(profile?.gallery_urls)
             ? profile.gallery_urls.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+            : [],
+          certificate_urls: Array.isArray(profile?.certificate_urls)
+            ? profile.certificate_urls.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
             : [],
           services: (servicesRows ?? []).map((service) => ({
             id: String(service.id),

@@ -34,4 +34,6 @@ export type Translations = {
   readMore: string;
   newBadge: string;
   videoTitle: string;
+  certificatesTitle: string;
+  certificatesSubtitle: string;
 };

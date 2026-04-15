@@ -24,6 +24,8 @@ async function geocodePlz(
   }
 }
 
+const MAX_CERTIFICATE_URLS = 10;
+
 type Payload = {
   name?: string;
   phone?: string;
@@ -39,6 +41,7 @@ type Payload = {
   video_url?: string;
   photo_url?: string;
   gallery_urls?: string[];
+  certificate_urls?: string[];
   services?: Array<{
     id?: string;
     title: string;
@@ -74,6 +77,13 @@ export async function PUT(request: NextRequest) {
   );
   if (hasInvalidLanguage) {
     return jsonNoStore({ error: "Invalid payload: languages contains unsupported values" }, { status: 400 });
+  }
+
+  if (
+    typeof body.certificate_urls !== "undefined" &&
+    !Array.isArray(body.certificate_urls)
+  ) {
+    return jsonNoStore({ error: "Invalid payload: certificate_urls must be an array" }, { status: 400 });
   }
 
   if (
@@ -244,6 +254,11 @@ export async function PUT(request: NextRequest) {
       ? body.gallery_urls
           .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
           .slice(0, 5)
+      : [],
+    certificate_urls: Array.isArray(body.certificate_urls)
+      ? body.certificate_urls
+          .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+          .slice(0, MAX_CERTIFICATE_URLS)
       : [],
   };
 

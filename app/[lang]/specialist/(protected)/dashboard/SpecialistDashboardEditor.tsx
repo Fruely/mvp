@@ -37,6 +37,7 @@ type Props = {
     address: string;
     photo_url: string;
     gallery_urls: string[];
+    certificate_urls: string[];
     services: ServiceInput[];
   };
   initialStatus: string;
@@ -52,6 +53,7 @@ type Props = {
 };
 
 const MAX_GALLERY_IMAGES = 5;
+const MAX_DOCUMENT_IMAGES = 10;
 
 const PRICE_COMMENT_MAX = 50;
 
@@ -115,6 +117,7 @@ export default function SpecialistDashboardEditor({
   const [publishing, setPublishing] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [galleryUploading, setGalleryUploading] = useState(false);
+  const [documentsUploading, setDocumentsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [status, setStatus] = useState(initialStatus);
@@ -257,6 +260,35 @@ export default function SpecialistDashboardEditor({
     }
   }
 
+  async function handleDocumentUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (file.type.startsWith("video/")) {
+      setError(t(dict, "dashboard.documents.videoNotAllowed"));
+      return;
+    }
+    if (form.certificate_urls.length >= MAX_DOCUMENT_IMAGES) {
+      setError(t(dict, "dashboard.messages.documentsLimit"));
+      return;
+    }
+    setDocumentsUploading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const url = await uploadSingleImage("/api/specialist/documents/upload", file);
+      setForm((prev) => ({
+        ...prev,
+        certificate_urls: [...prev.certificate_urls, url].slice(0, MAX_DOCUMENT_IMAGES),
+      }));
+      setSuccess(t(dict, "dashboard.messages.documentsAdded"));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t(dict, "dashboard.messages.uploadFailed"));
+    } finally {
+      setDocumentsUploading(false);
+    }
+  }
+
   async function save() {
     setSaving(true);
     setError(null);
@@ -281,6 +313,7 @@ export default function SpecialistDashboardEditor({
         service_radius_km: form.mobile_service ? form.service_radius_km : "",
         languages: form.languages.map((lang) => lang.trim()).filter(Boolean),
         gallery_urls: form.gallery_urls.map((url) => url.trim()).filter(Boolean),
+        certificate_urls: form.certificate_urls.map((url) => url.trim()).filter(Boolean),
         services: form.services
           .map((service) => ({
             id: service.id,
@@ -640,6 +673,53 @@ export default function SpecialistDashboardEditor({
                     }))
                   }
                   className="absolute right-2 top-2 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-gray-700"
+                >
+                  {t(dict, "dashboard.buttons.delete")}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm font-medium text-gray-900">{t(dict, "dashboard.fields.documents")}</p>
+            <label className="inline-flex cursor-pointer items-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+              {documentsUploading ? t(dict, "dashboard.buttons.uploading") : t(dict, "dashboard.buttons.addDocument")}
+              <input
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                className="hidden"
+                onChange={handleDocumentUpload}
+                disabled={documentsUploading || form.certificate_urls.length >= MAX_DOCUMENT_IMAGES}
+              />
+            </label>
+          </div>
+          <p className="text-xs text-gray-600 leading-relaxed">{t(dict, "dashboard.documents.help")}</p>
+          <p className="text-xs text-gray-500">{t(dict, "dashboard.documents.maxNote")}</p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {form.certificate_urls.map((url, index) => (
+              <div
+                key={`${url}-${index}`}
+                className="relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm"
+              >
+                <div className="relative aspect-[3/4] w-full bg-neutral-100">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={url}
+                    alt={t(dict, "dashboard.documents.imageAlt").replace("{{n}}", String(index + 1))}
+                    className="absolute inset-0 h-full w-full object-contain p-2"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      certificate_urls: prev.certificate_urls.filter((_, i) => i !== index),
+                    }))
+                  }
+                  className="absolute right-2 top-2 rounded-md bg-white/95 px-2 py-1 text-xs font-medium text-gray-700 shadow-sm"
                 >
                   {t(dict, "dashboard.buttons.delete")}
                 </button>
