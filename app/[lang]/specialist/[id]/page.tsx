@@ -471,91 +471,8 @@ export default function SpecialistPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-6 sm:py-8 pb-24 md:pb-0">
-      <div className="mx-auto max-w-6xl md:grid md:grid-cols-[minmax(0,1.45fr)_minmax(320px,1fr)] md:gap-6 md:items-start">
-        {hasPortfolio ? (
-          <section className="md:col-start-1">
-            <SectionCard title={sectionText.topGalleryTitle} subtitle={sectionText.topGallerySubtitle}>
-              <div className="relative group overflow-hidden rounded-xl bg-slate-100 aspect-[16/10]">
-                {activePortfolioImage ? (
-                  <div onTouchStart={onTouchStartPortfolio} onTouchEnd={onTouchEndPortfolio} className="h-full w-full">
-                    <Image
-                      src={activePortfolioImage}
-                      alt={`${displayName} work ${normalizedActivePortfolioIndex + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                ) : null}
-                {portfolioCount > 1 ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={goToPrevPortfolio}
-                      aria-label="Previous image"
-                      className="absolute left-3 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition md:opacity-0 md:group-hover:opacity-100"
-                    >
-                      ←
-                    </button>
-                    <button
-                      type="button"
-                      onClick={goToNextPortfolio}
-                      aria-label="Next image"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition md:opacity-0 md:group-hover:opacity-100"
-                    >
-                      →
-                    </button>
-                    <div className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white">
-                      {normalizedActivePortfolioIndex + 1} / {portfolioCount}
-                    </div>
-                  </>
-                ) : null}
-              </div>
-            </SectionCard>
-          </section>
-        ) : (
-          <section className="md:col-start-1">
-            <SectionCard title={sectionText.profilePhotoTitle} subtitle={sectionText.profilePhotoSubtitle}>
-              {!hasPortfolio && specialist.avatar_url && (
-                <div className="relative rounded-xl bg-slate-100 aspect-[4/3] flex items-center justify-center">
-                  <Image
-                    src={specialist.avatar_url}
-                    alt={displayName}
-                    fill
-                    className="object-contain object-center"
-                  />
-                  {(() => {
-                    const authUserId = typeof window !== "undefined" ? window.localStorage.getItem("authUserId") : null;
-                    const handleAddPhotos = () => {
-                      // Placeholder: open upload dialog or similar
-                      alert("Добавить фото: функция в разработке");
-                    };
-                    return authUserId === specialist.user_id && (
-                      <button
-                        className="absolute bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-full shadow text-sm font-medium"
-                        type="button"
-                        onClick={handleAddPhotos}
-                      >
-                        Добавить фото
-                      </button>
-                    );
-                  })()}
-                </div>
-              )}
-              {!hasPortfolio && !specialist.avatar_url && (
-                <div className="grid grid-cols-2 gap-3">
-                  {galleryPlaceholders.map((item) => (
-                    <div
-                      key={item}
-                      className={item === 0 ? "col-span-2 aspect-[16/10] rounded-xl border border-dashed border-slate-300 bg-slate-100/70" : "aspect-[4/3] rounded-xl border border-dashed border-slate-300 bg-slate-100/70"}
-                    />
-                  ))}
-                </div>
-              )}
-            </SectionCard>
-          </section>
-        )}
-
-        <aside className="mt-6 md:col-start-2 md:row-span-2 md:row-start-1 md:mt-0 md:self-start md:sticky md:top-6">
+      <div className="mx-auto max-w-6xl flex flex-col md:grid md:grid-cols-[minmax(0,1.45fr)_minmax(320px,1fr)] md:gap-6 md:items-start">
+        <aside className="order-1 mt-6 md:order-none md:col-start-2 md:row-start-1 md:mt-0 md:self-start md:sticky md:top-6">
           <SpecialistHero
             name={displayName}
             specialization={specializationText}
@@ -582,11 +499,134 @@ export default function SpecialistPage() {
           />
         </aside>
 
-        <main className="mt-6 space-y-6 md:col-start-1 md:mt-6">
+        <main className="order-2 mt-6 space-y-6 md:order-none md:col-start-1 md:row-start-1 md:mt-0">
           {aboutText ? (
             <SectionCard title={t(dict, "specialist.about")} subtitle={lang === "ru" ? "Опыт, подход и ключевые компетенции" : lang === "de" ? "Erfahrung, Ansatz und Schlüsselkompetenzen" : "Досвід, підхід та ключові компетенції"}>
               <div id="about" className="scroll-mt-24">
                 <p className="whitespace-pre-wrap leading-relaxed text-gray-700">{aboutText}</p>
+              </div>
+            </SectionCard>
+          ) : null}
+
+          {certificateUrls.length > 0 ? (
+            <SectionCard title={sectionText.certificatesTitle} subtitle={sectionText.certificatesSubtitle}>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {certificateUrls.map((src, idx) => (
+                  <button
+                    key={`${src}-${idx}`}
+                    type="button"
+                    onClick={() => setDocumentLightboxIndex(idx)}
+                    className="group relative overflow-hidden rounded-xl border border-slate-200/80 bg-neutral-100 shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  >
+                    <div className="relative aspect-[3/4] w-full">
+                      <Image
+                        src={src}
+                        alt={`${sectionText.certificatesTitle} ${idx + 1}`}
+                        fill
+                        className="object-contain p-2"
+                        sizes="(max-width: 640px) 45vw, 200px"
+                        unoptimized
+                      />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </SectionCard>
+          ) : null}
+
+          {hasPortfolio ? (
+            <section>
+              <SectionCard title={sectionText.topGalleryTitle} subtitle={sectionText.topGallerySubtitle}>
+                <div className="relative group overflow-hidden rounded-xl bg-slate-100 aspect-[16/10]">
+                  {activePortfolioImage ? (
+                    <div onTouchStart={onTouchStartPortfolio} onTouchEnd={onTouchEndPortfolio} className="h-full w-full">
+                      <Image
+                        src={activePortfolioImage}
+                        alt={`${displayName} work ${normalizedActivePortfolioIndex + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : null}
+                  {portfolioCount > 1 ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={goToPrevPortfolio}
+                        aria-label="Previous image"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition md:opacity-0 md:group-hover:opacity-100"
+                      >
+                        ←
+                      </button>
+                      <button
+                        type="button"
+                        onClick={goToNextPortfolio}
+                        aria-label="Next image"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition md:opacity-0 md:group-hover:opacity-100"
+                      >
+                        →
+                      </button>
+                      <div className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white">
+                        {normalizedActivePortfolioIndex + 1} / {portfolioCount}
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+              </SectionCard>
+            </section>
+          ) : (
+            <section>
+              <SectionCard title={sectionText.profilePhotoTitle} subtitle={sectionText.profilePhotoSubtitle}>
+                {!hasPortfolio && specialist.avatar_url && (
+                  <div className="relative rounded-xl bg-slate-100 aspect-[4/3] flex items-center justify-center">
+                    <Image
+                      src={specialist.avatar_url}
+                      alt={displayName}
+                      fill
+                      className="object-contain object-center"
+                    />
+                    {(() => {
+                      const authUserId = typeof window !== "undefined" ? window.localStorage.getItem("authUserId") : null;
+                      const handleAddPhotos = () => {
+                        // Placeholder: open upload dialog or similar
+                        alert("Добавить фото: функция в разработке");
+                      };
+                      return authUserId === specialist.user_id && (
+                        <button
+                          className="absolute bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-full shadow text-sm font-medium"
+                          type="button"
+                          onClick={handleAddPhotos}
+                        >
+                          Добавить фото
+                        </button>
+                      );
+                    })()}
+                  </div>
+                )}
+                {!hasPortfolio && !specialist.avatar_url && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {galleryPlaceholders.map((item) => (
+                      <div
+                        key={item}
+                        className={item === 0 ? "col-span-2 aspect-[16/10] rounded-xl border border-dashed border-slate-300 bg-slate-100/70" : "aspect-[4/3] rounded-xl border border-dashed border-slate-300 bg-slate-100/70"}
+                      />
+                    ))}
+                  </div>
+                )}
+              </SectionCard>
+            </section>
+          )}
+
+          {videoEmbedUrl ? (
+            <SectionCard title={sectionText.videoTitle} subtitle="">
+              <div className="relative w-full overflow-hidden rounded-xl bg-slate-100 aspect-video">
+                <iframe
+                  src={videoEmbedUrl}
+                  className="absolute inset-0 h-full w-full rounded-xl"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={t(dict, "specialistPage.videoTitle")}
+                />
               </div>
             </SectionCard>
           ) : null}
@@ -852,58 +892,6 @@ export default function SpecialistPage() {
                     </button>
                   </>
                 ) : null}
-              </div>
-            </SectionCard>
-          ) : null}
-
-          {videoEmbedUrl ? (
-            <SectionCard title={sectionText.videoTitle} subtitle="">
-              <div className="relative w-full overflow-hidden rounded-xl bg-slate-100 aspect-video">
-                <iframe
-                  src={videoEmbedUrl}
-                  className="absolute inset-0 h-full w-full rounded-xl"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  title={t(dict, "specialistPage.videoTitle")}
-                />
-              </div>
-            </SectionCard>
-          ) : null}
-
-          {hasPortfolio ? (
-            <SectionCard title={sectionText.galleryTitle} subtitle={sectionText.gallerySubtitle}>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {portfolioImages.map((src, idx) => (
-                  <div key={`${src}-${idx}`} className="relative overflow-hidden rounded-xl bg-slate-100 aspect-[4/3]">
-                    <Image src={src} alt={`${displayName} work ${idx + 1}`} fill className="object-cover" unoptimized />
-                  </div>
-                ))}
-              </div>
-            </SectionCard>
-          ) : null}
-
-          {certificateUrls.length > 0 ? (
-            <SectionCard title={sectionText.certificatesTitle} subtitle={sectionText.certificatesSubtitle}>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                {certificateUrls.map((src, idx) => (
-                  <button
-                    key={`${src}-${idx}`}
-                    type="button"
-                    onClick={() => setDocumentLightboxIndex(idx)}
-                    className="group relative overflow-hidden rounded-xl border border-slate-200/80 bg-neutral-100 shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                  >
-                    <div className="relative aspect-[3/4] w-full">
-                      <Image
-                        src={src}
-                        alt={`${sectionText.certificatesTitle} ${idx + 1}`}
-                        fill
-                        className="object-contain p-2"
-                        sizes="(max-width: 640px) 45vw, 200px"
-                        unoptimized
-                      />
-                    </div>
-                  </button>
-                ))}
               </div>
             </SectionCard>
           ) : null}
