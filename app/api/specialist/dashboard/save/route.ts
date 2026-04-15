@@ -244,7 +244,7 @@ export async function PUT(request: NextRequest) {
   const serviceCategoryId =
     typeof specialistAfter?.category_id === "string" ? specialistAfter.category_id : null;
 
-  const profilePatch = {
+  const profilePatch: Record<string, unknown> = {
     about_me: typeof body.about_me === "string" ? body.about_me.trim() || null : null,
     city: typeof body.city === "string" ? body.city.trim() || null : null,
     address: typeof body.address === "string" ? body.address.trim() || null : null,
@@ -255,12 +255,18 @@ export async function PUT(request: NextRequest) {
           .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
           .slice(0, 5)
       : [],
-    certificate_urls: Array.isArray(body.certificate_urls)
-      ? body.certificate_urls
-          .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
-          .slice(0, MAX_CERTIFICATE_URLS)
-      : [],
   };
+
+  // Only update certificate_urls when the client sends the field explicitly.
+  // Defaulting to [] when the key is missing would overwrite existing DB rows with an empty array.
+  if (
+    Object.prototype.hasOwnProperty.call(body, "certificate_urls") &&
+    Array.isArray(body.certificate_urls)
+  ) {
+    profilePatch.certificate_urls = body.certificate_urls
+      .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+      .slice(0, MAX_CERTIFICATE_URLS);
+  }
 
   const { data: existingProfile } = await supabase
     .from("specialist_profiles")
