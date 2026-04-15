@@ -1,24 +1,23 @@
 import { redirect } from "next/navigation";
 import HomeClient from "./HomeClient";
 import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
+import { HOME_METADATA, HREFLANG_HOME, SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const DOMAIN = "https://freuly.de";
-
 export async function generateMetadata({ params }: { params: { lang: string } }) {
-  const lang = params.lang === "ua" || params.lang === "ru" || params.lang === "de" ? params.lang : "ua";
-  const canonical = `${DOMAIN}/${lang}`;
+  const lang =
+    params.lang === "ua" || params.lang === "ru" || params.lang === "de" ? params.lang : "ua";
+  const canonical = `${SITE_DOMAIN}/${lang}`;
+  const seo = HOME_METADATA[lang];
 
   return {
+    title: seo.title,
+    description: seo.description,
     alternates: {
       canonical,
-      languages: {
-        uk: `${DOMAIN}/ua`,
-        ru: `${DOMAIN}/ru`,
-        de: `${DOMAIN}/de`,
-      },
+      languages: { ...HREFLANG_HOME },
     },
   };
 }

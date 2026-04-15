@@ -3,12 +3,11 @@ import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
 import SpecialistApplicationForm from "@/components/SpecialistApplicationForm";
 import SpecialistQuickRegisterForm from "@/components/SpecialistQuickRegisterForm";
 import { featureFlags } from "@/lib/featureFlags";
+import { SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 
 // Force dynamic rendering to prevent caching issues
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-const DOMAIN = "https://freuly.de";
 
 export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
   const byLang = {
@@ -30,7 +29,7 @@ export async function generateMetadata({ params }: { params: { lang: string } })
   } as const;
 
   const lang = (params.lang === "ua" || params.lang === "ru" || params.lang === "de" ? params.lang : "ua") as keyof typeof byLang;
-  const canonical = `${DOMAIN}/${lang}/become-specialist`;
+  const canonical = `${SITE_DOMAIN}/${lang}/become-specialist`;
 
   return {
     title: byLang[lang].title,
@@ -38,9 +37,9 @@ export async function generateMetadata({ params }: { params: { lang: string } })
     alternates: {
       canonical,
       languages: {
-        uk: `${DOMAIN}/ua/become-specialist`,
-        ru: `${DOMAIN}/ru/become-specialist`,
-        de: `${DOMAIN}/de/become-specialist`,
+        uk: `${SITE_DOMAIN}/ua/become-specialist`,
+        ru: `${SITE_DOMAIN}/ru/become-specialist`,
+        de: `${SITE_DOMAIN}/de/become-specialist`,
       },
     },
   };

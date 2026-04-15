@@ -1,16 +1,18 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getDictionary, t, isSupportedLang, type Lang } from "@/lib/i18n";
-
-const DOMAIN = "https://freuly.de";
+import { ABOUT_METADATA, hreflangAbout, SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 
 export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
-  const lang = params.lang === "ua" || params.lang === "ru" || params.lang === "de" ? params.lang : "ua";
+  const lang =
+    params.lang === "ua" || params.lang === "ru" || params.lang === "de" ? params.lang : "ua";
+  const seo = ABOUT_METADATA[lang];
   return {
-    title: "О платформе Freuly",
-    description: "Freuly — платформа, которая помогает людям находить специалистов, говорящих на их языке.",
+    title: seo.title,
+    description: seo.description,
     alternates: {
-      canonical: `${DOMAIN}/${lang}/about`,
+      canonical: `${SITE_DOMAIN}/${lang}/about`,
+      languages: { ...hreflangAbout() },
     },
   };
 }

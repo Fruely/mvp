@@ -13,11 +13,29 @@ function isLang(value: string): value is Lang {
   return (SUPPORTED_LANGS as readonly string[]).includes(value);
 }
 
+/** BCP 47: Ukrainian uses `uk` in <html lang>, URL segment stays `ua`. */
+const HTML_LANG_HEADER = "x-freuly-html-lang";
+
+function pathnameToHtmlLang(pathname: string): string {
+  if (pathname === "/impressum" || pathname === "/datenschutzerklaerung") return "de";
+  const seg = pathname.split("/").filter(Boolean)[0];
+  if (seg === "ua") return "uk";
+  if (seg === "ru") return "ru";
+  if (seg === "de") return "de";
+  return "ru";
+}
+
+function nextWithHtmlLang(request: NextRequest, pathname: string) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(HTML_LANG_HEADER, pathnameToHtmlLang(pathname));
+  return NextResponse.next({ request: { headers: requestHeaders } });
+}
+
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
   if (pathname === "/impressum" || pathname === "/datenschutzerklaerung") {
-    return NextResponse.next();
+    return nextWithHtmlLang(request, pathname);
   }
 
   // Legacy specialist dashboard URLs → /{lang}/specialist/dashboard
@@ -31,7 +49,7 @@ export function middleware(request: NextRequest) {
   }
 
   if (pathname.startsWith("/__closed")) {
-    return NextResponse.next();
+    return nextWithHtmlLang(request, pathname);
   }
 
   // STEP 1: Check for dev access key in URL parameter FIRST (before anything else)
@@ -106,7 +124,9 @@ export function middleware(request: NextRequest) {
     pathname === "/sitemap.xml" ||
     pathname.includes(".")
   ) {
-    const res = NextResponse.next();
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set(HTML_LANG_HEADER, pathnameToHtmlLang(pathname));
+    const res = NextResponse.next({ request: { headers: requestHeaders } });
     if (pathname.startsWith("/specialist/claim")) {
       res.headers.set("Cache-Control", "private, no-store, no-cache, must-revalidate, max-age=0");
     }
@@ -115,7 +135,7 @@ export function middleware(request: NextRequest) {
 
   // Root "/" → serve directly (no redirect, SEO requirement)
   if (pathname === "/") {
-    return NextResponse.next();
+    return nextWithHtmlLang(request, pathname);
   }
 
   // i18n logic (only for language routes)
@@ -143,7 +163,9 @@ export function middleware(request: NextRequest) {
 
   // For /{lang} keep as-is, just set cookie (for future redirects)
   if (segmentsForI18n.length === 1) {
-    const res = NextResponse.next();
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set(HTML_LANG_HEADER, pathnameToHtmlLang(pathname));
+    const res = NextResponse.next({ request: { headers: requestHeaders } });
     res.cookies.set(LANG_COOKIE, lang, { path: "/" });
     res.headers.set(
       "Cache-Control",
@@ -153,7 +175,9 @@ export function middleware(request: NextRequest) {
   }
 
   // For /{lang}/... keep as-is, just set cookie (for future redirects)
-  const res = NextResponse.next();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(HTML_LANG_HEADER, pathnameToHtmlLang(pathname));
+  const res = NextResponse.next({ request: { headers: requestHeaders } });
   res.cookies.set(LANG_COOKIE, lang, { path: "/" });
   return res;
 }
