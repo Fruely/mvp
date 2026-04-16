@@ -6,8 +6,15 @@ import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import type { SpecialistService } from "@/lib/dashboard/services";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
+import { isSupportedLang } from "@/lib/i18n";
 
-export default async function SpecialistDashboardServicesPage() {
+export default async function SpecialistDashboardServicesPage({
+  params,
+}: {
+  params: { lang: string } | Promise<{ lang: string }>;
+}) {
+  const resolved = await Promise.resolve(params);
+  const lang = isSupportedLang(resolved.lang) ? resolved.lang : "ru";
   const { specialist } = await getCurrentUserAndSpecialist();
   const service = createServiceClient();
 
@@ -47,5 +54,5 @@ export default async function SpecialistDashboardServicesPage() {
     updated_at: typeof row.updated_at === "string" ? row.updated_at : null,
   }));
 
-  return <ServicesTable initialServices={services} />;
+  return <ServicesTable initialServices={services} lang={lang} />;
 }

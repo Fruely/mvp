@@ -314,6 +314,7 @@ export default function SpecialistDashboardEditor({
         languages: form.languages.map((lang) => lang.trim()).filter(Boolean),
         gallery_urls: form.gallery_urls.map((url) => url.trim()).filter(Boolean),
         certificate_urls: form.certificate_urls.map((url) => url.trim()).filter(Boolean),
+        lang,
         services: form.services
           .map((service) => ({
             id: service.id,

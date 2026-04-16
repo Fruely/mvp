@@ -43,8 +43,10 @@ function hasValidPrice(service: {
 
 export default function ServicesTable({
   initialServices,
+  lang,
 }: {
   initialServices: SpecialistService[];
+  lang: string;
 }) {
   const [services, setServices] = useState<SpecialistService[]>(initialServices);
   const [showCreate, setShowCreate] = useState(false);
@@ -72,10 +74,13 @@ export default function ServicesTable({
     setToast(null);
     try {
       const shouldBeActive = payload.requested_active && hasValidPrice(payload);
-      const created = await createService({
-        ...payload,
-        is_active: shouldBeActive,
-      });
+      const created = await createService(
+        {
+          ...payload,
+          is_active: shouldBeActive,
+        },
+        lang
+      );
       setServices((prev) => [created, ...prev]);
       setShowCreate(false);
       setToast({ kind: "success", text: "Услуга добавлена" });
@@ -101,10 +106,14 @@ export default function ServicesTable({
     setToast(null);
     try {
       const shouldBeActive = payload.requested_active && hasValidPrice(payload);
-      const updated = await updateService(id, {
-        ...payload,
-        is_active: shouldBeActive,
-      });
+      const updated = await updateService(
+        id,
+        {
+          ...payload,
+          is_active: shouldBeActive,
+        },
+        lang
+      );
       setServices((prev) => prev.map((service) => (service.id === id ? updated : service)));
       setEditingId(null);
       setToast({ kind: "success", text: "Услуга обновлена" });
@@ -128,7 +137,7 @@ export default function ServicesTable({
     setBusyById((prev) => ({ ...prev, [service.id]: true }));
     setToast(null);
     try {
-      const updated = await toggleService(service.id, !service.is_active);
+      const updated = await toggleService(service.id, !service.is_active, lang);
       setServices((prev) => prev.map((item) => (item.id === service.id ? updated : item)));
       setToast({
         kind: "success",

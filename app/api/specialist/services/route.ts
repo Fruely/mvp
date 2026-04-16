@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
+import { normalizeRouteLangToDbContentCode } from "@/lib/specialists/normalizeContentLanguageCode";
 
 const ALLOWED_PRICING_TYPES = ["fixed", "range", "hourly"] as const;
 type PricingType = (typeof ALLOWED_PRICING_TYPES)[number];
@@ -91,6 +92,9 @@ export async function POST(request: NextRequest) {
   const ctx = await getCurrentSpecialistContext();
   if (ctx.error || !ctx.supabase || !ctx.specialistId) return ctx.error!;
 
+  const postUrl = new URL(request.url);
+  const languageCode = normalizeRouteLangToDbContentCode(postUrl.searchParams.get("lang"));
+
   const body = await request.json().catch(() => null);
   const title = normalizeText(body?.title);
   const description = normalizeText(body?.description);
@@ -151,12 +155,33 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to create service" }, { status: 500 });
   }
 
+  if (languageCode && data?.id) {
+    const { error: translationError } = await ctx.supabase.from("specialist_service_translations").upsert(
+      {
+        specialist_service_id: String(data.id),
+        language_code: languageCode,
+        title,
+        description,
+        price_comment: null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "specialist_service_id,language_code" }
+    );
+    if (translationError) {
+      console.error("[specialist/services] POST translation upsert failed", translationError);
+      return NextResponse.json({ error: "Failed to save service translation" }, { status: 500 });
+    }
+  }
+
   return NextResponse.json({ data }, { status: 201, headers: { "Cache-Control": "no-store" } });
 }
 
 export async function PATCH(request: NextRequest) {
   const ctx = await getCurrentSpecialistContext();
   if (ctx.error || !ctx.supabase || !ctx.specialistId) return ctx.error!;
+
+  const patchUrl = new URL(request.url);
+  const languageCode = normalizeRouteLangToDbContentCode(patchUrl.searchParams.get("lang"));
 
   const body = await request.json().catch(() => null);
   const id = normalizeText(body?.id);
@@ -257,6 +282,26 @@ export async function PATCH(request: NextRequest) {
   }
   if (!data) {
     return NextResponse.json({ error: "Service not found" }, { status: 404 });
+  }
+
+  if (languageCode && data?.id) {
+    const rowTitle = typeof data.title === "string" ? data.title : "";
+    const rowDesc = typeof data.description === "string" ? data.description : null;
+    const { error: translationError } = await ctx.supabase.from("specialist_service_translations").upsert(
+      {
+        specialist_service_id: String(data.id),
+        language_code: languageCode,
+        title: rowTitle,
+        description: rowDesc,
+        price_comment: null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "specialist_service_id,language_code" }
+    );
+    if (translationError) {
+      console.error("[specialist/services] PATCH translation upsert failed", translationError);
+      return NextResponse.json({ error: "Failed to save service translation" }, { status: 500 });
+    }
   }
 
   return NextResponse.json({ data }, { headers: { "Cache-Control": "no-store" } });

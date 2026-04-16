@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { jsonNoStore } from "@/lib/api/response";
 import { notify } from "@/lib/notifications/notify";
+import { normalizeRouteLangToDbContentCode } from "@/lib/specialists/normalizeContentLanguageCode";
 
 async function geocodePlz(
   postalCode: string
@@ -50,6 +51,8 @@ type Payload = {
     is_active?: boolean;
     price_comment?: string;
   }>;
+  /** Route UI locale (ua|ru|de) for multilingual dual-write; optional */
+  lang?: string;
 };
 
 export const dynamic = "force-dynamic";
@@ -67,6 +70,10 @@ export async function PUT(request: NextRequest) {
 
   const body = (await request.json().catch(() => null)) as Payload | null;
   if (!body) return jsonNoStore({ error: "Invalid payload" }, { status: 400 });
+
+  const languageCode = normalizeRouteLangToDbContentCode(
+    typeof body.lang === "string" ? body.lang : null
+  );
 
   const allowedLanguages = new Set(["ru", "uk", "de", "en", "pl"]);
   if (!Array.isArray(body.languages)) {
@@ -287,6 +294,29 @@ export async function PUT(request: NextRequest) {
     if (error) return jsonNoStore({ error: "Failed to create specialist details" }, { status: 500 });
   }
 
+  if (languageCode) {
+    const aboutForTranslation =
+      typeof body.about_me === "string" ? body.about_me.trim() || null : null;
+    const { error: profileTranslationError } = await supabase
+      .from("specialist_profile_translations")
+      .upsert(
+        {
+          specialist_id: specialistId,
+          language_code: languageCode,
+          about_me: aboutForTranslation,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "specialist_id,language_code" }
+      );
+    if (profileTranslationError) {
+      console.error(
+        "[dashboard/save] specialist_profile_translations upsert failed",
+        profileTranslationError
+      );
+      return jsonNoStore({ error: "Failed to save profile translation" }, { status: 500 });
+    }
+  }
+
   const normalizedServices = Array.isArray(body.services)
     ? body.services
         .filter((service) => service && typeof service.title === "string" && service.title.trim().length > 0)
@@ -343,6 +373,27 @@ export async function PUT(request: NextRequest) {
         .eq("id", service.id)
         .eq("specialist_id", specialistId);
       if (error) return jsonNoStore({ error: "Failed to update services" }, { status: 500 });
+      if (languageCode && service.id) {
+        const { error: svcTranslationError } = await supabase
+          .from("specialist_service_translations")
+          .upsert(
+            {
+              specialist_service_id: service.id,
+              language_code: languageCode,
+              title: service.title,
+              price_comment: service.price_comment,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "specialist_service_id,language_code" }
+          );
+        if (svcTranslationError) {
+          console.error(
+            "[dashboard/save] specialist_service_translations upsert failed",
+            svcTranslationError
+          );
+          return jsonNoStore({ error: "Failed to save service translation" }, { status: 500 });
+        }
+      }
     } else {
       const insertPayload: Record<string, unknown> = {
         specialist_id: specialistId,
@@ -362,6 +413,28 @@ export async function PUT(request: NextRequest) {
         .single();
       if (error) return jsonNoStore({ error: "Failed to create services" }, { status: 500 });
       if (data?.id) keepIds.add(String(data.id));
+      if (languageCode && data?.id) {
+        const newServiceId = String(data.id);
+        const { error: svcTranslationError } = await supabase
+          .from("specialist_service_translations")
+          .upsert(
+            {
+              specialist_service_id: newServiceId,
+              language_code: languageCode,
+              title: service.title,
+              price_comment: service.price_comment,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "specialist_service_id,language_code" }
+          );
+        if (svcTranslationError) {
+          console.error(
+            "[dashboard/save] specialist_service_translations upsert failed",
+            svcTranslationError
+          );
+          return jsonNoStore({ error: "Failed to save service translation" }, { status: 500 });
+        }
+      }
     }
   }
 

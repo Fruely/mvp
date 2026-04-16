@@ -35,14 +35,20 @@ async function parseApiResponse<T>(response: Response): Promise<T> {
   return json as T;
 }
 
-export async function fetchServices(): Promise<SpecialistService[]> {
-  const response = await fetch("/api/specialist/services", { cache: "no-store" });
+function specialistServicesLangQuery(lang: string | undefined) {
+  return lang != null && lang !== "" ? `?lang=${encodeURIComponent(lang)}` : "";
+}
+
+export async function fetchServices(lang?: string): Promise<SpecialistService[]> {
+  const response = await fetch(`/api/specialist/services${specialistServicesLangQuery(lang)}`, {
+    cache: "no-store",
+  });
   const result = await parseApiResponse<{ data: SpecialistService[] }>(response);
   return Array.isArray(result.data) ? result.data : [];
 }
 
-export async function createService(payload: ServicePayload): Promise<SpecialistService> {
-  const response = await fetch("/api/specialist/services", {
+export async function createService(payload: ServicePayload, lang?: string): Promise<SpecialistService> {
+  const response = await fetch(`/api/specialist/services${specialistServicesLangQuery(lang)}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -53,9 +59,10 @@ export async function createService(payload: ServicePayload): Promise<Specialist
 
 export async function updateService(
   id: string,
-  payload: Partial<ServicePayload> & { is_active?: boolean }
+  payload: Partial<ServicePayload> & { is_active?: boolean },
+  lang?: string
 ): Promise<SpecialistService> {
-  const response = await fetch("/api/specialist/services", {
+  const response = await fetch(`/api/specialist/services${specialistServicesLangQuery(lang)}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id, ...payload }),
@@ -64,8 +71,12 @@ export async function updateService(
   return result.data;
 }
 
-export async function toggleService(id: string, isActive: boolean): Promise<SpecialistService> {
-  return updateService(id, { is_active: isActive });
+export async function toggleService(
+  id: string,
+  isActive: boolean,
+  lang?: string
+): Promise<SpecialistService> {
+  return updateService(id, { is_active: isActive }, lang);
 }
 
 export async function deleteService(id: string): Promise<void> {
