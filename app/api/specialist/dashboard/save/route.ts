@@ -310,10 +310,9 @@ export async function PUT(request: NextRequest) {
       );
     if (profileTranslationError) {
       console.error(
-        "[dashboard/save] specialist_profile_translations upsert failed",
+        "[dashboard/save] specialist_profile_translations upsert failed (legacy save already persisted)",
         profileTranslationError
       );
-      return jsonNoStore({ error: "Failed to save profile translation" }, { status: 500 });
     }
   }
 
@@ -388,10 +387,9 @@ export async function PUT(request: NextRequest) {
           );
         if (svcTranslationError) {
           console.error(
-            "[dashboard/save] specialist_service_translations upsert failed",
+            "[dashboard/save] specialist_service_translations upsert failed (legacy save already persisted)",
             svcTranslationError
           );
-          return jsonNoStore({ error: "Failed to save service translation" }, { status: 500 });
         }
       }
     } else {
@@ -429,10 +427,9 @@ export async function PUT(request: NextRequest) {
           );
         if (svcTranslationError) {
           console.error(
-            "[dashboard/save] specialist_service_translations upsert failed",
+            "[dashboard/save] specialist_service_translations upsert failed (legacy save already persisted)",
             svcTranslationError
           );
-          return jsonNoStore({ error: "Failed to save service translation" }, { status: 500 });
         }
       }
     }

@@ -168,8 +168,10 @@ export async function POST(request: NextRequest) {
       { onConflict: "specialist_service_id,language_code" }
     );
     if (translationError) {
-      console.error("[specialist/services] POST translation upsert failed", translationError);
-      return NextResponse.json({ error: "Failed to save service translation" }, { status: 500 });
+      console.error(
+        "[specialist/services] POST translation upsert failed (legacy save already persisted)",
+        translationError
+      );
     }
   }
 
@@ -299,8 +301,10 @@ export async function PATCH(request: NextRequest) {
       { onConflict: "specialist_service_id,language_code" }
     );
     if (translationError) {
-      console.error("[specialist/services] PATCH translation upsert failed", translationError);
-      return NextResponse.json({ error: "Failed to save service translation" }, { status: 500 });
+      console.error(
+        "[specialist/services] PATCH translation upsert failed (legacy save already persisted)",
+        translationError
+      );
     }
   }
 
