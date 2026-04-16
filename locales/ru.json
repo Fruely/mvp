@@ -12,7 +12,9 @@
     "support": "Поддержка",
     "forSpecialists": "Для специалистов",
     "tagline": "Freuly — место, где люди находят профессионалов, говорящих на их языке.",
-    "socialHeading": "Мы в соцсетях"
+    "socialHeading": "Мы в соцсетях",
+    "impressumLink": "Импрессум",
+    "privacyLink": "Политика конфиденциальности"
   },
   "header.nav.categories": "Категории",
   "header.nav.about": "О нас",
@@ -176,6 +178,7 @@
     "loading": "Загрузка...",
     "notFound": "Специалист не найден",
     "notFoundHint": "Возможно, такого специалиста ещё нет",
+    "slugNotFound": "Возможно, такого специалиста ещё нет",
     "about": "О специалисте",
     "noDescription": "Описание отсутствует",
     "sendRequest": "Сделать заявку",

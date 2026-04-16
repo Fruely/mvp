@@ -148,6 +148,7 @@
     "loading": "Wird geladen...",
     "notFound": "Spezialist nicht gefunden",
     "notFoundHint": "Möglicherweise gibt es diesen Spezialisten noch nicht",
+    "slugNotFound": "Möglicherweise gibt es diesen Spezialisten noch nicht",
     "about": "Über den Spezialisten",
     "noDescription": "Keine Beschreibung verfügbar",
     "sendRequest": "Anfrage senden",
@@ -377,7 +378,9 @@
     "support": "Support",
     "forSpecialists": "Für Fachkräfte",
     "tagline": "Freuly — ein Ort, an dem Menschen Fachkräfte finden, die ihre Sprache sprechen.",
-    "socialHeading": "In sozialen Netzwerken"
+    "socialHeading": "In sozialen Netzwerken",
+    "impressumLink": "Impressum",
+    "privacyLink": "Datenschutzerklärung"
   },
   "footer.email": "E-Mail",
   "footer.phone": "Telefon",

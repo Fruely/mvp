@@ -23,6 +23,9 @@ const LEGACY_SLUGS: Record<string, string> = {
   "mymyzth-sbtbih": "business-kirchhundem-natalya-sheshenya",
 };
 
+/** Slug lookup failed — show localized not-found copy via `t(dict, …)` in the error UI. */
+const SLUG_NOT_FOUND = "SLUG_NOT_FOUND";
+
 interface Specialist {
   id: string;
   slug?: string | null;
@@ -174,7 +177,7 @@ export default function SpecialistPage() {
           if (row?.id) {
             resolvedId = row.id;
           } else {
-            setError("Specialist not found");
+            setError(SLUG_NOT_FOUND);
             return;
           }
         }
@@ -279,7 +282,11 @@ export default function SpecialistPage() {
           <h1 className="text-2xl font-bold text-gray-800 mb-2">
             {t(dict, "specialist.notFound")}
           </h1>
-          <p className="text-gray-600 mb-6">{error || t(dict, "common.tryLater")}</p>
+          <p className="text-gray-600 mb-6">
+            {error === SLUG_NOT_FOUND
+              ? t(dict, "specialist.slugNotFound")
+              : error || t(dict, "common.tryLater")}
+          </p>
           <Link
             href={langPrefix}
             className="inline-block px-6 py-3 bg-primary text-white rounded-full hover:shadow-lg transition"
