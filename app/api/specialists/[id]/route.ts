@@ -4,10 +4,29 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
+/** Query ?lang= route segment → specialist_*_translations.language_code */
+function normalizeRouteLangToDbCode(routeLang: string | null): string | null {
+  if (routeLang == null || typeof routeLang !== "string") return null;
+  const lower = routeLang.trim().toLowerCase();
+  if (lower === "ua") return "uk";
+  if (lower === "ru") return "ru";
+  if (lower === "de") return "de";
+  return null;
+}
+
+function nonEmptyTrimmedString(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const t = value.trim();
+  return t.length > 0 ? t : null;
+}
+
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
+  const url = new URL(request.url);
+  const languageCode = normalizeRouteLangToDbCode(url.searchParams.get("lang"));
+
   const param = params.id;
   if (!param) {
     return jsonNoStore({ error: "Missing specialist id" }, { status: 400 });
@@ -66,6 +85,51 @@ export async function GET(
     .eq("specialist_id", specialist.id)
     .maybeSingle();
 
+  let profileTranslationAbout: string | null | undefined;
+  const serviceTranslationById = new Map<
+    string,
+    { title: string | null; price_comment: string | null }
+  >();
+
+  if (languageCode) {
+    const { data: profileTrans } = await supabase
+      .from("specialist_profile_translations")
+      .select("about_me")
+      .eq("specialist_id", specialist.id)
+      .eq("language_code", languageCode)
+      .maybeSingle();
+    profileTranslationAbout = profileTrans?.about_me;
+
+    const serviceIds = (services ?? [])
+      .map((s) => (s?.id != null ? String(s.id) : null))
+      .filter((id): id is string => Boolean(id));
+
+    if (serviceIds.length > 0) {
+      const { data: serviceTransRows } = await supabase
+        .from("specialist_service_translations")
+        .select("specialist_service_id, title, price_comment")
+        .eq("language_code", languageCode)
+        .in("specialist_service_id", serviceIds);
+
+      for (const row of serviceTransRows ?? []) {
+        const sid = row?.specialist_service_id != null ? String(row.specialist_service_id) : null;
+        if (!sid) continue;
+        serviceTranslationById.set(sid, {
+          title: row.title != null && typeof row.title === "string" ? row.title : null,
+          price_comment:
+            row.price_comment != null && typeof row.price_comment === "string"
+              ? row.price_comment
+              : null,
+        });
+      }
+    }
+  }
+
+  const descriptionResolved =
+    languageCode != null
+      ? nonEmptyTrimmedString(profileTranslationAbout) ?? (profile?.about_me ?? null)
+      : profile?.about_me ?? null;
+
   const result = {
     id: specialist.id,
     slug: specialist.slug,
@@ -83,7 +147,7 @@ export async function GET(
     user_id: specialist.user_id,
     city: profile?.city ?? null,
     address: profile?.address ?? null,
-    description: profile?.about_me ?? null,
+    description: descriptionResolved,
     video_url: profile?.video_url ?? null,
     gallery_urls: Array.isArray(profile?.gallery_urls) ? profile.gallery_urls : [],
     certificate_urls: Array.isArray(profile?.certificate_urls) ? profile.certificate_urls : [],
@@ -92,17 +156,26 @@ export async function GET(
     lng: specialist.lng ?? null,
     rating: ratingRow?.rating_avg ?? null,
     reviews_count: ratingRow?.reviews_count ?? 0,
-    specialist_services: (services ?? []).map((s) => ({
-      id: s.id,
-      title: s.title,
-      price_from: s.price_from,
-      price_to: s.price_to,
-      currency: s.currency ?? "EUR",
-      price_comment:
+    specialist_services: (services ?? []).map((s) => {
+      const sid = s?.id != null ? String(s.id) : "";
+      const tr = sid ? serviceTranslationById.get(sid) : undefined;
+      const legacyTitle = s.title;
+      const legacyPriceComment =
         s.price_comment != null && String(s.price_comment).trim()
           ? String(s.price_comment).trim()
-          : null,
-    })),
+          : null;
+      const titleResolved = nonEmptyTrimmedString(tr?.title) ?? legacyTitle;
+      const priceCommentResolved =
+        nonEmptyTrimmedString(tr?.price_comment) ?? legacyPriceComment;
+      return {
+        id: s.id,
+        title: titleResolved,
+        price_from: s.price_from,
+        price_to: s.price_to,
+        currency: s.currency ?? "EUR",
+        price_comment: priceCommentResolved,
+      };
+    }),
   };
 
   return jsonNoStore({ data: result });

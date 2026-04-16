@@ -180,7 +180,7 @@ export default function SpecialistPage() {
         }
 
         const response = await fetch(
-          `/api/specialists/${resolvedId}`,
+          `/api/specialists/${resolvedId}?lang=${encodeURIComponent(lang)}`,
           { cache: "no-store" }
         );
         const result = await response.json();
