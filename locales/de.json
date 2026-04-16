@@ -153,6 +153,14 @@
     "sendRequest": "Anfrage senden",
     "hideForm": "Formular ausblenden"
   },
+  "specialistPage": {
+    "copyLink": "Link kopieren",
+    "shareText": "Freuly-Profil des Spezialisten",
+    "videoTitle": "Video des Spezialisten",
+    "contactsLineAddress": "Adresse",
+    "buildRoute": "Route planen",
+    "mapEmbedTitle": "Karte"
+  },
   "about": { "title": "Über die Plattform Freuly" },
   "support": { "title": "Freuly-Support" },
   "page": {
@@ -368,7 +376,8 @@
     "companyHeading": "Über das Projekt",
     "support": "Support",
     "forSpecialists": "Für Fachkräfte",
-    "tagline": "Freuly — ein Ort, an dem Menschen Fachkräfte finden, die ihre Sprache sprechen."
+    "tagline": "Freuly — ein Ort, an dem Menschen Fachkräfte finden, die ihre Sprache sprechen.",
+    "socialHeading": "In sozialen Netzwerken"
   },
   "footer.email": "E-Mail",
   "footer.phone": "Telefon",

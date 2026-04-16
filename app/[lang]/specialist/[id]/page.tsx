@@ -834,7 +834,7 @@ export default function SpecialistPage() {
                       {mapCoords ? (
                         <div className="mt-3 overflow-hidden rounded-xl border border-gray-200">
                           <iframe
-                            title="Map"
+                            title={t(dict, "specialistPage.mapEmbedTitle")}
                             src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapCoords.lon - 0.01},${mapCoords.lat - 0.007},${mapCoords.lon + 0.01},${mapCoords.lat + 0.007}&layer=mapnik&marker=${mapCoords.lat},${mapCoords.lon}`}
                             width="100%"
                             height="200"

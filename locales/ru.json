@@ -11,7 +11,8 @@
     "companyHeading": "О проекте",
     "support": "Поддержка",
     "forSpecialists": "Для специалистов",
-    "tagline": "Freuly — место, где люди находят профессионалов, говорящих на их языке."
+    "tagline": "Freuly — место, где люди находят профессионалов, говорящих на их языке.",
+    "socialHeading": "Мы в соцсетях"
   },
   "header.nav.categories": "Категории",
   "header.nav.about": "О нас",
@@ -179,6 +180,14 @@
     "noDescription": "Описание отсутствует",
     "sendRequest": "Сделать заявку",
     "hideForm": "Скрыть форму"
+  },
+  "specialistPage": {
+    "copyLink": "Скопировать ссылку",
+    "shareText": "Профиль специалиста Freuly",
+    "videoTitle": "Видео специалиста",
+    "contactsLineAddress": "Адрес",
+    "buildRoute": "Построить маршрут",
+    "mapEmbedTitle": "Карта"
   },
   "about": { "title": "О платформе Freuly" },
   "support": { "title": "Поддержка Freuly" },

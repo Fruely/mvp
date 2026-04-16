@@ -152,6 +152,14 @@
     "sendRequest": "Зробити заявку",
     "hideForm": "Сховати форму"
   },
+  "specialistPage": {
+    "copyLink": "Скопіювати посилання",
+    "shareText": "Профіль спеціаліста Freuly",
+    "videoTitle": "Відео спеціаліста",
+    "contactsLineAddress": "Адреса",
+    "buildRoute": "Побудувати маршрут",
+    "mapEmbedTitle": "Карта"
+  },
   "about": { "title": "Про платформу Freuly" },
   "support": { "title": "Підтримка Freuly" },
   "page": {
@@ -367,7 +375,8 @@
     "companyHeading": "Про проєкт",
     "support": "Підтримка",
     "forSpecialists": "Для спеціалістів",
-    "tagline": "Freuly — місце, де люди знаходять професіоналів, які говорять їхньою мовою."
+    "tagline": "Freuly — місце, де люди знаходять професіоналів, які говорять їхньою мовою.",
+    "socialHeading": "Ми в соцмережах"
   },
   "footer.email": "Email",
   "footer.phone": "Телефон",

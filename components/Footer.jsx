@@ -28,7 +28,7 @@ export default function Footer(props) {
             {t(dict, "footer.tagline")}
           </div>
           <div className="mt-8">
-            <h4 className="font-semibold mb-2 text-white/90">Мы в соцсетях</h4>
+            <h4 className="font-semibold mb-2 text-white/90">{t(dict, "footer.socialHeading")}</h4>
             <FreulySocialIcons />
           </div>
         </div>
