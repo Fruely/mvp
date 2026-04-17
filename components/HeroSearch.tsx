@@ -31,6 +31,8 @@ const defaultLanguageLabel = "Язык";
 
 type CategoryOption = {
   slug: string;
+  /** Present when /api/categories/suggest returns category id (maps from category_id). */
+  id?: string;
   title: string;
   title_ru?: string | null;
   title_de?: string | null;
@@ -42,8 +44,11 @@ function mapSuggestRow(item: unknown): CategoryOption | null {
   const row = item as Record<string, unknown>;
   const slug = typeof row.slug === "string" ? row.slug.trim() : "";
   if (!slug) return null;
+  const id =
+    typeof row.id === "string" && row.id.trim().length > 0 ? row.id.trim() : undefined;
   return {
     slug,
+    ...(id ? { id } : {}),
     title: typeof row.title === "string" ? row.title : "",
     title_ru: typeof row.title_ru === "string" ? row.title_ru : null,
     title_de: typeof row.title_de === "string" ? row.title_de : null,
@@ -148,6 +153,27 @@ export default function HeroSearch({
     }).catch(() => {});
   }
 
+  function logSuggestionSelected(option: CategoryOption, queryRawBefore: string) {
+    const langFilter = normalizeSearchLangToDbCode(language) ?? language;
+    const body: Record<string, unknown> = {
+      event_type: "suggestion_selected",
+      lang_ui: currentLocale,
+      lang_filter: langFilter,
+      query_raw: queryRawBefore.trim() || null,
+      selected_via: "suggestion",
+      metadata: { source: "hero_search" },
+    };
+    if (typeof option.id === "string" && option.id.trim()) {
+      body.selected_category_id = option.id.trim();
+    }
+    void fetch("/api/search/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+      body: JSON.stringify(body),
+    }).catch(() => {});
+  }
+
   function handleRedirect() {
     if (!language) {
       setInlineError("Выберите язык общения");
@@ -180,6 +206,8 @@ export default function HeroSearch({
   }
 
   function chooseCategory(option: CategoryOption) {
+    const queryRawBefore = categoryQuery;
+    logSuggestionSelected(option, queryRawBefore);
     setCategoryQuery(getCategoryTitle(option, toCategoryTitleLang(language || "ru")));
     setSelectedCategorySlug(option.slug);
     setCategoryOpen(false);
