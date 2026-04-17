@@ -48,7 +48,9 @@ export default async function SpecialistDashboardPage({
 
   const { data: specExtra } = await service
     .from("specialists")
-    .select("postal_code, country_code, telegram_chat_id, mobile_service, service_radius_km")
+    .select(
+      "postal_code, country_code, telegram_chat_id, mobile_service, service_radius_km, work_format, languages"
+    )
     .eq("id", specialist.id)
     .maybeSingle();
 
@@ -92,15 +94,15 @@ export default async function SpecialistDashboardPage({
               ? ((specialist as unknown as Record<string, unknown>).category_id as string)
               : "",
           work_format:
-            typeof (specialist as unknown as Record<string, unknown>).work_format === "string" &&
-            ((specialist as unknown as Record<string, unknown>).work_format === "online" ||
-              (specialist as unknown as Record<string, unknown>).work_format === "offline" ||
-              (specialist as unknown as Record<string, unknown>).work_format === "hybrid")
-              ? ((specialist as unknown as Record<string, unknown>).work_format as "online" | "offline" | "hybrid")
+            specExtra?.work_format === "online" ||
+            specExtra?.work_format === "offline" ||
+            specExtra?.work_format === "hybrid"
+              ? (specExtra.work_format as "online" | "offline" | "hybrid")
               : "online",
-          languages: Array.isArray((specialist as unknown as Record<string, unknown>).languages)
-            ? ((specialist as unknown as Record<string, unknown>).languages as unknown[])
-                .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+          languages: Array.isArray(specExtra?.languages)
+            ? (specExtra.languages as unknown[]).filter(
+                (value): value is string => typeof value === "string" && value.trim().length > 0
+              )
             : [],
           about_me: typeof profile?.about_me === "string" ? profile.about_me : "",
           video_url: typeof profile?.video_url === "string" ? profile.video_url : "",
