@@ -90,6 +90,7 @@ function sanitizePriceValue(raw: string): string {
 function hasValidService(services: ServiceInput[]): boolean {
   return services.some((s) => {
     if (!s.title?.trim()) return false;
+    if (s.is_active === false) return false;
 
     const raw = String(s.price_from ?? "").trim();
     if (!raw) return false;
@@ -138,26 +139,34 @@ export default function SpecialistDashboardEditor({
     [form.services]
   );
 
+  /** Mirrors server publish minimum in `app/api/specialist/dashboard/publish/route.ts` (no extra client-only gates). */
+  const hasWorkFormat =
+    form.work_format === "online" ||
+    form.work_format === "offline" ||
+    form.work_format === "hybrid";
+
   const publicationReady = useMemo(() => {
     return Boolean(
       form.name.trim() &&
         form.category_id.trim() &&
+        form.languages.length > 0 &&
+        hasWorkFormat &&
         (!needsPostalCode || /^\d{5}$/.test(form.postal_code.trim())) &&
-        form.about_me.trim() &&
-        form.photo_url.trim() &&
         hasValidServiceFlag
     );
-  }, [form, needsPostalCode, hasValidServiceFlag]);
+  }, [form, needsPostalCode, hasValidServiceFlag, hasWorkFormat]);
 
   const noServicesYet = form.services.length === 0;
 
   const publishDisabledHint = useMemo(() => {
     if (publishing) return null;
     if (isDirty) return t(dict, "dashboard.messages.saveFirst");
+    if (!form.languages.length) return t(dict, "dashboard.application.errors.languagesRequired");
+    if (!hasWorkFormat) return t(dict, "dashboard.messages.fillRequired");
     if (!hasValidServiceFlag) return t(dict, "dashboard.servicesSection.visibilityWarning");
     if (!publicationReady) return t(dict, "dashboard.messages.fillRequired");
     return null;
-  }, [dict, publishing, isDirty, hasValidServiceFlag, publicationReady]);
+  }, [dict, publishing, isDirty, form.languages.length, hasWorkFormat, hasValidServiceFlag, publicationReady]);
 
   const publishDisabled = publishing || isDirty || !publicationReady;
 
@@ -356,9 +365,9 @@ export default function SpecialistDashboardEditor({
       const missing: string[] = [];
       if (!form.name.trim()) missing.push(t(dict, "dashboard.fields.name"));
       if (!form.category_id.trim()) missing.push(t(dict, "dashboard.fields.category"));
+      if (!form.languages.length) missing.push(t(dict, "dashboard.fields.languages"));
+      if (!hasWorkFormat) missing.push(t(dict, "dashboard.fields.format"));
       if (needsPostalCode && !/^\d{5}$/.test(form.postal_code.trim())) missing.push(t(dict, "dashboard.fields.plz"));
-      if (!form.about_me.trim()) missing.push(t(dict, "dashboard.fields.aboutMe"));
-      if (!form.photo_url.trim()) missing.push(t(dict, "dashboard.fields.photo"));
       if (!hasValidServiceFlag) {
         missing.push(t(dict, "dashboard.messages.publishNeedsServiceAndPricePositive"));
       }
