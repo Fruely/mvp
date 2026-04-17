@@ -70,8 +70,14 @@ export default async function SpecialistDashboardHomePage({
 
   const { data: specExtra } = await service
     .from("specialists")
-    .select("postal_code, work_format, languages")
+    .select("postal_code, work_format, languages, telegram_chat_id")
     .eq("id", specialist.id)
+    .maybeSingle();
+
+  const { data: profileRow } = await service
+    .from("specialist_profiles")
+    .select("photo_url, about_me, video_url, gallery_urls, certificate_urls")
+    .eq("specialist_id", specialist.id)
     .maybeSingle();
 
   const categoryId =
@@ -168,6 +174,83 @@ export default async function SpecialistDashboardHomePage({
   const leadsTotalSafe =
     !leadsTotalError && typeof leadsTotal === "number" ? leadsTotal : null;
   const leadsNewSafe = !leadsNewError && typeof leadsNewCount === "number" ? leadsNewCount : null;
+
+  const hasPhoto =
+    typeof profileRow?.photo_url === "string" && profileRow.photo_url.trim().length > 0;
+  const hasAboutMe =
+    typeof profileRow?.about_me === "string" && profileRow.about_me.trim().length > 0;
+  const hasVideo =
+    typeof profileRow?.video_url === "string" && profileRow.video_url.trim().length > 0;
+  const galleryCount = Array.isArray(profileRow?.gallery_urls)
+    ? profileRow.gallery_urls.filter(
+        (value): value is string => typeof value === "string" && value.trim().length > 0,
+      ).length
+    : 0;
+  const certificateCount = Array.isArray(profileRow?.certificate_urls)
+    ? profileRow.certificate_urls.filter(
+        (value): value is string => typeof value === "string" && value.trim().length > 0,
+      ).length
+    : 0;
+  const telegramConnected = Boolean(String(specExtra?.telegram_chat_id ?? "").trim());
+  const activeServicesCount = Array.isArray(servicesRows) ? servicesRows.length : 0;
+
+  type ImprovementSeverity = "missing" | "improve";
+  type Improvement = { key: string; label: string; severity: ImprovementSeverity };
+  const improvements: Improvement[] = [];
+
+  if (!hasPhoto) {
+    improvements.push({
+      key: "photo",
+      label: t(dict, "dashboard.home.improve.items.photo"),
+      severity: "missing",
+    });
+  }
+  if (activeServicesCount === 0) {
+    improvements.push({
+      key: "services",
+      label: t(dict, "dashboard.home.improve.items.services"),
+      severity: "missing",
+    });
+  }
+  if (!hasAboutMe) {
+    improvements.push({
+      key: "about",
+      label: t(dict, "dashboard.home.improve.items.about"),
+      severity: "missing",
+    });
+  }
+  if (!telegramConnected) {
+    improvements.push({
+      key: "telegram",
+      label: t(dict, "dashboard.home.improve.items.telegram"),
+      severity: "improve",
+    });
+  }
+  if (galleryCount === 0) {
+    improvements.push({
+      key: "gallery",
+      label: t(dict, "dashboard.home.improve.items.gallery"),
+      severity: "improve",
+    });
+  }
+  if (certificateCount === 0) {
+    improvements.push({
+      key: "certificates",
+      label: t(dict, "dashboard.home.improve.items.certificates"),
+      severity: "improve",
+    });
+  }
+  if (!hasVideo) {
+    improvements.push({
+      key: "video",
+      label: t(dict, "dashboard.home.improve.items.video"),
+      severity: "improve",
+    });
+  }
+
+  const MAX_IMPROVEMENTS = 6;
+  const visibleImprovements = improvements.slice(0, MAX_IMPROVEMENTS);
+  const hiddenImprovementsCount = Math.max(0, improvements.length - MAX_IMPROVEMENTS);
 
   const statusLabel = specialistStatusLabel(dict, status);
   const publishReadyWord = profileReadyForPublish
@@ -302,6 +385,70 @@ export default async function SpecialistDashboardHomePage({
           </Link>
         </section>
       </div>
+
+      <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h2 className="text-base font-semibold text-gray-900">
+          {t(dict, "dashboard.home.improve.title")}
+        </h2>
+        <p className="mt-1 text-sm text-gray-600">{t(dict, "dashboard.home.improve.subtitle")}</p>
+
+        {visibleImprovements.length === 0 ? (
+          <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-900">
+            {t(dict, "dashboard.home.improve.allGood")}
+          </div>
+        ) : (
+          <>
+            <ul className="mt-4 space-y-2">
+              {visibleImprovements.map((item) => {
+                const isMissing = item.severity === "missing";
+                return (
+                  <li
+                    key={item.key}
+                    className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50/60 px-3 py-2 text-sm"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`mt-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-semibold leading-none ${
+                        isMissing
+                          ? "border border-amber-300 bg-white text-amber-700"
+                          : "border border-sky-300 bg-white text-sky-700"
+                      }`}
+                    >
+                      {isMissing ? "!" : "+"}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-gray-900">{item.label}</p>
+                      <p
+                        className={`mt-0.5 text-xs ${
+                          isMissing ? "text-amber-700" : "text-sky-700"
+                        }`}
+                      >
+                        {isMissing
+                          ? t(dict, "dashboard.home.improve.severity.missing")
+                          : t(dict, "dashboard.home.improve.severity.improve")}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            {hiddenImprovementsCount > 0 ? (
+              <p className="mt-2 text-xs text-gray-500">
+                {t(dict, "dashboard.home.improve.more").replace(
+                  "{{count}}",
+                  String(hiddenImprovementsCount),
+                )}
+              </p>
+            ) : null}
+            <Link
+              href={profileHref}
+              className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-orange-500 px-5 text-sm font-semibold text-white transition hover:bg-orange-600"
+            >
+              {t(dict, "dashboard.home.improve.cta")}
+            </Link>
+          </>
+        )}
+      </section>
     </div>
   );
 }
