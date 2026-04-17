@@ -88,9 +88,13 @@ export default function HeroSearch({
 
   useEffect(() => {
     const q = categoryQuery.trim();
-    const delay = q.length > 0 ? SUGGEST_DEBOUNCE_MS : 0;
-    const controller = new AbortController();
+    if (q.length === 0) {
+      setSuggestions([]);
+      setSuggestionsLoading(false);
+      return;
+    }
 
+    const controller = new AbortController();
     const t = setTimeout(async () => {
       setSuggestionsLoading(true);
       try {
@@ -120,7 +124,7 @@ export default function HeroSearch({
       } finally {
         if (!controller.signal.aborted) setSuggestionsLoading(false);
       }
-    }, delay);
+    }, SUGGEST_DEBOUNCE_MS);
 
     return () => {
       controller.abort();
@@ -232,17 +236,25 @@ export default function HeroSearch({
             type="text"
             value={categoryQuery}
             onChange={(e) => {
-              setCategoryQuery(e.target.value);
+              const next = e.target.value;
+              setCategoryQuery(next);
               setSelectedCategorySlug(null);
-              setCategoryOpen(true);
+              setCategoryOpen(next.trim().length > 0);
               if (inlineError) setInlineError("");
             }}
-            onFocus={() => setCategoryOpen(true)}
+            onFocus={() => {
+              if (categoryQuery.trim().length > 0) setCategoryOpen(true);
+            }}
             onBlur={() => {
               setTimeout(() => setCategoryOpen(false), 120);
             }}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && categoryOpen && suggestions.length > 0) {
+              if (
+                e.key === "Enter" &&
+                categoryOpen &&
+                categoryQuery.trim().length > 0 &&
+                suggestions.length > 0
+              ) {
                 e.preventDefault();
                 chooseCategory(suggestions[0]);
               }

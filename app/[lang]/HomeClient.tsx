@@ -101,13 +101,24 @@ const FALLBACK_PLACEHOLDERS = [
   { id: "placeholder-3", icon: "🫶" },
 ];
 
-const HERO_COPY: Record<Lang, { titleLines: [string, string, string]; subtitle: string; search: string; plzLabel: string; popularLabel: string }> = {
+const HERO_COPY: Record<
+  Lang,
+  {
+    titleLines: [string, string, string];
+    subtitle: string;
+    search: string;
+    plzLabel: string;
+    popularLabel: string;
+    categoryPlaceholder: string;
+  }
+> = {
   ru: {
     titleLines: ["Найдите специалиста", "на вашем языке", "в Германии"],
     subtitle: "Рядом с вами и онлайн. Выберите того, с кем вам удобно.",
     search: "Найти специалиста",
     plzLabel: "PLZ / почтовый индекс",
     popularLabel: "Популярные категории:",
+    categoryPlaceholder: "Психолог, массаж, репетитор…",
   },
   ua: {
     titleLines: ["Знайдіть спеціаліста", "вашою мовою", "в Німеччині"],
@@ -115,6 +126,7 @@ const HERO_COPY: Record<Lang, { titleLines: [string, string, string]; subtitle: 
     search: "Знайти спеціаліста",
     plzLabel: "PLZ / поштовий індекс",
     popularLabel: "Популярні категорії:",
+    categoryPlaceholder: "Психолог, масаж, репетитор…",
   },
   de: {
     titleLines: ["Finden Sie einen Spezialisten", "in Ihrer Sprache", "in\u00a0Deutschland"],
@@ -122,6 +134,7 @@ const HERO_COPY: Record<Lang, { titleLines: [string, string, string]; subtitle: 
     search: "Spezialisten finden",
     plzLabel: "PLZ / Postleitzahl",
     popularLabel: "Beliebte Kategorien:",
+    categoryPlaceholder: "Psychologe, Massage, Nachhilfe…",
   },
 };
 
@@ -428,7 +441,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
           <HeroSearch
             lang={lang}
             primaryCta={copy.search}
-            categoryPlaceholder={t(dict, "categories.default", { defaultValue: "Категория" })}
+            categoryPlaceholder={copy.categoryPlaceholder}
             plzPlaceholder={copy.plzLabel}
             languageLabel={t(dict, "filters.language.label", { defaultValue: "Язык" })}
           />
