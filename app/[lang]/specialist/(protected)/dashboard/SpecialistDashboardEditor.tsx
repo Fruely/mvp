@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback, type ChangeEvent } from "react";
+import { useMemo, useState, useCallback, useRef, useEffect, type ChangeEvent } from "react";
 import { t, type Dictionary } from "@/lib/i18n";
 import SupportBlock from "@/components/support/SupportBlock";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
@@ -66,6 +66,12 @@ const READINESS_SECTION_ID: Record<string, string> = {
   plz: "dashboard-section-plz",
   service: "dashboard-services-section",
 };
+
+/** How long the jump-target section stays visually highlighted after scroll. */
+const READINESS_HIGHLIGHT_MS = 2800;
+
+const READINESS_JUMP_HIGHLIGHT_CLASS =
+  "rounded-lg ring-2 ring-sky-400/85 bg-sky-50/65 shadow-sm transition-[box-shadow,background-color] duration-300";
 
 function focusFirstInteractive(container: HTMLElement) {
   const selector = [
@@ -144,6 +150,14 @@ export default function SpecialistDashboardEditor({
   const [success, setSuccess] = useState<string | null>(null);
   const [status, setStatus] = useState(initialStatus);
   const [priceErrors, setPriceErrors] = useState<Record<number, string | null>>({});
+  const [highlightedSectionId, setHighlightedSectionId] = useState<string | null>(null);
+  const highlightClearTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (highlightClearTimeoutRef.current) clearTimeout(highlightClearTimeoutRef.current);
+    };
+  }, []);
 
   const setForm = useCallback(
     (updater: Props["initialData"] | ((prev: Props["initialData"]) => Props["initialData"])) => {
@@ -223,8 +237,20 @@ export default function SpecialistDashboardEditor({
     if (!id) return;
     const el = document.getElementById(id);
     if (!el) return;
+
+    if (highlightClearTimeoutRef.current) {
+      clearTimeout(highlightClearTimeoutRef.current);
+      highlightClearTimeoutRef.current = null;
+    }
+    setHighlightedSectionId(id);
+
     el.scrollIntoView({ behavior: "smooth", block: "start" });
     window.setTimeout(() => focusFirstInteractive(el), 400);
+
+    highlightClearTimeoutRef.current = window.setTimeout(() => {
+      setHighlightedSectionId(null);
+      highlightClearTimeoutRef.current = null;
+    }, READINESS_HIGHLIGHT_MS);
   }, []);
 
   const noServicesYet = form.services.length === 0;
@@ -554,7 +580,10 @@ export default function SpecialistDashboardEditor({
 
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2">
-          <div id={READINESS_SECTION_ID.name} className="scroll-mt-6">
+          <div
+            id={READINESS_SECTION_ID.name}
+            className={`scroll-mt-6 ${highlightedSectionId === READINESS_SECTION_ID.name ? READINESS_JUMP_HIGHLIGHT_CLASS : ""}`}
+          >
             <label className="space-y-1 text-sm">
               <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.name")}</span>
               <input
@@ -572,7 +601,10 @@ export default function SpecialistDashboardEditor({
               className="w-full rounded-lg border border-gray-200 px-3 py-2"
             />
           </label>
-          <div id={READINESS_SECTION_ID.category} className="scroll-mt-6">
+          <div
+            id={READINESS_SECTION_ID.category}
+            className={`scroll-mt-6 ${highlightedSectionId === READINESS_SECTION_ID.category ? READINESS_JUMP_HIGHLIGHT_CLASS : ""}`}
+          >
             <label className="space-y-1 text-sm">
               <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.category")}</span>
               <select
@@ -597,7 +629,10 @@ export default function SpecialistDashboardEditor({
               className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-600"
             />
           </label>
-          <div id={READINESS_SECTION_ID.plz} className="scroll-mt-6">
+          <div
+            id={READINESS_SECTION_ID.plz}
+            className={`scroll-mt-6 ${highlightedSectionId === READINESS_SECTION_ID.plz ? READINESS_JUMP_HIGHLIGHT_CLASS : ""}`}
+          >
             <label className="space-y-1 text-sm">
               <span className="font-medium text-gray-700">
                 {t(dict, "dashboard.fields.plzLabel")} {needsPostalCode && <span className="text-red-500">*</span>}
@@ -650,7 +685,10 @@ export default function SpecialistDashboardEditor({
               <option value="XX">{t(dict, "dashboard.country.XX")}</option>
             </select>
           </label>
-          <div id={READINESS_SECTION_ID.work_format} className="scroll-mt-6">
+          <div
+            id={READINESS_SECTION_ID.work_format}
+            className={`scroll-mt-6 ${highlightedSectionId === READINESS_SECTION_ID.work_format ? READINESS_JUMP_HIGHLIGHT_CLASS : ""}`}
+          >
             <label className="space-y-1 text-sm">
               <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.format")}</span>
               <select
@@ -699,7 +737,9 @@ export default function SpecialistDashboardEditor({
           )}
           <fieldset
             id={READINESS_SECTION_ID.languages}
-            className="scroll-mt-6 space-y-2 text-sm md:col-span-2"
+            className={`scroll-mt-6 space-y-2 text-sm md:col-span-2 ${
+              highlightedSectionId === READINESS_SECTION_ID.languages ? READINESS_JUMP_HIGHLIGHT_CLASS : ""
+            }`}
           >
             <legend className="font-medium text-gray-700">{t(dict, "dashboard.fields.languages")}</legend>
             <div className="flex flex-wrap gap-x-5 gap-y-2">
@@ -882,10 +922,12 @@ export default function SpecialistDashboardEditor({
 
         <div
           id={READINESS_SECTION_ID.service}
-          className={`scroll-mt-6 rounded-lg border p-4 transition-colors ${
-            !hasValidServiceFlag
-              ? "border-amber-400 bg-amber-50/60 ring-2 ring-amber-300/80 shadow-[0_0_0_1px_rgba(251,191,36,0.35)]"
-              : "border-gray-200"
+          className={`scroll-mt-6 rounded-lg border p-4 transition-all duration-300 ${
+            highlightedSectionId === READINESS_SECTION_ID.service
+              ? "border-sky-300/90 bg-sky-50/70 ring-2 ring-sky-400/85 shadow-sm"
+              : !hasValidServiceFlag
+                ? "border-amber-400 bg-amber-50/60 ring-2 ring-amber-300/80 shadow-[0_0_0_1px_rgba(251,191,36,0.35)]"
+                : "border-gray-200"
           }`}
         >
           <div className="mb-3 flex items-center justify-between gap-3">
