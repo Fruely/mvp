@@ -151,7 +151,7 @@ export default function SpecialistDashboardEditor({
   const [status, setStatus] = useState(initialStatus);
   const [priceErrors, setPriceErrors] = useState<Record<number, string | null>>({});
   const [highlightedSectionId, setHighlightedSectionId] = useState<string | null>(null);
-  const highlightClearTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const highlightClearTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     return () => {
