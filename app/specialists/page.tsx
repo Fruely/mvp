@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getSpecialistUrl } from "@/lib/urls";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
+import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 
 export const dynamic = "force-dynamic";
@@ -105,6 +106,46 @@ type SearchParams = {
   category?: string;
   mode?: string;
 };
+
+function buildSpecialistsRouteTarget(sp: SearchParams): string {
+  const params = new URLSearchParams();
+  if (sp.lang?.trim()) params.set("lang", sp.lang.trim());
+  if (sp.place?.trim()) params.set("place", sp.place.trim());
+  if (sp.q?.trim()) params.set("q", sp.q.trim());
+  if (sp.category?.trim()) params.set("category", sp.category.trim());
+  if (sp.mode?.trim()) params.set("mode", sp.mode.trim());
+  const qs = params.toString();
+  return qs ? `/specialists?${qs}` : "/specialists";
+}
+
+function logZeroResultsSpecialistsPage(opts: {
+  uiLang: UiLang;
+  langParam: string;
+  place: string | null;
+  routeTarget: string;
+  fallback: string | null | undefined;
+}) {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://freuly.de";
+  const langFilter = normalizeSearchLangToDbCode(opts.langParam) ?? opts.langParam;
+  const metadata: Record<string, unknown> = { source: "search_results" };
+  if (opts.fallback) metadata.fallback = opts.fallback;
+
+  void fetch(`${baseUrl}/api/search/events`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+    body: JSON.stringify({
+      event_type: "zero_results_viewed",
+      lang_ui: opts.uiLang,
+      lang_filter: langFilter,
+      place_query: opts.place,
+      results_count: 0,
+      had_zero_results: true,
+      route_target: opts.routeTarget,
+      metadata,
+    }),
+  }).catch(() => {});
+}
 
 export async function generateMetadata({
   searchParams,
@@ -216,6 +257,13 @@ export default async function SpecialistsPage({
   const empty = specialists.length === 0;
 
   if (empty) {
+    logZeroResultsSpecialistsPage({
+      uiLang,
+      langParam: lang,
+      place: place ?? null,
+      routeTarget: buildSpecialistsRouteTarget(searchParams),
+      fallback: result.fallback,
+    });
     if (result.fallback === "no_local_results" && place) {
       const onlineHref = `/specialists?mode=online&lang=${encodeURIComponent(lang)}${
         category ? `&category=${encodeURIComponent(category)}` : ""

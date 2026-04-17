@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
+import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import uaDict from "@/locales/ua.json";
 import SpecialistPreviewCard from "@/components/specialist/SpecialistPreviewCard";
@@ -196,6 +197,28 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
       setHasMore(Boolean(meta.has_more));
       setNextOffset(Number(meta.next_offset ?? offset + incoming.length));
       setTotalSpecialists(Number(meta.total ?? incoming.length));
+
+      if (reset && incoming.length === 0) {
+        const sp = new URLSearchParams(window.location.search);
+        const langFromQuery = sp.get("lang");
+        const langFilter =
+          normalizeSearchLangToDbCode(langFromQuery) ?? langFromQuery ?? null;
+        const routeTarget = `${window.location.pathname}${window.location.search}`;
+        void fetch("/api/search/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({
+            event_type: "zero_results_viewed",
+            lang_ui: lang,
+            lang_filter: langFilter,
+            results_count: 0,
+            had_zero_results: true,
+            route_target: routeTarget,
+            metadata: { source: "search_results", category_slug: slug },
+          }),
+        }).catch(() => {});
+      }
 
       if (meta.filter_options?.languages) {
         setLanguageOptions(meta.filter_options.languages);
