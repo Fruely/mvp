@@ -129,6 +129,25 @@ export default function HeroSearch({
     return uiLanguage === "uk" ? "ua" : uiLanguage;
   }
 
+  function logSearchSubmitted(routeTarget: string, trimmedLocation: string) {
+    const langFilter = normalizeSearchLangToDbCode(language) ?? language;
+    void fetch("/api/search/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+      body: JSON.stringify({
+        event_type: "search_submitted",
+        lang_ui: currentLocale,
+        lang_filter: langFilter,
+        query_raw: categoryQuery.trim() || null,
+        selected_via: "suggestion",
+        place_query: trimmedLocation || null,
+        route_target: routeTarget,
+        metadata: { source: "hero_search" },
+      }),
+    }).catch(() => {});
+  }
+
   function handleRedirect() {
     if (!language) {
       setInlineError("Выберите язык общения");
@@ -143,18 +162,21 @@ export default function HeroSearch({
     const chosenCategorySlug = selectedCategorySlug;
     const trimmedLocation = location.trim();
 
+    let routeTarget: string;
     if (trimmedLocation) {
       const params = new URLSearchParams({
         lang: language,
         place: trimmedLocation,
       });
       params.set("category", chosenCategorySlug);
-      router.push(`/specialists?${params.toString()}`);
-      return;
+      routeTarget = `/specialists?${params.toString()}`;
+    } else {
+      const locale = toPathLocale(language);
+      routeTarget = `/${locale}/category/${chosenCategorySlug}?lang=${language}`;
     }
 
-    const locale = toPathLocale(language);
-    router.push(`/${locale}/category/${chosenCategorySlug}?lang=${language}`);
+    logSearchSubmitted(routeTarget, trimmedLocation);
+    router.push(routeTarget);
   }
 
   function chooseCategory(option: CategoryOption) {
