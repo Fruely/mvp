@@ -9,6 +9,7 @@ import { getSpecialistUrl } from "@/lib/urls";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import GermanyMapCTA from "@/components/home/GermanyMapCTA";
+import HeroSearch from "@/components/HeroSearch";
 
 type MosaicImage = { url: string; alt?: string; category_id?: string };
 
@@ -134,9 +135,6 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
   const [isPopularLoading, setIsPopularLoading] = useState(true);
   const [isRecommendedLoading, setIsRecommendedLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [heroCategorySlug, setHeroCategorySlug] = useState("");
-  const [heroCity, setHeroCity] = useState("");
-  const [heroLanguage, setHeroLanguage] = useState<"ru" | "uk" | "de">("ru");
   const placeFromUrl = place?.trim() ?? "";
   const specialistLang = lang === "ua" ? "uk" : lang;
 
@@ -151,10 +149,6 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
     }
     return [...featured.slice(0, 4), ...restCopy.slice(0, 8)].slice(0, MAX);
   }
-
-  useEffect(() => {
-    setHeroLanguage(lang === "ua" ? "uk" : lang === "de" ? "de" : "ru");
-  }, [lang]);
 
   useEffect(() => {
     function normalizeCategories(rawData: any[]): CategoryStat[] {
@@ -415,63 +409,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
     []
   );
 
-  const heroCategoryOptions = useMemo(() => {
-    const options: Array<{
-      slug: string;
-      cat: CategoryStat | NonNullable<CategoryStat["children"]>[number];
-    }> = [];
-    const seen = new Set<string>();
-
-    for (const category of categories) {
-      if (Array.isArray(category.children) && category.children.length > 0) {
-        for (const child of category.children) {
-          const slug = child.slug?.trim();
-          const label = getCategoryTitle(child, toCategoryTitleLang(heroLanguage)).trim();
-          if (!slug || !label || seen.has(slug)) continue;
-          seen.add(slug);
-          options.push({ slug, cat: child });
-        }
-        continue;
-      }
-
-      const slug = category.slug?.trim();
-      const label = getCategoryTitle(category, toCategoryTitleLang(heroLanguage)).trim();
-      if (!slug || !label || seen.has(slug)) continue;
-      seen.add(slug);
-      options.push({ slug, cat: category });
-    }
-
-    return options.sort((a, b) =>
-      getCategoryTitle(a.cat, toCategoryTitleLang(heroLanguage)).localeCompare(
-        getCategoryTitle(b.cat, toCategoryTitleLang(heroLanguage)),
-        "uk"
-      )
-    );
-  }, [categories, heroLanguage]);
-
   const copy = HERO_COPY[lang] ?? HERO_COPY.ru;
-
-  function handleHeroSearch() {
-    const locale = heroLanguage === "uk" ? "ua" : heroLanguage;
-    const trimmedCity = heroCity.trim();
-
-    if (trimmedCity) {
-      const params = new URLSearchParams({
-        lang: heroLanguage,
-        place: trimmedCity,
-      });
-      if (heroCategorySlug) params.set("category", heroCategorySlug);
-      router.push(`/specialists?${params.toString()}`);
-      return;
-    }
-
-    if (heroCategorySlug) {
-      router.push(`/${locale}/category/${heroCategorySlug}?lang=${heroLanguage}`);
-      return;
-    }
-
-    router.push(`/${locale}`);
-  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -487,49 +425,13 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             {copy.subtitle}
           </p>
 
-          <div className="mt-8 max-w-4xl mx-auto bg-white shadow-soft rounded-md p-3 flex flex-col sm:flex-row gap-3">
-            <select
-              value={heroCategorySlug}
-              onChange={(e) => setHeroCategorySlug(e.target.value)}
-              className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 sm:flex-1"
-              aria-label={t(dict, "categories.default", { defaultValue: "Категория" })}
-            >
-              <option value="">{t(dict, "categories.default", { defaultValue: "Категория" })}</option>
-              {heroCategoryOptions.map((option) => (
-                <option key={option.slug} value={option.slug}>
-                  {getCategoryTitle(option.cat, toCategoryTitleLang(heroLanguage))}
-                </option>
-              ))}
-            </select>
-
-            <input
-              type="text"
-              value={heroCity}
-              onChange={(e) => setHeroCity(e.target.value)}
-              placeholder={copy.plzLabel}
-              className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 placeholder:text-gray-500 sm:flex-1"
-              aria-label={copy.plzLabel}
-            />
-
-            <select
-              value={heroLanguage}
-              onChange={(e) => setHeroLanguage((e.target.value as "ru" | "uk" | "de") || "ru")}
-              className="h-14 rounded-lg border border-gray-200 px-4 text-sm text-gray-700 sm:w-48"
-              aria-label={t(dict, "filters.language.label", { defaultValue: "Язык" })}
-            >
-              <option value="ru">{t(dict, "home.heroLang.ru", { defaultValue: "Русский" })}</option>
-              <option value="uk">{t(dict, "home.heroLang.uk", { defaultValue: "Українська" })}</option>
-              <option value="de">Deutsch</option>
-            </select>
-
-            <button
-              type="button"
-              onClick={handleHeroSearch}
-              className="h-14 px-6 rounded-md bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-soft"
-            >
-              {copy.search}
-            </button>
-          </div>
+          <HeroSearch
+            lang={lang}
+            primaryCta={copy.search}
+            categoryPlaceholder={t(dict, "categories.default", { defaultValue: "Категория" })}
+            plzPlaceholder={copy.plzLabel}
+            languageLabel={t(dict, "filters.language.label", { defaultValue: "Язык" })}
+          />
 
           <div className="mt-6 text-sm font-normal text-textSecondary flex flex-wrap justify-center gap-3">
             <span>{copy.popularLabel}</span>
