@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
-import { normalizeLang } from "@/lib/normalizeLang";
+import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 
 type ImageBlockContent = {
   url?: string;
@@ -282,7 +282,7 @@ export default function AdminSiteBlocksPage() {
       new Map(
         categories.map((category) => [
           category.slug,
-          getCategoryTitle(category, normalizeLang("ru")) || DEFAULT_CATEGORY_LABEL,
+          getCategoryTitle(category, toCategoryTitleLang("ru")) || DEFAULT_CATEGORY_LABEL,
         ] as const)
       ),
     [categories]

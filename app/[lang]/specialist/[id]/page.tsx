@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
-import { normalizeLang } from "@/lib/normalizeLang";
+import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { getSpecialistUrl } from "@/lib/urls";
 import { getSupabase } from "@/lib/supabaseClient";
 import uaDict from "@/locales/ua.json";
@@ -313,7 +313,7 @@ export default function SpecialistPage() {
       title_de: specialist.category_title_de ?? null,
       title_ua: specialist.category_title_ua ?? null,
     },
-    normalizeLang(lang)
+    toCategoryTitleLang(lang)
   ) || t(dict, "specialist.about", { defaultValue: "Спеціаліст" });
   const galleryPlaceholders = Array.from({ length: 4 }, (_, idx) => idx);
   const workMode = getWorkFormat(specialist.format)

@@ -7,7 +7,7 @@ import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 import { getSpecialistUrl } from "@/lib/urls";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
-import { normalizeLang } from "@/lib/normalizeLang";
+import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import GermanyMapCTA from "@/components/home/GermanyMapCTA";
 
 type MosaicImage = { url: string; alt?: string; category_id?: string };
@@ -388,7 +388,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                       title_de: specialist.category_title_de,
                       title_ua: specialist.category_title_ua,
                     },
-                    normalizeLang(lang)
+                    toCategoryTitleLang(lang)
                   ) || t(dict, "home.recommended.defaultCategory")}
                 </p>
                 <p className="text-sm font-normal text-textSecondary line-clamp-1">
@@ -426,7 +426,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
       if (Array.isArray(category.children) && category.children.length > 0) {
         for (const child of category.children) {
           const slug = child.slug?.trim();
-          const label = getCategoryTitle(child, normalizeLang(heroLanguage)).trim();
+          const label = getCategoryTitle(child, toCategoryTitleLang(heroLanguage)).trim();
           if (!slug || !label || seen.has(slug)) continue;
           seen.add(slug);
           options.push({ slug, cat: child });
@@ -435,15 +435,15 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
       }
 
       const slug = category.slug?.trim();
-      const label = getCategoryTitle(category, normalizeLang(heroLanguage)).trim();
+      const label = getCategoryTitle(category, toCategoryTitleLang(heroLanguage)).trim();
       if (!slug || !label || seen.has(slug)) continue;
       seen.add(slug);
       options.push({ slug, cat: category });
     }
 
     return options.sort((a, b) =>
-      getCategoryTitle(a.cat, normalizeLang(heroLanguage)).localeCompare(
-        getCategoryTitle(b.cat, normalizeLang(heroLanguage)),
+      getCategoryTitle(a.cat, toCategoryTitleLang(heroLanguage)).localeCompare(
+        getCategoryTitle(b.cat, toCategoryTitleLang(heroLanguage)),
         "uk"
       )
     );
@@ -497,7 +497,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
               <option value="">{t(dict, "categories.default", { defaultValue: "Категория" })}</option>
               {heroCategoryOptions.map((option) => (
                 <option key={option.slug} value={option.slug}>
-                  {getCategoryTitle(option.cat, normalizeLang(heroLanguage))}
+                  {getCategoryTitle(option.cat, toCategoryTitleLang(heroLanguage))}
                 </option>
               ))}
             </select>
@@ -630,7 +630,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                 .map((parent) => (
                 <section key={parent.id} className="mt-12">
                   <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 pl-1 pb-2">
-                    {getCategoryTitle(parent, normalizeLang(lang))}
+                    {getCategoryTitle(parent, toCategoryTitleLang(lang))}
                   </h2>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 pb-12">
@@ -644,21 +644,21 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                             {child.image_url ? (
                               <img
                                 src={child.image_url}
-                                alt={getCategoryTitle(child, normalizeLang(lang))}
+                                alt={getCategoryTitle(child, toCategoryTitleLang(lang))}
                                 className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                                 loading="lazy"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
                                 <span className="text-sm text-gray-400 px-3 text-center line-clamp-2">
-                                  {getCategoryTitle(child, normalizeLang(lang))}
+                                  {getCategoryTitle(child, toCategoryTitleLang(lang))}
                                 </span>
                               </div>
                             )}
                           </div>
 
                           <p className="mt-2 px-1 text-base font-medium text-gray-900 line-clamp-1">
-                            {getCategoryTitle(child, normalizeLang(lang))}
+                            {getCategoryTitle(child, toCategoryTitleLang(lang))}
                           </p>
                         </Link>
                       </div>

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
-import { normalizeLang } from "@/lib/normalizeLang";
+import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 
 const LANG_OPTIONS = [
   { value: "ru", label: "Русский" },
@@ -112,7 +112,7 @@ export default function HeroSearch({
     return categories
       .filter(
         (item) => {
-          const translated = getCategoryTitle(item, normalizeLang(language || "ru")).toLowerCase();
+          const translated = getCategoryTitle(item, toCategoryTitleLang(language || "ru")).toLowerCase();
           return (
             translated.includes(query) ||
             item.title.toLowerCase().includes(query) ||
@@ -135,7 +135,7 @@ export default function HeroSearch({
     if (!query) return null;
     const match = categories.find(
       (item) =>
-        getCategoryTitle(item, normalizeLang(language || "ru")).toLowerCase() === query ||
+        getCategoryTitle(item, toCategoryTitleLang(language || "ru")).toLowerCase() === query ||
         item.title.toLowerCase() === query ||
         item.slug.toLowerCase() === query
     );
@@ -174,7 +174,7 @@ export default function HeroSearch({
   }
 
   function chooseCategory(option: CategoryOption) {
-    setCategoryQuery(getCategoryTitle(option, normalizeLang(language || "ru")));
+    setCategoryQuery(getCategoryTitle(option, toCategoryTitleLang(language || "ru")));
     setSelectedCategorySlug(option.slug);
     setCategoryOpen(false);
   }
@@ -257,7 +257,7 @@ export default function HeroSearch({
                         <span aria-hidden className="inline-flex w-5 items-center justify-center">
                           {getCategoryIcon(option.slug)}
                         </span>
-                        <span>{getCategoryTitle(option, normalizeLang(language || "ru"))}</span>
+                        <span>{getCategoryTitle(option, toCategoryTitleLang(language || "ru"))}</span>
                       </button>
                     ))}
                   </div>

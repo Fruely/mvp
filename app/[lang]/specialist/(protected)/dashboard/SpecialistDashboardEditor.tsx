@@ -4,7 +4,7 @@ import { useMemo, useState, useCallback, type ChangeEvent } from "react";
 import { t, type Dictionary } from "@/lib/i18n";
 import SupportBlock from "@/components/support/SupportBlock";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
-import { normalizeLang } from "@/lib/normalizeLang";
+import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 
 type ServiceInput = {
   id?: string;
@@ -449,7 +449,7 @@ export default function SpecialistDashboardEditor({
               <option value="">{t(dict, "dashboard.categoryPlaceholder")}</option>
               {filteredCategories.map((category) => (
                 <option key={category.id} value={category.id}>
-                  {getCategoryTitle(category, normalizeLang(lang))}
+                  {getCategoryTitle(category, toCategoryTitleLang(lang))}
                 </option>
               ))}
             </select>

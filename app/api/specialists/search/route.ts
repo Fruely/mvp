@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
-import { normalizeLang } from "@/lib/normalizeLang";
+import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 export const dynamic = "force-dynamic";
@@ -110,8 +110,7 @@ async function fetchSpecialistsLocalByRadius(
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const lang = searchParams.get("lang")?.trim() || null;
-    const normalizedLang = lang ? normalizeLang(lang) : null;
+    const normalizedLang = normalizeSearchLangToDbCode(searchParams.get("lang"));
     const place = searchParams.get("place")?.trim() || null;
     const category = searchParams.get("category")?.trim() || null;
     const mode = searchParams.get("mode")?.trim().toLowerCase() || null;
