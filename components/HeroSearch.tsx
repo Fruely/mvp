@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
+import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 
 const LANG_OPTIONS = [
@@ -12,6 +13,9 @@ const LANG_OPTIONS = [
   { value: "uk", label: "Українська" },
   { value: "de", label: "Deutsch" },
 ] as const;
+
+const SUGGEST_DEBOUNCE_MS = 200;
+const SUGGEST_LIMIT = 8;
 
 type HeroSearchProps = {
   lang: string;
@@ -45,6 +49,20 @@ function getCategoryIcon(slug: string): string {
   return "✨";
 }
 
+function mapSuggestRow(item: unknown): CategoryOption | null {
+  if (!item || typeof item !== "object") return null;
+  const row = item as Record<string, unknown>;
+  const slug = typeof row.slug === "string" ? row.slug.trim() : "";
+  if (!slug) return null;
+  return {
+    slug,
+    title: typeof row.title === "string" ? row.title : "",
+    title_ru: typeof row.title_ru === "string" ? row.title_ru : null,
+    title_de: typeof row.title_de === "string" ? row.title_de : null,
+    title_ua: typeof row.title_ua === "string" ? row.title_ua : null,
+  };
+}
+
 export default function HeroSearch({
   lang: currentLocale,
   title = defaultTitle,
@@ -58,7 +76,8 @@ export default function HeroSearch({
   const [location, setLocation] = useState("");
   const [categoryQuery, setCategoryQuery] = useState("");
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(null);
-  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [suggestions, setSuggestions] = useState<CategoryOption[]>([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [inlineError, setInlineError] = useState("");
 
@@ -68,78 +87,51 @@ export default function HeroSearch({
   }, [currentLocale]);
 
   useEffect(() => {
-    let cancelled = false;
+    const q = categoryQuery.trim();
+    const delay = q.length > 0 ? SUGGEST_DEBOUNCE_MS : 0;
+    const controller = new AbortController();
 
-    async function loadCategories() {
+    const t = setTimeout(async () => {
+      setSuggestionsLoading(true);
       try {
-        const res = await fetch("/api/specialists/categories?mode=children", { cache: "no-store" });
-        const json = await res.json();
-        if (!res.ok || !Array.isArray(json?.data)) return;
-
-        const normalized = json.data
-          .filter(
-            (item: { slug?: unknown; title?: unknown }) =>
-              typeof item?.slug === "string" &&
-              item.slug.trim().length > 0 &&
-              typeof item?.title === "string" &&
-              item.title.trim().length > 0
-          )
-          .map((item: any) => ({
-            slug: item.slug.trim(),
-            title: item.title.trim(),
-            title_ru: typeof item.title_ru === "string" ? item.title_ru : null,
-            title_de: typeof item.title_de === "string" ? item.title_de : null,
-            title_ua: typeof item.title_ua === "string" ? item.title_ua : null,
-          }));
-
-        if (!cancelled) {
-          setCategories(normalized);
+        const params = new URLSearchParams();
+        params.set("q", q);
+        if (language) {
+          params.set("lang", normalizeSearchLangToDbCode(language) ?? language);
         }
+        params.set("limit", String(SUGGEST_LIMIT));
+        const res = await fetch(`/api/categories/suggest?${params.toString()}`, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        const json = (await res.json()) as { data?: unknown };
+        if (!res.ok || !Array.isArray(json?.data)) {
+          if (!controller.signal.aborted) setSuggestions([]);
+          return;
+        }
+        const next: CategoryOption[] = [];
+        for (const row of json.data) {
+          const opt = mapSuggestRow(row);
+          if (opt) next.push(opt);
+        }
+        if (!controller.signal.aborted) setSuggestions(next);
       } catch {
-        // keep search usable without category hints
+        if (!controller.signal.aborted) setSuggestions([]);
+      } finally {
+        if (!controller.signal.aborted) setSuggestionsLoading(false);
       }
-    }
+    }, delay);
 
-    loadCategories();
     return () => {
-      cancelled = true;
+      controller.abort();
+      clearTimeout(t);
     };
-  }, []);
+  }, [categoryQuery, language]);
 
-  const filteredCategories = useMemo(() => {
-    const query = categoryQuery.trim().toLowerCase();
-    if (!query) return categories.slice(0, 8);
-    return categories
-      .filter(
-        (item) => {
-          const translated = getCategoryTitle(item, toCategoryTitleLang(language || "ru")).toLowerCase();
-          return (
-            translated.includes(query) ||
-            item.title.toLowerCase().includes(query) ||
-            item.slug.toLowerCase().includes(query)
-          );
-        }
-      )
-      .slice(0, 8);
-  }, [categories, categoryQuery, language]);
-
-  const canSubmit = Boolean(language);
+  const canSubmit = Boolean(language && selectedCategorySlug);
 
   function toPathLocale(uiLanguage: "ru" | "uk" | "de") {
     return uiLanguage === "uk" ? "ua" : uiLanguage;
-  }
-
-  function resolveCategorySlug() {
-    if (selectedCategorySlug) return selectedCategorySlug;
-    const query = categoryQuery.trim().toLowerCase();
-    if (!query) return null;
-    const match = categories.find(
-      (item) =>
-        getCategoryTitle(item, toCategoryTitleLang(language || "ru")).toLowerCase() === query ||
-        item.title.toLowerCase() === query ||
-        item.slug.toLowerCase() === query
-    );
-    return match?.slug ?? null;
   }
 
   function handleRedirect() {
@@ -147,9 +139,13 @@ export default function HeroSearch({
       setInlineError("Выберите язык общения");
       return;
     }
+    if (!selectedCategorySlug) {
+      setInlineError("Выберите категорию из списка");
+      return;
+    }
 
     setInlineError("");
-    const chosenCategorySlug = resolveCategorySlug();
+    const chosenCategorySlug = selectedCategorySlug;
     const trimmedLocation = location.trim();
 
     if (trimmedLocation) {
@@ -157,20 +153,13 @@ export default function HeroSearch({
         lang: language,
         place: trimmedLocation,
       });
-      if (chosenCategorySlug) {
-        params.set("category", chosenCategorySlug);
-      }
+      params.set("category", chosenCategorySlug);
       router.push(`/specialists?${params.toString()}`);
       return;
     }
 
-    if (chosenCategorySlug) {
-      const locale = toPathLocale(language);
-      router.push(`/${locale}/category/${chosenCategorySlug}?lang=${language}`);
-      return;
-    }
-
-    router.push(`/${toPathLocale(language)}`);
+    const locale = toPathLocale(language);
+    router.push(`/${locale}/category/${chosenCategorySlug}?lang=${language}`);
   }
 
   function chooseCategory(option: CategoryOption) {
@@ -178,6 +167,8 @@ export default function HeroSearch({
     setSelectedCategorySlug(option.slug);
     setCategoryOpen(false);
   }
+
+  const showCategoryRequiredHint = Boolean(language && !selectedCategorySlug);
 
   return (
     <section className="py-12 md:py-16">
@@ -230,9 +221,9 @@ export default function HeroSearch({
                     setTimeout(() => setCategoryOpen(false), 120);
                   }}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && categoryOpen && filteredCategories.length > 0) {
+                    if (e.key === "Enter" && categoryOpen && suggestions.length > 0) {
                       e.preventDefault();
-                      chooseCategory(filteredCategories[0]);
+                      chooseCategory(suggestions[0]);
                     }
                   }}
                   placeholder="Категория"
@@ -240,26 +231,28 @@ export default function HeroSearch({
                   aria-label="Категория"
                   autoComplete="off"
                 />
-                {filteredCategories.length > 0 ? (
+                {categoryOpen && (suggestionsLoading || suggestions.length > 0) ? (
                   <div
-                    className={`absolute top-full left-0 mt-2 min-w-[320px] max-h-56 overflow-auto bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200/60 py-2 z-50 transition-all duration-[120ms] ${
-                      categoryOpen ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-1 pointer-events-none"
-                    }`}
+                    className={`absolute top-full left-0 mt-2 min-w-[320px] max-h-56 overflow-auto bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200/60 py-2 z-50 transition-all duration-[120ms] opacity-100 translate-y-0 pointer-events-auto`}
                   >
-                    {filteredCategories.map((option) => (
-                      <button
-                        key={option.slug}
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => chooseCategory(option)}
-                        className="flex w-full items-center gap-2 whitespace-nowrap px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 cursor-pointer transition-all duration-150 hover:translate-x-1"
-                      >
-                        <span aria-hidden className="inline-flex w-5 items-center justify-center">
-                          {getCategoryIcon(option.slug)}
-                        </span>
-                        <span>{getCategoryTitle(option, toCategoryTitleLang(language || "ru"))}</span>
-                      </button>
-                    ))}
+                    {suggestionsLoading ? (
+                      <div className="px-4 py-2 text-sm text-gray-500">Загрузка…</div>
+                    ) : (
+                      suggestions.map((option) => (
+                        <button
+                          key={option.slug}
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => chooseCategory(option)}
+                          className="flex w-full items-center gap-2 whitespace-nowrap px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 cursor-pointer transition-all duration-150 hover:translate-x-1"
+                        >
+                          <span aria-hidden className="inline-flex w-5 items-center justify-center">
+                            {getCategoryIcon(option.slug)}
+                          </span>
+                          <span>{getCategoryTitle(option, toCategoryTitleLang(language || "ru"))}</span>
+                        </button>
+                      ))
+                    )}
                   </div>
                 ) : null}
               </div>
@@ -285,6 +278,8 @@ export default function HeroSearch({
             </form>
             {inlineError ? (
               <p className="mt-2 text-sm text-red-600">{inlineError}</p>
+            ) : showCategoryRequiredHint ? (
+              <p className="mt-2 text-sm text-amber-600">Выберите категорию из списка</p>
             ) : null}
             <div className="mt-4 text-sm text-gray-500">
               Вы специалист?{" "}
