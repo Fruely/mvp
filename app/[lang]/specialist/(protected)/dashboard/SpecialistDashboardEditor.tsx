@@ -156,6 +156,47 @@ export default function SpecialistDashboardEditor({
     );
   }, [form, needsPostalCode, hasValidServiceFlag, hasWorkFormat]);
 
+  /** Checklist items mirror the same publish minimum; order matches form sections. */
+  const readinessItems = useMemo(() => {
+    const items: Array<{ key: string; label: string; done: boolean }> = [
+      { key: "name", label: t(dict, "dashboard.fields.name"), done: Boolean(form.name.trim()) },
+      {
+        key: "category",
+        label: t(dict, "dashboard.fields.category"),
+        done: Boolean(form.category_id.trim()),
+      },
+      {
+        key: "languages",
+        label: t(dict, "dashboard.fields.languages"),
+        done: form.languages.length > 0,
+      },
+      {
+        key: "work_format",
+        label: t(dict, "dashboard.fields.format"),
+        done: hasWorkFormat,
+      },
+    ];
+    if (needsPostalCode) {
+      items.push({
+        key: "plz",
+        label: t(dict, "dashboard.fields.plz"),
+        done: /^\d{5}$/.test(form.postal_code.trim()),
+      });
+    }
+    items.push({
+      key: "service",
+      label: t(dict, "dashboard.readiness.service"),
+      done: hasValidServiceFlag,
+    });
+    return items;
+  }, [dict, form, needsPostalCode, hasWorkFormat, hasValidServiceFlag]);
+
+  const readinessDoneCount = readinessItems.filter((item) => item.done).length;
+  const readinessTotalCount = readinessItems.length;
+  const readinessSummary = t(dict, "dashboard.readiness.summary")
+    .replace("{{done}}", String(readinessDoneCount))
+    .replace("{{total}}", String(readinessTotalCount));
+
   const noServicesYet = form.services.length === 0;
 
   const publishDisabledHint = useMemo(() => {
@@ -400,6 +441,43 @@ export default function SpecialistDashboardEditor({
     <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
       <div className="mb-5 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
         {t(dict, "dashboard.introBanner")}
+      </div>
+
+      <div
+        className={`mb-5 rounded-lg border px-4 py-3 text-sm ${
+          publicationReady
+            ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+            : "border-amber-200 bg-amber-50 text-amber-900"
+        }`}
+        aria-label={t(dict, "dashboard.readiness.title")}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+          <p className="font-medium">
+            {publicationReady
+              ? t(dict, "dashboard.readiness.allReady")
+              : t(dict, "dashboard.readiness.title")}
+          </p>
+          <p className="text-xs opacity-80">{readinessSummary}</p>
+        </div>
+        <ul className="mt-2 grid gap-1 sm:grid-cols-2">
+          {readinessItems.map((item) => (
+            <li key={item.key} className="flex items-start gap-2 text-sm">
+              <span
+                aria-hidden="true"
+                className={`mt-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-semibold leading-none ${
+                  item.done
+                    ? "bg-emerald-600 text-white"
+                    : "border border-amber-300 bg-white text-amber-700"
+                }`}
+              >
+                {item.done ? "✓" : "•"}
+              </span>
+              <span className={item.done ? "text-gray-700 line-through decoration-emerald-400" : "text-gray-800"}>
+                {item.label}
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
 
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
