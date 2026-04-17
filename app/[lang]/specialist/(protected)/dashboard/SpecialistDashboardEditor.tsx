@@ -57,6 +57,27 @@ const MAX_DOCUMENT_IMAGES = 10;
 
 const PRICE_COMMENT_MAX = 50;
 
+/** Targets for readiness checklist jump-to-section (ids on form blocks below). */
+const READINESS_SECTION_ID: Record<string, string> = {
+  name: "dashboard-section-name",
+  category: "dashboard-section-category",
+  languages: "dashboard-section-languages",
+  work_format: "dashboard-section-work-format",
+  plz: "dashboard-section-plz",
+  service: "dashboard-services-section",
+};
+
+function focusFirstInteractive(container: HTMLElement) {
+  const selector = [
+    'input:not([type="hidden"]):not([disabled])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    'button:not([disabled])',
+  ].join(", ");
+  const el = container.querySelector<HTMLElement>(selector);
+  if (el) el.focus({ preventScroll: true });
+}
+
 const PRICE_COMMENT_PRESETS = [
   "по договорённости",
   "за час",
@@ -196,6 +217,15 @@ export default function SpecialistDashboardEditor({
   const readinessSummary = t(dict, "dashboard.readiness.summary")
     .replace("{{done}}", String(readinessDoneCount))
     .replace("{{total}}", String(readinessTotalCount));
+
+  const jumpToReadinessSection = useCallback((key: string) => {
+    const id = READINESS_SECTION_ID[key];
+    if (!id) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.setTimeout(() => focusFirstInteractive(el), 400);
+  }, []);
 
   const noServicesYet = form.services.length === 0;
 
@@ -461,20 +491,34 @@ export default function SpecialistDashboardEditor({
         </div>
         <ul className="mt-2 grid gap-1 sm:grid-cols-2">
           {readinessItems.map((item) => (
-            <li key={item.key} className="flex items-start gap-2 text-sm">
-              <span
-                aria-hidden="true"
-                className={`mt-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-semibold leading-none ${
+            <li key={item.key} className="text-sm">
+              <button
+                type="button"
+                onClick={() => jumpToReadinessSection(item.key)}
+                className={`flex w-full items-start gap-2 rounded-md px-1 py-0.5 text-left transition ${
                   item.done
-                    ? "bg-emerald-600 text-white"
-                    : "border border-amber-300 bg-white text-amber-700"
+                    ? "text-gray-700 hover:bg-black/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500/80"
+                    : "cursor-pointer text-gray-800 hover:bg-amber-100/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600/80"
                 }`}
               >
-                {item.done ? "✓" : "•"}
-              </span>
-              <span className={item.done ? "text-gray-700 line-through decoration-emerald-400" : "text-gray-800"}>
-                {item.label}
-              </span>
+                <span
+                  aria-hidden="true"
+                  className={`mt-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-semibold leading-none ${
+                    item.done
+                      ? "bg-emerald-600 text-white"
+                      : "border border-amber-400 bg-white text-amber-800"
+                  }`}
+                >
+                  {item.done ? "✓" : "•"}
+                </span>
+                <span
+                  className={
+                    item.done ? "text-gray-700 line-through decoration-emerald-400" : "font-medium text-gray-900"
+                  }
+                >
+                  {item.label}
+                </span>
+              </button>
             </li>
           ))}
         </ul>
@@ -510,14 +554,16 @@ export default function SpecialistDashboardEditor({
 
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2">
-          <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.name")}</span>
-            <input
-              value={form.name}
-              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2"
-            />
-          </label>
+          <div id={READINESS_SECTION_ID.name} className="scroll-mt-6">
+            <label className="space-y-1 text-sm">
+              <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.name")}</span>
+              <input
+                value={form.name}
+                onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2"
+              />
+            </label>
+          </div>
           <label className="space-y-1 text-sm">
             <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.phone")}</span>
             <input
@@ -526,21 +572,23 @@ export default function SpecialistDashboardEditor({
               className="w-full rounded-lg border border-gray-200 px-3 py-2"
             />
           </label>
-          <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.category")}</span>
-            <select
-              value={form.category_id}
-              onChange={(e) => setForm((prev) => ({ ...prev, category_id: e.target.value }))}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2"
-            >
-              <option value="">{t(dict, "dashboard.categoryPlaceholder")}</option>
-              {filteredCategories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {getCategoryTitle(category, toCategoryTitleLang(lang))}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div id={READINESS_SECTION_ID.category} className="scroll-mt-6">
+            <label className="space-y-1 text-sm">
+              <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.category")}</span>
+              <select
+                value={form.category_id}
+                onChange={(e) => setForm((prev) => ({ ...prev, category_id: e.target.value }))}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2"
+              >
+                <option value="">{t(dict, "dashboard.categoryPlaceholder")}</option>
+                {filteredCategories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {getCategoryTitle(category, toCategoryTitleLang(lang))}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
           <label className="space-y-1 text-sm">
             <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.email")}</span>
             <input
@@ -549,24 +597,26 @@ export default function SpecialistDashboardEditor({
               className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-600"
             />
           </label>
-          <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">
-              {t(dict, "dashboard.fields.plzLabel")} {needsPostalCode && <span className="text-red-500">*</span>}
-            </span>
-            <input
-              value={form.postal_code}
-              onChange={(e) => {
-                const v = e.target.value.replace(/\D/g, "").slice(0, 5);
-                setForm((prev) => ({ ...prev, postal_code: v }));
-              }}
-              inputMode="numeric"
-              pattern="\d{5}"
-              maxLength={5}
-              placeholder={t(dict, "dashboard.fields.plzPlaceholder")}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2"
-            />
-            {needsPostalCode && <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.plzHint")}</p>}
-          </label>
+          <div id={READINESS_SECTION_ID.plz} className="scroll-mt-6">
+            <label className="space-y-1 text-sm">
+              <span className="font-medium text-gray-700">
+                {t(dict, "dashboard.fields.plzLabel")} {needsPostalCode && <span className="text-red-500">*</span>}
+              </span>
+              <input
+                value={form.postal_code}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, "").slice(0, 5);
+                  setForm((prev) => ({ ...prev, postal_code: v }));
+                }}
+                inputMode="numeric"
+                pattern="\d{5}"
+                maxLength={5}
+                placeholder={t(dict, "dashboard.fields.plzPlaceholder")}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2"
+              />
+              {needsPostalCode && <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.plzHint")}</p>}
+            </label>
+          </div>
           <label className="space-y-1 text-sm">
             <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.city")}</span>
             <input
@@ -600,18 +650,20 @@ export default function SpecialistDashboardEditor({
               <option value="XX">{t(dict, "dashboard.country.XX")}</option>
             </select>
           </label>
-          <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.format")}</span>
-            <select
-              value={form.work_format}
-              onChange={(e) => setForm((prev) => ({ ...prev, work_format: e.target.value as Props["initialData"]["work_format"] }))}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2"
-            >
-              <option value="online">{t(dict, "dashboard.workFormat.online")}</option>
-              <option value="offline">{t(dict, "dashboard.workFormat.offline")}</option>
-              <option value="hybrid">{t(dict, "dashboard.workFormat.hybrid")}</option>
-            </select>
-          </label>
+          <div id={READINESS_SECTION_ID.work_format} className="scroll-mt-6">
+            <label className="space-y-1 text-sm">
+              <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.format")}</span>
+              <select
+                value={form.work_format}
+                onChange={(e) => setForm((prev) => ({ ...prev, work_format: e.target.value as Props["initialData"]["work_format"] }))}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2"
+              >
+                <option value="online">{t(dict, "dashboard.workFormat.online")}</option>
+                <option value="offline">{t(dict, "dashboard.workFormat.offline")}</option>
+                <option value="hybrid">{t(dict, "dashboard.workFormat.hybrid")}</option>
+              </select>
+            </label>
+          </div>
           {form.work_format !== "online" && (
             <div className="space-y-2 text-sm md:col-span-2">
               <label className="inline-flex items-center gap-2 cursor-pointer select-none">
@@ -645,7 +697,10 @@ export default function SpecialistDashboardEditor({
               )}
             </div>
           )}
-          <fieldset className="space-y-2 text-sm md:col-span-2">
+          <fieldset
+            id={READINESS_SECTION_ID.languages}
+            className="scroll-mt-6 space-y-2 text-sm md:col-span-2"
+          >
             <legend className="font-medium text-gray-700">{t(dict, "dashboard.fields.languages")}</legend>
             <div className="flex flex-wrap gap-x-5 gap-y-2">
               {(["ru", "uk", "de", "en", "pl"] as const).map((code) => (
@@ -826,8 +881,8 @@ export default function SpecialistDashboardEditor({
         ) : null}
 
         <div
-          id="dashboard-services-section"
-          className={`rounded-lg border p-4 transition-colors ${
+          id={READINESS_SECTION_ID.service}
+          className={`scroll-mt-6 rounded-lg border p-4 transition-colors ${
             !hasValidServiceFlag
               ? "border-amber-400 bg-amber-50/60 ring-2 ring-amber-300/80 shadow-[0_0_0_1px_rgba(251,191,36,0.35)]"
               : "border-gray-200"
