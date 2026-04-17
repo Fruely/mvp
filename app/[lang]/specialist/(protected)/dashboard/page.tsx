@@ -1,15 +1,16 @@
 export const dynamic = "force-dynamic";
 
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { notify } from "@/lib/notifications/notify";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
-import { getDictionary, isSupportedLang, type Dictionary } from "@/lib/i18n";
-import SpecialistDashboardEditor from "./SpecialistDashboardEditor";
+import { isPublicationReadyForDashboard } from "@/lib/dashboard/publicationReadiness";
+import { getDictionary, isSupportedLang, t, type Dictionary } from "@/lib/i18n";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import VerificationBanner from "./VerificationBanner";
 
-export default async function SpecialistDashboardPage({
+export default async function SpecialistDashboardHomePage({
   params,
 }: {
   params: { lang: string } | Promise<{ lang: string }>;
@@ -48,121 +49,91 @@ export default async function SpecialistDashboardPage({
 
   const { data: specExtra } = await service
     .from("specialists")
-    .select(
-      "postal_code, country_code, telegram_chat_id, mobile_service, service_radius_km, work_format, languages"
-    )
+    .select("postal_code, work_format, languages")
     .eq("id", specialist.id)
     .maybeSingle();
 
-  const botUsername = process.env.TELEGRAM_BOT_USERNAME?.replace(/^@/, "").trim() ?? "";
-  const telegramConnectHref =
-    botUsername.length > 0
-      ? `https://t.me/${botUsername}?start=${encodeURIComponent(specialist.id)}`
-      : null;
-  const telegramConnected = Boolean(String(specExtra?.telegram_chat_id ?? "").trim());
-  const { data: profile } = await service
-    .from("specialist_profiles")
-    .select("photo_url, about_me, city, address, gallery_urls, certificate_urls, video_url")
-    .eq("specialist_id", specialist.id)
+  const categoryId =
+    typeof (specialist as unknown as Record<string, unknown>).category_id === "string"
+      ? ((specialist as unknown as Record<string, unknown>).category_id as string)
+      : "";
+
+  const { data: categoryRow } = await service
+    .from("categories")
+    .select("parent_id")
+    .eq("id", categoryId)
     .maybeSingle();
+
+  const categoryParentId =
+    categoryRow && typeof categoryRow.parent_id === "string" ? categoryRow.parent_id : null;
+
   const { data: servicesRows } = await service
     .from("specialist_services")
-    .select("id, title, price_from, currency, is_active, price_comment")
+    .select("title, price_from, is_active, category_id")
     .eq("specialist_id", specialist.id)
-    .order("created_at", { ascending: false });
-  const { data: categoriesRows } = await service
-    .from("categories")
-    .select("id, title, title_ru, title_de, title_ua, parent_id, slug")
-    .or("parent_id.not.is.null,slug.eq.other")
-    .order("title", { ascending: true });
+    .eq("is_active", true);
+
+  const servicesInCategory = (servicesRows ?? []).filter(
+    (row) => typeof row.category_id === "string" && row.category_id === categoryId,
+  );
+
+  const name = specialist.first_name?.trim() || specialist.name?.trim() || "";
+  const languages = Array.isArray(specExtra?.languages)
+    ? (specExtra.languages as unknown[]).filter(
+        (value): value is string => typeof value === "string" && value.trim().length > 0,
+      )
+    : [];
+  const workFormat =
+    specExtra?.work_format === "online" ||
+    specExtra?.work_format === "offline" ||
+    specExtra?.work_format === "hybrid"
+      ? String(specExtra.work_format)
+      : "online";
+  const postalCode = typeof specExtra?.postal_code === "string" ? specExtra.postal_code : "";
+
+  const profileReadyForPublish = isPublicationReadyForDashboard({
+    name,
+    categoryId,
+    categoryParentId,
+    languages,
+    workFormat,
+    postalCode,
+    servicesInSelectedCategory: servicesInCategory,
+  });
+
+  const profileHref = `/${lang}/specialist/dashboard/profile`;
 
   return (
     <div className="space-y-6">
       <VerificationBanner status={status} dict={dict} />
-      <SpecialistDashboardEditor
-        dict={dict}
-        lang={lang}
-        initialStatus={status || "draft"}
-        telegramConnected={telegramConnected}
-        telegramConnectHref={telegramConnectHref}
-        initialData={{
-          name: specialist.first_name?.trim() || specialist.name?.trim() || "",
-          email: specialist.email || "",
-          phone: specialist.phone || "",
-          category_id:
-            typeof (specialist as unknown as Record<string, unknown>).category_id === "string"
-              ? ((specialist as unknown as Record<string, unknown>).category_id as string)
-              : "",
-          work_format:
-            specExtra?.work_format === "online" ||
-            specExtra?.work_format === "offline" ||
-            specExtra?.work_format === "hybrid"
-              ? (specExtra.work_format as "online" | "offline" | "hybrid")
-              : "online",
-          languages: Array.isArray(specExtra?.languages)
-            ? (specExtra.languages as unknown[]).filter(
-                (value): value is string => typeof value === "string" && value.trim().length > 0
-              )
-            : [],
-          about_me: typeof profile?.about_me === "string" ? profile.about_me : "",
-          video_url: typeof profile?.video_url === "string" ? profile.video_url : "",
-          postal_code: typeof specExtra?.postal_code === "string" ? specExtra.postal_code : "",
-          country_code: typeof specExtra?.country_code === "string" ? specExtra.country_code : "DE",
-          mobile_service: Boolean(specExtra?.mobile_service),
-          service_radius_km:
-            typeof specExtra?.service_radius_km === "number" && Number.isFinite(specExtra.service_radius_km)
-              ? String(specExtra.service_radius_km)
-              : "",
-          city: typeof profile?.city === "string" ? profile.city : "",
-          address: typeof profile?.address === "string" ? profile.address : "",
-          photo_url: typeof profile?.photo_url === "string" ? profile.photo_url : "",
-          gallery_urls: Array.isArray(profile?.gallery_urls)
-            ? profile.gallery_urls.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-            : [],
-          certificate_urls: Array.isArray(profile?.certificate_urls)
-            ? profile.certificate_urls.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-            : [],
-          services: (servicesRows ?? []).map((service) => ({
-            id: String(service.id),
-            title: typeof service.title === "string" ? service.title : "",
-            price_from:
-              typeof service.price_from === "number" && Number.isFinite(service.price_from)
-                ? String(service.price_from)
-                : "",
-            currency: typeof service.currency === "string" && service.currency.trim() ? service.currency : "EUR",
-            is_active: Boolean(service.is_active),
-            price_comment: service.price_comment != null ? String(service.price_comment) : "",
-          })),
-        }}
-        categories={(categoriesRows ?? [])
-          .filter(
-            (category) =>
-              typeof category?.id === "string" &&
-              typeof category?.title === "string" &&
-              (category.parent_id === null || typeof category.parent_id === "string") &&
-              typeof category?.slug === "string"
-          )
-          .map((category) => {
-            const row = category as {
-              id: string;
-              title: string;
-              title_ru?: string | null;
-              title_de?: string | null;
-              title_ua?: string | null;
-              parent_id: string | null;
-              slug: string;
-            };
-            return {
-              id: row.id,
-              title: row.title,
-              title_ru: row.title_ru,
-              title_de: row.title_de,
-              title_ua: row.title_ua,
-              parent_id: row.parent_id,
-              slug: row.slug,
-            };
-          })}
-      />
+
+      <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <h1 className="text-2xl font-semibold text-gray-900">{t(dict, "dashboard.home.title")}</h1>
+        <p className="mt-2 text-sm text-gray-600">{t(dict, "dashboard.home.subtitle")}</p>
+
+        <div
+          className={`mt-6 rounded-lg border px-4 py-4 text-sm ${
+            profileReadyForPublish
+              ? "border-emerald-200 bg-emerald-50/80 text-emerald-950"
+              : "border-amber-200 bg-amber-50/80 text-amber-950"
+          }`}
+        >
+          <p className="font-medium">{t(dict, "dashboard.home.statusLabel")}</p>
+          <p className="mt-1 text-gray-800">
+            {profileReadyForPublish ? t(dict, "dashboard.home.readyBody") : t(dict, "dashboard.home.incompleteBody")}
+          </p>
+          <Link
+            href={profileHref}
+            className={`mt-4 inline-flex h-10 items-center justify-center rounded-lg px-5 text-sm font-semibold text-white transition ${
+              profileReadyForPublish
+                ? "bg-teal-600 hover:bg-teal-700"
+                : "bg-orange-500 hover:bg-orange-600"
+            }`}
+          >
+            {profileReadyForPublish ? t(dict, "dashboard.home.editProfile") : t(dict, "dashboard.home.completeProfile")}
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

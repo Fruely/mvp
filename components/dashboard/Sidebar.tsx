@@ -9,6 +9,8 @@ type NavItem = {
   label: string;
   href?: string;
   disabled?: boolean;
+  /** If true, only exact pathname match highlights this item (used for dashboard home vs `/dashboard/...`). */
+  exact?: boolean;
   icon: ReactNode;
 };
 
@@ -22,9 +24,22 @@ function buildNavItems(lang: string, dict: Dictionary): NavItem[] {
   {
     label: t(dict, "dashboard.sidebar.nav.dashboard"),
     href: base,
+    exact: true,
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
         <path d="M4 13h6V4H4v9zm10 7h6v-9h-6v9zM4 20h6v-5H4v5zm10-7h6V4h-6v9z" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    label: t(dict, "dashboard.sidebar.nav.profile"),
+    href: `${base}/profile`,
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
+        <path
+          d="M12 12a4 4 0 100-8 4 4 0 000 8zm-7 9a7 7 0 0114 0H5z"
+          fill="currentColor"
+        />
       </svg>
     ),
   },
@@ -90,7 +105,12 @@ export default function Sidebar({
         </div>
         <nav className="space-y-1 p-3">
           {navItems.map((item) => {
-            const isActive = Boolean(item.href && (currentPath === item.href || currentPath.startsWith(`${item.href}/`)));
+            const isActive = Boolean(
+              item.href &&
+                (item.exact
+                  ? currentPath === item.href
+                  : currentPath === item.href || currentPath.startsWith(`${item.href}/`)),
+            );
             const baseClass =
               "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition";
             const stateClass = isActive
@@ -140,7 +160,12 @@ export default function Sidebar({
         </div>
         <nav className="space-y-1 p-3">
           {navItems.map((item) => {
-            const isActive = Boolean(item.href && (currentPath === item.href || currentPath.startsWith(`${item.href}/`)));
+            const isActive = Boolean(
+              item.href &&
+                (item.exact
+                  ? currentPath === item.href
+                  : currentPath === item.href || currentPath.startsWith(`${item.href}/`)),
+            );
             const baseClass =
               "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition";
             const stateClass = isActive
