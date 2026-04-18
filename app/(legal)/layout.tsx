@@ -21,7 +21,7 @@ export default async function LegalLayout({
   return (
     <>
       <Suspense fallback={<div className="h-9 bg-gray-50 border-b border-gray-100" />}>
-        <LanguageBar />
+        <LanguageBar serverLang={lang} />
       </Suspense>
       <Header lang={lang} dict={dict} />
       {children}

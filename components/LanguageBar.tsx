@@ -4,6 +4,10 @@ import { useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SUPPORTED_LANGS, type Lang } from "@/lib/i18n";
 
+/** Same name as server routes and middleware (`middleware.ts`). */
+const LANG_COOKIE = "freuly_lang";
+const COOKIE_MAX_AGE_SEC = 60 * 60 * 24 * 365;
+
 const LANGS: { code: Lang; label: string }[] = [
   { code: "ua", label: "UA" },
   { code: "ru", label: "RU" },
@@ -20,18 +24,38 @@ function stripLangPrefix(pathname: string) {
   return { lang: "ua" as Lang, rest: pathname || "/" };
 }
 
-export default function LanguageBar() {
+function pathHasLangPrefix(pathname: string): boolean {
+  const first = pathname.split("/").filter(Boolean)[0];
+  return Boolean(first && SUPPORTED_LANGS.includes(first as Lang));
+}
+
+export type LanguageBarProps = {
+  /**
+   * Paths without `/{lang}/` (e.g. `/for-specialists`, legal pages): server-resolved
+   * language from `freuly_lang` so the active chip matches SSR and cookie.
+   */
+  serverLang?: Lang;
+};
+
+export default function LanguageBar({ serverLang }: LanguageBarProps) {
   const router = useRouter();
   const pathname = usePathname() || "/";
   const searchParams = useSearchParams();
   const qs = searchParams?.toString();
   const suffix = qs ? `?${qs}` : "";
 
-  const { lang, rest } = useMemo(() => stripLangPrefix(pathname), [pathname]);
+  const hasPrefix = useMemo(() => pathHasLangPrefix(pathname), [pathname]);
+  const { lang: pathLang, rest } = useMemo(() => stripLangPrefix(pathname), [pathname]);
+  const activeLang = hasPrefix ? pathLang : serverLang ?? pathLang;
 
   const changeLang = (code: Lang) => {
-    const nextPath = `/${code}${rest === "/" ? "" : rest}${suffix}`;
-    router.push(nextPath);
+    if (hasPrefix) {
+      const nextPath = `/${code}${rest === "/" ? "" : rest}${suffix}`;
+      router.push(nextPath);
+      return;
+    }
+    document.cookie = `${LANG_COOKIE}=${code}; Path=/; Max-Age=${COOKIE_MAX_AGE_SEC}; SameSite=Lax`;
+    router.refresh();
   };
 
   return (
@@ -44,11 +68,11 @@ export default function LanguageBar() {
               type="button"
               onClick={() => changeLang(l.code)}
               className={`px-3 py-1 text-sm font-medium transition ${
-                lang === l.code
+                activeLang === l.code
                   ? "bg-blue-600 text-white"
                   : "text-gray-600 hover:text-blue-600"
               }`}
-              aria-current={lang === l.code ? "true" : undefined}
+              aria-current={activeLang === l.code ? "true" : undefined}
             >
               {l.label}
             </button>

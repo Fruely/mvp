@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import { Suspense } from "react";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import LanguageBar from "@/components/LanguageBar";
 import { FOR_SPECIALISTS_COPY } from "./copy";
 import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
 
@@ -30,6 +32,9 @@ export default async function ForSpecialistsPage() {
 
   return (
     <>
+      <Suspense fallback={<div className="h-9 border-b border-gray-100 bg-white/40" />}>
+        <LanguageBar serverLang={lang} />
+      </Suspense>
       <Header lang={lang} dict={dict} />
       <main className="min-h-screen bg-white text-gray-900">
         {/* Hero */}
