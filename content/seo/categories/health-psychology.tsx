@@ -119,7 +119,7 @@ function De({ lang }: { lang: string }): ReactNode {
         <p className="mt-3">
           Psychologische Unterst&uuml;tzung, Coaching und Beratung sind besonders wertvoll, wenn Sie mit einem
           Spezialisten in Ihrer Muttersprache sprechen k&ouml;nnen. Auf Freuly finden Sie{" "}
-          <Link href={`/${lang}/search?category=psychologists`} className="text-blue-600 hover:underline">
+          <Link href={`/${lang}/category/psychologists`} className="text-blue-600 hover:underline">
             Psychologen
           </Link>
           , Coaches und Berater, die Ukrainisch, Russisch und Deutsch sprechen.
@@ -130,7 +130,7 @@ function De({ lang }: { lang: string }): ReactNode {
         <p className="mt-3">
           Ob Krisenbew&auml;ltigung, Stressmanagement oder pers&ouml;nliche Entwicklung &mdash; die passende
           fachliche Begleitung kann den Unterschied machen. Nutzen Sie die Suche nach{" "}
-          <Link href={`/${lang}/search?category=psychologists`} className="text-blue-600 hover:underline">
+          <Link href={`/${lang}/category/psychologists`} className="text-blue-600 hover:underline">
             Psychologen
           </Link>{" "}
           und verwandten Angeboten, um Profile zu vergleichen und Kontakt aufzunehmen.
@@ -157,7 +157,7 @@ function Ru({ lang }: { lang: string }): ReactNode {
         </h2>
         <p className="mt-3">
           {"\u041f\u0441\u0438\u0445\u043e\u043b\u043e\u0433\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u043f\u043e\u043c\u043e\u0449\u044c \u0438 \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u043a\u0430. \u041d\u0430 Freuly \u0432\u044b \u043d\u0430\u0439\u0434\u0451\u0442\u0435 "}
-          <Link href={`/${lang}/search?category=psychologists`} className="text-blue-600 hover:underline">
+          <Link href={`/${lang}/category/psychologists`} className="text-blue-600 hover:underline">
             {"\u043f\u0441\u0438\u0445\u043e\u043b\u043e\u0433\u043e\u0432"}
           </Link>
           {" \u0438 \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442\u043e\u0432, \u043a\u043e\u0442\u043e\u0440\u044b\u0435 \u0433\u043e\u0432\u043e\u0440\u044f\u0442 \u043d\u0430 \u0432\u0430\u0448\u0435\u043c \u044f\u0437\u044b\u043a\u0435."}
@@ -169,7 +169,7 @@ function Ru({ lang }: { lang: string }): ReactNode {
         </h2>
         <p className="mt-3">
           {"\u0418\u043d\u0434\u0438\u0432\u0438\u0434\u0443\u0430\u043b\u044c\u043d\u044b\u0439 \u043f\u043e\u0434\u0445\u043e\u0434 \u043f\u043e\u043c\u043e\u0433\u0430\u0435\u0442 \u043f\u0440\u0438 \u0441\u0442\u0440\u0435\u0441\u0441\u0435, \u043f\u0435\u0440\u0435\u0435\u0437\u0434\u0435 \u0438\u043b\u0438 \u043f\u043e\u0438\u0441\u043a\u0435 \u0431\u0430\u043b\u0430\u043d\u0441\u0430. \u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0439\u0442\u0435 \u043f\u043e\u0438\u0441\u043a \u043f\u043e "}
-          <Link href={`/${lang}/search?category=psychologists`} className="text-blue-600 hover:underline">
+          <Link href={`/${lang}/category/psychologists`} className="text-blue-600 hover:underline">
             {"\u043f\u0441\u0438\u0445\u043e\u043b\u043e\u0433\u0430\u043c"}
           </Link>
           {" \u0434\u043b\u044f \u0432\u044b\u0431\u043e\u0440\u0430 \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442\u0430."}
@@ -188,7 +188,7 @@ function Ua({ lang }: { lang: string }): ReactNode {
         </h2>
         <p className="mt-3">
           {"\u041f\u0441\u0438\u0445\u043e\u043b\u043e\u0433\u0456\u0447\u043d\u0430 \u043f\u0456\u0434\u0442\u0440\u0438\u043c\u043a\u0430. \u041d\u0430 Freuly \u0432\u0438 \u0437\u043d\u0430\u0439\u0434\u0435\u0442\u0435 "}
-          <Link href={`/${lang}/search?category=psychologists`} className="text-blue-600 hover:underline">
+          <Link href={`/${lang}/category/psychologists`} className="text-blue-600 hover:underline">
             {"\u043f\u0441\u0438\u0445\u043e\u043b\u043e\u0433\u0456\u0432"}
           </Link>
           {" \u0442\u0430 \u043a\u043e\u0443\u0447\u0456\u0432, \u044f\u043a\u0456 \u0440\u043e\u0437\u043c\u043e\u0432\u043b\u044f\u044e\u0442\u044c \u0432\u0430\u0448\u043e\u044e \u043c\u043e\u0432\u043e\u044e."}
@@ -200,7 +200,7 @@ function Ua({ lang }: { lang: string }): ReactNode {
         </h2>
         <p className="mt-3">
           {"\u0406\u043d\u0434\u0438\u0432\u0456\u0434\u0443\u0430\u043b\u044c\u043d\u0438\u0439 \u043f\u0456\u0434\u0445\u0456\u0434 \u0434\u043e\u043f\u043e\u043c\u0430\u0433\u0430\u0454 \u043f\u0440\u0438 \u0441\u0442\u0440\u0435\u0441\u0456 \u0442\u0430 \u043f\u0435\u0440\u0435\u0437\u0430\u0432\u0430\u043d\u0442\u0430\u0436\u0435\u043d\u043d\u0456. \u0412\u0438\u043a\u043e\u0440\u0438\u0441\u0442\u043e\u0432\u0443\u0439\u0442\u0435 \u043f\u043e\u0448\u0443\u043a "}
-          <Link href={`/${lang}/search?category=psychologists`} className="text-blue-600 hover:underline">
+          <Link href={`/${lang}/category/psychologists`} className="text-blue-600 hover:underline">
             {"\u043f\u0441\u0438\u0445\u043e\u043b\u043e\u0433\u0456\u0432"}
           </Link>
           {" \u0434\u043b\u044f \u0432\u0438\u0431\u043e\u0440\u0443 \u0441\u043f\u0435\u0446\u0456\u0430\u043b\u0456\u0441\u0442\u0430."}

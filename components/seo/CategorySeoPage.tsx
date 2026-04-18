@@ -76,7 +76,7 @@ export default function CategorySeoPage({
           {subcategories.map((sub) => (
             <Link
               key={sub.slug}
-              href={`/${lang}/search?category=${sub.slug}`}
+              href={`/${lang}/category/${sub.slug}`}
               className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-800 transition-shadow hover:shadow-md"
             >
               {lbl(sub, lang)}
@@ -143,7 +143,7 @@ export default function CategorySeoPage({
         <h2 className="text-xl font-semibold text-gray-900">{copy.ctaHeading}</h2>
         <p className="mx-auto mt-2 max-w-md text-gray-600">{copy.ctaText}</p>
         <Link
-          href={`/${lang}/search?category=${slug}`}
+          href={`/${lang}/category/${slug}`}
           className="mt-5 inline-flex h-12 items-center justify-center rounded-xl bg-teal-600 px-8 text-base font-semibold text-white transition hover:bg-teal-700"
         >
           {copy.ctaButton}
