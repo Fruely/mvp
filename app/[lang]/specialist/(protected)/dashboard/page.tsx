@@ -175,6 +175,14 @@ export default async function SpecialistDashboardHomePage({
     !leadsTotalError && typeof leadsTotal === "number" ? leadsTotal : null;
   const leadsNewSafe = !leadsNewError && typeof leadsNewCount === "number" ? leadsNewCount : null;
 
+  const { count: profileViewsCount, error: profileViewsError } = await service
+    .from("profile_view_events")
+    .select("id", { count: "exact", head: true })
+    .eq("specialist_id", specialist.id);
+
+  const profileViewsTotalSafe =
+    !profileViewsError && typeof profileViewsCount === "number" ? profileViewsCount : null;
+
   const hasPhoto =
     typeof profileRow?.photo_url === "string" && profileRow.photo_url.trim().length > 0;
   const hasAboutMe =
@@ -385,6 +393,23 @@ export default async function SpecialistDashboardHomePage({
           </Link>
         </section>
       </div>
+
+      <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h2 className="text-base font-semibold text-gray-900">
+          {t(dict, "dashboard.home.profileViews.title")}
+        </h2>
+        <div className="mt-3 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-3">
+          <p className="text-3xl font-semibold tabular-nums text-gray-900">
+            {profileViewsTotalSafe !== null ? profileViewsTotalSafe : "—"}
+          </p>
+          <p className="text-sm text-gray-600">
+            {t(dict, "dashboard.home.profileViews.totalLabel")}
+          </p>
+        </div>
+        <p className="mt-2 text-xs text-gray-500">
+          {t(dict, "dashboard.home.profileViews.hint")}
+        </p>
+      </section>
 
       <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <h2 className="text-base font-semibold text-gray-900">
