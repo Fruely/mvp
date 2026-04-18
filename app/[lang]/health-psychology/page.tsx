@@ -2,26 +2,20 @@ import { isSupportedLang, type Lang } from "@/lib/i18n";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
-import CategorySeoPage from "@/components/seo/CategorySeoPage";
-import {
-  SLUG,
-  FILTER_OR,
-  META,
-  SUBCATEGORIES,
-  CROSS_LINKS,
-  SeoContent,
-} from "@/content/seo/categories/health-psychology";
+import CategoryContentPage from "@/components/seo/CategoryContentPage";
+import { healthPsychologyContent } from "@/content/seo/v2/health-psychology.content";
 
 export const dynamic = "force-dynamic";
 
 const DOMAIN = process.env.APP_URL || "https://freuly.de";
+const SLUG = healthPsychologyContent.slug;
 
 export async function generateMetadata({ params }: { params: { lang: string } }) {
   const lang = isSupportedLang(params.lang) ? (params.lang as Lang) : "de";
-  const m = META[lang];
+  const c = healthPsychologyContent.content[lang];
   return {
-    title: m.metaTitle,
-    description: m.metaDescription,
+    title: c.metaTitle,
+    description: c.metaDescription,
     alternates: {
       canonical: `${DOMAIN}/${lang}/${SLUG}`,
       languages: {
@@ -49,18 +43,14 @@ export default async function HealthPsychologyPage({
     .eq("is_active", true)
     .eq("is_visible", true)
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
-    .or(FILTER_OR)
+    .or(healthPsychologyContent.filterOr ?? "")
     .limit(12);
 
   return (
-    <CategorySeoPage
+    <CategoryContentPage
       lang={lang}
-      slug={SLUG}
-      copy={META[lang]}
-      subcategories={SUBCATEGORIES}
-      crossLinks={CROSS_LINKS}
+      content={healthPsychologyContent.content[lang]}
       specialists={data ?? []}
-      seoContent={<SeoContent lang={lang} />}
     />
   );
 }
