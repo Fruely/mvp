@@ -2,13 +2,6 @@ import type { LocalizedSeoCategory } from "@/lib/seo/content";
 
 /**
  * Parent category page for the Freuly SEO layer: "pflege-betreuung" hub.
- *
- * Role: umbrella page for care and everyday-assistance services in Germany
- * – senior care, home nursing, everyday help, childcare, housekeeping and
- * accompaniment. It explains the boundaries between those formats and how
- * to choose a caregiver who actually speaks the family's language.
- *
- * Routed at: `/{lang}/pflege-betreuung` (see `app/[lang]/pflege-betreuung/page.tsx`).
  */
 export const pflegeBetreuungContent: LocalizedSeoCategory = {
   slug: "pflege-betreuung",
@@ -22,145 +15,150 @@ export const pflegeBetreuungContent: LocalizedSeoCategory = {
       parentSlug: null,
       locale: "de",
       categoryType: "parent",
-      metaTitle: "Pflege & Betreuung in Deutschland – Pflegekräfte in Ihrer Sprache | Freuly",
+      metaTitle:
+        "Pflege & Betreuung in Deutschland: Formate verstehen, Hilfe finden | Freuly",
       metaDescription:
-        "Seniorenbetreuung, Krankenpflege, Alltagshilfe und Begleitung in Deutschland. Freuly verbindet Familien mit Pflegepersonen, die Ukrainisch, Russisch oder Deutsch sprechen.",
-      h1: "Pflege & Betreuung in Deutschland – Hilfe in der Sprache der Familie",
+        "Seniorenbetreuung, Krankenpflege zu Hause, Alltagshilfe, Kinderbetreuung und Begleitdienste: wie Sie Bedarf von Qualifikation trennen, warum Sprache in der Pflege kritisch ist, und wie Sie auf Freuly konkrete Personen vergleichen — ohne Kassen- oder Rechtsversprechen der Plattform.",
+      h1: "Pflege & Betreuung — zuerst Aufgaben klären, dann Menschen wählen",
       breadcrumbsLabel: "Pflege & Betreuung",
       homeLabel: "Startseite",
       intro: [
-        "Pflege und Betreuung betrifft früher oder später viele Familien: ein älter werdender Elternteil, eine Erkrankung, ein Unfall oder schlicht der Wunsch, den Alltag zu Hause weiter zu ermöglichen.",
-        "Die eigentliche Frage ist selten „Pflege ja oder nein?“, sondern „welches Format passt heute?“ – und wie findet man eine Person, die nicht nur qualifiziert ist, sondern auch wirklich verstanden wird, wenn es um Medikamente, Schmerzen oder Ängste geht.",
+        "Diese Seite richtet sich an Familien und Einzelpersonen, die Unterstützung im Alltag oder bei Gesundheitsthemen zu Hause suchen — nicht an alle Lebenslagen gleichzeitig, aber mit dem Bedarf, Formate auseinanderzuhalten, bevor Verträge oder Stundenläufe beginnen.",
+        "Im Unterschied zu allgemeinen Gesundheits- oder Reisethemen auf Freuly geht es hier um konkrete physische Präsenz: einkaufen, begleiten, Grundleistungen der Pflege oder fachlich geregelte Tätigkeiten — je nach Profil.",
+        "Unten sehen Sie eine Auswahl sichtbarer Profile; die Feinfilterung erfolgt in den Pflegekategorien.",
       ],
-      subcategoriesTitle: "Welche Formate gibt es?",
+      subcategoriesTitle: "Welches Unterformat passt zu welchem Bedarf?",
       subcategories: [
         {
           slug: "seniorenbetreuung",
           label: "Seniorenbetreuung",
           description:
-            "Stundenweise oder regelmäßige Begleitung im Alltag, Körperpflege, Gesellschaft und emotionale Unterstützung.",
+            "Wenn Gesellschaft, Orientierung im Tag und einfache Hilfen im Haushalt im Vordergrund stehen — oft ohne klinische Pflegehandlungen.",
         },
         {
           slug: "krankenpflege",
           label: "Krankenpflege",
           description:
-            "Fachlich qualifizierte Pflege zu Hause, zum Beispiel Medikamentengabe, Wundversorgung und Absprachen mit behandelnden Ärzten.",
+            "Wenn Dosierungen, Wunden, Abstimmung mit Ärztinnen nötig sind — nur mit entsprechender Qualifikation.",
         },
         {
           slug: "alltagshilfe",
           label: "Alltagshilfe",
           description:
-            "Unterstützung beim Einkaufen, Kochen, Begleitung zu Terminen und leichten Tätigkeiten im Haushalt – ohne medizinische Aufgaben.",
+            "Wenn Einkaufen, leichte Hausarbeit und Begleitung reichen — bewusst nicht-medizinisch.",
         },
         {
           slug: "kinderbetreuung",
           label: "Kinderbetreuung",
           description:
-            "Regelmäßige oder gelegentliche Betreuung von Kindern in der vertrauten Sprache der Familie.",
+            "Wenn verlässliche Erwachsene auf Deutsch, Ukrainisch oder Russisch gesucht werden — klar im Profil abfragen.",
         },
         {
           slug: "haushaltshilfe",
           label: "Haushaltshilfe",
           description:
-            "Reinigung, Wäsche und Ordnung halten im Haushalt, passend zur aktuellen Lebenssituation.",
+            "Wenn Hygiene im Raum Thema ist, nicht primär Menschen am Bett.",
         },
         {
           slug: "begleitdienst",
           label: "Begleitdienst",
           description:
-            "Begleitung zu Arztbesuchen, Behörden oder Spaziergängen – besonders wichtig, wenn Deutschkenntnisse eingeschränkt sind.",
+            "Wenn Arzt- oder Behördentermine mit Sprachunterstützung gescheitert wären — ohne dass die Person klinisch eingreifen muss.",
         },
       ],
       sections: [
         {
-          heading: "Wie unterscheiden sich Seniorenbetreuung, Krankenpflege und Alltagshilfe?",
+          heading: "Formate kombinieren stärker als ein Monolith",
           body: [
-            "Seniorenbetreuung ist breit: Begleitung, Gesellschaft, Grundpflege und Unterstützung im Alltag. Krankenpflege setzt eine Fachausbildung voraus und übernimmt medizinische Aufgaben. Alltagshilfe ist bewusst nicht-medizinisch und entlastet im täglichen Leben.",
-            "In vielen Familien kombiniert sich das: eine Pflegefachkraft kommt stundenweise, eine Alltagshilfe übernimmt Einkäufe und Gesellschaft, Angehörige tragen den emotionalen Teil. Die richtige Kombination spart Ressourcen und schützt vor Überlastung.",
+            "Realitätsnah: eine Fachkraft für medizinische Handgriffe, eine andere für Einkauf und Gespräch — plus Familienressourcen. Die Seite hilft, nicht alles einer Rolle zu überladen.",
+            "Wenn unsicher: kurz beschreiben, was täglich schiefgeht (Medikamente? Mobilität? Isolation?), dann zeigen Profile klarer, ob sie zuständig sind.",
           ],
         },
         {
-          heading: "Warum spielt die Sprache in der Pflege eine besondere Rolle?",
+          heading: "Warum Sprache nicht „Komfort“, sondern Risiko reduziert",
           bullets: [
-            "Bei Demenz, Schmerzen oder akuten Krisen greifen Menschen fast immer auf die Erst- oder Muttersprache zurück.",
-            "Missverständnisse in Medikamenten, Mengen oder Dosierungen sind das häufigste Risiko in der häuslichen Pflege.",
-            "Vertrauen zu einer fremden Person entsteht schneller, wenn sie kulturelle Gewohnheiten, Feste und Umgangsformen kennt.",
-            "Bei Behörden- oder Arztterminen ersetzt eine mehrsprachige Begleitung oft einen professionellen Dolmetscher.",
+            "Dosierungsdialoge, Schmerzbeschreibungen und Demenz brauchen vertraute Wörter.",
+            "Missverständnisse entstehen bei Zeitdruck oft bei Zahlen und Einheiten.",
+            "Vertrauen gegenüber einer fremden Person wächst, wenn Alltagskultur nicht erklärt werden muss.",
           ],
         },
         {
-          heading: "Gesetzliche Leistungen und was Freuly ergänzt",
-          body: "Pflege in Deutschland ist gut reguliert: Pflegekasse, Pflegegrad, Sachleistungen und Entlastungsbetrag sind die bekannten Stichworte. Freuly ersetzt diese Leistungen nicht. Wir ergänzen sie, indem wir Sie mit konkreten Personen verbinden – und zwar so, dass Sie in Ihrer Sprache klar besprechen können, welche Hilfe wirklich gebraucht wird.",
+          heading: "Leistungsrecht und Freuly",
+          body: "Pflegegrad, Pflegekasse und Entlastungsbudget sind deutsche Regelwerke — Freuly ersetzt keine Sachbearbeitung und garantiert keine Bewilligung. Die Plattform vermittelt Menschen, deren Sprache und Kompetenzen Sie im Steckbrief prüfen.",
         },
         {
-          heading: "Wie wähle ich die richtige Pflege- oder Betreuungsperson?",
+          heading: "Vor-Ort first — digital nur ergänzend",
           bullets: [
-            "Bedarf zuerst klären: Welche Aufgaben sollen wirklich übernommen werden, welche bleiben bei der Familie?",
-            "Sprache und Qualifikation passend zum Bedarf auswählen – Alltagshilfe braucht anderes als Wundversorgung.",
-            "Zwei bis drei Profile auf Freuly vergleichen und ein kurzes Kennenlernen vereinbaren, gerne auch per Video.",
-            "Arbeitszeiten, Vertretungsmöglichkeiten und Erreichbarkeit offen besprechen.",
-            "Nach Erfahrung mit Demenz, Mobilitätseinschränkungen oder chronischen Erkrankungen fragen.",
+            "Hausbesuche und Begleitung passieren physisch.",
+            "Video kann Erstkontakt oder Abstimmung mit entfernten Angehörigen erleichtern — ersetzt aber keine Hilfe vor Ort.",
           ],
         },
         {
-          heading: "Vor Ort, mobil oder digital?",
-          body: "Pflege ist in ihrem Kern eine Vor-Ort-Aufgabe. Digitale Begleitung kann sie nicht ersetzen, aber ergänzen – etwa durch kurze Video-Check-ins mit weiter entfernt lebenden Angehörigen oder durch Online-Beratung vor der Auswahl einer Person. Freuly ermöglicht beides.",
+          heading: "Erste Nachricht an eine Pflegeperson",
+          body: "Alter der betroffenen Person, Sprachbedarf, welche Tätigkeiten explizit nötig sind, welche Wochentage realistisch sind — kurz, aber konkret. So lässt sich Fit eher beurteilen als mit „Wir brauchen Hilfe“ allein.",
+        },
+        {
+          heading: "So navigieren Sie auf Freuly",
+          body: "Kacheln oben zeigen Richtungen; Profilvergleich mit identischem Briefing an zwei bis drei Personen spart Missverständnisse. Kein Ergebnis ist medizinisch zugesichert — Entscheidungen treffen Sie weiterhin mit ärztlicher Begleitung, wo nötig.",
         },
       ],
-      specialistsTitle: "Verfügbare Pflege- und Betreuungspersonen",
+      specialistsTitle: "Pflege- und Betreuungspersonen (Auswahl)",
       specialistsEmpty:
         "Sobald passende Pflege- und Betreuungspersonen auf Freuly registriert sind, erscheinen sie hier.",
-      faqTitle: "Häufige Fragen zu Pflege und Betreuung",
+      faqTitle: "Häufige Fragen",
       faq: [
         {
-          question: "Brauche ich einen Pflegegrad, um jemanden über Freuly zu finden?",
+          question: "Brauche ich einen Pflegegrad für Freuly?",
           answer:
-            "Nein. Freuly ist ein Verzeichnis von Pflege- und Betreuungspersonen und nicht an einen konkreten Pflegegrad gebunden. Einen Pflegegrad brauchen Sie nur, wenn Sie Leistungen über die Pflegekasse abrechnen möchten.",
-        },
-        {
-          question: "Worauf achte ich besonders bei Demenz?",
-          answer:
-            "Bei Demenz ist Sprache entscheidend: der vertraute Wortschatz beruhigt, fördert Orientierung und reduziert Aggression. Eine Pflegekraft, die die Muttersprache spricht, ist hier nicht Komfort, sondern Qualität.",
+            "Nein für die Suche — ja, wenn Sie Leistungen über die Pflegekasse laufen lassen wollen; das klären Sie außerhalb der Plattform mit Kasse und Beratung.",
         },
         {
           question: "Was ist der Unterschied zwischen Alltagshilfe und Krankenpflege?",
           answer:
-            "Alltagshilfe übernimmt nicht-medizinische Aufgaben wie Einkäufe, Begleitung und leichte Hausarbeit. Krankenpflege wird von Fachkräften geleistet und umfasst medizinische Leistungen wie Medikamentengabe, Wundversorgung oder Injektionen.",
+            "Alltagshilfe bleibt bei nicht-medizinischen Aufgaben; Krankenpflege setzt eine entsprechende Ausbildung und ggf. delegierte ärztliche Aufgaben voraus.",
         },
         {
-          question: "Kann Freuly auch für stundenweise Unterstützung genutzt werden?",
+          question: "Demenz: warum Muttersprache wichtiger als Akzentfreiheit?",
           answer:
-            "Ja. Viele Angebote sind explizit stundenweise gedacht, zum Beispiel für Arztbegleitung, Einkaufshilfe oder regelmäßige Gesellschaft. Die genauen Konditionen stehen im jeweiligen Profil.",
+            "Vertraute Wörter beruhigen und helfen, Anweisungen zu verstehen — das ist mehr als „nett auf Deutsch sprechen“.",
         },
         {
-          question: "Was kostet Pflege über Freuly?",
+          question: "Stundenweise möglich?",
           answer:
-            "Die Preise hängen von Qualifikation, Umfang und Region ab und werden von den Anbietenden selbst angegeben. Freuly ist dabei Vermittler, nicht Arbeitgeber – konkrete Konditionen klären Sie direkt mit der Person.",
+            "Viele Profile bieten genau das — Lesen Sie Kapazität und Vertretung im Steckbrief.",
+        },
+        {
+          question: "Preise?",
+          answer:
+            "Regional und nach Qualifikation unterschiedlich — direkt mit dem Anbieter klären; Freuly ist nicht Arbeitgeber.",
         },
       ],
-      relatedTitle: "Verwandte Freuly-Seiten",
+      relatedTitle: "Verwandte Bereiche",
       relatedLinks: [
         {
           href: "health-psychology",
-          label: "Psychologie, Therapie & Coaching",
+          label: "Psychologie & Gesundheit",
           description:
-            "Für pflegende Angehörige selbst – wenn die emotionale Belastung hoch wird.",
+            "Wenn pflegende Angehörige selbst entlastet werden müssen — kein Ersatz für Pflegekraft.",
         },
         {
           href: "cleaning",
           label: "Reinigung",
-          description: "Wenn vor allem regelmäßige Haushaltsunterstützung nötig ist.",
+          description:
+            "Wenn primär Staub und Wäsche drängen, nicht Menschenpflege.",
         },
         {
           href: "housemaster",
           label: "Hausmeister & Handwerk",
-          description: "Praktische Hilfe rund um Wohnung und Haus, ergänzend zur Pflege.",
+          description:
+            "Technische Hilfen neben Betreuung — andere Kompetenz.",
         },
       ],
       cta: {
-        heading: "Suchen Sie Unterstützung, die wirklich verstanden wird?",
-        body: "Finden Sie auf Freuly Pflege- und Betreuungspersonen, die die Sprache Ihrer Familie sprechen.",
-        buttonLabel: "Pflegekräfte ansehen",
+        heading: "Pflegeprofile in der Kategorie öffnen",
+        body: "Start mit Seniorenbetreuung, dann nach Qualifikation verfeinern.",
+        buttonLabel: "Kategorie Seniorenbetreuung",
+        ctaHref: "/de/category/seniorenbetreuung",
       },
     },
     ru: {
@@ -168,144 +166,146 @@ export const pflegeBetreuungContent: LocalizedSeoCategory = {
       parentSlug: null,
       locale: "ru",
       categoryType: "parent",
-      metaTitle: "Уход и сопровождение в Германии – специалисты, говорящие с вами на одном языке | Freuly",
+      metaTitle:
+        "Уход и сопровождение в Германии: форматы и поиск помощи | Freuly",
       metaDescription:
-        "Уход за пожилыми, медицинский уход на дому, помощь в быту и сопровождение в Германии. Freuly помогает найти специалистов, говорящих на русском, украинском или немецком.",
-      h1: "Уход и сопровождение в Германии — помощь на языке семьи",
+        "Поиск специалистов по уходу на дому: чем отличаются быт, сестринские задачи и сопровождение; почему язык — это безопасность; как писать первое сообщение — без обещаний страховки от Freuly.",
+      h1: "Уход и сопровождение — сначала задачи, потом роль",
       breadcrumbsLabel: "Уход и сопровождение",
       homeLabel: "Главная",
       intro: [
-        "Тема ухода и сопровождения рано или поздно появляется во многих семьях: пожилой родственник, болезнь, травма или просто желание сохранить привычную жизнь дома.",
-        "Чаще всего вопрос не в том, нужен ли уход, а в том, какой формат подходит сейчас — и как найти человека, которого действительно понимают, когда речь идёт о лекарствах, боли или страхе.",
+        "Страница для тех, кому нужна регулярная поддержка дома: пожилой человек, послеоперационный период или перегруженная семья — с разделением «что отдать специалисту» и «что оставить себе».",
+        "Это не универсальный текст «о здоровье» и не туризм: упор на практические часы рядом с человеком.",
+        "Ниже — примеры профилей; фильтры — в категориях.",
       ],
-      subcategoriesTitle: "Какие форматы ухода бывают",
+      subcategoriesTitle: "Что выбрать по ситуации",
       subcategories: [
         {
           slug: "seniorenbetreuung",
           label: "Уход за пожилыми",
           description:
-            "Почасовое или регулярное сопровождение, базовый уход за телом, общение и эмоциональная поддержка.",
+            "Общение, быт, прогулки — без сложных процедур.",
         },
         {
           slug: "krankenpflege",
           label: "Медицинский уход",
           description:
-            "Квалифицированный уход на дому: раздача лекарств, обработка ран, согласование с лечащими врачами.",
+            "Когда нужны компетенции сестры и связь с врачом.",
         },
         {
           slug: "alltagshilfe",
           label: "Помощь в быту",
           description:
-            "Покупки, готовка, сопровождение на приёмы, лёгкая уборка — без медицинских задач.",
+            "Магазины, лёгкая уборка — без медзадач.",
         },
         {
           slug: "kinderbetreuung",
           label: "Присмотр за детьми",
           description:
-            "Регулярный или разовый присмотр за детьми на языке семьи.",
+            "Язык и график — в профиле.",
         },
         {
           slug: "haushaltshilfe",
           label: "Домашняя помощь",
           description:
-            "Уборка, стирка, поддержание порядка — под текущие потребности семьи.",
+            "Если грязь в квартире давит сильнее ухода за человеком.",
         },
         {
           slug: "begleitdienst",
           label: "Сопровождение",
           description:
-            "Сопровождение в больницу, ведомства или на прогулки — особенно важно, когда немецкий язык ограничен.",
+            "Визиты к врачу и в инстанции при слабом немецком.",
         },
       ],
       sections: [
         {
-          heading: "Чем отличаются уход за пожилыми, медицинский уход и помощь в быту",
+          heading: "Комбинировать роли",
           body: [
-            "Уход за пожилыми — это широкий спектр задач: сопровождение, общение, базовая гигиена и помощь в повседневных действиях. Медицинский уход выполняется квалифицированным персоналом и включает клинические процедуры. Помощь в быту сознательно не медицинская — это разгрузка повседневности.",
-            "Во многих семьях эти форматы сочетаются: медсестра приходит почасово, помощник занимается покупками и компанией, близкие берут на себя эмоциональную часть. Грамотное сочетание экономит силы и снижает риск выгорания.",
+            "Часто нужна связка «медсестра X часов + помощник по магазину» — это нормально описать прямо.",
+            "Freuly не ставит диагнозы и не подтверждает льготы Pflegekasse.",
           ],
         },
         {
-          heading: "Почему язык так важен именно в уходе",
+          heading: "Язык и безопасность",
           bullets: [
-            "При деменции, сильной боли или остром стрессе человек почти всегда переходит на родной язык.",
-            "Ошибки в дозировках лекарств чаще всего возникают из-за недопонимания, а не из-за небрежности.",
-            "Доверие формируется быстрее, если специалист понимает привычки, праздники и бытовой контекст.",
-            "На приёмах у врачей и в ведомствах двуязычный сопровождающий часто заменяет профессионального переводчика.",
+            "Лекарства и боль — темы, где ошибки дороже, чем «удобный разговор».",
+            "Деменция сильнее реагирует на привычные слова.",
           ],
         },
         {
-          heading: "Государственные услуги и что добавляет Freuly",
-          body: "Система ухода в Германии регулируется законом: Pflegekasse, Pflegegrad, натуральные услуги и Entlastungsbetrag — ключевые понятия. Freuly не заменяет эти структуры. Мы помогаем найти конкретного человека и обсудить с ним детали на вашем языке, чтобы вы действительно понимали, какая помощь нужна.",
+          heading: "Госструктуры",
+          body: "Pflegegrad и выплаты — вне платформы; здесь поиск людей.",
         },
         {
-          heading: "Как выбрать сотрудника по уходу",
+          heading: "Очно и онлайн",
           bullets: [
-            "Сначала определите, какие задачи действительно нужно отдать, а какие останутся у семьи.",
-            "Выберите уровень квалификации под задачи: помощь в быту и обработка ран — это не одно и то же.",
-            "Сравните два–три профиля на Freuly и запланируйте короткое знакомство, можно по видеосвязи.",
-            "Открыто обсудите график, замены и способы связи.",
-            "Уточните опыт работы с деменцией, ограничениями по движению или хроническими заболеваниями.",
+            "Основной объём — дома или в дороге к врачу.",
+            "Звонок может помочь в подборе, не заменяя визит.",
           ],
         },
         {
-          heading: "Очно, с выездом или онлайн",
-          body: "Уход по своей сути — это работа рядом с человеком. Онлайн не заменяет её, но дополняет: видеосозвоны с родственниками, которые живут далеко, или короткая онлайн-консультация перед выбором специалиста. На Freuly возможно и то, и другое.",
+          heading: "Первое сообщение",
+          body: "Кто получает помощь, язык, какие задачи ежедневно, график — минимум для ответа «берусь/нет».",
+        },
+        {
+          heading: "Freuly",
+          body: "Сопоставляет профили; не гарантирует исход лечения.",
         },
       ],
-      specialistsTitle: "Доступные специалисты по уходу",
+      specialistsTitle: "Специалисты (примеры)",
       specialistsEmpty:
         "Когда в этой категории появятся подходящие специалисты на Freuly, они отобразятся здесь.",
-      faqTitle: "Частые вопросы об уходе и сопровождении",
+      faqTitle: "Частые вопросы",
       faq: [
         {
-          question: "Нужен ли Pflegegrad, чтобы найти специалиста через Freuly",
+          question: "Нужен ли Pflegegrad?",
           answer:
-            "Нет. Freuly — это каталог специалистов, и его использование не зависит от официального Pflegegrad. Pflegegrad нужен, если вы хотите оплачивать часть услуг через Pflegekasse.",
+            "Не для поиска на Freuly; для компенсаций через кассу — по правилам DE.",
         },
         {
-          question: "На что особенно обратить внимание при деменции",
+          question: "Быт против медухода?",
           answer:
-            "При деменции язык играет клиническую роль: привычный словарь успокаивает, поддерживает ориентацию и снижает агрессию. Специалист, говорящий на родном языке, — это не комфорт, а показатель качества ухода.",
+            "Разные компетенции — не смешивайте задачи без проверки профиля.",
         },
         {
-          question: "В чём разница между помощью в быту и медицинским уходом",
+          question: "Деменция и язык?",
           answer:
-            "Помощь в быту — немедицинские задачи: покупки, сопровождение, лёгкая работа по дому. Медицинский уход выполняется квалифицированным персоналом и включает процедуры вроде перевязок, инъекций или раздачи лекарств.",
+            "Родной язык снижает тревогу и ошибки.",
         },
         {
-          question: "Можно ли найти специалиста на несколько часов в неделю",
+          question: "Почасово?",
           answer:
-            "Да. Многие специалисты работают почасово: сопровождение на приём, помощь с покупками, регулярное общение. Конкретные условия указаны в профиле.",
+            "Часто да — смотрите профиль.",
         },
         {
-          question: "Сколько стоит уход через Freuly",
+          question: "Цена?",
           answer:
-            "Цены зависят от квалификации, объёма услуг и региона и указываются самими специалистами. Freuly — это площадка-посредник, а не работодатель. Все условия обсуждаются напрямую со специалистом.",
+            "Напрямую со специалистом.",
         },
       ],
-      relatedTitle: "Смежные разделы Freuly",
+      relatedTitle: "Смежные разделы",
       relatedLinks: [
         {
           href: "health-psychology",
-          label: "Психология, терапия и коучинг",
-          description: "Для тех, кто сам ухаживает — когда эмоциональная нагрузка становится высокой.",
+          label: "Психология",
+          description: "Для выгорания уходящих.",
         },
         {
           href: "cleaning",
           label: "Уборка",
-          description: "Если нужна прежде всего регулярная помощь по хозяйству.",
+          description: "Если грязь — главная боль.",
         },
         {
           href: "housemaster",
           label: "Мастер на дом",
-          description: "Практическая помощь по дому, в дополнение к уходу.",
+          description: "Техника рядом с уходом.",
         },
       ],
       cta: {
-        heading: "Нужна поддержка, которую действительно понимают?",
-        body: "Найдите на Freuly специалистов по уходу, говорящих на языке вашей семьи.",
-        buttonLabel: "Посмотреть специалистов",
+        heading: "Категория ухода за пожилыми",
+        body: "Старт фильтра — дальше уточнение по квалификации.",
+        buttonLabel: "Открыть",
+        ctaHref: "/ru/category/seniorenbetreuung",
       },
     },
     ua: {
@@ -313,145 +313,140 @@ export const pflegeBetreuungContent: LocalizedSeoCategory = {
       parentSlug: null,
       locale: "ua",
       categoryType: "parent",
-      metaTitle: "Догляд і супровід у Німеччині – спеціалісти, які говорять з вами однією мовою | Freuly",
+      metaTitle:
+        "Догляд і супровід у Німеччині: формати та пошук допомоги | Freuly",
       metaDescription:
-        "Догляд за літніми, медичний догляд удома, побутова допомога і супровід у Німеччині. Freuly допомагає знайти фахівців, які говорять українською, російською або німецькою.",
-      h1: "Догляд і супровід у Німеччині — допомога мовою родини",
+        "Допомога вдома: чим відрізняються побут, медсестринські задачі та сопровід; чому мова — безпека; перше повідомлення — без фінансових обіцянок від Freuly.",
+      h1: "Догляд і супровід — спочатку навантаження, потім роль фахівця",
       breadcrumbsLabel: "Догляд і супровід",
       homeLabel: "Головна",
       intro: [
-        "Тема догляду рано чи пізно виникає в багатьох родинах: літній родич, хвороба, травма або просто прагнення зберегти звичне життя вдома.",
-        "Запитання зазвичай не «чи потрібен догляд», а «який формат підходить саме зараз» — і як знайти людину, яку дійсно розуміють, коли йдеться про ліки, біль чи тривогу.",
+        "Сторінка для родин, які шукають підтримку вдома: літні батьки, післяопераційний період або перевантаження без можливості «робити все самим».",
+        "Фокус на практичних годинах поруч, не на абстрактному «здоров’ї загалом».",
+        "Нижче — зразки; деталі — у категоріях.",
       ],
-      subcategoriesTitle: "Які формати догляду існують",
+      subcategoriesTitle: "Що обрати",
       subcategories: [
         {
           slug: "seniorenbetreuung",
           label: "Догляд за літніми",
-          description:
-            "Погодинний чи регулярний супровід, базовий догляд за тілом, спілкування та емоційна підтримка.",
+          description: "Спілкування й базові побутові речі.",
         },
         {
           slug: "krankenpflege",
           label: "Медичний догляд",
-          description:
-            "Кваліфікований догляд удома: видача ліків, обробка ран, координація з лікарями.",
+          description: "Коли потрібні меднавички.",
         },
         {
           slug: "alltagshilfe",
           label: "Побутова допомога",
-          description:
-            "Покупки, приготування їжі, супровід на прийоми, легке прибирання — без медичних задач.",
+          description: "Без медманіпуляцій.",
         },
         {
           slug: "kinderbetreuung",
-          label: "Догляд за дітьми",
-          description:
-            "Регулярний або разовий догляд за дітьми мовою родини.",
+          label: "Діти",
+          description: "Мова в профілі.",
         },
         {
           slug: "haushaltshilfe",
-          label: "Домашня допомога",
-          description:
-            "Прибирання, прання, підтримання порядку — відповідно до поточної ситуації в родині.",
+          label: "Домашня праця",
+          description: "Якщо дім — головне вогнище хаосу.",
         },
         {
           slug: "begleitdienst",
           label: "Супровід",
-          description:
-            "Супровід у лікарню, установи або на прогулянки — особливо важливо, коли володіння німецькою обмежене.",
+          description: "Лікарні й установи при слабкій німецькій.",
         },
       ],
       sections: [
         {
-          heading: "Чим відрізняються догляд за літніми, медичний догляд і побутова допомога",
+          heading: "Комбінування",
           body: [
-            "Догляд за літніми — це широкий спектр задач: супровід, спілкування, базова гігієна та допомога у повсякденних справах. Медичний догляд виконує кваліфікований персонал і включає процедури на кшталт ін’єкцій чи обробки ран. Побутова допомога свідомо не є медичною — це розвантаження щоденних обов’язків.",
-            "У багатьох родинах ці формати поєднуються: медсестра приходить погодинно, помічниця бере покупки й спілкування, близькі беруть на себе емоційну частину. Продумана комбінація заощаджує сили й знижує ризик вигорання.",
+            "Часто потрібні дві ролі — опишіть окремо.",
+            "Платформа не визначає Pflegegrad.",
           ],
         },
         {
-          heading: "Чому мова важлива саме в догляді",
+          heading: "Мова",
           bullets: [
-            "При деменції, сильному болі чи гострій тривозі людина майже завжди повертається до рідної мови.",
-            "Більшість помилок із дозуванням ліків удома виникає через непорозуміння, а не через недбалість.",
-            "Довіра до сторонньої людини формується швидше, якщо вона розуміє традиції, свята і побутовий контекст.",
-            "На прийомах у лікарів та в установах двомовний супровід часто замінює професійного перекладача.",
+            "Дози й біль — зона ризику.",
+            "Деменція — рідна мова як опора.",
           ],
         },
         {
-          heading: "Державні послуги й чим їх доповнює Freuly",
-          body: "Догляд у Німеччині врегульований: Pflegekasse, Pflegegrad, натуральні послуги та Entlastungsbetrag — ключові поняття. Freuly не замінює цю систему. Ми допомагаємо знайти конкретну людину та обговорити деталі вашою мовою, щоб ви дійсно розуміли, яка саме підтримка потрібна.",
+          heading: "Держава",
+          body: "Виплати — не через Freuly.",
         },
         {
-          heading: "Як обрати фахівця з догляду",
+          heading: "Офлайн-ядро",
           bullets: [
-            "Спершу чітко визначте, які задачі справді треба делегувати, а які залишаться в родині.",
-            "Обирайте кваліфікацію під завдання: побутова допомога і обробка ран — це різні речі.",
-            "Порівняйте два-три профілі на Freuly та заплануйте коротке знайомство, можна відеозв’язком.",
-            "Відкрито обговоріть графік, можливі заміни та доступність.",
-            "Запитайте про досвід роботи з деменцією, обмеженнями мобільності або хронічними захворюваннями.",
+            "Догляд — переважно фізично.",
+            "Відео як допомога у виборі — не заміна візиту.",
           ],
         },
         {
-          heading: "Офлайн, з виїздом або онлайн",
-          body: "Догляд — це переважно робота поруч із людиною. Онлайн-формат не замінює її, але доповнює: короткі відеодзвінки з родичами, які живуть далеко, або онлайн-консультація до вибору фахівця. На Freuly можливі обидва сценарії.",
+          heading: "Перший лист",
+          body: "Хто, яка мова, які щоденні задачі, графік.",
+        },
+        {
+          heading: "Freuly",
+          body: "Вітрина профілів без гарантій лікування.",
         },
       ],
-      specialistsTitle: "Доступні фахівці з догляду",
+      specialistsTitle: "Фахівці (приклади)",
       specialistsEmpty:
         "Щойно в цій категорії з’являться відповідні фахівці на Freuly, вони будуть показані тут.",
-      faqTitle: "Часті питання про догляд і супровід",
+      faqTitle: "Часті питання",
       faq: [
         {
-          question: "Чи потрібен Pflegegrad, щоб знайти фахівця через Freuly",
+          question: "Чи треба Pflegegrad?",
           answer:
-            "Ні. Freuly — це каталог фахівців, його використання не залежить від офіційного Pflegegrad. Pflegegrad потрібен, якщо ви хочете компенсувати частину витрат через Pflegekasse.",
+            "Не для пошуку тут; для компенсацій — за правилами Німеччини.",
         },
         {
-          question: "На що особливо звернути увагу у випадку деменції",
+          question: "Побут чи меддогляд?",
           answer:
-            "При деменції мова має клінічне значення: звичні слова заспокоюють, підтримують орієнтацію і зменшують агресію. Фахівець, що говорить рідною мовою, — це не комфорт, а якість догляду.",
+            "Різні компетенції.",
         },
         {
-          question: "У чому різниця між побутовою допомогою та медичним доглядом",
+          question: "Деменція?",
           answer:
-            "Побутова допомога — це немедичні задачі: покупки, супровід, легке прибирання. Медичний догляд виконують кваліфіковані працівники, це включає процедури на кшталт перев’язок, ін’єкцій чи видачі ліків.",
+            "Рідна мова важлива для спокою.",
         },
         {
-          question: "Чи можна знайти фахівця лише на кілька годин на тиждень",
+          question: "Погодинно?",
           answer:
-            "Так. Багато фахівців працюють погодинно: супровід на прийом, допомога з покупками, регулярне спілкування. Конкретні умови вказані в профілі.",
+            "Часто — див. профіль.",
         },
         {
-          question: "Скільки коштує догляд через Freuly",
+          question: "Ціна?",
           answer:
-            "Вартість залежить від кваліфікації, обсягу послуг і регіону й встановлюється самими фахівцями. Freuly — це майданчик-посередник, а не роботодавець. Умови ви узгоджуєте напряму зі спеціалістом.",
+            "Напряму з фахівцем.",
         },
       ],
-      relatedTitle: "Суміжні розділи Freuly",
+      relatedTitle: "Суміжні розділи",
       relatedLinks: [
         {
           href: "health-psychology",
-          label: "Психологія, терапія та коучинг",
-          description:
-            "Для тих, хто сам доглядає — коли емоційне навантаження стає високим.",
+          label: "Психологія",
+          description: "Родичам, які вигорають.",
         },
         {
           href: "cleaning",
           label: "Прибирання",
-          description: "Якщо потрібна насамперед регулярна допомога по дому.",
+          description: "Якщо пріоритет — дім.",
         },
         {
           href: "housemaster",
-          label: "Майстер на дім",
-          description: "Практична допомога по дому, додатково до догляду.",
+          label: "Майстер",
+          description: "Техніка додатково.",
         },
       ],
       cta: {
-        heading: "Потрібна підтримка, яку дійсно розуміють?",
-        body: "Знайдіть на Freuly фахівців із догляду, які говорять мовою вашої родини.",
-        buttonLabel: "Переглянути фахівців",
+        heading: "Категорія догляду за літніми",
+        body: "Почати фільтр, потім звузити за кваліфікацією.",
+        buttonLabel: "Відкрити",
+        ctaHref: "/ua/category/seniorenbetreuung",
       },
     },
   },

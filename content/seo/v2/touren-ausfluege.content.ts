@@ -14,100 +14,131 @@ export const tourenAusfluegeContent: LocalizedSeoCategory = {
       locale: "de",
       categoryType: "parent",
       metaTitle:
-        "Touren & Ausflüge in Deutschland – Stadtführungen & Tagestrips | Freuly",
+        "Touren & Tagestrips in Deutschland: Geführte Erlebnisse wählen | Freuly",
       metaDescription:
-        "Geführte Touren und Ausflüge: Worin sich Stadt-, Themen- und Tagestrips unterscheiden und wie Sie Guides auf Freuly finden, die Deutsch, Russisch oder Ukrainisch sprechen.",
-      h1: "Touren und Ausflüge — Deutschland mit Guide erleben",
+        "Stadt-, Themen- und Tagesausflüge mit Guide: wie Sie passende Angebote filtern, Vor-Ort versus Gruppe, was vor Buchung klar sein sollte, und Profile auf Ukrainisch, Russisch oder Deutsch.",
+      h1: "Touren & Ausflüge — wenn der Tag schon gebucht ist und der Guide fehlt",
       breadcrumbsLabel: "Touren & Ausflüge",
       homeLabel: "Startseite",
       intro: [
-        "Ein gut geplanter halber oder ganzer Tag mit Guide kann mehr zeigen als oberflächliches Sightseeing aus der App: Kontext zu Geschichte, Architektur oder Küche, ohne selbst jede Verbindung puzzleartig zusammenzusetzen.",
-        "Unten finden Sie typische Kategorien und eine Auswahl sichtbarer Profile; der Feinschliff (Sprache, Gruppengröße, barrierearme Routen) klären Sie direkt im Kontakt.",
+        "Diese Seite ist der Einstieg, wenn Ihre Reise steht oder Ihr Wochenende brauchbar werden soll: Sie suchen jemanden, der vor Ort erklärt, navigiert und Zeitfenster abfedert — nicht jemanden, der vom Nullpunkt den ganzen Urlaub plant (dafür gibt es „Reiseberatung“).",
+        "Typische Suchanlässe: erster Besuch in einer Großstadt, Geburtstag mit Familie, Firmenbesuch mit Gästen aus dem Ausland oder ein Tag Entlastung zwischen Messe und Business-Terminen.",
+        "Unten sehen Sie eine Profilauswahl; detailliert filtern Sie in der Guide-Kategorie.",
       ],
-      subcategoriesTitle: "Was Guide-Angebote oft unterscheidet",
+      subcategoriesTitle: "Formate kurz erklärt",
       subcategories: [
         {
           slug: "stadtfuehrung",
           label: "Stadtführungen",
           description:
-            "Kernzentren wie Berlin, Hamburg, München — klassisch zu Fuß oder mit ÖPNV-Hops.",
+            "Meist zwei bis vier Stunden im Zentrum — gut, wenn Sie rasch Orientierung wollen.",
         },
         {
           slug: "tagesausfluege",
           label: "Tagesausflüge",
           description:
-            "Hinaus in Regionen, Seen oder Burgen — meist längere Wegstrecke als reine Innenstadtführung.",
+            "Weiter raus — Seen, Burgen, Nachbarregionen; längere Bus- oder Bahnzeiten einplanen.",
         },
         {
           slug: "thementouren",
           label: "Thementouren",
           description:
-            "Ein roter Faden: Geschichte, jüdisches Erbe, Streetart, Kulinarik — je nach Expertise.",
+            "Kulinarik, Geschichte, Architektur — ein roter Faden statt bunter Mix.",
         },
         {
           slug: "gruppenreisen",
           label: "Gruppenreisen",
           description:
-            "Fester Termin und Gruppe — oft günstiger pro Person, weniger Individualität.",
+            "Feste Daten, gemeinsamer Takt — oft günstiger pro Kopf, weniger Tempo-Flex.",
         },
       ],
       sections: [
         {
-          heading: "Woran erkennen Sie einen guten Fit?",
+          heading: "Touren-Seite versus Reiseberatung versus Tourismus-Überblick",
           body: [
-            "Klare Dauer, Treffpunkt, maximale Gruppengröße und ob Tickets für Museen bereits eingepreist sind — alles sollte vorab geschrieben stehen.",
-            "Fragen Sie bei längeren Touren nach Toiletten- und Pausenrhythmus, besonders mit Kindern oder eingeschränkter Gehfähigkeit.",
+            "„Reisen & Tourismus“ ordnet das große Feld; „Reiseberatung“ hilft beim Gesamtrouting. Hier geht es um die nächste konkrete Einheit: eine geführte Einheit mit Start- und Endzeit.",
+            "Wenn Sie noch keine Unterkunft haben, kann trotzdem eine Tour sinnvoll sein — dann klären Sie Treffpunkt flexibel.",
           ],
         },
         {
-          heading: "Privat versus Gruppe",
+          heading: "Worauf Sie vor der Buchung achten",
           bullets: [
-            "Privat: flexibler Tempo, höherer Preis.",
-            "Öffentliche Termine: sozial, oft günstiger, weniger Spielraum.",
+            "Dauer, Treffpunkt, maximale Gruppengröße, Sprache der Führung.",
+            "Ob Tickets, Snacks oder öffentliche Verkehrsmittel im Preis sind.",
+            "Barriere: Kopfsteinpflaster, Treppen, Pausenrhythmus bei Kindern oder Gehwagen.",
+            "Storno und Alternativplan bei Regen — schriftlich.",
           ],
         },
         {
-          heading: "Sprache wirklich für die Führung",
-          body: "Achten Sie im Profil darauf, welche Sprachen für die Erklärung angeboten werden — nicht nur „spricht akzentfrei“, sondern ob der inhaltliche Teil Ihrer Sprache folgt.",
+          heading: "Privat, Kleingruppe oder offener Termin",
+          bullets: [
+            "Privat oder sehr klein: höhere Kosten, eigenes Tempo.",
+            "Offene Gruppe: Budget freundlicher, weniger Eingriffsmöglichkeit.",
+          ],
+        },
+        {
+          heading: "Online-Infos, Präsenz-Erlebnis",
+          body: "Sie buchen digital, erleben vor Ort. Hybrid ist selten sinnvoll — Ausnahme: Vorbereitungs-Call; die Führung selbst lebt vom realen Raum.",
+        },
+        {
+          heading: "Erste Nachricht an eine Guide-Person",
+          body: "Nennen Sie Datum, ungefähre Gruppengröße, Sprache und ob Kinder dabei sind — dann kann jemand ehrlich sagen, ob Route und Geschwindigkeit passen.",
+        },
+        {
+          heading: "So nutzen Sie Freuly",
+          body: "Lesen Sie Profil und Bewertungsankündigungen, schreiben Sie zweimal mit derselben Story — so sehen Sie, wer nachfragt statt paste-bare Standardantworten zu senden.",
         },
       ],
       specialistsTitle: "Guides und Tour-Anbieter (Auswahl)",
       specialistsEmpty:
         "Wenn passende sichtbare Profile vorhanden sind, erscheinen sie hier.",
-      faqTitle: "FAQ",
+      faqTitle: "Häufige Fragen",
       faq: [
         {
-          question: "Sind Trinkgelder üblich?",
+          question: "Ist Trinkgeld Pflicht?",
           answer:
-            "Das ist in Deutschland nicht zwingend wie in anderen Ländern; fragen Sie ruhig vorab nach lokal üblichen Erwartungen.",
+            "In Deutschland gibt es kein US-Modell; fragen Sie vorab nach lokalen Gepflogenheiten.",
         },
         {
-          question: "Was bei schlechtem Wetter?",
+          question: "Regen — was dann?",
           answer:
-            "Seriöse Guides definieren Alternativen oder Storno-Regeln — klären Sie das schriftlich.",
+            "Gute Anbieter definieren Indoor-Alternativen oder klare Storno-Regeln.",
+        },
+        {
+          question: "Übernimmt Freuly die Tickets?",
+          answer:
+            "Nein — Zahlungsflüsse laufen mit dem Profil; lesen Sie, was im Paket steht.",
+        },
+        {
+          question: "Brauche ich schon ein Hotel?",
+          answer:
+            "Nicht zwingend, aber der Treffpunkt muss zum Tag passen — stimmen Sie ihn ab.",
         },
       ],
-      relatedTitle: "Weitere Themen",
+      relatedTitle: "Verknüpfte Einstiege",
       relatedLinks: [
         {
           href: "reisen-tourismus",
           label: "Reisen & Tourismus",
-          description: "Breitere Einordnung neben geführten Touren.",
+          description:
+            "Wenn Sie noch nicht wissen, ob eher Beratung, Tour oder Retreat passt.",
         },
         {
           href: "reiseberatung",
           label: "Reiseberatung",
-          description: "Wenn vor der Tour noch der Gesamtplan fehlt.",
+          description:
+            "Wenn Logistik und Unterkunft noch offen sind, bevor ein Guide Sinn macht.",
         },
         {
           href: "retreats",
           label: "Retreats",
-          description: "Wenn Sie mehrere Tage gebunden bleiben möchten.",
+          description:
+            "Mehrtägige intensive Formate — nicht dasselbe wie ein Stadtspaziergang.",
         },
       ],
       cta: {
-        heading: "Zur Guide- und Tour-Kategorie",
-        body: "Filtern Sie nach Stadt und Sprache.",
+        heading: "Guides in der Kategorie öffnen",
+        body: "Stadt und Sprache filtern, dann konkrete Nachricht.",
         buttonLabel: "Kategorie Tourguides",
         ctaHref: "/de/category/tourguide",
       },
@@ -117,56 +148,76 @@ export const tourenAusfluegeContent: LocalizedSeoCategory = {
       parentSlug: null,
       locale: "ru",
       categoryType: "parent",
-      metaTitle: "Экскурсии и туры по Германии – гиды на вашем языке | Freuly",
+      metaTitle:
+        "Экскурсии и однодневные поездки в Германии — выбрать гида | Freuly",
       metaDescription:
-        "Городские туры, тематические прогулки и однодневные поездки: как выбрать гида на Freuly и на что смотреть в описании программы.",
-      h1: "Экскурсии и поездки с гидом — не только фото у достопримечательностей",
+        "Узкий сценарий: вам нужен гид и программа на часы или день, а не планирование всей поездки с нуля. Что спросить до оплаты, приват или группа, язык экскурсии.",
+      h1: "Экскурсии и выезды — когда нужен гид, а не новый тур с чистого листа",
       breadcrumbsLabel: "Экскурсии и туры",
       homeLabel: "Главная",
       intro: [
-        "Гид может связать историю, архитектуру и быт в цельный рассказ за несколько часов — а не оставить вас с обрывочными заметками из навигатора.",
-        "Ниже — типы предложений и ссылки на категории; список профилей — живой срез базы Freuly.",
+        "Страница для тех, у кого даты и город уже определены, а нужна живая подача: маршрут, история, ритм пешеходной группы.",
+        "Если вы ещё собираете отели и билеты по всей Европе — логичнее начать с «Туристических консультаций»; если хотите много дней одной темы — смотрите «Ретриты».",
+        "Ниже — срез профилей; фильтрация — в категории гидов.",
       ],
-      subcategoriesTitle: "Отличия форматов",
+      subcategoriesTitle: "Чем форматы отличаются",
       subcategories: [
         {
           slug: "stadtfuehrung",
-          label: "Городские туры",
-          description: "Пешком или с короткими пересадками в центре города.",
+          label: "Городские экскурсии",
+          description:
+            "Несколько часов в центре — быстрый захват места.",
         },
         {
           slug: "tagesausfluege",
           label: "Однодневные выезды",
-          description: "За город — природа, замки, соседние регионы.",
+          description:
+            "Дальше от центра — считайте дорогу и усталость.",
         },
         {
           slug: "thementouren",
-          label: "Тематические маршруты",
-          description: "Единая линия: история, кухня, стрит-арт.",
+          label: "Тематические туры",
+          description:
+            "Один фокус — еда, эпоха, субкультура.",
         },
         {
           slug: "gruppenreisen",
-          label: "Групповые форматы",
-          description: "Фиксированная дата и состав.",
+          label: "Групповые слоты",
+          description:
+            "Фиксированные даты, общий темп.",
         },
       ],
       sections: [
         {
-          heading: "Проверка перед оплатой",
+          heading: "Где здесь граница с другими разделами",
           body: [
-            "Длительность, место встречи, язык экскурсии, входные билеты, размер группы и политика при отмене из-за погоды.",
+            "«Туризм и путешествия» — карта; «консультации» — сбор всей поездки; здесь — конкретный гид и слот времени.",
+            "Платформа не продаёт билеты как агент — договор с человеком из профиля.",
           ],
         },
         {
-          heading: "Индивидуально или в группе",
+          heading: "Чеклист до оплаты",
           bullets: [
-            "Соло или малый круг: дороже, гибче.",
-            "Открытая группа: дешевле с человека, меньше вариативности.",
+            "Время, место встречи, язык ведения.",
+            "Включены ли музейные входы и транспорт.",
+            "Размер группы и отмена при плохой погоде.",
+            "Особенности детей и колясок.",
           ],
         },
         {
-          heading: "Язык экскурсии",
-          body: "Смотрите, что язык указан именно для проведения маршрута, а не только «канцелярский» уровень.",
+          heading: "Приват и группа",
+          bullets: [
+            "Приват — цена выше, маршрут гибче.",
+            "Открытая группа — дешевле, меньше коррекций.",
+          ],
+        },
+        {
+          heading: "Первое сообщение гиду",
+          body: "Дата, примерный состав, язык, если есть дети — достаточно, чтобы отсеять несовпадение по темпу.",
+        },
+        {
+          heading: "Freuly как старт",
+          body: "Сравните 2–3 анкеты с одинаковым запросом — видно, кто уточняет детали.",
         },
       ],
       specialistsTitle: "Гиды и организаторы (примеры)",
@@ -175,14 +226,24 @@ export const tourenAusfluegeContent: LocalizedSeoCategory = {
       faqTitle: "Вопросы",
       faq: [
         {
-          question: "Нужны ли чаевые?",
+          question: "Обязательны ли чаевые?",
           answer:
-            "В Германии нет жёсткой нормы как в ряде стран — уточняйте у гида заранее.",
+            "Уточняйте культурную норму заранее.",
         },
         {
-          question: "Дождь и перенос",
+          question: "Дождь?",
           answer:
-            "Нормально прописать запасной маршрут или правила возврата.",
+            "Нужен запасной сценарий или чёткие правила отмены.",
+        },
+        {
+          question: "Freuly бронирует билеты?",
+          answer:
+            "Нет — смотрите описание в профиле.",
+        },
+        {
+          question: "Нужен ли уже отель?",
+          answer:
+            "Желательно согласовать точку встречи под ваш случай.",
         },
       ],
       relatedTitle: "Рядом",
@@ -190,22 +251,22 @@ export const tourenAusfluegeContent: LocalizedSeoCategory = {
         {
           href: "reisen-tourismus",
           label: "Туризм и путешествия",
-          description: "Шире, чем только гиды.",
+          description: "Если формат ещё не выбран.",
         },
         {
           href: "reiseberatung",
-          label: "Подбор туров",
-          description: "Если нужна полная логистика поездки.",
+          label: "Туристические консультации",
+          description: "Если нужна вся логистика поездки.",
         },
         {
           href: "retreats",
           label: "Ретриты",
-          description: "Многодневный фокус.",
+          description: "Много дней одной практики.",
         },
       ],
       cta: {
-        heading: "К гидам",
-        body: "Фильтр по городу и языку экскурсии.",
+        heading: "К списку гидов",
+        body: "Город + язык экскурсии.",
         buttonLabel: "Категория гидов",
         ctaHref: "/ru/category/tourguide",
       },
@@ -215,56 +276,72 @@ export const tourenAusfluegeContent: LocalizedSeoCategory = {
       parentSlug: null,
       locale: "ua",
       categoryType: "parent",
-      metaTitle: "Екскурсії та тури Німеччиною – гіди вашою мовою | Freuly",
+      metaTitle:
+        "Екскурсії та одноденні виїзди в Німеччині — обрати гіда | Freuly",
       metaDescription:
-        "Міські тури, тематичні прогулянки та одноденні виїзди: як обрати гіда на Freuly і що уточнити перед бронюванням.",
-      h1: "Екскурсії та виїзди з гідом — коли важлива подача, а не лише маршрут на карті",
+        "Конкретний намір: гід на день або кілька годин, не повна туроператорська послуга. Порівняння з консультаціями та загальним туризмом, що уточнити перед бронюванням.",
+      h1: "Екскурсії та виїзди — коли потрібен супровід дня, а не новий маршрут з нуля",
       breadcrumbsLabel: "Екскурсії та тури",
       homeLabel: "Головна",
       intro: [
-        "Гід перетворює набір точок на лінію історії й контексту — особливо якщо розповідь рідною мовою без постійного перекладу термінів.",
-        "Нижче — формати та посилання на категорії; картки — живий фрагмент бази.",
+        "Сторінка для тих, хто вже має місто й дату, але хоче професійну подачу матеріалу й маршрут без самостійного копання в довідниках.",
+        "Якщо треба зібрати всю поїздку з переїздами й готелями — спершу «Підбір турів»; якщо багатоденний фокус однієї теми — «Ретрити».",
+        "Нижче — фрагмент бази; далі — категорія гідів.",
       ],
       subcategoriesTitle: "Формати",
       subcategories: [
         {
           slug: "stadtfuehrung",
           label: "Міські тури",
-          description: "Центр, пішки або короткий транспорт.",
+          description: "Коротко й щільно в центрі.",
         },
         {
           slug: "tagesausfluege",
           label: "Одноденні виїзди",
-          description: "Регіон, природа, сусідні міста.",
+          description: "Більше дороги, інший ритм.",
         },
         {
           slug: "thementouren",
           label: "Тематичні маршрути",
-          description: "Єдиний фокус: епоха, їжа, мистецтво.",
+          description: "Один акцент історії чи кухні.",
         },
         {
           slug: "gruppenreisen",
-          label: "Групові тури",
+          label: "Групові виїзди",
           description: "Спільний календар.",
         },
       ],
       sections: [
         {
-          heading: "Що погодити наперед",
+          heading: "Відмінності від інших сторінок",
           body: [
-            "Тривалість, зустріч, мова програми, квитки, розмір групи, дощовий план.",
+            "«Туризм і подорожі» дає карту; «консультації» будують усю поїздку; тут — один гід і часова одиниця.",
+            "Freuly не гарантує погоду й не продає квитки як агентство.",
+          ],
+        },
+        {
+          heading: "Що погодити",
+          bullets: [
+            "Тривалість, зустріч, мова гіда.",
+            "Включені квитки й транспорт чи ні.",
+            "Розмір групи, Plan Б дощу.",
+            "Доступність для дітей.",
           ],
         },
         {
           heading: "Приват чи група",
           bullets: [
-            "Приват: дорожче, гнучкіше.",
-            "Група: дешевше з особи, менше свободи.",
+            "Приват — дорожче, гнучкіше.",
+            "Група — економніше, менше варіацій.",
           ],
         },
         {
-          heading: "Мова супроводу",
-          body: "Перевірте, що мова стосується саме екскурсійного супроводу.",
+          heading: "Перший лист",
+          body: "Дата, склад, мова — мінімум для чесної відповіді «так/ні».",
+        },
+        {
+          heading: "Старт на Freuly",
+          body: "Однаковий запит кільком профілям показує рівень деталізації відповіді.",
         },
       ],
       specialistsTitle: "Гіди (приклади)",
@@ -273,37 +350,47 @@ export const tourenAusfluegeContent: LocalizedSeoCategory = {
       faqTitle: "Питання",
       faq: [
         {
-          question: "Чайові обов’язкові?",
+          question: "Чайові?",
           answer:
-            "Уточніть у гіда — у Німеччині немає однієї норми.",
+            "Уточнюйте до виїзду.",
         },
         {
-          question: "Дощ і скасування",
+          question: "Дощ?",
           answer:
-            "Краще мати письмові правила переносу чи повернення.",
+            "Має бути письмовий запасний план.",
+        },
+        {
+          question: "Квитки через Freuly?",
+          answer:
+            "Ні — умови в профілі.",
+        },
+        {
+          question: "Готель обов’язковий?",
+          answer:
+            "Ні, але точку зустрічі підлаштовують під вашу логістику.",
         },
       ],
-      relatedTitle: "Поруч на Freuly",
+      relatedTitle: "Поруч",
       relatedLinks: [
         {
           href: "reisen-tourismus",
           label: "Туризм і подорожі",
-          description: "Ширший огляд.",
+          description: "Ширший вибір, якщо тип відпочинку не визначений.",
         },
         {
           href: "reiseberatung",
           label: "Підбір турів",
-          description: "Повна організація поїздки.",
+          description: "Повна організація маршруту.",
         },
         {
           href: "retreats",
           label: "Ретрити",
-          description: "Багатоденний формат.",
+          description: "Довгі програми однієї теми.",
         },
       ],
       cta: {
         heading: "До гідів",
-        body: "Фільтри міста й мови.",
+        body: "Місто й мова в фільтрі.",
         buttonLabel: "Категорія гідів",
         ctaHref: "/ua/category/tourguide",
       },

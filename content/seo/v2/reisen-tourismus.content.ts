@@ -13,68 +13,86 @@ export const reisenTourismusContent: LocalizedSeoCategory = {
       parentSlug: null,
       locale: "de",
       categoryType: "parent",
-      metaTitle: "Reisen & Tourismus in Deutschland – Beratung & Angebote | Freuly",
+      metaTitle:
+        "Reisen & Tourismus in Deutschland — Karte der nächsten Schritte | Freuly",
       metaDescription:
-        "Reiseplanung, Guides und Retreats in Deutschland: Orientierung zu Angeboten und wie Sie auf Freuly deutsch-, russisch- oder ukrainischsprachige Anbieter finden.",
-      h1: "Reisen und Tourismus in Deutschland — vom Plan bis zur ersten Buchung",
+        "Überblick, wann Reiseberatung, Touren, Retreats oder Visa-Hilfe passen; typische Suchanlässe; was Sie in die Erstanfrage schreiben; Sprache als Filter — ohne Versprechen von Versicherung oder Visum.",
+      h1: "Reisen & Tourismus — erst Einordnung, dann Spezialist:in wählen",
       breadcrumbsLabel: "Reisen & Tourismus",
       homeLabel: "Startseite",
       intro: [
-        "Deutschland lässt sich auf sehr verschiedene Weisen erleben: Städtereisen mit Führung, organisierte Tagesausflüge, individuell zusammengestellte Rundreisen oder bewusste Retreat-Formate. Was für Sie passt, hängt weniger vom Marketingwort auf der Startseite ab als von Budget, Zeitraum und dem, ob Sie lieber flexibel selbst planen oder eine klare Struktur von außen brauchen.",
-        "Diese Seite ordnet typische Wege ein und verweist auf öffentliche Kategorie-Seiten auf Freuly — inklusive einer Auswahl sichtbarer Profile, die grob zum Themenfeld passen.",
+        "Diese Seite ist die Landkarte: Sie hilft entscheiden, ob Sie zuerst eine Route planen, einen Tag mit Guide füllen, mehrere Tage in einem Retreat verbringen oder parallel Formalitäten sortieren — bevor Sie in eine Kategorie springen.",
+        "Sie ersetzt keine Versicherung, keinen Visa-Bescheid und kein klassisches Reisebüro: Freuly zeigt Profile, mit denen Sie direkt sprechen, oft auf Ukrainisch, Russisch oder Deutsch.",
+        "Unten eine Auswahl passender Einträge; verfeinern tun Sie in den jeweiligen Kategorien.",
       ],
-      subcategoriesTitle: "Typische Einstiege (Kategorien)",
+      subcategoriesTitle: "Typische nächste Klicks — je nach Problemstellung",
       subcategories: [
         {
           slug: "reiseberatung",
           label: "Reiseberatung",
           description:
-            "Individuelle Planung: Ziele, Unterkünfte, Transfers, oft auch organisatorische Hilfe bei Formalitäten.",
+            "Wenn Route, Unterkünfte und Transport noch offen sind — Startpunkt für viele Reisen.",
         },
         {
           slug: "tourguide",
           label: "Tourguide",
           description:
-            "Geführte Touren vor Ort — Stadt, Region oder Themenschwerpunkt mit erklärender Begleitung.",
+            "Wenn Datum und Stadt stehen und ein geführter Tag oder halber Tag fehlt.",
         },
         {
           slug: "retreats",
           label: "Retreats",
           description:
-            "Mehrtägige Programme mit Fokus auf Yoga, Wellness, Kreativität oder Stille — oft mit fester Tagesstruktur.",
+            "Wenn Sie mehrere Tage einem klaren Programm widmen wollen — nicht klassischer Städtetrip.",
         },
         {
           slug: "visa-hilfe",
           label: "Visa & Formalitäten",
           description:
-            "Unterstützung rund um Dokumente und Anträge — sinnvoll parallel zu konkreter Reiseplanung zu klären.",
+            "Parallel zur Route — klären Sie Grenzen der Unterstützung im Profil; keine Rechtsberatung.",
         },
         {
           slug: "gruppenreisen",
           label: "Gruppenreisen",
           description:
-            "Feste Termine und gemeinsamer Rhythmus — gut, wenn Sie Anschluss an eine Gruppe suchen.",
+            "Wenn ein fertiger Termin und Gruppentakt für Sie vorteilhaft sind.",
         },
       ],
       sections: [
         {
-          heading: "Warum Sprache beim Thema Reisen oft der erste Filter ist",
+          heading: "Welche Freuly-Seite wann?",
           body: [
-            "Bahnverbindungen, Umbuchungsregeln oder Hotelkategorien missversteht man schnell — umso mehr, wenn alles in zweiter Sprache koordiniert wird. Ein Berater oder Guide, der mit Ihnen auf Ukrainisch, Russisch oder Deutsch denselben Plan bespricht, spart Zeit und Nerven.",
-            "Freuly ist kein klassisches Reisebüro-Portal: Sie sehen Profile von selbstständigen Anbietenden und treten direkt Kontakt auf Basis transparenter Angaben.",
+            "Noch unsicher zwischen Hotel und Route: Reiseberatung-SEO-Seite oder Kategorie Reiseberatung.",
+            "Hotel steht, Stadt ist klar, es fehlt Erlebnis: Touren & Ausflüge.",
+            "Längere Auszeit mit Fokus Yoga/Meditation/Wellness: Retreats.",
+            "Pflege von Angehörigen oder psychische Belastung parallel: verlinkte Lebensbereiche, nicht Mische aus einem Kontakt.",
           ],
         },
         {
-          heading: "Worauf Sie vor der ersten Nachricht achten sollten",
+          heading: "Suchanlässe, die hier häufig starten",
           bullets: [
-            "Zeitraum und ungefähres Budget — auch als Spanne.",
-            "Ob Kinder, eingeschränkte Mobilität oder großes Gepäck eine Rolle spielen.",
-            "Ob Sie Flexibilität brauchen (Storno, Umbuchung) oder ein fixes Paket bevorzugen.",
+            "Erste Deutschlandreise mit Familie — Überforderung bei Bahn-Tarifen.",
+            " Geschäftsreise mit halbem freien Tag — soll lohnenswert sein.",
+            "Besuch aus dem Ausland — Guide gesucht, der mehrsprachig erklärt.",
+            "Retreat-Idee, aber unklar, ob Wochenende oder Woche reicht.",
           ],
         },
         {
-          heading: "Online-Beratung oder vor Ort?",
-          body: "Viele Abläufe lassen sich digital starten; Touren und Tagestrips finden natürlich vor Ort statt. Hybrid ist üblich: Planung remote, Erlebnis in Präsenz.",
+          heading: "Erste Nachricht an eine Person auf Freuly",
+          bullets: [
+            "Zeitraum als Fenster, nicht nur ein Datum ohne Alternative.",
+            "Reisende, Alter, Einschränkungen bei Gehen oder Treppen.",
+            "Budget-Spannen — schützt vor unrealistischen Vorschlägen.",
+            "Ob Kinder, Gepäckmenge oder Messe-Baggage eine Rolle spielen.",
+          ],
+        },
+        {
+          heading: "Online planen, Erlebnis vor Ort",
+          body: "Typischer Mix: remote abstimmen, Tickets digital, Touren und Retreat-Tage physisch. Hybrid heißt hier Kombination aus Planung + Präsenz, nicht Video-Urlaub.",
+        },
+        {
+          heading: "Risiken und Zusagen",
+          body: "Freuly garantiert keine Versicherungsleistungen, keine Visumserteilung und keine Wetterlage — Lesen Sie Profilinfos und Nachrichten ernsthaft nach, bevor Sie zahlen.",
         },
       ],
       specialistsTitle: "Passende Profile (Auswahl)",
@@ -85,46 +103,58 @@ export const reisenTourismusContent: LocalizedSeoCategory = {
         {
           question: "Ist Freuly ein Reiseveranstalter?",
           answer:
-            "Nein. Wir zeigen Profile unabhängiger Spezialistinnen und Spezialisten; Vertragsinhalte klären Sie mit der jeweiligen Person.",
+            "Nein — es ist eine Kontextseite plus Profilauswahl; Verträge schließen Sie mit der jeweiligen Person.",
         },
         {
-          question: "Ersetzt die Plattform eine Reiserücktrittsversicherung?",
+          question: "Warum ist die Liste oben kurz?",
           answer:
-            "Nein. Versicherungen und rechtliche Absicherung sind separat zu prüfen — die Profile beschreiben Leistungen, ersetzen aber keine Police.",
+            "Vorschau — vollständige Filter stehen in den Kategorien.",
         },
         {
-          question: "Was bedeutet die Liste oben bei „Spezialisten“?",
+          question: "Versicherung über die Plattform?",
           answer:
-            "Es ist eine grobe Vorschau passender Einträge aus der Datenbank; die vollständige Filterung erfolgt über die jeweilige Kategorie-Seite.",
+            "Nein — separat absichern.",
+        },
+        {
+          question: "Was ist der Unterschied zu „Reiseberatung“?",
+          answer:
+            "Diese Seite ordnet breiter; die Reiseberatungsseite vertieft den Planungs-Intent.",
+        },
+        {
+          question: "Was ist der Unterschied zu Touren?",
+          answer:
+            "Touren betonen geführte Tage; hier wählen Sie zuerst Ihre strategische Richtung.",
         },
       ],
-      relatedTitle: "Weitere Freuly-Bereiche",
+      relatedTitle: "Vertiefungen",
       relatedLinks: [
         {
           href: "pflege-betreuung",
           label: "Pflege & Betreuung",
-          description: "Wenn parallel Alltagshilfe in Deutschland Thema ist.",
+          description:
+            "Wenn Reisen neben Alltag in Deutschland koordiniert werden muss.",
         },
         {
           href: "psychologists-germany",
           label: "Psycholog:innen in Deutschland",
-          description: "Reise- und Anpassungsstress begleitend abfedern.",
+          description:
+            "Wenn der emotionale Druck Reisen erschwert.",
         },
         {
           href: "health-psychology",
           label: "Psychologie & Gesundheit",
-          description: "Übergeordnete Gesundheitsthemen neben Reiseplanung.",
+          description: "Breiter, wenn Stress nicht nur reisebezogen ist.",
         },
         {
           href: "retreats",
-          label: "Retreats (Detail-Hub)",
-          description: "Vertiefung zu Auszeit-Formaten.",
+          label: "Retreats (Detail)",
+          description: "Vertiefung bei mehrtägigen Programmen.",
         },
       ],
       cta: {
-        heading: "In die Reise-Kategorie wechseln",
-        body: "Filtern Sie nach passendem Profil und schreiben Sie eine konkrete Erstanfrage.",
-        buttonLabel: "Reise-Themen in der Kategorie",
+        heading: "In eine konkrete Kategorie wechseln",
+        body: "Wenn Sie bereits wissen, dass Beratung zuerst kommt — öffnen Sie Reiseberatung; bei Stadttag Touren & Ausflüge.",
+        buttonLabel: "Reiseberatung-Kategorie",
         ctaHref: "/de/category/reiseberatung",
       },
     },
@@ -133,64 +163,82 @@ export const reisenTourismusContent: LocalizedSeoCategory = {
       parentSlug: null,
       locale: "ru",
       categoryType: "parent",
-      metaTitle: "Туризм и поездки по Германии — консультации и гиды | Freuly",
+      metaTitle:
+        "Туризм и поездки по Германии: карта разделов Freuly | Freuly",
       metaDescription:
-        "Как планировать поездки по Германии и находить на Freuly специалистов на русском, украинском или немецком: консультации, экскурсии и ретриты.",
-      h1: "Путешествия и туризм в Германии — с чего начать план",
+        "Обзор без навязанного тура: куда кликнуть — консультации, гиды, ретриты, документы; примеры запросов; что написать в первом сообщении; без обещаний страховки и визы от платформы.",
+      h1: "Туризм и путешествия — сначала выбрать тип задачи, потом специалиста",
       breadcrumbsLabel: "Туризм и путешествия",
       homeLabel: "Главная",
       intro: [
-        "Германию можно проехать по-разному: с гидом по городу, заранее собранным туром, полностью самостоятельно или с ретритом «внутрь отдыха». Выбор зависит не от рекламного слогана, а от времени, бюджета и того, нужен ли вам жёсткий сценарий или свобода маршрута.",
-        "Ниже — ориентиры по направлениям и ссылки на категории Freuly плюс выборка профилей, связанных с туризмом и поездками.",
+        "Эта страница помогает не потеряться между «спланировать всё», «нанять гида на день» и «поехать на ретрит на неделю».",
+        "Она не бронирует за вас и не заменяет страховку — даёт контекст и ссылки на профили.",
+        "Ниже — превью; точная фильтрация — по категориям.",
       ],
-      subcategoriesTitle: "Частые направления",
+      subcategoriesTitle: "Куда идти по смыслу запроса",
       subcategories: [
         {
           slug: "reiseberatung",
           label: "Туристические консультации",
           description:
-            "Подбор маршрута, отелей, трансферов, иногда помощь с документами.",
+            "Маршрут и логистика с нуля или почти с нуля.",
         },
         {
           slug: "tourguide",
           label: "Гиды",
-          description: "Пешие и тематические туры с сопровождением.",
+          description:
+            "Когда город и дата есть, нужен сопровождающий день.",
         },
         {
           slug: "retreats",
           label: "Ретриты",
-          description: "Форматы на несколько дней с фокусом на практике и распорядке.",
+          description:
+            "Несколько дней одной среды и расписания.",
         },
         {
           slug: "visa-hilfe",
-          label: "Визы и формальности",
-          description: "Сопровождение по документам — разумно сочетать с планом поездки.",
+          label: "Визы",
+          description:
+            "Параллельно поездке — уточняйте рамки помощи в профиле.",
         },
         {
           slug: "gruppenreisen",
           label: "Групповые туры",
-          description: "Общий календарь и состав — если важен контакт с группой.",
+          description:
+            "Готовые даты и общий ритм.",
         },
       ],
       sections: [
         {
-          heading: "Зачем на первом шаге думать о языке",
+          heading: "Как не смешать разные услуги",
           body: [
-            "Ж/д соединения, условия отмены и классы отелей легко перепутать, если всё читается «скользко» на втором языке. Консультант или гид, с которым вы говорите на привычном языке, снижает количество недопониманий.",
-            "Freuly не заменяет классический туроператор: вы смотрите профили и пишете людям напрямую.",
+            "Консультация строит поездку; гид заполняет день; ретрит — про удержание фокуса, не про список музеев.",
+            "Семья, уход, стресс — смежные темы, но не одна кнопка «всё решить».",
           ],
         },
         {
-          heading: "Что указать в первом сообщении",
+          heading: "Частые сценарии",
           bullets: [
-            "Даты или хотя бы месяц и гибкость ± несколько дней.",
-            "Состав семьи, дети, особые потребности по здоровью.",
-            "Ориентир по бюджету без стеснения — так легче предложить реалистичный вариант.",
+            "Первый приезд — страх сломаться на тарифах.",
+            "Гости из-за границы — нужен язык экскурсии.",
+            "Нужен отдых, но не очередной «просто отпуск» — интерес к ретриту.",
+          ],
+        },
+        {
+          heading: "Первое сообщение",
+          bullets: [
+            "Даты или окно.",
+            "Состав и мобильность.",
+            "Бюджет честно.",
           ],
         },
         {
           heading: "Онлайн и офлайн",
-          body: "План часто строится удалённо, а прогулки и поездки проходят очно — такая комбинация обычна.",
+          body: "План удалённо — опыт на месте — обычная связка.",
+        },
+        {
+          heading: "Ограничения платформы",
+          body: "Нет гарантий погоды, виз и страховок — уточняйте у профилей и внешних сервисов.",
         },
       ],
       specialistsTitle: "Примеры анкет",
@@ -201,46 +249,56 @@ export const reisenTourismusContent: LocalizedSeoCategory = {
         {
           question: "Freuly — туроператор?",
           answer:
-            "Нет, это витрина профилей; договорённости и оплата — с выбранным специалистом.",
+            "Нет, это витрина профилей.",
         },
         {
-          question: "Есть ли страховка через платформу?",
+          question: "Почему мало карточек?",
           answer:
-            "Нет, страховки и отмены бронирования оформляются отдельно.",
+            "Это превью.",
         },
         {
-          question: "Почему список короткий?",
+          question: "Страховка?",
           answer:
-            "Это превью; полный поиск — в соответствующих категориях.",
+            "Отдельно.",
+        },
+        {
+          question: "Чем страница отличается от консультаций?",
+          answer:
+            "Здесь карта; там узкий консалтинг.",
+        },
+        {
+          question: "Чем от экскурсий?",
+          answer:
+            "Экскурсии — про гида; здесь вы сначала выбираете слой задачи.",
         },
       ],
       relatedTitle: "Другие разделы",
       relatedLinks: [
         {
           href: "pflege-betreuung",
-          label: "Уход и сопровождение",
-          description: "Если параллельно важен быт и забота о близких.",
+          label: "Уход",
+          description: "Параллельный быт.",
         },
         {
           href: "psychologists-germany",
-          label: "Психологи в Германии",
-          description: "Стресс переезда и дороги.",
+          label: "Психологи",
+          description: "Стресс и адаптация.",
         },
         {
           href: "health-psychology",
           label: "Психология и здоровье",
-          description: "Широкий контекст здоровья.",
+          description: "Шире запрос.",
         },
         {
           href: "retreats",
           label: "Ретриты",
-          description: "Отдельный хаб про форматы ретритов.",
+          description: "Подробнее про форматы.",
         },
       ],
       cta: {
         heading: "К консультациям по поездкам",
-        body: "Откройте категорию и сравните предложения.",
-        buttonLabel: "Категория «консультации по турам»",
+        body: "Если нужен маршрут целиком — откройте категорию; для одного дня с гидом идите в экскурсии.",
+        buttonLabel: "Категория консультаций",
         ctaHref: "/ru/category/reiseberatung",
       },
     },
@@ -249,64 +307,77 @@ export const reisenTourismusContent: LocalizedSeoCategory = {
       parentSlug: null,
       locale: "ua",
       categoryType: "parent",
-      metaTitle: "Туризм і подорожі в Німеччині — поради й гіди | Freuly",
+      metaTitle:
+        "Туризм і подорожі в Німеччині: карта розділів Freuly | Freuly",
       metaDescription:
-        "Як планувати подорожі Німеччиною й знаходити на Freuly фахівців українською, російською чи німецькою: консультації, тури та ретрити.",
-      h1: "Подорожі та туризм у Німеччині — з чого складати маршрут",
+        "Огляд, куди рухатися далі — консультації, гіди, ретрити; приклади запитів; без обіцянок страховки; мови в профілях.",
+      h1: "Подорожі та туризм — спочатку тип задачі, потім фахівець",
       breadcrumbsLabel: "Туризм і подорожі",
       homeLabel: "Головна",
       intro: [
-        "Німеччину можна відкривати по-різному: з міським гідом, готовим туром, повністю самостійно або через ретрит із чітким розкладом. Логіка вибору зав’язана на часі, бюджеті й тому, чи потрібна вам зовнішня структура.",
-        "Нижче — карта напрямів і посилання на категорії Freuly, а також вибірка профілів, пов’язаних із подорожами й туризмом.",
+        "Сторінка допомагає відрізнити планування поїздки від найму гіда на день чи ретриту на кілька днів.",
+        "Це не бронювальний центр і не страховик.",
+        "Нижче — зразки; повнота — у категоріях.",
       ],
-      subcategoriesTitle: "Типові входи",
+      subcategoriesTitle: "Типові наступні кроки",
       subcategories: [
         {
           slug: "reiseberatung",
-          label: "Консультації з подорожей",
-          description:
-            "Маршрут, готелі, трансфери, інколи допомога з паперами.",
+          label: "Консультації",
+          description: "Маршрут і логістика.",
         },
         {
           slug: "tourguide",
           label: "Гіди",
-          description: "Екскурсії та тематичні прогулянки.",
+          description: "Супровід дня в місті.",
         },
         {
           slug: "retreats",
           label: "Ретрити",
-          description: "Багатоденні програми з акцентом на практику.",
+          description: "Багатоденний фокус.",
         },
         {
           slug: "visa-hilfe",
-          label: "Візи та документи",
-          description: "Логічно узгоджувати з планом поїздки.",
+          label: "Візи",
+          description: "Уточнюйте межі допомоги.",
         },
         {
           slug: "gruppenreisen",
           label: "Групові тури",
-          description: "Стійкий склад і спільний графік.",
+          description: "Готові дати.",
         },
       ],
       sections: [
         {
-          heading: "Чому мова вирішує на старті",
+          heading: "Що не змішувати",
           body: [
-            "Розклад потягів, правила скасування та категорії житла простіше узгоджувати рідною мовою — менше двозначностей.",
-            "Freuly не є заміною туроператору: ви обираєте людину й пишете їй безпосередньо.",
+            "Консультант будує поїздку; гід веде маршрут дня; ретрит — інша логіка часу.",
+            "Побут і здоров’я — інші розділи сайту.",
           ],
         },
         {
-          heading: "Що написати в першому листі",
+          heading: "Сценарії",
           bullets: [
-            "Дати або місяць і можлива гнучкість.",
-            "Склад родини й особливі потреби.",
-            "Орієнтир витрат — так простіше запропонувати реалістичний план.",
+            "Перший візит до Німеччини.",
+            "Гості, яким потрібна мова супроводу.",
+            "Цікавість до ретриту замість класичного туру.",
           ],
         },
         {
-          heading: "Онлайн проти офлайну",
-          body: "План часто збирають дистанційно, а прогулянки й поїздки проходять на місці.",
+          heading: "Перше повідомлення",
+          bullets: [
+            "Діапазон дат.",
+            "Склад родини.",
+            "Бюджет-орієнтир.",
+          ],
+        },
+        {
+          heading: "Дистанційно й на місці",
+          body: "План часто онлайн; прогулянки — офлайн.",
+        },
+        {
+          heading: "Межі платформи",
+          body: "Без гарантій віз і страхових виплат.",
         },
       ],
       specialistsTitle: "Приклади профілів",
@@ -317,46 +388,56 @@ export const reisenTourismusContent: LocalizedSeoCategory = {
         {
           question: "Чи Freuly — туроператор?",
           answer:
-            "Ні; угоди й оплата — безпосередньо з фахівцем.",
-        },
-        {
-          question: "Чи є страхування?",
-          answer:
-            "Ні, оформлюйте страхування окремо.",
+            "Ні.",
         },
         {
           question: "Чому мало карток?",
           answer:
-            "Це прев’ю; повний набір — у категоріях.",
+            "Прев’ю.",
+        },
+        {
+          question: "Страховка?",
+          answer:
+            "Окремо.",
+        },
+        {
+          question: "Відмінність від консультацій?",
+          answer:
+            "Тут — карта; там — вузький сервіс.",
+        },
+        {
+          question: "Відмінність від екскурсій?",
+          answer:
+            "Гіди дня — в іншому розділі.",
         },
       ],
       relatedTitle: "Інші розділи",
       relatedLinks: [
         {
           href: "pflege-betreuung",
-          label: "Догляд і супровід",
-          description: "Паралельні побутові задачі.",
+          label: "Догляд",
+          description: "Паралельні задачі.",
         },
         {
           href: "psychologists-germany",
-          label: "Психологи в Німеччині",
-          description: "Стрес переїзду й подорожей.",
+          label: "Психологи",
+          description: "Стрес.",
         },
         {
           href: "health-psychology",
-          label: "Психологія і здоров’я",
-          description: "Ширший контекст.",
+          label: "Психологія",
+          description: "Ширше.",
         },
         {
           href: "retreats",
           label: "Ретрити",
-          description: "Окремий огляд форматів.",
+          description: "Детальніше.",
         },
       ],
       cta: {
         heading: "До консультацій з подорожей",
-        body: "Відкрийте категорію та порівняйте профілі.",
-        buttonLabel: "Категорія рейзебератунг",
+        body: "Якщо потрібна вся логістика; для гіда на день — екскурсії.",
+        buttonLabel: "Категорія консультацій",
         ctaHref: "/ua/category/reiseberatung",
       },
     },
