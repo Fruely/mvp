@@ -125,6 +125,7 @@ export default function SpecialistPage() {
   const [documentLightboxIndex, setDocumentLightboxIndex] = useState<number | null>(null);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const redirected = useRef(false);
+  const profileViewReportedForIdRef = useRef<string | null>(null);
   const [reviewMsg, setReviewMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const searchParams = useSearchParams();
   const pathname = usePathname() || "/";
@@ -262,6 +263,24 @@ export default function SpecialistPage() {
       .catch(() => {});
     return () => { cancelled = true; };
   }, [specialist?.id]);
+
+  useEffect(() => {
+    if (!specialist?.id) return;
+    const routeId = id.trim();
+    if (!routeId) return;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(routeId);
+    const routeMatchesSpecialist =
+      (isUuid && specialist.id.toLowerCase() === routeId.toLowerCase()) ||
+      (!isUuid && String(specialist.slug ?? "") === routeId);
+    if (!routeMatchesSpecialist) return;
+    if (profileViewReportedForIdRef.current === specialist.id) return;
+    profileViewReportedForIdRef.current = specialist.id;
+
+    void fetch(`/api/specialists/${specialist.id}/view`, {
+      method: "POST",
+      credentials: "same-origin",
+    }).catch(() => {});
+  }, [id, specialist?.id, specialist?.slug]);
 
   if (loading) {
     return (
