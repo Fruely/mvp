@@ -3,10 +3,8 @@ import type { Lang } from "@/lib/i18n";
 /**
  * Shared SEO content model for Freuly category landing pages.
  *
- * This file is intentionally additive: existing `CategorySeoPage` and the
- * content files under `content/seo/categories/*.tsx` continue to work
- * unchanged. New pages/upgrades should prefer this model + the new
- * `CategoryContentPage` template.
+ * This file is intentionally additive. New SEO category landings use this
+ * model with the `CategoryContentPage` template and `content/seo/v2/*.content.ts`.
  *
  * The model supports two page roles:
  *   - "parent": an umbrella / hub page (e.g. "health-psychology", "retreats")
