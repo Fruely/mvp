@@ -17,101 +17,146 @@ export const psychologistsGermanyContent: LocalizedSeoCategory = {
       locale: "de",
       categoryType: "child",
       metaTitle:
-        "Psycholog:innen in Deutschland – Ukrainisch, Russisch, Deutsch | Freuly",
+        "Psycholog:innen in Deutschland (Ukrainisch & Russisch) finden | Freuly",
       metaDescription:
-        "Psychologische Unterstützung in Deutschland: wie Sie vorgehen, worauf Sie achten und wie Sie auf Freuly passende Fachkräfte finden, die Ukrainisch, Russisch oder Deutsch sprechen.",
-      h1: "Psycholog:innen in Deutschland — wenn die Muttersprache den Unterschied macht",
+        "Konkrete Hilfe bei der Suche: Psychologische Fachkräfte in Deutschland, die auf Ukrainisch, Russisch oder Deutsch arbeiten — was Sie vor dem Kontakt klären, Online vs. vor Ort, erste Nachricht, und wie Freuly Profile derselben öffentlichen Kategorie zeigt.",
+      h1: "Psycholog:innen in Deutschland — fokussiert auf Ihre Sprache im Setting",
       breadcrumbsLabel: "Psycholog:innen in Deutschland",
       homeLabel: "Startseite",
       parentLabel: "Psychologie & Gesundheit",
       intro: [
-        "Ein Umzug nach Deutschland bringt oft gleichzeitig Erleichterung, Leistungsdruck und emotionale Erschöpfung mit sich. Wenn innere Themen anstehen, ist der erste Schritt nicht „noch mehr durchhalten“, sondern jemanden zu finden, dem Sie sich wirklich mitteilen können — in der Sprache, in der Ihre Geschichte ohne Übersetzung erzählt werden kann.",
-        "Diese Seite beschreibt, woran Sie erkennen können, ob ein Profil zu Ihrer Situation passt, und verweist auf echte Kontaktmöglichkeiten über Freuly. Darunter sehen Sie eine Auswahl psychologisch passender Profile, sofern sie in der Datenbank sichtbar sind.",
+        "Diese Seite richtet sich an Menschen, die bereits wissen: Sie wollen eine psychologische Fachkraft — nicht erst eine große Einführung in Coaching, Ernährung oder andere Überschriften. Der Schwerpunkt liegt auf Profilen mit Psychologie-Bezug und auf der Alltagsfrage, ob Beratung und Weiteres auf Ukrainisch, Russisch oder (mit) Deutsch stattfinden können.",
+        "Der Kontext „Deutschland + mehrere Sprachen“ ist hier kein Marketingdetail, sondern oft der Kern: Alltag, Arbeit, Familie in der Ukraine oder in der Ferne, Erschöpfung durch Sprachwechsel oder das Bedürfnis, emotionale Feinheiten nicht erst übersetzen zu müssen.",
+        "Die übergeordnete Seite „Psychologie & Gesundheit“ ordnet breiter ein; hier geht es um den nächsten praktischen Schritt — Profile vergleichen, filtern und anschreiben. Darunter sehen Sie eine Auswahl sichtbarer Profile aus derselben Logik wie die öffentliche Kategorie „Psycholog:innen“.",
       ],
-      subcategoriesTitle: "Verwandte Kategorien auf Freuly",
+      subcategoriesTitle: "Wenn Ihr Thema schmaler oder breiter ist",
       subcategories: [
         {
           slug: "psychologists",
-          label: "Alle Psycholog:innen (Übersicht)",
+          label: "Alle Psycholog:innen (öffentliche Kategorie)",
           description:
-            "Breitere Filter in der öffentlichen Kategorie — Stadt, Sprachen, Arbeit online oder vor Ort.",
+            "Volle Liste mit Stadt-, Sprach- und Formatfiltern — dieselbe Datengrundlage wie auf dieser Seite.",
         },
         {
           slug: "psychotherapists",
           label: "Psychotherapeut:innen",
-          description: "Wenn ein verfahrensgebundener Therapieprozess in Betracht kommt.",
+          description:
+            "Wenn Sie explizit einen verfahrensgebundenen Therapieweg prüfen — nicht jede psychologische Fachkraft ist Psychotherapeut:in im Approbationssinne.",
         },
         {
           slug: "coaches",
           label: "Coaches",
-          description: "Kurzfristige Ziele, Karriere, Stressbewältigung außerhalb klinischer Diagnosen.",
+          description:
+            "Wenn es primär um berufliche Ziele oder Struktur geht und Sie keine psychologische Fachkraft suchen.",
         },
       ],
       sections: [
         {
-          heading: "Warum „richtige Sprache“ mehr ist als Komfort",
+          heading: "Typische Suchanlässe — warum die Sprache der Session zählt",
           body: [
-            "Psychologische Arbeit lebt von Nuancen: Wut, Scham, Schuld oder Verlust formulieren Sie in Ihrer Muttersprache präziser — und Sie müssen weniger Energie in die grammatikalisch korrekte Fassung investieren.",
-            "Ein guter Fit berücksichtigt außerdem Migration, Familienerwartungen und biografische Brüche, ohne dass Sie alles erst „für Deutschland“ erklären müssen.",
+            "Viele Nutzer:innen kommen mit einem Mix aus Erschöpfung, Konflikten oder einer festgefahrenen Stressreaktion — und mit der Erfahrung, dass „nur Deutsch“ im Beratungszimmer schnell an innere Grenzen stößt, wenn es um Verlust, Schuldgefühl oder kulturelle Tabus geht.",
+            "Ukrainisch oder Russisch im therapeutischen Gespräch heißt nicht automatisch dieselbe Biografie wie bei Ihnen — aber oft leichterer Zugang zu Nuancen. Lesen Sie im Profil, welche Sprachen für die eigentliche Arbeit angeboten werden, nicht nur für die Website.",
           ],
         },
         {
-          heading: "Worauf Sie in einem Profil achten sollten",
+          heading: "Online, Präsenz oder hybrid — was sich im Alltag unterscheidet",
           bullets: [
-            "Welche Ausbildung wird genannt und welche Methoden werden angeboten?",
-            "Arbeitet die Person online, hybrid oder nur vor Ort — und passt das zu Ihrem Alltag?",
-            "Welche Sprachen werden explizit für die therapeutische Arbeit genannt?",
-            "Gibt es Hinweise auf Erfahrung mit Belastung durch Flucht, Verlust oder Diskriminierung?",
+            "Online: weniger Wegzeit, oft leichter einzubauen; klären Sie Ruhe, Vertraulichkeit zu Hause und was bei technischen Ausfällen gilt.",
+            "Vor Ort: anderer Raum, andere Körperhaltung — manche Themen erleben Menschen leichter ohne Laptop-Kamera.",
+            "Hybrid: Wechsel im Verlauf möglich, wenn die Person das anbietet — nicht jede Fachkraft kombiniert alle Formate.",
+            "Freuly zeigt, was im Profil steht; verbindliche Kapazitäten klären Sie in der Nachricht.",
           ],
         },
         {
-          heading: "Erster Kontakt ohne Romandinner",
-          body: "Halten Sie die erste Nachricht sachlich und dennoch persönlich: Altersspanne, aktuelle Belastung (zum Beispiel Schlaf, Panik, Konflikte), ob schon Behandlung läuft und in welchem Zeitraum Sie einen Termin brauchen. Daraus kann eine Fachkraft einschätzen, ob sie passend ist.",
+          heading: "Profil vergleichen — woran Sie einen ersten Fit messen",
+          bullets: [
+            "Benannte Schwerpunkte (Belastung, Trauer, ADHS-nahe Themen, Paararbeit …) statt nur ein generisches „ich höre zu“.",
+            "Sprachen explizit für die psychologische Arbeit, nicht nur Nebensatz „Sprachen: DE, EN“.",
+            "Format und ggf. Einzugsgebiet oder reine Online-Praxis.",
+            "Transparenz zu Ausbildung und dem, was die Person leistet — und was nicht; bei Unklarheit nachfragen.",
+          ],
+        },
+        {
+          heading: "Was Sie vor dem ersten Termin sachlich abfragen können",
+          body: [
+            "Ohne rechtliche oder kassenrechtliche Zusicherung von Freuly: viele Klärungen laufen direkt — etwa ob Erstgespräch und Folgesitzungen getrennt berechnet werden, wie häufig Sitzungen sinnvoll sind und ob eine andere Fachrichtung naheliegt.",
+            "Medizinische Diagnosen stellt die Plattform nicht; ob und wann ein ärztlicher Kontakt nötig ist, entscheidet nicht Ihr Profilvergleich allein.",
+          ],
+        },
+        {
+          heading: "Erste Nachricht und erste Sitzung — ohne Überversprechen",
+          body: [
+            "Eine knappe Nachricht reicht: aktuelle Belastung, ungefähre Dauer, ob schon Behandlung läuft, gewünschte Sprache und ob online oder vor Ort passt. Daraus kann die Gegenpartei ehrlich sagen: zuständig, Warteliste oder nicht passend.",
+            "Eine erste Sitzung ersetzt kein langes Vorab-Assessment im Netz — sie dient meist Kennenlernen, Erwartungen und ob Sie weiterarbeiten wollen. Passt die Chemie nicht, ist ein Wechsel legitim; das ist kein Versagen.",
+          ],
+        },
+        {
+          heading: "So nutzen Sie Freuly hier konkret",
+          body: [
+            "Lesen Sie Text und Sprachen im Profil, vergleichen Sie mehrere Personen. Nutzen Sie die Verlinkung zur Kategorie „Psycholog:innen“, wenn Sie Kartenfilter brauchen.",
+            "Brauchen Sie zuerst die große Landkarte über Coaching und Therapie-Unterschiede, springen Sie kurz zur übergeordneten Seite „Psychologie & Gesundheit“ — und kehren Sie hierher zurück, sobald der Fokus klar „Psycholog:in in Deutschland mit passender Sprache“ ist.",
+          ],
         },
       ],
-      specialistsTitle: "Sichtbare Psycholog:innen-Profile (Auswahl)",
+      specialistsTitle: "Psycholog:innen-Profile (Auswahl)",
       specialistsEmpty:
-        "Derzeit sind keine passenden Profile in dieser Auswahl sichtbar — öffnen Sie die Kategorie „Psycholog:innen“ über den Button unten oder versuchen Sie später erneut.",
+        "Aktuell keine passenden sichtbaren Profile — öffnen Sie die Kategorie „Psycholog:innen“ über den Button oder versuchen Sie es später erneut.",
       faqTitle: "Häufige Fragen",
       faq: [
         {
-          question: "Ist das eine Psychotherapie nach Heilpraktiker- oder Approbationsregeln?",
+          question: "Ist das dasselbe wie die allgemeine Übersicht „Psychologie & Gesundheit“?",
           answer:
-            "Das variiert von Profil zu Profil. Lesen Sie den Steckbrief aufmerksam und fragen Sie offen nach Status, Kostenübernahme und Methodik.",
+            "Nein. Die übergeordnete Seite erklärt das Themengebiet breiter; diese Seite ist auf die Kombination Psycholog:in in Deutschland plus Sprach-/Kontext gedacht und führt zur gleichen Profilfamilie wie die Kategorie „Psycholog:innen“.",
         },
         {
-          question: "Was, wenn ich sofort jemanden brauche?",
+          question: "Sind alle Listenden automatisch approbierte Psychotherapeut:innen?",
           answer:
-            "Bei Notlagen wenden Sie sich an lokale Krisendienste, psychiatrische Ambulanzen oder den ärztlichen Notdienst. Freuly ist kein Ersthelfer-Notruf.",
+            "Nein — Qualifikationen variieren. Das Profil sollte Ausbildung und Angebot nennen; bei der Frage nach approbierter Psychotherapie nach deutschem Recht müssen Sie direkt nachfragen.",
         },
         {
-          question: "Kann ich zuerst schreiben und dann telefonieren?",
+          question: "Übernimmt die Krankenkasse?",
           answer:
-            "Viele Profile auf Freuly beginnen mit einer schriftlichen Anfrage; ob ein Telefonat folgt, entscheidet die Fachkraft.",
+            "Das hängt von Status der Person, Vertrag und Einzelfall ab. Freuly ersetzt keine Prüfung Ihrer Kostenübernahme — klären Sie das in der Erstanfrage oder im Erstgespräch.",
+        },
+        {
+          question: "Was tun bei akuter Gefahr für mich oder andere?",
+          answer:
+            "Notruf 112 oder lokale Krisendienste — Freuly ist kein Echtzeit-Notdienst.",
+        },
+        {
+          question: "Kann ich nur schreiben und keinen Anruf?",
+          answer:
+            "Oft startet ein Text über die Plattform; ob Telefon oder Video folgt, legt die Fachkraft fest.",
+        },
+        {
+          question: "Was, wenn nach ein oder zwei Terminen der Fit nicht stimmt?",
+          answer:
+            "Das kommt vor. Besprechen Sie es offen oder suchen Sie jemand anderen — ein Profil ist ein Einstieg, kein lebenslanger Vertrag.",
         },
       ],
-      relatedTitle: "Weitere Freuly-Themen",
+      relatedTitle: "Zur Einordnung und zu Nachbarthemen",
       relatedLinks: [
         {
           href: "health-psychology",
-          label: "Psychologie & Gesundheit (Übersicht)",
-          description: "Zurück zur übergeordneten Einordnung aller Formate.",
+          label: "Psychologie & Gesundheit — Überblick (Parent)",
+          description:
+            "Wenn Sie noch zwischen Psycholog:in, Therapieform und anderen Formaten sortieren — danach wieder hierher für die konkrete Psycholog:innen-Suche.",
         },
         {
           href: "pflege-betreuung",
           label: "Pflege & Betreuung",
-          description: "Wenn statt Gespräch erst einmal Alltag und Betreuung drängen.",
+          description: "Wenn der Alltag Pflege braucht, nicht primär eine psychologische Erstsprechstunde.",
         },
         {
           href: "retreats",
           label: "Retreats",
-          description: "Intensive Gruppenformate als Ergänzung zur Einzelarbeit.",
+          description: "Gruppenintensive — andere Struktur als Einzelpsychologie.",
         },
       ],
       cta: {
-        heading: "Direkt alle Psycholog:innen filtern",
-        body: "In der öffentlichen Kategorie können Sie weiter einschränken — Ort, Sprache, Verfügbarkeit.",
-        buttonLabel: "Zur Psycholog:innen-Kategorie",
+        heading: "Alle Psycholog:innen mit Filtern öffnen",
+        body: "Gleiche Profilbasis wie hier — enger nach Stadt, Sprache und Verfügbarkeit eingrenzen.",
+        buttonLabel: "Zur Kategorie Psycholog:innen",
         ctaHref: "/de/category/psychologists",
       },
     },
@@ -121,99 +166,153 @@ export const psychologistsGermanyContent: LocalizedSeoCategory = {
       locale: "ru",
       categoryType: "child",
       metaTitle:
-        "Психологи в Германии на украинском и русском — как искать помощь | Freuly",
+        "Психологи в Германии: украинский, русский, немецкий — как выбрать | Freuly",
       metaDescription:
-        "Как найти психолога в Германии и на что смотреть в профиле: язык, формат, опыт. Freuly показывает специалистов с той же логикой, что и публичная категория «Психологи».",
-      h1: "Психологи в Германии — когда важнее язык, чем красивый заголовок",
+        "Узкий запрос: психологическая поддержка в Германии на понятном языке сессии. Сценарии, что спросить до встречи, онлайн и очно, первая заявка и первая встреча без обещаний исхода — плюс те же профили, что в категории «Психологи».",
+      h1: "Психологи в Германии — когда вы уже ищете человека, а не «про психологию вообще»",
       breadcrumbsLabel: "Психологи в Германии",
       homeLabel: "Главная",
       parentLabel: "Психология и здоровье",
       intro: [
-        "Переезд и жизнь между двумя странами часто сочетают надежду и усталость. Если внутри тревога, пустота или острый кризис, важна не только квалификация специалиста, но и возможность говорить так, чтобы вас слышали без лишних объяснений «контекста».",
-        "Здесь — практические ориентиры без обещаний волшебного решения. Ниже вы увидите выборку профилей психологов из той же базы, что и в разделе «Психологи», если такие анкеты сейчас проходят публичные правила отображения.",
+        "Страница для тех, кто вводит в поиске не «что такое психология», а кого-то конкретного: специалиста с психологическим профилем в Германии, с опорой на язык сессии — украинский, русский или немецкий в совместной работе.",
+        "Типичный контекст жизни в Германии при связях с Украиной или русскоязычным окружением: усталость от постоянного переключения языков, острые или затяжные переживания, семейные сюжеты через границу. Здесь не пересказ общей карты рынка — в отличие от родительской страницы «Психология и здоровье», где расширен зонт форматов.",
+        "Ниже — практические ориентиры и выборка профилей из той же публичной логики, что и раздел «Психологи».",
       ],
-      subcategoriesTitle: "Рядом по смыслу на Freuly",
+      subcategoriesTitle: "Если запрос уже не «только психолог»",
       subcategories: [
         {
           slug: "psychologists",
-          label: "Все психологи",
-          description: "Полный список с фильтрами по городу и языкам.",
+          label: "Все психологи (категория)",
+          description:
+            "Полный список с фильтрами — та же база, что и на этой странице.",
         },
         {
           slug: "psychotherapists",
           label: "Психотерапевты",
-          description: "Если нужен долгий терапевтический процесс, а не разовая поддержка.",
+          description:
+            "Когда важен именно длинный терапевтический процесс и статус в DE — не каждый психолог им является.",
         },
         {
           slug: "coaches",
           label: "Коучи",
-          description: "Цели, стресс на работе, структура — вне клинической диагностики.",
+          description:
+            "Если вам ближе цели и структура без запроса к психологическому профилю.",
         },
       ],
       sections: [
         {
-          heading: "Почему родной язык меняет качество контакта",
+          heading: "Кого вы ищете, открывая эту страницу",
           body: [
-            "Тонкие оттенки стыда, вины или злости быстрее проговариваются на привычном языке — меньше самоцензуры из-за «как бы это по-немецки сказать».",
-            "Не нужно отдельно объяснять, почему важны границы с родственниками или как устроена миграционная усталость: это остаётся в фокусе, а не в преамбуле.",
+            "Смысл — быстрее сойтись с тем, что вам нужен разговор с психологом или смежным профилем именно в немецком контексте и с языком под душу. Это не лонгрид «обо всём»: обзор ролей остаётся на родительской странице.",
+            "Если речь о суицидальных мыслях или немедленной опасности — сначала экстренные службы и очная помощь, не ожидание ответа в приложении.",
           ],
         },
         {
-          heading: "На что смотреть в анкете",
+          heading: "Ситуации, когда особенно часто ищут родной язык",
           bullets: [
-            "Образование, метод, указан ли опыт с мигрантскими историями.",
-            "Онлайн, очно или гибрид — совпадает это с вашим графиком или нет.",
-            "Явно ли перечислены языки для работы, а не только «знает разговорный».",
+            "Хронический стресс после переезда и нагрузки «быть сильным всё время».",
+            "Семейные конфликты на фоне войны, разлуки, статуса «гостя» в стране.",
+            "Паника, бессонница, выгорание — и ощущение, что на немецком вы описываете симптомы слишком сухо.",
+            "Потребность не объяснять миграцию с нуля, а работать с тем, что уже внутри.",
           ],
         },
         {
-          heading: "Первое сообщение",
-          body: "Достаточно трёх–пяти предложений: что болит сейчас, как давно, есть ли приём у врача и когда нужна первая встреча. Этого хватает, чтобы специалист понял, берётся ли он за запрос.",
+          heading: "Онлайн, очно, гибрид — на что смотреть в календаре",
+          bullets: [
+            "Онлайн: экономия дороги; уточните приватность дома и план на сбой связи.",
+            "Очно: другой контакт и границы пространства — иногда проще «дотронуться до тяжёлого» не через экран.",
+            "Гибрид: не у всех в анкете; спросите прямо.",
+          ],
+        },
+        {
+          heading: "Как сравнивать анкеты, не теряя время",
+          bullets: [
+            "Читаемое описание метода и тем, а не одно слово «тревога».",
+            "Языки именно для терапевтической работы.",
+            "Город или чистый онлайн — совпадает ли с вашим бытом.",
+            "Честная граница: что человек не делает (например, не работает с детьми).",
+          ],
+        },
+        {
+          heading: "Что уточнить до первого часа (без юридических обещаний с нашей стороны)",
+          body: [
+            "Стоимость первой и следующих встреч, формат оплаты, возможные очереди — это нормальные вопросы. Страховой статус и права по GKV/PKV мы не подтверждаем: это между вами и специалистом или вашей кассой.",
+            "Мы не ставим диагнозы и не оцениваем медицинскую срочность — при сомнении к врачу.",
+          ],
+        },
+        {
+          heading: "Первая заявка и первая встреча",
+          body: [
+            "В заявке: что болит сейчас, как долго, нужен ли язык сессии украинский/русский и онлайн или офлайн. Коротко — чтобы получить честный ответ «подхожу / нет / позже».",
+            "Первая встреча обычно про знакомство и договорённости, не «исцеление за час». Не сошлись — это нормальный повод искать другого человека.",
+          ],
+        },
+        {
+          heading: "Первый шаг в Freuly",
+          body: [
+            "Просмотрите несколько карточек, отфильтруйте категорию «Психологи» при необходимости. Родительская «Психология и здоровье» остаётся запасным входом, если вы ещё выбираете между коучем и психологом.",
+          ],
         },
       ],
-      specialistsTitle: "Примеры профилей психологов",
+      specialistsTitle: "Профили психологов (выборка)",
       specialistsEmpty:
-        "Сейчас в выборке никого нет — откройте категорию «Психологи» через кнопку ниже или зайдите позже.",
-      faqTitle: "Вопросы",
+        "Сейчас пусто — перейдите в категорию «Психологи» кнопкой ниже или зайдите позже.",
+      faqTitle: "Вопросы и ответы",
       faq: [
         {
-          question: "Это всегда психотерапия с немецкой approbatio?",
+          question: "Чем эта страница отличается от обзора «Психология и здоровье»?",
           answer:
-            "Нет, состав разный. Читайте в карточке статус и спрашивайте прямо про оплату и метод.",
+            "Родительская — широкий зонт и сравнение ролей. Здесь уместен узкий интент: психолог в Германии и язык сессии; меньше обзора, больше выбора человека.",
         },
         {
-          question: "Что делать в острой опасности?",
+          question: "Все здесь — психотерапевты по немецкому закону?",
           answer:
-            "Обращайтесь в неотложку и к местным кризисным службам; сайт и подбор не заменяют экстренную помощь.",
+            "Нет. Состав смешанный. Статус смотрите в профиле и уточняйте при сомнениях.",
         },
         {
-          question: "Можно ли сперва перепиской?",
+          question: "Freuly гарантирует результат терапии?",
           answer:
-            "На Freuly часто начинают с заявки; продолжение по телефону зависит от специалиста.",
+            "Нет — платформа показывает профили и контакт; исход зависит от задачи, пары специалист-клиент и обстоятельств.",
+        },
+        {
+          question: "Что при острой опасности?",
+          answer:
+            "Локальная неотложка и телефоны помощи — не переписка на сайте.",
+        },
+        {
+          question: "Можно только перепиской?",
+          answer:
+            "Часто первая точка — текст; звонок или видео по договорённости.",
+        },
+        {
+          question: "Не подошло после пары встреч?",
+          answer:
+            "Имеет смысл сказать прямо и поискать другого специалиста — это обычная практика.",
         },
       ],
-      relatedTitle: "Другие разделы",
+      relatedTitle: "Связанные страницы",
       relatedLinks: [
         {
           href: "health-psychology",
-          label: "Психология и здоровье — обзор",
-          description: "Шире: коучинг, смежные направления.",
+          label: "Психология и здоровье — родительский обзор",
+          description:
+            "Если нужно сначала развести психолога, терапию и коучинг — потом вернитесь сюда за выбором психолога.",
         },
         {
           href: "pflege-betreuung",
           label: "Уход и сопровождение",
-          description: "Если кризис быта важнее разговора.",
+          description: "Когда приоритет быт и уход, а не психологическая первая линия.",
         },
         {
           href: "retreats",
           label: "Ретриты",
-          description: "Смена ритма в малой группе.",
+          description: "Другая структура времени и группы.",
         },
       ],
       cta: {
-        heading: "Открыть категорию «Психологи»",
-        body: "Там доступны фильтры и полный список, синхронный с публичным поиском.",
-        buttonLabel: "К списку психологов",
+        heading: "Открыть полный список психологов",
+        body: "Фильтры по городу и языку — та же логика отображения, что здесь.",
+        buttonLabel: "К категории «Психологи»",
         ctaHref: "/ru/category/psychologists",
       },
     },
@@ -223,99 +322,150 @@ export const psychologistsGermanyContent: LocalizedSeoCategory = {
       locale: "ua",
       categoryType: "child",
       metaTitle:
-        "Психологи в Німеччині українською та російською — як шукати підтримку | Freuly",
+        "Психологи в Німеччині: українська, російська, німецька — вибір | Freuly",
       metaDescription:
-        "Як обрати психолога в Німеччині: мова, формат роботи, досвід. Freuly підтягує ті самі профілі, що й публічна категорія «Психологи».",
-      h1: "Психологи в Німеччині — коли зручна мова важливіша за гучну обіцянку",
+        "Дочірня сторінка під конкретний запит: психологічна підтримка в Німеччині рідною мовою сесії, практичні сценарії, онлайн чи офлайн, що узгодити до зустрічі, перша заявка — без медичних обіцянок. Профілі як у категорії «Психологи».",
+      h1: "Психологи в Німеччині — коли потрібен фахівець, а не вступ до «усієї психології»",
       breadcrumbsLabel: "Психологи в Німеччині",
       homeLabel: "Головна",
       parentLabel: "Психологія і здоров’я",
       intro: [
-        "Переїзд і життя «між двома світами» часто поєднує надію й виснаження. Якщо всередині тривога, втрата сенсу чи гострий злам, має значення не лише диплом спеціаліста, а й можливість вільно розповісти історію рідною мовою.",
-        "Нижче — орієнтири без обіцянок швидкого зцілення. Під текстом показані профілі з тієї ж логіки відбору, що й у розділі «Психологи», якщо такі анкети зараз публічні.",
+        "Сторінка для пошуку конкретного профілю психолога в Німеччині з опорою на мову роботи: українську, російську чи німецьку — як ви домовитеся. Це не довідка про всі напрями психічного здоров’я: широку карту ролей дає батьківська «Психологія і здоров’я».",
+        "Тут фокус на типових причинах шукати саме психолога саме тут: навантаження переїзду, подвійний культурний код, втома від постійного пояснювати себе німецькою, коли хочеться говорити про себе рідною мовою.",
+        "Далі — перевірені орієнтири й добірка акаунтів із тієї ж публічної логіки, що й розділ «Психологи».",
       ],
-      subcategoriesTitle: "Суміжне на Freuly",
+      subcategoriesTitle: "Якщо запит уже не лише «психолог»",
       subcategories: [
         {
           slug: "psychologists",
           label: "Усі психологи",
-          description: "Повний каталог із фільтрами міста й мов.",
+          description: "Повний каталог із фільтрами — та ж база.",
         },
         {
           slug: "psychotherapists",
           label: "Психотерапевти",
-          description: "Якщо потрібен тривалий терапевтичний процес.",
+          description: "Коли потрібен саме тривалий терапевтичний процес у німецьких рамках.",
         },
         {
           slug: "coaches",
           label: "Коучі",
-          description: "Цілі, навантаження на роботі, структура без клінічного діагнозу.",
+          description: "Якщо ближче цілі й звички, а не профіль психолога.",
         },
       ],
       sections: [
         {
-          heading: "Навіщо рідна мова у розмові про психіку",
+          heading: "Навіщо ця сторінка поруч із загальним оглядом",
           body: [
-            "Сором, злість, провина легше формулюються без перекладу в голові — менше самопідміни «правильними» словами.",
-            "Досвід війни, розлуки чи дискриміанції не потрібно спершу пояснювати іноземцю — ви одразу в темі запиту.",
+            "Вона відповідає на запит «мені потрібен психолог у Німеччині, і мова сесії критична». Батьківська пояснює парасольку форматів — коучинг, терапія, консультування; тут менше повтору теорії, більше дій із профілями.",
+            "Гострий стан загрози життю — до екстрених служб, не до очікування відповіді в кабінеті на сайті.",
           ],
         },
         {
-          heading: "На що дивитися в профілі",
+          heading: "Сценарії, де часто шукають рідну мову",
           bullets: [
-            "Освіта, метод, чи є досвід з людьми з міграційним досвідом.",
-            "Онлайн, офлайн чи гібрид — чи підходить вашому тижню.",
-            "Мови вказані саме для терапевтичної роботи.",
+            "Вигорання, тривога, порушення сну без «гучного» діагнозу в голові.",
+            "Родинні конфлікти на відстані або після переїзду.",
+            "Потреба не витрачати сесію на переклад емоцій з української в «правильну» німецьку.",
+            "Репетиторство німецької вже не допомагає з психологічним навантаженням.",
           ],
         },
         {
-          heading: "Перше повідомлення",
-          body: "Коротко: що болить зараз, як довго, чи є лікування в лікаря, коли потрібен перший контакт — цього достатньо для чесної відповіді «так / не мій профіль».",
+          heading: "Онлайн, офлайн, змішаний формат",
+          bullets: [
+            "Онлайн — зручність графіка; уточіть приватність і резерв на технічні збої.",
+            "Офлайн — інший простір тіла; деякі теми легше без «квадратика» в ноутбуці.",
+            "Комбінація — лише якщо фахівець це пропонує.",
+          ],
+        },
+        {
+          heading: "Як обрати без зайвого скролу",
+          bullets: [
+            "Зрозуміле описання тем і методу.",
+            "Мови саме для терапевтичної роботи.",
+            "Місто чи чистий онлайн.",
+            "Якщо вказано межі: з якими групами не працює людина — це добрий знак.",
+          ],
+        },
+        {
+          heading: "Що узгодити до оплати години",
+          body: [
+            "Вартість першої та наступних зустрічей, можлива черга — нормальні питання. Страхове покриття Freuly не підтверджує: це між вами, фахівцем і вашим договором.",
+            "Діагнози й медична невідкладність — зона лікаря; не покладайтеся лише на порівняння профілів.",
+          ],
+        },
+        {
+          heading: "Перше повідомлення і перша зустріч",
+          body: [
+            "Напишіть коротко: що зараз найгостріше, скільки триває, який мова сесії і формат. Достатньо для відповіді «беру / не беру / пізніше».",
+            "Перша зустріч зазвичай про знайомство і угоду про роботу, не про миттєвий ефект. Якщо контакт не «зійшовся» — можна шукати іншого.",
+          ],
+        },
+        {
+          heading: "Перший крок у Freuly",
+          body: [
+            "Порівняйте кілька профілів, за потреби відкрийте категорію «Психологи». Якщо ще ламаєтеся між коучем і психологом — спершу батьківська сторінка, потім сюди.",
+          ],
         },
       ],
-      specialistsTitle: "Приклади анкет",
+      specialistsTitle: "Профілі психологів (добірка)",
       specialistsEmpty:
-        "Зараз список порожній — перейдіть у категорію «Психологи» кнопкою нижче або зайдіть пізніше.",
-      faqTitle: "Питання",
+        "Поки порожньо — кнопка нижче веде до повної категорії.",
+      faqTitle: "Питання та відповіді",
       faq: [
         {
-          question: "Усі тут — ліцензовані психотерапевти?",
+          question: "Чим це відрізняється від огляду «Психологія і здоров’я»?",
           answer:
-            "Ні. Уважно читайте статус і уточнюйте оплату та метод напряму.",
+            "Батьківська дає карту напрямів; тут — звуження до пошуку психолога в Німеччині з мовним акцентом.",
         },
         {
-          question: "Гострий стан — що робити?",
+          question: "Чи всі — ліцензовані психотерапевти в Німеччині?",
           answer:
-            "Терміново до служб екстреної допомоги й кризових ліній; платформа не замінює екстрену допомогу.",
+            "Ні. Перевіряйте профіль і запитуйте прямо про статус.",
         },
         {
-          question: "Чи можна почати листуванням?",
+          question: "Чи гарантує платформа результат?",
           answer:
-            "Часто перший контакт текстовий; телефон узгоджується окремо.",
+            "Ні — показує профілі; результат залежить від запиту та пари клієнт-фахівець.",
+        },
+        {
+          question: "Гостра небезпека?",
+          answer:
+            "Служби 112 і локальні кризові лінії — не лист у формі на сайті.",
+        },
+        {
+          question: "Можна лише текстом?",
+          answer:
+            "Часто так; телефон або відео за домовленістю.",
+        },
+        {
+          question: "Що якщо не зайшло після кількох зустрічей?",
+          answer:
+            "Нормально озвучити й обрати іншого спеціаліста.",
         },
       ],
-      relatedTitle: "Інші розділи",
+      relatedTitle: "Зв’язані розділи",
       relatedLinks: [
         {
           href: "health-psychology",
-          label: "Психологія і здоров’я — огляд",
-          description: "Повернутися до ширшої карти напрямів.",
+          label: "Психологія і здоров’я — батьківський огляд",
+          description:
+            "Якщо треба спочатку відокремити ролі — потім поверніться сюди для вибору психолога.",
         },
         {
           href: "pflege-betreuung",
           label: "Догляд і супровід",
-          description: "Якщо зараз важливіший побут, ніж розмова.",
+          description: "Коли головне — побут і догляд за близьким.",
         },
         {
           href: "retreats",
           label: "Ретрити",
-          description: "Інший темп і структура групи.",
+          description: "Інший формат часу та групи.",
         },
       ],
       cta: {
-        heading: "Категорія «Психологи»",
-        body: "Повний список і фільтри, зіставні з публічним пошуком.",
-        buttonLabel: "Перейти до списку",
+        heading: "Відкрити категорію «Психологи»",
+        body: "Фільтри міста та мови — та ж база профілів.",
+        buttonLabel: "До списку психологів",
         ctaHref: "/ua/category/psychologists",
       },
     },
