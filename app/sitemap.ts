@@ -71,6 +71,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.3,
   });
 
+  entries.push({
+    url: `${DOMAIN}/for-specialists`,
+    lastModified,
+    changeFrequency: "weekly",
+    priority: 0.6,
+  });
+
   const supabase = createSupabaseServerClient();
   const { data: specialists } = await supabase
     .from("specialists")
