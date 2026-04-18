@@ -86,7 +86,7 @@ export const tourenAusfluegeContent: LocalizedSeoCategory = {
         },
         {
           heading: "So nutzen Sie Freuly",
-          body: "Lesen Sie Profil und Bewertungsankündigungen, schreiben Sie zweimal mit derselben Story — so sehen Sie, wer nachfragt statt paste-bare Standardantworten zu senden.",
+          body: "Profil, Sprachen und beschriebene Leistungen genau lesen; dieselbe Anfrage zweimal mit leicht anderer Formulierung stellen — so erkennen Sie, wer konkret nachfragt statt nur vorformulierte Antworten zu senden.",
         },
       ],
       specialistsTitle: "Guides und Tour-Anbieter (Auswahl)",

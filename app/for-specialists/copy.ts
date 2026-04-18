@@ -16,6 +16,9 @@ export type ForSpecialistsCopy = {
   steps: { title: string; items: readonly { number: string; title: string; description: string }[] };
   faq: { title: string; items: readonly { q: string; a: string }[] };
   finalCta: { headline: string; button: string };
+  /** Labels for /become-specialist after social and after steps (hero + push use dedicated strings) */
+  ctaAfterSocial: string;
+  ctaAfterSteps: string;
 };
 
 export const FOR_SPECIALISTS_COPY: Record<Lang, ForSpecialistsCopy> = {
@@ -80,7 +83,7 @@ export const FOR_SPECIALISTS_COPY: Record<Lang, ForSpecialistsCopy> = {
         "Менше ризику загубити звернення у загальному потоці повідомлень.",
         "Швидша відповідь — зручніше і вам, і людині, що написала.",
       ],
-      cta: "Створити профіль спеціаліста",
+      cta: "Зареєструватись і відкрити профіль",
       imageAlt: "Push-сповіщення про нову заявку у Freuly",
     },
     steps: {
@@ -129,6 +132,8 @@ export const FOR_SPECIALISTS_COPY: Record<Lang, ForSpecialistsCopy> = {
       headline: "Готові додати профіль як ще одну точку видимості?",
       button: "Перейти до реєстрації спеціаліста",
     },
+    ctaAfterSocial: "Продовжити з анкетою профілю",
+    ctaAfterSteps: "До форми для фахівців",
   },
 
   ru: {
@@ -192,7 +197,7 @@ export const FOR_SPECIALISTS_COPY: Record<Lang, ForSpecialistsCopy> = {
         "Меньше риска потерять заявку в общем потоке сообщений.",
         "Быстрее ответ — удобнее и вам, и человеку, который написал.",
       ],
-      cta: "Создать профиль специалиста",
+      cta: "Зарегистрироваться и открыть профиль",
       imageAlt: "Push-уведомление о новой заявке в Freuly",
     },
     steps: {
@@ -241,6 +246,8 @@ export const FOR_SPECIALISTS_COPY: Record<Lang, ForSpecialistsCopy> = {
       headline: "Готовы добавить профиль как ещё одну точку видимости?",
       button: "Перейти к регистрации специалиста",
     },
+    ctaAfterSocial: "Перейти к анкете профиля",
+    ctaAfterSteps: "К форме для специалистов",
   },
 
   de: {
@@ -304,7 +311,7 @@ export const FOR_SPECIALISTS_COPY: Record<Lang, ForSpecialistsCopy> = {
         "Weniger Risiko, eine Anfrage im allgemeinen Nachrichtenstrom zu übersehen.",
         "Schnellere Antwort — gut für Sie und für die Person, die geschrieben hat.",
       ],
-      cta: "Profil als Fachkraft anlegen",
+      cta: "Registrieren und Profil anlegen",
       imageAlt: "Push-Benachrichtigung über eine neue Anfrage bei Freuly",
     },
     steps: {
@@ -353,5 +360,7 @@ export const FOR_SPECIALISTS_COPY: Record<Lang, ForSpecialistsCopy> = {
       headline: "Profil als weitere Sichtbarkeit hinzufügen?",
       button: "Zur Registrierung für Fachkräfte",
     },
+    ctaAfterSocial: "Zum Profil-Formular",
+    ctaAfterSteps: "Zur Fachkraft-Registrierung",
   },
 };

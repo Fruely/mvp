@@ -25,7 +25,7 @@ export const psychologistsGermanyContent: LocalizedSeoCategory = {
       homeLabel: "Startseite",
       parentLabel: "Psychologie & Gesundheit",
       intro: [
-        "Diese Seite richtet sich an Menschen, die bereits wissen: Sie wollen eine psychologische Fachkraft — nicht erst eine große Einführung in Coaching, Ernährung oder andere Überschriften. Der Schwerpunkt liegt auf Profilen mit Psychologie-Bezug und auf der Alltagsfrage, ob Beratung und Weiteres auf Ukrainisch, Russisch oder (mit) Deutsch stattfinden können.",
+        "Diese Seite richtet sich an Menschen, die bereits wissen: Sie wollen eine psychologische Fachkraft in Deutschland — nicht zuerst einen Rundgang durch alle Gesundheits- und Beratungsstile, bevor es konkret wird. Der Schwerpunkt liegt auf Profilen mit Psychologie-Bezug und auf der Alltagsfrage, ob Beratung und Weiteres auf Ukrainisch, Russisch oder (mit) Deutsch stattfinden können.",
         "Der Kontext „Deutschland + mehrere Sprachen“ ist hier kein Marketingdetail, sondern oft der Kern: Alltag, Arbeit, Familie in der Ukraine oder in der Ferne, Erschöpfung durch Sprachwechsel oder das Bedürfnis, emotionale Feinheiten nicht erst übersetzen zu müssen.",
         "Die übergeordnete Seite „Psychologie & Gesundheit“ ordnet breiter ein; hier geht es um den nächsten praktischen Schritt — Profile vergleichen, filtern und anschreiben. Darunter sehen Sie eine Auswahl sichtbarer Profile aus derselben Logik wie die öffentliche Kategorie „Psycholog:innen“.",
       ],
@@ -52,10 +52,10 @@ export const psychologistsGermanyContent: LocalizedSeoCategory = {
       ],
       sections: [
         {
-          heading: "Typische Suchanlässe — warum die Sprache der Session zählt",
+          heading: "Typische Suchanlässe — nächster Schritt nach der großen Übersicht",
           body: [
-            "Viele Nutzer:innen kommen mit einem Mix aus Erschöpfung, Konflikten oder einer festgefahrenen Stressreaktion — und mit der Erfahrung, dass „nur Deutsch“ im Beratungszimmer schnell an innere Grenzen stößt, wenn es um Verlust, Schuldgefühl oder kulturelle Tabus geht.",
-            "Ukrainisch oder Russisch im therapeutischen Gespräch heißt nicht automatisch dieselbe Biografie wie bei Ihnen — aber oft leichterer Zugang zu Nuancen. Lesen Sie im Profil, welche Sprachen für die eigentliche Arbeit angeboten werden, nicht nur für die Website.",
+            "Viele Nutzer:innen landen hier mit dem Ziel, schneller einen konkreten Gesprächspartner zu finden — und mit der Erfahrung, dass rein deutschsprachige Beratung schnell stockt, wenn Nuancen fehlen oder kulturelle Tabus unbenannt bleiben.",
+            "Ukrainisch oder Russisch im Gespräch ersetzt keine gemeinsame Biografie — erleichtert aber oft den Zugang. Lesen Sie im Profil, welche Sprachen für die eigentliche Arbeit angeboten werden, nicht nur für die Website.",
           ],
         },
         {
@@ -203,7 +203,7 @@ export const psychologistsGermanyContent: LocalizedSeoCategory = {
         {
           heading: "Кого вы ищете, открывая эту страницу",
           body: [
-            "Смысл — быстрее сойтись с тем, что вам нужен разговор с психологом или смежным профилем именно в немецком контексте и с языком под душу. Это не лонгрид «обо всём»: обзор ролей остаётся на родительской странице.",
+            "Смысл — быстрее сойтись с тем, что вам нужен разговор с психологом или смежным профилем именно в немецком контексте и с языком под душу. Это не лонгрид «обо всём»: сопоставление ролей (психолог / терапия / коучинг) — на входной странице раздела «Психология и здоровье».",
             "Если речь о суицидальных мыслях или немедленной опасности — сначала экстренные службы и очная помощь, не ожидание ответа в приложении.",
           ],
         },

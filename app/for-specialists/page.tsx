@@ -63,7 +63,7 @@ export default async function ForSpecialistsPage() {
               href="/become-specialist"
               className="inline-flex h-12 items-center justify-center rounded-xl bg-emerald-600 px-7 text-base font-semibold text-white transition hover:bg-emerald-700"
             >
-              {copy.hero.cta}
+              {copy.ctaAfterSocial}
             </Link>
           </div>
         </section>
@@ -147,7 +147,7 @@ export default async function ForSpecialistsPage() {
               href="/become-specialist"
               className="inline-flex h-12 items-center justify-center rounded-xl bg-emerald-600 px-7 text-base font-semibold text-white transition hover:bg-emerald-700"
             >
-              {copy.push.cta}
+              {copy.ctaAfterSteps}
             </Link>
           </div>
         </section>
