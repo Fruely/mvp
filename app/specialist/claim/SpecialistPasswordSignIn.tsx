@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { getSupabase } from "@/lib/supabaseClient";
 import { specialistDashboardHrefClient } from "@/lib/specialists/dashboardHref";
 
 export default function SpecialistPasswordSignIn() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,6 +22,7 @@ export default function SpecialistPasswordSignIn() {
     setLoading(true);
     try {
       const supabase = getSupabase();
+      await supabase.auth.signOut();
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: trimmedEmail,
         password: trimmedPassword,
@@ -36,9 +35,10 @@ export default function SpecialistPasswordSignIn() {
         }
         return;
       }
+      const targetHref = specialistDashboardHrefClient();
       if (data.session) {
-        router.replace(specialistDashboardHrefClient());
-        router.refresh();
+        window.location.assign(`${window.location.origin}${targetHref}`);
+        return;
       } else {
         setError(
           "Вход выполнен, но сессия не создана. Проверьте подтверждение email в письме или попробуйте ещё раз."
