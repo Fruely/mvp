@@ -5,11 +5,22 @@ import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const supabase = createSupabaseServerClient();
+  let supabase;
+  try {
+    supabase = createSupabaseServerClient();
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Server misconfiguration";
+    return NextResponse.json(
+      { error: message, code: "config" },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
+    );
+  }
 
+  // Only columns guaranteed by geo migration (supabase-specialists-listing.sql).
+  // Omit optional fields (e.g. city) that may be missing on older DBs — PostgREST returns 400 for unknown select columns.
   const { data, error } = await supabase
     .from("specialists")
-    .select("id, lat, lng, city")
+    .select("id, lat, lng")
     .eq("is_active", true)
     .eq("is_visible", true)
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
@@ -19,8 +30,12 @@ export async function GET() {
 
   if (error) {
     return NextResponse.json(
-      { error: error.message },
-      { status: 500, headers: { "Cache-Control": "no-store" } }
+      {
+        error: error.message,
+        code: error.code ?? "supabase",
+        details: error.details ?? null,
+      },
+      { status: 502, headers: { "Cache-Control": "no-store" } }
     );
   }
 
@@ -30,7 +45,6 @@ export async function GET() {
       id: r.id as string,
       lat: r.lat as number,
       lng: r.lng as number,
-      city: typeof r.city === "string" ? r.city : null,
     }));
 
   return NextResponse.json(
