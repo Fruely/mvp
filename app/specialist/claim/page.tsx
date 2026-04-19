@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { createSupabaseServerClient as createAuthServerClient } from "@/lib/supabase/auth-server";
+import { createSupabaseServerComponentClient as createAuthServerClient } from "@/lib/supabase/auth-server";
 import { specialistDashboardPath } from "@/lib/specialists/navigation";
 import ClaimNoTokenHandler from "./ClaimNoTokenHandler";
 import ClaimInitButton from "./ClaimInitButton";

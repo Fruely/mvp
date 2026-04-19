@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
+import { createSupabaseServerComponentClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { specialistLangBecomePath } from "@/lib/specialists/navigation";
 
@@ -36,7 +36,7 @@ const COLS =
   "id, user_id, name, email, phone, category_id, status, password_set_at";
 
 export async function getCurrentUserAndSpecialist() {
-  const supabase = createSupabaseServerClient();
+  const supabase = createSupabaseServerComponentClient();
   const service = createServiceClient();
 
   let user;

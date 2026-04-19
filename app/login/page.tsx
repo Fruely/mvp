@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { specialistDashboardPath } from "@/lib/specialists/navigation";
 import SpecialistPasswordSignIn from "@/app/specialist/claim/SpecialistPasswordSignIn";
-import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
+import { createSupabaseServerComponentClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 
 /**
@@ -13,7 +13,7 @@ import { createSupabaseServerClient as createServiceClient } from "@/lib/supabas
 export const dynamic = "force-dynamic";
 
 export default async function LoginPage() {
-  const authClient = createSupabaseServerClient();
+  const authClient = createSupabaseServerComponentClient();
   const serviceClient = createServiceClient();
 
   const {
