@@ -78,7 +78,7 @@ curl -X POST https://your-domain.vercel.app/api/specialists/application \
     "phone": "+49123456789",
     "category_id": "psychologists",
     "proof_link": "https://example.com/proof.pdf",
-    "terms_accepted": true
+    "specialist_rules_accepted": true
   }'
 ```
 

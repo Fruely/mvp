@@ -29,7 +29,7 @@ type FormData = {
   category_id: string;
   stoir_number: string;
   about_short: string;
-  terms_accepted: boolean;
+  specialist_rules_accepted: boolean;
 };
 
 export default function SpecialistApplicationForm({
@@ -51,7 +51,7 @@ export default function SpecialistApplicationForm({
     category_id: "",
     stoir_number: "",
     about_short: "",
-    terms_accepted: false,
+    specialist_rules_accepted: false,
   });
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -127,8 +127,10 @@ export default function SpecialistApplicationForm({
     if (!proofFile) {
       errors.proof = t(dict, "application.errors.proofRequired", { defaultValue: "Завантажте документ (PDF або зображення)" });
     }
-    if (!formData.terms_accepted) {
-      errors.terms_accepted = t(dict, "application.errors.termsRequired", { defaultValue: "Потрібно прийняти умови" });
+    if (!formData.specialist_rules_accepted) {
+      errors.specialist_rules_accepted = t(dict, "application.errors.specialistRulesRequired", {
+        defaultValue: "Потрібно прийняти правила розміщення спеціалістів",
+      });
     }
 
     setFieldErrors(errors);
@@ -170,7 +172,7 @@ export default function SpecialistApplicationForm({
         category_id: formData.category_id.trim(),
         stoir_number: formData.stoir_number.trim() || null,
         about_short: formData.about_short.trim() || null,
-        terms_accepted: formData.terms_accepted,
+        specialist_rules_accepted: formData.specialist_rules_accepted,
         photo_base64: photo_base64 || null,
         proof_link,
       };
@@ -194,7 +196,7 @@ export default function SpecialistApplicationForm({
         category_id: "",
         stoir_number: "",
         about_short: "",
-        terms_accepted: false,
+        specialist_rules_accepted: false,
       });
       setPhotoFile(null);
       setProofFile(null);
@@ -410,32 +412,41 @@ export default function SpecialistApplicationForm({
             <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
-                name="terms_accepted"
-                checked={formData.terms_accepted}
+                name="specialist_rules_accepted"
+                checked={formData.specialist_rules_accepted}
                 onChange={handleChange}
-                className="w-5 h-5 text-blue-600 rounded mt-0.5"
+                className="w-5 h-5 shrink-0 text-blue-600 rounded mt-0.5"
               />
-              <span className="text-sm font-semibold text-gray-700">
-                {t(dict, "application.termsAccepted", {
-                  defaultValue: "Я приймаю умови",
-                })}{" "}
-                <span className="text-red-500">*</span>
+              <span className="text-sm text-gray-800 leading-snug">
+                {t(dict, "application.specialistRulesCheckbox.before")}{" "}
+                <Link
+                  href={`/${lang}/specialist-rules`}
+                  className="font-semibold text-blue-600 underline hover:text-blue-700"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t(dict, "application.specialistRulesCheckbox.link")}
+                </Link>{" "}
+                {t(dict, "application.specialistRulesCheckbox.after")}
+                <span className="text-red-500"> *</span>
               </span>
             </label>
             <p className="mt-2 ml-8 text-sm text-gray-500">
-              Бесплатное размещение X месяцев, далее 49,90 €/мес. Можно
-              отказаться в любой момент.
+              {t(dict, "application.pricingNote", {
+                defaultValue:
+                  "Безкоштовне розміщення на перші місяці, далі підписка за тарифом.",
+              })}
             </p>
-            {fieldErrors.terms_accepted && (
+            {fieldErrors.specialist_rules_accepted && (
               <p className="mt-1 text-sm text-red-600">
-                {fieldErrors.terms_accepted}
+                {fieldErrors.specialist_rules_accepted}
               </p>
             )}
           </div>
 
           <button
             type="submit"
-            disabled={loading || !formData.terms_accepted}
+            disabled={loading || !formData.specialist_rules_accepted}
             className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (

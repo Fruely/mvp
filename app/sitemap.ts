@@ -47,6 +47,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     });
 
+    entries.push({
+      url: `${DOMAIN}/${lang}/specialist-rules`,
+      lastModified,
+      changeFrequency: "yearly",
+      priority: 0.4,
+    });
+
     for (const slug of SEO_CATEGORY_SLUGS) {
       entries.push({
         url: `${DOMAIN}/${lang}/${slug}`,

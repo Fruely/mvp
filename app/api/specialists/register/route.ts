@@ -42,6 +42,14 @@ export async function POST(request: NextRequest) {
     const email = normalizeEmail(body?.email);
     const phone = normalizePhone(body?.phone);
     const password = normalizePassword(body?.password);
+    const specialistRulesAccepted = body?.specialist_rules_accepted === true;
+
+    if (!specialistRulesAccepted) {
+      return jsonNoStore(
+        { error: "specialist_rules_required" },
+        { status: 400 }
+      );
+    }
 
     if (!name || !email || !phone || !password) {
       return jsonNoStore(
@@ -78,6 +86,7 @@ export async function POST(request: NextRequest) {
     }
 
     const now = new Date().toISOString();
+    const rulesVersion = process.env.SPECIALIST_RULES_VERSION || "1";
     const { data: specialist, error: specialistError } = await supabase
       .from("specialists")
       .insert({
@@ -89,6 +98,8 @@ export async function POST(request: NextRequest) {
         is_active: false,
         is_visible: false,
         created_at: now,
+        specialist_rules_accepted_at: now,
+        specialist_rules_version: rulesVersion,
       })
       .select("id, name, email, phone, status")
       .single();

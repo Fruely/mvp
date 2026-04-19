@@ -82,3 +82,29 @@ export function hreflangSupport(): HreflangTriple {
     de: `${SITE_DOMAIN}/de/support`,
   };
 }
+
+export const SPECIALIST_RULES_METADATA = {
+  ua: {
+    title: "Правила розміщення спеціалістів на Freuly",
+    description:
+      "Умови розміщення профілю та послуг спеціалістів на платформі Freuly: достовірність, якість контенту та відповідність кваліфікації.",
+  },
+  ru: {
+    title: "Правила размещения специалистов на Freuly",
+    description:
+      "Условия размещения профиля и услуг специалистов на платформе Freuly: достоверность, качество контента и соответствие квалификации.",
+  },
+  de: {
+    title: "Regeln für die Platzierung von Spezialisten auf Freuly",
+    description:
+      "Bedingungen für Profil und Leistungen auf Freuly: Wahrhaftigkeit, Qualität der Inhalte und Nachweis der Qualifikation.",
+  },
+} as const;
+
+export function hreflangSpecialistRules(): HreflangTriple {
+  return {
+    uk: `${SITE_DOMAIN}/ua/specialist-rules`,
+    ru: `${SITE_DOMAIN}/ru/specialist-rules`,
+    de: `${SITE_DOMAIN}/de/specialist-rules`,
+  };
+}

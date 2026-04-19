@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       about_short,
       photo_base64,
       proof_link,
-      terms_accepted,
+      specialist_rules_accepted,
     } = body;
 
     // -----------------------------
@@ -51,9 +51,9 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    if (terms_accepted !== true) {
+    if (specialist_rules_accepted !== true) {
       return NextResponse.json(
-        { error: "Terms must be accepted" },
+        { error: "Specialist placement rules must be accepted" },
         { status: 400 }
       );
     }
@@ -84,6 +84,8 @@ export async function POST(req: NextRequest) {
       email_confirmed_at: shouldRequireEmailVerification ? null : now,
       terms_accepted_at: now,
       terms_version: process.env.TERMS_VERSION || "1.0",
+      specialist_rules_accepted_at: now,
+      specialist_rules_version: process.env.SPECIALIST_RULES_VERSION || "1",
     };
 
     const supabase = createSupabaseServerClient();

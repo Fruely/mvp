@@ -467,6 +467,30 @@
     "submit": "Bewerbung absenden",
     "submitting": "Wird gesendet...",
     "loading": "Wird geladen...",
+    "stoirNumber": "Store-Nummer",
+    "photo": "Foto",
+    "proof": "Nachweisdokument (PDF oder Bild)",
+    "aboutShort": "Kurz über mich",
+    "pricingNote": "Kostenlose Platzierung für die ersten Monate, danach Abo nach Tarif. Sie können jederzeit kündigen.",
+    "specialistRulesCheckbox": {
+      "before": "Ich habe die",
+      "link": "Regeln für die Platzierung von Spezialisten",
+      "after": "auf der Freuly-Plattform gelesen und verpflichte mich, sie einzuhalten."
+    },
+    "quickRegister": {
+      "title": "Registrierung als Spezialist",
+      "subtitle": "Mindestangaben: E-Mail, Telefon und Passwort. Nach der Kontoerstellung gelangen Sie ins Dashboard.",
+      "password": "Passwort",
+      "passwordPlaceholder": "Mindestens 8 Zeichen",
+      "phoneLabel": "Telefon",
+      "phonePlaceholder": "+49 …",
+      "emailPlaceholder": "you@example.com",
+      "button": "Konto erstellen und zum Dashboard",
+      "creating": "Konto wird erstellt…",
+      "nameTooShort": "Vor- und Nachname müssen mindestens 2 Zeichen haben.",
+      "loginLine": "Sie haben bereits ein Konto?",
+      "loginLink": "Anmelden"
+    },
     "success": {
       "title": "Vielen Dank für Ihre Bewerbung!",
       "message": "Wir haben eine E-Mail zur Bestätigung gesendet. Nach der Bestätigung wird Ihre Bewerbung manuell geprüft."
@@ -475,13 +499,56 @@
       "nameRequired": "Name ist erforderlich",
       "emailRequired": "E-Mail ist erforderlich",
       "emailInvalid": "Ungültiges E-Mail-Format",
+      "phoneRequired": "Telefon ist erforderlich",
       "categoryRequired": "Kategorie ist erforderlich",
       "locationRequired": "Stadt oder Postleitzahl angeben",
       "proofLinkRequired": "Link ist erforderlich",
+      "proofRequired": "Bitte laden Sie ein Dokument hoch (PDF oder Bild)",
       "proofLinkInvalid": "Ungültiges Link-Format",
       "languagesRequired": "Wählen Sie mindestens eine Sprache",
+      "specialistRulesRequired": "Bitte akzeptieren Sie die Regeln für die Platzierung von Spezialisten",
       "submitFailed": "Fehler beim Senden der Bewerbung"
     }
+  },
+  "specialistRules": {
+    "backToHome": "← Zur Startseite",
+    "title": "Regeln für die Platzierung von Spezialisten auf Freuly",
+    "intro": "Damit die Plattform hilfreich, verständlich und vertrauenswürdig bleibt, müssen alle Spezialistinnen und Spezialisten die Regeln für Profil und Leistungen einhalten.",
+    "closing": "Mit der Veröffentlichung des Profils auf Freuly bestätigt der Spezialist, dass er diese Regeln versteht, akzeptiert und einhalten wird.",
+    "rules": [
+      {
+        "title": "Wahrhaftigkeit der Angaben",
+        "body": "Spezialistinnen und Spezialisten dürfen nur wahrheitsgemäße und aktuelle Angaben zu ihrer Person machen. Es ist untersagt, falsche, unvollständige oder irreführende Informationen zu Qualifikation, Erfahrung, Dokumenten oder Leistungen zu veröffentlichen."
+      },
+      {
+        "title": "Qualität der Fotos",
+        "body": "Für das Profil sind angemessene, qualitativ gute und passende Fotos erforderlich. Zufällige Bilder, unscharfe Fotos, Fotos von Zetteln oder Fremdobjekten, Memes, Scherze oder Bilder, die das Vertrauen in Profil und Plattform schwächen, sind nicht erlaubt."
+      },
+      {
+        "title": "Realität und Verständlichkeit der Leistungen",
+        "body": "Leistungen müssen real, verständlich und zum Profil passend sein. Absurde, erfundene, widersprüchliche oder offenkundig unseriöse Beschreibungen sind untersagt."
+      },
+      {
+        "title": "Übereinstimmung mit der Qualifikation",
+        "body": "Wird eine Berufsausübung oder Spezialisierung genannt, für die ein Kompetenznachweis erwartet wird, muss der Spezialist bereit sein, Nachweise vorzulegen, die sich auf den genannten Tätigkeitsbereich beziehen."
+      },
+      {
+        "title": "Unzulässige Fehldarstellung der Qualifikation",
+        "body": "Man darf sich nicht als Fachkraft in einem Bereich ausgeben, der nicht durch Ausbildung, Dokumente, Erfahrung oder andere nachvollziehbare Gründe belegt ist. Beispiel: Man darf sich nicht als Psychologin oder Psychologe positionieren, wenn die eingereichten Nachweise eine andere Profession betreffen und die behauptete Qualifikation nicht belegen."
+      },
+      {
+        "title": "Preise und Konditionen",
+        "body": "Angaben zu Preisen und Konditionen müssen fair formuliert sein und Nutzer nicht irreführen. Offenkundig absurde, unseriöse, die Plattform diskreditierende oder unangemessene Preis- und Konditionstexte sind untersagt."
+      },
+      {
+        "title": "Missbrauch der Plattform",
+        "body": "Die Plattform darf nicht für Trolling, Spam, digitale Rowdysmus, Test- oder Provokationsinhalte oder Handlungen genutzt werden, die das Vertrauen in die Plattform und ihre Spezialistinnen und Spezialisten untergraben."
+      },
+      {
+        "title": "Rechte der Plattform",
+        "body": "Freuly darf Profile aus der Veröffentlichung nehmen, die Sichtbarkeit einschränken, Profile oder Konten deaktivieren oder löschen, wenn sie gegen die Regeln verletzen, unzutreffende Informationen enthalten, Qualitätsstandards nicht erfüllen oder das Vertrauen der Nutzer in die Plattform schwächen."
+      }
+    ]
   },
   "dashboard": {
     "helpers": {
