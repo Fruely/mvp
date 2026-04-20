@@ -179,5 +179,12 @@ export async function POST() {
     });
   }
 
+  const { error: founderRpcError } = await supabase.rpc("try_assign_founder_badge", {
+    p_specialist_id: specialistId,
+  });
+  if (founderRpcError) {
+    console.warn("[specialist/dashboard/publish] try_assign_founder_badge:", founderRpcError.message);
+  }
+
   return jsonNoStore({ success: true, status: updated.status });
 }

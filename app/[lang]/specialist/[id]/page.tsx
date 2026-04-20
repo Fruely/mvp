@@ -60,6 +60,7 @@ interface Specialist {
   user_id?: string | null;
   lat?: number | null;
   lng?: number | null;
+  founder_badge?: boolean;
   specialist_services?: Array<{
     id: string;
     title: string;
@@ -507,6 +508,7 @@ export default function SpecialistPage() {
             workModeText={workModeLabel}
             isNew={isNewActive}
             newBadgeLabel={sectionText.newBadge}
+            showFounderBadge={specialist.founder_badge === true}
             successMessage={leadSuccessMessage}
             aboutPreview={aboutText || null}
             aboutHref="#about"

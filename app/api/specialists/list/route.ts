@@ -25,6 +25,7 @@ type SpecialistRow = {
   lng?: number | null;
   mobile_service?: boolean | null;
   service_radius_km?: number | null;
+  founder_badge?: boolean | null;
 };
 
 type ProfileRow = {
@@ -279,11 +280,11 @@ export async function GET(request: NextRequest) {
     }
 
     const fullSelect =
-      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,is_featured,lat,lng,mobile_service,service_radius_km)';
+      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,is_featured,lat,lng,mobile_service,service_radius_km,founder_badge)';
     const safeSelect =
-      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,is_featured)';
+      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,is_featured,founder_badge)';
     const fallbackSelect =
-      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,created_at,is_featured)';
+      'specialist_id,specialists!inner(id,slug,name,bio,avatar_url,category_id,languages,created_at,is_featured,founder_badge)';
 
     let rows: SpecialistRow[] | null = null;
     let queryError: { message?: string } | null = null;
@@ -368,7 +369,7 @@ export async function GET(request: NextRequest) {
 
       const fullDirect = await supabase
         .from("specialists")
-        .select("id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,is_featured,lat,lng,mobile_service,service_radius_km")
+        .select("id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,is_featured,lat,lng,mobile_service,service_radius_km,founder_badge")
         .eq("category_id", categoryId)
         .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
         .eq("is_active", true)
@@ -381,7 +382,7 @@ export async function GET(request: NextRequest) {
         console.log("[specialists/list] direct fullDirect failed, trying safe direct select:", directError.message);
         const safeDirect = await supabase
           .from("specialists")
-          .select("id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,is_featured")
+          .select("id,slug,name,bio,avatar_url,category_id,languages,work_format,approved_at,created_at,is_featured,founder_badge")
           .eq("category_id", categoryId)
           .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
           .eq("is_active", true)
@@ -427,6 +428,7 @@ export async function GET(request: NextRequest) {
             lng: (r.lng as number) ?? null,
             mobile_service: (r.mobile_service as boolean) ?? null,
             service_radius_km: (r.service_radius_km as number) ?? null,
+            founder_badge: typeof r.founder_badge === "boolean" ? r.founder_badge : null,
           })) as SpecialistRow[];
       }
     }
@@ -543,6 +545,7 @@ export async function GET(request: NextRequest) {
         languages: Array.isArray(row.languages) ? row.languages.slice(0, 8) : [],
         is_verified: false,
         is_featured: row.is_featured === true,
+        founder_badge: row.founder_badge === true,
         created_at: row.created_at ?? null,
         is_new: Boolean(newUntilTs && nowTs < newUntilTs),
         new_until: newUntil,
@@ -667,6 +670,7 @@ export async function GET(request: NextRequest) {
         languages: rest.languages,
         is_verified: rest.is_verified,
         is_featured: rest.is_featured,
+        founder_badge: rest.founder_badge,
         created_at: rest.created_at,
         is_new: rest.is_new,
         new_until: rest.new_until,

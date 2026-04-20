@@ -33,6 +33,7 @@ interface SpecialistPreview {
   price_comment?: string | null;
   mobile_service?: boolean;
   service_radius_km?: number | null;
+  founder_badge?: boolean;
 }
 
 interface Category {
@@ -122,6 +123,7 @@ function normalizeSpecialistPreview(input: any): SpecialistPreview | null {
     mobile_service: Boolean(input.mobile_service),
     service_radius_km:
       typeof input.service_radius_km === "number" ? input.service_radius_km : null,
+    founder_badge: input.founder_badge === true,
   };
 }
 

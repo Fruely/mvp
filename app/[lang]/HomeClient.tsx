@@ -10,6 +10,7 @@ import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import GermanyMapCTA from "@/components/home/GermanyMapCTA";
 import HeroSearch from "@/components/HeroSearch";
+import FounderBadge from "@/components/specialist/FounderBadge";
 
 type MosaicImage = { url: string; alt?: string; category_id?: string };
 
@@ -87,6 +88,7 @@ type RecommendedSpecialist = {
   about_line?: string | null;
   rating_avg: number | null;
   reviews_count: number;
+  founder_badge?: boolean;
 };
 
 const CATEGORY_ICON_HINTS = [
@@ -313,6 +315,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             about_line: typeof item.about_line === "string" ? item.about_line : null,
             rating_avg: typeof item.rating_avg === "number" ? item.rating_avg : null,
             reviews_count: typeof item.reviews_count === "number" ? item.reviews_count : 0,
+            founder_badge: item.founder_badge === true,
           }));
         setRecommendedSpecialists(normalized);
       } catch {
@@ -355,7 +358,12 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
               href={getSpecialistUrl(lang, specialist)}
               className="group rounded-md border bg-white shadow-card overflow-hidden flex h-full flex-col transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
             >
-              <div className="aspect-square w-full overflow-hidden bg-gray-100">
+              <div className="relative aspect-square w-full overflow-hidden bg-gray-100">
+                {specialist.founder_badge ? (
+                  <div className="absolute left-3 top-3 z-10">
+                    <FounderBadge />
+                  </div>
+                ) : null}
                 {specialist.avatar_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img

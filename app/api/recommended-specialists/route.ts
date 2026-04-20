@@ -37,7 +37,7 @@ export async function GET() {
   const { data: specRows, error: specError } = await supabase
     .from("specialists")
     .select(
-      "id, slug, name, avatar_url, category_id, languages, featured_priority, is_featured, specialist_services!inner(id, title, price_from, is_active)"
+      "id, slug, name, avatar_url, category_id, languages, featured_priority, is_featured, founder_badge, specialist_services!inner(id, title, price_from, is_active)"
     )
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
     .eq("is_active", true)
@@ -176,6 +176,7 @@ export async function GET() {
       featured_priority: row.featured_priority ?? 0,
       rating_avg: ratingBySpecialistId.get(row.id)?.rating_avg ?? null,
       reviews_count: ratingBySpecialistId.get(row.id)?.reviews_count ?? 0,
+      founder_badge: (row as { founder_badge?: boolean }).founder_badge === true,
     };
   });
 

@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Globe, Laptop, MapPin } from "lucide-react";
+import FounderBadge from "@/components/specialist/FounderBadge";
 
 export default function SpecialistHero({
   name,
@@ -11,6 +12,7 @@ export default function SpecialistHero({
   workModeText,
   isNew,
   newBadgeLabel,
+  showFounderBadge,
   successMessage,
   aboutPreview,
   aboutHref,
@@ -26,6 +28,7 @@ export default function SpecialistHero({
   workModeText?: string | null;
   isNew: boolean;
   newBadgeLabel: string;
+  showFounderBadge?: boolean;
   successMessage?: string | null;
   aboutPreview?: string | null;
   aboutHref: string;
@@ -40,6 +43,7 @@ export default function SpecialistHero({
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-semibold leading-tight tracking-tight text-textPrimary">{name}</h1>
+            {showFounderBadge ? <FounderBadge /> : null}
             {isNew ? (
               <span className="rounded-full bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white">{newBadgeLabel}</span>
             ) : null}

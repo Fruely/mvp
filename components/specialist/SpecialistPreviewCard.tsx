@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { t, type Dictionary } from "@/lib/i18n";
 import { getSpecialistUrl } from "@/lib/urls";
+import FounderBadge from "@/components/specialist/FounderBadge";
 
 type SpecialistPreview = {
   id: string;
@@ -30,6 +31,7 @@ type SpecialistPreview = {
   price_comment?: string | null;
   mobile_service?: boolean;
   service_radius_km?: number | null;
+  founder_badge?: boolean;
 };
 
 function workFormatLabel(workFormat: SpecialistPreview["work_format"]): string {
@@ -157,6 +159,7 @@ export default function SpecialistPreviewCard({
         </button>
 
         <div className="absolute left-3 top-3 flex flex-col gap-2">
+          {specialist.founder_badge === true ? <FounderBadge /> : null}
           {specialist.is_verified ? (
             <span className="rounded-full bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white shadow">
               {t(dict, "specialist.verified")}
