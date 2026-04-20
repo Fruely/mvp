@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     const { data: specialist, error: specialistError } = await supabase
       .from("specialists")
-      .select("id, telegram_chat_id")
+      .select("id, telegram_chat_id, name, category_id")
       .eq("id", specialist_id)
       .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
       .eq("is_active", true)
@@ -92,6 +92,26 @@ export async function POST(request: NextRequest) {
         { error: "Specialist not found" },
         { status: 404 }
       );
+    }
+
+    const specRow = specialist as {
+      id: string;
+      telegram_chat_id: unknown;
+      name: string | null;
+      category_id: string | null;
+    };
+
+    let category_title: string | null = null;
+    if (specRow.category_id) {
+      const { data: catRow } = await supabase
+        .from("categories")
+        .select("title")
+        .eq("id", specRow.category_id)
+        .maybeSingle();
+      const title = (catRow as { title?: string | null } | null)?.title;
+      if (typeof title === "string" && title.trim()) {
+        category_title = title.trim();
+      }
     }
 
     const insertPayload = {
@@ -123,8 +143,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const specialistName =
+      typeof specRow.name === "string" && specRow.name.trim()
+        ? specRow.name.trim()
+        : null;
+
     await notify("NEW_LEAD", {
       lead_id: String(data.id),
+      specialist_name: specialistName,
+      category_title,
       client_name: client_name.trim(),
       client_phone: client_phone.trim(),
       client_email: client_email.trim(),
@@ -139,12 +166,15 @@ export async function POST(request: NextRequest) {
           : null,
     });
 
-    const tgChatId = specialist.telegram_chat_id;
-    if (tgChatId != null) {
+    const tgRaw = specRow.telegram_chat_id;
+    if (
+      tgRaw != null &&
+      (typeof tgRaw === "string" || typeof tgRaw === "number")
+    ) {
       const appUrl = process.env.APP_URL || "https://freuly.de";
       const text = `🔔 Новая заявка Freuly\n\nИмя: ${client_name || "—"}\nТелефон: ${client_phone || "—"}\nEmail: ${client_email || "—"}\n\nСообщение:\n${message || "—"}`;
       const ok = await sendTelegramMessage(
-        tgChatId,
+        tgRaw,
         text,
         `${appUrl}${specialistDashboardPath("leads")}`
       );
