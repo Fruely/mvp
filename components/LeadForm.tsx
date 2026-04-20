@@ -78,6 +78,8 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
       message: message || null,
       source: "specialist_profile",
       source_path: pathname,
+      referrer:
+        typeof document !== "undefined" ? document.referrer || null : null,
       hp,
     };
 

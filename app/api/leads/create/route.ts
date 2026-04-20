@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
       message,
       source,
       source_path,
+      referrer,
       hp,
     } = body;
 
@@ -120,13 +121,24 @@ export async function POST(request: NextRequest) {
       client_email: client_email || null,
       client_phone: client_phone || null,
       message: message || null,
+      source:
+        typeof source === "string" && source.trim() ? source.trim() : null,
+      source_path:
+        typeof source_path === "string" && source_path.trim()
+          ? source_path.trim()
+          : null,
+      referrer:
+        typeof referrer === "string" && referrer.trim()
+          ? referrer.trim()
+          : null,
     };
 
-    if (source || source_path) {
+    if (source || source_path || referrer) {
       console.info("[leads/create] lead source", {
         specialist_id,
         source: typeof source === "string" ? source : "unknown",
         source_path: typeof source_path === "string" ? source_path : "unknown",
+        referrer: typeof referrer === "string" ? referrer : "unknown",
       });
     }
 
@@ -163,6 +175,10 @@ export async function POST(request: NextRequest) {
       source_path:
         typeof source_path === "string" && source_path.trim()
           ? source_path.trim()
+          : null,
+      referrer:
+        typeof referrer === "string" && referrer.trim()
+          ? referrer.trim()
           : null,
     });
 

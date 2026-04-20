@@ -15,6 +15,7 @@ export type NewLeadOwnerPayload = {
   message: string | null;
   source?: string | null;
   source_path?: string | null;
+  referrer?: string | null;
 };
 
 function formatNewLeadOwnerMessage(p: NewLeadOwnerPayload): string {
@@ -36,10 +37,12 @@ function formatNewLeadOwnerMessage(p: NewLeadOwnerPayload): string {
   lines.push(msg ? msg : "—");
   const src = typeof p.source === "string" ? p.source.trim() : "";
   const path = typeof p.source_path === "string" ? p.source_path.trim() : "";
-  if (src || path) {
+  const ref = typeof p.referrer === "string" ? p.referrer.trim() : "";
+  if (src || path || ref) {
     lines.push("");
     if (src) lines.push(`Источник: ${src}`);
     if (path) lines.push(`Страница: ${path}`);
+    if (ref) lines.push(`Реферер: ${ref}`);
   }
   return lines.join("\n");
 }
