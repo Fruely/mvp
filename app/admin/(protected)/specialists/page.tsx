@@ -49,6 +49,9 @@ export default function AdminSpecialistsPage() {
   const [togglingActiveById, setTogglingActiveById] = useState<Record<string, boolean>>({});
   const [moderatingById, setModeratingById] = useState<Record<string, boolean>>({});
   const [resendingById, setResendingById] = useState<Record<string, boolean>>({});
+  const [deletingSpecialistById, setDeletingSpecialistById] = useState<
+    Record<string, boolean>
+  >({});
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [expandedRejectionId, setExpandedRejectionId] = useState<string | null>(null);
   const [rejectModal, setRejectModal] = useState<{ id: string; reason: string } | null>(null);
@@ -228,6 +231,83 @@ export default function AdminSpecialistsPage() {
       });
     } finally {
       setUpdatingById((prev) => ({ ...prev, [id]: false }));
+    }
+  }
+
+  async function hardDeleteSpecialist(specialistId: string) {
+    const activeToken = token?.trim();
+    if (!activeToken) {
+      setToast({ type: "error", message: "Введите токен." });
+      return;
+    }
+    const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!baseUrl || !anonKey) {
+      setToast({
+        type: "error",
+        message:
+          "Не заданы NEXT_PUBLIC_SUPABASE_URL или NEXT_PUBLIC_SUPABASE_ANON_KEY (нужны для Edge Function).",
+      });
+      return;
+    }
+    if (
+      typeof window !== "undefined" &&
+      !window.confirm(
+        "Безвозвратно удалить специалиста, файлы в Storage и связанные данные в БД?"
+      )
+    ) {
+      return;
+    }
+    const deleteAuthUser =
+      typeof window !== "undefined" &&
+      window.confirm(
+        "Также удалить учётную запись входа Supabase Auth (auth.users) для этого пользователя? «Отмена» — оставить только удаление профиля и данных."
+      );
+
+    setDeletingSpecialistById((prev) => ({ ...prev, [specialistId]: true }));
+    setToast(null);
+    try {
+      const res = await fetch(`${baseUrl}/functions/v1/admin_delete_specialist`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${anonKey}`,
+          "x-admin-token": activeToken,
+        },
+        body: JSON.stringify({
+          specialist_id: specialistId,
+          delete_auth_user: deleteAuthUser,
+        }),
+      });
+      const json = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        auth_user_deleted?: boolean;
+      };
+      if (!res.ok || !json.ok) {
+        const msg =
+          typeof json.error === "string"
+            ? json.error
+            : res.status === 404
+              ? "Специалист не найден"
+              : "Не удалось удалить специалиста";
+        setToast({ type: "error", message: msg });
+        return;
+      }
+      setToast({
+        type: "success",
+        message: json.auth_user_deleted
+          ? "Специалист и учётная запись входа удалены."
+          : "Специалист и связанные данные удалены.",
+      });
+      await fetchSpecialists(activeToken, activeStatus);
+    } catch (e: unknown) {
+      setToast({
+        type: "error",
+        message: e instanceof Error ? e.message : "Ошибка запроса",
+      });
+    } finally {
+      setDeletingSpecialistById((prev) => ({ ...prev, [specialistId]: false }));
     }
   }
 
@@ -651,6 +731,20 @@ export default function AdminSpecialistsPage() {
                             ) : null}
                             {specialistId && (
                               <>
+                                {activeStatus === "approved" && (
+                                  <button
+                                    type="button"
+                                    onClick={() => hardDeleteSpecialist(specialistId)}
+                                    disabled={
+                                      !!deletingSpecialistById[specialistId] || !hasToken
+                                    }
+                                    className="px-3 py-1 rounded-md border border-gray-800 text-xs font-semibold text-gray-900 hover:bg-gray-100 disabled:opacity-50"
+                                  >
+                                    {deletingSpecialistById[specialistId]
+                                      ? "…"
+                                      : "Удалить навсегда"}
+                                  </button>
+                                )}
                                 <button
                                   type="button"
                                   onClick={() => moderateSpecialist(specialistId, "approve")}

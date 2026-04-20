@@ -1,0 +1,6 @@
+# Supabase CLI / Edge Functions — minimal config for this repo.
+# See: https://supabase.com/docs/guides/functions
+
+[functions.admin_delete_specialist]
+# Custom gate via x-admin-token + ADMIN_API_TOKEN (same as Next.js admin API)
+verify_jwt = false
