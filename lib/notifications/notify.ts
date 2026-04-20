@@ -4,6 +4,38 @@ const errorCooldown = new Map<string, { last: number; count: number }>();
 
 export type NotifyEventType = "NEW_SPECIALIST" | "NEW_LEAD" | "SYSTEM_ERROR";
 
+/** Owner Telegram text for a new lead (from /api/leads/create). */
+export type NewLeadOwnerPayload = {
+  lead_id: string;
+  client_name: string | null;
+  client_phone: string | null;
+  client_email: string | null;
+  message: string | null;
+  source?: string | null;
+  source_path?: string | null;
+};
+
+function formatNewLeadOwnerMessage(p: NewLeadOwnerPayload): string {
+  const lines: string[] = ["Новая заявка Freuly", "", `ID: ${p.lead_id}`];
+  const name = p.client_name?.trim();
+  if (name) lines.push(`Имя: ${name}`);
+  const phone = p.client_phone?.trim();
+  if (phone) lines.push(`Телефон: ${phone}`);
+  const email = p.client_email?.trim();
+  if (email) lines.push(`Email: ${email}`);
+  lines.push("Сообщение:");
+  const msg = p.message?.trim();
+  lines.push(msg ? msg : "—");
+  const src = typeof p.source === "string" ? p.source.trim() : "";
+  const path = typeof p.source_path === "string" ? p.source_path.trim() : "";
+  if (src || path) {
+    lines.push("");
+    if (src) lines.push(`Источник: ${src}`);
+    if (path) lines.push(`Страница: ${path}`);
+  }
+  return lines.join("\n");
+}
+
 function formatErrorForMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   return String(error);
@@ -15,7 +47,7 @@ export async function notify(
 ): Promise<void>;
 export async function notify(
   eventType: "NEW_LEAD",
-  payload: { service: string }
+  payload: NewLeadOwnerPayload
 ): Promise<void>;
 export async function notify(
   eventType: "SYSTEM_ERROR",
@@ -25,7 +57,7 @@ export async function notify(
   eventType: NotifyEventType,
   payload:
     | { name: string }
-    | { service: string }
+    | NewLeadOwnerPayload
     | { route: string; error?: unknown }
 ): Promise<void> {
   console.log("[FREULY][EVENT]", eventType);
@@ -33,7 +65,7 @@ export async function notify(
   if (eventType === "NEW_SPECIALIST") {
     message = `Новый специалист:\n${(payload as { name: string }).name}`;
   } else if (eventType === "NEW_LEAD") {
-    message = `Новая заявка:\n${(payload as { service: string }).service}`;
+    message = formatNewLeadOwnerMessage(payload as NewLeadOwnerPayload);
   } else {
     const p = payload as { route: string; error?: unknown };
     const key = `${p.route}:${formatErrorForMessage(p.error)}`;

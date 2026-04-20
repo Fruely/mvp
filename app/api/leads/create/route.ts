@@ -124,10 +124,19 @@ export async function POST(request: NextRequest) {
     }
 
     await notify("NEW_LEAD", {
-      service:
-        typeof message === "string" && message.trim()
-          ? message.trim()
-          : "—",
+      lead_id: String(data.id),
+      client_name: client_name.trim(),
+      client_phone: client_phone.trim(),
+      client_email: client_email.trim(),
+      message: typeof message === "string" ? message : null,
+      source:
+        typeof source === "string" && source.trim()
+          ? source.trim()
+          : null,
+      source_path:
+        typeof source_path === "string" && source_path.trim()
+          ? source_path.trim()
+          : null,
     });
 
     const tgChatId = specialist.telegram_chat_id;
