@@ -105,7 +105,6 @@ export async function GET() {
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
     .eq("is_active", true)
     .eq("is_visible", true)
-    .eq("is_verified", true)
     .eq("specialist_services.is_active", true)
     .gt("specialist_services.price_from", 0)
     .not("specialist_services.title", "eq", "")
