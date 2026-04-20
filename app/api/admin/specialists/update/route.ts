@@ -151,7 +151,6 @@ export async function POST(request: NextRequest) {
       name: string | null;
       phone: string | null;
       category_id: string | null;
-      stoir_number: string | null;
       about_short: string | null;
       avatar_url: string | null;
       terms_accepted_at?: string | null;
@@ -242,7 +241,6 @@ export async function POST(request: NextRequest) {
         phone: app.phone.trim(),
         category_id: app.category_id,
         avatar_url: app.avatar_url || null,
-        stoir_number: app.stoir_number || null,
         bio: app.about_short?.trim() || null,
         status: 'published_unverified',
         approved_at: now.toISOString(),

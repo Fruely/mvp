@@ -8,7 +8,6 @@ type Application = {
   name: string | null;
   phone: string | null;
   category: string | null;
-  stoir_number: string | null;
   about_short: string | null;
   proof_link: string | null;
   created_at: string | null;
@@ -589,7 +588,6 @@ export default function AdminSpecialistsPage() {
                 <th className="px-3 py-2 border-b">Имя</th>
                 <th className="px-3 py-2 border-b">Телефон</th>
                 <th className="px-3 py-2 border-b">Категория</th>
-                <th className="px-3 py-2 border-b">Стоир</th>
                 <th className="px-3 py-2 border-b">Документ</th>
                 <th className="px-3 py-2 border-b">О себе</th>
                 <th className="px-3 py-2 border-b">Действия</th>
@@ -598,7 +596,7 @@ export default function AdminSpecialistsPage() {
             <tbody>
               {data.length === 0 ? (
                 <tr>
-                  <td className="px-3 py-4 text-gray-600" colSpan={9}>
+                  <td className="px-3 py-4 text-gray-600" colSpan={8}>
                     {hasToken
                       ? activeStatus === "pending_review"
                         ? "Нет заявок на модерацию (или не удалось загрузить)."
@@ -625,7 +623,6 @@ export default function AdminSpecialistsPage() {
                         <td className="px-3 py-2 border-b font-medium text-gray-900">{app.name || "—"}</td>
                         <td className="px-3 py-2 border-b">{app.phone || "—"}</td>
                         <td className="px-3 py-2 border-b">{app.category || "—"}</td>
-                        <td className="px-3 py-2 border-b">{app.stoir_number || "—"}</td>
                         <td className="px-3 py-2 border-b">
                           {app.proof_link ? (
                             <a href={app.proof_link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
@@ -766,7 +763,7 @@ export default function AdminSpecialistsPage() {
                       </tr>
                       {isExpanded && (
                         <tr>
-                          <td colSpan={9} className="border-b bg-gray-50 px-3 py-2 text-xs text-gray-600">
+                          <td colSpan={8} className="border-b bg-gray-50 px-3 py-2 text-xs text-gray-600">
                             <div className="space-y-1">
                               <div>
                                 <span className="font-medium text-gray-700">Отклонено: </span>

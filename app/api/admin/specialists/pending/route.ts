@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
     const supabase = createSupabaseServerClient();
 
-    const cols = 'id, email, name, phone, category_id, stoir_number, about_short, proof_link, created_at, status, rejection_reason, rejected_at';
+    const cols = 'id, email, name, phone, category_id, about_short, proof_link, created_at, status, rejection_reason, rejected_at';
 
     let rows: Array<Record<string, unknown>> = [];
     let error: { message?: string } | null = null;

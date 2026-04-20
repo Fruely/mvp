@@ -27,7 +27,6 @@ type FormData = {
   name: string;
   phone: string;
   category_id: string;
-  stoir_number: string;
   about_short: string;
   specialist_rules_accepted: boolean;
 };
@@ -49,7 +48,6 @@ export default function SpecialistApplicationForm({
     name: "",
     phone: "",
     category_id: "",
-    stoir_number: "",
     about_short: "",
     specialist_rules_accepted: false,
   });
@@ -170,7 +168,6 @@ export default function SpecialistApplicationForm({
         name: formData.name.trim(),
         phone: formData.phone.trim(),
         category_id: formData.category_id.trim(),
-        stoir_number: formData.stoir_number.trim() || null,
         about_short: formData.about_short.trim() || null,
         specialist_rules_accepted: formData.specialist_rules_accepted,
         photo_base64: photo_base64 || null,
@@ -194,7 +191,6 @@ export default function SpecialistApplicationForm({
         name: "",
         phone: "",
         category_id: "",
-        stoir_number: "",
         about_short: "",
         specialist_rules_accepted: false,
       });
@@ -333,27 +329,6 @@ export default function SpecialistApplicationForm({
               ))}
             </select>
             {fieldErrors.category_id && <p className="mt-1 text-sm text-red-600">{fieldErrors.category_id}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              {t(dict, "application.stoirNumber", { defaultValue: "Номер стора" })}
-            </label>
-            <input
-              type="text"
-              name="stoir_number"
-              value={formData.stoir_number}
-              onChange={handleChange}
-              placeholder=""
-              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition ${
-                fieldErrors.stoir_number ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {fieldErrors.stoir_number && (
-              <p className="mt-1 text-sm text-red-600">
-                {fieldErrors.stoir_number}
-              </p>
-            )}
           </div>
 
           <div>

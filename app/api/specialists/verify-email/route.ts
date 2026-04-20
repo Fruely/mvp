@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 
     const { data: application, error: fetchError } = await supabase
       .from("specialist_applications")
-      .select("id, email, name, phone, category_id, stoir_number, about_short, proof_link, created_at, status, email_verification_token")
+      .select("id, email, name, phone, category_id, about_short, proof_link, created_at, status, email_verification_token")
       .eq("email_verification_token", token)
       .maybeSingle();
 
@@ -42,7 +42,6 @@ export async function GET(request: NextRequest) {
       name: string | null;
       phone: string | null;
       category_id: string | null;
-      stoir_number: string | null;
       about_short: string | null;
       proof_link: string | null;
       created_at: string | null;
@@ -98,7 +97,6 @@ export async function GET(request: NextRequest) {
 <li><strong>Имя:</strong> ${row.name ?? "—"}</li>
 <li><strong>Телефон:</strong> ${row.phone ?? "—"}</li>
 <li><strong>Категория:</strong> ${categoryLabel}</li>
-<li><strong>Номер стора:</strong> ${row.stoir_number ?? "—"}</li>
 <li><strong>Дата заявки:</strong> ${createdLabel}</li>
 </ul>
 ${row.about_short ? `<p><strong>О себе:</strong><br/>${row.about_short}</p>` : ""}
