@@ -4,13 +4,58 @@ import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 export const dynamic = "force-dynamic";
 
-function shuffle<T>(items: T[]): T[] {
+/** Homepage grid: 4 founder + 4 featured + 4 general */
+const QUOTA_FOUNDER = 4;
+const QUOTA_FEATURED = 4;
+const QUOTA_GENERAL = 4;
+const TOTAL_SLOTS = QUOTA_FOUNDER + QUOTA_FEATURED + QUOTA_GENERAL;
+const FETCH_LIMIT = 120;
+
+type SpecialistRow = {
+  id: string;
+  slug?: string | null;
+  name?: string | null;
+  avatar_url?: string | null;
+  category_id?: string | null;
+  languages?: string[] | null;
+  featured_priority?: number | null;
+  is_featured?: boolean | null;
+  founder_badge?: boolean | null;
+  specialist_services?: unknown;
+};
+
+/** Deterministic PRNG for seeded shuffle (stable within same seed). */
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a += 0x6d2b79f5;
+    let t = Math.imul(a ^ (a >>> 15), a | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seededShuffle<T>(items: T[], seed: number): T[] {
+  const rng = mulberry32(seed);
   const next = [...items];
   for (let i = next.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rng() * (i + 1));
     [next[i], next[j]] = [next[j], next[i]];
   }
   return next;
+}
+
+/** UTC calendar day mixed into a 32-bit seed. */
+function utcDaySeed(d: Date): number {
+  const y = d.getUTCFullYear();
+  const m = d.getUTCMonth() + 1;
+  const day = d.getUTCDate();
+  return (y * 10000 + m * 100 + day) >>> 0;
+}
+
+/** UTC 12-hour window index (stable within ~12h). */
+function utcHalfDaySeed(d: Date): number {
+  return Math.floor(d.getTime() / (12 * 60 * 60 * 1000)) >>> 0;
 }
 
 function hasValidServiceForRecommended(services: unknown): boolean {
@@ -31,8 +76,26 @@ function hasValidServiceForRecommended(services: unknown): boolean {
   });
 }
 
+function takeUniqueById(
+  ordered: SpecialistRow[],
+  used: Set<string>,
+  n: number
+): SpecialistRow[] {
+  const out: SpecialistRow[] = [];
+  for (const row of ordered) {
+    if (out.length >= n) break;
+    if (!row?.id || used.has(row.id)) continue;
+    used.add(row.id);
+    out.push(row);
+  }
+  return out;
+}
+
 export async function GET() {
   const supabase = createSupabaseServerClient();
+  const now = new Date();
+  const seedDay = utcDaySeed(now);
+  const seedHalfDay = utcHalfDaySeed(now);
 
   const { data: specRows, error: specError } = await supabase
     .from("specialists")
@@ -46,22 +109,88 @@ export async function GET() {
     .eq("specialist_services.is_active", true)
     .gt("specialist_services.price_from", 0)
     .not("specialist_services.title", "eq", "")
-    .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false })
-    .limit(24);
+    .limit(FETCH_LIMIT);
 
   if (specError) {
     return jsonNoStore({ error: specError.message }, { status: 500 });
   }
 
-  const specialists = (specRows ?? []).filter((row) =>
-    hasValidServiceForRecommended(
-      (row as { specialist_services?: unknown }).specialist_services
-    )
-  );
-  if (specialists.length === 0) return jsonNoStore({ data: [] });
+  const byId = new Map<string, SpecialistRow>();
+  for (const row of specRows ?? []) {
+    const r = row as SpecialistRow;
+    if (!r?.id || !hasValidServiceForRecommended(r.specialist_services)) continue;
+    if (!byId.has(r.id)) byId.set(r.id, r);
+  }
+  const base = Array.from(byId.values());
+  if (base.length === 0) return jsonNoStore({ data: [] });
 
-  const specialistIds = specialists.map((r) => r.id);
+  const used = new Set<string>();
+
+  const founderPool = base.filter((s) => s.founder_badge === true);
+  const founderOrdered = seededShuffle(founderPool, seedDay ^ 0x4f4e4445);
+  let founderPick = takeUniqueById(founderOrdered, used, QUOTA_FOUNDER);
+
+  if (founderPick.length < QUOTA_FOUNDER) {
+    const backfill = base.filter((s) => !used.has(s.id) && s.founder_badge !== true);
+    const extra = takeUniqueById(
+      seededShuffle(backfill, seedDay ^ 0x424b46),
+      used,
+      QUOTA_FOUNDER - founderPick.length
+    );
+    founderPick = [...founderPick, ...extra];
+  }
+
+  const featuredPool = base.filter((s) => s.is_featured === true);
+  const featuredOrdered = seededShuffle(featuredPool, seedDay ^ 0x464554);
+  let featuredPick = takeUniqueById(featuredOrdered, used, QUOTA_FEATURED);
+
+  if (featuredPick.length < QUOTA_FEATURED) {
+    const backfill = base.filter((s) => !used.has(s.id));
+    const extra = takeUniqueById(
+      seededShuffle(backfill, seedDay ^ 0x46425f32),
+      used,
+      QUOTA_FEATURED - featuredPick.length
+    );
+    featuredPick = [...featuredPick, ...extra];
+  }
+
+  const generalStrict = base.filter(
+    (s) =>
+      !used.has(s.id) &&
+      s.founder_badge !== true &&
+      s.is_featured !== true
+  );
+  const generalOrdered = seededShuffle(generalStrict, seedHalfDay ^ 0x474e4c);
+  let generalPick = takeUniqueById(generalOrdered, used, QUOTA_GENERAL);
+
+  if (generalPick.length < QUOTA_GENERAL) {
+    const loose = base.filter((s) => !used.has(s.id));
+    const extra = takeUniqueById(
+      seededShuffle(loose, seedHalfDay ^ 0x474c32),
+      used,
+      QUOTA_GENERAL - generalPick.length
+    );
+    generalPick = [...generalPick, ...extra];
+  }
+
+  const toShow: SpecialistRow[] = [
+    ...founderPick,
+    ...featuredPick,
+    ...generalPick,
+  ];
+
+  if (toShow.length < TOTAL_SLOTS) {
+    const rest = base.filter((s) => !used.has(s.id));
+    const fill = takeUniqueById(
+      seededShuffle(rest, seedHalfDay ^ 0x464c4c),
+      used,
+      TOTAL_SLOTS - toShow.length
+    );
+    toShow.push(...fill);
+  }
+
+  const specialistIds = toShow.map((r) => r.id);
   const { data: profiles } = await supabase
     .from("specialist_profiles")
     .select("specialist_id, city, photo_url")
@@ -79,19 +208,22 @@ export async function GET() {
 
   const categoryIds = Array.from(
     new Set(
-      specialists
+      toShow
         .map((row) => (typeof row.category_id === "string" ? row.category_id : null))
         .filter((id): id is string => Boolean(id))
     )
   );
 
-  let categoryById = new Map<string, {
-    title: string | null;
-    title_ru: string | null;
-    title_de: string | null;
-    title_ua: string | null;
-    slug: string | null;
-  }>();
+  let categoryById = new Map<
+    string,
+    {
+      title: string | null;
+      title_ru: string | null;
+      title_de: string | null;
+      title_ua: string | null;
+      slug: string | null;
+    }
+  >();
   if (categoryIds.length > 0) {
     const { data: categories } = await supabase
       .from("categories")
@@ -126,37 +258,6 @@ export async function GET() {
     }
   }
 
-  const grouped = new Map<number, typeof specialists>();
-  for (const specialist of specialists) {
-    const priority = Number.isFinite(specialist.featured_priority)
-      ? Number(specialist.featured_priority)
-      : 0;
-    const list = grouped.get(priority) ?? [];
-    list.push(specialist);
-    grouped.set(priority, list);
-  }
-
-  const orderedPriorities = Array.from(grouped.keys()).sort((a, b) => b - a);
-  const mixed: typeof specialists = [];
-  for (const priority of orderedPriorities) {
-    mixed.push(...shuffle(grouped.get(priority) ?? []));
-  }
-
-  const ROW_SIZE = 4;
-  const MAX_ROWS = 3;
-  const maxItems = ROW_SIZE * MAX_ROWS;
-
-  let toShow: typeof specialists;
-
-  if (mixed.length < ROW_SIZE) {
-    toShow = mixed;
-  } else {
-    const roundedLength =
-      Math.floor(Math.min(mixed.length, maxItems) / ROW_SIZE) * ROW_SIZE;
-
-    toShow = mixed.slice(0, roundedLength);
-  }
-
   const data = toShow.map((row) => {
     const profile = profileBySpecialistId.get(row.id);
     const category =
@@ -176,7 +277,7 @@ export async function GET() {
       featured_priority: row.featured_priority ?? 0,
       rating_avg: ratingBySpecialistId.get(row.id)?.rating_avg ?? null,
       reviews_count: ratingBySpecialistId.get(row.id)?.reviews_count ?? 0,
-      founder_badge: (row as { founder_badge?: boolean }).founder_badge === true,
+      founder_badge: row.founder_badge === true,
     };
   });
 
