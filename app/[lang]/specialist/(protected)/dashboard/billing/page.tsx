@@ -1,11 +1,5 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  manualInvoicesEnabled,
-  paymentsEnabled,
-  subscriptionEnforcementEnabled,
-  subscriptionPublicPaidCopyEnabled,
-} from "@/lib/billing/featureFlags";
 import { getDictionary, isSupportedLang, t, type Lang } from "@/lib/i18n";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
@@ -34,13 +28,7 @@ export default async function SpecialistDashboardBillingPage({
   const subscriptionHref = `/${lang}/specialist/dashboard/subscription`;
 
   return (
-    <div
-      className="space-y-8"
-      data-payments-enabled={String(paymentsEnabled)}
-      data-subscription-enforcement-enabled={String(subscriptionEnforcementEnabled)}
-      data-subscription-public-paid-copy-enabled={String(subscriptionPublicPaidCopyEnabled)}
-      data-manual-invoices-enabled={String(manualInvoicesEnabled)}
-    >
+    <div className="space-y-8">
       <section className="rounded-2xl border border-gray-200/90 bg-white p-6 shadow-sm sm:p-8">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-600/90">
           {t(dict, "dashboard.billingPage.kicker")}
