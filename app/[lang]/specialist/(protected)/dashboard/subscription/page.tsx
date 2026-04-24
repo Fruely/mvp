@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
@@ -90,6 +91,14 @@ export default async function SpecialistDashboardSubscriptionPage({
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-gray-600 sm:text-base">
           {t(dict, "dashboard.subscriptionPage.subtitle")}
+        </p>
+        <p className="mt-5">
+          <Link
+            href={`/${lang}/specialist/dashboard/billing`}
+            className="text-sm font-medium text-indigo-700 underline-offset-4 hover:text-indigo-800 hover:underline"
+          >
+            {t(dict, "dashboard.subscriptionPage.link.billingStub")}
+          </Link>
         </p>
       </section>
 

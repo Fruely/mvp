@@ -62,6 +62,18 @@ function buildNavItems(lang: string, dict: Dictionary): NavItem[] {
     ),
   },
   {
+    label: t(dict, "dashboard.sidebar.nav.billing"),
+    href: `${base}/billing`,
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
+        <path
+          d="M4 6h16v4H4V6zm0 6h10v8H4v-8zm12 0h4v2h-4v-2zm0 4h4v4h-4v-4z"
+          fill="currentColor"
+        />
+      </svg>
+    ),
+  },
+  {
     label: t(dict, "dashboard.sidebar.nav.services"),
     href: `${base}/services`,
     icon: (
