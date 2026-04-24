@@ -1,7 +1,11 @@
 import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
-import { consumeLeadRateLimit, getLeadRateLimitKey } from "@/lib/leads/rateLimit";
+import {
+  checkRateLimit,
+  getClientIP,
+  RATE_LIMIT_PUBLIC_MESSAGE,
+} from "@/lib/rate-limit/shared";
 import { notify } from "@/lib/notifications/notify";
 import { sendTelegramMessage } from "@/lib/telegram/sendMessage";
 import { specialistDashboardPath } from "@/lib/specialists/navigation";
@@ -57,15 +61,40 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "message is too long" }, { status: 400 });
     }
 
-    const forwardedFor = request.headers.get("x-forwarded-for");
-    const ip = forwardedFor ? forwardedFor.split(",")[0].trim() : "unknown";
-    const limit = consumeLeadRateLimit(getLeadRateLimitKey(ip, specialist_id));
-    if (!limit.allowed) {
+    const ip = getClientIP(request);
+
+    const perSpecialist = await checkRateLimit(request, {
+      namespace: "lead:specialist",
+      identifier: `${ip}:${specialist_id}`,
+      limit: 5,
+      windowSeconds: 600,
+    });
+    if (!perSpecialist.allowed) {
       return Response.json(
-        { error: "Too many requests. Try again later." },
+        { error: RATE_LIMIT_PUBLIC_MESSAGE },
         {
           status: 429,
-          headers: { "Retry-After": String(limit.retryAfterSec ?? 60) },
+          headers: {
+            "Retry-After": String(perSpecialist.retryAfterSec ?? 60),
+          },
+        }
+      );
+    }
+
+    const perIp = await checkRateLimit(request, {
+      namespace: "lead:ip",
+      identifier: ip,
+      limit: 30,
+      windowSeconds: 3600,
+    });
+    if (!perIp.allowed) {
+      return Response.json(
+        { error: RATE_LIMIT_PUBLIC_MESSAGE },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(perIp.retryAfterSec ?? 60),
+          },
         }
       );
     }

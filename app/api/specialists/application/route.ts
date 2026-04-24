@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email";
+import {
+  checkRateLimit,
+  getClientIP,
+  hashEmailForRateLimit,
+  RATE_LIMIT_PUBLIC_MESSAGE,
+} from "@/lib/rate-limit/shared";
 
 export async function POST(req: NextRequest) {
   try {
@@ -58,6 +64,40 @@ export async function POST(req: NextRequest) {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+
+    const ip = getClientIP(req);
+    const ipLimit = await checkRateLimit(req, {
+      namespace: "specialist_application:ip",
+      identifier: ip,
+      limit: 10,
+      windowSeconds: 3600,
+    });
+    if (!ipLimit.allowed) {
+      return NextResponse.json(
+        { error: RATE_LIMIT_PUBLIC_MESSAGE },
+        {
+          status: 429,
+          headers: { "Retry-After": String(ipLimit.retryAfterSec ?? 60) },
+        }
+      );
+    }
+
+    const emailLimit = await checkRateLimit(req, {
+      namespace: "specialist_application:email",
+      identifier: hashEmailForRateLimit(normalizedEmail),
+      limit: 3,
+      windowSeconds: 86400,
+    });
+    if (!emailLimit.allowed) {
+      return NextResponse.json(
+        { error: RATE_LIMIT_PUBLIC_MESSAGE },
+        {
+          status: 429,
+          headers: { "Retry-After": String(emailLimit.retryAfterSec ?? 60) },
+        }
+      );
+    }
+
     const emailVerificationToken = crypto.randomUUID();
     const now = new Date().toISOString();
     const emailIsConfigured = Boolean(

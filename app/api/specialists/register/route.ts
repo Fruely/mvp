@@ -1,6 +1,12 @@
 import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
+import {
+  checkRateLimit,
+  getClientIP,
+  hashEmailForRateLimit,
+  RATE_LIMIT_PUBLIC_MESSAGE,
+} from "@/lib/rate-limit/shared";
 
 function normalizeEmail(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -58,6 +64,39 @@ export async function POST(request: NextRequest) {
             "name, email, phone и password обязательны; name требует имя и фамилию (минимум 2 символа), password минимум 8 символов.",
         },
         { status: 400 }
+      );
+    }
+
+    const ip = getClientIP(request);
+    const ipLimit = await checkRateLimit(request, {
+      namespace: "specialist_register:ip",
+      identifier: ip,
+      limit: 5,
+      windowSeconds: 3600,
+    });
+    if (!ipLimit.allowed) {
+      return jsonNoStore(
+        { error: RATE_LIMIT_PUBLIC_MESSAGE },
+        {
+          status: 429,
+          headers: { "Retry-After": String(ipLimit.retryAfterSec ?? 60) },
+        }
+      );
+    }
+
+    const emailLimit = await checkRateLimit(request, {
+      namespace: "specialist_register:email",
+      identifier: hashEmailForRateLimit(email),
+      limit: 3,
+      windowSeconds: 86400,
+    });
+    if (!emailLimit.allowed) {
+      return jsonNoStore(
+        { error: RATE_LIMIT_PUBLIC_MESSAGE },
+        {
+          status: 429,
+          headers: { "Retry-After": String(emailLimit.retryAfterSec ?? 60) },
+        }
       );
     }
 

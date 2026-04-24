@@ -2,6 +2,11 @@ import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
+import {
+  checkRateLimit,
+  getClientIP,
+  RATE_LIMIT_PUBLIC_MESSAGE,
+} from "@/lib/rate-limit/shared";
 
 export const dynamic = "force-dynamic";
 
@@ -72,8 +77,25 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       );
     }
 
-    const supabase = createSupabaseServerClient();
     const specialistId = id.trim();
+    const ip = getClientIP(request);
+    const rl = await checkRateLimit(request, {
+      namespace: "specialist_review:ip_specialist",
+      identifier: `${ip}:${specialistId}`,
+      limit: 10,
+      windowSeconds: 900,
+    });
+    if (!rl.allowed) {
+      return jsonNoStore(
+        { error: RATE_LIMIT_PUBLIC_MESSAGE },
+        {
+          status: 429,
+          headers: { "Retry-After": String(rl.retryAfterSec ?? 60) },
+        }
+      );
+    }
+
+    const supabase = createSupabaseServerClient();
 
     const { data: specialist, error: specLookupError } = await supabase
       .from("specialists")
