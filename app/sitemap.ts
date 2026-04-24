@@ -48,6 +48,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
 
     entries.push({
+      url: `${DOMAIN}/${lang}/pricing`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.55,
+    });
+
+    entries.push({
       url: `${DOMAIN}/${lang}/specialist-rules`,
       lastModified,
       changeFrequency: "yearly",

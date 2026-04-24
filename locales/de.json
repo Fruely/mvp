@@ -11,6 +11,7 @@
   "header.nav.categories": "Kategorien",
   "header.nav.about": "Über uns",
   "header.nav.contacts": "Kontakt",
+  "header.nav.pricing": "Tarife",
   "header.cabinet": "Fachkraft-Konto",
   "home.howItWorks.title": "So funktioniert es",
   "home.howItWorks.step1": "Kategorie und Sprache wählen.",
@@ -611,5 +612,107 @@
       "uploadFailed": "Dokument konnte nicht hochgeladen werden.",
       "uploadSuccess": "Dokument hochgeladen. Überprüfungsstatus aktualisiert."
     }
+  },
+  "pricing": {
+    "hero": {
+      "kicker": "Für Fachkräfte",
+      "title": "Freuly Tarife",
+      "subtitle": "Die Nutzung für Spezialistinnen und Spezialisten ist derzeit kostenlos. Kostenpflichtige Tarife werden später aktiviert — wir informieren rechtzeitig über Bedingungen und Zeitplan."
+    },
+    "notice": {
+      "title": "Frühe Plattformphase",
+      "lead": "Freuly befindet sich in einer frühen Launch- und Testphase. Unten finden Sie Orientierung zu künftigen Tarifen — Zahlungen über die Plattform sind derzeit nicht vorgesehen.",
+      "points": [
+        "Fachkräfte zahlen derzeit keine Gebühr für die Platzierung.",
+        "Es werden keine Zahlungen entgegengenommen — Abonnement oder Checkout sind nicht möglich.",
+        "Kostenpflichtige Tarife werden später mit klaren Bedingungen aktiviert.",
+        "Wir informieren frühzeitig über Zeitplan und Änderungen — ohne überraschende Abbuchungen."
+      ]
+    },
+    "starter": {
+      "name": "Starter",
+      "price": "0 €",
+      "priceHint": "Derzeit kostenlos",
+      "description": "Für die ersten Spezialistinnen und Spezialisten in der Aufbauphase von Freuly.",
+      "features": [
+        "persönlicher Bereich",
+        "öffentliche Spezialisten-Seite",
+        "Eintrag in der Kategorie",
+        "Leistungen und Preise",
+        "Fotos, Portfolio und Dokumente",
+        "Anfragen erhalten",
+        "mehrsprachiges Profil"
+      ],
+      "cta": "Als Fachkraft starten"
+    },
+    "basic": {
+      "name": "Basic",
+      "price": "29 € / Monat",
+      "badge": "Später geplant",
+      "description": "Standard-Platzierung nach Ende der kostenlosen Phase.",
+      "features": [
+        "alles aus dem Starter-Tarif",
+        "dauerhafte Profil-Sichtbarkeit",
+        "Darstellung in Kategorien und Suche",
+        "Anfragen erhalten",
+        "Basissupport",
+        "Profilausbau"
+      ],
+      "ctaDisabled": "Zahlung derzeit nicht verfügbar"
+    },
+    "premium": {
+      "name": "Premium",
+      "status": "In Entwicklung",
+      "description": "Für stärkere Sichtbarkeit und künftige Marketing-Möglichkeiten.",
+      "features": [
+        "Premium-Platzierungen",
+        "verstärkte Rotation",
+        "Hervorhebung einzelner Leistungen",
+        "Spezialisten-Kuratiertlisten",
+        "erweiterte Analysen"
+      ],
+      "ctaDisabled": "In Entwicklung"
+    },
+    "compare": {
+      "title": "Überblick",
+      "colPhase": "Jetzt / später",
+      "colStarter": "Starter",
+      "colBasic": "Basic",
+      "colPremium": "Premium",
+      "rows": [
+        {
+          "label": "Zugang",
+          "starter": "Kostenlos in der frühen Phase",
+          "basic": "Geplant als kostenpflichtiger Tarif",
+          "premium": "In Entwicklung"
+        },
+        {
+          "label": "Zahlung über die Plattform",
+          "starter": "Nicht erforderlich",
+          "basic": "Später, nach Ankündigung",
+          "premium": "Später, nach Ankündigung"
+        }
+      ]
+    },
+    "faqTitle": "Häufige Fragen",
+    "faq": [
+      {
+        "q": "Muss ich jetzt zahlen?",
+        "a": "Nein. Die Nutzung ist derzeit kostenlos; es werden keine Zahlungen über die Plattform entgegengenommen."
+      },
+      {
+        "q": "Wann starten kostenpflichtige Tarife?",
+        "a": "Später, mit separater Ankündigung: Wir kommunizieren Bedingungen und Zeitplan im Voraus."
+      },
+      {
+        "q": "Kann mein Profil plötzlich verborgen werden oder wird abgebucht?",
+        "a": "Es gibt keine überraschenden Abbuchungen — Zahlungen sind derzeit nicht möglich. Wesentliche Änderungen kündigen wir frühzeitig an."
+      },
+      {
+        "q": "Kann ich Freuly in der Early-Access-Phase nutzen?",
+        "a": "Ja. Die aktuellen Funktionen im Konto und das öffentliche Profil sind ohne Zahlung nutzbar."
+      }
+    ],
+    "disclaimer": "Die Angaben auf dieser Seite sind unverbindlich und können sich ändern. Verbindliche Konditionen kommunizieren wir vor Aktivierung kostenpflichtiger Tarife."
   }
 }

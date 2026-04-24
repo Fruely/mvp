@@ -31,6 +31,11 @@ function getByPath(obj: unknown, path: string): unknown {
   return cur;
 }
 
+/** Read nested dictionary values (objects / arrays) for structured page copy. */
+export function getDictValue(dict: Dictionary, path: string): unknown {
+  return getByPath(dict, path);
+}
+
 export function t(
   dict: Dictionary,
   key: string,

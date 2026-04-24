@@ -83,6 +83,32 @@ export function hreflangSupport(): HreflangTriple {
   };
 }
 
+export const PRICING_METADATA = {
+  ua: {
+    title: "Тарифи Freuly — умови для спеціалістів",
+    description:
+      "Зараз розміщення на Freuly безкоштовне. Майбутні тарифи будуть оголошені заздалегідь. Оплата на платформі поки не приймається.",
+  },
+  ru: {
+    title: "Тарифы Freuly — условия для специалистов",
+    description:
+      "Сейчас размещение на Freuly бесплатно. Будущие тарифы будут объявлены заранее. Оплата на платформе пока не принимается.",
+  },
+  de: {
+    title: "Freuly Tarife — Konditionen für Fachkräfte",
+    description:
+      "Die Nutzung für Spezialistinnen und Spezialisten ist derzeit kostenlos. Kostenpflichtige Tarife werden später mit Vorankündigung eingeführt. Es werden noch keine Zahlungen entgegengenommen.",
+  },
+} as const;
+
+export function hreflangPricing(): HreflangTriple {
+  return {
+    uk: `${SITE_DOMAIN}/ua/pricing`,
+    ru: `${SITE_DOMAIN}/ru/pricing`,
+    de: `${SITE_DOMAIN}/de/pricing`,
+  };
+}
+
 export const SPECIALIST_RULES_METADATA = {
   ua: {
     title: "Правила розміщення спеціалістів на Freuly",
