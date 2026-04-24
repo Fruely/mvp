@@ -9,6 +9,12 @@ import { isPublicationReadyForDashboard } from "@/lib/dashboard/publicationReadi
 import { getDictionary, isSupportedLang, t, type Dictionary } from "@/lib/i18n";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
+import {
+  dashboardNoticeTitleBody,
+  getSubscriptionDisplayState,
+  pickDashboardSubscriptionNotice,
+  subscriptionNoticePanelClass,
+} from "@/lib/specialists/subscriptionDisplay";
 import VerificationBanner from "./VerificationBanner";
 
 function formatDashboardDate(value: string | null, lang: string): string {
@@ -134,6 +140,12 @@ export default async function SpecialistDashboardHomePage({
   const leadsHref = `/${lang}/specialist/dashboard/leads`;
 
   const plan = await getSpecialistPlanForDashboard(service, specialist.id);
+  const display = getSubscriptionDisplayState(plan);
+  const subscriptionNoticePick = pickDashboardSubscriptionNotice(display);
+  const subscriptionNoticeCopy = subscriptionNoticePick
+    ? dashboardNoticeTitleBody(dict, subscriptionNoticePick)
+    : null;
+
   const planStatus = plan.plan_status;
   const planCode = plan.plan_code;
   const subscriptionUntil = plan.expires_at;
@@ -332,6 +344,16 @@ export default async function SpecialistDashboardHomePage({
               </div>
             ) : null}
           </div>
+          {subscriptionNoticeCopy ? (
+            <div
+              className={`mt-4 ${subscriptionNoticePanelClass(subscriptionNoticeCopy.severity)}`}
+            >
+              <p className="font-semibold leading-snug">{subscriptionNoticeCopy.title}</p>
+              <p className="mt-1.5 text-xs leading-relaxed opacity-[0.92]">
+                {subscriptionNoticeCopy.body}
+              </p>
+            </div>
+          ) : null}
           <Link
             href={subscriptionHref}
             className={`mt-4 inline-flex h-10 w-full items-center justify-center rounded-lg px-4 text-sm font-semibold text-white transition sm:w-auto ${

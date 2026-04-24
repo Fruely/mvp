@@ -1,6 +1,12 @@
 import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
+import {
+  dashboardNoticeTitleBody,
+  getSubscriptionDisplayState,
+  pickDashboardSubscriptionNotice,
+  subscriptionNoticePanelClass,
+} from "@/lib/specialists/subscriptionDisplay";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import { getDictionary, isSupportedLang, t, type Dictionary, type Lang } from "@/lib/i18n";
@@ -57,14 +63,18 @@ export default async function SpecialistDashboardSubscriptionPage({
   }
 
   const plan = await getSpecialistPlanForDashboard(service, specialist.id);
+  const display = getSubscriptionDisplayState(plan);
+  const subscriptionNoticePick = pickDashboardSubscriptionNotice(display);
+  const subscriptionNoticeCopy = subscriptionNoticePick
+    ? dashboardNoticeTitleBody(dict, subscriptionNoticePick)
+    : null;
+
   const planStatusRaw = plan.plan_status;
   const statusLabel = statusDisplayLabel(dict, planStatusRaw);
   const planLabel = planDisplayLabel(dict, plan.plan_code);
   const subscriptionUntil = plan.expires_at;
   const graceUntil = plan.grace_until;
   const startedAt = plan.started_at;
-
-  const isEarlyAccess = planStatusRaw === "early_access";
 
   const mailSubject = t(dict, "dashboard.subscriptionPage.mailto.subject");
   const mailtoHref = `mailto:info@freuly.de?subject=${encodeURIComponent(mailSubject)}`;
@@ -138,15 +148,24 @@ export default async function SpecialistDashboardSubscriptionPage({
         <h2 className="text-base font-semibold text-gray-900">
           {t(dict, "dashboard.subscriptionPage.context.title")}
         </h2>
-        {isEarlyAccess ? (
-          <p className="mt-3 text-sm leading-relaxed text-gray-700">
-            {t(dict, "dashboard.subscriptionPage.context.earlyAccess")}
-          </p>
-        ) : (
-          <p className="mt-3 text-sm leading-relaxed text-gray-700">
-            {t(dict, "dashboard.subscriptionPage.context.general")}
-          </p>
-        )}
+        {subscriptionNoticeCopy ? (
+          <div
+            className={`mt-4 ${subscriptionNoticePanelClass(subscriptionNoticeCopy.severity)}`}
+          >
+            <p className="font-semibold leading-snug">{subscriptionNoticeCopy.title}</p>
+            <p className="mt-2 text-sm leading-relaxed opacity-[0.95]">{subscriptionNoticeCopy.body}</p>
+          </div>
+        ) : null}
+        {display.isPaymentCurrentlyDisabled ? (
+          <div className="mt-4 rounded-xl border border-gray-200/90 bg-white/70 px-4 py-3.5 text-sm shadow-sm">
+            <p className="font-medium text-gray-900">
+              {t(dict, "dashboard.subscriptionNotice.paymentDisabledShort")}
+            </p>
+            <p className="mt-1.5 leading-relaxed text-gray-600">
+              {t(dict, "dashboard.subscriptionNotice.paymentDisabledBody")}
+            </p>
+          </div>
+        ) : null}
         <ul className="mt-4 space-y-2 text-sm leading-relaxed text-gray-600">
           <li className="flex gap-2">
             <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-indigo-400" aria-hidden />
