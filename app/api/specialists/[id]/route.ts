@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
+import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 /** Query ?lang= route segment → specialist_*_translations.language_code */
@@ -132,6 +133,8 @@ export async function GET(
       ? nonEmptyTrimmedString(profileTranslationAbout) ?? (profile?.about_me ?? null)
       : profile?.about_me ?? null;
 
+  const plan = await getSpecialistPlanForDashboard(supabase, specialist.id);
+
   const result = {
     id: specialist.id,
     slug: specialist.slug,
@@ -156,6 +159,8 @@ export async function GET(
     lat: specialist.lat ?? null,
     lng: specialist.lng ?? null,
     founder_badge: specialist.founder_badge === true,
+    plan_code: plan.plan_code,
+    plan_status: plan.plan_status,
     rating: ratingRow?.rating_avg ?? null,
     reviews_count: ratingRow?.reviews_count ?? 0,
     specialist_services: (services ?? []).map((s) => {

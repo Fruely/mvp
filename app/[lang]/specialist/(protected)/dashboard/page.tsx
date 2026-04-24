@@ -8,6 +8,7 @@ import { createSupabaseServerClient as createServiceClient } from "@/lib/supabas
 import { isPublicationReadyForDashboard } from "@/lib/dashboard/publicationReadiness";
 import { getDictionary, isSupportedLang, t, type Dictionary } from "@/lib/i18n";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
+import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
 import VerificationBanner from "./VerificationBanner";
 
 function formatDashboardDate(value: string | null, lang: string): string {
@@ -19,9 +20,9 @@ function formatDashboardDate(value: string | null, lang: string): string {
 }
 
 function subscriptionStatusBadgeClass(planStatus: string): string {
-  if (planStatus === "early_access") return "bg-emerald-50 text-emerald-700";
+  if (planStatus === "early_access" || planStatus === "trialing") return "bg-emerald-50 text-emerald-700";
   if (planStatus === "active") return "bg-blue-50 text-blue-700";
-  if (planStatus === "grace") return "bg-amber-50 text-amber-700";
+  if (planStatus === "grace" || planStatus === "grace_period") return "bg-amber-50 text-amber-700";
   if (planStatus === "expired") return "bg-rose-50 text-rose-700";
   return "bg-gray-100 text-gray-700";
 }
@@ -132,33 +133,14 @@ export default async function SpecialistDashboardHomePage({
   const subscriptionHref = `/${lang}/specialist/dashboard/subscription`;
   const leadsHref = `/${lang}/specialist/dashboard/leads`;
 
-  const specialistRecord = specialist as unknown as Record<string, unknown>;
-  const { data: planRow } = await service
-    .from("specialist_plan")
-    .select("plan_code, plan_status, expires_at")
-    .eq("specialist_id", specialist.id)
-    .maybeSingle();
+  const plan = await getSpecialistPlanForDashboard(service, specialist.id);
+  const planStatus = plan.plan_status;
+  const planCode = plan.plan_code;
+  const subscriptionUntil = plan.expires_at;
+  const graceUntil = plan.grace_until;
 
-  const subscriptionStatusRaw =
-    planRow?.plan_status != null ? String(planRow.plan_status) : specialistRecord.subscription_status;
-  const planNameRaw =
-    planRow?.plan_code != null ? String(planRow.plan_code) : specialistRecord.plan_name;
-  const subscriptionUntilRaw =
-    planRow?.expires_at != null ? String(planRow.expires_at) : specialistRecord.subscription_until;
-  const graceUntilRaw = specialistRecord.grace_until;
-
-  const planStatus =
-    subscriptionStatusRaw != null && String(subscriptionStatusRaw).trim()
-      ? String(subscriptionStatusRaw).trim()
-      : "—";
-  const planCode =
-    planNameRaw != null && String(planNameRaw).trim() ? String(planNameRaw).trim() : "—";
-  const subscriptionUntil =
-    subscriptionUntilRaw != null && String(subscriptionUntilRaw).trim() ? String(subscriptionUntilRaw) : null;
-  const graceUntil =
-    graceUntilRaw != null && String(graceUntilRaw).trim() ? String(graceUntilRaw) : null;
-
-  const subscriptionNeedsAttention = planStatus === "grace" || planStatus === "expired";
+  const subscriptionNeedsAttention =
+    planStatus === "grace" || planStatus === "grace_period" || planStatus === "expired";
 
   const { count: leadsTotal, error: leadsTotalError } = await service
     .from("leads")

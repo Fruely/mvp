@@ -21,8 +21,10 @@ function getInitials(name: string): string {
 }
 
 function getStatusBadgeClass(status: string): string {
-  if (status === "active" || status === "early_access") return "bg-emerald-50 text-emerald-700";
-  if (status === "grace") return "bg-amber-50 text-amber-700";
+  if (status === "active" || status === "early_access" || status === "trialing") {
+    return "bg-emerald-50 text-emerald-700";
+  }
+  if (status === "grace" || status === "grace_period") return "bg-amber-50 text-amber-700";
   if (status === "expired") return "bg-rose-50 text-rose-700";
   return "bg-gray-100 text-gray-700";
 }
@@ -30,18 +32,19 @@ function getStatusBadgeClass(status: string): string {
 export default function TopBar({
   dict,
   specialist,
+  planStatusForBadge,
   onMenuClick,
 }: {
   dict: Dictionary;
   specialist: SpecialistTopBarData;
+  planStatusForBadge: string;
   onMenuClick: () => void;
 }) {
   const name = specialist?.name?.trim() || specialist?.first_name?.trim() || "—";
   const avatarUrl = specialist?.avatar_url?.trim() || "";
-  const subscriptionStatusRaw = (specialist as Record<string, unknown>)?.subscription_status;
   const subscriptionStatus =
-    typeof subscriptionStatusRaw === "string" && subscriptionStatusRaw.trim()
-      ? subscriptionStatusRaw.trim()
+    typeof planStatusForBadge === "string" && planStatusForBadge.trim()
+      ? planStatusForBadge.trim()
       : "—";
 
   return (

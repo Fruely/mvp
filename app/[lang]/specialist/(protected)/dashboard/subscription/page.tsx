@@ -1,14 +1,15 @@
 import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
+import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 
 export const dynamic = "force-dynamic";
 
 function getStatusClass(status: string): string {
-  if (status === "early_access") return "bg-emerald-50 text-emerald-700";
+  if (status === "early_access" || status === "trialing") return "bg-emerald-50 text-emerald-700";
   if (status === "active") return "bg-blue-50 text-blue-700";
-  if (status === "grace") return "bg-amber-50 text-amber-700";
+  if (status === "grace" || status === "grace_period") return "bg-amber-50 text-amber-700";
   if (status === "expired") return "bg-rose-50 text-rose-700";
   return "bg-gray-100 text-gray-700";
 }
@@ -28,36 +29,16 @@ export default async function SpecialistDashboardSubscriptionPage() {
     redirect(specialistLangHomePath());
   }
 
-  const specialistRecord = specialist as unknown as Record<string, unknown>;
-  const { data: planRow } = await service
-    .from("specialist_plan")
-    .select("plan_code, plan_status, expires_at")
-    .eq("specialist_id", specialist.id)
-    .maybeSingle();
-
-  const subscriptionStatusRaw =
-    planRow?.plan_status != null ? String(planRow.plan_status) : specialistRecord.subscription_status;
-  const planNameRaw =
-    planRow?.plan_code != null ? String(planRow.plan_code) : specialistRecord.plan_name;
-  const subscriptionUntilRaw =
-    planRow?.expires_at != null ? String(planRow.expires_at) : specialistRecord.subscription_until;
-  const graceUntilRaw = specialistRecord.grace_until;
-
-  const status =
-    subscriptionStatusRaw != null && String(subscriptionStatusRaw).trim()
-      ? String(subscriptionStatusRaw).trim()
-      : "—";
-  const planName =
-    planNameRaw != null && String(planNameRaw).trim() ? String(planNameRaw).trim() : "—";
-  const subscriptionUntil =
-    subscriptionUntilRaw != null && String(subscriptionUntilRaw).trim() ? String(subscriptionUntilRaw) : null;
-  const graceUntil =
-    graceUntilRaw != null && String(graceUntilRaw).trim() ? String(graceUntilRaw) : null;
+  const plan = await getSpecialistPlanForDashboard(service, specialist.id);
+  const status = plan.plan_status;
+  const planName = plan.plan_code;
+  const subscriptionUntil = plan.expires_at;
+  const graceUntil = plan.grace_until;
 
   const ctaLabel =
     status === "expired"
       ? "Активировать тариф"
-      : status === "grace"
+      : status === "grace" || status === "grace_period"
         ? "Продлить сейчас"
         : "Управление подпиской";
 

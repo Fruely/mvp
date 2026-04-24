@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { requireAdminToken } from '@/lib/adminApiAuth';
+import { ACTIVE_SUBSCRIPTION_PLAN_STATUSES } from '@/lib/specialists/subscription';
 
 export async function GET(request: NextRequest) {
   const authResponse = requireAdminToken(request);
@@ -43,11 +44,11 @@ export async function GET(request: NextRequest) {
 
     if (pendingError) throw pendingError;
 
-    // Active subscriptions count
+    // Active subscriptions count (canonical `specialist_plan`)
     const { count: activeSubscriptions, error: subscriptionsError } = await supabase
-      .from('specialists')
+      .from('specialist_plan')
       .select('*', { count: 'exact', head: true })
-      .eq('subscription_status', 'active');
+      .in('plan_status', [...ACTIVE_SUBSCRIPTION_PLAN_STATUSES]);
 
     if (subscriptionsError) throw subscriptionsError;
 

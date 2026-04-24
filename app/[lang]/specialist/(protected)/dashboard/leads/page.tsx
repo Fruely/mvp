@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import LeadsTable from "@/components/dashboard/LeadsTable";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
+import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { isContactsLocked } from "@/lib/dashboard/isContactsLocked";
 import type { DashboardLead } from "@/lib/dashboard/getDashboardData";
@@ -36,10 +37,8 @@ export default async function SpecialistDashboardLeadsPage() {
     created_at: typeof row.created_at === "string" ? row.created_at : null,
   }));
 
-  const specialistRecord = specialist as unknown as Record<string, unknown>;
-  const subscriptionStatus =
-    typeof specialistRecord.subscription_status === "string" ? specialistRecord.subscription_status : null;
-  const contactsLocked = isContactsLocked(subscriptionStatus);
+  const plan = await getSpecialistPlanForDashboard(service, specialist.id);
+  const contactsLocked = isContactsLocked(plan.plan_status);
 
   return <LeadsTable initialLeads={leads} contactsLocked={contactsLocked} />;
 }
