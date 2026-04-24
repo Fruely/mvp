@@ -58,7 +58,8 @@ function buildSpecialistSearchQuery(
     .select(SELECT_COLS)
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
     .eq("is_active", true)
-    .eq("is_visible", true);
+    .eq("is_visible", true)
+    .or("is_test.is.null,is_test.eq.false");
 
   if (opts.lang) {
     q = q.contains("languages", [opts.lang]);
@@ -97,6 +98,22 @@ async function fetchSpecialistsLocalByRadius(
     p_offset: params.offset,
     p_limit: 20,
   });
+}
+
+/** RPC may not filter `is_test`; drop test specialists without a DB migration. */
+async function excludeTestSpecialistsById(
+  supabase: ReturnType<typeof createSupabaseServerClient>,
+  specialists: SpecialistRow[]
+): Promise<SpecialistRow[]> {
+  const ids = specialists.map((s) => s.id).filter((id): id is string => Boolean(id));
+  if (ids.length === 0) return [];
+  const { data: allowedRows } = await supabase
+    .from("specialists")
+    .select("id")
+    .in("id", ids)
+    .or("is_test.is.null,is_test.eq.false");
+  const allowed = new Set((allowedRows ?? []).map((r) => r.id as string));
+  return specialists.filter((s) => allowed.has(s.id));
 }
 
 /**
@@ -211,7 +228,8 @@ export async function GET(request: NextRequest) {
         return jsonNoStore({ data: [] });
       }
 
-      const list = (rows ?? []) as SpecialistRow[];
+      const listRaw = (rows ?? []) as SpecialistRow[];
+      const list = await excludeTestSpecialistsById(supabase, listRaw);
       if (list.length > 0) {
         const data = await mapSpecialistsWithCategories(supabase, list);
         return jsonNoStore({

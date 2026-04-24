@@ -39,7 +39,7 @@ export async function GET(
   const { data: specialist, error: specError } = await supabase
     .from("specialists")
     .select(
-      "id, slug, name, avatar_url, category_id, status, is_active, is_visible, languages, work_format, created_at, lat, lng, founder_badge"
+      "id, slug, name, avatar_url, category_id, status, is_active, is_visible, is_test, languages, work_format, created_at, lat, lng, founder_badge"
     )
     .eq(isUuid ? "id" : "slug", param)
     .maybeSingle();
@@ -53,6 +53,7 @@ export async function GET(
     !specialist ||
     !specialist.is_active ||
     !specialist.is_visible ||
+    specialist.is_test === true ||
     !(VISIBLE_PUBLIC_SPECIALIST_STATUSES as readonly string[]).includes(specialist.status ?? "")
   ) {
     return jsonNoStore({ error: "Specialist not found" }, { status: 404 });

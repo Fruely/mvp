@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
+import { CACHE_PUBLIC_POPULAR_CATEGORIES, jsonWithCache } from "@/lib/http/cache";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +21,7 @@ export async function GET() {
   const supabase = createSupabaseServerClient();
 
   // 1. Count specialists per category
-  const { data: serviceData } = await supabase
+  const { data: serviceData, error: serviceError } = await supabase
     .from("specialist_services")
     .select(`
       category_id,
@@ -30,7 +31,13 @@ export async function GET() {
     .eq("is_active", true)
     .in("specialists.status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
     .eq("specialists.is_active", true)
-    .eq("specialists.is_visible", true);
+    .eq("specialists.is_visible", true)
+    .or("is_test.is.null,is_test.eq.false", { referencedTable: "specialists" });
+
+  if (serviceError) {
+    console.error("[api/homepage/popular-categories] services", serviceError);
+    return jsonNoStore({ error: "Failed to load popular categories" }, { status: 500 });
+  }
 
   const countByCategory = new Map<string, number>();
   const seenPairs = new Set<string>();
@@ -46,7 +53,7 @@ export async function GET() {
 
   const activeCategoryIds = Array.from(countByCategory.keys());
   if (activeCategoryIds.length === 0) {
-    return jsonNoStore({ data: [] });
+    return jsonWithCache({ data: [] }, CACHE_PUBLIC_POPULAR_CATEGORIES);
   }
 
   // 2. Fetch categories that have specialists
@@ -98,6 +105,6 @@ export async function GET() {
     return b.specialists_count - a.specialists_count;
   });
 
-  return jsonNoStore({ data: rows });
+  return jsonWithCache({ data: rows }, CACHE_PUBLIC_POPULAR_CATEGORIES);
 }
 

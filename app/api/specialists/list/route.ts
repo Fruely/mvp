@@ -304,7 +304,8 @@ export async function GET(request: NextRequest) {
       .gte("price_from", 0)
       .in("specialists.status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
       .eq("specialists.is_active", true)
-      .eq("specialists.is_visible", true);
+      .eq("specialists.is_visible", true)
+      .or("is_test.is.null,is_test.eq.false", { referencedTable: "specialists" });
 
     rows = extractRows(initial.data);
     queryError = initial.error;
@@ -320,7 +321,8 @@ export async function GET(request: NextRequest) {
         .gte("price_from", 0)
         .in("specialists.status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
         .eq("specialists.is_active", true)
-        .eq("specialists.is_visible", true);
+        .eq("specialists.is_visible", true)
+        .or("is_test.is.null,is_test.eq.false", { referencedTable: "specialists" });
 
       rows = extractRows(safe.data);
       queryError = safe.error;
@@ -336,7 +338,8 @@ export async function GET(request: NextRequest) {
           .gte("price_from", 0)
           .in("specialists.status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
           .eq("specialists.is_active", true)
-          .eq("specialists.is_visible", true);
+          .eq("specialists.is_visible", true)
+          .or("is_test.is.null,is_test.eq.false", { referencedTable: "specialists" });
         rows = extractRows(fallback.data);
         queryError = fallback.error;
         _trace.q3_fallbackSelect = { rows: rows.length, error: queryError?.message ?? null };
@@ -347,7 +350,9 @@ export async function GET(request: NextRequest) {
     if (queryError) {
       console.error("[specialists/list] ALL queries failed:", queryError.message);
       return jsonNoStore(
-        { error: 'Failed to fetch specialists', _trace },
+        process.env.NODE_ENV === "production"
+          ? { error: "Failed to fetch specialists" }
+          : { error: "Failed to fetch specialists", _trace },
         { status: 500 }
       );
     }
@@ -373,7 +378,8 @@ export async function GET(request: NextRequest) {
         .eq("category_id", categoryId)
         .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
         .eq("is_active", true)
-        .eq("is_visible", true);
+        .eq("is_visible", true)
+        .or("is_test.is.null,is_test.eq.false");
 
       directSpecialists = fullDirect.data as Record<string, unknown>[] | null;
       directError = fullDirect.error;
@@ -386,7 +392,8 @@ export async function GET(request: NextRequest) {
           .eq("category_id", categoryId)
           .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
           .eq("is_active", true)
-          .eq("is_visible", true);
+          .eq("is_visible", true)
+          .or("is_test.is.null,is_test.eq.false");
 
         directSpecialists = safeDirect.data as Record<string, unknown>[] | null;
         directError = safeDirect.error;
@@ -575,7 +582,7 @@ export async function GET(request: NextRequest) {
     }
 
     _trace.merged = merged.length;
-    if (debugEnabled) {
+    if (debugEnabled && process.env.NODE_ENV !== "production") {
       _trace.mergedDetails = merged.map((s) => ({ id: s.id, name: s.name, price: s.min_price_from }));
     }
     console.log("STEP 1 merged:", merged.length);
@@ -708,7 +715,7 @@ export async function GET(request: NextRequest) {
     _trace.categoryId = categoryId;
     _trace.params = { language, city, sort, userLat, userLng };
 
-    return jsonNoStore({
+    const payload: Record<string, unknown> = {
       data: page,
       meta: {
         total,
@@ -721,8 +728,12 @@ export async function GET(request: NextRequest) {
           cities: cityOptions,
         },
       },
-      _trace,
-    });
+    };
+    if (process.env.NODE_ENV !== "production") {
+      payload._trace = _trace;
+    }
+
+    return jsonNoStore(payload);
   } catch (error: any) {
     console.error('[api/specialists] Unexpected error:', error);
     return jsonNoStore(

@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
+import { CACHE_PUBLIC_RECOMMENDED, jsonWithCache } from "@/lib/http/cache";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 export const dynamic = "force-dynamic";
@@ -105,6 +106,7 @@ export async function GET() {
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
     .eq("is_active", true)
     .eq("is_visible", true)
+    .or("is_test.is.null,is_test.eq.false")
     .eq("specialist_services.is_active", true)
     .gt("specialist_services.price_from", 0)
     .not("specialist_services.title", "eq", "")
@@ -122,7 +124,7 @@ export async function GET() {
     if (!byId.has(r.id)) byId.set(r.id, r);
   }
   const base = Array.from(byId.values());
-  if (base.length === 0) return jsonNoStore({ data: [] });
+  if (base.length === 0) return jsonWithCache({ data: [] }, CACHE_PUBLIC_RECOMMENDED);
 
   const used = new Set<string>();
 
@@ -280,5 +282,5 @@ export async function GET() {
     };
   });
 
-  return jsonNoStore({ data });
+  return jsonWithCache({ data }, CACHE_PUBLIC_RECOMMENDED);
 }

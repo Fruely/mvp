@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { CACHE_PUBLIC_SPECIALISTS_CATEGORIES } from "@/lib/http/cache";
 import { getPublicSpecialistCountsByServiceCategory } from "@/lib/specialists/publicCategoryCounts";
 
 export const dynamic = "force-dynamic";
@@ -134,7 +135,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { data, meta },
         {
-          headers: { "Cache-Control": "no-store, max-age=0" },
+          headers: { "Cache-Control": CACHE_PUBLIC_SPECIALISTS_CATEGORIES },
         }
       );
     }
@@ -201,7 +202,7 @@ export async function GET(request: NextRequest) {
         meta,
       },
       {
-        headers: { "Cache-Control": "no-store, max-age=0" },
+        headers: { "Cache-Control": CACHE_PUBLIC_SPECIALISTS_CATEGORIES },
       }
     );
   } catch (err: unknown) {

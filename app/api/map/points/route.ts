@@ -23,6 +23,7 @@ export async function GET() {
     .select("id, lat, lng")
     .eq("is_active", true)
     .eq("is_visible", true)
+    .or("is_test.is.null,is_test.eq.false")
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
     .not("lat", "is", null)
     .not("lng", "is", null)

@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
+import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,11 @@ export async function GET() {
     const { count, error } = await supabase
       .from("specialists")
       .select("*", { count: "exact", head: true })
-      .eq("founder_badge", true);
+      .eq("founder_badge", true)
+      .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
+      .eq("is_active", true)
+      .eq("is_visible", true)
+      .or("is_test.is.null,is_test.eq.false");
 
     if (error) {
       return jsonNoStore({ error: error.message }, { status: 500 });
