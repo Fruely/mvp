@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
+import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
       .order("created_at", { ascending: false });
 
     if (error) {
+      console.error("[specialists/reviews] GET failed", error);
       return jsonNoStore({ error: "Failed to load reviews" }, { status: 500 });
     }
 
@@ -44,36 +46,68 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return jsonNoStore({ error: "Invalid request body" }, { status: 400 });
     }
 
-    const authorName = typeof body.author_name === "string" ? body.author_name.trim().slice(0, 100) : "";
-    const rating = typeof body.rating === "number" ? Math.round(body.rating) : 0;
-    const comment = typeof body.comment === "string" ? body.comment.trim().slice(0, 1000) : "";
+    const authorName =
+      typeof body.author_name === "string" ? body.author_name.trim().slice(0, 80) : "";
+    const rawRating = body.rating;
+    const rating =
+      typeof rawRating === "number" && Number.isInteger(rawRating) ? rawRating : null;
+    const comment = typeof body.comment === "string" ? body.comment.trim().slice(0, 2000) : "";
 
     if (!authorName) {
-      return jsonNoStore({ error: "author_name is required (max 100 chars)" }, { status: 400 });
+      return jsonNoStore(
+        { error: "author_name is required (max 80 chars)" },
+        { status: 400 }
+      );
     }
-    if (rating < 1 || rating > 5) {
-      return jsonNoStore({ error: "rating must be an integer between 1 and 5" }, { status: 400 });
+    if (rating === null || rating < 1 || rating > 5) {
+      return jsonNoStore(
+        { error: "rating must be an integer between 1 and 5" },
+        { status: 400 }
+      );
     }
     if (!comment) {
-      return jsonNoStore({ error: "comment is required (max 1000 chars)" }, { status: 400 });
+      return jsonNoStore(
+        { error: "comment is required (max 2000 chars)" },
+        { status: 400 }
+      );
     }
 
     const supabase = createSupabaseServerClient();
+    const specialistId = id.trim();
+
+    const { data: specialist, error: specLookupError } = await supabase
+      .from("specialists")
+      .select("id")
+      .eq("id", specialistId)
+      .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
+      .eq("is_active", true)
+      .eq("is_visible", true)
+      .maybeSingle();
+
+    if (specLookupError) {
+      console.error("[specialists/reviews] specialist lookup failed", specLookupError);
+      return jsonNoStore({ error: "Failed to submit review" }, { status: 500 });
+    }
+
+    if (!specialist?.id) {
+      return jsonNoStore({ error: "Specialist not found" }, { status: 404 });
+    }
 
     const { data, error } = await supabase
       .from("specialist_reviews")
       .insert({
-        specialist_id: id.trim(),
+        specialist_id: specialistId,
         author_name: authorName,
         rating,
         comment,
-        is_visible: true,
+        is_visible: false,
       })
       .select("id, author_name, rating, comment, created_at")
       .single();
 
     if (error) {
-      return jsonNoStore({ error: "Failed to create review" }, { status: 500 });
+      console.error("[specialists/reviews] insert failed", error);
+      return jsonNoStore({ error: "Failed to submit review" }, { status: 500 });
     }
 
     return jsonNoStore({ data }, { status: 201 });

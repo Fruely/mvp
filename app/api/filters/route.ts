@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from '@/lib/specialists/status';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,11 +19,15 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to load categories' }, { status: 500 });
     }
 
-    // Postal codes (distinct)
+    // Postal codes (distinct) — public specialists only
     const { data: postalData, error: postalError } = await supabase
       .from('specialists')
       .select('postal_code')
       .not('postal_code', 'is', null)
+      .in('status', [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
+      .eq('is_active', true)
+      .eq('is_visible', true)
+      .or('is_test.is.null,is_test.eq.false')
       .order('postal_code', { ascending: true });
 
     if (postalError) {
@@ -36,10 +41,14 @@ export async function GET() {
     });
     const postal_codes = Array.from(postalSet).sort();
 
-    // Languages (distinct from array column)
+    // Languages (distinct) — public specialists only
     const { data: langData, error: langError } = await supabase
       .from('specialists')
-      .select('languages');
+      .select('languages')
+      .in('status', [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
+      .eq('is_active', true)
+      .eq('is_visible', true)
+      .or('is_test.is.null,is_test.eq.false');
 
     if (langError) {
       console.error('[api/filters] languages error', langError);
@@ -59,8 +68,8 @@ export async function GET() {
       postal_codes,
       languages,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[api/filters] unexpected', error);
-    return NextResponse.json({ error: 'Internal error', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

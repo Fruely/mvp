@@ -41,6 +41,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false }, { status: 500 });
   }
 
+  const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+  if (webhookSecret) {
+    const headerToken = request.headers.get("X-Telegram-Bot-Api-Secret-Token");
+    if (headerToken !== webhookSecret) {
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    }
+  } else if (process.env.NODE_ENV === "development") {
+    console.warn(
+      "[telegram/webhook] TELEGRAM_WEBHOOK_SECRET is not set; webhook requests are not verified by secret."
+    );
+  }
+
   let body: TelegramUpdate;
   try {
     body = (await request.json()) as TelegramUpdate;

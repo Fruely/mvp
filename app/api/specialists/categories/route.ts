@@ -27,51 +27,6 @@ function isCategoryClickable(specialistsCount: number, minCount: number): boolea
   return specialistsCount > 0 && specialistsCount >= minCount;
 }
 
-function decodeJwtPayload(token: string): Record<string, unknown> | null {
-  const parts = token.split(".");
-  if (parts.length < 2) return null;
-  try {
-    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
-    const payload = Buffer.from(padded, "base64").toString("utf8");
-    return JSON.parse(payload) as Record<string, unknown>;
-  } catch {
-    return null;
-  }
-}
-
-function extractServiceKeyDebugInfo() {
-  const serviceKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_KEY ?? "";
-  if (!serviceKey) {
-    return {
-      service_key_role: "missing",
-      service_key_iss_ref: "missing",
-    };
-  }
-
-  const payload = decodeJwtPayload(serviceKey);
-  const role =
-    payload && typeof payload.role === "string" ? payload.role : "unknown";
-
-  let issRef = "unknown";
-  const iss = payload && typeof payload.iss === "string" ? payload.iss : "";
-  if (iss) {
-    try {
-      const host = new URL(iss).hostname;
-      const ref = host.split(".")[0];
-      if (ref) issRef = ref;
-    } catch {
-      issRef = "invalid";
-    }
-  }
-
-  return {
-    service_key_role: role,
-    service_key_iss_ref: issRef,
-  };
-}
-
 async function loadCategoriesWithOptionalHierarchy() {
   const supabase = createSupabaseServerClient();
 
@@ -110,7 +65,6 @@ async function loadCategoriesWithOptionalHierarchy() {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const debugEnabled = searchParams.get("debug") === "1";
     const queryMinCount = parsePositiveInt(searchParams.get("min_count"));
     const minCount = queryMinCount ?? 0;
     const mode = searchParams.get("mode") === "parents" ? "parents" : "children";
@@ -136,40 +90,8 @@ export async function GET(request: NextRequest) {
 
     const categoryIds = childCategories.map((c) => c.id);
     let countsByCategoryId = new Map<string, number>();
-    let debugCountBreakdown:
-      | {
-          specialists_in_child_categories: number;
-          approved_total: number;
-          approved_active_total: number;
-          approved_active_visible_total: number;
-          counted_in_response_total: number;
-        }
-      | null = null;
 
     if (categoryIds.length > 0) {
-      if (debugEnabled) {
-        const { data: servicesForDebug, error: debugError } = await supabase
-          .from("specialist_services")
-          .select("specialist_id, category_id, is_active, price_from")
-          .in("category_id", categoryIds);
-
-        if (!debugError) {
-          const rows = servicesForDebug ?? [];
-          const active = rows.filter((row) => row.is_active === true);
-          const activeWithPrice = active.filter(
-            (row) => typeof row.price_from === "number" && Number.isFinite(row.price_from) && row.price_from >= 0
-          );
-
-          debugCountBreakdown = {
-            specialists_in_child_categories: rows.length,
-            approved_total: active.length,
-            approved_active_total: activeWithPrice.length,
-            approved_active_visible_total: activeWithPrice.length,
-            counted_in_response_total: 0,
-          };
-        }
-      }
-
       try {
         countsByCategoryId = await getPublicSpecialistCountsByServiceCategory(
           supabase,
@@ -184,14 +106,6 @@ export async function GET(request: NextRequest) {
             headers: { "Cache-Control": "no-store, max-age=0" },
           }
         );
-      }
-
-      if (debugCountBreakdown) {
-        let countedTotal = 0;
-        countsByCategoryId.forEach((value) => {
-          countedTotal += value;
-        });
-        debugCountBreakdown.counted_in_response_total = countedTotal;
       }
     }
 
@@ -217,17 +131,6 @@ export async function GET(request: NextRequest) {
         mode,
         hierarchy_enabled: hasHierarchy,
       };
-      if (debugEnabled) {
-        const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-        const serviceKeyDebug = extractServiceKeyDebugInfo();
-        meta._debug = {
-          supabase_tail: url ? `***${url.slice(-20)}` : "missing",
-          build_sha: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 8) ?? "local",
-          vercel_env: process.env.VERCEL_ENV ?? "local",
-          ...(debugCountBreakdown ? { count_breakdown: debugCountBreakdown } : {}),
-          ...serviceKeyDebug,
-        };
-      }
       return NextResponse.json(
         { data, meta },
         {
@@ -291,19 +194,6 @@ export async function GET(request: NextRequest) {
       mode,
       hierarchy_enabled: hasHierarchy,
     };
-    if (debugEnabled) {
-      const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-      const serviceKeyDebug = extractServiceKeyDebugInfo();
-      meta._debug = {
-        supabase_tail: url ? `***${url.slice(-20)}` : "missing",
-        build_sha: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 8) ?? "local",
-        vercel_env: process.env.VERCEL_ENV ?? "local",
-        ...(debugCountBreakdown ? { count_breakdown: debugCountBreakdown } : {}),
-        ...serviceKeyDebug,
-        parent_count: parentData.length,
-        raw_parent_count: parentCandidates.length,
-      };
-    }
 
     return NextResponse.json(
       {

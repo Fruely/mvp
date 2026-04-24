@@ -39,13 +39,14 @@ export async function GET(
   const { data: specialist, error: specError } = await supabase
     .from("specialists")
     .select(
-      "id, slug, name, avatar_url, category_id, status, is_active, is_visible, languages, work_format, created_at, user_id, lat, lng, founder_badge"
+      "id, slug, name, avatar_url, category_id, status, is_active, is_visible, languages, work_format, created_at, lat, lng, founder_badge"
     )
     .eq(isUuid ? "id" : "slug", param)
     .maybeSingle();
 
   if (specError) {
-    return jsonNoStore({ error: "Failed to fetch specialist" }, { status: 500 });
+    console.error("[specialists/[id]] fetch specialist failed", specError);
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   if (
@@ -144,7 +145,6 @@ export async function GET(
     languages: specialist.languages ?? [],
     work_format: specialist.work_format,
     created_at: specialist.created_at,
-    user_id: specialist.user_id,
     city: profile?.city ?? null,
     address: profile?.address ?? null,
     description: descriptionResolved,
