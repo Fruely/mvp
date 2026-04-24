@@ -637,7 +637,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
           {t(dict, "home.cta.subtitle")}
         </p>
         <Link
-          href="/for-specialists"
+          href={`/${lang}/for-specialists`}
           className="mt-6 inline-flex h-11 items-center justify-center rounded-md bg-emerald-600 px-6 text-sm font-semibold text-white transition hover:bg-emerald-700"
         >
           {t(dict, "home.cta.button")}

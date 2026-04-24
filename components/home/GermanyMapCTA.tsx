@@ -16,7 +16,7 @@ type Props = {
   lang: string;
 };
 
-export default function GermanyMapCTA({ title, body, spark, button }: Props) {
+export default function GermanyMapCTA({ title, body, spark, button, lang }: Props) {
   return (
     <section className="py-16 md:py-24">
       <div className="max-w-[1280px] mx-auto px-4 md:px-6">
@@ -43,7 +43,7 @@ export default function GermanyMapCTA({ title, body, spark, button }: Props) {
             </p>
 
             <Link
-              href="/for-specialists"
+              href={`/${lang}/for-specialists`}
               className="mt-8 inline-flex h-12 items-center justify-center rounded-lg bg-teal-600 px-8 text-sm font-semibold text-white transition-all duration-300 hover:bg-teal-700 hover:shadow-lg"
             >
               {button}
