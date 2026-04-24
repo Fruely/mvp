@@ -9,7 +9,7 @@ export type SpecialistPlanForUi = {
   plan_status: string;
   started_at: string | null;
   expires_at: string | null;
-  /** Reserved for when `specialist_plan.grace_until` exists in DB; currently always null. */
+  /** End of grace period from `specialist_plan.grace_until`, if set. */
   grace_until: string | null;
   /** Whether a row was found in `specialist_plan`. */
   fromDatabase: boolean;
@@ -30,7 +30,7 @@ export async function getSpecialistPlanForDashboard(
 ): Promise<SpecialistPlanForUi> {
   const { data, error } = await supabase
     .from("specialist_plan")
-    .select("plan_code, plan_status, started_at, expires_at")
+    .select("plan_code, plan_status, started_at, expires_at, grace_until")
     .eq("specialist_id", specialistId)
     .maybeSingle();
 
@@ -46,7 +46,7 @@ export async function getSpecialistPlanForDashboard(
     plan_status: planStatusRaw || FALLBACK.plan_status,
     started_at: data.started_at != null ? String(data.started_at) : null,
     expires_at: data.expires_at != null ? String(data.expires_at) : null,
-    grace_until: null,
+    grace_until: data.grace_until != null ? String(data.grace_until) : null,
     fromDatabase: true,
   };
 }
