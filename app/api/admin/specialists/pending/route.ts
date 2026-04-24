@@ -136,8 +136,82 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    const specialistIdsForPlans = Array.from(
+      new Set(
+        data
+          .map((row: { specialist_id?: string | null }) =>
+            typeof row.specialist_id === 'string' && row.specialist_id ? row.specialist_id : null
+          )
+          .filter(Boolean)
+      )
+    ) as string[];
+
+    let planBySpecialistId: Record<
+      string,
+      { plan_code: string; plan_status: string; expires_at: string | null; grace_until: string | null }
+    > = {};
+
+    if (specialistIdsForPlans.length > 0) {
+      const { data: planRows, error: planErr } = await supabase
+        .from('specialist_plan')
+        .select('specialist_id, plan_code, plan_status, expires_at, grace_until')
+        .in('specialist_id', specialistIdsForPlans);
+
+      if (planErr) {
+        console.error('[admin] Error fetching specialist_plan:', planErr);
+        return NextResponse.json(
+          { error: 'Failed to fetch subscription data' },
+          { status: 500, headers: { 'Cache-Control': 'no-store' } }
+        );
+      }
+
+      (planRows || []).forEach(
+        (p: {
+          specialist_id: string;
+          plan_code?: string | null;
+          plan_status?: string | null;
+          expires_at?: string | null;
+          grace_until?: string | null;
+        }) => {
+          planBySpecialistId[p.specialist_id] = {
+            plan_code: p.plan_code != null ? String(p.plan_code) : 'starter',
+            plan_status: p.plan_status != null ? String(p.plan_status) : 'early_access',
+            expires_at: p.expires_at != null ? String(p.expires_at) : null,
+            grace_until: p.grace_until != null ? String(p.grace_until) : null,
+          };
+        }
+      );
+    }
+
+    const dataWithSubscription = data.map(
+      (row: { specialist_id?: string | null; [k: string]: unknown }) => {
+        const sid =
+          typeof row.specialist_id === 'string' && row.specialist_id.trim() ? row.specialist_id.trim() : null;
+        if (!sid) {
+          return { ...row, subscription: null };
+        }
+        const fromDb = planBySpecialistId[sid];
+        if (fromDb) {
+          return {
+            ...row,
+            subscription: { ...fromDb, from_database: true },
+          };
+        }
+        return {
+          ...row,
+          subscription: {
+            plan_code: 'starter',
+            plan_status: 'early_access',
+            expires_at: null,
+            grace_until: null,
+            from_database: false,
+          },
+        };
+      }
+    );
+
     return NextResponse.json(
-      { data },
+      { data: dataWithSubscription },
       { status: 200, headers: { 'Cache-Control': 'no-store' } }
     );
   } catch (error: any) {

@@ -2,6 +2,14 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 
+type SubscriptionInfo = {
+  plan_code: string;
+  plan_status: string;
+  expires_at: string | null;
+  grace_until: string | null;
+  from_database: boolean;
+};
+
 type Application = {
   id: string;
   email: string | null;
@@ -20,6 +28,7 @@ type Application = {
   is_active?: boolean | null;
   source?: "application" | "specialist";
   can_resend_claim?: boolean;
+  subscription?: SubscriptionInfo | null;
 };
 
 type ApiResponse = { data: Application[] } | { error: string };
@@ -31,6 +40,36 @@ type UpdateResponse =
 const TOKEN_STORAGE_KEY = "ADMIN_API_TOKEN";
 
 type StatusTab = "pending_review" | "approved" | "rejected";
+
+type PlanStatusFilter =
+  | "all"
+  | "early_access"
+  | "trialing"
+  | "active"
+  | "grace_period"
+  | "expired"
+  | "cancelled";
+
+const PLAN_CODE_OPTIONS = ["starter", "basic", "premium"] as const;
+const PLAN_STATUS_OPTIONS = [
+  "early_access",
+  "trialing",
+  "active",
+  "grace",
+  "grace_period",
+  "expired",
+  "cancelled",
+] as const;
+
+const PLAN_STATUS_FILTER_OPTIONS: { value: PlanStatusFilter; label: string }[] = [
+  { value: "all", label: "Все статусы плана" },
+  { value: "early_access", label: "early_access" },
+  { value: "trialing", label: "trialing" },
+  { value: "active", label: "active" },
+  { value: "grace_period", label: "grace / grace_period" },
+  { value: "expired", label: "expired" },
+  { value: "cancelled", label: "cancelled" },
+];
 
 const STATUS_TABS: { value: StatusTab; label: string }[] = [
   { value: "pending_review", label: "Pending" },
@@ -58,8 +97,117 @@ export default function AdminSpecialistsPage() {
   const [activeStatus, setActiveStatus] = useState<StatusTab>("pending_review");
   const [pendingCount, setPendingCount] = useState<number>(0);
   const [lastClaimUrl, setLastClaimUrl] = useState<string | null>(null);
+  const [planStatusFilter, setPlanStatusFilter] = useState<PlanStatusFilter>("all");
+  const [subscriptionEditId, setSubscriptionEditId] = useState<string | null>(null);
+  const [savingSubscriptionById, setSavingSubscriptionById] = useState<Record<string, boolean>>({});
+  const [subscriptionFormDraft, setSubscriptionFormDraft] = useState<{
+    plan_code: string;
+    plan_status: string;
+    expiresLocal: string;
+    graceLocal: string;
+  } | null>(null);
 
   const hasToken = useMemo(() => !!token && token.trim().length > 0, [token]);
+
+  function subscriptionStatusBadgeClass(status: string): string {
+    const s = status.trim().toLowerCase();
+    if (s === "early_access" || s === "trialing") {
+      return "bg-emerald-50 text-emerald-800 border border-emerald-200";
+    }
+    if (s === "active") {
+      return "bg-blue-50 text-blue-800 border border-blue-200";
+    }
+    if (s === "grace" || s === "grace_period") {
+      return "bg-amber-50 text-amber-900 border border-amber-200";
+    }
+    if (s === "expired") {
+      return "bg-rose-50 text-rose-900 border border-rose-200";
+    }
+    if (s === "cancelled") {
+      return "bg-slate-100 text-slate-800 border border-slate-200";
+    }
+    return "bg-gray-50 text-gray-700 border border-gray-200";
+  }
+
+  function rowMatchesPlanFilter(app: Application, filter: PlanStatusFilter): boolean {
+    if (filter === "all") return true;
+    if (!app.subscription) return false;
+    const st = app.subscription.plan_status.trim().toLowerCase();
+    if (filter === "grace_period") return st === "grace" || st === "grace_period";
+    return st === filter;
+  }
+
+  const filteredData = useMemo(
+    () => data.filter((app) => rowMatchesPlanFilter(app, planStatusFilter)),
+    [data, planStatusFilter]
+  );
+
+  function isoToDatetimeLocalValue(iso: string | null): string {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "";
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function datetimeLocalToIsoOrNull(v: string): string | null {
+    const t = v.trim();
+    if (!t) return null;
+    const d = new Date(t);
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toISOString();
+  }
+
+  async function saveSpecialistSubscription(
+    specialistId: string,
+    payload: {
+      plan_code: string;
+      plan_status: string;
+      expires_at: string | null;
+      grace_until: string | null;
+    }
+  ) {
+    const activeToken = token || localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (!activeToken?.trim()) {
+      setToast({ type: "error", message: "Введите токен." });
+      return;
+    }
+    setSavingSubscriptionById((prev) => ({ ...prev, [specialistId]: true }));
+    setToast(null);
+    try {
+      const res = await fetch(`/api/admin/specialists/${encodeURIComponent(specialistId)}/subscription`, {
+        method: "PATCH",
+        headers: {
+          "x-admin-token": activeToken,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      const json = (await res.json()) as { error?: string; success?: boolean; data?: SubscriptionInfo & { started_at?: string; updated_at?: string } };
+      if (res.status === 401) {
+        try {
+          localStorage.removeItem(TOKEN_STORAGE_KEY);
+        } catch {
+          // ignore
+        }
+        setToken(null);
+        setTokenInput("");
+        setError("Токен недействителен. Введите токен заново.");
+        return;
+      }
+      if (!res.ok || !json.data) {
+        setToast({ type: "error", message: json.error || "Не удалось сохранить подписку" });
+        return;
+      }
+      setToast({ type: "success", message: "Подписка обновлена" });
+      setSubscriptionEditId(null);
+      await fetchSpecialists(activeToken, activeStatus);
+    } catch (e: unknown) {
+      setToast({ type: "error", message: e instanceof Error ? e.message : "Ошибка сети" });
+    } finally {
+      setSavingSubscriptionById((prev) => ({ ...prev, [specialistId]: false }));
+    }
+  }
 
   function formatDateTime(iso: string | null | undefined): string {
     if (!iso) return "—";
@@ -473,6 +621,30 @@ export default function AdminSpecialistsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasToken, token, activeStatus]);
 
+  useEffect(() => {
+    if (!subscriptionEditId) {
+      setSubscriptionFormDraft(null);
+      return;
+    }
+    const app = data.find((a) => a.specialist_id === subscriptionEditId);
+    const sub = app?.subscription;
+    if (!sub) {
+      setSubscriptionFormDraft({
+        plan_code: "starter",
+        plan_status: "early_access",
+        expiresLocal: "",
+        graceLocal: "",
+      });
+      return;
+    }
+    setSubscriptionFormDraft({
+      plan_code: sub.plan_code,
+      plan_status: sub.plan_status,
+      expiresLocal: isoToDatetimeLocalValue(sub.expires_at),
+      graceLocal: isoToDatetimeLocalValue(sub.grace_until),
+    });
+  }, [subscriptionEditId, data]);
+
   function handleSaveToken(e: React.FormEvent) {
     e.preventDefault();
     const value = tokenInput.trim();
@@ -563,6 +735,28 @@ export default function AdminSpecialistsPage() {
                 )}
               </button>
             ))}
+          </div>
+        )}
+
+        {hasToken && (
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <label className="text-sm text-gray-700">
+              Фильтр по plan_status:{" "}
+              <select
+                value={planStatusFilter}
+                onChange={(e) => setPlanStatusFilter(e.target.value as PlanStatusFilter)}
+                className="ml-1 rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm"
+              >
+                {PLAN_STATUS_FILTER_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <span className="text-xs text-gray-500">
+              Показано {filteredData.length} из {data.length}
+            </span>
           </div>
         )}
 
@@ -670,13 +864,14 @@ export default function AdminSpecialistsPage() {
                 <th className="px-3 py-2 border-b">Категория</th>
                 <th className="px-3 py-2 border-b">Документ</th>
                 <th className="px-3 py-2 border-b">О себе</th>
+                <th className="px-3 py-2 border-b min-w-[200px]">Подписка</th>
                 <th className="px-3 py-2 border-b">Действия</th>
               </tr>
             </thead>
             <tbody>
-              {data.length === 0 ? (
+              {filteredData.length === 0 ? (
                 <tr>
-                  <td className="px-3 py-4 text-gray-600" colSpan={8}>
+                  <td className="px-3 py-4 text-gray-600" colSpan={9}>
                     {hasToken
                       ? activeStatus === "pending_review"
                         ? "Нет заявок на модерацию (или не удалось загрузить)."
@@ -685,7 +880,7 @@ export default function AdminSpecialistsPage() {
                   </td>
                 </tr>
               ) : (
-                data.map((app) => {
+                filteredData.map((app) => {
                   const createdAt = app.created_at ? new Date(app.created_at).toLocaleString("ru-RU") : "—";
                   const isUpdating = !!updatingById[app.id];
                   const specialistId = typeof app.specialist_id === "string" ? app.specialist_id : null;
@@ -714,6 +909,48 @@ export default function AdminSpecialistsPage() {
                         </td>
                         <td className="px-3 py-2 border-b max-w-[200px] truncate" title={app.about_short || ""}>
                           {app.about_short || "—"}
+                        </td>
+                        <td className="px-3 py-2 border-b align-top text-xs text-gray-700">
+                          {!app.subscription ? (
+                            <span className="text-gray-400">—</span>
+                          ) : (
+                            <div className="space-y-1.5">
+                              <span
+                                className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${subscriptionStatusBadgeClass(
+                                  app.subscription.plan_status
+                                )}`}
+                              >
+                                {app.subscription.plan_status}
+                              </span>
+                              <div className="text-[11px] leading-snug">
+                                <div>
+                                  <span className="text-gray-500">тариф:</span> {app.subscription.plan_code}
+                                  {!app.subscription.from_database ? (
+                                    <span className="ml-1 text-amber-700">(нет строки в БД)</span>
+                                  ) : null}
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">до:</span>{" "}
+                                  {formatDateTime(app.subscription.expires_at)}
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">grace:</span>{" "}
+                                  {formatDateTime(app.subscription.grace_until)}
+                                </div>
+                              </div>
+                              {specialistId ? (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setSubscriptionEditId((prev) => (prev === specialistId ? null : specialistId))
+                                  }
+                                  className="mt-1 rounded border border-gray-300 bg-white px-2 py-0.5 text-[11px] font-medium text-gray-800 hover:bg-gray-50"
+                                >
+                                  {subscriptionEditId === specialistId ? "Закрыть" : "Изменить план"}
+                                </button>
+                              ) : null}
+                            </div>
+                          )}
                         </td>
                         <td className="px-3 py-2 border-b">
                           <div className="flex flex-wrap items-center gap-2">
@@ -855,9 +1092,110 @@ export default function AdminSpecialistsPage() {
                           </div>
                         </td>
                       </tr>
+                      {subscriptionEditId === specialistId && specialistId && subscriptionFormDraft ? (
+                        <tr>
+                          <td colSpan={9} className="border-b bg-slate-50 px-3 py-3 text-xs">
+                            <div className="max-w-3xl space-y-2 rounded-lg border border-slate-200 bg-white p-3">
+                              <p className="font-semibold text-gray-900">Ручное управление подпиской (specialist_plan)</p>
+                              <div className="grid gap-2 sm:grid-cols-2">
+                                <label className="block">
+                                  <span className="text-gray-600">plan_code</span>
+                                  <select
+                                    value={subscriptionFormDraft.plan_code}
+                                    onChange={(e) =>
+                                      setSubscriptionFormDraft((prev) =>
+                                        prev ? { ...prev, plan_code: e.target.value } : prev
+                                      )
+                                    }
+                                    className="mt-0.5 w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+                                  >
+                                    {PLAN_CODE_OPTIONS.map((c) => (
+                                      <option key={c} value={c}>
+                                        {c}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </label>
+                                <label className="block">
+                                  <span className="text-gray-600">plan_status</span>
+                                  <select
+                                    value={subscriptionFormDraft.plan_status}
+                                    onChange={(e) =>
+                                      setSubscriptionFormDraft((prev) =>
+                                        prev ? { ...prev, plan_status: e.target.value } : prev
+                                      )
+                                    }
+                                    className="mt-0.5 w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+                                  >
+                                    {PLAN_STATUS_OPTIONS.map((s) => (
+                                      <option key={s} value={s}>
+                                        {s}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </label>
+                                <label className="block sm:col-span-2">
+                                  <span className="text-gray-600">expires_at (локальное время)</span>
+                                  <input
+                                    type="datetime-local"
+                                    value={subscriptionFormDraft.expiresLocal}
+                                    onChange={(e) =>
+                                      setSubscriptionFormDraft((prev) =>
+                                        prev ? { ...prev, expiresLocal: e.target.value } : prev
+                                      )
+                                    }
+                                    className="mt-0.5 w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+                                  />
+                                </label>
+                                <label className="block sm:col-span-2">
+                                  <span className="text-gray-600">grace_until (локальное время)</span>
+                                  <input
+                                    type="datetime-local"
+                                    value={subscriptionFormDraft.graceLocal}
+                                    onChange={(e) =>
+                                      setSubscriptionFormDraft((prev) =>
+                                        prev ? { ...prev, graceLocal: e.target.value } : prev
+                                      )
+                                    }
+                                    className="mt-0.5 w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+                                  />
+                                </label>
+                              </div>
+                              <p className="text-[11px] text-gray-500">
+                                Очистите дату в поле или оставьте пустым и сохраните — в БД уйдёт null. Не меняет
+                                specialists.subscription_status / plan_name и публичную видимость.
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  disabled={!!savingSubscriptionById[specialistId]}
+                                  onClick={() =>
+                                    saveSpecialistSubscription(specialistId, {
+                                      plan_code: subscriptionFormDraft.plan_code.trim().toLowerCase(),
+                                      plan_status: subscriptionFormDraft.plan_status.trim().toLowerCase(),
+                                      expires_at: datetimeLocalToIsoOrNull(subscriptionFormDraft.expiresLocal),
+                                      grace_until: datetimeLocalToIsoOrNull(subscriptionFormDraft.graceLocal),
+                                    })
+                                  }
+                                  className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                                >
+                                  {savingSubscriptionById[specialistId] ? "Сохранение…" : "Сохранить"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setSubscriptionEditId(null)}
+                                  className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
+                                >
+                                  Отмена
+                                </button>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : null}
                       {isExpanded && (
                         <tr>
-                          <td colSpan={8} className="border-b bg-gray-50 px-3 py-2 text-xs text-gray-600">
+                          <td colSpan={9} className="border-b bg-gray-50 px-3 py-2 text-xs text-gray-600">
                             <div className="space-y-1">
                               <div>
                                 <span className="font-medium text-gray-700">Отклонено: </span>
