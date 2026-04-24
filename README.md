@@ -2,6 +2,13 @@
 
 Полнофункциональный проект Next.js + TailwindCSS для платформы бронирования услуг здоровья и благополучия.
 
+## Project handover
+
+Для быстрого знакомства с архитектурой, безопасностью, деплоем и текущими техническими решениями проекта см.:
+
+- [docs/HANDOVER_RU.md](docs/HANDOVER_RU.md) — русскоязычное руководство для передачи проекта разработчику.
+- [docs/adr/002-specialists-list-pagination-performance.md](docs/adr/002-specialists-list-pagination-performance.md) — отложенное архитектурное решение по производительности `/api/specialists/list`.
+
 ## 🚀 Возможности
 
 - ✅ Responsive дизайн (desktop, tablet, mobile)
