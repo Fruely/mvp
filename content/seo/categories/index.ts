@@ -9,4 +9,8 @@ export const SEO_CATEGORY_SLUGS = [
   "reiseberatung",
   "touren-ausfluege",
   "retreats",
+  "auto-mobilitaet",
+  "autowerkstatt-reparatur",
+  "autoelektrik",
+  "autokauf-beratung",
 ] as const;
