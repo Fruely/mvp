@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { specialistLangBecomePath } from "@/lib/specialists/navigation";
@@ -49,6 +50,10 @@ export async function getCurrentUserAndSpecialist() {
 
     user = data.user;
   } catch (e) {
+    if (isRedirectError(e)) {
+      throw e;
+    }
+
     console.error("[auth] getUser crash", e);
     redirect("/login");
   }
