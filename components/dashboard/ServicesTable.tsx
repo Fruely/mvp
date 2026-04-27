@@ -31,7 +31,7 @@ function hasValidPrice(service: {
   price_to: number | null;
 }): boolean {
   if (typeof service.price_from !== "number" || !Number.isFinite(service.price_from)) return false;
-  if (service.price_from < 0) return false;
+  if (service.price_from <= 0) return false;
   if (service.pricing_type === "range") {
     if (typeof service.price_to !== "number" || !Number.isFinite(service.price_to)) return false;
     if (service.price_to < service.price_from) return false;
@@ -134,7 +134,7 @@ export default function ServicesTable({
     if (!service.is_active && !hasValidPrice(service)) {
       setToast({
         kind: "error",
-        text: t(dict, "dashboard.servicesEditor.errors.activeNeedsPrice"),
+        text: t(dict, "dashboard.servicesEditor.errors.activePriceRequired"),
       });
       return;
     }
@@ -261,6 +261,11 @@ export default function ServicesTable({
               {services.map((service) => {
                 const busy = Boolean(busyById[service.id]);
                 const isEditing = editingId === service.id;
+                const shouldShowPublishPriceHint =
+                  !service.is_active &&
+                  (typeof service.price_from !== "number" ||
+                    !Number.isFinite(service.price_from) ||
+                    service.price_from <= 0);
                 return (
                   <Fragment key={service.id}>
                     <tr className="border-b border-gray-50 last:border-b-0">
@@ -280,6 +285,11 @@ export default function ServicesTable({
                         {service.price_comment ? (
                           <div className="mt-1 max-w-[280px] text-xs text-gray-500">
                             {service.price_comment}
+                          </div>
+                        ) : null}
+                        {shouldShowPublishPriceHint ? (
+                          <div className="mt-1 max-w-[280px] text-xs text-amber-700">
+                            {t(dict, "dashboard.servicesEditor.notPublishValidWithoutPrice")}
                           </div>
                         ) : null}
                       </td>

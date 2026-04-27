@@ -98,11 +98,11 @@ export default function ServiceForm({
     if (requestedActive) {
       const hasValidPrice =
         Number.isFinite(priceFrom) &&
-        priceFrom >= 0 &&
+        priceFrom > 0 &&
         (values.pricing_type !== "range" ||
           (priceTo != null && Number.isFinite(priceTo) && priceTo >= priceFrom));
       if (!hasValidPrice) {
-        setError(t(dict, "dashboard.servicesEditor.errors.activeNeedsPrice"));
+        setError(t(dict, "dashboard.servicesEditor.errors.activePriceRequired"));
         return;
       }
     }

@@ -4,6 +4,8 @@ import { normalizeRouteLangToDbContentCode } from "@/lib/specialists/normalizeCo
 
 const ALLOWED_PRICING_TYPES = ["fixed", "range", "hourly"] as const;
 type PricingType = (typeof ALLOWED_PRICING_TYPES)[number];
+const ACTIVE_PRICE_REQUIRED_ERROR =
+  "Чтобы показывать услугу в профиле и использовать её для публикации, укажите цену больше 0.";
 
 function normalizeNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -34,6 +36,10 @@ function hasValidServicePrice(args: {
     }
   }
   return true;
+}
+
+function hasPositivePriceFrom(priceFrom: number | null): boolean {
+  return typeof priceFrom === "number" && Number.isFinite(priceFrom) && priceFrom > 0;
 }
 
 async function getCurrentSpecialistContext() {
@@ -125,9 +131,9 @@ export async function POST(request: NextRequest) {
     priceFrom,
     priceTo,
   });
-  if (requestedActive && !validPrice) {
+  if (requestedActive && (!validPrice || !hasPositivePriceFrom(priceFrom))) {
     return NextResponse.json(
-      { error: "Без указания цены услуга не может быть активирована." },
+      { error: ACTIVE_PRICE_REQUIRED_ERROR },
       { status: 400 }
     );
   }
@@ -263,9 +269,9 @@ export async function PATCH(request: NextRequest) {
 
   const currentIsActive = Boolean(currentService.is_active);
   const nextRequestedIsActive = isActive ?? currentIsActive;
-  if (nextRequestedIsActive && !validPrice) {
+  if (nextRequestedIsActive && (!validPrice || !hasPositivePriceFrom(effectivePriceFrom))) {
     return NextResponse.json(
-      { error: "Без указания цены услуга не может быть активирована." },
+      { error: ACTIVE_PRICE_REQUIRED_ERROR },
       { status: 400 }
     );
   }
