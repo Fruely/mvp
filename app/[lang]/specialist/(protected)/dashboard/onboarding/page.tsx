@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import SpecialistOnboardingWizard from "@/components/dashboard/onboarding/SpecialistOnboardingWizard";
 import type { OnboardingChecklistItem } from "@/components/dashboard/onboarding/OnboardingChecklist";
-import type { OnboardingStepKey } from "@/components/dashboard/onboarding/OnboardingProgress";
+import { ONBOARDING_STEP_ORDER, type OnboardingStepKey } from "@/components/dashboard/onboarding/OnboardingProgress";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 import {
   hasValidServiceForPublish,
@@ -12,11 +12,9 @@ import { getDictionary, isSupportedLang, t, type Dictionary } from "@/lib/i18n";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 
-const ONBOARDING_STEPS: OnboardingStepKey[] = ["welcome", "basic", "about", "services", "photo", "review"];
-
 function normalizeStep(value: string | string[] | undefined): OnboardingStepKey {
   const raw = Array.isArray(value) ? value[0] : value;
-  return ONBOARDING_STEPS.includes(raw as OnboardingStepKey) ? (raw as OnboardingStepKey) : "welcome";
+  return ONBOARDING_STEP_ORDER.includes(raw as OnboardingStepKey) ? (raw as OnboardingStepKey) : "welcome";
 }
 
 export default async function SpecialistDashboardOnboardingPage({
