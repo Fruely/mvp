@@ -161,6 +161,7 @@ export default function OnboardingReviewStep({
   ];
 
   async function handlePublish() {
+    if (published) return;
     if (!publishReady || !summary.publishReady) {
       setError(t(dict, "dashboard.onboarding.reviewStep.preflightError"));
       return;
@@ -268,16 +269,18 @@ export default function OnboardingReviewStep({
         >
           {t(dict, "dashboard.onboarding.reviewStep.backToPhoto")}
         </Link>
-        <button
-          type="button"
-          onClick={handlePublish}
-          disabled={publishing || !publishReady}
-          className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {publishing
-            ? t(dict, "dashboard.onboarding.reviewStep.publishing")
-            : t(dict, "dashboard.onboarding.reviewStep.publish")}
-        </button>
+        {!published ? (
+          <button
+            type="button"
+            onClick={handlePublish}
+            disabled={publishing || !publishReady}
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {publishing
+              ? t(dict, "dashboard.onboarding.reviewStep.publishing")
+              : t(dict, "dashboard.onboarding.reviewStep.publish")}
+          </button>
+        ) : null}
         {published ? (
           <Link
             href={dashboardLink}
