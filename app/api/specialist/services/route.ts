@@ -76,7 +76,7 @@ export async function GET() {
 
   const { data, error } = await ctx.supabase
     .from("specialist_services")
-    .select("id, title, description, pricing_type, price_from, price_to, currency, duration_minutes, is_active, created_at, updated_at")
+    .select("id, title, description, price_comment, pricing_type, price_from, price_to, currency, duration_minutes, is_active, created_at, updated_at")
     .eq("specialist_id", ctx.specialistId)
     .order("created_at", { ascending: false });
 
@@ -98,6 +98,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
   const title = normalizeText(body?.title);
   const description = normalizeText(body?.description);
+  const priceComment = normalizeText(body?.price_comment);
   const pricingType = normalizeText(body?.pricing_type);
   const priceFrom = normalizeNumber(body?.price_from);
   const priceTo = normalizeNumber(body?.price_to);
@@ -135,6 +136,7 @@ export async function POST(request: NextRequest) {
     specialist_id: ctx.specialistId,
     title,
     description,
+    price_comment: priceComment,
     pricing_type: pricingType,
     price_from: priceFrom,
     price_to: pricingType === "range" ? priceTo : null,
@@ -147,7 +149,7 @@ export async function POST(request: NextRequest) {
   const { data, error } = await ctx.supabase
     .from("specialist_services")
     .insert(payload)
-    .select("id, title, description, pricing_type, price_from, price_to, currency, duration_minutes, is_active, created_at, updated_at")
+    .select("id, title, description, price_comment, pricing_type, price_from, price_to, currency, duration_minutes, is_active, created_at, updated_at")
     .maybeSingle();
 
   if (error) {
@@ -162,7 +164,7 @@ export async function POST(request: NextRequest) {
         language_code: languageCode,
         title,
         description,
-        price_comment: null,
+        price_comment: priceComment,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "specialist_service_id,language_code" }
@@ -191,6 +193,7 @@ export async function PATCH(request: NextRequest) {
 
   const title = normalizeText(body?.title);
   const description = normalizeText(body?.description);
+  const priceComment = normalizeText(body?.price_comment);
   const pricingType = normalizeText(body?.pricing_type);
   const priceFrom = normalizeNumber(body?.price_from);
   const priceTo = normalizeNumber(body?.price_to);
@@ -217,6 +220,7 @@ export async function PATCH(request: NextRequest) {
 
   if (title !== null) patch.title = title;
   if (Object.prototype.hasOwnProperty.call(body ?? {}, "description")) patch.description = description;
+  if (Object.prototype.hasOwnProperty.call(body ?? {}, "price_comment")) patch.price_comment = priceComment;
   if (pricingType !== null) {
     if (!ALLOWED_PRICING_TYPES.includes(pricingType as PricingType)) {
       return NextResponse.json({ error: "pricing_type must be fixed/range/hourly" }, { status: 400 });
@@ -275,7 +279,7 @@ export async function PATCH(request: NextRequest) {
     .update(patch)
     .eq("id", id)
     .eq("specialist_id", ctx.specialistId)
-    .select("id, title, description, pricing_type, price_from, price_to, currency, duration_minutes, is_active, created_at, updated_at")
+    .select("id, title, description, price_comment, pricing_type, price_from, price_to, currency, duration_minutes, is_active, created_at, updated_at")
     .maybeSingle();
 
   if (error) {
@@ -289,13 +293,14 @@ export async function PATCH(request: NextRequest) {
   if (languageCode && data?.id) {
     const rowTitle = typeof data.title === "string" ? data.title : "";
     const rowDesc = typeof data.description === "string" ? data.description : null;
+    const rowPriceComment = typeof data.price_comment === "string" ? data.price_comment : null;
     const { error: translationError } = await ctx.supabase.from("specialist_service_translations").upsert(
       {
         specialist_service_id: String(data.id),
         language_code: languageCode,
         title: rowTitle,
         description: rowDesc,
-        price_comment: null,
+        price_comment: rowPriceComment,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "specialist_service_id,language_code" }

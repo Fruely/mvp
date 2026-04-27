@@ -4,6 +4,7 @@ export type SpecialistService = {
   id: string;
   title: string;
   description: string | null;
+  price_comment?: string | null;
   pricing_type: PricingType;
   price_from: number;
   price_to: number | null;
@@ -17,6 +18,7 @@ export type SpecialistService = {
 type ServicePayload = {
   title: string;
   description: string | null;
+  price_comment?: string | null;
   pricing_type: PricingType;
   price_from: number;
   price_to: number | null;

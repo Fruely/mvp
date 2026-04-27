@@ -65,6 +65,7 @@ export default function ServicesTable({
   async function handleCreate(payload: {
     title: string;
     description: string | null;
+    price_comment: string | null;
     pricing_type: PricingType;
     price_from: number;
     price_to: number | null;
@@ -96,6 +97,7 @@ export default function ServicesTable({
     payload: {
       title: string;
       description: string | null;
+      price_comment: string | null;
       pricing_type: PricingType;
       price_from: number;
       price_to: number | null;
@@ -273,7 +275,14 @@ export default function ServicesTable({
                           {pricingTypeLabel(service.pricing_type)}
                         </span>
                       </td>
-                      <td className="px-2 py-3 text-gray-800">{formatPrice(service)}</td>
+                      <td className="px-2 py-3">
+                        <div className="text-gray-800">{formatPrice(service)}</div>
+                        {service.price_comment ? (
+                          <div className="mt-1 max-w-[280px] text-xs text-gray-500">
+                            {service.price_comment}
+                          </div>
+                        ) : null}
+                      </td>
                       <td className="px-2 py-3 text-gray-600">{service.duration_minutes ? `${service.duration_minutes}` : "—"}</td>
                       <td className="px-2 py-3">
                         <div className="flex flex-col items-start gap-2">
@@ -329,6 +338,7 @@ export default function ServicesTable({
                             initialValues={{
                               title: service.title,
                               description: service.description ?? "",
+                              price_comment: service.price_comment ?? "",
                               pricing_type: service.pricing_type,
                               price_from: String(service.price_from ?? ""),
                               price_to: service.price_to == null ? "" : String(service.price_to),

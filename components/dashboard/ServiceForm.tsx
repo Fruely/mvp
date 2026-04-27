@@ -7,6 +7,7 @@ import type { PricingType } from "@/lib/dashboard/services";
 type ServiceFormValues = {
   title: string;
   description: string;
+  price_comment: string;
   pricing_type: PricingType;
   price_from: string;
   price_to: string;
@@ -17,6 +18,7 @@ type ServiceFormValues = {
 const DEFAULT_VALUES: ServiceFormValues = {
   title: "",
   description: "",
+  price_comment: "",
   pricing_type: "fixed",
   price_from: "",
   price_to: "",
@@ -40,6 +42,7 @@ export default function ServiceForm({
   onSubmit: (payload: {
     title: string;
     description: string | null;
+    price_comment: string | null;
     pricing_type: PricingType;
     price_from: number;
     price_to: number | null;
@@ -107,6 +110,7 @@ export default function ServiceForm({
     await onSubmit({
       title,
       description: values.description.trim() || null,
+      price_comment: values.price_comment.trim() || null,
       pricing_type: values.pricing_type,
       price_from: priceFrom,
       price_to: values.pricing_type === "range" ? priceTo : null,
@@ -144,6 +148,21 @@ export default function ServiceForm({
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
           placeholder={t(dict, "dashboard.servicesEditor.placeholder.description")}
         />
+      </div>
+
+      <div>
+        <label className="mb-1 block text-xs font-medium text-gray-600">
+          {t(dict, "dashboard.servicesEditor.field.priceComment")}
+        </label>
+        <textarea
+          value={values.price_comment}
+          onChange={(e) => updateValue("price_comment", e.target.value)}
+          rows={2}
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          {t(dict, "dashboard.servicesEditor.helper.priceComment")}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
