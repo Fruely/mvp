@@ -91,6 +91,7 @@ export default async function SpecialistDashboardOnboardingPage({
   );
   const totalServices = Array.isArray(servicesRows) ? servicesRows.length : 0;
   const activeServices = (servicesRows ?? []).filter((row) => row.is_active === true).length;
+  const hasActiveServicesAnyCategory = activeServices > 0;
   const hasValidService = hasValidServiceForPublish(servicesInSelectedCategory);
 
   const publishReady = isPublicationReadyForDashboard({
@@ -105,9 +106,15 @@ export default async function SpecialistDashboardOnboardingPage({
 
   const hasAbout = typeof profile?.about_me === "string" && profile.about_me.trim().length > 0;
   const hasPhoto = typeof profile?.photo_url === "string" && profile.photo_url.trim().length > 0;
+  const hasGallery = Array.isArray(profile?.gallery_urls)
+    ? profile.gallery_urls.some((value) => typeof value === "string" && value.trim().length > 0)
+    : false;
   const needsPostalCode = workFormat !== "online";
   const hasWorkFormat =
     workFormat === "online" || workFormat === "offline" || workFormat === "hybrid";
+  const isRootCategory = Boolean(categoryId && categoryParentId == null && !isUncategorizedCategory);
+  const hasValidPostalCodeWhenNeeded = !needsPostalCode || /^\d{5}$/.test(postalCode.trim());
+  const servicesMismatch = hasActiveServicesAnyCategory && !hasValidService;
   const profileStarted = Boolean(
     name ||
       categoryId ||
@@ -188,6 +195,24 @@ export default async function SpecialistDashboardOnboardingPage({
         hasValidServiceForPublish: hasValidService,
       }}
       currentPhotoUrl={typeof profile?.photo_url === "string" ? profile.photo_url : ""}
+      reviewSummary={{
+        publishReady,
+        hasName: Boolean(name.trim()),
+        hasCategory: Boolean(categoryId),
+        hasPublishableCategory: Boolean(categoryId && categoryParentId != null && !isUncategorizedCategory),
+        isUncategorizedCategory,
+        isRootCategory,
+        hasLanguages: languages.length > 0,
+        hasWorkFormat,
+        needsPostalCode,
+        hasValidPostalCodeWhenNeeded,
+        hasActiveServicesAnyCategory,
+        hasValidServiceInSelectedCategory: hasValidService,
+        servicesMismatch,
+        hasAbout,
+        hasPhoto,
+        hasGallery,
+      }}
       categories={(categoriesRows ?? [])
         .filter(
           (category) =>

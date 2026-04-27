@@ -13,6 +13,7 @@ import OnboardingProgress, {
   type OnboardingStepKey,
 } from "./OnboardingProgress";
 import OnboardingPhotoStep from "./OnboardingPhotoStep";
+import OnboardingReviewStep, { type OnboardingReviewSummary } from "./OnboardingReviewStep";
 import OnboardingServicesStep, { type OnboardingServicesSummary } from "./OnboardingServicesStep";
 import OnboardingStepShell from "./OnboardingStepShell";
 
@@ -32,6 +33,7 @@ export default function SpecialistOnboardingWizard({
   initialAboutData,
   servicesSummary,
   currentPhotoUrl,
+  reviewSummary,
   categories,
   preserveProfileData,
 }: {
@@ -46,6 +48,7 @@ export default function SpecialistOnboardingWizard({
   initialAboutData: OnboardingAboutData;
   servicesSummary: OnboardingServicesSummary;
   currentPhotoUrl: string;
+  reviewSummary: OnboardingReviewSummary;
   categories: OnboardingCategory[];
   preserveProfileData: OnboardingPreserveProfileData;
 }) {
@@ -101,8 +104,6 @@ export default function SpecialistOnboardingWizard({
       </Link>
     </div>
   );
-
-  const reviewBody = t(dict, "dashboard.onboarding.stepContent.review.body");
 
   return (
     <div className="space-y-6">
@@ -224,11 +225,13 @@ export default function SpecialistOnboardingWizard({
 
       {activeStep === "review" ? (
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          <OnboardingStepShell
-            title={t(dict, "dashboard.onboarding.stepContent.review.title")}
-            body={reviewBody}
-            footer={stepNavFooter}
-            titleAs="h2"
+          <OnboardingReviewStep
+            dict={dict}
+            lang={lang}
+            baseHref={baseHref}
+            dashboardHref={dashboardHref}
+            publishReady={publishReady}
+            summary={reviewSummary}
           />
           <OnboardingChecklist
             title={t(dict, "dashboard.onboarding.checklist.title")}
