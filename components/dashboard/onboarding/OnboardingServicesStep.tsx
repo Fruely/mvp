@@ -9,16 +9,17 @@ export type OnboardingServicesSummary = {
 
 export default function OnboardingServicesStep({
   dict,
-  servicesHref,
+  lang,
   photoHref,
   summary,
 }: {
   dict: Dictionary;
-  servicesHref: string;
+  lang: string;
   photoHref: string;
   summary: OnboardingServicesSummary;
 }) {
   const hasValidService = summary.hasValidServiceForPublish;
+  const servicesHrefWithContext = `/${lang}/specialist/dashboard/services?from=onboarding`;
 
   return (
     <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
@@ -64,7 +65,7 @@ export default function OnboardingServicesStep({
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <Link
-          href={servicesHref}
+          href={servicesHrefWithContext}
           className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
         >
           {t(dict, "dashboard.onboarding.servicesStep.openServices")}
