@@ -6,6 +6,7 @@ import SupportBlock from "@/components/support/SupportBlock";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
+import { isPublicationReadyForDashboard } from "@/lib/dashboard/publicationReadiness";
 
 type ServiceInput = {
   id?: string;
@@ -180,17 +181,29 @@ export default function SpecialistDashboardEditor({
     form.work_format === "online" ||
     form.work_format === "offline" ||
     form.work_format === "hybrid";
+  const selectedCategory = categories.find((category) => category.id === form.category_id);
+  const categoryParentId = selectedCategory?.parent_id ?? null;
+  const isUncategorizedCategory =
+    selectedCategory?.slug === UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG;
+  const hasPublishableCategory = Boolean(
+    form.category_id.trim() && categoryParentId != null && !isUncategorizedCategory
+  );
 
   const publicationReady = useMemo(() => {
-    return Boolean(
-      form.name.trim() &&
-        form.category_id.trim() &&
-        form.languages.length > 0 &&
-        hasWorkFormat &&
-        (!needsPostalCode || /^\d{5}$/.test(form.postal_code.trim())) &&
-        hasValidServiceFlag
-    );
-  }, [form, needsPostalCode, hasValidServiceFlag, hasWorkFormat]);
+    return isPublicationReadyForDashboard({
+      name: form.name,
+      categoryId: form.category_id,
+      categoryParentId,
+      languages: form.languages,
+      workFormat: form.work_format,
+      postalCode: form.postal_code,
+      servicesInSelectedCategory: form.services.map((service) => ({
+        title: service.title,
+        price_from: service.price_from,
+        is_active: service.is_active,
+      })),
+    });
+  }, [categoryParentId, form.category_id, form.languages, form.name, form.postal_code, form.services, form.work_format]);
 
   /** Checklist items mirror the same publish minimum; order matches form sections. */
   const readinessItems = useMemo(() => {
@@ -199,7 +212,7 @@ export default function SpecialistDashboardEditor({
       {
         key: "category",
         label: t(dict, "dashboard.fields.category"),
-        done: Boolean(form.category_id.trim()),
+        done: hasPublishableCategory,
       },
       {
         key: "languages",
@@ -225,7 +238,7 @@ export default function SpecialistDashboardEditor({
       done: hasValidServiceFlag,
     });
     return items;
-  }, [dict, form, needsPostalCode, hasWorkFormat, hasValidServiceFlag]);
+  }, [dict, form, needsPostalCode, hasWorkFormat, hasValidServiceFlag, hasPublishableCategory]);
 
   const readinessDoneCount = readinessItems.filter((item) => item.done).length;
   const readinessTotalCount = readinessItems.length;
@@ -259,12 +272,27 @@ export default function SpecialistDashboardEditor({
   const publishDisabledHint = useMemo(() => {
     if (publishing) return null;
     if (isDirty) return t(dict, "dashboard.messages.saveFirst");
+    if (isUncategorizedCategory) return t(dict, "dashboard.messages.publishHintUncategorized");
+    if (form.category_id.trim() && categoryParentId == null) {
+      return t(dict, "dashboard.messages.publishHintNeedSubcategory");
+    }
     if (!form.languages.length) return t(dict, "dashboard.application.errors.languagesRequired");
     if (!hasWorkFormat) return t(dict, "dashboard.messages.fillRequired");
     if (!hasValidServiceFlag) return t(dict, "dashboard.servicesSection.visibilityWarning");
     if (!publicationReady) return t(dict, "dashboard.messages.fillRequired");
     return null;
-  }, [dict, publishing, isDirty, form.languages.length, hasWorkFormat, hasValidServiceFlag, publicationReady]);
+  }, [
+    dict,
+    publishing,
+    isDirty,
+    isUncategorizedCategory,
+    form.category_id,
+    categoryParentId,
+    form.languages.length,
+    hasWorkFormat,
+    hasValidServiceFlag,
+    publicationReady,
+  ]);
 
   const publishDisabled = publishing || isDirty || !publicationReady;
 
@@ -462,7 +490,13 @@ export default function SpecialistDashboardEditor({
     if (!publicationReady) {
       const missing: string[] = [];
       if (!form.name.trim()) missing.push(t(dict, "dashboard.fields.name"));
-      if (!form.category_id.trim()) missing.push(t(dict, "dashboard.fields.category"));
+      if (!form.category_id.trim()) {
+        missing.push(t(dict, "dashboard.fields.category"));
+      } else if (isUncategorizedCategory) {
+        missing.push(t(dict, "dashboard.messages.publishHintUncategorized"));
+      } else if (categoryParentId == null) {
+        missing.push(t(dict, "dashboard.messages.publishHintNeedSubcategory"));
+      }
       if (!form.languages.length) missing.push(t(dict, "dashboard.fields.languages"));
       if (!hasWorkFormat) missing.push(t(dict, "dashboard.fields.format"));
       if (needsPostalCode && !/^\d{5}$/.test(form.postal_code.trim())) missing.push(t(dict, "dashboard.fields.plz"));
@@ -620,6 +654,11 @@ export default function SpecialistDashboardEditor({
                   </option>
                 ))}
               </select>
+              {isUncategorizedCategory ? (
+                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium leading-relaxed text-amber-900">
+                  {t(dict, "dashboard.readiness.uncategorizedHint")}
+                </p>
+              ) : null}
             </label>
           </div>
           <label className="space-y-1 text-sm">
