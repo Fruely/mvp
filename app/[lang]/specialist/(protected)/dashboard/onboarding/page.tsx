@@ -40,7 +40,7 @@ export default async function SpecialistDashboardOnboardingPage({
 
   const { data: profile } = await service
     .from("specialist_profiles")
-    .select("photo_url, about_me, city")
+    .select("photo_url, about_me, city, address, video_url, gallery_urls, certificate_urls")
     .eq("specialist_id", specialist.id)
     .maybeSingle();
 
@@ -62,6 +62,12 @@ export default async function SpecialistDashboardOnboardingPage({
     .select("title, price_from, is_active, category_id")
     .eq("specialist_id", specialist.id)
     .eq("is_active", true);
+
+  const { data: categoriesRows } = await service
+    .from("categories")
+    .select("id, title, title_ru, title_de, title_ua, parent_id, slug")
+    .or(`parent_id.not.is.null,slug.eq.${UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG}`)
+    .order("title", { ascending: true });
 
   const name = specialist.first_name?.trim() || specialist.name?.trim() || "";
   const languages = Array.isArray(specExtra?.languages)
@@ -161,6 +167,50 @@ export default async function SpecialistDashboardOnboardingPage({
       publishReady={publishReady}
       isUncategorizedCategory={isUncategorizedCategory}
       checklistItems={checklistItems}
+      initialBasicData={{
+        name,
+        category_id: categoryId,
+        work_format:
+          workFormat === "online" || workFormat === "offline" || workFormat === "hybrid"
+            ? workFormat
+            : "online",
+        postal_code: postalCode,
+        languages,
+      }}
+      categories={(categoriesRows ?? [])
+        .filter(
+          (category) =>
+            typeof category?.id === "string" &&
+            (typeof category?.title === "string" || category?.title === null) &&
+            (category.parent_id === null || typeof category.parent_id === "string") &&
+            (typeof category?.slug === "string" || category?.slug === null),
+        )
+        .map((category) => ({
+          id: String(category.id),
+          title: typeof category.title === "string" ? category.title : null,
+          title_ru: typeof category.title_ru === "string" ? category.title_ru : null,
+          title_de: typeof category.title_de === "string" ? category.title_de : null,
+          title_ua: typeof category.title_ua === "string" ? category.title_ua : null,
+          parent_id: typeof category.parent_id === "string" ? category.parent_id : null,
+          slug: typeof category.slug === "string" ? category.slug : null,
+        }))}
+      preserveProfileData={{
+        about_me: typeof profile?.about_me === "string" ? profile.about_me : "",
+        city: typeof profile?.city === "string" ? profile.city : "",
+        address: typeof profile?.address === "string" ? profile.address : "",
+        video_url: typeof profile?.video_url === "string" ? profile.video_url : "",
+        photo_url: typeof profile?.photo_url === "string" ? profile.photo_url : "",
+        gallery_urls: Array.isArray(profile?.gallery_urls)
+          ? profile.gallery_urls.filter(
+              (value): value is string => typeof value === "string" && value.trim().length > 0,
+            )
+          : [],
+        certificate_urls: Array.isArray(profile?.certificate_urls)
+          ? profile.certificate_urls.filter(
+              (value): value is string => typeof value === "string" && value.trim().length > 0,
+            )
+          : [],
+      }}
     />
   );
 }

@@ -1,5 +1,10 @@
 import Link from "next/link";
 import { t, type Dictionary } from "@/lib/i18n";
+import OnboardingBasicForm, {
+  type OnboardingBasicData,
+  type OnboardingCategory,
+  type OnboardingPreserveProfileData,
+} from "./OnboardingBasicForm";
 import OnboardingChecklist, { type OnboardingChecklistItem } from "./OnboardingChecklist";
 import OnboardingProgress, {
   ONBOARDING_STEP_ORDER,
@@ -20,6 +25,9 @@ export default function SpecialistOnboardingWizard({
   publishReady,
   isUncategorizedCategory,
   checklistItems,
+  initialBasicData,
+  categories,
+  preserveProfileData,
 }: {
   dict: Dictionary;
   lang: string;
@@ -28,6 +36,9 @@ export default function SpecialistOnboardingWizard({
   publishReady: boolean;
   isUncategorizedCategory: boolean;
   checklistItems: OnboardingChecklistItem[];
+  initialBasicData: OnboardingBasicData;
+  categories: OnboardingCategory[];
+  preserveProfileData: OnboardingPreserveProfileData;
 }) {
   const baseHref = `/${lang}/specialist/dashboard/onboarding`;
   const dashboardHref = `/${lang}/specialist/dashboard`;
@@ -117,11 +128,14 @@ export default function SpecialistOnboardingWizard({
 
       {activeStep === "basic" ? (
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          <OnboardingStepShell
-            title={t(dict, "dashboard.onboarding.stepContent.basic.title")}
-            body={t(dict, "dashboard.onboarding.stepContent.basic.body")}
-            footer={stepNavFooter}
-            titleAs="h2"
+          <OnboardingBasicForm
+            dict={dict}
+            lang={lang}
+            baseHref={baseHref}
+            dashboardHref={dashboardHref}
+            initialData={initialBasicData}
+            categories={categories}
+            preserveProfileData={preserveProfileData}
           />
           <OnboardingChecklist
             title={t(dict, "dashboard.onboarding.checklist.title")}
