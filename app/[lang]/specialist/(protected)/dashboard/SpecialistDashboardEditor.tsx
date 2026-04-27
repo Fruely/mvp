@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useCallback, useRef, useEffect, type ChangeEvent } from "react";
+import Link from "next/link";
 import { t, type Dictionary } from "@/lib/i18n";
 import SupportBlock from "@/components/support/SupportBlock";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
@@ -57,8 +58,6 @@ type Props = {
 const MAX_GALLERY_IMAGES = 5;
 const MAX_DOCUMENT_IMAGES = 10;
 
-const PRICE_COMMENT_MAX = 50;
-
 /** Targets for readiness checklist jump-to-section (ids on form blocks below). */
 const READINESS_SECTION_ID: Record<string, string> = {
   name: "dashboard-section-name",
@@ -84,36 +83,6 @@ function focusFirstInteractive(container: HTMLElement) {
   ].join(", ");
   const el = container.querySelector<HTMLElement>(selector);
   if (el) el.focus({ preventScroll: true });
-}
-
-const PRICE_COMMENT_PRESETS = [
-  "по договорённости",
-  "за час",
-  "за сессию",
-  "за м²",
-  "после замеров",
-  "после осмотра",
-  "оплачивается Jobcenter",
-] as const;
-
-const ZERO_PRICE_PRESETS = new Set([
-  "по договорённости",
-  "после замеров",
-  "после осмотра",
-  "оплачивается Jobcenter",
-]);
-
-const CHIP_COLORS = [
-  "bg-blue-50 text-blue-700 hover:bg-blue-100",
-  "bg-orange-50 text-orange-700 hover:bg-orange-100",
-  "bg-green-50 text-green-700 hover:bg-green-100",
-  "bg-purple-50 text-purple-700 hover:bg-purple-100",
-  "bg-pink-50 text-pink-700 hover:bg-pink-100",
-  "bg-indigo-50 text-indigo-700 hover:bg-indigo-100",
-];
-
-function sanitizePriceValue(raw: string): string {
-  return raw.replace(/\s/g, "").replace(",", ".");
 }
 
 function hasValidService(services: ServiceInput[]): boolean {
@@ -151,7 +120,6 @@ export default function SpecialistDashboardEditor({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [status, setStatus] = useState(initialStatus);
-  const [priceErrors, setPriceErrors] = useState<Record<number, string | null>>({});
   const [highlightedSectionId, setHighlightedSectionId] = useState<string | null>(null);
   const highlightClearTimeoutRef = useRef<number | null>(null);
 
@@ -267,7 +235,8 @@ export default function SpecialistDashboardEditor({
     }, READINESS_HIGHLIGHT_MS);
   }, []);
 
-  const noServicesYet = form.services.length === 0;
+  const activeServicesCount = form.services.filter((service) => service.is_active).length;
+  const servicesHref = `/${lang}/specialist/dashboard/services`;
 
   const publishDisabledHint = useMemo(() => {
     if (publishing) return null;
@@ -295,47 +264,6 @@ export default function SpecialistDashboardEditor({
   ]);
 
   const publishDisabled = publishing || isDirty || !publicationReady;
-
-  function sanitizePrice(raw: string): string {
-    return sanitizePriceValue(raw);
-  }
-
-  function validatePrice(value: string): string | null {
-    if (value === "") return null;
-    const sanitized = sanitizePrice(value);
-    if (!/^\d+(\.\d+)?$/.test(sanitized)) {
-      return t(dict, "dashboard.messages.priceDigitsOnly");
-    }
-    return null;
-  }
-
-  function updateService(index: number, patch: Partial<ServiceInput>) {
-    if (patch.price_from !== undefined) {
-      setPriceErrors((prev) => ({ ...prev, [index]: validatePrice(patch.price_from!) }));
-    }
-    setForm((prev) => {
-      const next = [...prev.services];
-      next[index] = { ...next[index], ...patch };
-      return { ...prev, services: next };
-    });
-  }
-
-  function addService() {
-    setForm((prev) => ({
-      ...prev,
-      services: [
-        ...prev.services,
-        { title: "", price_from: "", currency: "EUR", is_active: true, price_comment: "" },
-      ],
-    }));
-  }
-
-  function removeService(index: number) {
-    setForm((prev) => ({
-      ...prev,
-      services: prev.services.filter((_, i) => i !== index),
-    }));
-  }
 
   async function uploadSingleImage(endpoint: string, file: File): Promise<string> {
     const formData = new FormData();
@@ -429,18 +357,7 @@ export default function SpecialistDashboardEditor({
     setError(null);
     setSuccess(null);
     try {
-      for (const service of form.services) {
-        if (!service.title?.trim()) continue;
-        const pf = Number(
-          String(service.price_from ?? "").replace(/\s/g, "").replace(",", ".")
-        );
-        if (Number.isFinite(pf) && pf === 0 && !String(service.price_comment ?? "").trim()) {
-          setError(t(dict, "dashboard.messages.priceZeroNeedsComment"));
-          return;
-        }
-      }
-
-      const payload = {
+      const payload: Record<string, unknown> = {
         ...form,
         category_id: form.category_id || null,
         video_url: form.video_url.trim(),
@@ -450,17 +367,8 @@ export default function SpecialistDashboardEditor({
         gallery_urls: form.gallery_urls.map((url) => url.trim()).filter(Boolean),
         certificate_urls: form.certificate_urls.map((url) => url.trim()).filter(Boolean),
         lang,
-        services: form.services
-          .map((service) => ({
-            id: service.id,
-            title: service.title.trim(),
-            price_from: sanitizePrice(service.price_from.trim()),
-            currency: (service.currency || "EUR").trim().toUpperCase(),
-            is_active: service.is_active,
-            price_comment: service.price_comment?.slice(0, PRICE_COMMENT_MAX) ?? "",
-          }))
-          .filter((service) => service.title.length > 0),
       };
+      delete payload.services;
 
       const res = await fetch("/api/specialist/dashboard/save", {
         method: "PUT",
@@ -951,15 +859,6 @@ export default function SpecialistDashboardEditor({
           </div>
         </div>
 
-        {noServicesYet ? (
-          <div
-            className="rounded-lg border-2 border-red-300 bg-red-50 px-4 py-3 text-sm font-medium text-red-900 shadow-sm"
-            role="status"
-          >
-            {t(dict, "dashboard.servicesSection.visibilityWarning")}
-          </div>
-        ) : null}
-
         <div
           id={READINESS_SECTION_ID.service}
           className={`scroll-mt-6 rounded-lg border p-4 transition-all duration-300 ${
@@ -970,119 +869,31 @@ export default function SpecialistDashboardEditor({
                 : "border-gray-200"
           }`}
         >
-          <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h2 className="text-base font-semibold text-gray-900">{t(dict, "dashboard.servicesSection.title")}</h2>
-              {!hasValidServiceFlag && !noServicesYet ? (
+              <p className="mt-2 text-sm text-gray-700">
+                {activeServicesCount > 0
+                  ? t(dict, "dashboard.servicesSection.activeSummary").replace(
+                      "{{count}}",
+                      String(activeServicesCount)
+                    )
+                  : t(dict, "dashboard.servicesSection.emptySummary")}
+              </p>
+              {!hasValidServiceFlag && activeServicesCount > 0 ? (
                 <p className="mt-1 text-sm font-medium text-amber-900">
                   {t(dict, "dashboard.servicesSection.visibilityWarning")}
                 </p>
               ) : null}
             </div>
-            <button
-              type="button"
-              onClick={addService}
-              className="shrink-0 text-sm font-medium text-blue-600 hover:text-blue-700"
+            <Link
+              href={servicesHref}
+              className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
             >
-              {t(dict, "dashboard.buttons.addService")}
-            </button>
-          </div>
-          <div className="space-y-3">
-            {form.services.map((service, idx) => (
-              <div
-                key={service.id || `new-${idx}`}
-                className="space-y-2 rounded-lg border border-gray-100 bg-gray-50/50 p-3"
-              >
-                <div className="grid gap-2 md:grid-cols-[1fr_180px_110px_auto]">
-                  <input
-                    value={service.title}
-                    onChange={(e) => updateService(idx, { title: e.target.value })}
-                    placeholder={t(dict, "dashboard.service.placeholderTitle")}
-                    className="rounded-lg border border-gray-200 px-3 py-2 text-sm"
-                  />
-                  <div>
-                    <input
-                      value={service.price_from}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        updateService(idx, {
-                          price_from: value,
-                          price_comment: service.price_comment,
-                        });
-                      }}
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder={t(dict, "dashboard.service.placeholderPrice")}
-                      className={`rounded-lg border px-3 py-2 text-sm ${
-                        priceErrors[idx] ? "border-red-400" : "border-gray-200"
-                      }`}
-                    />
-                    <p className="mt-0.5 text-[11px] text-gray-600 font-medium">{t(dict, "dashboard.service.priceHint")}</p>
-                    {priceErrors[idx] && (
-                      <p className="mt-0.5 text-xs text-red-600">{priceErrors[idx]}</p>
-                    )}
-                  </div>
-                  <input
-                    value={service.currency}
-                    onChange={(e) => updateService(idx, { currency: e.target.value })}
-                    placeholder="EUR"
-                    className="rounded-lg border border-gray-200 px-3 py-2 text-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeService(idx)}
-                    className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-700 hover:bg-red-50"
-                  >
-                    {t(dict, "dashboard.buttons.delete")}
-                  </button>
-                </div>
-                <label className="block space-y-1">
-                  <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.priceComment")}</span>
-                  <div className="mb-2 flex flex-wrap gap-2">
-                    {PRICE_COMMENT_PRESETS.map((preset, i) => {
-                      const isActive = (service.price_comment || "").trim() === preset;
-                      return (
-                        <button
-                          key={preset}
-                          type="button"
-                          onClick={() =>
-                            updateService(idx, {
-                              price_comment: preset.slice(0, PRICE_COMMENT_MAX),
-                              ...(ZERO_PRICE_PRESETS.has(preset)
-                                ? { price_from: "0" }
-                                : {}),
-                            })
-                          }
-                          className={`
-                            px-3 py-1 text-xs font-medium rounded-full transition
-                            ${CHIP_COLORS[i % CHIP_COLORS.length]}
-                            ${isActive ? "ring-2 ring-black/20" : ""}
-                          `}
-                        >
-                          {preset}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <textarea
-                    value={service.price_comment || ""}
-                    maxLength={PRICE_COMMENT_MAX}
-                    onChange={(e) =>
-                      updateService(idx, {
-                        price_comment: e.target.value.slice(0, PRICE_COMMENT_MAX),
-                      })
-                    }
-                    placeholder={t(dict, "dashboard.fields.priceCommentPlaceholder50")}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
-                    rows={2}
-                  />
-                  <p className="mt-1 text-xs text-gray-500">
-                    {t(dict, "dashboard.fields.priceCommentMicroHint")}
-                  </p>
-                </label>
-              </div>
-            ))}
+              {activeServicesCount > 0
+                ? t(dict, "dashboard.servicesSection.manageButton")
+                : t(dict, "dashboard.servicesSection.addButton")}
+            </Link>
           </div>
         </div>
 
