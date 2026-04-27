@@ -48,7 +48,6 @@ export default function SpecialistOnboardingWizard({
 }) {
   const baseHref = `/${lang}/specialist/dashboard/onboarding`;
   const dashboardHref = `/${lang}/specialist/dashboard`;
-  const servicesHref = `/${lang}/specialist/dashboard/services`;
 
   const steps: OnboardingStep[] = ONBOARDING_STEP_ORDER.map((step) => ({
     key: step,
@@ -189,7 +188,7 @@ export default function SpecialistOnboardingWizard({
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <OnboardingServicesStep
             dict={dict}
-            servicesHref={servicesHref}
+            lang={lang}
             photoHref={stepHref(baseHref, "photo")}
             summary={servicesSummary}
           />
