@@ -256,6 +256,7 @@ export default async function SpecialistDashboardHomePage({
 
   const statusLabel = specialistStatusLabel(dict, status);
   const onboardingHref = `/${lang}/specialist/dashboard/onboarding`;
+  const onboardingPublishHref = `/${lang}/specialist/dashboard/onboarding?step=review`;
   const publishReadyWord = profileReadyForPublish
     ? t(dict, "dashboard.home.publishReadiness.ready")
     : t(dict, "dashboard.home.publishReadiness.notReady");
@@ -275,7 +276,17 @@ export default async function SpecialistDashboardHomePage({
   }
   const profileAlreadyPublished =
     st === "published_unverified" || st === "approved" || st === "featured_verified";
-  const showOnboardingCta = !profileReadyForPublish && !profileAlreadyPublished;
+  const showOnboardingCta = !profileAlreadyPublished;
+  const onboardingCtaHref = profileReadyForPublish ? onboardingPublishHref : onboardingHref;
+  const onboardingCtaTitle = profileReadyForPublish
+    ? t(dict, "dashboard.onboarding.ctaCard.readyTitle")
+    : t(dict, "dashboard.onboarding.ctaCard.title");
+  const onboardingCtaBody = profileReadyForPublish
+    ? t(dict, "dashboard.onboarding.ctaCard.readyBody")
+    : t(dict, "dashboard.onboarding.ctaCard.body");
+  const onboardingCtaButton = profileReadyForPublish
+    ? t(dict, "dashboard.onboarding.ctaCard.readyButton")
+    : t(dict, "dashboard.onboarding.ctaCard.button");
 
   return (
     <div className="space-y-6">
@@ -291,17 +302,17 @@ export default async function SpecialistDashboardHomePage({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-base font-semibold text-blue-950">
-                {t(dict, "dashboard.onboarding.ctaCard.title")}
+                {onboardingCtaTitle}
               </h2>
               <p className="mt-1 max-w-3xl text-sm text-blue-900">
-                {t(dict, "dashboard.onboarding.ctaCard.body")}
+                {onboardingCtaBody}
               </p>
             </div>
             <Link
-              href={onboardingHref}
+              href={onboardingCtaHref}
               className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
             >
-              {t(dict, "dashboard.onboarding.ctaCard.button")}
+              {onboardingCtaButton}
             </Link>
           </div>
         </section>
