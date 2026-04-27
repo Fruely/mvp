@@ -177,6 +177,9 @@ export default async function SpecialistDashboardOnboardingPage({
         postal_code: postalCode,
         languages,
       }}
+      initialAboutData={{
+        about_me: typeof profile?.about_me === "string" ? profile.about_me : "",
+      }}
       categories={(categoriesRows ?? [])
         .filter(
           (category) =>

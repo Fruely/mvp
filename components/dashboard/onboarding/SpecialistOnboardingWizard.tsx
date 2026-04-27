@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { t, type Dictionary } from "@/lib/i18n";
+import OnboardingAboutForm, { type OnboardingAboutData } from "./OnboardingAboutForm";
 import OnboardingBasicForm, {
   type OnboardingBasicData,
   type OnboardingCategory,
@@ -26,6 +27,7 @@ export default function SpecialistOnboardingWizard({
   isUncategorizedCategory,
   checklistItems,
   initialBasicData,
+  initialAboutData,
   categories,
   preserveProfileData,
 }: {
@@ -37,6 +39,7 @@ export default function SpecialistOnboardingWizard({
   isUncategorizedCategory: boolean;
   checklistItems: OnboardingChecklistItem[];
   initialBasicData: OnboardingBasicData;
+  initialAboutData: OnboardingAboutData;
   categories: OnboardingCategory[];
   preserveProfileData: OnboardingPreserveProfileData;
 }) {
@@ -148,11 +151,27 @@ export default function SpecialistOnboardingWizard({
 
       {activeStep === "about" ? (
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          <OnboardingStepShell
-            title={t(dict, "dashboard.onboarding.stepContent.about.title")}
-            body={t(dict, "dashboard.onboarding.stepContent.about.body")}
-            footer={stepNavFooter}
-            titleAs="h2"
+          <OnboardingAboutForm
+            dict={dict}
+            lang={lang}
+            baseHref={baseHref}
+            dashboardHref={dashboardHref}
+            initialData={initialAboutData}
+            preserveBasicData={{
+              name: initialBasicData.name,
+              category_id: initialBasicData.category_id || null,
+              work_format: initialBasicData.work_format,
+              postal_code: initialBasicData.postal_code,
+              languages: initialBasicData.languages,
+            }}
+            preserveProfileData={{
+              city: preserveProfileData.city,
+              address: preserveProfileData.address,
+              video_url: preserveProfileData.video_url,
+              photo_url: preserveProfileData.photo_url,
+              gallery_urls: preserveProfileData.gallery_urls,
+              certificate_urls: preserveProfileData.certificate_urls,
+            }}
           />
           <OnboardingChecklist
             title={t(dict, "dashboard.onboarding.checklist.title")}
