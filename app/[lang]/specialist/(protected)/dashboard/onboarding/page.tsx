@@ -187,6 +187,7 @@ export default async function SpecialistDashboardOnboardingPage({
         activeServices,
         hasValidServiceForPublish: hasValidService,
       }}
+      currentPhotoUrl={typeof profile?.photo_url === "string" ? profile.photo_url : ""}
       categories={(categoriesRows ?? [])
         .filter(
           (category) =>

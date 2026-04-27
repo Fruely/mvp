@@ -12,6 +12,7 @@ import OnboardingProgress, {
   type OnboardingStep,
   type OnboardingStepKey,
 } from "./OnboardingProgress";
+import OnboardingPhotoStep from "./OnboardingPhotoStep";
 import OnboardingServicesStep, { type OnboardingServicesSummary } from "./OnboardingServicesStep";
 import OnboardingStepShell from "./OnboardingStepShell";
 
@@ -30,6 +31,7 @@ export default function SpecialistOnboardingWizard({
   initialBasicData,
   initialAboutData,
   servicesSummary,
+  currentPhotoUrl,
   categories,
   preserveProfileData,
 }: {
@@ -43,6 +45,7 @@ export default function SpecialistOnboardingWizard({
   initialBasicData: OnboardingBasicData;
   initialAboutData: OnboardingAboutData;
   servicesSummary: OnboardingServicesSummary;
+  currentPhotoUrl: string;
   categories: OnboardingCategory[];
   preserveProfileData: OnboardingPreserveProfileData;
 }) {
@@ -203,11 +206,12 @@ export default function SpecialistOnboardingWizard({
 
       {activeStep === "photo" ? (
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          <OnboardingStepShell
-            title={t(dict, "dashboard.onboarding.stepContent.photo.title")}
-            body={t(dict, "dashboard.onboarding.stepContent.photo.body")}
-            footer={stepNavFooter}
-            titleAs="h2"
+          <OnboardingPhotoStep
+            dict={dict}
+            lang={lang}
+            baseHref={baseHref}
+            dashboardHref={dashboardHref}
+            currentPhotoUrl={currentPhotoUrl}
           />
           <OnboardingChecklist
             title={t(dict, "dashboard.onboarding.checklist.title")}
