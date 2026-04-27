@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { jsonNoStore } from "@/lib/api/response";
 import { notify } from "@/lib/notifications/notify";
 import { buildSpecialistSlug } from "@/lib/slugify";
+import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 
 export const dynamic = "force-dynamic";
 
@@ -48,10 +49,22 @@ export async function POST() {
 
   const { data: category } = await supabase
     .from("categories")
-    .select("id, parent_id")
+    .select("id, parent_id, slug")
     .eq("id", specialist.category_id)
     .maybeSingle();
-  if (!category || !category.parent_id) {
+  if (!category) {
+    return jsonNoStore({ error: "Invalid category" }, { status: 400 });
+  }
+  if (category.slug === UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG) {
+    return jsonNoStore(
+      {
+        error:
+          "Нельзя опубликовать профиль с категорией «Другое». Выберите категорию каталога или дождитесь решения администратора.",
+      },
+      { status: 400 }
+    );
+  }
+  if (!category.parent_id) {
     return jsonNoStore(
       { error: "Invalid category: parent category cannot be selected" },
       { status: 400 }

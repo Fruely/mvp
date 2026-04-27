@@ -8,6 +8,7 @@ import { getDictionary, isSupportedLang, type Dictionary } from "@/lib/i18n";
 import SpecialistDashboardEditor from "../SpecialistDashboardEditor";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import VerificationBanner from "../VerificationBanner";
+import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 
 export default async function SpecialistDashboardProfilePage({
   params,
@@ -54,7 +55,7 @@ export default async function SpecialistDashboardProfilePage({
   const { data: categoriesRows } = await service
     .from("categories")
     .select("id, title, title_ru, title_de, title_ua, parent_id, slug")
-    .or("parent_id.not.is.null,slug.eq.other")
+    .or(`parent_id.not.is.null,slug.eq.${UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG}`)
     .order("title", { ascending: true });
 
   return (

@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { jsonNoStore } from "@/lib/api/response";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
+import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 
 // Force dynamic so Next.js does not attempt to prerender this API route
 export const dynamic = 'force-dynamic';
@@ -240,6 +241,20 @@ export async function GET(request: NextRequest) {
     const categorySlug = searchParams.get('category')?.trim().toLowerCase() ?? '';
     const limit = Math.min(parsePositiveInt(searchParams.get('limit'), 12), 50);
     const offset = parsePositiveInt(searchParams.get('offset'), 0);
+
+    if (categorySlug === UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG) {
+      return jsonNoStore({
+        data: [],
+        meta: {
+          total: 0,
+          limit,
+          offset,
+          next_offset: offset,
+          has_more: false,
+          filter_options: { languages: [], cities: [] },
+        },
+      });
+    }
     const language = searchParams.get('language')?.trim().toLowerCase() ?? '';
     const city = searchParams.get('city')?.trim().toLowerCase() ?? '';
     const sort = (searchParams.get('sort') as SortMode | null) ?? 'relevance';

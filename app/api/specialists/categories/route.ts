@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { CACHE_PUBLIC_SPECIALISTS_CATEGORIES } from "@/lib/http/cache";
 import { getPublicSpecialistCountsByServiceCategory } from "@/lib/specialists/publicCategoryCounts";
+import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 
 export const dynamic = "force-dynamic";
 
@@ -81,7 +82,8 @@ export async function GET(request: NextRequest) {
       (category) =>
         typeof category?.id === "string" &&
         typeof category?.slug === "string" &&
-        category.slug.trim().length > 0
+        category.slug.trim().length > 0 &&
+        category.slug !== UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG
     );
 
     const childCategories =

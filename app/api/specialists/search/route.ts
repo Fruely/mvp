@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
 import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
+import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 export const dynamic = "force-dynamic";
@@ -138,6 +139,9 @@ export async function GET(request: NextRequest) {
 
     let categoryId: string | null = null;
     if (category) {
+      if (category.trim().toLowerCase() === UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG) {
+        return jsonNoStore({ data: [], mode: "all" });
+      }
       const { data: categoryRow } = await supabase
         .from("categories")
         .select("id")

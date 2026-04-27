@@ -5,6 +5,7 @@ import { t, type Dictionary } from "@/lib/i18n";
 import SupportBlock from "@/components/support/SupportBlock";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
+import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 
 type ServiceInput = {
   id?: string;
@@ -137,7 +138,7 @@ export default function SpecialistDashboardEditor({
   telegramConnectHref,
 }: Props) {
   const filteredCategories = categories.filter(
-    (cat) => cat.parent_id !== null || cat.slug === "other"
+    (cat) => cat.parent_id !== null || cat.slug === UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG
   );
   const [form, _setFormRaw] = useState(initialData);
   const [isDirty, setIsDirty] = useState(false);

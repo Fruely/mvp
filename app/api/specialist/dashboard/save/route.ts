@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { jsonNoStore } from "@/lib/api/response";
 import { notify } from "@/lib/notifications/notify";
 import { normalizeRouteLangToDbContentCode } from "@/lib/specialists/normalizeContentLanguageCode";
+import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 
 async function geocodePlz(
   postalCode: string
@@ -144,10 +145,12 @@ export async function PUT(request: NextRequest) {
   if (effectiveCategoryId) {
     const { data: category } = await supabase
       .from("categories")
-      .select("id, parent_id")
+      .select("id, parent_id, slug")
       .eq("id", effectiveCategoryId)
       .maybeSingle();
-    if (!category || !category.parent_id) {
+    const slug = typeof category?.slug === "string" ? category.slug : null;
+    const isUncategorized = slug === UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG;
+    if (!category || (!category.parent_id && !isUncategorized)) {
       return jsonNoStore(
         { error: "Invalid category: parent category cannot be selected" },
         { status: 400 }

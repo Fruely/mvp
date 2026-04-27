@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from '@/lib/specialists/status';
 import { CACHE_PUBLIC_FILTERS, jsonWithCache } from '@/lib/http/cache';
+import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from '@/lib/categories/uncategorizedSpecialistCategory';
 
 const NO_STORE = { 'Cache-Control': 'no-store' } as const;
 
@@ -75,9 +76,13 @@ export async function GET() {
     });
     const languages = Array.from(langSet).sort();
 
+    const categories = (categoryData ?? []).filter(
+      (row) => row.slug !== UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG
+    );
+
     return jsonWithCache(
       {
-        categories: categoryData || [],
+        categories,
         postal_codes,
         languages,
       },
