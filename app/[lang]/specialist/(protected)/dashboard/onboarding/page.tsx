@@ -60,8 +60,7 @@ export default async function SpecialistDashboardOnboardingPage({
   const { data: servicesRows } = await service
     .from("specialist_services")
     .select("title, price_from, is_active, category_id")
-    .eq("specialist_id", specialist.id)
-    .eq("is_active", true);
+    .eq("specialist_id", specialist.id);
 
   const { data: categoriesRows } = await service
     .from("categories")
@@ -88,8 +87,11 @@ export default async function SpecialistDashboardOnboardingPage({
     categoryRow && typeof categoryRow.parent_id === "string" ? categoryRow.parent_id : null;
   const isUncategorizedCategory = categoryRow?.slug === UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG;
   const servicesInSelectedCategory = (servicesRows ?? []).filter(
-    (row) => typeof row.category_id === "string" && row.category_id === categoryId,
+    (row) => row.is_active === true && typeof row.category_id === "string" && row.category_id === categoryId,
   );
+  const totalServices = Array.isArray(servicesRows) ? servicesRows.length : 0;
+  const activeServices = (servicesRows ?? []).filter((row) => row.is_active === true).length;
+  const hasValidService = hasValidServiceForPublish(servicesInSelectedCategory);
 
   const publishReady = isPublicationReadyForDashboard({
     name,
@@ -142,7 +144,7 @@ export default async function SpecialistDashboardOnboardingPage({
     {
       key: "services",
       label: t(dict, "dashboard.onboarding.checklist.services"),
-      done: hasValidServiceForPublish(servicesInSelectedCategory),
+      done: hasValidService,
     },
     {
       key: "photo",
@@ -179,6 +181,11 @@ export default async function SpecialistDashboardOnboardingPage({
       }}
       initialAboutData={{
         about_me: typeof profile?.about_me === "string" ? profile.about_me : "",
+      }}
+      servicesSummary={{
+        totalServices,
+        activeServices,
+        hasValidServiceForPublish: hasValidService,
       }}
       categories={(categoriesRows ?? [])
         .filter(

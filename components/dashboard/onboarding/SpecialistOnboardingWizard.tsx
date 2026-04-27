@@ -12,6 +12,7 @@ import OnboardingProgress, {
   type OnboardingStep,
   type OnboardingStepKey,
 } from "./OnboardingProgress";
+import OnboardingServicesStep, { type OnboardingServicesSummary } from "./OnboardingServicesStep";
 import OnboardingStepShell from "./OnboardingStepShell";
 
 function stepHref(baseHref: string, step: OnboardingStepKey): string {
@@ -28,6 +29,7 @@ export default function SpecialistOnboardingWizard({
   checklistItems,
   initialBasicData,
   initialAboutData,
+  servicesSummary,
   categories,
   preserveProfileData,
 }: {
@@ -40,6 +42,7 @@ export default function SpecialistOnboardingWizard({
   checklistItems: OnboardingChecklistItem[];
   initialBasicData: OnboardingBasicData;
   initialAboutData: OnboardingAboutData;
+  servicesSummary: OnboardingServicesSummary;
   categories: OnboardingCategory[];
   preserveProfileData: OnboardingPreserveProfileData;
 }) {
@@ -184,18 +187,12 @@ export default function SpecialistOnboardingWizard({
 
       {activeStep === "services" ? (
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          <OnboardingStepShell
-            title={t(dict, "dashboard.onboarding.stepContent.services.title")}
-            body={t(dict, "dashboard.onboarding.stepContent.services.body")}
-            footer={stepNavFooter}
-            titleAs="h2"
-          >
-            <p className="text-sm">
-              <Link href={servicesHref} className="font-medium text-blue-700 underline-offset-2 hover:underline">
-                {t(dict, "dashboard.onboarding.stepContent.services.openServicesLink")}
-              </Link>
-            </p>
-          </OnboardingStepShell>
+          <OnboardingServicesStep
+            dict={dict}
+            servicesHref={servicesHref}
+            photoHref={stepHref(baseHref, "photo")}
+            summary={servicesSummary}
+          />
           <OnboardingChecklist
             title={t(dict, "dashboard.onboarding.checklist.title")}
             publishReadyLabel={t(dict, "dashboard.onboarding.checklist.done")}
