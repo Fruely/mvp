@@ -255,6 +255,7 @@ export default async function SpecialistDashboardHomePage({
   const hiddenImprovementsCount = Math.max(0, improvements.length - MAX_IMPROVEMENTS);
 
   const statusLabel = specialistStatusLabel(dict, status);
+  const onboardingHref = `/${lang}/specialist/dashboard/onboarding`;
   const publishReadyWord = profileReadyForPublish
     ? t(dict, "dashboard.home.publishReadiness.ready")
     : t(dict, "dashboard.home.publishReadiness.notReady");
@@ -272,6 +273,9 @@ export default async function SpecialistDashboardHomePage({
   } else if (st === "approved") {
     statusHint = t(dict, "dashboard.home.statusHint.approved");
   }
+  const profileAlreadyPublished =
+    st === "published_unverified" || st === "approved" || st === "featured_verified";
+  const showOnboardingCta = !profileReadyForPublish && !profileAlreadyPublished;
 
   return (
     <div className="space-y-6">
@@ -281,6 +285,27 @@ export default async function SpecialistDashboardHomePage({
         <h1 className="text-2xl font-semibold text-gray-900">{t(dict, "dashboard.home.title")}</h1>
         <p className="mt-1 text-sm text-gray-600">{t(dict, "dashboard.home.subtitle")}</p>
       </div>
+
+      {showOnboardingCta ? (
+        <section className="rounded-xl border border-blue-100 bg-blue-50 p-5 shadow-sm">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-blue-950">
+                {t(dict, "dashboard.onboarding.ctaCard.title")}
+              </h2>
+              <p className="mt-1 max-w-3xl text-sm text-blue-900">
+                {t(dict, "dashboard.onboarding.ctaCard.body")}
+              </p>
+            </div>
+            <Link
+              href={onboardingHref}
+              className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+              {t(dict, "dashboard.onboarding.ctaCard.button")}
+            </Link>
+          </div>
+        </section>
+      ) : null}
 
       <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <h2 className="text-base font-semibold text-gray-900">{t(dict, "dashboard.home.blocks.profileTitle")}</h2>
