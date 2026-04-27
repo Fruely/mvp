@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { t, type Dictionary } from "@/lib/i18n";
 import type { PricingType } from "@/lib/dashboard/services";
 
 type ServiceFormValues = {
@@ -24,6 +25,7 @@ const DEFAULT_VALUES: ServiceFormValues = {
 };
 
 export default function ServiceForm({
+  dict,
   initialValues,
   initialIsActive = true,
   submitLabel,
@@ -31,6 +33,7 @@ export default function ServiceForm({
   onCancel,
   loading = false,
 }: {
+  dict: Dictionary;
   initialValues?: Partial<ServiceFormValues>;
   initialIsActive?: boolean;
   submitLabel: string;
@@ -59,6 +62,9 @@ export default function ServiceForm({
     setValues((prev) => ({ ...prev, [key]: value }));
   }
 
+  const pricingTypeLabel = (type: PricingType): string =>
+    t(dict, `dashboard.servicesEditor.pricingType.${type}`);
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
@@ -69,21 +75,21 @@ export default function ServiceForm({
     const duration = values.duration_minutes.trim() ? Number(values.duration_minutes) : null;
 
     if (!title) {
-      setError("Введите название услуги");
+      setError(t(dict, "dashboard.servicesEditor.errors.titleRequired"));
       return;
     }
     if (!Number.isFinite(priceFrom) || priceFrom < 0) {
-      setError("Укажите корректную цену от");
+      setError(t(dict, "dashboard.servicesEditor.errors.priceFromInvalid"));
       return;
     }
     if (values.pricing_type === "range") {
       if (priceTo == null || !Number.isFinite(priceTo) || priceTo < priceFrom) {
-        setError("Для диапазона цена до должна быть не меньше цены от");
+        setError(t(dict, "dashboard.servicesEditor.errors.priceRangeInvalid"));
         return;
       }
     }
     if (duration != null && (!Number.isFinite(duration) || duration < 0)) {
-      setError("Длительность должна быть положительным числом");
+      setError(t(dict, "dashboard.servicesEditor.errors.durationInvalid"));
       return;
     }
     if (requestedActive) {
@@ -93,7 +99,7 @@ export default function ServiceForm({
         (values.pricing_type !== "range" ||
           (priceTo != null && Number.isFinite(priceTo) && priceTo >= priceFrom));
       if (!hasValidPrice) {
-        setError("Без указания цены услуга не может быть активирована.");
+        setError(t(dict, "dashboard.servicesEditor.errors.activeNeedsPrice"));
         return;
       }
     }
@@ -108,54 +114,60 @@ export default function ServiceForm({
       duration_minutes: duration,
       requested_active: requestedActive,
     }).catch((e) => {
-      setError(e instanceof Error ? e.message : "Не удалось сохранить услугу");
+      setError(e instanceof Error ? e.message : t(dict, "dashboard.servicesEditor.errors.saveFailed"));
     });
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
       <div>
-        <label className="mb-1 block text-xs font-medium text-gray-600">Название услуги</label>
+        <label className="mb-1 block text-xs font-medium text-gray-600">
+          {t(dict, "dashboard.servicesEditor.field.title")}
+        </label>
         <input
           value={values.title}
           onChange={(e) => updateValue("title", e.target.value)}
           className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-          placeholder="Например, Консультация"
+          placeholder={t(dict, "dashboard.servicesEditor.placeholder.title")}
           required
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-gray-600">Описание</label>
+        <label className="mb-1 block text-xs font-medium text-gray-600">
+          {t(dict, "dashboard.servicesEditor.field.description")}
+        </label>
         <textarea
           value={values.description}
           onChange={(e) => updateValue("description", e.target.value)}
           rows={3}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-          placeholder="Кратко опишите услугу"
+          placeholder={t(dict, "dashboard.servicesEditor.placeholder.description")}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Тип цены</label>
+          <label className="mb-1 block text-xs font-medium text-gray-600">
+            {t(dict, "dashboard.servicesEditor.field.pricingType")}
+          </label>
           <select
             value={values.pricing_type}
             onChange={(e) => updateValue("pricing_type", e.target.value as PricingType)}
             className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
           >
-            <option value="fixed">fixed</option>
-            <option value="range">range</option>
-            <option value="hourly">hourly</option>
+            <option value="fixed">{pricingTypeLabel("fixed")}</option>
+            <option value="hourly">{pricingTypeLabel("hourly")}</option>
+            <option value="range">{pricingTypeLabel("range")}</option>
           </select>
         </div>
         <div>
           <label className="mb-1 flex items-center gap-1 text-xs font-medium text-gray-600">
-            Цена от
+            {t(dict, "dashboard.servicesEditor.field.priceFrom")}
             <span
               className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-gray-300 text-[10px] text-gray-500"
-              title="Цена обязательна для публикации профиля. Профили с указанной ценой получают больше заявок и выше доверие клиентов."
-              aria-label="Информация о требовании цены"
+              title={t(dict, "dashboard.servicesEditor.priceInfo")}
+              aria-label={t(dict, "dashboard.servicesEditor.priceInfo")}
             >
               i
             </span>
@@ -171,7 +183,9 @@ export default function ServiceForm({
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Цена до</label>
+          <label className="mb-1 block text-xs font-medium text-gray-600">
+            {t(dict, "dashboard.servicesEditor.field.priceTo")}
+          </label>
           <input
             value={values.price_to}
             onChange={(e) => updateValue("price_to", e.target.value)}
@@ -186,7 +200,9 @@ export default function ServiceForm({
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Валюта</label>
+          <label className="mb-1 block text-xs font-medium text-gray-600">
+            {t(dict, "dashboard.servicesEditor.field.currency")}
+          </label>
           <input
             value={values.currency}
             onChange={(e) => updateValue("currency", e.target.value.toUpperCase())}
@@ -195,7 +211,9 @@ export default function ServiceForm({
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Длительность (мин)</label>
+          <label className="mb-1 block text-xs font-medium text-gray-600">
+            {t(dict, "dashboard.servicesEditor.field.duration")}
+          </label>
           <input
             value={values.duration_minutes}
             onChange={(e) => updateValue("duration_minutes", e.target.value)}
@@ -214,7 +232,7 @@ export default function ServiceForm({
           onChange={(e) => setRequestedActive(e.target.checked)}
           className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
         />
-        Активировать услугу
+        {t(dict, "dashboard.servicesEditor.field.showInProfile")}
       </label>
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
@@ -225,7 +243,7 @@ export default function ServiceForm({
           disabled={loading}
           className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
         >
-          {loading ? "Сохранение..." : submitLabel}
+          {loading ? t(dict, "dashboard.buttons.saving") : submitLabel}
         </button>
         {onCancel ? (
           <button
@@ -233,7 +251,7 @@ export default function ServiceForm({
             onClick={onCancel}
             className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
           >
-            Отмена
+            {t(dict, "dashboard.servicesEditor.cancel")}
           </button>
         ) : null}
       </div>
