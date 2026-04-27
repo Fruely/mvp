@@ -319,8 +319,12 @@ export async function PUT(request: NextRequest) {
     }
   }
 
-  const normalizedServices = Array.isArray(body.services)
-    ? body.services
+  // Services are intentionally optional in this endpoint. If the key is absent, keep existing services untouched.
+  const shouldUpdateServices =
+    Object.prototype.hasOwnProperty.call(body, "services") && Array.isArray(body.services);
+
+  if (shouldUpdateServices) {
+    const normalizedServices = (body.services ?? [])
         .filter((service) => service && typeof service.title === "string" && service.title.trim().length > 0)
         .map((service) => ({
           id: typeof service.id === "string" ? service.id : null,
@@ -341,8 +345,7 @@ export async function PUT(request: NextRequest) {
                 })()
               : null,
         }))
-        .filter((service) => Number.isFinite(service.price_from) && service.price_from >= 0)
-    : [];
+        .filter((service) => Number.isFinite(service.price_from) && service.price_from >= 0);
 
   if (process.env.NODE_ENV === "development") {
     console.log("SERVICES TO SAVE:", normalizedServices);
@@ -454,6 +457,7 @@ export async function PUT(request: NextRequest) {
 
   if (syncCategoryError) {
     return jsonNoStore({ error: "Failed to sync service categories" }, { status: 500 });
+  }
   }
 
   const { data: notifyRow } = await supabase
