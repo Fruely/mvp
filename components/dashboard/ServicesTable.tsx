@@ -67,6 +67,10 @@ export default function ServicesTable({
   );
   const pricingTypeLabel = (type: PricingType): string =>
     t(dict, `dashboard.servicesEditor.pricingType.${type}`);
+  const isOnboardingMode = Boolean(onboardingReturnHref);
+  const formSubmitLabel = isOnboardingMode
+    ? t(dict, "dashboard.servicesEditor.saveAndContinue")
+    : t(dict, "dashboard.servicesEditor.save");
 
   function maybeReturnToOnboarding(service: SpecialistService) {
     if (onboardingReturnHref && service.is_active && hasValidPrice(service)) {
@@ -214,16 +218,18 @@ export default function ServicesTable({
             {t(dict, "dashboard.servicesEditor.subtitle")}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            setShowCreate((prev) => !prev);
-            setEditingId(null);
-          }}
-          className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
-        >
-          + {t(dict, "dashboard.servicesEditor.add")}
-        </button>
+        {!isOnboardingMode ? (
+          <button
+            type="button"
+            onClick={() => {
+              setShowCreate((prev) => !prev);
+              setEditingId(null);
+            }}
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
+          >
+            + {t(dict, "dashboard.servicesEditor.add")}
+          </button>
+        ) : null}
       </div>
 
       {toast ? (
@@ -242,10 +248,11 @@ export default function ServicesTable({
         <div className="mb-5">
           <ServiceForm
             dict={dict}
-            submitLabel={t(dict, "dashboard.servicesEditor.save")}
+            submitLabel={formSubmitLabel}
             loading={creating}
             initialIsActive={true}
-            onCancel={() => setShowCreate(false)}
+            hideActiveToggle={isOnboardingMode}
+            onCancel={isOnboardingMode ? undefined : () => setShowCreate(false)}
             onSubmit={handleCreate}
           />
         </div>
@@ -372,10 +379,11 @@ export default function ServicesTable({
                               duration_minutes:
                                 service.duration_minutes == null ? "" : String(service.duration_minutes),
                             }}
-                            submitLabel={t(dict, "dashboard.servicesEditor.save")}
+                            submitLabel={formSubmitLabel}
                             loading={busy}
                             initialIsActive={service.is_active}
-                            onCancel={() => setEditingId(null)}
+                            hideActiveToggle={isOnboardingMode}
+                            onCancel={isOnboardingMode ? undefined : () => setEditingId(null)}
                             onSubmit={(payload) => handleUpdate(service.id, payload)}
                           />
                         </td>

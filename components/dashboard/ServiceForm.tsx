@@ -34,6 +34,7 @@ export default function ServiceForm({
   onSubmit,
   onCancel,
   loading = false,
+  hideActiveToggle = false,
 }: {
   dict: Dictionary;
   initialValues?: Partial<ServiceFormValues>;
@@ -52,6 +53,7 @@ export default function ServiceForm({
   }) => Promise<void>;
   onCancel?: () => void;
   loading?: boolean;
+  hideActiveToggle?: boolean;
 }) {
   const merged = useMemo(
     () => ({ ...DEFAULT_VALUES, ...(initialValues ?? {}) }),
@@ -244,15 +246,17 @@ export default function ServiceForm({
         </div>
       </div>
 
-      <label className="flex items-center gap-2 text-sm text-gray-700">
-        <input
-          type="checkbox"
-          checked={requestedActive}
-          onChange={(e) => setRequestedActive(e.target.checked)}
-          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-        />
-        {t(dict, "dashboard.servicesEditor.field.showInProfile")}
-      </label>
+      {!hideActiveToggle ? (
+        <label className="flex items-center gap-2 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={requestedActive}
+            onChange={(e) => setRequestedActive(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          {t(dict, "dashboard.servicesEditor.field.showInProfile")}
+        </label>
+      ) : null}
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
@@ -260,7 +264,7 @@ export default function ServiceForm({
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+          className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60 sm:w-auto"
         >
           {loading ? t(dict, "dashboard.buttons.saving") : submitLabel}
         </button>

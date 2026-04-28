@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import ServicesTable from "@/components/dashboard/ServicesTable";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
@@ -66,28 +65,23 @@ export default async function SpecialistDashboardServicesPage({
     (item) => item.is_active && Number.isFinite(item.price_from) && item.price_from > 0,
   );
 
-  const onboardingServicesStepHref = `/${lang}/specialist/dashboard/onboarding?step=services`;
   const onboardingPhotosStepHref = `/${lang}/specialist/dashboard/onboarding?step=photos`;
+
+  if (showOnboardingReturn && hasOnboardingPublishableService) {
+    redirect(onboardingPhotosStepHref);
+  }
 
   return (
     <>
       {showOnboardingReturn ? (
         <section className="mb-6 rounded-xl border border-blue-100 bg-blue-50/90 p-4 shadow-sm">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <h2 className="text-sm font-semibold text-blue-950">
-                {t(dict, "dashboard.onboarding.servicesContextBanner.title")}
-              </h2>
-              <p className="mt-1 max-w-2xl text-sm text-blue-900/90">
-                {t(dict, "dashboard.onboarding.servicesContextBanner.body")}
-              </p>
-            </div>
-            <Link
-              href={onboardingServicesStepHref}
-              className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-white px-4 text-sm font-semibold text-blue-800 ring-1 ring-blue-200/80 transition hover:bg-blue-50"
-            >
-              {t(dict, "dashboard.onboarding.servicesContextBanner.back")}
-            </Link>
+          <div className="min-w-0">
+            <h2 className="text-sm font-semibold text-blue-950">
+              {t(dict, "dashboard.onboarding.servicesContextBanner.title")}
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-blue-900/90">
+              {t(dict, "dashboard.onboarding.servicesContextBanner.body")}
+            </p>
           </div>
         </section>
       ) : null}
@@ -96,7 +90,7 @@ export default async function SpecialistDashboardServicesPage({
         lang={lang}
         dict={dict}
         onboardingReturnHref={showOnboardingReturn ? onboardingPhotosStepHref : undefined}
-        initialShowCreate={showOnboardingReturn && !hasOnboardingPublishableService}
+        initialShowCreate={showOnboardingReturn}
       />
     </>
   );

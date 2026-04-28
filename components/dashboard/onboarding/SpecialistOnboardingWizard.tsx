@@ -198,7 +198,6 @@ export default function SpecialistOnboardingWizard({
           <OnboardingServicesStep
             dict={dict}
             lang={lang}
-            summary={servicesSummary}
           />
           <OnboardingChecklist
             title={t(dict, "dashboard.onboarding.checklist.title")}
