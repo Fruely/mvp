@@ -82,11 +82,11 @@ export default function OnboardingPhotoStep({
         return;
       }
 
-      setPreviewUrl(json.url);
+      const uploadedUrl = json.url.trim();
+      setPreviewUrl(uploadedUrl);
       setFile(null);
       setUploaded(true);
       router.refresh();
-      router.push(reviewHref);
     } catch {
       setError(t(dict, "dashboard.onboarding.photoStep.uploadFailed"));
     } finally {
@@ -110,22 +110,27 @@ export default function OnboardingPhotoStep({
       </div>
 
       <form className="mt-5 space-y-5" onSubmit={handleSubmit}>
-        <div className="space-y-2">
+        <div className="space-y-3">
           <p className="text-sm font-medium text-gray-700">
             {t(dict, "dashboard.onboarding.photoStep.currentPhoto")}
           </p>
-          {previewUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={previewUrl}
-              alt={t(dict, "dashboard.onboarding.photoStep.currentPhoto")}
-              className="h-24 w-24 rounded-full border border-gray-200 object-cover"
-            />
-          ) : (
-            <div className="flex h-24 w-24 items-center justify-center rounded-full border border-dashed border-gray-300 text-xs text-gray-500">
-              {t(dict, "dashboard.onboarding.steps.photo")}
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            {previewUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={previewUrl}
+                alt={t(dict, "dashboard.onboarding.photoStep.currentPhoto")}
+                className="h-28 w-28 shrink-0 rounded-full border border-gray-200 object-cover shadow-sm"
+              />
+            ) : (
+              <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-full border border-dashed border-gray-300 text-xs text-gray-500">
+                {t(dict, "dashboard.onboarding.steps.photo")}
+              </div>
+            )}
+            <p className="max-w-xs text-xs leading-relaxed text-gray-500">
+              {t(dict, "dashboard.onboarding.photoStep.previewHint")}
+            </p>
+          </div>
         </div>
 
         <label className="block space-y-2 text-sm">
@@ -166,7 +171,7 @@ export default function OnboardingPhotoStep({
           <button
             type="submit"
             disabled={uploading}
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
           >
             {uploading
               ? t(dict, "dashboard.onboarding.photoStep.uploading")
