@@ -72,6 +72,7 @@ export default function OnboardingReviewStep({
   lang,
   baseHref,
   dashboardHref,
+  publicProfileHref,
   publishReady,
   summary,
 }: {
@@ -79,6 +80,7 @@ export default function OnboardingReviewStep({
   lang: string;
   baseHref: string;
   dashboardHref: string;
+  publicProfileHref: string;
   publishReady: boolean;
   summary: OnboardingReviewSummary;
 }) {
@@ -87,6 +89,7 @@ export default function OnboardingReviewStep({
   const [published, setPublished] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dashboardLink = dashboardHref || `/${lang}/specialist/dashboard`;
+  const servicesHref = `/${lang}/specialist/dashboard/services`;
 
   const categoryLabel = summary.isUncategorizedCategory
     ? t(dict, "dashboard.onboarding.reviewStep.fixUncategorizedCategory")
@@ -151,7 +154,7 @@ export default function OnboardingReviewStep({
       key: "photo",
       label: t(dict, "dashboard.onboarding.reviewStep.recommendPhoto"),
       done: summary.hasPhoto,
-      href: `${baseHref}?step=photo`,
+      href: `${baseHref}?step=photos`,
     },
     {
       key: "gallery",
@@ -205,98 +208,117 @@ export default function OnboardingReviewStep({
         </p>
       </div>
 
-      <div
-        className={`mt-5 rounded-lg border px-4 py-3 text-sm ${
-          publishReady
-            ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-            : "border-amber-200 bg-amber-50 text-amber-900"
-        }`}
-      >
-        <p className="font-semibold">
-          {publishReady
-            ? t(dict, "dashboard.onboarding.reviewStep.readyTitle")
-            : t(dict, "dashboard.onboarding.reviewStep.notReadyTitle")}
-        </p>
-        <p className="mt-1">
-          {publishReady
-            ? t(dict, "dashboard.onboarding.reviewStep.readyBody")
-            : t(dict, "dashboard.onboarding.reviewStep.notReadyBody")}
-        </p>
-      </div>
-
-      <div className="mt-5 space-y-6">
-        <div>
-          <h3 className="text-base font-semibold text-gray-900">
-            {t(dict, "dashboard.onboarding.reviewStep.hardRequirementsTitle")}
-          </h3>
-          <div className="mt-3">
-            <ReviewList
-              items={hardItems}
-              doneLabel={t(dict, "dashboard.onboarding.checklist.done")}
-            />
+      {published ? (
+        <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+          <p className="text-base font-semibold text-emerald-900">
+            {t(dict, "dashboard.onboarding.reviewStep.published")}
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <Link
+              href={publicProfileHref}
+              className="inline-flex h-10 items-center justify-center rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700"
+            >
+              {t(dict, "dashboard.onboarding.reviewStep.viewProfile")}
+            </Link>
+            <Link
+              href={servicesHref}
+              className="inline-flex h-10 items-center justify-center rounded-lg border border-emerald-200 bg-white px-4 text-sm font-medium text-emerald-800 transition hover:bg-emerald-50"
+            >
+              {t(dict, "dashboard.onboarding.reviewStep.addService")}
+            </Link>
+            <Link
+              href={`${baseHref}?step=photos`}
+              className="inline-flex h-10 items-center justify-center rounded-lg border border-emerald-200 bg-white px-4 text-sm font-medium text-emerald-800 transition hover:bg-emerald-50"
+            >
+              {t(dict, "dashboard.onboarding.reviewStep.addPhoto")}
+            </Link>
+            <Link
+              href={dashboardLink}
+              className="inline-flex h-10 items-center justify-center rounded-lg border border-emerald-200 bg-white px-4 text-sm font-medium text-emerald-800 transition hover:bg-emerald-50"
+            >
+              {t(dict, "dashboard.onboarding.reviewStep.goDashboard")}
+            </Link>
           </div>
         </div>
-
-        <div>
-          <h3 className="text-base font-semibold text-gray-900">
-            {t(dict, "dashboard.onboarding.reviewStep.recommendationsTitle")}
-          </h3>
-          <div className="mt-3">
-            <ReviewList
-              items={recommendations}
-              doneLabel={t(dict, "dashboard.onboarding.checklist.done")}
-            />
+      ) : (
+        <>
+          <div
+            className={`mt-5 rounded-lg border px-4 py-3 text-sm ${
+              publishReady
+                ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+                : "border-amber-200 bg-amber-50 text-amber-900"
+            }`}
+          >
+            <p className="font-semibold">
+              {publishReady
+                ? t(dict, "dashboard.onboarding.reviewStep.readyTitle")
+                : t(dict, "dashboard.onboarding.reviewStep.notReadyTitle")}
+            </p>
+            <p className="mt-1">
+              {publishReady
+                ? t(dict, "dashboard.onboarding.reviewStep.readyBody")
+                : t(dict, "dashboard.onboarding.reviewStep.notReadyBody")}
+            </p>
           </div>
-        </div>
-      </div>
+
+          <div className="mt-5 space-y-6">
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">
+                {t(dict, "dashboard.onboarding.reviewStep.hardRequirementsTitle")}
+              </h3>
+              <div className="mt-3">
+                <ReviewList
+                  items={hardItems}
+                  doneLabel={t(dict, "dashboard.onboarding.checklist.done")}
+                />
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">
+                {t(dict, "dashboard.onboarding.reviewStep.recommendationsTitle")}
+              </h3>
+              <div className="mt-3">
+                <ReviewList
+                  items={recommendations}
+                  doneLabel={t(dict, "dashboard.onboarding.checklist.done")}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <Link
+              href={`${baseHref}?step=photos`}
+              className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+            >
+              {t(dict, "dashboard.onboarding.reviewStep.backToPhoto")}
+            </Link>
+            <button
+              type="button"
+              onClick={handlePublish}
+              disabled={publishing || !publishReady}
+              className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {publishing
+                ? t(dict, "dashboard.onboarding.reviewStep.publishing")
+                : t(dict, "dashboard.onboarding.reviewStep.publish")}
+            </button>
+            <Link
+              href={dashboardLink}
+              className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+            >
+              {t(dict, "dashboard.onboarding.nav.dashboard")}
+            </Link>
+          </div>
+        </>
+      )}
 
       {error ? (
         <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
           {error}
         </div>
       ) : null}
-
-      {published ? (
-        <div className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
-          {t(dict, "dashboard.onboarding.reviewStep.published")}
-        </div>
-      ) : null}
-
-      <div className="mt-5 flex flex-wrap items-center gap-3">
-        <Link
-          href={`${baseHref}?step=photo`}
-          className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-        >
-          {t(dict, "dashboard.onboarding.reviewStep.backToPhoto")}
-        </Link>
-        {!published ? (
-          <button
-            type="button"
-            onClick={handlePublish}
-            disabled={publishing || !publishReady}
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {publishing
-              ? t(dict, "dashboard.onboarding.reviewStep.publishing")
-              : t(dict, "dashboard.onboarding.reviewStep.publish")}
-          </button>
-        ) : null}
-        {published ? (
-          <Link
-            href={dashboardLink}
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700"
-          >
-            {t(dict, "dashboard.onboarding.reviewStep.goDashboard")}
-          </Link>
-        ) : (
-          <Link
-            href={dashboardLink}
-            className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-          >
-            {t(dict, "dashboard.onboarding.nav.dashboard")}
-          </Link>
-        )}
-      </div>
     </section>
   );
 }

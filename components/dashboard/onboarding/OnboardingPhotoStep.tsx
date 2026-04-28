@@ -29,7 +29,7 @@ export default function OnboardingPhotoStep({
   const [error, setError] = useState<string | null>(null);
 
   function validateFile(nextFile: File | null): string | null {
-    if (!nextFile) return t(dict, "dashboard.onboarding.photoStep.chooseFile");
+    if (!nextFile) return null;
     if (!ALLOWED_TYPES.includes(nextFile.type)) {
       return t(dict, "dashboard.onboarding.photoStep.invalidType");
     }
@@ -50,13 +50,16 @@ export default function OnboardingPhotoStep({
     event.preventDefault();
     setUploaded(false);
 
+    if (!file) {
+      router.push(reviewHref);
+      return;
+    }
+
     const validationError = validateFile(file);
     if (validationError) {
       setError(validationError);
       return;
     }
-    if (!file) return;
-
     const formData = new FormData();
     formData.append("file", file);
 
@@ -83,6 +86,7 @@ export default function OnboardingPhotoStep({
       setFile(null);
       setUploaded(true);
       router.refresh();
+      router.push(reviewHref);
     } catch {
       setError(t(dict, "dashboard.onboarding.photoStep.uploadFailed"));
     } finally {
@@ -166,19 +170,10 @@ export default function OnboardingPhotoStep({
           >
             {uploading
               ? t(dict, "dashboard.onboarding.photoStep.uploading")
-              : t(dict, "dashboard.onboarding.photoStep.upload")}
+              : file
+                ? t(dict, "dashboard.onboarding.photoStep.uploadAndContinue")
+                : t(dict, "dashboard.onboarding.photoStep.next")}
           </button>
-          {(uploaded || previewUrl) ? (
-            <Link
-              href={reviewHref}
-              className="inline-flex h-10 items-center justify-center rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700"
-            >
-              {t(dict, "dashboard.onboarding.photoStep.next")}
-            </Link>
-          ) : null}
-          <Link href={reviewHref} className={secondaryLinkClass}>
-            {t(dict, "dashboard.onboarding.photoStep.skip")}
-          </Link>
         </div>
       </form>
     </section>

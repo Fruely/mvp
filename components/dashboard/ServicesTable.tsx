@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import ServiceForm from "@/components/dashboard/ServiceForm";
 import { t, type Dictionary } from "@/lib/i18n";
 import type { SpecialistService, PricingType } from "@/lib/dashboard/services";
@@ -43,13 +44,18 @@ export default function ServicesTable({
   initialServices,
   lang,
   dict,
+  onboardingReturnHref,
+  initialShowCreate = false,
 }: {
   initialServices: SpecialistService[];
   lang: string;
   dict: Dictionary;
+  onboardingReturnHref?: string;
+  initialShowCreate?: boolean;
 }) {
+  const router = useRouter();
   const [services, setServices] = useState<SpecialistService[]>(initialServices);
-  const [showCreate, setShowCreate] = useState(false);
+  const [showCreate, setShowCreate] = useState(initialShowCreate);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busyById, setBusyById] = useState<Record<string, boolean>>({});
   const [toast, setToast] = useState<{ kind: "success" | "error"; text: string } | null>(null);
@@ -61,6 +67,13 @@ export default function ServicesTable({
   );
   const pricingTypeLabel = (type: PricingType): string =>
     t(dict, `dashboard.servicesEditor.pricingType.${type}`);
+
+  function maybeReturnToOnboarding(service: SpecialistService) {
+    if (onboardingReturnHref && service.is_active && hasValidPrice(service)) {
+      router.push(onboardingReturnHref);
+      router.refresh();
+    }
+  }
 
   async function handleCreate(payload: {
     title: string;
@@ -87,6 +100,7 @@ export default function ServicesTable({
       setServices((prev) => [created, ...prev]);
       setShowCreate(false);
       setToast({ kind: "success", text: t(dict, "dashboard.servicesEditor.toast.created") });
+      maybeReturnToOnboarding(created);
     } finally {
       setCreating(false);
     }
@@ -121,6 +135,7 @@ export default function ServicesTable({
       setServices((prev) => prev.map((service) => (service.id === id ? updated : service)));
       setEditingId(null);
       setToast({ kind: "success", text: t(dict, "dashboard.servicesEditor.toast.updated") });
+      maybeReturnToOnboarding(updated);
     } finally {
       setBusyById((prev) => {
         const next = { ...prev };
@@ -149,6 +164,7 @@ export default function ServicesTable({
           ? t(dict, "dashboard.servicesEditor.toast.activated")
           : t(dict, "dashboard.servicesEditor.toast.deactivated"),
       });
+      maybeReturnToOnboarding(updated);
     } catch (e) {
       setToast({
         kind: "error",

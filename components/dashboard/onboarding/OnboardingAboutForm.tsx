@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { t, type Dictionary } from "@/lib/i18n";
 import type { OnboardingBasicData, OnboardingPreserveProfileData } from "./OnboardingBasicForm";
@@ -32,14 +33,13 @@ export default function OnboardingAboutForm({
   preserveBasicData: PreserveBasicData;
   preserveProfileData: PreserveProfileData;
 }) {
+  const router = useRouter();
   const [aboutMe, setAboutMe] = useState(initialData.about_me);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSaved(false);
     setError(null);
     setSaving(true);
 
@@ -71,7 +71,8 @@ export default function OnboardingAboutForm({
         return;
       }
 
-      setSaved(true);
+      router.push(`${baseHref}?step=services`);
+      router.refresh();
     } catch {
       setError(t(dict, "dashboard.onboarding.aboutForm.saveFailed"));
     } finally {
@@ -117,12 +118,6 @@ export default function OnboardingAboutForm({
           </div>
         ) : null}
 
-        {saved ? (
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
-            {t(dict, "dashboard.onboarding.aboutForm.saved")}
-          </div>
-        ) : null}
-
         <div className="flex flex-wrap items-center gap-3">
           <Link href={`${baseHref}?step=basic`} className={secondaryLinkClass}>
             {t(dict, "dashboard.onboarding.nav.back")}
@@ -139,14 +134,6 @@ export default function OnboardingAboutForm({
               ? t(dict, "dashboard.onboarding.aboutForm.saving")
               : t(dict, "dashboard.onboarding.aboutForm.save")}
           </button>
-          {saved ? (
-            <Link
-              href={`${baseHref}?step=services`}
-              className="inline-flex h-10 items-center justify-center rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700"
-            >
-              {t(dict, "dashboard.onboarding.aboutForm.next")}
-            </Link>
-          ) : null}
         </div>
       </form>
     </section>

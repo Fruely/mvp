@@ -277,6 +277,15 @@ export default async function SpecialistDashboardHomePage({
   const profileAlreadyPublished =
     st === "published_unverified" || st === "approved" || st === "featured_verified";
   const showOnboardingCta = !profileAlreadyPublished;
+  const profileStarted = Boolean(
+    name ||
+      categoryId ||
+      languages.length > 0 ||
+      postalCode ||
+      hasAboutMe ||
+      hasPhoto ||
+      activeServicesCount > 0,
+  );
   const onboardingCtaHref = profileReadyForPublish ? onboardingPublishHref : onboardingHref;
   const onboardingCtaTitle = profileReadyForPublish
     ? t(dict, "dashboard.onboarding.ctaCard.readyTitle")
@@ -286,7 +295,9 @@ export default async function SpecialistDashboardHomePage({
     : t(dict, "dashboard.onboarding.ctaCard.body");
   const onboardingCtaButton = profileReadyForPublish
     ? t(dict, "dashboard.onboarding.ctaCard.readyButton")
-    : t(dict, "dashboard.onboarding.ctaCard.button");
+    : profileStarted
+      ? t(dict, "dashboard.onboarding.cta.continue")
+      : t(dict, "dashboard.onboarding.cta.start");
 
   return (
     <div className="space-y-6">
@@ -331,16 +342,14 @@ export default async function SpecialistDashboardHomePage({
             {profileReadyForPublish ? t(dict, "dashboard.home.readyBody") : t(dict, "dashboard.home.incompleteBody")}
           </p>
         </div>
-        <Link
-          href={profileHref}
-          className={`mt-4 inline-flex h-10 items-center justify-center rounded-lg px-5 text-sm font-semibold text-white transition ${
-            profileReadyForPublish
-              ? "bg-teal-600 hover:bg-teal-700"
-              : "bg-orange-500 hover:bg-orange-600"
-          }`}
-        >
-          {profileReadyForPublish ? t(dict, "dashboard.home.editProfile") : t(dict, "dashboard.home.completeProfile")}
-        </Link>
+        {profileAlreadyPublished ? (
+          <Link
+            href={profileHref}
+            className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-teal-600 px-5 text-sm font-semibold text-white transition hover:bg-teal-700"
+          >
+            {t(dict, "dashboard.home.editProfile")}
+          </Link>
+        ) : null}
       </section>
 
       <div className="grid gap-4 md:grid-cols-2">

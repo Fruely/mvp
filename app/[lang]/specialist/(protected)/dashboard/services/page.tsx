@@ -62,8 +62,12 @@ export default async function SpecialistDashboardServicesPage({
     created_at: typeof row.created_at === "string" ? row.created_at : null,
     updated_at: typeof row.updated_at === "string" ? row.updated_at : null,
   }));
+  const hasOnboardingPublishableService = services.some(
+    (item) => item.is_active && Number.isFinite(item.price_from) && item.price_from > 0,
+  );
 
   const onboardingServicesStepHref = `/${lang}/specialist/dashboard/onboarding?step=services`;
+  const onboardingPhotosStepHref = `/${lang}/specialist/dashboard/onboarding?step=photos`;
 
   return (
     <>
@@ -87,7 +91,13 @@ export default async function SpecialistDashboardServicesPage({
           </div>
         </section>
       ) : null}
-      <ServicesTable initialServices={services} lang={lang} dict={dict} />
+      <ServicesTable
+        initialServices={services}
+        lang={lang}
+        dict={dict}
+        onboardingReturnHref={showOnboardingReturn ? onboardingPhotosStepHref : undefined}
+        initialShowCreate={showOnboardingReturn && !hasOnboardingPublishableService}
+      />
     </>
   );
 }

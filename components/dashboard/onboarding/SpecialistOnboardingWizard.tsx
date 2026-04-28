@@ -18,6 +18,7 @@ import OnboardingServicesStep, { type OnboardingServicesSummary } from "./Onboar
 import OnboardingStepShell from "./OnboardingStepShell";
 
 function stepHref(baseHref: string, step: OnboardingStepKey): string {
+  if (step === "photo") return `${baseHref}?step=photos`;
   return step === "welcome" ? `${baseHref}?step=welcome` : `${baseHref}?step=${step}`;
 }
 
@@ -34,6 +35,7 @@ export default function SpecialistOnboardingWizard({
   servicesSummary,
   currentPhotoUrl,
   reviewSummary,
+  publicProfileHref,
   categories,
   preserveProfileData,
 }: {
@@ -49,6 +51,7 @@ export default function SpecialistOnboardingWizard({
   servicesSummary: OnboardingServicesSummary;
   currentPhotoUrl: string;
   reviewSummary: OnboardingReviewSummary;
+  publicProfileHref: string;
   categories: OnboardingCategory[];
   preserveProfileData: OnboardingPreserveProfileData;
 }) {
@@ -94,10 +97,12 @@ export default function SpecialistOnboardingWizard({
 
   const welcomeFooter = (
     <div className="flex flex-wrap items-center gap-3">
-      <Link href={stepHref(baseHref, "basic")} className={primaryLinkClass}>
-        {profileStarted
-          ? t(dict, "dashboard.onboarding.cta.continue")
-          : t(dict, "dashboard.onboarding.cta.start")}
+      <Link href={publishReady ? stepHref(baseHref, "review") : stepHref(baseHref, "basic")} className={primaryLinkClass}>
+        {publishReady
+          ? t(dict, "dashboard.onboarding.ctaCard.readyButton")
+          : profileStarted
+            ? t(dict, "dashboard.onboarding.cta.continue")
+            : t(dict, "dashboard.onboarding.cta.start")}
       </Link>
       <Link href={dashboardHref} className={secondaryLinkClass}>
         {t(dict, "dashboard.onboarding.nav.dashboard")}
@@ -193,7 +198,6 @@ export default function SpecialistOnboardingWizard({
           <OnboardingServicesStep
             dict={dict}
             lang={lang}
-            photoHref={stepHref(baseHref, "photo")}
             summary={servicesSummary}
           />
           <OnboardingChecklist
@@ -230,6 +234,7 @@ export default function SpecialistOnboardingWizard({
             lang={lang}
             baseHref={baseHref}
             dashboardHref={dashboardHref}
+            publicProfileHref={publicProfileHref}
             publishReady={publishReady}
             summary={reviewSummary}
           />

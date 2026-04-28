@@ -11,9 +11,11 @@ import {
 import { getDictionary, isSupportedLang, t, type Dictionary } from "@/lib/i18n";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
+import { getSpecialistUrl } from "@/lib/urls";
 
 function normalizeStep(value: string | string[] | undefined): OnboardingStepKey {
   const raw = Array.isArray(value) ? value[0] : value;
+  if (raw === "photos") return "photo";
   return ONBOARDING_STEP_ORDER.includes(raw as OnboardingStepKey) ? (raw as OnboardingStepKey) : "welcome";
 }
 
@@ -31,6 +33,14 @@ export default async function SpecialistDashboardOnboardingPage({
   const { specialist } = await getCurrentUserAndSpecialist();
   const service = createServiceClient();
   const dict: Dictionary = await getDictionary(lang);
+  const specialistSlug =
+    typeof (specialist as unknown as Record<string, unknown>).slug === "string"
+      ? ((specialist as unknown as Record<string, unknown>).slug as string)
+      : null;
+  const publicProfileHref = getSpecialistUrl(lang, {
+    id: specialist.id,
+    slug: specialistSlug,
+  });
 
   const { data: specExtra } = await service
     .from("specialists")
@@ -213,6 +223,7 @@ export default async function SpecialistDashboardOnboardingPage({
         hasPhoto,
         hasGallery,
       }}
+      publicProfileHref={publicProfileHref}
       categories={(categoriesRows ?? [])
         .filter(
           (category) =>

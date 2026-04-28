@@ -10,16 +10,15 @@ export type OnboardingServicesSummary = {
 export default function OnboardingServicesStep({
   dict,
   lang,
-  photoHref,
   summary,
 }: {
   dict: Dictionary;
   lang: string;
-  photoHref: string;
   summary: OnboardingServicesSummary;
 }) {
   const hasValidService = summary.hasValidServiceForPublish;
   const servicesHrefWithContext = `/${lang}/specialist/dashboard/services?from=onboarding`;
+  const photosHref = `/${lang}/specialist/dashboard/onboarding?step=photos`;
 
   return (
     <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
@@ -65,19 +64,13 @@ export default function OnboardingServicesStep({
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <Link
-          href={servicesHrefWithContext}
+          href={hasValidService ? photosHref : servicesHrefWithContext}
           className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
         >
-          {t(dict, "dashboard.onboarding.servicesStep.openServices")}
+          {hasValidService
+            ? t(dict, "dashboard.onboarding.servicesStep.continueToPhoto")
+            : t(dict, "dashboard.onboarding.servicesStep.openServices")}
         </Link>
-        {hasValidService ? (
-          <Link
-            href={photoHref}
-            className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-          >
-            {t(dict, "dashboard.onboarding.servicesStep.continueToPhoto")}
-          </Link>
-        ) : null}
       </div>
     </section>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
@@ -57,10 +58,10 @@ export default function OnboardingBasicForm({
   categories: OnboardingCategory[];
   preserveProfileData: OnboardingPreserveProfileData;
 }) {
+  const router = useRouter();
   const [form, setForm] = useState<OnboardingBasicData>(initialData);
   const [errors, setErrors] = useState<FormErrors>({});
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
 
   const selectedCategory = useMemo(
     () => categories.find((category) => category.id === form.category_id),
@@ -91,7 +92,6 @@ export default function OnboardingBasicForm({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSaved(false);
     const validationErrors = validate();
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
@@ -125,8 +125,9 @@ export default function OnboardingBasicForm({
         return;
       }
 
-      setSaved(true);
       setErrors({});
+      router.push(`${baseHref}?step=about`);
+      router.refresh();
     } catch {
       setErrors({ submit: t(dict, "dashboard.onboarding.basicForm.saveFailed") });
     } finally {
@@ -257,12 +258,6 @@ export default function OnboardingBasicForm({
           </div>
         ) : null}
 
-        {saved ? (
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
-            {t(dict, "dashboard.onboarding.basicForm.saved")}
-          </div>
-        ) : null}
-
         <div className="flex flex-wrap items-center gap-3">
           <Link href={`${baseHref}?step=welcome`} className={secondaryLinkClass}>
             {t(dict, "dashboard.onboarding.nav.back")}
@@ -279,14 +274,6 @@ export default function OnboardingBasicForm({
               ? t(dict, "dashboard.onboarding.basicForm.saving")
               : t(dict, "dashboard.onboarding.basicForm.save")}
           </button>
-          {saved ? (
-            <Link
-              href={`${baseHref}?step=about`}
-              className="inline-flex h-10 items-center justify-center rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700"
-            >
-              {t(dict, "dashboard.onboarding.basicForm.next")}
-            </Link>
-          ) : null}
         </div>
       </form>
     </section>
