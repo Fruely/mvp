@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 import { SEO_CATEGORY_SLUGS } from "@/content/seo/categories";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
+import { SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 
-const DOMAIN = "https://freuly.de";
 const LANGS = ["ua", "ru", "de"] as const;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -12,7 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [];
 
   entries.push({
-    url: DOMAIN,
+    url: SITE_DOMAIN,
     lastModified,
     changeFrequency: "weekly",
     priority: 1.0,
@@ -20,42 +20,42 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   for (const lang of LANGS) {
     entries.push({
-      url: `${DOMAIN}/${lang}`,
+      url: `${SITE_DOMAIN}/${lang}`,
       lastModified,
       changeFrequency: "weekly",
       priority: 1.0,
     });
 
     entries.push({
-      url: `${DOMAIN}/${lang}/become-specialist`,
+      url: `${SITE_DOMAIN}/${lang}/become-specialist`,
       lastModified,
       changeFrequency: "weekly",
       priority: 0.7,
     });
 
     entries.push({
-      url: `${DOMAIN}/${lang}/about`,
+      url: `${SITE_DOMAIN}/${lang}/about`,
       lastModified,
       changeFrequency: "monthly",
       priority: 0.5,
     });
 
     entries.push({
-      url: `${DOMAIN}/${lang}/support`,
+      url: `${SITE_DOMAIN}/${lang}/support`,
       lastModified,
       changeFrequency: "monthly",
       priority: 0.5,
     });
 
     entries.push({
-      url: `${DOMAIN}/${lang}/pricing`,
+      url: `${SITE_DOMAIN}/${lang}/pricing`,
       lastModified,
       changeFrequency: "monthly",
       priority: 0.55,
     });
 
     entries.push({
-      url: `${DOMAIN}/${lang}/specialist-rules`,
+      url: `${SITE_DOMAIN}/${lang}/specialist-rules`,
       lastModified,
       changeFrequency: "yearly",
       priority: 0.4,
@@ -63,7 +63,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     for (const slug of SEO_CATEGORY_SLUGS) {
       entries.push({
-        url: `${DOMAIN}/${lang}/${slug}`,
+        url: `${SITE_DOMAIN}/${lang}/${slug}`,
         lastModified,
         changeFrequency: "weekly",
         priority: 0.7,
@@ -72,24 +72,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   entries.push({
-    url: `${DOMAIN}/impressum`,
+    url: `${SITE_DOMAIN}/impressum`,
     lastModified,
     changeFrequency: "yearly",
     priority: 0.3,
   });
 
   entries.push({
-    url: `${DOMAIN}/datenschutzerklaerung`,
+    url: `${SITE_DOMAIN}/datenschutzerklaerung`,
     lastModified,
     changeFrequency: "yearly",
     priority: 0.3,
-  });
-
-  entries.push({
-    url: `${DOMAIN}/for-specialists`,
-    lastModified,
-    changeFrequency: "weekly",
-    priority: 0.6,
   });
 
   const supabase = createSupabaseServerClient();
@@ -104,9 +97,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   if (specialists) {
     for (const sp of specialists) {
+      const slug = typeof sp.slug === "string" ? sp.slug.trim() : "";
+      if (!slug) continue;
+      const segment = encodeURIComponent(slug);
+
       for (const lang of LANGS) {
         entries.push({
-          url: `${DOMAIN}/${lang}/specialist/${sp.slug}`,
+          url: `${SITE_DOMAIN}/${lang}/specialist/${segment}`,
           lastModified: sp.updated_at ? new Date(sp.updated_at) : lastModified,
           changeFrequency: "weekly",
           priority: 0.7,

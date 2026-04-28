@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-
-const DOMAIN = "https://freuly.de";
+import { SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 
 const LEGACY_SLUGS: Record<string, string> = {
   "zkeiy-lbztieh": "cosmetologists-kassel-irina-melnik",
@@ -34,16 +33,16 @@ export async function generateMetadata({
     if (data?.slug) slug = data.slug;
   }
 
-  const segment = slug || id;
+  const segment = encodeURIComponent((slug || id).trim());
 
   return {
     alternates: {
-      canonical: `${DOMAIN}/${lang}/specialist/${segment}`,
+      canonical: `${SITE_DOMAIN}/${lang}/specialist/${segment}`,
       languages: {
-        "x-default": `${DOMAIN}/ru/specialist/${segment}`,
-        ru: `${DOMAIN}/ru/specialist/${segment}`,
-        uk: `${DOMAIN}/ua/specialist/${segment}`,
-        de: `${DOMAIN}/de/specialist/${segment}`,
+        "x-default": `${SITE_DOMAIN}/ru/specialist/${segment}`,
+        ru: `${SITE_DOMAIN}/ru/specialist/${segment}`,
+        uk: `${SITE_DOMAIN}/ua/specialist/${segment}`,
+        de: `${SITE_DOMAIN}/de/specialist/${segment}`,
       },
     },
   };

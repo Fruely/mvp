@@ -2,6 +2,7 @@
 export const SITE_DOMAIN = "https://freuly.de";
 
 export const HREFLANG_HOME = {
+  "x-default": SITE_DOMAIN,
   uk: `${SITE_DOMAIN}/ua`,
   ru: `${SITE_DOMAIN}/ru`,
   de: `${SITE_DOMAIN}/de`,
