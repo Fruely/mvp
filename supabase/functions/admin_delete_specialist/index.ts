@@ -115,7 +115,16 @@ async function removePathsInBatches(
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return jsonResponse({ ok: true }, 204, req);
+    const origin = req.headers.get("Origin") ?? "*";
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Allow-Headers":
+          "authorization, x-client-info, apikey, content-type, x-admin-token",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+      },
+    });
   }
 
   if (req.method !== "POST") {
