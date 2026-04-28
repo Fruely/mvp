@@ -1,8 +1,9 @@
 /** Shared SEO copy for [lang] routes — keeps hreflang URLs consistent. */
 export const SITE_DOMAIN = "https://freuly.de";
+export const SITE_ROOT_URL = `${SITE_DOMAIN}/`;
 
 export const HREFLANG_HOME = {
-  "x-default": SITE_DOMAIN,
+  "x-default": SITE_ROOT_URL,
   uk: `${SITE_DOMAIN}/ua`,
   ru: `${SITE_DOMAIN}/ru`,
   de: `${SITE_DOMAIN}/de`,

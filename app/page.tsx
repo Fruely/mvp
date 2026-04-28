@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import LanguageBar from "@/components/LanguageBar";
 import { getDictionary, type Lang } from "@/lib/i18n";
-import { HOME_METADATA, HREFLANG_HOME, SITE_DOMAIN } from "@/lib/seo/siteMetadata";
+import { HOME_METADATA, HREFLANG_HOME, SITE_ROOT_URL } from "@/lib/seo/siteMetadata";
 import HomeClient from "./[lang]/HomeClient";
 
 const ROOT_LANG: Lang = "ru";
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: HOME_METADATA[ROOT_LANG].title,
   description: HOME_METADATA[ROOT_LANG].description,
   alternates: {
-    canonical: SITE_DOMAIN,
+    canonical: SITE_ROOT_URL,
     languages: HREFLANG_HOME,
   },
 };
