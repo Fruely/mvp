@@ -10,11 +10,17 @@ import { getDictionary, isSupportedLang, t, type Dictionary } from "@/lib/i18n";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
 import {
+  parseSpecialistOnboardingState,
+  shouldShowLaunchVideoGuide,
+  VIDEO_GUIDE_AUTO_HIDE_STATUSES,
+} from "@/lib/specialists/onboardingState";
+import {
   dashboardNoticeTitleBody,
   getSubscriptionDisplayState,
   pickDashboardSubscriptionNotice,
   subscriptionNoticePanelClass,
 } from "@/lib/specialists/subscriptionDisplay";
+import SpecialistLaunchVideoGuide from "@/components/specialist/SpecialistLaunchVideoGuide";
 import VerificationBanner from "./VerificationBanner";
 
 function formatDashboardDate(value: string | null, lang: string): string {
@@ -77,7 +83,7 @@ export default async function SpecialistDashboardHomePage({
 
   const { data: specExtra } = await service
     .from("specialists")
-    .select("postal_code, work_format, languages, telegram_chat_id")
+    .select("postal_code, work_format, languages, telegram_chat_id, onboarding_state")
     .eq("id", specialist.id)
     .maybeSingle();
 
@@ -298,6 +304,14 @@ export default async function SpecialistDashboardHomePage({
     : profileStarted
       ? t(dict, "dashboard.onboarding.cta.continue")
       : t(dict, "dashboard.onboarding.cta.start");
+  const onboardingState = parseSpecialistOnboardingState(specExtra?.onboarding_state);
+  const shouldAutoShowVideoGuide = shouldShowLaunchVideoGuide({
+    specialistStatus: status,
+    onboardingState,
+    now: new Date(),
+  });
+  const canUseVideoGuide =
+    !status || !VIDEO_GUIDE_AUTO_HIDE_STATUSES.has(String(status));
 
   return (
     <div className="space-y-6">
@@ -523,6 +537,10 @@ export default async function SpecialistDashboardHomePage({
           </>
         )}
       </section>
+
+      {canUseVideoGuide ? (
+        <SpecialistLaunchVideoGuide lang={lang} initialAutoShow={shouldAutoShowVideoGuide} />
+      ) : null}
     </div>
   );
 }
