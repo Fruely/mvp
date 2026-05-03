@@ -1,80 +1,12 @@
 export const dynamic = "force-dynamic";
 
 import { isSupportedLang } from "@/lib/i18n";
-
-type LocalizedCopy = {
-  ru: string;
-  ua: string;
-  de: string;
-};
-
-type VideoGuideItem = {
-  id: string;
-  title: LocalizedCopy;
-  description: LocalizedCopy;
-  embedUrl: string | null;
-  badge: LocalizedCopy;
-};
-
-const VIDEO_GUIDE_ITEMS: VideoGuideItem[] = [
-  {
-    id: "profile-launch",
-    title: {
-      ru: "Запуск и публикация профиля",
-      ua: "Запуск і публікація профілю",
-      de: "Profilstart und Veröffentlichung",
-    },
-    description: {
-      ru: "Как заполнить профиль, добавить услуги, галерею и опубликоваться на Freuly.",
-      ua: "Як заповнити профіль, додати послуги, галерею та опублікуватися на Freuly.",
-      de: "So füllen Sie Ihr Profil aus, fügen Leistungen und Galerie hinzu und veröffentlichen Ihr Profil auf Freuly.",
-    },
-    embedUrl: "https://www.youtube.com/embed/2eEnzEFqMEg",
-    badge: {
-      ru: "Старт",
-      ua: "Старт",
-      de: "Start",
-    },
-  },
-  {
-    id: "payments-coming-soon",
-    title: {
-      ru: "Оплата и тарифы",
-      ua: "Оплата й тарифи",
-      de: "Zahlung und Tarife",
-    },
-    description: {
-      ru: "Скоро здесь появится отдельный видеогид о подписке, оплате размещения и тарифах Freuly.",
-      ua: "Незабаром тут зʼявиться окремий відеогід про підписку, оплату розміщення та тарифи Freuly.",
-      de: "Hier erscheint bald ein eigener Videoguide zu Abonnement, Zahlung und Tarifen bei Freuly.",
-    },
-    embedUrl: null,
-    badge: {
-      ru: "Скоро",
-      ua: "Скоро",
-      de: "Bald",
-    },
-  },
-  {
-    id: "dashboard-updates",
-    title: {
-      ru: "Новые возможности кабинета",
-      ua: "Нові можливості кабінету",
-      de: "Neue Dashboard-Funktionen",
-    },
-    description: {
-      ru: "Когда в кабинете появляются новые функции, мы будем добавлять сюда пояснения и новые видеогиды.",
-      ua: "Коли в кабінеті зʼявлятимуться нові функції, ми додаватимемо сюди пояснення та нові відеогіди.",
-      de: "Wenn neue Funktionen im Dashboard erscheinen, ergänzen wir hier Erklärungen und neue Videoguides.",
-    },
-    embedUrl: null,
-    badge: {
-      ru: "Обновления",
-      ua: "Оновлення",
-      de: "Updates",
-    },
-  },
-];
+import {
+  VIDEO_GUIDE_EMBED_URL,
+  VIDEO_GUIDE_ITEMS,
+  VIDEO_GUIDE_MAIN_ID,
+  type VideoGuideLocalizedCopy,
+} from "@/content/dashboard/videoGuideItems";
 
 const VIDEO_GUIDE_TOPICS: Record<"ru" | "ua" | "de", string[]> = {
   ru: [
@@ -111,7 +43,7 @@ const VIDEO_GUIDE_TOPICS: Record<"ru" | "ua" | "de", string[]> = {
 
 function pickLocalized(
   lang: "ru" | "ua" | "de",
-  localized: LocalizedCopy
+  localized: VideoGuideLocalizedCopy
 ): string {
   return localized[lang];
 }
@@ -163,7 +95,9 @@ export default async function SpecialistDashboardVideoGuidePage({
     de: "Das Video wird bald verfugbar sein.",
   };
 
-  const mainVideoItem = VIDEO_GUIDE_ITEMS[0];
+  const mainVideoItem =
+    VIDEO_GUIDE_ITEMS.find((item) => item.id === VIDEO_GUIDE_MAIN_ID) ??
+    VIDEO_GUIDE_ITEMS[0];
   const hasMainVideo = Boolean(mainVideoItem?.embedUrl);
 
   return (
@@ -191,7 +125,7 @@ export default async function SpecialistDashboardVideoGuidePage({
             {hasMainVideo ? (
               <div className="overflow-hidden rounded-xl border border-gray-200 bg-black">
                 <iframe
-                  src={mainVideoItem.embedUrl ?? ""}
+                  src={mainVideoItem.embedUrl ?? VIDEO_GUIDE_EMBED_URL}
                   title={pickLocalized(activeLang, mainVideoItem.title)}
                   className="h-[240px] w-full sm:h-[360px]"
                   allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
