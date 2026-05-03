@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 const COLLAPSED_STORAGE_KEY = "freuly_specialist_launch_video_guide_collapsed";
-const VIDEO_EMBED_URL = "https://www.youtube.com/embed/VIDEO_ID";
+const VIDEO_EMBED_URL = "https://www.youtube.com/embed/2eEnzEFqMEg";
 
 type Props = {
   lang: string;
