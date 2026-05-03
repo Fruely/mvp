@@ -83,6 +83,18 @@ function buildNavItems(lang: string, dict: Dictionary): NavItem[] {
     ),
   },
   {
+    label: t(dict, "dashboard.sidebar.nav.videoGuide"),
+    href: `${base}/video-guide`,
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
+        <path
+          d="M4 7.5A2.5 2.5 0 016.5 5h8A2.5 2.5 0 0117 7.5v9a2.5 2.5 0 01-2.5 2.5h-8A2.5 2.5 0 014 16.5v-9zm15.8 1.1A1 1 0 0021 9.5v5a1 1 0 01-1.2.98L18 15.1V8.9l1.8-.3zM10 10.1l3 1.9-3 1.9v-3.8z"
+          fill="currentColor"
+        />
+      </svg>
+    ),
+  },
+  {
     label: t(dict, "dashboard.sidebar.nav.settings"),
     href: `${base}/settings`,
     icon: (

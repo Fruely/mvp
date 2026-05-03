@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 const COLLAPSED_STORAGE_KEY = "freuly_specialist_launch_video_guide_collapsed";
@@ -17,6 +18,7 @@ type Copy = {
   collapse: string;
   snooze: string;
   videoGuide: string;
+  openFullGuide: string;
 };
 
 function getCopy(lang: string): Copy {
@@ -29,6 +31,7 @@ function getCopy(lang: string): Copy {
       collapse: "Згорнути",
       snooze: "Нагадати пізніше",
       videoGuide: "Відеогід",
+      openFullGuide: "Відкрити повний відеогід",
     };
   }
   if (lang === "de") {
@@ -40,6 +43,7 @@ function getCopy(lang: string): Copy {
       collapse: "Minimieren",
       snooze: "Spater erinnern",
       videoGuide: "Videoguide",
+      openFullGuide: "Vollstandigen Videoguide offnen",
     };
   }
   return {
@@ -50,6 +54,7 @@ function getCopy(lang: string): Copy {
     collapse: "Свернуть",
     snooze: "Напомнить позже",
     videoGuide: "Видеогид",
+    openFullGuide: "Открыть полный видеогид",
   };
 }
 
@@ -151,6 +156,12 @@ export default function SpecialistLaunchVideoGuide({
                 {copy.snooze}
               </button>
             </div>
+            <Link
+              href={`/${lang}/specialist/dashboard/video-guide`}
+              className="mt-3 inline-flex text-sm font-medium text-blue-700 transition hover:text-blue-800"
+            >
+              {copy.openFullGuide}
+            </Link>
           </div>
         </div>
       ) : null}
