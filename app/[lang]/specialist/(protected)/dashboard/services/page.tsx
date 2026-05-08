@@ -24,9 +24,17 @@ export default async function SpecialistDashboardServicesPage({
   const { specialist } = await getCurrentUserAndSpecialist();
   const service = createServiceClient();
   const dict = await getDictionary(lang);
+  const specialistCategoryId =
+    typeof (specialist as unknown as Record<string, unknown>).category_id === "string"
+      ? ((specialist as unknown as Record<string, unknown>).category_id as string).trim()
+      : "";
 
   if (specialist.status === "blocked") {
     redirect(specialistLangHomePath());
+  }
+
+  if (showOnboardingReturn && specialistCategoryId.length === 0) {
+    redirect(`/${lang}/specialist/dashboard/onboarding?step=basic`);
   }
 
   const { data, error } = await service

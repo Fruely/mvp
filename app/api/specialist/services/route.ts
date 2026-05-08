@@ -6,6 +6,7 @@ const ALLOWED_PRICING_TYPES = ["fixed", "range", "hourly"] as const;
 type PricingType = (typeof ALLOWED_PRICING_TYPES)[number];
 const ACTIVE_PRICE_REQUIRED_ERROR =
   "Чтобы показывать услугу в профиле и использовать её для публикации, укажите цену больше 0.";
+const SPECIALIST_CATEGORY_REQUIRED_ERROR = "SPECIALIST_CATEGORY_REQUIRED";
 
 function normalizeNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -111,6 +112,12 @@ export async function POST(request: NextRequest) {
   const currency = normalizeText(body?.currency) ?? "EUR";
   const durationMinutes = normalizeNumber(body?.duration_minutes);
   const requestedActive = typeof body?.is_active === "boolean" ? body.is_active : true;
+  const requestedCategoryId = normalizeText(body?.category_id);
+  const resolvedCategoryId = requestedCategoryId ?? ctx.categoryId;
+
+  if (!resolvedCategoryId) {
+    return NextResponse.json({ error: SPECIALIST_CATEGORY_REQUIRED_ERROR }, { status: 400 });
+  }
 
   if (!title) {
     return NextResponse.json({ error: "title is required" }, { status: 400 });
@@ -149,8 +156,8 @@ export async function POST(request: NextRequest) {
     currency,
     duration_minutes: durationMinutes,
     is_active: validPrice ? requestedActive : false,
+    category_id: resolvedCategoryId,
   };
-  payload.category_id = ctx.categoryId;
 
   const { data, error } = await ctx.supabase
     .from("specialist_services")
@@ -206,6 +213,7 @@ export async function PATCH(request: NextRequest) {
   const currency = normalizeText(body?.currency) ?? "EUR";
   const durationMinutes = normalizeNumber(body?.duration_minutes);
   const isActive = typeof body?.is_active === "boolean" ? body.is_active : null;
+  const requestedCategoryId = normalizeText(body?.category_id);
 
   const { data: currentService, error: currentServiceError } = await ctx.supabase
     .from("specialist_services")
@@ -278,7 +286,11 @@ export async function PATCH(request: NextRequest) {
   if (!validPrice) {
     patch.is_active = false;
   }
-  patch.category_id = ctx.categoryId;
+  const resolvedCategoryId = requestedCategoryId ?? ctx.categoryId;
+  if (!resolvedCategoryId) {
+    return NextResponse.json({ error: SPECIALIST_CATEGORY_REQUIRED_ERROR }, { status: 400 });
+  }
+  patch.category_id = resolvedCategoryId;
 
   const { data, error } = await ctx.supabase
     .from("specialist_services")

@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { redirect } from "next/navigation";
 import SpecialistOnboardingWizard from "@/components/dashboard/onboarding/SpecialistOnboardingWizard";
 import type { OnboardingChecklistItem } from "@/components/dashboard/onboarding/OnboardingChecklist";
 import { ONBOARDING_STEP_ORDER, type OnboardingStepKey } from "@/components/dashboard/onboarding/OnboardingProgress";
@@ -58,6 +59,13 @@ export default async function SpecialistDashboardOnboardingPage({
     typeof (specialist as unknown as Record<string, unknown>).category_id === "string"
       ? ((specialist as unknown as Record<string, unknown>).category_id as string)
       : "";
+  const hasSavedCategory = categoryId.trim().length > 0;
+  const requiresSavedCategoryForStep =
+    activeStep === "services" || activeStep === "photo" || activeStep === "review";
+
+  if (!hasSavedCategory && requiresSavedCategoryForStep) {
+    redirect(`/${lang}/specialist/dashboard/onboarding?step=basic`);
+  }
 
   const { data: categoryRow } = categoryId
     ? await service
