@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     const ipLimit = await checkRateLimit(request, {
       namespace: "specialist_register:ip",
       identifier: ip,
-      limit: 5,
+      limit: 30,
       windowSeconds: 3600,
     });
     if (!ipLimit.allowed) {
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     const emailLimit = await checkRateLimit(request, {
       namespace: "specialist_register:email",
       identifier: hashEmailForRateLimit(email),
-      limit: 3,
+      limit: 10,
       windowSeconds: 86400,
     });
     if (!emailLimit.allowed) {
