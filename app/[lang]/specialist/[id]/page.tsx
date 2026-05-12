@@ -80,8 +80,6 @@ function getSpecialistServicePriceDisplay(
   },
   priceOnRequestLabel: string
 ): { main: string; commentBelow: string | null } {
-  const currency =
-    typeof service.currency === "string" && service.currency.trim() ? service.currency.trim() : "EUR";
   const raw = service.price_from;
   const pf =
     typeof raw === "number" && Number.isFinite(raw)
@@ -98,7 +96,7 @@ function getSpecialistServicePriceDisplay(
     const to = service.price_to;
     const hasRange =
       to != null && typeof to === "number" && Number.isFinite(to) && to > 0;
-    const main = hasRange ? `${pf}–${to} ${currency}` : `${pf} ${currency}`;
+    const main = hasRange ? `${pf}–${to} €` : `${pf} €`;
     return { main, commentBelow: comment };
   }
 

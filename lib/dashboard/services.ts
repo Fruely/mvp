@@ -22,7 +22,6 @@ type ServicePayload = {
   pricing_type: PricingType;
   price_from: number;
   price_to: number | null;
-  currency: string;
   duration_minutes: number | null;
   is_active?: boolean;
 };

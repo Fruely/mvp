@@ -49,7 +49,7 @@ export default async function SpecialistDashboardProfilePage({
     .maybeSingle();
   const { data: servicesRows } = await service
     .from("specialist_services")
-    .select("id, title, price_from, currency, is_active, price_comment")
+    .select("id, title, price_from, is_active, price_comment")
     .eq("specialist_id", specialist.id)
     .order("created_at", { ascending: false });
   const { data: categoriesRows } = await service
@@ -111,7 +111,6 @@ export default async function SpecialistDashboardProfilePage({
               typeof service.price_from === "number" && Number.isFinite(service.price_from)
                 ? String(service.price_from)
                 : "",
-            currency: typeof service.currency === "string" && service.currency.trim() ? service.currency : "EUR",
             is_active: Boolean(service.is_active),
             price_comment: service.price_comment != null ? String(service.price_comment) : "",
           })),

@@ -13,7 +13,6 @@ type ServiceInput = {
   id?: string;
   title: string;
   price_from: string;
-  currency: string;
   is_active: boolean;
   price_comment?: string;
 };

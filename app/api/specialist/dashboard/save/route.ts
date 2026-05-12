@@ -48,7 +48,6 @@ type Payload = {
     id?: string;
     title: string;
     price_from: string;
-    currency?: string;
     is_active?: boolean;
     price_comment?: string;
   }>;
@@ -332,10 +331,6 @@ export async function PUT(request: NextRequest) {
           price_from: Number(
             String(service.price_from ?? "").replace(/\s/g, "").replace(",", ".")
           ),
-          currency:
-            typeof service.currency === "string" && service.currency.trim().length > 0
-              ? service.currency.trim().toUpperCase()
-              : "EUR",
           is_active: service.is_active !== false,
           price_comment:
             typeof service.price_comment === "string"
@@ -367,7 +362,7 @@ export async function PUT(request: NextRequest) {
         pricing_type: "fixed",
         price_from: service.price_from,
         price_to: null,
-        currency: service.currency,
+        currency: "EUR",
         is_active: service.is_active,
         price_comment: service.price_comment,
         category_id: serviceCategoryId,
@@ -405,7 +400,7 @@ export async function PUT(request: NextRequest) {
         pricing_type: "fixed",
         price_from: service.price_from,
         price_to: null,
-        currency: service.currency,
+        currency: "EUR",
         is_active: service.is_active,
         price_comment: service.price_comment,
         category_id: serviceCategoryId,

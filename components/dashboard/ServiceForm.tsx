@@ -11,7 +11,6 @@ type ServiceFormValues = {
   pricing_type: PricingType;
   price_from: string;
   price_to: string;
-  currency: string;
   duration_minutes: string;
 };
 
@@ -22,9 +21,17 @@ const DEFAULT_VALUES: ServiceFormValues = {
   pricing_type: "fixed",
   price_from: "",
   price_to: "",
-  currency: "EUR",
   duration_minutes: "",
 };
+
+/** Inline EUR suffix next to amount inputs (prices are always EUR server-side). */
+function euroSuffix() {
+  return (
+    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 select-none text-sm font-medium text-gray-600">
+      €
+    </span>
+  );
+}
 
 export default function ServiceForm({
   dict,
@@ -47,7 +54,6 @@ export default function ServiceForm({
     pricing_type: PricingType;
     price_from: number;
     price_to: number | null;
-    currency: string;
     duration_minutes: number | null;
     requested_active: boolean;
   }) => Promise<void>;
@@ -116,13 +122,15 @@ export default function ServiceForm({
       pricing_type: values.pricing_type,
       price_from: priceFrom,
       price_to: values.pricing_type === "range" ? priceTo : null,
-      currency: values.currency.trim() || "EUR",
       duration_minutes: duration,
       requested_active: requestedActive,
     }).catch((e) => {
       setError(e instanceof Error ? e.message : t(dict, "dashboard.servicesEditor.errors.saveFailed"));
     });
   }
+
+  const amountInputClass =
+    "h-10 w-full rounded-lg border border-gray-300 pl-3 pr-10 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
@@ -193,57 +201,50 @@ export default function ServiceForm({
               i
             </span>
           </label>
-          <input
-            value={values.price_from}
-            onChange={(e) => updateValue("price_from", e.target.value)}
-            type="number"
-            min="0"
-            step="0.01"
-            className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-            required
-          />
+          <div className="relative">
+            <input
+              value={values.price_from}
+              onChange={(e) => updateValue("price_from", e.target.value)}
+              type="number"
+              min="0"
+              step="0.01"
+              className={amountInputClass}
+              required
+            />
+            {euroSuffix()}
+          </div>
         </div>
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-600">
             {t(dict, "dashboard.servicesEditor.field.priceTo")}
           </label>
-          <input
-            value={values.price_to}
-            onChange={(e) => updateValue("price_to", e.target.value)}
-            type="number"
-            min="0"
-            step="0.01"
-            disabled={values.pricing_type !== "range"}
-            className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
-          />
+          <div className="relative">
+            <input
+              value={values.price_to}
+              onChange={(e) => updateValue("price_to", e.target.value)}
+              type="number"
+              min="0"
+              step="0.01"
+              disabled={values.pricing_type !== "range"}
+              className={`${amountInputClass} disabled:bg-gray-100`}
+            />
+            {values.pricing_type === "range" ? euroSuffix() : null}
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">
-            {t(dict, "dashboard.servicesEditor.field.currency")}
-          </label>
-          <input
-            value={values.currency}
-            onChange={(e) => updateValue("currency", e.target.value.toUpperCase())}
-            className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-            placeholder="EUR"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">
-            {t(dict, "dashboard.servicesEditor.field.duration")}
-          </label>
-          <input
-            value={values.duration_minutes}
-            onChange={(e) => updateValue("duration_minutes", e.target.value)}
-            type="number"
-            min="0"
-            className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-            placeholder="60"
-          />
-        </div>
+      <div>
+        <label className="mb-1 block text-xs font-medium text-gray-600">
+          {t(dict, "dashboard.servicesEditor.field.duration")}
+        </label>
+        <input
+          value={values.duration_minutes}
+          onChange={(e) => updateValue("duration_minutes", e.target.value)}
+          type="number"
+          min="0"
+          className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          placeholder="60"
+        />
       </div>
 
       {!hideActiveToggle ? (
@@ -281,4 +282,3 @@ export default function ServiceForm({
     </form>
   );
 }
-

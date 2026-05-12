@@ -7,6 +7,7 @@ type PricingType = (typeof ALLOWED_PRICING_TYPES)[number];
 const ACTIVE_PRICE_REQUIRED_ERROR =
   "Чтобы показывать услугу в профиле и использовать её для публикации, укажите цену больше 0.";
 const SPECIALIST_CATEGORY_REQUIRED_ERROR = "SPECIALIST_CATEGORY_REQUIRED";
+const SPECIALIST_SERVICE_CURRENCY = "EUR";
 
 function normalizeNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -109,7 +110,6 @@ export async function POST(request: NextRequest) {
   const pricingType = normalizeText(body?.pricing_type);
   const priceFrom = normalizeNumber(body?.price_from);
   const priceTo = normalizeNumber(body?.price_to);
-  const currency = normalizeText(body?.currency) ?? "EUR";
   const durationMinutes = normalizeNumber(body?.duration_minutes);
   const requestedActive = typeof body?.is_active === "boolean" ? body.is_active : true;
   const requestedCategoryId = normalizeText(body?.category_id);
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
     pricing_type: pricingType,
     price_from: priceFrom,
     price_to: pricingType === "range" ? priceTo : null,
-    currency,
+    currency: SPECIALIST_SERVICE_CURRENCY,
     duration_minutes: durationMinutes,
     is_active: validPrice ? requestedActive : false,
     category_id: resolvedCategoryId,
@@ -210,7 +210,6 @@ export async function PATCH(request: NextRequest) {
   const pricingType = normalizeText(body?.pricing_type);
   const priceFrom = normalizeNumber(body?.price_from);
   const priceTo = normalizeNumber(body?.price_to);
-  const currency = normalizeText(body?.currency) ?? "EUR";
   const durationMinutes = normalizeNumber(body?.duration_minutes);
   const isActive = typeof body?.is_active === "boolean" ? body.is_active : null;
   const requestedCategoryId = normalizeText(body?.category_id);
@@ -243,7 +242,6 @@ export async function PATCH(request: NextRequest) {
   }
   if (priceFrom !== null) patch.price_from = priceFrom;
   if (Object.prototype.hasOwnProperty.call(body ?? {}, "price_to")) patch.price_to = priceTo;
-  if (currency) patch.currency = currency;
   if (Object.prototype.hasOwnProperty.call(body ?? {}, "duration_minutes")) patch.duration_minutes = durationMinutes;
   if (isActive !== null) patch.is_active = isActive;
 
@@ -291,6 +289,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: SPECIALIST_CATEGORY_REQUIRED_ERROR }, { status: 400 });
   }
   patch.category_id = resolvedCategoryId;
+  patch.currency = SPECIALIST_SERVICE_CURRENCY;
 
   const { data, error } = await ctx.supabase
     .from("specialist_services")

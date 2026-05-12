@@ -19,11 +19,10 @@ function pricingBadgeClass(type: PricingType): string {
 }
 
 function formatPrice(service: SpecialistService): string {
-  const currency = service.currency || "EUR";
   if (service.pricing_type === "range") {
-    return `${service.price_from}–${service.price_to ?? "—"} ${currency}`;
+    return `${service.price_from}–${service.price_to ?? "—"} €`;
   }
-  return `${service.price_from} ${currency}`;
+  return `${service.price_from} €`;
 }
 
 function hasValidPrice(service: {
@@ -86,7 +85,6 @@ export default function ServicesTable({
     pricing_type: PricingType;
     price_from: number;
     price_to: number | null;
-    currency: string;
     duration_minutes: number | null;
     requested_active: boolean;
   }) {
@@ -94,9 +92,10 @@ export default function ServicesTable({
     setToast(null);
     try {
       const shouldBeActive = payload.requested_active && hasValidPrice(payload);
+      const { requested_active, ...serviceFields } = payload;
       const created = await createService(
         {
-          ...payload,
+          ...serviceFields,
           is_active: shouldBeActive,
         },
         lang
@@ -119,7 +118,6 @@ export default function ServicesTable({
       pricing_type: PricingType;
       price_from: number;
       price_to: number | null;
-      currency: string;
       duration_minutes: number | null;
       requested_active: boolean;
     }
@@ -128,10 +126,11 @@ export default function ServicesTable({
     setToast(null);
     try {
       const shouldBeActive = payload.requested_active && hasValidPrice(payload);
+      const { requested_active, ...serviceFields } = payload;
       const updated = await updateService(
         id,
         {
-          ...payload,
+          ...serviceFields,
           is_active: shouldBeActive,
         },
         lang
@@ -375,7 +374,6 @@ export default function ServicesTable({
                               pricing_type: service.pricing_type,
                               price_from: String(service.price_from ?? ""),
                               price_to: service.price_to == null ? "" : String(service.price_to),
-                              currency: service.currency ?? "EUR",
                               duration_minutes:
                                 service.duration_minutes == null ? "" : String(service.duration_minutes),
                             }}

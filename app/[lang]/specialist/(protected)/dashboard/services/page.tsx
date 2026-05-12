@@ -60,7 +60,7 @@ export default async function SpecialistDashboardServicesPage({
         : "fixed",
     price_from: typeof row.price_from === "number" ? row.price_from : 0,
     price_to: typeof row.price_to === "number" ? row.price_to : null,
-    currency: typeof row.currency === "string" && row.currency.trim() ? row.currency : "EUR",
+    currency: "EUR",
     duration_minutes:
       typeof row.duration_minutes === "number" && Number.isFinite(row.duration_minutes)
         ? row.duration_minutes
