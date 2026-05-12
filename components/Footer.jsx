@@ -48,6 +48,11 @@ export default function Footer(props) {
                 </Link>
               </li>
               <li>
+                <Link href={`${prefix}/specialist-rules`} className="hover:text-white">
+                  {t(dict, "footer.specialistRules")}
+                </Link>
+              </li>
+              <li>
                 <Link href={`${prefix}/become-specialist`} className="hover:text-white">
                   {t(dict, "footer.forSpecialists")}
                 </Link>

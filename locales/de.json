@@ -683,6 +683,7 @@
     "companyHeading": "Über das Projekt",
     "support": "Support",
     "forSpecialists": "Für Fachkräfte",
+    "specialistRules": "Plattformregeln",
     "tagline": "Freuly — ein Ort, an dem Menschen Fachkräfte finden, die ihre Sprache sprechen.",
     "socialHeading": "In sozialen Netzwerken",
     "impressumLink": "Impressum",
@@ -787,15 +788,27 @@
       },
       {
         "title": "Preise und Konditionen",
-        "body": "Angaben zu Preisen und Konditionen müssen fair formuliert sein und Nutzer nicht irreführen. Offenkundig absurde, unseriöse, die Plattform diskreditierende oder unangemessene Preis- und Konditionstexte sind untersagt."
+        "body": "Preise dürfen nur in Euro angegeben werden. Es ist verboten, Preise in anderen Währungen anzugeben, Zahlungsangaben, Kartennummern, Zahlungsanweisungen, Links zu Zahlungssystemen, Zahlungsangebote in Rubeln oder anderen Währungen oder konkrete Zahlungskanäle zu veröffentlichen. Angaben zu Preisen und Konditionen müssen fair formuliert sein und Nutzer nicht irreführen."
+      },
+      {
+        "title": "Freulys Rolle bei Zahlungen",
+        "body": "Freuly ist kein Zahlungsdienstleister. Die Plattform nimmt keine Zahlungen von Kundinnen und Kunden entgegen, behält keine Provisionen ein und nimmt nicht an Abrechnungen zwischen Kundin bzw. Kunde und Spezialist teil. Alle Zahlungen und Bedingungen der Zusammenarbeit werden direkt zwischen Kundin bzw. Kunde und Spezialist vereinbart."
+      },
+      {
+        "title": "Verantwortung des Spezialisten",
+        "body": "Der Spezialist trägt die vollständige Verantwortung für die Gesetzmäßigkeit seiner Tätigkeiten, Steuerzahlungen, erforderliche Lizenzen und Dokumente sowie die Erfüllung aller Verpflichtungen gegenüber seinen Kundinnen und Kunden. Freuly trägt keine Verantwortung für Arbeitsqualität, Vertragseinhaltung oder Streitigkeiten zwischen Spezialist und Kundin bzw. Kunde."
+      },
+      {
+        "title": "Mangel an Garantien",
+        "body": "Freuly garantiert nicht den Erhalt von Anfragen, die Gewinnung von Kundinnen und Kunden, Einkommenshöhe, Umsatzvolumen oder konkrete Erfolge bei der Profilförderung. Die Plattform stellt einen Profileintrag und Anfragevermittlung bereit, garantiert jedoch weder deren Menge noch Qualität oder erfolgreiche Geschäftsabschlüsse."
+      },
+      {
+        "title": "Rechte der Plattform",
+        "body": "Freuly darf Profile aus der Veröffentlichung nehmen, die Sichtbarkeit einschränken, Profile und Konten deaktivieren oder löschen, wenn diese gegen die Regeln verstoßen, unzutreffende Informationen enthalten, Nutzer irreführen, Qualitätsstandards nicht erfüllen oder rechtliche und reputationsbezogene Risiken für die Plattform und ihre Nutzer darstellen."
       },
       {
         "title": "Missbrauch der Plattform",
         "body": "Die Plattform darf nicht für Trolling, Spam, digitale Rowdysmus, Test- oder Provokationsinhalte oder Handlungen genutzt werden, die das Vertrauen in die Plattform und ihre Spezialistinnen und Spezialisten untergraben."
-      },
-      {
-        "title": "Rechte der Plattform",
-        "body": "Freuly darf Profile aus der Veröffentlichung nehmen, die Sichtbarkeit einschränken, Profile oder Konten deaktivieren oder löschen, wenn sie gegen die Regeln verletzen, unzutreffende Informationen enthalten, Qualitätsstandards nicht erfüllen oder das Vertrauen der Nutzer in die Plattform schwächen."
       }
     ]
   },
