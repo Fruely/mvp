@@ -27,7 +27,27 @@ const DEFAULT_VALUES: ServiceFormValues = {
 /** Inline EUR suffix next to amount inputs (prices are always EUR server-side). */
 function euroSuffix() {
   return (
-    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 select-none text-sm font-medium text-gray-600">
+    <span
+      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 select-none text-sm font-medium text-gray-600"
+      style={{
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none',
+        pointerEvents: 'none',
+      }}
+      aria-hidden="true"
+    
+      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 select-none text-sm font-medium text-gray-600"
+      style={{
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none',
+        pointerEvents: 'none',
+      }}
+      aria-hidden="true"
+    >
       €
     </span>
   );
