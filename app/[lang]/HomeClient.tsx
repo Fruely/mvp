@@ -74,6 +74,24 @@ type PopularCategory = {
   sort_order?: number | null;
 };
 
+type ManagedFeaturedCategory = {
+  id: string;
+  slug: string;
+  parent_id: string | null;
+  image_url: string | null;
+  title: string | null;
+  title_ru: string | null;
+  title_de: string | null;
+  title_ua: string | null;
+  name_en: string;
+  name_de: string;
+  name_ru: string;
+  name_ua: string;
+  specialists_count: number;
+  sort_order: number;
+  placement: string;
+};
+
 type RecommendedSpecialist = {
   id: string;
   slug: string | null;
@@ -145,9 +163,11 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [categories, setCategories] = useState<CategoryStat[]>([]);
   const [popularCategories, setPopularCategories] = useState<PopularCategory[]>([]);
+  const [managedFeaturedCategories, setManagedFeaturedCategories] = useState<ManagedFeaturedCategory[] | null>(null);
   const [recommendedSpecialists, setRecommendedSpecialists] = useState<RecommendedSpecialist[]>([]);
   const [isBlocksLoading, setIsBlocksLoading] = useState(true);
   const [isPopularLoading, setIsPopularLoading] = useState(true);
+  const [isManagedFeaturedLoading, setIsManagedFeaturedLoading] = useState(true);
   const [isRecommendedLoading, setIsRecommendedLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const placeFromUrl = place?.trim() ?? "";
@@ -325,10 +345,55 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
       }
     }
 
-    loadBlocks();
-    loadCategories();
-    loadPopularCategories();
-    loadRecommendedSpecialists();
+    async function loadFeaturedCategories(): Promise<boolean> {
+      try {
+        const res = await fetch("/api/homepage/featured-categories", { cache: "no-store" });
+        const json = await res.json();
+        if (!res.ok || !Array.isArray(json?.categories)) {
+          return false;
+        }
+        const normalized = json.categories
+          .filter((item: any) => item && typeof item.id === "string")
+          .map((item: any) => ({
+            id: String(item.id),
+            slug: String(item.slug),
+            parent_id: item.parent_id ? String(item.parent_id) : null,
+            image_url: typeof item.image_url === "string" ? item.image_url : null,
+            title: typeof item.title === "string" ? item.title : null,
+            title_ru: typeof item.title_ru === "string" ? item.title_ru : null,
+            title_de: typeof item.title_de === "string" ? item.title_de : null,
+            title_ua: typeof item.title_ua === "string" ? item.title_ua : null,
+            name_en: typeof item.name_en === "string" ? item.name_en : "",
+            name_de: typeof item.name_de === "string" ? item.name_de : "",
+            name_ru: typeof item.name_ru === "string" ? item.name_ru : "",
+            name_ua: typeof item.name_ua === "string" ? item.name_ua : "",
+            specialists_count: typeof item.specialists_count === "number" ? item.specialists_count : 0,
+            sort_order: typeof item.sort_order === "number" ? item.sort_order : 999,
+            placement: String(item.placement || "featured"),
+          }));
+        if (normalized.length > 0) {
+          setManagedFeaturedCategories(normalized);
+          return true;
+        }
+        return false;
+      } catch {
+        return false;
+      } finally {
+        setIsManagedFeaturedLoading(false);
+      }
+    }
+
+    async function loadHomepageData() {
+      loadBlocks();
+      const loadedFeatured = await loadFeaturedCategories();
+      if (!loadedFeatured) {
+        await loadCategories();
+      }
+      loadPopularCategories();
+      loadRecommendedSpecialists();
+    }
+
+    loadHomepageData();
 
     // Быстрая реакция на публикацию из админки
     const handler = () => loadBlocks();
@@ -547,7 +612,56 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
               </div>
             ) : null}
 
-            {categories
+            {/* Managed Featured Categories Block */}
+            {managedFeaturedCategories && managedFeaturedCategories.length > 0 ? (
+              <section className="mt-12">
+                <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 pl-1 pb-6">
+                  {t(dict, 'home.categories.title')}
+                </h2>
+                <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-5 md:gap-6 pb-12">
+                  {managedFeaturedCategories.map((cat) => {
+                    const title = (() => {
+                      if (lang === 'de' && cat.name_de) return cat.name_de;
+                      if (lang === 'ru' && cat.name_ru) return cat.name_ru;
+                      if (lang === 'ua' && cat.name_ua) return cat.name_ua;
+                      return cat.name_en || cat.title || cat.slug;
+                    })();
+
+                    return (
+                      <div key={cat.id}>
+                        <Link
+                          href={`/${lang}/category/${cat.slug}`}
+                          className="group block transition-shadow duration-300 ease-out hover:shadow-lg"
+                        >
+                          <div className="w-full aspect-[3/2] overflow-hidden rounded-[4px] bg-gray-100">
+                            {cat.image_url ? (
+                              <img
+                                src={cat.image_url}
+                                alt={title}
+                                className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <span className="text-sm text-gray-400 px-3 text-center line-clamp-2">
+                                  {title}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <p className="mt-2 px-1 text-base font-medium text-gray-900 line-clamp-1">
+                            {title}
+                          </p>
+                          <p className="mt-1 px-1 text-sm text-gray-500">
+                            {cat.specialists_count}
+                          </p>
+                        </Link>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            ) : categories
                 .filter((cat) => Array.isArray(cat.children) && cat.children.some((c) => c.specialists_count > 0))
                 .slice(0, 4)
                 .map((parent) => (
