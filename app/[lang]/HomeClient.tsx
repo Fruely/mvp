@@ -439,12 +439,18 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
     for (const parent of categories) {
       if (!Array.isArray(parent.children)) continue;
 
-      const visibleChildren = parent.children.filter(
+      const hasActiveChild = parent.children.some(
         (child) => child.specialists_count > 0
       );
-      if (visibleChildren.length === 0) continue;
+      if (!hasActiveChild) continue;
 
-      const orderedChildren = [...visibleChildren]
+      const hasActiveBoostedChild = parent.children.some(
+        (child) =>
+          BOOSTED_CHILD_CATEGORY_SLUGS.includes(child.slug as typeof BOOSTED_CHILD_CATEGORY_SLUGS[number]) &&
+          child.specialists_count > 0
+      );
+
+      const orderedChildren = [...parent.children]
         .sort((a, b) => {
           const aBoosted = BOOSTED_CHILD_CATEGORY_SLUGS.includes(a.slug as typeof BOOSTED_CHILD_CATEGORY_SLUGS[number]);
           const bBoosted = BOOSTED_CHILD_CATEGORY_SLUGS.includes(b.slug as typeof BOOSTED_CHILD_CATEGORY_SLUGS[number]);
@@ -460,9 +466,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
         children: orderedChildren,
       };
 
-      if (orderedChildren.some((child) =>
-        BOOSTED_CHILD_CATEGORY_SLUGS.includes(child.slug as typeof BOOSTED_CHILD_CATEGORY_SLUGS[number])
-      )) {
+      if (hasActiveBoostedChild) {
         boostedParents.push(parentWithOrderedChildren);
       } else {
         normalParents.push(parentWithOrderedChildren);
