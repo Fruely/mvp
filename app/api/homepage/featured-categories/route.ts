@@ -60,34 +60,7 @@ export async function GET(request: Request) {
 
     if (categoriesError) throw categoriesError;
 
-    const parentIds = (categoriesData ?? [])
-      .filter((cat: any) => cat && typeof cat.id === 'string')
-      .map((cat: any) => cat.id);
-
-    const { data: childCategoriesData, error: childCategoriesError } = await supabase
-      .from('categories')
-      .select('id, parent_id')
-      .in('parent_id', parentIds)
-      .eq('is_active', true);
-
-    if (childCategoriesError) throw childCategoriesError;
-
-    const childCategoryMap = new Map<string, string[]>();
-    for (const child of (childCategoriesData ?? []) as Array<{ id: string; parent_id: string | null }>) {
-      if (!child.parent_id) continue;
-      const list = childCategoryMap.get(child.parent_id) ?? [];
-      list.push(child.id);
-      childCategoryMap.set(child.parent_id, list);
-    }
-
-    const relevantCategoryIds = Array.from(
-      new Set([
-        ...categoryIds,
-        ...Array.from(childCategoryMap.values()).flat(),
-      ])
-    );
-
-    // Count specialists per relevant category id
+    // Count specialists per category (matching popular-categories endpoint)
     const { data: serviceData, error: serviceError } = await supabase
       .from('specialist_services')
       .select(`
@@ -96,7 +69,6 @@ export async function GET(request: Request) {
         specialists!inner ( status, is_active, is_visible, is_test )
       `)
       .eq('is_active', true)
-      .in('category_id', relevantCategoryIds)
       .in('specialists.status', [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
       .eq('specialists.is_active', true)
       .eq('specialists.is_visible', true)
@@ -119,36 +91,25 @@ export async function GET(request: Request) {
       countByCategory.set(row.category_id, (countByCategory.get(row.category_id) ?? 0) + 1);
     }
 
-    // Map categories, preserving DB sort_order and counting parents across active children
+    // Map categories, preserving DB sort_order
     const result: ManagedFeaturedCategory[] = (categoriesData || [])
-      .map((cat: any) => {
-        const directCount = countByCategory.get(cat.id) || 0;
-        const childIds = childCategoryMap.get(cat.id) ?? [];
-        const childCount = childIds.reduce(
-          (sum, childId) => sum + (countByCategory.get(childId) || 0),
-          0
-        );
-        const specialists_count = childIds.length > 0 ? childCount : directCount;
-
-        return {
-          id: cat.id,
-          slug: cat.slug,
-          parent_id: cat.parent_id || null,
-          image_url: cat.image_url || null,
-          title: cat.title,
-          title_ru: cat.title_ru,
-          title_de: cat.title_de,
-          title_ua: cat.title_ua,
-          name_en: cat.title,
-          name_de: cat.title_de,
-          name_ru: cat.title_ru,
-          name_ua: cat.title_ua,
-          specialists_count,
-          sort_order: sortOrderMap.get(cat.id) || 999,
-          placement: placementMap.get(cat.id) || placement,
-        };
-      })
-      .filter((item) => item.specialists_count > 0)
+      .map((cat: any) => ({
+        id: cat.id,
+        slug: cat.slug,
+        parent_id: cat.parent_id || null,
+        image_url: cat.image_url || null,
+        title: cat.title,
+        title_ru: cat.title_ru,
+        title_de: cat.title_de,
+        title_ua: cat.title_ua,
+        name_en: cat.title,
+        name_de: cat.title_de,
+        name_ru: cat.title_ru,
+        name_ua: cat.title_ua,
+        specialists_count: countByCategory.get(cat.id) || 0,
+        sort_order: sortOrderMap.get(cat.id) || 999,
+        placement: placementMap.get(cat.id) || placement,
+      }))
       .sort((a: any, b: any) => a.sort_order - b.sort_order);
 
     return jsonWithCache({ categories: result }, CACHE_PUBLIC_POPULAR_CATEGORIES);
