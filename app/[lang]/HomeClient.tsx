@@ -148,6 +148,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
   const [categories, setCategories] = useState<CategoryStat[]>([]);
   const [popularCategories, setPopularCategories] = useState<PopularCategory[]>([]);
   const [recommendedSpecialists, setRecommendedSpecialists] = useState<RecommendedSpecialist[]>([]);
+  const [homepageParentSlotSlugs, setHomepageParentSlotSlugs] = useState<string[]>([]);
   const [isBlocksLoading, setIsBlocksLoading] = useState(true);
   const [isPopularLoading, setIsPopularLoading] = useState(true);
   const [isRecommendedLoading, setIsRecommendedLoading] = useState(true);
@@ -259,6 +260,34 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
       }
     }
 
+    async function loadHomepageParentSlots() {
+      try {
+        const res = await fetch("/api/homepage/parent-category-slots", {
+          cache: "no-store",
+        });
+        const json = await res.json();
+        if (!res.ok || !Array.isArray(json?.slots)) {
+          setHomepageParentSlotSlugs([]);
+          return;
+        }
+
+        const slugs = json.slots
+          .filter(
+            (item: any) =>
+              item &&
+              typeof item.slot === "number" &&
+              typeof item.slug === "string" &&
+              item.slug.trim().length > 0
+          )
+          .sort((a: any, b: any) => Number(a.slot) - Number(b.slot))
+          .map((item: any) => String(item.slug).trim());
+
+        setHomepageParentSlotSlugs(slugs);
+      } catch {
+        setHomepageParentSlotSlugs([]);
+      }
+    }
+
     async function loadPopularCategories() {
       try {
         const res = await fetch("/api/homepage/popular-categories", { cache: "no-store" });
@@ -329,6 +358,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
 
     loadBlocks();
     loadCategories();
+    loadHomepageParentSlots();
     loadPopularCategories();
     loadRecommendedSpecialists();
 
@@ -433,8 +463,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
   );
 
   const orderedCategorySections = useMemo(() => {
-    const boostedParents: CategoryStat[] = [];
-    const normalParents: CategoryStat[] = [];
+    const preparedParents: CategoryStat[] = [];
 
     for (const parent of categories) {
       if (!Array.isArray(parent.children)) continue;
@@ -443,12 +472,6 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
         (child) => child.specialists_count > 0
       );
       if (!hasActiveChild) continue;
-
-      const hasActiveBoostedChild = parent.children.some(
-        (child) =>
-          BOOSTED_CHILD_CATEGORY_SLUGS.includes(child.slug as typeof BOOSTED_CHILD_CATEGORY_SLUGS[number]) &&
-          child.specialists_count > 0
-      );
 
       const orderedChildren = [...parent.children]
         .sort((a, b) => {
@@ -461,20 +484,52 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
         })
         .slice(0, 3);
 
-      const parentWithOrderedChildren = {
+      preparedParents.push({
         ...parent,
         children: orderedChildren,
-      };
+      });
+    }
 
-      if (hasActiveBoostedChild) {
-        boostedParents.push(parentWithOrderedChildren);
-      } else {
-        normalParents.push(parentWithOrderedChildren);
+    if (homepageParentSlotSlugs.length === 0) {
+      const fallbackBoosted: CategoryStat[] = [];
+      const fallbackNormal: CategoryStat[] = [];
+
+      for (const parent of preparedParents) {
+        const hasActiveBoostedChild = (parent.children ?? []).some(
+          (child) =>
+            BOOSTED_CHILD_CATEGORY_SLUGS.includes(child.slug as typeof BOOSTED_CHILD_CATEGORY_SLUGS[number]) &&
+            child.specialists_count > 0
+        );
+
+        if (hasActiveBoostedChild) fallbackBoosted.push(parent);
+        else fallbackNormal.push(parent);
+      }
+
+      return [...fallbackBoosted, ...fallbackNormal].slice(0, 4);
+    }
+
+    const parentBySlug = new Map<string, CategoryStat>();
+    for (const parent of preparedParents) {
+      parentBySlug.set(parent.slug, parent);
+    }
+
+    const orderedParents: CategoryStat[] = [];
+    for (const slug of homepageParentSlotSlugs) {
+      const parent = parentBySlug.get(slug);
+      if (!parent) continue;
+      orderedParents.push(parent);
+      parentBySlug.delete(slug);
+    }
+
+    for (const parent of preparedParents) {
+      if (parentBySlug.has(parent.slug)) {
+        orderedParents.push(parent);
+        parentBySlug.delete(parent.slug);
       }
     }
 
-    return [...boostedParents, ...normalParents].slice(0, 4);
-  }, [categories]);
+    return orderedParents.slice(0, 4);
+  }, [categories, homepageParentSlotSlugs]);
 
   const copy = HERO_COPY[lang] ?? HERO_COPY.ru;
 
