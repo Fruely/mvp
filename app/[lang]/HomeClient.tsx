@@ -92,6 +92,21 @@ type ManagedFeaturedCategory = {
   placement: string;
 };
 
+type FlatCategoryCard = {
+  id: string;
+  slug: string;
+  title: string | null;
+  title_ru?: string | null;
+  title_de?: string | null;
+  title_ua?: string | null;
+  image_url?: string | null;
+  specialists_count: number;
+  name_en?: string;
+  name_de?: string;
+  name_ru?: string;
+  name_ua?: string;
+};
+
 type RecommendedSpecialist = {
   id: string;
   slug: string | null;
@@ -385,10 +400,8 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
 
     async function loadHomepageData() {
       loadBlocks();
-      const loadedFeatured = await loadFeaturedCategories();
-      if (!loadedFeatured) {
-        await loadCategories();
-      }
+      await loadFeaturedCategories();
+      await loadCategories();
       loadPopularCategories();
       loadRecommendedSpecialists();
     }
@@ -494,6 +507,53 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
       ),
     []
   );
+
+  const mergedCategoryCards = useMemo(() => {
+    const activeManaged: FlatCategoryCard[] = (managedFeaturedCategories ?? [])
+      .filter((cat) => cat.specialists_count > 0)
+      .map((cat) => ({
+        id: cat.id,
+        slug: cat.slug,
+        title: cat.title,
+        title_ru: cat.title_ru,
+        title_de: cat.title_de,
+        title_ua: cat.title_ua,
+        image_url: cat.image_url,
+        specialists_count: cat.specialists_count,
+        name_en: cat.name_en,
+        name_de: cat.name_de,
+        name_ru: cat.name_ru,
+        name_ua: cat.name_ua,
+      }));
+    const existingSlugs = new Set(activeManaged.map((cat) => cat.slug));
+
+    const fallbackChildren = categories.reduce(
+      (acc: Array<NonNullable<CategoryStat['children']>[number]>, parent) => {
+        if (Array.isArray(parent.children)) {
+          acc.push(...parent.children);
+        }
+        return acc;
+      },
+      [] as Array<NonNullable<CategoryStat['children']>[number]>
+    );
+
+    const fallbackItems: FlatCategoryCard[] = fallbackChildren
+      .filter((child) => child.specialists_count > 0 && !existingSlugs.has(child.slug))
+      .sort((a, b) => b.specialists_count - a.specialists_count)
+      .map((child) => ({
+        id: child.id,
+        slug: child.slug,
+        title: child.title,
+        title_ru: child.title_ru,
+        title_de: child.title_de,
+        title_ua: child.title_ua,
+        image_url: child.image_url || null,
+        specialists_count: child.specialists_count,
+      }));
+
+    const merged = [...activeManaged, ...fallbackItems].slice(0, 8);
+    return merged.length > 1 ? merged : [];
+  }, [managedFeaturedCategories, categories]);
 
   const copy = HERO_COPY[lang] ?? HERO_COPY.ru;
 
@@ -612,19 +672,22 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
               </div>
             ) : null}
 
-            {/* Managed Featured Categories Block */}
-            {managedFeaturedCategories && managedFeaturedCategories.length > 0 ? (
+            {/* Merged featured + fallback category cards */}
+            {mergedCategoryCards.length > 0 ? (
               <section className="mt-12">
                 <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 pl-1 pb-6">
                   {t(dict, 'home.categories.title')}
                 </h2>
                 <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-5 md:gap-6 pb-12">
-                  {managedFeaturedCategories.map((cat) => {
+                  {mergedCategoryCards.map((cat) => {
                     const title = (() => {
+                      if (lang === 'de' && cat.title_de) return cat.title_de;
+                      if (lang === 'ru' && cat.title_ru) return cat.title_ru;
+                      if (lang === 'ua' && cat.title_ua) return cat.title_ua;
                       if (lang === 'de' && cat.name_de) return cat.name_de;
                       if (lang === 'ru' && cat.name_ru) return cat.name_ru;
                       if (lang === 'ua' && cat.name_ua) return cat.name_ua;
-                      return cat.name_en || cat.title || cat.slug;
+                      return cat.title || cat.name_en || cat.slug;
                     })();
 
                     return (
