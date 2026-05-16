@@ -103,6 +103,8 @@ const FALLBACK_PLACEHOLDERS = [
   { id: "placeholder-3", icon: "🫶" },
 ];
 
+const BOOSTED_CHILD_CATEGORY_SLUGS = ["it-support"] as const;
+
 const HERO_COPY: Record<
   Lang,
   {
@@ -430,6 +432,46 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
     []
   );
 
+  const orderedCategorySections = useMemo(() => {
+    const boostedParents: CategoryStat[] = [];
+    const normalParents: CategoryStat[] = [];
+
+    for (const parent of categories) {
+      if (!Array.isArray(parent.children)) continue;
+
+      const visibleChildren = parent.children.filter(
+        (child) => child.specialists_count > 0
+      );
+      if (visibleChildren.length === 0) continue;
+
+      const orderedChildren = [...visibleChildren]
+        .sort((a, b) => {
+          const aBoosted = BOOSTED_CHILD_CATEGORY_SLUGS.includes(a.slug as typeof BOOSTED_CHILD_CATEGORY_SLUGS[number]);
+          const bBoosted = BOOSTED_CHILD_CATEGORY_SLUGS.includes(b.slug as typeof BOOSTED_CHILD_CATEGORY_SLUGS[number]);
+
+          if (aBoosted && !bBoosted) return -1;
+          if (!aBoosted && bBoosted) return 1;
+          return b.specialists_count - a.specialists_count;
+        })
+        .slice(0, 3);
+
+      const parentWithOrderedChildren = {
+        ...parent,
+        children: orderedChildren,
+      };
+
+      if (orderedChildren.some((child) =>
+        BOOSTED_CHILD_CATEGORY_SLUGS.includes(child.slug as typeof BOOSTED_CHILD_CATEGORY_SLUGS[number])
+      )) {
+        boostedParents.push(parentWithOrderedChildren);
+      } else {
+        normalParents.push(parentWithOrderedChildren);
+      }
+    }
+
+    return [...boostedParents, ...normalParents].slice(0, 4);
+  }, [categories]);
+
   const copy = HERO_COPY[lang] ?? HERO_COPY.ru;
 
   return (
@@ -547,17 +589,14 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
               </div>
             ) : null}
 
-            {categories
-                .filter((cat) => Array.isArray(cat.children) && cat.children.some((c) => c.specialists_count > 0))
-                .slice(0, 4)
-                .map((parent) => (
+            {orderedCategorySections.map((parent) => (
                 <section key={parent.id} className="mt-12">
                   <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 pl-1 pb-2">
                     {getCategoryTitle(parent, toCategoryTitleLang(lang))}
                   </h2>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 pb-12">
-                    {[...parent.children!].sort((a, b) => b.specialists_count - a.specialists_count).slice(0, 3).map((child) => (
+                    {(parent.children ?? []).map((child) => (
                       <div key={child.id}>
                         <Link
                           href={`/${lang}/category/${child.slug}`}
