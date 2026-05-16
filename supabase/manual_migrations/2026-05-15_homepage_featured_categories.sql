@@ -26,16 +26,16 @@ CREATE INDEX IF NOT EXISTS idx_homepage_featured_categories_placement_active
 -- Seed: explicit mapping for featured placement
 -- sort_order assigned explicitly to avoid relying on alphabetical order
 INSERT INTO public.homepage_featured_categories (category_id, placement, sort_order, is_active)
-SELECT c.id, 'featured', v.sort_order, true
+SELECT c.id, 'featured', v.sort_order, v.is_active
 FROM (
   VALUES
-    ('it-support', 1),
-    ('health-psychology', 2),
-    ('pflege-betreuung', 3),
-    ('auto-mobilitaet', 4),
-    ('business-consulting', 5),
-    ('education-development', 6)
-) AS v(slug, sort_order)
+    ('it-support', 1, true),
+    ('health-psychology', 2, false),
+    ('pflege-betreuung', 3, false),
+    ('auto-mobilitaet', 4, false),
+    ('business-consulting', 5, false),
+    ('education-development', 6, false)
+) AS v(slug, sort_order, is_active)
 JOIN public.categories c ON c.slug = v.slug
 WHERE c.is_active = true
 ON CONFLICT (category_id, placement) DO NOTHING;
