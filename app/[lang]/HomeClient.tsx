@@ -549,6 +549,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
 
           <HeroSearch
             lang={lang}
+            dict={dict}
             primaryCta={copy.search}
             categoryPlaceholder={copy.categoryPlaceholder}
             plzPlaceholder={copy.plzLabel}

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
+import { t } from "@/lib/i18n";
+import type { Dictionary } from "@/lib/i18n";
 
 const LANG_OPTIONS = [
   { value: "ru", label: "Русский" },
@@ -17,6 +19,7 @@ const SUGGEST_LIMIT = 8;
 
 type HeroSearchProps = {
   lang: string;
+  dict: Dictionary;
   primaryCta?: string;
   categoryPlaceholder?: string;
   plzPlaceholder?: string;
@@ -58,6 +61,7 @@ function mapSuggestRow(item: unknown): CategoryOption | null {
 
 export default function HeroSearch({
   lang: currentLocale,
+  dict,
   primaryCta = defaultPrimaryCta,
   categoryPlaceholder = defaultCategoryPlaceholder,
   plzPlaceholder = defaultPlzPlaceholder,
@@ -184,7 +188,7 @@ export default function HeroSearch({
       return;
     }
     if (!selectedCategorySlug) {
-      setInlineError("Выберите категорию из списка");
+      setInlineError(t(dict, "home.hero.errors.selectCategory"));
       return;
     }
 
@@ -322,7 +326,7 @@ export default function HeroSearch({
       {inlineError ? (
         <p className="mt-2 text-sm text-red-600 text-center">{inlineError}</p>
       ) : showCategoryRequiredHint ? (
-        <p className="mt-2 text-sm text-amber-600 text-center">Выберите категорию из списка</p>
+        <p className="mt-2 text-sm text-amber-600 text-center">{t(dict, "home.hero.errors.selectCategory")}</p>
       ) : null}
     </div>
   );

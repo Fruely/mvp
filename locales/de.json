@@ -1,7 +1,10 @@
 {
   "home": {
     "hero": {
-      "popularTags": "Psychologen • Anwälte • Nachhilfe • Migration"
+      "popularTags": "Psychologen • Anwälte • Nachhilfe • Migration",
+      "errors": {
+        "selectCategory": "Bitte wählen Sie eine Kategorie aus der Liste"
+      }
     }
   },
   "site.title": "Freuly",
