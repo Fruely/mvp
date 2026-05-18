@@ -107,7 +107,7 @@ function getSpecialistServicePriceDisplay(
   return { main: priceOnRequestLabel, commentBelow: null };
 }
 
-export default function SpecialistProfileClient({ lang, id }: { lang: "ru" | "ua" | "de"; id: string }) {
+export default function SpecialistProfileClient({ lang, id, hideHero = false }: { lang: "ru" | "ua" | "de"; id: string; hideHero?: boolean }) {
   const [specialist, setSpecialist] = useState<Specialist | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -493,31 +493,33 @@ export default function SpecialistProfileClient({ lang, id }: { lang: "ru" | "ua
     <div className="min-h-screen bg-slate-50 px-4 py-6 sm:py-8 pb-24 md:pb-0">
       <div className="mx-auto max-w-6xl flex flex-col md:grid md:grid-cols-[minmax(0,1.45fr)_minmax(320px,1fr)] md:gap-6 md:items-start">
         <aside className="order-1 mt-6 md:order-none md:col-start-2 md:row-start-1 md:mt-0 md:self-start md:sticky md:top-6">
-          <SpecialistHero
-            name={displayName}
-            specialization={specializationText}
-            city={specialist.city ?? null}
-            languages={Array.isArray(specialist.languages) ? specialist.languages : []}
-            workModeText={workModeLabel}
-            isNew={isNewActive}
-            newBadgeLabel={sectionText.newBadge}
-            showFounderBadge={specialist.founder_badge === true}
-            successMessage={leadSuccessMessage}
-            aboutPreview={aboutText || null}
-            aboutHref="#about"
-            readMoreLabel={sectionText.readMore}
-            showForm={showForm}
-            formTitle={sectionText.leadFormTitle}
-            formNode={
-              <LeadForm
-                specialistId={specialist.id}
-                onSuccess={(message) => {
-                  setShowForm(false);
-                  setLeadSuccessMessage(message);
-                }}
-              />
-            }
-          />
+          {!hideHero ? (
+            <SpecialistHero
+              name={displayName}
+              specialization={specializationText}
+              city={specialist.city ?? null}
+              languages={Array.isArray(specialist.languages) ? specialist.languages : []}
+              workModeText={workModeLabel}
+              isNew={isNewActive}
+              newBadgeLabel={sectionText.newBadge}
+              showFounderBadge={specialist.founder_badge === true}
+              successMessage={leadSuccessMessage}
+              aboutPreview={aboutText || null}
+              aboutHref="#about"
+              readMoreLabel={sectionText.readMore}
+              showForm={showForm}
+              formTitle={sectionText.leadFormTitle}
+              formNode={
+                <LeadForm
+                  specialistId={specialist.id}
+                  onSuccess={(message) => {
+                    setShowForm(false);
+                    setLeadSuccessMessage(message);
+                  }}
+                />
+              }
+            />
+          ) : null}
         </aside>
 
         <main className="order-2 mt-6 space-y-6 md:order-none md:col-start-1 md:row-start-1 md:mt-0">
