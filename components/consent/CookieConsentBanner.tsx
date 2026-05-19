@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   COOKIE_CONSENT_STORAGE_KEY,
+  COOKIE_CONSENT_CHANGE_EVENT,
   COOKIE_CONSENT_OPEN_EVENT,
   createCookieConsent,
 } from "@/lib/consent/cookieConsent";
@@ -42,6 +43,7 @@ export default function CookieConsentBanner() {
       COOKIE_CONSENT_STORAGE_KEY,
       JSON.stringify(consent),
     );
+    window.dispatchEvent(new Event(COOKIE_CONSENT_CHANGE_EVENT));
     setVisible(false);
   }
 
