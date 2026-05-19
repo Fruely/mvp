@@ -62,6 +62,56 @@ export async function generateMetadata({ params }: SpecialistPageProps): Promise
   };
 }
 
+function escapeJsonLd(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+
+function toSpecialistJsonLd(
+  profile: Awaited<ReturnType<typeof getPublicSpecialistProfile>>,
+  lang: "ru" | "ua" | "de",
+  identifier: string
+): Record<string, unknown> | null {
+  if (!profile?.name) return null;
+
+  const publicId = profile.slug ?? identifier;
+  const url = `https://freuly.de/${lang}/specialist/${publicId}`;
+  const services = profile.services.filter((service) => service.title);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    name: profile.name,
+    url,
+    image: profile.avatarUrl ?? undefined,
+    description: profile.description ?? undefined,
+    areaServed: profile.city
+      ? {
+          "@type": "City",
+          name: profile.city,
+        }
+      : undefined,
+    address: profile.city
+      ? {
+          "@type": "PostalAddress",
+          addressLocality: profile.city,
+          addressCountry: "DE",
+        }
+      : undefined,
+    knowsLanguage: profile.languages,
+    serviceType: profile.categoryTitle ?? undefined,
+    makesOffer: services.map((service) => ({
+      "@type": "Offer",
+      name: service.title,
+      price: service.price_from ?? undefined,
+      priceCurrency: service.currency ?? "EUR",
+      itemOffered: {
+        "@type": "Service",
+        name: service.title,
+      },
+    })),
+  };
+}
+
 function toInitialSpecialist(
   profile: Awaited<ReturnType<typeof getPublicSpecialistProfile>>
 ): Specialist | null {
@@ -89,12 +139,21 @@ function toInitialSpecialist(
 
 export default async function SpecialistPage({ params }: SpecialistPageProps) {
   const profile = await getPublicSpecialistProfile(params.id, params.lang);
+  const jsonLd = toSpecialistJsonLd(profile, params.lang, params.id);
 
   return (
-    <SpecialistProfileClient
-      lang={params.lang}
-      id={params.id}
-      initialSpecialist={toInitialSpecialist(profile)}
-    />
+    <>
+      {jsonLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: escapeJsonLd(jsonLd) }}
+        />
+      ) : null}
+      <SpecialistProfileClient
+        lang={params.lang}
+        id={params.id}
+        initialSpecialist={toInitialSpecialist(profile)}
+      />
+    </>
   );
 }
