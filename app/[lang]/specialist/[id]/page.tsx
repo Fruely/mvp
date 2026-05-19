@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getPublicSpecialistProfile } from '@/lib/specialists/publicProfile';
 import SpecialistProfileClient from '@/components/specialist/SpecialistProfileClient';
+import type { Specialist } from '@/components/specialist/SpecialistProfileClient';
 
 interface SpecialistPageProps {
   params: {
@@ -61,6 +62,39 @@ export async function generateMetadata({ params }: SpecialistPageProps): Promise
   };
 }
 
-export default function SpecialistPage({ params }: SpecialistPageProps) {
-  return <SpecialistProfileClient lang={params.lang} id={params.id} />;
+function toInitialSpecialist(
+  profile: Awaited<ReturnType<typeof getPublicSpecialistProfile>>
+): Specialist | null {
+  if (!profile) return null;
+
+  return {
+    id: profile.id,
+    slug: profile.slug,
+    name: profile.name,
+    description: profile.description ?? undefined,
+    avatar_url: profile.avatarUrl,
+    city: profile.city,
+    category: profile.categoryTitle ?? undefined,
+    languages: profile.languages,
+    created_at: profile.createdAt,
+    specialist_services: profile.services.map((service) => ({
+      id: service.id,
+      title: service.title ?? "",
+      price_from: service.price_from ?? 0,
+      price_to: service.price_to ?? null,
+      currency: service.currency ?? "EUR",
+    })),
+  };
+}
+
+export default async function SpecialistPage({ params }: SpecialistPageProps) {
+  const profile = await getPublicSpecialistProfile(params.id, params.lang);
+
+  return (
+    <SpecialistProfileClient
+      lang={params.lang}
+      id={params.id}
+      initialSpecialist={toInitialSpecialist(profile)}
+    />
+  );
 }

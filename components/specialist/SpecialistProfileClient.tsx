@@ -26,7 +26,7 @@ const LEGACY_SLUGS: Record<string, string> = {
 /** Slug lookup failed — show localized not-found copy via `t(dict, …)` in the error UI. */
 const SLUG_NOT_FOUND = "SLUG_NOT_FOUND";
 
-interface Specialist {
+export interface Specialist {
   id: string;
   slug?: string | null;
   name: string | null;
@@ -107,9 +107,19 @@ function getSpecialistServicePriceDisplay(
   return { main: priceOnRequestLabel, commentBelow: null };
 }
 
-export default function SpecialistProfileClient({ lang, id, hideHero = false }: { lang: "ru" | "ua" | "de"; id: string; hideHero?: boolean }) {
-  const [specialist, setSpecialist] = useState<Specialist | null>(null);
-  const [loading, setLoading] = useState(true);
+export default function SpecialistProfileClient({
+  lang,
+  id,
+  hideHero = false,
+  initialSpecialist = null,
+}: {
+  lang: "ru" | "ua" | "de";
+  id: string;
+  hideHero?: boolean;
+  initialSpecialist?: Specialist | null;
+}) {
+  const [specialist, setSpecialist] = useState<Specialist | null>(initialSpecialist);
+  const [loading, setLoading] = useState(!initialSpecialist);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(true);
   const [leadSuccessMessage, setLeadSuccessMessage] = useState<string | null>(null);
