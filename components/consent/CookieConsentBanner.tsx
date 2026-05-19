@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   COOKIE_CONSENT_STORAGE_KEY,
+  COOKIE_CONSENT_OPEN_EVENT,
   createCookieConsent,
 } from "@/lib/consent/cookieConsent";
 
@@ -18,6 +19,17 @@ export default function CookieConsentBanner() {
     if (!saved) {
       setVisible(true);
     }
+
+    const openCookieSettings = () => {
+      setSettingsOpen(true);
+      setVisible(true);
+    };
+
+    window.addEventListener(COOKIE_CONSENT_OPEN_EVENT, openCookieSettings);
+
+    return () => {
+      window.removeEventListener(COOKIE_CONSENT_OPEN_EVENT, openCookieSettings);
+    };
   }, []);
 
   function saveConsent(values: {

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { t } from "@/lib/i18n";
+import CookieSettingsLink from "@/components/consent/CookieSettingsLink";
 import FreulySocialIcons from "./FreulySocialIcons";
 
 /**
@@ -66,6 +67,18 @@ export default function Footer(props) {
                 <Link href="/datenschutzerklaerung" className="hover:text-white">
                   {t(dict, "footer.privacyLink")}
                 </Link>
+              </li>
+              <li>
+                <CookieSettingsLink
+                  label={
+                    lang === "de"
+                      ? "Cookie-Einstellungen"
+                      : lang === "ru"
+                        ? "Настройки cookies"
+               : "Налаштування cookies"
+                  }
+                  className="hover:text-white"
+                />
               </li>
             </ul>
           </div>

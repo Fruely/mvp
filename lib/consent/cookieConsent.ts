@@ -1,4 +1,5 @@
 export const COOKIE_CONSENT_STORAGE_KEY = "freuly_cookie_consent_v1";
+export const COOKIE_CONSENT_OPEN_EVENT = "freuly_cookie_consent_open";
 
 export type CookieConsent = {
   analytics: boolean;
