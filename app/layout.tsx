@@ -1,4 +1,5 @@
 import "@/styles/globals.css";
+import CookieConsentBanner from "@/components/consent/CookieConsentBanner";
 import { Inter } from "next/font/google";
 import { headers } from "next/headers";
 
@@ -25,7 +26,10 @@ export default function RootLayout({
 
   return (
     <html lang={htmlLang} className={inter.variable}>
-      <body className="min-h-screen font-sans text-textPrimary antialiased bg-white">{children}</body>
+      <body className="min-h-screen font-sans text-textPrimary antialiased bg-white">
+        {children}
+        <CookieConsentBanner />
+      </body>
     </html>
   );
 }
