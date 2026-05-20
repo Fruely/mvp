@@ -56,6 +56,10 @@ function numberOf(value, fallback = 0) {
   return Number.isFinite(n) ? n : fallback
 }
 
+function scoreFrom(row, keys, fallback = 0) {
+  return numberOf(pickFirst(row, keys), fallback)
+}
+
 function clamp(value, min = 0, max = 100) {
   return Math.max(min, Math.min(max, value))
 }
@@ -72,6 +76,7 @@ function normalizeSlug(value) {
 function detectLanguage(row) {
   return pickFirst(row, [
     'language_code',
+    'language_detected',
     'lang',
     'language',
     'route_locale',
@@ -114,53 +119,83 @@ function detectSourceId(row) {
 }
 
 function scoreDemandSignal(row) {
-  let score = 20
+  const baseScore = scoreFrom(row, [
+    'priority_score',
+    'opportunity_score',
+    'ai_score',
+    'score',
+  ], 20)
 
-  score += numberOf(row.priority_score) || 0
-  score += Math.min(numberOf(row.search_volume), 40)
-  score += Math.min(numberOf(row.mentions_count), 30)
-  score += Math.min(numberOf(row.leads_count) * 10, 40)
-  score += Math.min(numberOf(row.prospects_count) * 3, 30)
+  let score = baseScore
+
+  score += Math.min(numberOf(row.search_volume), 20)
+  score += Math.min(numberOf(row.mentions_count), 15)
+  score += Math.min(numberOf(row.leads_count) * 5, 20)
+  score += Math.min(numberOf(row.prospects_count) * 2, 15)
+  score += Math.min(numberOf(row.demand_count) * 5, 20)
+  score += Math.min(numberOf(row.supply_count) * 2, 10)
+  score += Math.min(numberOf(row.unique_source_count) * 3, 15)
 
   const status = String(row.status || '').toLowerCase()
+  const marketDensity = String(row.market_density || '').toLowerCase()
+  const supplyDemandBalance = String(row.supply_demand_balance || '').toLowerCase()
 
-  if (status.includes('new')) score += 5
-  if (status.includes('hot')) score += 20
-  if (row.missing_supply === true) score += 20
-  if (row.has_specialists === false) score += 20
+  if (status.includes('new')) score += 3
+  if (status.includes('hot')) score += 12
+  if (marketDensity === 'high') score += 8
+  if (marketDensity === 'medium') score += 4
+  if (supplyDemandBalance.includes('undersupplied')) score += 12
+  if (row.missing_supply === true) score += 12
+  if (row.has_specialists === false) score += 12
 
   return clamp(Math.round(score), 0, 100)
 }
 
 function scoreSupplySignal(row) {
-  let score = 15
+  const baseScore = scoreFrom(row, [
+    'priority_score',
+    'ai_score',
+    'score',
+  ], 15)
 
-  score += Math.min(numberOf(row.followers_count) / 100, 20)
-  score += Math.min(numberOf(row.rating) * 5, 25)
-  score += Math.min(numberOf(row.reviews_count), 25)
+  let score = baseScore
+
+  score += Math.min(numberOf(row.followers_count) / 100, 10)
+  score += Math.min(numberOf(row.rating) * 3, 15)
+  score += Math.min(numberOf(row.reviews_count), 10)
 
   const text = textOf(row, [
     'title',
     'name',
+    'business_name',
+    'service_summary',
     'bio',
     'description',
     'notes',
+    'source_text',
     'source_url',
   ]).toLowerCase()
 
-  if (text.includes('украин')) score += 10
-  if (text.includes('україн')) score += 10
-  if (text.includes('russisch') || text.includes('русск')) score += 10
-  if (text.includes('deutsch') || text.includes('немец')) score += 5
-  if (row.email || row.phone || row.instagram || row.telegram) score += 15
+  if (text.includes('украин')) score += 5
+  if (text.includes('україн')) score += 5
+  if (text.includes('russisch') || text.includes('русск')) score += 5
+  if (text.includes('deutsch') || text.includes('немец')) score += 3
+  if (row.email || row.phone || row.instagram || row.telegram || row.website) score += 10
+  if (Array.isArray(row.available_channels) && row.available_channels.length > 0) score += 5
+  if (String(row.outreach_status || '') === 'not_contacted') score += 3
 
   return clamp(Math.round(score), 0, 100)
 }
 
 function scoreContentSignal(row) {
-  let score = 10
+  const baseScore = scoreFrom(row, [
+    'priority_score',
+    'priority',
+    'ai_score',
+    'score',
+  ], 10)
 
-  score += numberOf(row.priority_score) || 0
+  let score = baseScore
 
   const text = textOf(row, [
     'title',
@@ -168,12 +203,19 @@ function scoreContentSignal(row) {
     'description',
     'notes',
     'keywords',
+    'target_audience',
+    'angle',
+    'source_insight',
+    'draft_text',
   ]).toLowerCase()
 
-  if (text.includes('германи') || text.includes('deutschland')) score += 15
-  if (text.includes('украин') || text.includes('україн')) score += 10
-  if (text.includes('специалист') || text.includes('fach')) score += 10
-  if (text.includes('threads') || text.includes('telegram') || text.includes('facebook')) score += 10
+  if (text.includes('германи') || text.includes('deutschland')) score += 5
+  if (text.includes('украин') || text.includes('україн')) score += 4
+  if (text.includes('специалист') || text.includes('fach')) score += 4
+  if (text.includes('threads') || text.includes('telegram') || text.includes('facebook')) score += 4
+  if (row.status === 'draft_ready') score += 8
+  if (row.draft_text) score += 6
+  if (row.cta) score += 4
 
   return clamp(Math.round(score), 0, 100)
 }
@@ -203,18 +245,19 @@ function buildCategoryOpportunitySignal(row) {
     source_table: 'category_opportunities',
     source_id: sourceId || null,
     title: String(title),
-    summary: textOf(row, ['summary', 'description', 'notes']) || null,
+    summary: textOf(row, ['ai_summary', 'summary', 'description', 'notes']) || null,
     category_slug: categorySlug,
     city_slug: citySlug,
     language_code: languageCode,
     priority_score: priorityScore,
     confidence_score: clamp(50 + Math.round(priorityScore / 3), 50, 90),
     recommended_action:
-      priorityScore >= 75
+      row.recommended_action ||
+      (priorityScore >= 75
         ? 'Prioritize category landing page, outreach and Telegram/FB post'
         : priorityScore >= 50
           ? 'Add to content plan and monitor specialist supply'
-          : 'Keep as weak signal',
+          : 'Keep as weak signal'),
     payload: row,
     status: 'new',
   }
@@ -227,10 +270,12 @@ function buildScoutProspectSignal(row) {
   const languageCode = detectLanguage(row)
 
   const name =
-    pickFirst(row, ['name', 'full_name', 'title', 'display_name']) ||
+    pickFirst(row, ['name', 'business_name', 'full_name', 'title', 'display_name']) ||
+    pickFirst(row, ['service_summary']) ||
     'Unnamed specialist prospect'
 
   const priorityScore = scoreSupplySignal(row)
+  const aiConfidence = numberOf(row.ai_confidence)
 
   return {
     signal_hash: hashSignal([
@@ -245,12 +290,14 @@ function buildScoutProspectSignal(row) {
     source_table: 'scout_prospects',
     source_id: sourceId || null,
     title: String(name),
-    summary: textOf(row, ['bio', 'description', 'notes', 'source_url']) || null,
+    summary: textOf(row, ['ai_summary', 'service_summary', 'bio', 'description', 'notes', 'source_text', 'source_url']) || null,
     category_slug: categorySlug,
     city_slug: citySlug,
     language_code: languageCode,
     priority_score: priorityScore,
-    confidence_score: clamp(45 + Math.round(priorityScore / 3), 45, 85),
+    confidence_score: aiConfidence > 0
+      ? clamp(Math.round(aiConfidence * 100), 0, 100)
+      : clamp(45 + Math.round(priorityScore / 3), 45, 85),
     recommended_action:
       priorityScore >= 70
         ? 'Add to outreach queue'
@@ -287,7 +334,7 @@ function buildContentTaskSignal(row) {
     source_table: 'content_tasks',
     source_id: sourceId || null,
     title: String(title),
-    summary: textOf(row, ['summary', 'description', 'notes', 'keywords']) || null,
+    summary: textOf(row, ['source_insight', 'summary', 'description', 'notes', 'keywords', 'angle']) || null,
     category_slug: categorySlug,
     city_slug: citySlug,
     language_code: languageCode,
