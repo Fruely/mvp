@@ -132,7 +132,7 @@ function mapSignalType(signalType) {
   return clean(signalType);
 }
 
-function mapRow(row) {
+function mapRow(row, existing = null) {
   const title = row.title || row.signal_hash || row.id;
 
   return {
@@ -152,6 +152,7 @@ function mapRow(row) {
     'Источник': row.source_table || '',
     'Source ID': row.source_id || '',
     'Статус': row.status || '',
+    'Статус оператора': existing?.['Статус оператора'] || row.operator_status || 'new',
     'Создано': row.created_at || '',
     'Обновлено': row.updated_at || '',
   };
@@ -161,7 +162,7 @@ async function main() {
   console.log('Reading Supabase market signals...');
 
   const supabaseRows = await supabaseGet(
-    'market_signals?select=id,signal_hash,signal_type,title,summary,category_slug,city_slug,city,language_code,language_detected,priority_score,confidence_score,recommended_action,source_table,source_id,status,created_at,updated_at&signal_hash=not.is.null&order=priority_score.desc&limit=100'
+    'market_signals?select=id,signal_hash,signal_type,title,summary,category_slug,city_slug,city,language_code,language_detected,priority_score,confidence_score,recommended_action,source_table,source_id,status,operator_status,created_at,updated_at&signal_hash=not.is.null&order=priority_score.desc&limit=100'
   );
 
   console.log(`Supabase rows: ${supabaseRows.length}`);
@@ -186,16 +187,17 @@ async function main() {
   let updated = 0;
 
   for (const supabaseRow of supabaseRows) {
-    const mapped = mapRow(supabaseRow);
     const existing =
       existingBySignalHash.get(supabaseRow.signal_hash) ||
       existingBySupabaseId.get(supabaseRow.id);
 
     if (existing) {
+      const mapped = mapRow(supabaseRow, existing);
       await updateBaserowRow(existing.id, mapped);
       updated += 1;
       console.log(`Updated: ${supabaseRow.signal_hash}`);
     } else {
+      const mapped = mapRow(supabaseRow);
       await createBaserowRow(mapped);
       created += 1;
       console.log(`Created: ${supabaseRow.signal_hash}`);
