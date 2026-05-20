@@ -20,6 +20,7 @@ create table if not exists public.market_signals (
   payload jsonb not null default '{}'::jsonb,
 
   status text not null default 'new',
+  operator_status text not null default 'new',
 
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -41,6 +42,7 @@ alter table public.market_signals
   add column if not exists recommended_action text,
   add column if not exists payload jsonb default '{}'::jsonb,
   add column if not exists status text default 'new',
+  add column if not exists operator_status text default 'new',
   add column if not exists created_at timestamptz default now(),
   add column if not exists updated_at timestamptz default now();
 
@@ -53,6 +55,7 @@ set
   confidence_score = coalesce(confidence_score, 50),
   payload = coalesce(payload, '{}'::jsonb),
   status = coalesce(status, 'new'),
+  operator_status = coalesce(operator_status, 'new'),
   created_at = coalesce(created_at, now()),
   updated_at = coalesce(updated_at, now());
 
@@ -65,6 +68,7 @@ alter table public.market_signals
   alter column confidence_score set not null,
   alter column payload set not null,
   alter column status set not null,
+  alter column operator_status set not null,
   alter column created_at set not null,
   alter column updated_at set not null;
 
@@ -102,6 +106,9 @@ create index if not exists market_signals_priority_idx
 
 create index if not exists market_signals_status_idx
   on public.market_signals(status);
+
+create index if not exists market_signals_operator_status_idx
+  on public.market_signals(operator_status);
 
 create index if not exists market_signals_category_idx
   on public.market_signals(category_slug);
