@@ -44,6 +44,9 @@ alter table public.market_signals
   add column if not exists created_at timestamptz default now(),
   add column if not exists updated_at timestamptz default now();
 
+alter table public.market_signals
+  drop constraint if exists market_signals_signal_type_check;
+
 update public.market_signals
 set
   priority_score = coalesce(priority_score, 0),
