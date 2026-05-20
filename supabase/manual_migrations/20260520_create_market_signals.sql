@@ -25,6 +25,72 @@ create table if not exists public.market_signals (
   updated_at timestamptz not null default now()
 );
 
+alter table public.market_signals
+  add column if not exists id uuid default gen_random_uuid(),
+  add column if not exists signal_hash text,
+  add column if not exists signal_type text,
+  add column if not exists source_table text,
+  add column if not exists source_id text,
+  add column if not exists title text,
+  add column if not exists summary text,
+  add column if not exists category_slug text,
+  add column if not exists city_slug text,
+  add column if not exists language_code text,
+  add column if not exists priority_score integer default 0,
+  add column if not exists confidence_score integer default 50,
+  add column if not exists recommended_action text,
+  add column if not exists payload jsonb default '{}'::jsonb,
+  add column if not exists status text default 'new',
+  add column if not exists created_at timestamptz default now(),
+  add column if not exists updated_at timestamptz default now();
+
+update public.market_signals
+set
+  priority_score = coalesce(priority_score, 0),
+  confidence_score = coalesce(confidence_score, 50),
+  payload = coalesce(payload, '{}'::jsonb),
+  status = coalesce(status, 'new'),
+  created_at = coalesce(created_at, now()),
+  updated_at = coalesce(updated_at, now());
+
+alter table public.market_signals
+  alter column signal_hash set not null,
+  alter column signal_type set not null,
+  alter column source_table set not null,
+  alter column title set not null,
+  alter column priority_score set not null,
+  alter column confidence_score set not null,
+  alter column payload set not null,
+  alter column status set not null,
+  alter column created_at set not null,
+  alter column updated_at set not null;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'market_signals_pkey'
+      and conrelid = 'public.market_signals'::regclass
+  ) then
+    alter table public.market_signals
+      add constraint market_signals_pkey primary key (id);
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'market_signals_signal_hash_key'
+      and conrelid = 'public.market_signals'::regclass
+  ) then
+    alter table public.market_signals
+      add constraint market_signals_signal_hash_key unique (signal_hash);
+  end if;
+end $$;
+
 create index if not exists market_signals_type_idx
   on public.market_signals(signal_type);
 
