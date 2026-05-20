@@ -6,6 +6,7 @@ const scripts = [
   'scripts/sync-baserow-content-tasks.mjs',
   'scripts/sync-baserow-category-opportunities.mjs',
   'scripts/sync-baserow-scout-prospects.mjs',
+  'scripts/sync-baserow-market-signals.mjs',
 ];
 
 for (const script of scripts) {
