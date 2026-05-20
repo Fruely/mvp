@@ -136,7 +136,7 @@ function mapRow(row) {
   const title = row.title || row.signal_hash || row.id;
 
   return {
-    "Ім'я": title,
+    'Имя': title,
     'Signal Hash': row.signal_hash || '',
     'Supabase ID': row.id,
     'Тип сигнала': mapSignalType(row.signal_type),
