@@ -16,10 +16,7 @@ function loadEnv() {
     const key = trimmed.slice(0, index).trim();
     let value = trimmed.slice(index + 1).trim();
 
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
       value = value.slice(1, -1);
     }
 
@@ -31,19 +28,13 @@ loadEnv();
 
 const googleApiKey = process.env.GOOGLE_SEARCH_API_KEY;
 const googleSearchEngineId = process.env.GOOGLE_SEARCH_ENGINE_ID;
-
-const supabaseUrl =
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  process.env.SUPABASE_URL;
-
-const supabaseKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.SUPABASE_ANON_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 const DRY_RUN = process.argv.includes('--dry-run');
-const MAX_QUERIES = Number(process.env.OPEN_SERVICE_SCOUT_MAX_QUERIES || 12);
+const MAX_QUERIES = Number(process.env.OPEN_SERVICE_SCOUT_MAX_QUERIES || 40);
 const RESULTS_PER_QUERY = Number(process.env.OPEN_SERVICE_SCOUT_RESULTS_PER_QUERY || 5);
+const SOURCES_PATH = process.env.OPEN_SERVICE_SCOUT_SOURCES_PATH || 'config/open-service-scout-sources.json';
 
 function requireEnv(name, value) {
   if (!value) {
@@ -57,7 +48,7 @@ requireEnv('GOOGLE_SEARCH_ENGINE_ID', googleSearchEngineId);
 requireEnv('NEXT_PUBLIC_SUPABASE_URL or SUPABASE_URL', supabaseUrl);
 requireEnv('SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY', supabaseKey);
 
-const baseQueries = [
+const languageQueries = [
   'русскоязычные услуги Германия специалист',
   'украинские специалисты Германия услуги',
   'русский мастер Германия услуги',
@@ -68,131 +59,49 @@ const baseQueries = [
   'ukrainische Spezialisten Deutschland Dienstleistungen',
   'russischsprachiger Dienstleister Deutschland',
   'ukrainischsprachiger Dienstleister Deutschland',
-  'русскоязычный специалист Köln услуги',
-  'украинский специалист Berlin услуги',
-  'русский мастер NRW услуги',
-  'russischsprachiger Dienstleister Düsseldorf',
-  'український майстер München послуги',
-  'русскоязычный консультант Германия услуги',
+];
+
+const serviceQueries = [
+  'фотограф психолог бухгалтер адвокат ремонт Германия русский украинский',
+  'мастер консультант коуч дизайнер репетитор Германия русский украинский',
+  'Steuerberater Anwalt Psychologe Fotograf russisch ukrainisch Deutschland',
+  'Handwerker Elektriker Kosmetik Nachhilfe russisch ukrainisch Deutschland',
 ];
 
 const cityRules = [
-  ['köln', 'Köln', 'NRW'],
-  ['koln', 'Köln', 'NRW'],
-  ['кёльн', 'Köln', 'NRW'],
-  ['кельн', 'Köln', 'NRW'],
-  ['düsseldorf', 'Düsseldorf', 'NRW'],
-  ['duesseldorf', 'Düsseldorf', 'NRW'],
-  ['дюссельдорф', 'Düsseldorf', 'NRW'],
-  ['berlin', 'Berlin', 'Berlin'],
-  ['берлин', 'Berlin', 'Berlin'],
-  ['münchen', 'München', 'Bayern'],
-  ['munich', 'München', 'Bayern'],
-  ['мюнхен', 'München', 'Bayern'],
-  ['hamburg', 'Hamburg', 'Hamburg'],
-  ['гамбург', 'Hamburg', 'Hamburg'],
-  ['dortmund', 'Dortmund', 'NRW'],
-  ['essen', 'Essen', 'NRW'],
-  ['bochum', 'Bochum', 'NRW'],
-  ['wuppertal', 'Wuppertal', 'NRW'],
-  ['bielefeld', 'Bielefeld', 'NRW'],
-  ['bonn', 'Bonn', 'NRW'],
-  ['frankfurt', 'Frankfurt am Main', 'Hessen'],
-  ['stuttgart', 'Stuttgart', 'Baden-Württemberg'],
-  ['hannover', 'Hannover', 'Niedersachsen'],
-  ['leipzig', 'Leipzig', 'Sachsen'],
-  ['bremen', 'Bremen', 'Bremen'],
-  ['nrw', null, 'NRW'],
-  ['nordrhein-westfalen', null, 'NRW'],
+  ['köln', 'Köln', 'NRW'], ['koln', 'Köln', 'NRW'], ['кёльн', 'Köln', 'NRW'], ['кельн', 'Köln', 'NRW'],
+  ['düsseldorf', 'Düsseldorf', 'NRW'], ['duesseldorf', 'Düsseldorf', 'NRW'], ['дюссельдорф', 'Düsseldorf', 'NRW'],
+  ['berlin', 'Berlin', 'Berlin'], ['берлин', 'Berlin', 'Berlin'],
+  ['münchen', 'München', 'Bayern'], ['munich', 'München', 'Bayern'], ['мюнхен', 'München', 'Bayern'],
+  ['hamburg', 'Hamburg', 'Hamburg'], ['гамбург', 'Hamburg', 'Hamburg'],
+  ['dortmund', 'Dortmund', 'NRW'], ['essen', 'Essen', 'NRW'], ['bochum', 'Bochum', 'NRW'], ['wuppertal', 'Wuppertal', 'NRW'],
+  ['bielefeld', 'Bielefeld', 'NRW'], ['bonn', 'Bonn', 'NRW'], ['frankfurt', 'Frankfurt am Main', 'Hessen'],
+  ['stuttgart', 'Stuttgart', 'Baden-Württemberg'], ['hannover', 'Hannover', 'Niedersachsen'], ['leipzig', 'Leipzig', 'Sachsen'],
+  ['bremen', 'Bremen', 'Bremen'], ['nrw', null, 'NRW'], ['nordrhein-westfalen', null, 'NRW'],
 ];
 
 const categoryRules = [
-  {
-    category: 'photo-video',
-    subcategory: 'photographer',
-    keywords: ['фотограф', 'фотосесс', 'photograf', 'fotograf', 'photo shooting', 'фото'],
-  },
-  {
-    category: 'health-psychology',
-    subcategory: 'psychologist',
-    keywords: ['психолог', 'психотерап', 'psycholog', 'psychotherapie', 'therapeut', 'терапевт'],
-  },
-  {
-    category: 'taxes-finance',
-    subcategory: 'tax-consultant',
-    keywords: ['налог', 'steuer', 'steuerberater', 'buchhaltung', 'бухгалтер', 'finanz'],
-  },
-  {
-    category: 'legal',
-    subcategory: 'lawyer',
-    keywords: ['адвокат', 'юрист', 'anwalt', 'rechtsanwalt', 'recht'],
-  },
-  {
-    category: 'repair',
-    subcategory: 'electrician',
-    keywords: ['электрик', 'електрик', 'electrician', 'elektriker', 'розет', 'strom', 'licht'],
-  },
-  {
-    category: 'repair',
-    subcategory: 'renovation',
-    keywords: ['ремонт', 'renovierung', 'handwerker', 'мастер', 'маляр', 'плитк', 'boden'],
-  },
-  {
-    category: 'beauty',
-    subcategory: 'beauty-master',
-    keywords: ['маникюр', 'манікюр', 'ногти', 'nails', 'kosmetik', 'beauty', 'брови', 'ресницы'],
-  },
-  {
-    category: 'education',
-    subcategory: 'tutor',
-    keywords: ['репетитор', 'tutor', 'nachhilfe', 'обучение', 'уроки', 'unterricht'],
-  },
-  {
-    category: 'translation',
-    subcategory: 'translator',
-    keywords: ['переводчик', 'перекладач', 'übersetzer', 'dolmetscher', 'translation'],
-  },
-  {
-    category: 'business-marketing',
-    subcategory: 'designer',
-    keywords: ['дизайнер', 'design', 'брендбук', 'логотип', 'webdesign', 'сайт', 'website'],
-  },
-  {
-    category: 'coaching-consulting',
-    subcategory: 'coach',
-    keywords: ['коуч', 'coach', 'консультант', 'beratung', 'mentor', 'ментор'],
-  },
+  { category: 'photo-video', subcategory: 'photographer', keywords: ['фотограф', 'фотосесс', 'photograf', 'fotograf', 'photo shooting', 'фото'] },
+  { category: 'health-psychology', subcategory: 'psychologist', keywords: ['психолог', 'психотерап', 'psycholog', 'psychotherapie', 'therapeut', 'терапевт'] },
+  { category: 'taxes-finance', subcategory: 'tax-consultant', keywords: ['налог', 'steuer', 'steuerberater', 'buchhaltung', 'бухгалтер', 'finanz'] },
+  { category: 'legal', subcategory: 'lawyer', keywords: ['адвокат', 'юрист', 'anwalt', 'rechtsanwalt', 'recht'] },
+  { category: 'repair', subcategory: 'electrician', keywords: ['электрик', 'електрик', 'electrician', 'elektriker', 'розет', 'strom', 'licht'] },
+  { category: 'repair', subcategory: 'renovation', keywords: ['ремонт', 'renovierung', 'handwerker', 'мастер', 'маляр', 'плитк', 'boden'] },
+  { category: 'beauty', subcategory: 'beauty-master', keywords: ['маникюр', 'манікюр', 'ногти', 'nails', 'kosmetik', 'beauty', 'брови', 'ресницы'] },
+  { category: 'education', subcategory: 'tutor', keywords: ['репетитор', 'tutor', 'nachhilfe', 'обучение', 'уроки', 'unterricht'] },
+  { category: 'translation', subcategory: 'translator', keywords: ['переводчик', 'перекладач', 'übersetzer', 'dolmetscher', 'translation'] },
+  { category: 'business-marketing', subcategory: 'designer', keywords: ['дизайнер', 'design', 'брендбук', 'логотип', 'webdesign', 'сайт', 'website'] },
+  { category: 'coaching-consulting', subcategory: 'coach', keywords: ['коуч', 'coach', 'консультант', 'beratung', 'mentor', 'ментор'] },
 ];
 
 const languageRules = [
-  ['україн', 'ua'],
-  ['украин', 'ua'],
-  ['ukrainisch', 'ua'],
-  ['ukrainian', 'ua'],
-  ['русск', 'ru'],
-  ['росій', 'ru'],
-  ['russisch', 'ru'],
-  ['russian', 'ru'],
-  ['по-русски', 'ru'],
+  ['україн', 'ua'], ['украин', 'ua'], ['ukrainisch', 'ua'], ['ukrainian', 'ua'],
+  ['русск', 'ru'], ['росій', 'ru'], ['russisch', 'ru'], ['russian', 'ru'], ['по-русски', 'ru'],
   ['deutsch', 'de'],
 ];
 
-const publicPlatformRules = [
-  ['instagram.com', 'instagram'],
-  ['facebook.com', 'facebook'],
-  ['t.me/', 'telegram'],
-  ['telegram.me', 'telegram'],
-  ['youtube.com', 'youtube'],
-  ['youtu.be', 'youtube'],
-  ['google.', 'google'],
-  ['maps.google', 'google_maps'],
-];
-
 function hashSignal(parts) {
-  return crypto
-    .createHash('sha256')
-    .update(parts.filter(Boolean).join('|'))
-    .digest('hex');
+  return crypto.createHash('sha256').update(parts.filter(Boolean).join('|')).digest('hex');
 }
 
 function normalizeText(value) {
@@ -204,6 +113,16 @@ function stripPersonalContactText(value) {
     .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[email removed]')
     .replace(/(?:\+\d{1,3}[\s.-]?)?(?:\(?\d{2,5}\)?[\s.-]?){2,}\d{2,}/g, '[phone removed]')
     .trim();
+}
+
+function loadSources() {
+  if (!fs.existsSync(SOURCES_PATH)) {
+    throw new Error(`Missing source map: ${SOURCES_PATH}`);
+  }
+
+  return JSON.parse(fs.readFileSync(SOURCES_PATH, 'utf8'))
+    .filter((source) => source.domain)
+    .sort((a, b) => (b.priority || 0) - (a.priority || 0));
 }
 
 function detectLanguage(text) {
@@ -218,7 +137,6 @@ function detectLanguage(text) {
   if (hits.has('ua')) return 'ua';
   if (hits.has('ru')) return 'ru';
   if (hits.has('de')) return 'de';
-
   return null;
 }
 
@@ -226,9 +144,7 @@ function detectLocation(text) {
   const lower = normalizeText(text);
 
   for (const [keyword, city, region] of cityRules) {
-    if (lower.includes(keyword)) {
-      return { city, region };
-    }
+    if (lower.includes(keyword)) return { city, region };
   }
 
   return { city: null, region: null };
@@ -240,61 +156,35 @@ function detectCategory(text) {
   let bestScore = 0;
 
   for (const rule of categoryRules) {
-    const score = rule.keywords.reduce((total, keyword) => {
-      return lower.includes(keyword) ? total + 1 : total;
-    }, 0);
-
+    const score = rule.keywords.reduce((total, keyword) => lower.includes(keyword) ? total + 1 : total, 0);
     if (score > bestScore) {
       best = rule;
       bestScore = score;
     }
   }
 
-  if (!best) {
-    return {
-      category: 'unknown',
-      subcategory: null,
-      score: 0,
-    };
-  }
-
-  return {
-    category: best.category,
-    subcategory: best.subcategory,
-    score: bestScore,
-  };
-}
-
-function detectPlatform(link) {
-  const lower = normalizeText(link);
-
-  for (const [keyword, platform] of publicPlatformRules) {
-    if (lower.includes(keyword)) return platform;
-  }
-
-  return 'website';
+  return best
+    ? { category: best.category, subcategory: best.subcategory, score: bestScore }
+    : { category: 'unknown', subcategory: null, score: 0 };
 }
 
 function buildMarketCluster({ language, category, city, region }) {
-  return [
-    language || 'unknown-language',
-    category || 'unknown-category',
-    city || region || 'germany',
-  ]
+  return [language || 'unknown-language', category || 'unknown-category', city || region || 'germany']
     .join('-')
     .toLowerCase()
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9äöüß-]+/gi, '-');
 }
 
-function confidenceFor({ language, categoryScore, city, region, sourceTitle, sourceSnippet }) {
-  let score = 30;
+function confidenceFor({ language, categoryScore, city, region, sourceTitle, sourceSnippet, sourcePriority }) {
+  let score = 25;
 
   if (language) score += 25;
   if (categoryScore > 0) score += Math.min(categoryScore * 15, 30);
   if (city || region) score += 15;
   if (sourceTitle) score += 5;
   if (sourceSnippet) score += 5;
+  score += Math.min(Math.round((sourcePriority || 0) / 20), 5);
 
   return Math.max(0, Math.min(100, score));
 }
@@ -316,14 +206,28 @@ function buildKeywords(query, text) {
   return [...new Set(keywords)].slice(0, 20);
 }
 
-function classifySearchResult(query, item) {
+function buildQueriesForSource(source) {
+  const focus = new Set(source.focus || []);
+  let queries = [...languageQueries];
+
+  if (focus.has('local_services') || focus.has('classifieds')) queries.push(...serviceQueries);
+  if (focus.has('psychology') || focus.has('therapy')) queries.push('психолог психотерапевт русскоязычный украинский Германия', 'Psychologe Therapeut russisch ukrainisch Deutschland');
+  if (focus.has('tax') || focus.has('finance')) queries.push('бухгалтер налоговый консультант русский украинский Германия', 'Steuerberater russisch ukrainisch Deutschland');
+  if (focus.has('legal') || focus.has('lawyer')) queries.push('адвокат юрист русский украинский Германия', 'Anwalt russisch ukrainisch Deutschland');
+  if (focus.has('beauty')) queries.push('маникюр брови ресницы русский украинский Германия');
+  if (focus.has('photo')) queries.push('фотограф русский украинский Германия');
+  if (focus.has('education')) queries.push('репетитор русский украинский Германия');
+
+  return [...new Set(queries)].map((query) => `${query} site:${source.domain}`);
+}
+
+function classifySearchResult(query, item, source) {
   const sourceTitle = stripPersonalContactText(item.title || '');
   const sourceSnippet = stripPersonalContactText(item.snippet || '');
   const sourceText = `${sourceTitle} ${sourceSnippet} ${query}`;
   const language = detectLanguage(sourceText);
   const location = detectLocation(sourceText);
   const category = detectCategory(sourceText);
-  const platform = detectPlatform(item.link || '');
   const confidence = confidenceFor({
     language,
     categoryScore: category.score,
@@ -331,11 +235,12 @@ function classifySearchResult(query, item) {
     region: location.region,
     sourceTitle,
     sourceSnippet,
+    sourcePriority: source.priority,
   });
 
   return {
-    signal_hash: hashSignal(['open_service_signal', item.link, sourceTitle, sourceSnippet]),
-    source_platform: platform,
+    signal_hash: hashSignal(['open_service_signal', source.domain, item.link, sourceTitle, sourceSnippet]),
+    source_platform: source.source_type || 'focused_source',
     source_url: item.link,
     source_title: sourceTitle,
     source_snippet: sourceSnippet,
@@ -348,14 +253,9 @@ function classifySearchResult(query, item) {
     category_guess: category.category,
     subcategory_guess: category.subcategory,
     signal_kind: 'supply',
-    market_cluster: buildMarketCluster({
-      language,
-      category: category.category,
-      city: location.city,
-      region: location.region,
-    }),
+    market_cluster: buildMarketCluster({ language, category: category.category, city: location.city, region: location.region }),
     confidence_score: confidence,
-    ai_summary: `Open service signal from ${platform}: ${sourceTitle || sourceSnippet}`.slice(0, 500),
+    ai_summary: `Open service signal from ${source.domain}: ${sourceTitle || sourceSnippet}`.slice(0, 500),
     source_keywords: buildKeywords(query, sourceText),
     status: confidence >= 60 ? 'new' : 'low_confidence',
   };
@@ -368,14 +268,11 @@ async function googleSearch(query) {
   url.searchParams.set('q', query);
   url.searchParams.set('num', String(Math.min(RESULTS_PER_QUERY, 10)));
   url.searchParams.set('gl', 'de');
-  url.searchParams.set('lr', 'lang_ru|lang_uk|lang_de');
 
   const response = await fetch(url);
   const text = await response.text();
 
-  if (!response.ok) {
-    throw new Error(`Google Search error ${response.status}: ${text}`);
-  }
+  if (!response.ok) throw new Error(`Google Search error ${response.status}: ${text}`);
 
   const data = text ? JSON.parse(text) : {};
   return data.items || [];
@@ -402,10 +299,7 @@ async function supabaseUpsert(rows) {
   });
 
   const text = await response.text();
-
-  if (!response.ok) {
-    throw new Error(`Supabase error ${response.status}: ${text}`);
-  }
+  if (!response.ok) throw new Error(`Supabase error ${response.status}: ${text}`);
 
   return { count: rows.length };
 }
@@ -414,19 +308,30 @@ async function main() {
   console.log('Running Open Service Scout...');
   console.log(`Mode: ${DRY_RUN ? 'dry-run' : 'write'}`);
 
-  const queries = baseQueries.slice(0, MAX_QUERIES);
+  const sources = loadSources();
+  const plannedQueries = [];
+
+  for (const source of sources) {
+    for (const query of buildQueriesForSource(source)) {
+      plannedQueries.push({ source, query });
+      if (plannedQueries.length >= MAX_QUERIES) break;
+    }
+    if (plannedQueries.length >= MAX_QUERIES) break;
+  }
+
+  console.log(`Sources loaded: ${sources.length}`);
+  console.log(`Queries planned: ${plannedQueries.length}`);
+
   const signalsByHash = new Map();
 
-  for (const query of queries) {
-    console.log(`Searching: ${query}`);
-
+  for (const { source, query } of plannedQueries) {
+    console.log(`Searching [${source.domain}]: ${query}`);
     const items = await googleSearch(query);
 
     for (const item of items) {
       if (!item.link) continue;
 
-      const signal = classifySearchResult(query, item);
-
+      const signal = classifySearchResult(query, item, source);
       if (!signal.language_detected) continue;
       if (signal.category_guess === 'unknown' && signal.confidence_score < 65) continue;
 
@@ -434,9 +339,7 @@ async function main() {
     }
   }
 
-  const signals = [...signalsByHash.values()]
-    .sort((a, b) => b.confidence_score - a.confidence_score);
-
+  const signals = [...signalsByHash.values()].sort((a, b) => b.confidence_score - a.confidence_score);
   const result = await supabaseUpsert(signals);
 
   console.log(`Done. Open service signals processed: ${result.count}`);
