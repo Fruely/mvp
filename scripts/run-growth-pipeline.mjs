@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 
 const scripts = [
   'scripts/sync-baserow-market-signal-statuses.mjs',
+  'scripts/run-open-service-scout.mjs',
   'scripts/process-market-signals.mjs',
   'scripts/sync-baserow-growth-all.mjs',
 ];
