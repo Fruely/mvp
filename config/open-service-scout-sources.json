@@ -1,0 +1,302 @@
+[
+  {
+    "domain": "rg-rb.de",
+    "source_type": "diaspora_media",
+    "priority": 95,
+    "focus": ["ru", "diaspora", "services", "germany"]
+  },
+  {
+    "domain": "neue-semljaki.de",
+    "source_type": "diaspora_media",
+    "priority": 92,
+    "focus": ["ru", "diaspora", "services", "germany"]
+  },
+  {
+    "domain": "germany24.ru",
+    "source_type": "diaspora_portal",
+    "priority": 90,
+    "focus": ["ru", "services", "classifieds", "germany"]
+  },
+  {
+    "domain": "berlin24.ru",
+    "source_type": "diaspora_portal",
+    "priority": 88,
+    "focus": ["ru", "services", "berlin"]
+  },
+  {
+    "domain": "berlin-ru.net",
+    "source_type": "diaspora_portal",
+    "priority": 86,
+    "focus": ["ru", "services", "berlin"]
+  },
+  {
+    "domain": "russianingermany.de",
+    "source_type": "diaspora_portal",
+    "priority": 84,
+    "focus": ["ru", "services", "germany"]
+  },
+  {
+    "domain": "germany-ru.com",
+    "source_type": "diaspora_portal",
+    "priority": 82,
+    "focus": ["ru", "services", "germany"]
+  },
+  {
+    "domain": "rusverlag.de",
+    "source_type": "diaspora_media",
+    "priority": 80,
+    "focus": ["ru", "media", "germany"]
+  },
+  {
+    "domain": "russisch-in-deutschland.de",
+    "source_type": "diaspora_portal",
+    "priority": 78,
+    "focus": ["ru", "language", "services"]
+  },
+  {
+    "domain": "russische-community.de",
+    "source_type": "diaspora_community",
+    "priority": 76,
+    "focus": ["ru", "community", "services"]
+  },
+  {
+    "domain": "ukrainehelp.de",
+    "source_type": "ukrainian_community",
+    "priority": 78,
+    "focus": ["ua", "community", "germany"]
+  },
+  {
+    "domain": "germanyforukraine.de",
+    "source_type": "ukrainian_community",
+    "priority": 76,
+    "focus": ["ua", "community", "germany"]
+  },
+  {
+    "domain": "vitsche.org",
+    "source_type": "ukrainian_community",
+    "priority": 74,
+    "focus": ["ua", "community", "berlin"]
+  },
+  {
+    "domain": "wefugees.de",
+    "source_type": "migration_community",
+    "priority": 72,
+    "focus": ["ua", "migration", "services"]
+  },
+  {
+    "domain": "handbookgermany.de",
+    "source_type": "migration_info",
+    "priority": 70,
+    "focus": ["ua", "ru", "migration", "germany"]
+  },
+  {
+    "domain": "kleinanzeigen.de",
+    "source_type": "classifieds",
+    "priority": 100,
+    "focus": ["local_services", "repair", "beauty", "photo", "education"]
+  },
+  {
+    "domain": "quoka.de",
+    "source_type": "classifieds",
+    "priority": 88,
+    "focus": ["local_services", "classifieds"]
+  },
+  {
+    "domain": "markt.de",
+    "source_type": "classifieds",
+    "priority": 86,
+    "focus": ["local_services", "classifieds"]
+  },
+  {
+    "domain": "meinestadt.de",
+    "source_type": "local_portal",
+    "priority": 84,
+    "focus": ["local_services", "city"]
+  },
+  {
+    "domain": "kalaydo.de",
+    "source_type": "classifieds",
+    "priority": 82,
+    "focus": ["local_services", "nrw", "classifieds"]
+  },
+  {
+    "domain": "locanto.de",
+    "source_type": "classifieds",
+    "priority": 78,
+    "focus": ["local_services", "classifieds"]
+  },
+  {
+    "domain": "marktcom.de",
+    "source_type": "classifieds",
+    "priority": 70,
+    "focus": ["classifieds", "services"]
+  },
+  {
+    "domain": "annonce.de",
+    "source_type": "classifieds",
+    "priority": 68,
+    "focus": ["classifieds", "services"]
+  },
+  {
+    "domain": "de.indeed.com",
+    "source_type": "jobs",
+    "priority": 60,
+    "focus": ["professions", "language_markers"]
+  },
+  {
+    "domain": "stepstone.de",
+    "source_type": "jobs",
+    "priority": 58,
+    "focus": ["professions", "language_markers"]
+  },
+  {
+    "domain": "my-hammer.de",
+    "source_type": "service_marketplace",
+    "priority": 95,
+    "focus": ["repair", "handwerk", "local_services"]
+  },
+  {
+    "domain": "blauarbeit.de",
+    "source_type": "service_marketplace",
+    "priority": 88,
+    "focus": ["repair", "handwerk", "local_services"]
+  },
+  {
+    "domain": "prontopro.de",
+    "source_type": "service_marketplace",
+    "priority": 82,
+    "focus": ["local_services", "professional_services"]
+  },
+  {
+    "domain": "starofservice.de",
+    "source_type": "service_marketplace",
+    "priority": 80,
+    "focus": ["local_services", "professional_services"]
+  },
+  {
+    "domain": "superprof.de",
+    "source_type": "education_marketplace",
+    "priority": 84,
+    "focus": ["education", "tutor", "language"]
+  },
+  {
+    "domain": "betreut.de",
+    "source_type": "care_marketplace",
+    "priority": 78,
+    "focus": ["care", "household", "children"]
+  },
+  {
+    "domain": "houzz.de",
+    "source_type": "home_design_directory",
+    "priority": 74,
+    "focus": ["interior", "renovation", "architecture"]
+  },
+  {
+    "domain": "homify.de",
+    "source_type": "home_design_directory",
+    "priority": 72,
+    "focus": ["interior", "renovation", "architecture"]
+  },
+  {
+    "domain": "check24.de",
+    "source_type": "service_comparison",
+    "priority": 70,
+    "focus": ["services", "finance", "handwerk"]
+  },
+  {
+    "domain": "werkenntdenbesten.de",
+    "source_type": "local_reviews",
+    "priority": 72,
+    "focus": ["local_services", "reviews"]
+  },
+  {
+    "domain": "jameda.de",
+    "source_type": "medical_directory",
+    "priority": 86,
+    "focus": ["health", "therapy", "doctors"]
+  },
+  {
+    "domain": "doctolib.de",
+    "source_type": "medical_directory",
+    "priority": 82,
+    "focus": ["health", "doctors", "therapy"]
+  },
+  {
+    "domain": "therapie.de",
+    "source_type": "therapy_directory",
+    "priority": 90,
+    "focus": ["psychology", "therapy"]
+  },
+  {
+    "domain": "anwalt.de",
+    "source_type": "legal_directory",
+    "priority": 88,
+    "focus": ["legal", "lawyer"]
+  },
+  {
+    "domain": "anwalt-suchservice.de",
+    "source_type": "legal_directory",
+    "priority": 82,
+    "focus": ["legal", "lawyer"]
+  },
+  {
+    "domain": "steuerberater.de",
+    "source_type": "tax_directory",
+    "priority": 86,
+    "focus": ["tax", "finance"]
+  },
+  {
+    "domain": "steuerberaterscout.de",
+    "source_type": "tax_directory",
+    "priority": 80,
+    "focus": ["tax", "finance"]
+  },
+  {
+    "domain": "dasauge.de",
+    "source_type": "creative_directory",
+    "priority": 78,
+    "focus": ["design", "creative", "photo"]
+  },
+  {
+    "domain": "freelancermap.de",
+    "source_type": "freelance_marketplace",
+    "priority": 76,
+    "focus": ["it", "consulting", "freelance"]
+  },
+  {
+    "domain": "malt.de",
+    "source_type": "freelance_marketplace",
+    "priority": 74,
+    "focus": ["freelance", "digital", "creative"]
+  },
+  {
+    "domain": "instagram.com",
+    "source_type": "social_surface",
+    "priority": 70,
+    "focus": ["beauty", "photo", "coach", "creative"]
+  },
+  {
+    "domain": "facebook.com",
+    "source_type": "social_surface",
+    "priority": 68,
+    "focus": ["community", "local_services"]
+  },
+  {
+    "domain": "threads.net",
+    "source_type": "social_surface",
+    "priority": 66,
+    "focus": ["content", "professionals"]
+  },
+  {
+    "domain": "t.me",
+    "source_type": "messenger_public_surface",
+    "priority": 68,
+    "focus": ["telegram", "community", "services"]
+  },
+  {
+    "domain": "youtube.com",
+    "source_type": "video_surface",
+    "priority": 60,
+    "focus": ["experts", "consultants", "content"]
+  }
+]
