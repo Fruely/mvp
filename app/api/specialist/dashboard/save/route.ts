@@ -28,6 +28,10 @@ async function geocodePlz(
 
 const MAX_CERTIFICATE_URLS = 10;
 
+function hasOwn<T extends object>(obj: T, key: PropertyKey): boolean {
+  return Object.prototype.hasOwnProperty.call(obj, key);
+}
+
 type Payload = {
   name?: string;
   phone?: string;
@@ -76,14 +80,23 @@ export async function PUT(request: NextRequest) {
   );
 
   const allowedLanguages = new Set(["ru", "uk", "de", "en", "pl"]);
-  if (!Array.isArray(body.languages)) {
-    return jsonNoStore({ error: "Invalid payload: languages must be an array" }, { status: 400 });
+  if (hasOwn(body, "languages")) {
+    if (!Array.isArray(body.languages)) {
+      return jsonNoStore({ error: "Invalid payload: languages must be an array" }, { status: 400 });
+    }
+    const hasInvalidLanguage = body.languages.some(
+      (language) => typeof language !== "string" || !allowedLanguages.has(language)
+    );
+    if (hasInvalidLanguage) {
+      return jsonNoStore({ error: "Invalid payload: languages contains unsupported values" }, { status: 400 });
+    }
   }
-  const hasInvalidLanguage = body.languages.some(
-    (language) => typeof language !== "string" || !allowedLanguages.has(language)
-  );
-  if (hasInvalidLanguage) {
-    return jsonNoStore({ error: "Invalid payload: languages contains unsupported values" }, { status: 400 });
+
+  if (
+    typeof body.gallery_urls !== "undefined" &&
+    !Array.isArray(body.gallery_urls)
+  ) {
+    return jsonNoStore({ error: "Invalid payload: gallery_urls must be an array" }, { status: 400 });
   }
 
   if (
@@ -137,9 +150,9 @@ export async function PUT(request: NextRequest) {
     body.category_id !== undefined
       ? (typeof body.category_id === "string" ? body.category_id.trim() || null : null)
       : (typeof specialist.category_id === "string" ? specialist.category_id : null) ?? null;
-  const languages = Array.isArray(body.languages)
+  const languages = hasOwn(body, "languages") && Array.isArray(body.languages)
     ? body.languages.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
-    : [];
+    : null;
 
   if (effectiveCategoryId) {
     const { data: category } = await supabase
@@ -191,7 +204,9 @@ export async function PUT(request: NextRequest) {
     specialistPatch.avatar_url = avatarUrlValue.trim() || null;
   }
 
-  specialistPatch.languages = Array.isArray(languages) ? languages : [];
+  if (languages !== null) {
+    specialistPatch.languages = languages;
+  }
   specialistPatch.updated_at = new Date().toISOString();
 
   if (specialistPatch.postal_code) {
@@ -253,52 +268,59 @@ export async function PUT(request: NextRequest) {
   const serviceCategoryId =
     typeof specialistAfter?.category_id === "string" ? specialistAfter.category_id : null;
 
-  const profilePatch: Record<string, unknown> = {
-    about_me: typeof body.about_me === "string" ? body.about_me.trim() || null : null,
-    city: typeof body.city === "string" ? body.city.trim() || null : null,
-    address: typeof body.address === "string" ? body.address.trim() || null : null,
-    video_url: typeof body.video_url === "string" ? body.video_url.trim() || null : null,
-    photo_url: typeof body.photo_url === "string" ? body.photo_url.trim() || null : null,
-    gallery_urls: Array.isArray(body.gallery_urls)
-      ? body.gallery_urls
-          .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
-          .slice(0, 5)
-      : [],
-  };
+  const profilePatch: Record<string, unknown> = {};
+  if (hasOwn(body, "about_me") && typeof body.about_me === "string") {
+    profilePatch.about_me = body.about_me.trim() || null;
+  }
+  if (hasOwn(body, "city") && typeof body.city === "string") {
+    profilePatch.city = body.city.trim() || null;
+  }
+  if (hasOwn(body, "address") && typeof body.address === "string") {
+    profilePatch.address = body.address.trim() || null;
+  }
+  if (hasOwn(body, "video_url") && typeof body.video_url === "string") {
+    profilePatch.video_url = body.video_url.trim() || null;
+  }
+  if (hasOwn(body, "photo_url") && typeof body.photo_url === "string") {
+    profilePatch.photo_url = body.photo_url.trim() || null;
+  }
+  if (hasOwn(body, "gallery_urls") && Array.isArray(body.gallery_urls)) {
+    profilePatch.gallery_urls = body.gallery_urls
+      .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+      .slice(0, 5);
+  }
 
   // Only update certificate_urls when the client sends the field explicitly.
   // Defaulting to [] when the key is missing would overwrite existing DB rows with an empty array.
-  if (
-    Object.prototype.hasOwnProperty.call(body, "certificate_urls") &&
-    Array.isArray(body.certificate_urls)
-  ) {
+  if (hasOwn(body, "certificate_urls") && Array.isArray(body.certificate_urls)) {
     profilePatch.certificate_urls = body.certificate_urls
       .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
       .slice(0, MAX_CERTIFICATE_URLS);
   }
 
-  const { data: existingProfile } = await supabase
-    .from("specialist_profiles")
-    .select("specialist_id")
-    .eq("specialist_id", specialistId)
-    .maybeSingle();
+  if (Object.keys(profilePatch).length > 0) {
+    const { data: existingProfile } = await supabase
+      .from("specialist_profiles")
+      .select("specialist_id")
+      .eq("specialist_id", specialistId)
+      .maybeSingle();
 
-  if (existingProfile?.specialist_id) {
-    const { error } = await supabase
-      .from("specialist_profiles")
-      .update(profilePatch)
-      .eq("specialist_id", specialistId);
-    if (error) return jsonNoStore({ error: "Failed to update specialist details" }, { status: 500 });
-  } else {
-    const { error } = await supabase
-      .from("specialist_profiles")
-      .insert({ specialist_id: specialistId, ...profilePatch });
-    if (error) return jsonNoStore({ error: "Failed to create specialist details" }, { status: 500 });
+    if (existingProfile?.specialist_id) {
+      const { error } = await supabase
+        .from("specialist_profiles")
+        .update(profilePatch)
+        .eq("specialist_id", specialistId);
+      if (error) return jsonNoStore({ error: "Failed to update specialist details" }, { status: 500 });
+    } else {
+      const { error } = await supabase
+        .from("specialist_profiles")
+        .insert({ specialist_id: specialistId, ...profilePatch });
+      if (error) return jsonNoStore({ error: "Failed to create specialist details" }, { status: 500 });
+    }
   }
 
-  if (languageCode) {
-    const aboutForTranslation =
-      typeof body.about_me === "string" ? body.about_me.trim() || null : null;
+  if (languageCode && hasOwn(body, "about_me") && typeof body.about_me === "string") {
+    const aboutForTranslation = body.about_me.trim() || null;
     const { error: profileTranslationError } = await supabase
       .from("specialist_profile_translations")
       .upsert(
@@ -320,7 +342,7 @@ export async function PUT(request: NextRequest) {
 
   // Services are intentionally optional in this endpoint. If the key is absent, keep existing services untouched.
   const shouldUpdateServices =
-    Object.prototype.hasOwnProperty.call(body, "services") && Array.isArray(body.services);
+    hasOwn(body, "services") && Array.isArray(body.services);
 
   if (shouldUpdateServices) {
     const normalizedServices = (body.services ?? [])
