@@ -77,6 +77,23 @@ const STATUS_TABS: { value: StatusTab; label: string }[] = [
   { value: "rejected", label: "Rejected" },
 ];
 
+function isPublishedSpecialistStatus(status: string | null | undefined): boolean {
+  return status === "published_unverified" || status === "featured_verified";
+}
+
+function adminErrorMessage(error: string | undefined): string {
+  if (!error) return "Не удалось выполнить действие";
+  if (error === "SPECIALIST_NOT_READY_FOR_PUBLICATION") {
+    return "Нельзя опубликовать: профиль ещё не готов. Проверьте обязательные поля и услуги.";
+  }
+  if (error === "INVALID_SPECIALIST_CATEGORY") {
+    return "Нельзя опубликовать: выбрана неподходящая категория.";
+  }
+  if (error.includes("Премиум-показ")) return error;
+  if (error.includes("черновик")) return error;
+  return error;
+}
+
 export default function AdminSpecialistsPage() {
   const [token, setToken] = useState<string | null>(null);
   const [tokenInput, setTokenInput] = useState("");
@@ -196,7 +213,7 @@ export default function AdminSpecialistsPage() {
         return;
       }
       if (!res.ok || !json.data) {
-        setToast({ type: "error", message: json.error || "Не удалось сохранить подписку" });
+        setToast({ type: "error", message: adminErrorMessage(json.error || "Не удалось сохранить подписку") });
         return;
       }
       setToast({ type: "success", message: "Подписка обновлена" });
@@ -280,7 +297,7 @@ export default function AdminSpecialistsPage() {
           "error" in json && typeof json.error === "string"
             ? json.error
             : "Не удалось загрузить заявки";
-        setError(message);
+        setError(adminErrorMessage(message));
         return;
       }
 
@@ -349,7 +366,7 @@ export default function AdminSpecialistsPage() {
           "error" in json && typeof json.error === "string"
             ? json.error
             : "Не удалось обновить статус заявки";
-        setToast({ type: "error", message: errorMessage });
+        setToast({ type: "error", message: adminErrorMessage(errorMessage) });
         return;
       }
 
@@ -364,12 +381,12 @@ export default function AdminSpecialistsPage() {
         }
         setToast({
           type: "error",
-          message: `Заявка одобрена. Письмо не отправлено${err ? `: ${err}` : ""}. Ссылка для входа скопирована в буфер — отправьте специалисту вручную.`,
+          message: `Заявка одобрена. Специалист создан как черновик. Письмо не отправлено${err ? `: ${err}` : ""}. Ссылка для входа скопирована в буфер — отправьте специалисту вручную.`,
         });
       } else {
         setToast({
           type: "success",
-          message: status === "approved" ? "Заявка одобрена" : "Заявка отклонена",
+          message: status === "approved" ? "Заявка одобрена. Специалист создан как черновик." : "Заявка отклонена",
         });
       }
     } catch (e: any) {
@@ -439,7 +456,7 @@ export default function AdminSpecialistsPage() {
             : res.status === 404
               ? "Специалист не найден"
               : "Не удалось удалить специалиста";
-        setToast({ type: "error", message: msg });
+        setToast({ type: "error", message: adminErrorMessage(msg) });
         return;
       }
       setToast({
@@ -476,7 +493,7 @@ export default function AdminSpecialistsPage() {
       const json = (await res.json()) as UpdateResponse & { claim_url?: string; email_sent?: boolean; email_error?: string };
       if (!res.ok) {
         const msg = "error" in json && typeof json.error === "string" ? json.error : "Не удалось выслать ссылку";
-        setToast({ type: "error", message: msg });
+        setToast({ type: "error", message: adminErrorMessage(msg) });
         return;
       }
       const newClaimUrl = json.claim_url;
@@ -533,7 +550,7 @@ export default function AdminSpecialistsPage() {
       }
 
       if (!res.ok || !json?.data) {
-        setToast({ type: "error", message: json?.error || "Не удалось обновить активность специалиста" });
+        setToast({ type: "error", message: adminErrorMessage(json?.error || "Не удалось обновить активность специалиста") });
         return;
       }
 
@@ -594,7 +611,7 @@ export default function AdminSpecialistsPage() {
       }
 
       if (!res.ok) {
-        setToast({ type: "error", message: json?.error || "Не удалось обновить специалиста" });
+        setToast({ type: "error", message: adminErrorMessage(json?.error || "Не удалось обновить специалиста") });
         return;
       }
 
@@ -604,7 +621,7 @@ export default function AdminSpecialistsPage() {
           action === "approve"
             ? "Специалист верифицирован"
             : action === "feature"
-              ? "Специалист отмечен как featured"
+              ? "Премиум-показ включён"
               : "Специалист деактивирован",
       });
       await fetchSpecialists(activeToken, activeStatus);
@@ -889,6 +906,8 @@ export default function AdminSpecialistsPage() {
                   const isModerating = specialistId ? !!moderatingById[specialistId] : false;
                   const isRejected = app.status === "rejected";
                   const isExpanded = expandedRejectionId === app.id && isRejected;
+                  const isPublished = isPublishedSpecialistStatus(app.status);
+                  const isPremiumActive = app.status === "featured_verified";
 
                   return (
                     <React.Fragment key={app.id}>
@@ -960,7 +979,8 @@ export default function AdminSpecialistsPage() {
                                   type="checkbox"
                                   checked={!!app.is_active}
                                   onChange={(e) => updateSpecialistActive(specialistId, e.target.checked)}
-                                  disabled={isTogglingActive || !hasToken}
+                                  disabled={isTogglingActive || !hasToken || !isPublished}
+                                  title={!isPublished ? "Активировать можно только опубликованный профиль" : undefined}
                                   className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-60"
                                 />
                                 Active
@@ -985,7 +1005,8 @@ export default function AdminSpecialistsPage() {
                                 <button
                                   type="button"
                                   onClick={() => moderateSpecialist(specialistId, "approve")}
-                                  disabled={isModerating || !hasToken}
+                                  disabled={isModerating || !hasToken || !isPublished}
+                                  title={!isPublished ? "Верификация доступна после публикации профиля" : undefined}
                                   className="px-3 py-1 rounded-md border border-green-300 text-xs font-semibold text-green-700 hover:bg-green-50 disabled:opacity-50"
                                 >
                                   Верифицировать
@@ -993,10 +1014,11 @@ export default function AdminSpecialistsPage() {
                                 <button
                                   type="button"
                                   onClick={() => moderateSpecialist(specialistId, "feature")}
-                                  disabled={isModerating || !hasToken}
+                                  disabled={isModerating || !hasToken || !isPublished || isPremiumActive}
+                                  title={!isPublished ? "Премиум-показ доступен только после публикации профиля" : undefined}
                                   className="px-3 py-1 rounded-md border border-amber-300 text-xs font-semibold text-amber-700 hover:bg-amber-50 disabled:opacity-50"
                                 >
-                                  Featured
+                                  {isPremiumActive ? "Премиум-показ активен" : "Включить премиум-показ"}
                                 </button>
                                 <button
                                   type="button"
@@ -1220,4 +1242,3 @@ export default function AdminSpecialistsPage() {
     </div>
   );
 }
-
