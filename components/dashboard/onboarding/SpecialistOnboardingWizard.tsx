@@ -79,9 +79,7 @@ export default function SpecialistOnboardingWizard({
   preserveProfileData: OnboardingPreserveProfileData;
 }) {
   const baseHref = `/${lang}/specialist/dashboard/onboarding`;
-  const dashboardHref = `/${lang}/specialist/dashboard`;
   const gateMessage = incompleteProfileGateMessage(lang);
-  const canOpenDashboard = publishReady;
 
   const steps: OnboardingStep[] = ONBOARDING_STEP_ORDER.map((step) => ({
     key: step,
@@ -109,11 +107,6 @@ export default function SpecialistOnboardingWizard({
             {t(dict, "dashboard.onboarding.nav.back")}
           </Link>
         ) : null}
-        {canOpenDashboard ? (
-          <Link href={dashboardHref} className={secondaryLinkClass}>
-            {t(dict, "dashboard.onboarding.nav.dashboard")}
-          </Link>
-        ) : null}
         {nextKey ? (
           <Link href={stepHref(baseHref, nextKey)} className={primaryLinkClass}>
             {t(dict, "dashboard.onboarding.nav.next")}
@@ -131,11 +124,6 @@ export default function SpecialistOnboardingWizard({
             ? t(dict, "dashboard.onboarding.cta.continue")
             : t(dict, "dashboard.onboarding.cta.start")}
       </Link>
-      {canOpenDashboard ? (
-        <Link href={dashboardHref} className={secondaryLinkClass}>
-          {t(dict, "dashboard.onboarding.nav.dashboard")}
-        </Link>
-      ) : null}
     </div>
   );
 
@@ -182,7 +170,7 @@ export default function SpecialistOnboardingWizard({
             dict={dict}
             lang={lang}
             baseHref={baseHref}
-            dashboardHref={dashboardHref}
+            dashboardHref={`/${lang}/specialist/dashboard`}
             initialData={initialBasicData}
             categories={categories}
             preserveProfileData={preserveProfileData}
@@ -202,7 +190,7 @@ export default function SpecialistOnboardingWizard({
             dict={dict}
             lang={lang}
             baseHref={baseHref}
-            dashboardHref={dashboardHref}
+            dashboardHref={`/${lang}/specialist/dashboard`}
             initialData={initialAboutData}
             preserveBasicData={{
               name: initialBasicData.name,
@@ -250,7 +238,7 @@ export default function SpecialistOnboardingWizard({
             dict={dict}
             lang={lang}
             baseHref={baseHref}
-            dashboardHref={dashboardHref}
+            dashboardHref={`/${lang}/specialist/dashboard`}
             currentPhotoUrl={currentPhotoUrl}
           />
           <OnboardingChecklist
@@ -268,7 +256,7 @@ export default function SpecialistOnboardingWizard({
             dict={dict}
             lang={lang}
             baseHref={baseHref}
-            dashboardHref={dashboardHref}
+            dashboardHref={`/${lang}/specialist/dashboard`}
             publicProfileHref={publicProfileHref}
             publishReady={publishReady}
             summary={reviewSummary}
