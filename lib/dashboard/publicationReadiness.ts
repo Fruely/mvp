@@ -1,7 +1,32 @@
+import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
+
 /**
  * Server-side checks aligned with client `publicationReady` in SpecialistDashboardEditor
  * and with `app/api/specialist/dashboard/publish/route.ts` (subcategory + services in category).
  */
+
+export type PublishableCategoryCheck = {
+  ok: boolean;
+  reason?: "missing" | "not_found" | "root" | "uncategorized";
+};
+
+export function checkPublishableCategory(category: {
+  id?: unknown;
+  parent_id?: unknown;
+  slug?: unknown;
+} | null | undefined): PublishableCategoryCheck {
+  if (!category) return { ok: false, reason: "not_found" };
+  if (typeof category.id !== "string" || category.id.trim().length === 0) {
+    return { ok: false, reason: "not_found" };
+  }
+  if (category.slug === UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG) {
+    return { ok: false, reason: "uncategorized" };
+  }
+  if (typeof category.parent_id !== "string" || category.parent_id.trim().length === 0) {
+    return { ok: false, reason: "root" };
+  }
+  return { ok: true };
+}
 
 export function hasValidServiceForPublish(
   services: Array<{
