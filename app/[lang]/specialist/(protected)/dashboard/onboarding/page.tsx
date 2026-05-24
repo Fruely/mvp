@@ -20,17 +20,27 @@ function normalizeStep(value: string | string[] | undefined): OnboardingStepKey 
   return ONBOARDING_STEP_ORDER.includes(raw as OnboardingStepKey) ? (raw as OnboardingStepKey) : "welcome";
 }
 
+function hasReason(value: string | string[] | undefined, reason: string): boolean {
+  return Array.isArray(value) ? value.includes(reason) : value === reason;
+}
+
 export default async function SpecialistDashboardOnboardingPage({
   params,
   searchParams,
 }: {
   params: { lang: string } | Promise<{ lang: string }>;
-  searchParams?: { step?: string | string[] } | Promise<{ step?: string | string[] }>;
+  searchParams?:
+    | { step?: string | string[]; reason?: string | string[] }
+    | Promise<{ step?: string | string[]; reason?: string | string[] }>;
 }) {
   const resolvedParams = await Promise.resolve(params);
   const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
   const lang = isSupportedLang(resolvedParams.lang) ? resolvedParams.lang : "ru";
   const activeStep = normalizeStep(resolvedSearchParams.step);
+  const showIncompleteProfileGateNotice = hasReason(
+    resolvedSearchParams.reason,
+    "incomplete_profile",
+  );
   const { specialist } = await getCurrentUserAndSpecialist();
   const service = createServiceClient();
   const dict: Dictionary = await getDictionary(lang);
@@ -193,6 +203,7 @@ export default async function SpecialistDashboardOnboardingPage({
       profileStarted={profileStarted}
       publishReady={publishReady}
       isUncategorizedCategory={isUncategorizedCategory}
+      showIncompleteProfileGateNotice={showIncompleteProfileGateNotice}
       checklistItems={checklistItems}
       initialBasicData={{
         name,
