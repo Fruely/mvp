@@ -44,7 +44,13 @@ export default async function SpecialistProtectedLayout({
   const plan = await getSpecialistPlanForDashboard(service, specialist.id);
 
   return (
-    <DashboardShell specialist={specialist} planStatusForBadge={plan.plan_status} lang={lang} dict={dict}>
+    <DashboardShell
+      specialist={specialist}
+      planStatusForBadge={plan.plan_status}
+      lang={lang}
+      dict={dict}
+      isPublished={gate.state === "published"}
+    >
       {children}
     </DashboardShell>
   );
