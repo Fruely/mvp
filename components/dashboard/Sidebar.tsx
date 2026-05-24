@@ -9,6 +9,7 @@ type NavItem = {
   label: string;
   href?: string;
   disabled?: boolean;
+  lockedUntilPublished?: boolean;
   /** If true, only exact pathname match highlights this item (used for dashboard home vs `/dashboard/...`). */
   exact?: boolean;
   icon: ReactNode;
@@ -18,13 +19,22 @@ function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-function buildNavItems(lang: string, dict: Dictionary): NavItem[] {
+function lockedLabel(lang: string): string {
+  if (lang === "de") return "Nach Veröffentlichung";
+  if (lang === "ua") return "Після публікації";
+  return "После публикации";
+}
+
+function buildNavItems(lang: string, dict: Dictionary, isPublished: boolean): NavItem[] {
   const base = `/${lang}/specialist/dashboard`;
+  const lock = !isPublished;
   return [
   {
     label: t(dict, "dashboard.sidebar.nav.dashboard"),
     href: base,
     exact: true,
+    disabled: lock,
+    lockedUntilPublished: lock,
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
         <path d="M4 13h6V4H4v9zm10 7h6v-9h-6v9zM4 20h6v-5H4v5zm10-7h6V4h-6v9z" fill="currentColor" />
@@ -34,6 +44,8 @@ function buildNavItems(lang: string, dict: Dictionary): NavItem[] {
   {
     label: t(dict, "dashboard.sidebar.nav.profile"),
     href: `${base}/profile`,
+    disabled: lock,
+    lockedUntilPublished: lock,
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
         <path
@@ -46,6 +58,8 @@ function buildNavItems(lang: string, dict: Dictionary): NavItem[] {
   {
     label: t(dict, "dashboard.sidebar.nav.leads"),
     href: `${base}/leads`,
+    disabled: lock,
+    lockedUntilPublished: lock,
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
         <path d="M4 5h16v14H4V5zm2 2v10h12V7H6zm2 2h8v2H8V9zm0 4h5v2H8v-2z" fill="currentColor" />
@@ -55,6 +69,8 @@ function buildNavItems(lang: string, dict: Dictionary): NavItem[] {
   {
     label: t(dict, "dashboard.sidebar.nav.subscription"),
     href: `${base}/subscription`,
+    disabled: lock,
+    lockedUntilPublished: lock,
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
         <path d="M12 2l2.4 4.9L20 8l-4 3.8.9 5.7-4.9-2.6L7.1 17.5l.9-5.7L4 8l5.6-.8L12 2z" fill="currentColor" />
@@ -64,6 +80,8 @@ function buildNavItems(lang: string, dict: Dictionary): NavItem[] {
   {
     label: t(dict, "dashboard.sidebar.nav.billing"),
     href: `${base}/billing`,
+    disabled: lock,
+    lockedUntilPublished: lock,
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
         <path
@@ -85,6 +103,8 @@ function buildNavItems(lang: string, dict: Dictionary): NavItem[] {
   {
     label: t(dict, "dashboard.sidebar.nav.videoGuide"),
     href: `${base}/video-guide`,
+    disabled: lock,
+    lockedUntilPublished: lock,
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
         <path
@@ -111,15 +131,18 @@ export default function Sidebar({
   lang,
   open,
   onClose,
+  isPublished,
 }: {
   dict: Dictionary;
   lang: string;
   open: boolean;
   onClose: () => void;
+  isPublished: boolean;
 }) {
   const pathname = usePathname();
   const currentPath = pathname ?? "";
-  const navItems = useMemo(() => buildNavItems(lang, dict), [lang, dict]);
+  const lockedBadge = lockedLabel(lang);
+  const navItems = useMemo(() => buildNavItems(lang, dict, isPublished), [lang, dict, isPublished]);
 
   return (
     <>
@@ -140,14 +163,19 @@ export default function Sidebar({
             const stateClass = isActive
               ? "bg-blue-50 text-blue-700"
               : item.disabled
-                ? "cursor-not-allowed text-textSecondary"
+                ? "cursor-not-allowed text-gray-400"
                 : "text-gray-700 hover:bg-gray-50 hover:text-gray-900";
 
             if (!item.href || item.disabled) {
               return (
-                <span key={item.href ?? item.label} className={cn(baseClass, stateClass)}>
+                <span key={item.href ?? item.label} className={cn(baseClass, stateClass)} title={item.lockedUntilPublished ? lockedBadge : undefined}>
                   <span className="text-current">{item.icon}</span>
-                  {item.label}
+                  <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                  {item.lockedUntilPublished ? (
+                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                      {lockedBadge}
+                    </span>
+                  ) : null}
                 </span>
               );
             }
@@ -155,7 +183,7 @@ export default function Sidebar({
             return (
               <Link key={item.href} href={item.href} className={cn(baseClass, stateClass)}>
                 <span className="text-current">{item.icon}</span>
-                {item.label}
+                <span className="min-w-0 flex-1 truncate">{item.label}</span>
               </Link>
             );
           })}
@@ -195,14 +223,19 @@ export default function Sidebar({
             const stateClass = isActive
               ? "bg-blue-50 text-blue-700"
               : item.disabled
-                ? "cursor-not-allowed text-textSecondary"
+                ? "cursor-not-allowed text-gray-400"
                 : "text-gray-700 hover:bg-gray-50 hover:text-gray-900";
 
             if (!item.href || item.disabled) {
               return (
-                <span key={item.href ?? item.label} className={cn(baseClass, stateClass)}>
+                <span key={item.href ?? item.label} className={cn(baseClass, stateClass)} title={item.lockedUntilPublished ? lockedBadge : undefined}>
                   <span className="text-current">{item.icon}</span>
-                  {item.label}
+                  <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                  {item.lockedUntilPublished ? (
+                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                      {lockedBadge}
+                    </span>
+                  ) : null}
                 </span>
               );
             }
@@ -210,7 +243,7 @@ export default function Sidebar({
             return (
               <Link key={item.href} href={item.href} onClick={onClose} className={cn(baseClass, stateClass)}>
                 <span className="text-current">{item.icon}</span>
-                {item.label}
+                <span className="min-w-0 flex-1 truncate">{item.label}</span>
               </Link>
             );
           })}
