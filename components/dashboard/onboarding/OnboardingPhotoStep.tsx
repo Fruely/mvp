@@ -12,7 +12,6 @@ export default function OnboardingPhotoStep({
   dict,
   lang,
   baseHref,
-  dashboardHref,
   currentPhotoUrl,
 }: {
   dict: Dictionary;
@@ -164,9 +163,6 @@ export default function OnboardingPhotoStep({
         <div className="flex flex-wrap items-center gap-3">
           <Link href={`${baseHref}?step=services`} className={secondaryLinkClass}>
             {t(dict, "dashboard.onboarding.nav.back")}
-          </Link>
-          <Link href={dashboardHref} className={secondaryLinkClass}>
-            {t(dict, "dashboard.onboarding.nav.dashboard")}
           </Link>
           <button
             type="submit"
