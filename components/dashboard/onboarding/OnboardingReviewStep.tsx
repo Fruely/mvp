@@ -304,12 +304,6 @@ export default function OnboardingReviewStep({
                 ? t(dict, "dashboard.onboarding.reviewStep.publishing")
                 : t(dict, "dashboard.onboarding.reviewStep.publish")}
             </button>
-            <Link
-              href={dashboardLink}
-              className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-            >
-              {t(dict, "dashboard.onboarding.nav.dashboard")}
-            </Link>
           </div>
         </>
       )}
