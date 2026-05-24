@@ -5,12 +5,22 @@ import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 export const dynamic = "force-dynamic";
 
-/** Homepage grid: 4 founder + 4 featured + 4 general */
-const QUOTA_FOUNDER = 4;
-const QUOTA_FEATURED = 4;
-const QUOTA_GENERAL = 4;
-const TOTAL_SLOTS = QUOTA_FOUNDER + QUOTA_FEATURED + QUOTA_GENERAL;
-const FETCH_LIMIT = 120;
+/**
+ * Homepage recommended grid: 3 rows x 4 cards.
+ *
+ * Row 1: founder / first-50 rotation.
+ * Row 2: premium placement rotation.
+ * Row 3: mostly premium backfill + discovery slots for newer non-premium specialists.
+ */
+const FOUNDER_ROW_SIZE = 4;
+const PREMIUM_ROW_SIZE = 4;
+const DISCOVERY_ROW_SIZE = 4;
+const DISCOVERY_NON_PREMIUM_SLOTS = 1;
+const TOTAL_SLOTS = FOUNDER_ROW_SIZE + PREMIUM_ROW_SIZE + DISCOVERY_ROW_SIZE;
+const POOL_FETCH_LIMIT = 160;
+
+type PlacementGroup = "founder" | "premium" | "discovery" | "general";
+type RecommendationBadge = "founder_first_50" | "premium_placement" | "new_discovery";
 
 type SpecialistRow = {
   id: string;
@@ -22,7 +32,14 @@ type SpecialistRow = {
   featured_priority?: number | null;
   is_featured?: boolean | null;
   founder_badge?: boolean | null;
+  published_at?: string | null;
+  created_at?: string | null;
   specialist_services?: unknown;
+};
+
+type SelectedSpecialist = SpecialistRow & {
+  placement_group: PlacementGroup;
+  badges: RecommendationBadge[];
 };
 
 /** Deterministic PRNG for seeded shuffle (stable within same seed). */
@@ -77,19 +94,76 @@ function hasValidServiceForRecommended(services: unknown): boolean {
   });
 }
 
+function dedupeRows(rows: SpecialistRow[]): SpecialistRow[] {
+  const byId = new Map<string, SpecialistRow>();
+  for (const row of rows) {
+    if (!row?.id || !hasValidServiceForRecommended(row.specialist_services)) continue;
+    if (!byId.has(row.id)) byId.set(row.id, row);
+  }
+  return Array.from(byId.values());
+}
+
 function takeUniqueById(
   ordered: SpecialistRow[],
   used: Set<string>,
-  n: number
-): SpecialistRow[] {
-  const out: SpecialistRow[] = [];
+  n: number,
+  placementGroup: PlacementGroup,
+  badgesForRow: (row: SpecialistRow) => RecommendationBadge[],
+): SelectedSpecialist[] {
+  const out: SelectedSpecialist[] = [];
   for (const row of ordered) {
     if (out.length >= n) break;
     if (!row?.id || used.has(row.id)) continue;
     used.add(row.id);
-    out.push(row);
+    out.push({ ...row, placement_group: placementGroup, badges: badgesForRow(row) });
   }
   return out;
+}
+
+function founderBadges(row: SpecialistRow): RecommendationBadge[] {
+  const badges: RecommendationBadge[] = [];
+  if (row.founder_badge === true) badges.push("founder_first_50");
+  if (row.is_featured === true) badges.push("premium_placement");
+  return badges;
+}
+
+function premiumBadges(row: SpecialistRow): RecommendationBadge[] {
+  const badges: RecommendationBadge[] = [];
+  if (row.founder_badge === true) badges.push("founder_first_50");
+  badges.push("premium_placement");
+  return badges;
+}
+
+function discoveryBadges(row: SpecialistRow): RecommendationBadge[] {
+  const badges: RecommendationBadge[] = [];
+  if (row.founder_badge === true) badges.push("founder_first_50");
+  if (row.is_featured === true) badges.push("premium_placement");
+  if (row.is_featured !== true && row.founder_badge !== true) badges.push("new_discovery");
+  return badges;
+}
+
+function premiumSort(a: SpecialistRow, b: SpecialistRow): number {
+  const ap = typeof a.featured_priority === "number" ? a.featured_priority : 0;
+  const bp = typeof b.featured_priority === "number" ? b.featured_priority : 0;
+  if (bp !== ap) return bp - ap;
+  const at = a.published_at ? Date.parse(a.published_at) : 0;
+  const bt = b.published_at ? Date.parse(b.published_at) : 0;
+  return bt - at;
+}
+
+function visibleQuery(supabase: ReturnType<typeof createSupabaseServerClient>) {
+  return supabase
+    .from("specialists")
+    .select(
+      "id, slug, name, avatar_url, category_id, languages, featured_priority, is_featured, founder_badge, published_at, created_at, specialist_services!inner(id, title, price_from, is_active)"
+    )
+    .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
+    .eq("is_active", true)
+    .eq("is_visible", true)
+    .or("is_test.is.null,is_test.eq.false")
+    .eq("specialist_services.is_active", true)
+    .gt("specialist_services.price_from", 0)
+    .not("specialist_services.title", "eq", "");
 }
 
 export async function GET() {
@@ -98,87 +172,118 @@ export async function GET() {
   const seedDay = utcDaySeed(now);
   const seedHalfDay = utcHalfDaySeed(now);
 
-  const { data: specRows, error: specError } = await supabase
-    .from("specialists")
-    .select(
-      "id, slug, name, avatar_url, category_id, languages, featured_priority, is_featured, founder_badge, specialist_services!inner(id, title, price_from, is_active)"
-    )
-    .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
-    .eq("is_active", true)
-    .eq("is_visible", true)
-    .or("is_test.is.null,is_test.eq.false")
-    .eq("specialist_services.is_active", true)
-    .gt("specialist_services.price_from", 0)
-    .not("specialist_services.title", "eq", "")
-    .order("created_at", { ascending: false })
-    .limit(FETCH_LIMIT);
+  const [founderResult, premiumResult, discoveryResult] = await Promise.all([
+    visibleQuery(supabase)
+      .eq("founder_badge", true)
+      .order("founder_assigned_at", { ascending: true, nullsFirst: false })
+      .limit(POOL_FETCH_LIMIT),
+    visibleQuery(supabase)
+      .or("is_featured.eq.true,status.eq.featured_verified")
+      .order("featured_priority", { ascending: false, nullsFirst: false })
+      .order("featured_at", { ascending: false, nullsFirst: false })
+      .limit(POOL_FETCH_LIMIT),
+    visibleQuery(supabase)
+      .order("published_at", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false })
+      .limit(POOL_FETCH_LIMIT),
+  ]);
 
-  if (specError) {
-    return jsonNoStore({ error: specError.message }, { status: 500 });
+  const firstError = founderResult.error ?? premiumResult.error ?? discoveryResult.error;
+  if (firstError) {
+    return jsonNoStore({ error: firstError.message }, { status: 500 });
   }
 
-  const byId = new Map<string, SpecialistRow>();
-  for (const row of specRows ?? []) {
-    const r = row as SpecialistRow;
-    if (!r?.id || !hasValidServiceForRecommended(r.specialist_services)) continue;
-    if (!byId.has(r.id)) byId.set(r.id, r);
+  const founderPool = dedupeRows((founderResult.data ?? []) as SpecialistRow[]);
+  const premiumPool = dedupeRows((premiumResult.data ?? []) as SpecialistRow[]).sort(premiumSort);
+  const discoveryPool = dedupeRows((discoveryResult.data ?? []) as SpecialistRow[]);
+  const allById = new Map<string, SpecialistRow>();
+  for (const row of [...founderPool, ...premiumPool, ...discoveryPool]) {
+    if (!allById.has(row.id)) allById.set(row.id, row);
   }
-  const base = Array.from(byId.values());
+  const base = Array.from(allById.values());
   if (base.length === 0) return jsonWithCache({ data: [] }, CACHE_PUBLIC_RECOMMENDED);
 
   const used = new Set<string>();
 
-  const founderPool = base.filter((s) => s.founder_badge === true);
   const founderOrdered = seededShuffle(founderPool, seedDay ^ 0x4f4e4445);
-  let founderPick = takeUniqueById(founderOrdered, used, QUOTA_FOUNDER);
+  let founderPick = takeUniqueById(
+    founderOrdered,
+    used,
+    FOUNDER_ROW_SIZE,
+    "founder",
+    founderBadges,
+  );
 
-  if (founderPick.length < QUOTA_FOUNDER) {
+  if (founderPick.length < FOUNDER_ROW_SIZE) {
     const backfill = base.filter((s) => !used.has(s.id) && s.founder_badge !== true);
     const extra = takeUniqueById(
       seededShuffle(backfill, seedDay ^ 0x424b46),
       used,
-      QUOTA_FOUNDER - founderPick.length
+      FOUNDER_ROW_SIZE - founderPick.length,
+      "general",
+      discoveryBadges,
     );
     founderPick = [...founderPick, ...extra];
   }
 
-  const featuredPool = base.filter((s) => s.is_featured === true);
-  const featuredOrdered = seededShuffle(featuredPool, seedDay ^ 0x464554);
-  let featuredPick = takeUniqueById(featuredOrdered, used, QUOTA_FEATURED);
+  const premiumOrdered = seededShuffle(premiumPool, seedDay ^ 0x464554).sort(premiumSort);
+  let premiumPick = takeUniqueById(
+    premiumOrdered,
+    used,
+    PREMIUM_ROW_SIZE,
+    "premium",
+    premiumBadges,
+  );
 
-  if (featuredPick.length < QUOTA_FEATURED) {
+  if (premiumPick.length < PREMIUM_ROW_SIZE) {
     const backfill = base.filter((s) => !used.has(s.id));
     const extra = takeUniqueById(
       seededShuffle(backfill, seedDay ^ 0x46425f32),
       used,
-      QUOTA_FEATURED - featuredPick.length
+      PREMIUM_ROW_SIZE - premiumPick.length,
+      "general",
+      discoveryBadges,
     );
-    featuredPick = [...featuredPick, ...extra];
+    premiumPick = [...premiumPick, ...extra];
   }
 
-  const generalStrict = base.filter(
-    (s) =>
-      !used.has(s.id) &&
-      s.founder_badge !== true &&
-      s.is_featured !== true
+  const premiumDiscoverySlots = Math.max(0, DISCOVERY_ROW_SIZE - DISCOVERY_NON_PREMIUM_SLOTS);
+  let discoveryPick = takeUniqueById(
+    seededShuffle(premiumPool.filter((s) => !used.has(s.id)), seedHalfDay ^ 0x50524d),
+    used,
+    premiumDiscoverySlots,
+    "premium",
+    premiumBadges,
   );
-  const generalOrdered = seededShuffle(generalStrict, seedHalfDay ^ 0x474e4c);
-  let generalPick = takeUniqueById(generalOrdered, used, QUOTA_GENERAL);
 
-  if (generalPick.length < QUOTA_GENERAL) {
+  const nonPremiumDiscovery = discoveryPool.filter(
+    (s) => !used.has(s.id) && s.founder_badge !== true && s.is_featured !== true,
+  );
+  const discoveryExtra = takeUniqueById(
+    seededShuffle(nonPremiumDiscovery, seedHalfDay ^ 0x44495343),
+    used,
+    DISCOVERY_ROW_SIZE - discoveryPick.length,
+    "discovery",
+    discoveryBadges,
+  );
+  discoveryPick = [...discoveryPick, ...discoveryExtra];
+
+  if (discoveryPick.length < DISCOVERY_ROW_SIZE) {
     const loose = base.filter((s) => !used.has(s.id));
     const extra = takeUniqueById(
       seededShuffle(loose, seedHalfDay ^ 0x474c32),
       used,
-      QUOTA_GENERAL - generalPick.length
+      DISCOVERY_ROW_SIZE - discoveryPick.length,
+      "general",
+      discoveryBadges,
     );
-    generalPick = [...generalPick, ...extra];
+    discoveryPick = [...discoveryPick, ...extra];
   }
 
-  const toShow: SpecialistRow[] = [
+  const toShow: SelectedSpecialist[] = [
     ...founderPick,
-    ...featuredPick,
-    ...generalPick,
+    ...premiumPick,
+    ...discoveryPick,
   ];
 
   if (toShow.length < TOTAL_SLOTS) {
@@ -186,7 +291,9 @@ export async function GET() {
     const fill = takeUniqueById(
       seededShuffle(rest, seedHalfDay ^ 0x464c4c),
       used,
-      TOTAL_SLOTS - toShow.length
+      TOTAL_SLOTS - toShow.length,
+      "general",
+      discoveryBadges,
     );
     toShow.push(...fill);
   }
@@ -194,15 +301,16 @@ export async function GET() {
   const specialistIds = toShow.map((r) => r.id);
   const { data: profiles } = await supabase
     .from("specialist_profiles")
-    .select("specialist_id, city, photo_url")
+    .select("specialist_id, city, photo_url, about_me")
     .in("specialist_id", specialistIds);
 
-  const profileBySpecialistId = new Map<string, { city: string | null; photo_url: string | null }>();
+  const profileBySpecialistId = new Map<string, { city: string | null; photo_url: string | null; about_me: string | null }>();
   for (const p of profiles ?? []) {
     if (p?.specialist_id) {
       profileBySpecialistId.set(p.specialist_id, {
         city: typeof p.city === "string" ? p.city : null,
         photo_url: typeof p.photo_url === "string" ? p.photo_url : null,
+        about_me: typeof p.about_me === "string" ? p.about_me : null,
       });
     }
   }
@@ -259,7 +367,7 @@ export async function GET() {
     }
   }
 
-  const data = toShow.map((row) => {
+  const data = toShow.map((row, index) => {
     const profile = profileBySpecialistId.get(row.id);
     const category =
       typeof row.category_id === "string" ? categoryById.get(row.category_id) : undefined;
@@ -275,10 +383,15 @@ export async function GET() {
       category_title_de: category?.title_de ?? null,
       category_title_ua: category?.title_ua ?? null,
       category_slug: category?.slug ?? null,
+      about_line: profile?.about_me ?? null,
       featured_priority: row.featured_priority ?? 0,
+      is_featured: row.is_featured === true || row.placement_group === "premium",
       rating_avg: ratingBySpecialistId.get(row.id)?.rating_avg ?? null,
       reviews_count: ratingBySpecialistId.get(row.id)?.reviews_count ?? 0,
       founder_badge: row.founder_badge === true,
+      placement_group: row.placement_group,
+      recommendation_row: Math.floor(index / 4) + 1,
+      badges: row.badges,
     };
   });
 
