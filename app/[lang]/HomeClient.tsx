@@ -430,8 +430,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                   </div>
                 ) : null}
                 {(specialist.badges?.includes("premium_placement") ||
-                  specialist.placement_group === "premium" ||
-                  specialist.is_featured === true) ? (
+                  specialist.placement_group === "premium") ? (
                   <div className="absolute right-3 top-3 z-10 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900 shadow-sm">
                     Премиум-показ
                   </div>
