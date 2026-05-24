@@ -81,6 +81,7 @@ export default function SpecialistOnboardingWizard({
   const baseHref = `/${lang}/specialist/dashboard/onboarding`;
   const dashboardHref = `/${lang}/specialist/dashboard`;
   const gateMessage = incompleteProfileGateMessage(lang);
+  const canOpenDashboard = publishReady;
 
   const steps: OnboardingStep[] = ONBOARDING_STEP_ORDER.map((step) => ({
     key: step,
@@ -108,9 +109,11 @@ export default function SpecialistOnboardingWizard({
             {t(dict, "dashboard.onboarding.nav.back")}
           </Link>
         ) : null}
-        <Link href={dashboardHref} className={secondaryLinkClass}>
-          {t(dict, "dashboard.onboarding.nav.dashboard")}
-        </Link>
+        {canOpenDashboard ? (
+          <Link href={dashboardHref} className={secondaryLinkClass}>
+            {t(dict, "dashboard.onboarding.nav.dashboard")}
+          </Link>
+        ) : null}
         {nextKey ? (
           <Link href={stepHref(baseHref, nextKey)} className={primaryLinkClass}>
             {t(dict, "dashboard.onboarding.nav.next")}
@@ -128,9 +131,11 @@ export default function SpecialistOnboardingWizard({
             ? t(dict, "dashboard.onboarding.cta.continue")
             : t(dict, "dashboard.onboarding.cta.start")}
       </Link>
-      <Link href={dashboardHref} className={secondaryLinkClass}>
-        {t(dict, "dashboard.onboarding.nav.dashboard")}
-      </Link>
+      {canOpenDashboard ? (
+        <Link href={dashboardHref} className={secondaryLinkClass}>
+          {t(dict, "dashboard.onboarding.nav.dashboard")}
+        </Link>
+      ) : null}
     </div>
   );
 
