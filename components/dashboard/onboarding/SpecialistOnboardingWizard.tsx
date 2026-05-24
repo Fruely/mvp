@@ -22,6 +22,27 @@ function stepHref(baseHref: string, step: OnboardingStepKey): string {
   return step === "welcome" ? `${baseHref}?step=welcome` : `${baseHref}?step=${step}`;
 }
 
+function incompleteProfileGateMessage(lang: string): { title: string; body: string } {
+  if (lang === "de") {
+    return {
+      title: "Ihr Profil ist noch nicht veröffentlicht.",
+      body: "Bitte schließen Sie die Veröffentlichung Ihres Profils ab. Danach werden alle Bereiche des Spezialisten-Kontos freigeschaltet.",
+    };
+  }
+
+  if (lang === "ua") {
+    return {
+      title: "Ваш профіль ще не опубліковано.",
+      body: "Будь ласка, завершіть публікацію профілю. Після цього всі розділи кабінету спеціаліста стануть доступними.",
+    };
+  }
+
+  return {
+    title: "Ваш профиль ещё не опубликован.",
+    body: "Пожалуйста, завершите публикацию профиля. После этого все разделы кабинета специалиста станут доступны.",
+  };
+}
+
 export default function SpecialistOnboardingWizard({
   dict,
   lang,
@@ -29,6 +50,7 @@ export default function SpecialistOnboardingWizard({
   profileStarted,
   publishReady,
   isUncategorizedCategory,
+  showIncompleteProfileGateNotice,
   checklistItems,
   initialBasicData,
   initialAboutData,
@@ -45,6 +67,7 @@ export default function SpecialistOnboardingWizard({
   profileStarted: boolean;
   publishReady: boolean;
   isUncategorizedCategory: boolean;
+  showIncompleteProfileGateNotice?: boolean;
   checklistItems: OnboardingChecklistItem[];
   initialBasicData: OnboardingBasicData;
   initialAboutData: OnboardingAboutData;
@@ -57,6 +80,7 @@ export default function SpecialistOnboardingWizard({
 }) {
   const baseHref = `/${lang}/specialist/dashboard/onboarding`;
   const dashboardHref = `/${lang}/specialist/dashboard`;
+  const gateMessage = incompleteProfileGateMessage(lang);
 
   const steps: OnboardingStep[] = ONBOARDING_STEP_ORDER.map((step) => ({
     key: step,
@@ -112,6 +136,13 @@ export default function SpecialistOnboardingWizard({
 
   return (
     <div className="space-y-6">
+      {showIncompleteProfileGateNotice ? (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 px-5 py-4 text-amber-950 shadow-sm">
+          <p className="text-sm font-semibold">{gateMessage.title}</p>
+          <p className="mt-1 text-sm leading-6">{gateMessage.body}</p>
+        </div>
+      ) : null}
+
       <OnboardingProgress steps={steps} activeStep={activeStep} />
 
       {activeStep === "welcome" ? (
