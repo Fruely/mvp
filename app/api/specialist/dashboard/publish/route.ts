@@ -7,6 +7,13 @@ import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncateg
 
 export const dynamic = "force-dynamic";
 
+const PUBLISHED_SPECIALIST_STATUSES = new Set([
+  "published_unverified",
+  "featured_verified",
+  "approved",
+  "paused",
+]);
+
 export async function POST() {
   const supabase = createSupabaseServerClient();
   const {
@@ -27,6 +34,15 @@ export async function POST() {
   }
 
   const specialistId = specialist.id as string;
+  const currentStatus = typeof specialist.status === "string" ? specialist.status : null;
+
+  if (currentStatus && PUBLISHED_SPECIALIST_STATUSES.has(currentStatus)) {
+    return jsonNoStore({
+      success: true,
+      status: currentStatus,
+      alreadyPublished: true,
+    });
+  }
 
   const missing: string[] = [];
   if (!specialist.name) missing.push("Имя");
@@ -170,10 +186,25 @@ export async function POST() {
     .from("specialists")
     .update(updatePayload)
     .eq("id", specialistId)
+    .not("status", "in", "(published_unverified,featured_verified,approved,paused)")
     .select("id, status")
-    .single();
+    .maybeSingle();
   if (updateError) {
     return jsonNoStore({ error: "Failed to publish specialist profile" }, { status: 500 });
+  }
+
+  if (!updated) {
+    const { data: current } = await supabase
+      .from("specialists")
+      .select("status")
+      .eq("id", specialistId)
+      .maybeSingle();
+    const status = typeof current?.status === "string" ? current.status : "published_unverified";
+    return jsonNoStore({
+      success: true,
+      status,
+      alreadyPublished: true,
+    });
   }
 
   const { data: publishedRow } = await supabase
