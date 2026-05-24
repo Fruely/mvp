@@ -74,6 +74,17 @@ type PopularCategory = {
   sort_order?: number | null;
 };
 
+type RecommendationBadge =
+  | "founder_first_50"
+  | "premium_placement"
+  | "new_discovery";
+
+type RecommendationPlacementGroup =
+  | "founder"
+  | "premium"
+  | "discovery"
+  | "general";
+
 type RecommendedSpecialist = {
   id: string;
   slug: string | null;
@@ -89,6 +100,10 @@ type RecommendedSpecialist = {
   rating_avg: number | null;
   reviews_count: number;
   founder_badge?: boolean;
+  is_featured?: boolean;
+  placement_group?: RecommendationPlacementGroup;
+  recommendation_row?: number;
+  badges?: RecommendationBadge[];
 };
 
 const CATEGORY_ICON_HINTS = [
@@ -347,6 +362,24 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             rating_avg: typeof item.rating_avg === "number" ? item.rating_avg : null,
             reviews_count: typeof item.reviews_count === "number" ? item.reviews_count : 0,
             founder_badge: item.founder_badge === true,
+            is_featured: item.is_featured === true,
+            placement_group:
+              item.placement_group === "founder" ||
+              item.placement_group === "premium" ||
+              item.placement_group === "discovery" ||
+              item.placement_group === "general"
+                ? item.placement_group
+                : undefined,
+            recommendation_row:
+              typeof item.recommendation_row === "number" ? item.recommendation_row : undefined,
+            badges: Array.isArray(item.badges)
+              ? item.badges.filter(
+                  (badge: unknown): badge is RecommendationBadge =>
+                    badge === "founder_first_50" ||
+                    badge === "premium_placement" ||
+                    badge === "new_discovery"
+                )
+              : [],
           }));
         setRecommendedSpecialists(normalized);
       } catch {
@@ -394,6 +427,13 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                 {specialist.founder_badge ? (
                   <div className="absolute left-3 top-3 z-10">
                     <FounderBadge />
+                  </div>
+                ) : null}
+                {(specialist.badges?.includes("premium_placement") ||
+                  specialist.placement_group === "premium" ||
+                  specialist.is_featured === true) ? (
+                  <div className="absolute right-3 top-3 z-10 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900 shadow-sm">
+                    Премиум-показ
                   </div>
                 ) : null}
                 {specialist.avatar_url ? (
