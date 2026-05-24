@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ——— APPROVE (ATOMIC: create specialist first, then update application) ———
+    // ——— APPROVE (ATOMIC: create draft specialist first, then update application) ———
     if (!app.name || !app.name.trim()) {
       return NextResponse.json(
         { error: 'Application missing name; cannot create specialist' },
@@ -242,14 +242,14 @@ export async function POST(request: NextRequest) {
         category_id: app.category_id,
         avatar_url: app.avatar_url || null,
         bio: app.about_short?.trim() || null,
-        status: 'published_unverified',
+        status: 'draft',
         approved_at: now.toISOString(),
         claim_token: claimToken,
         claim_token_created_at: now.toISOString(),
         claim_token_expires_at: expiresAt.toISOString(),
         claim_token_used_at: null,
-        is_active: true,
-        is_visible: true,
+        is_active: false,
+        is_visible: false,
         terms_accepted_at: app.terms_accepted_at || null,
         terms_version: app.terms_version || '1.0',
       })
@@ -295,7 +295,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await notify('NEW_SPECIALIST', { name: app.name.trim() });
+    await notify('NEW_SPECIALIST', { name: `🟡 Заявка одобрена, создан draft: ${app.name.trim()}` });
 
     const baseUrl =
       process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
@@ -325,7 +325,7 @@ export async function POST(request: NextRequest) {
           subject: 'Ваша заявка одобрена — доступ к кабинету Freuly',
           html: `<div style="font-family: Arial, sans-serif; max-width: 600px;">
   <h2 style="color: #2563eb;">Заявка одобрена</h2>
-  <p>Ваша заявка на платформе Freuly одобрена.</p>
+  <p>Ваша заявка на платформе Freuly одобрена. Теперь заполните и опубликуйте профиль в кабинете специалиста.</p>
   <p><a href="${claimUrl}" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">Войти в кабинет</a></p>
   <p style="color: #666; font-size: 14px;">Ссылка действует 48 часов. После первого входа она станет недействительной.</p>
 </div>`,
@@ -333,24 +333,23 @@ export async function POST(request: NextRequest) {
         email_sent = true;
       } catch (emailErr: unknown) {
         email_error = emailErr instanceof Error ? emailErr.message : String(emailErr);
-        console.error('[admin] Approve email failed', emailErr);
+        console.error('[admin] Approval email failed', emailErr);
       }
     }
 
     return NextResponse.json(
       {
         success: true,
-        updated: { ...application, status: 'approved' },
-        specialist: newSpecialist,
+        updated: updatedApplication,
+        specialist_id: newSpecialist?.id,
+        claim_url: claimUrl,
         email_sent,
         ...(email_error !== undefined && { email_error }),
-        claim_url: claimUrl,
       },
       { status: 200, headers: { 'Cache-Control': 'no-store' } }
     );
-  } catch (error: unknown) {
-    console.error('[admin] Unexpected error', error);
-    await notify('SYSTEM_ERROR', { route: '/api/admin/specialists/update', error });
+  } catch (error) {
+    console.error('Admin update error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500, headers: { 'Cache-Control': 'no-store' } }
