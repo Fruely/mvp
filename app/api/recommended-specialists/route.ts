@@ -29,6 +29,7 @@ type SpecialistRow = {
   avatar_url?: string | null;
   category_id?: string | null;
   languages?: string[] | null;
+  status?: string | null;
   featured_priority?: number | null;
   is_featured?: boolean | null;
   founder_badge?: boolean | null;
@@ -74,6 +75,10 @@ function utcDaySeed(d: Date): number {
 /** UTC 12-hour window index (stable within ~12h). */
 function utcHalfDaySeed(d: Date): number {
   return Math.floor(d.getTime() / (12 * 60 * 60 * 1000)) >>> 0;
+}
+
+function isPremiumPlacement(row: SpecialistRow): boolean {
+  return row.is_featured === true || row.status === "featured_verified";
 }
 
 function hasValidServiceForRecommended(services: unknown): boolean {
@@ -123,7 +128,7 @@ function takeUniqueById(
 function founderBadges(row: SpecialistRow): RecommendationBadge[] {
   const badges: RecommendationBadge[] = [];
   if (row.founder_badge === true) badges.push("founder_first_50");
-  if (row.is_featured === true) badges.push("premium_placement");
+  if (isPremiumPlacement(row)) badges.push("premium_placement");
   return badges;
 }
 
@@ -137,8 +142,8 @@ function premiumBadges(row: SpecialistRow): RecommendationBadge[] {
 function discoveryBadges(row: SpecialistRow): RecommendationBadge[] {
   const badges: RecommendationBadge[] = [];
   if (row.founder_badge === true) badges.push("founder_first_50");
-  if (row.is_featured === true) badges.push("premium_placement");
-  if (row.is_featured !== true && row.founder_badge !== true) badges.push("new_discovery");
+  if (isPremiumPlacement(row)) badges.push("premium_placement");
+  if (!isPremiumPlacement(row) && row.founder_badge !== true) badges.push("new_discovery");
   return badges;
 }
 
@@ -155,7 +160,7 @@ function visibleQuery(supabase: ReturnType<typeof createSupabaseServerClient>) {
   return supabase
     .from("specialists")
     .select(
-      "id, slug, name, avatar_url, category_id, languages, featured_priority, is_featured, founder_badge, published_at, created_at, specialist_services!inner(id, title, price_from, is_active)"
+      "id, slug, name, avatar_url, category_id, languages, status, featured_priority, is_featured, founder_badge, published_at, created_at, specialist_services!inner(id, title, price_from, is_active)"
     )
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
     .eq("is_active", true)
@@ -257,7 +262,7 @@ export async function GET() {
   );
 
   const nonPremiumDiscovery = discoveryPool.filter(
-    (s) => !used.has(s.id) && s.founder_badge !== true && s.is_featured !== true,
+    (s) => !used.has(s.id) && s.founder_badge !== true && !isPremiumPlacement(s),
   );
   const discoveryExtra = takeUniqueById(
     seededShuffle(nonPremiumDiscovery, seedHalfDay ^ 0x44495343),
@@ -371,6 +376,7 @@ export async function GET() {
     const profile = profileBySpecialistId.get(row.id);
     const category =
       typeof row.category_id === "string" ? categoryById.get(row.category_id) : undefined;
+    const premiumPlacement = isPremiumPlacement(row) || row.placement_group === "premium";
     return {
       id: row.id,
       slug: row.slug ?? null,
@@ -385,7 +391,7 @@ export async function GET() {
       category_slug: category?.slug ?? null,
       about_line: profile?.about_me ?? null,
       featured_priority: row.featured_priority ?? 0,
-      is_featured: row.is_featured === true || row.placement_group === "premium",
+      is_featured: premiumPlacement,
       rating_avg: ratingBySpecialistId.get(row.id)?.rating_avg ?? null,
       reviews_count: ratingBySpecialistId.get(row.id)?.reviews_count ?? 0,
       founder_badge: row.founder_badge === true,
