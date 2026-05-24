@@ -8,6 +8,8 @@ const ACTIVE_PRICE_REQUIRED_ERROR =
   "Чтобы показывать услугу в профиле и использовать её для публикации, укажите цену больше 0.";
 const SPECIALIST_CATEGORY_REQUIRED_ERROR = "SPECIALIST_CATEGORY_REQUIRED";
 const SPECIALIST_SERVICE_CURRENCY = "EUR";
+const SERVICE_SELECT =
+  "id, title, description, price_comment, pricing_type, price_from, price_to, currency, duration_minutes, is_active, category_id, created_at, updated_at";
 
 function normalizeNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -22,6 +24,10 @@ function normalizeText(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
+}
+
+function hasOwn(value: unknown, key: PropertyKey): boolean {
+  return Boolean(value && typeof value === "object" && Object.prototype.hasOwnProperty.call(value, key));
 }
 
 function hasValidServicePrice(args: {
@@ -84,7 +90,7 @@ export async function GET() {
 
   const { data, error } = await ctx.supabase
     .from("specialist_services")
-    .select("id, title, description, price_comment, pricing_type, price_from, price_to, currency, duration_minutes, is_active, created_at, updated_at")
+    .select(SERVICE_SELECT)
     .eq("specialist_id", ctx.specialistId)
     .order("created_at", { ascending: false });
 
@@ -162,7 +168,7 @@ export async function POST(request: NextRequest) {
   const { data, error } = await ctx.supabase
     .from("specialist_services")
     .insert(payload)
-    .select("id, title, description, price_comment, pricing_type, price_from, price_to, currency, duration_minutes, is_active, created_at, updated_at")
+    .select(SERVICE_SELECT)
     .maybeSingle();
 
   if (error) {
@@ -216,7 +222,7 @@ export async function PATCH(request: NextRequest) {
 
   const { data: currentService, error: currentServiceError } = await ctx.supabase
     .from("specialist_services")
-    .select("id, pricing_type, price_from, price_to, is_active")
+    .select("id, pricing_type, price_from, price_to, is_active, category_id")
     .eq("id", id)
     .eq("specialist_id", ctx.specialistId)
     .maybeSingle();
@@ -232,8 +238,8 @@ export async function PATCH(request: NextRequest) {
   const patch: Record<string, unknown> = {};
 
   if (title !== null) patch.title = title;
-  if (Object.prototype.hasOwnProperty.call(body ?? {}, "description")) patch.description = description;
-  if (Object.prototype.hasOwnProperty.call(body ?? {}, "price_comment")) patch.price_comment = priceComment;
+  if (hasOwn(body, "description")) patch.description = description;
+  if (hasOwn(body, "price_comment")) patch.price_comment = priceComment;
   if (pricingType !== null) {
     if (!ALLOWED_PRICING_TYPES.includes(pricingType as PricingType)) {
       return NextResponse.json({ error: "pricing_type must be fixed/range/hourly" }, { status: 400 });
@@ -241,8 +247,8 @@ export async function PATCH(request: NextRequest) {
     patch.pricing_type = pricingType;
   }
   if (priceFrom !== null) patch.price_from = priceFrom;
-  if (Object.prototype.hasOwnProperty.call(body ?? {}, "price_to")) patch.price_to = priceTo;
-  if (Object.prototype.hasOwnProperty.call(body ?? {}, "duration_minutes")) patch.duration_minutes = durationMinutes;
+  if (hasOwn(body, "price_to")) patch.price_to = priceTo;
+  if (hasOwn(body, "duration_minutes")) patch.duration_minutes = durationMinutes;
   if (isActive !== null) patch.is_active = isActive;
 
   const effectivePricingTypeRaw =
@@ -284,11 +290,14 @@ export async function PATCH(request: NextRequest) {
   if (!validPrice) {
     patch.is_active = false;
   }
-  const resolvedCategoryId = requestedCategoryId ?? ctx.categoryId;
-  if (!resolvedCategoryId) {
-    return NextResponse.json({ error: SPECIALIST_CATEGORY_REQUIRED_ERROR }, { status: 400 });
+
+  if (hasOwn(body, "category_id")) {
+    const resolvedCategoryId = requestedCategoryId ?? ctx.categoryId;
+    if (!resolvedCategoryId) {
+      return NextResponse.json({ error: SPECIALIST_CATEGORY_REQUIRED_ERROR }, { status: 400 });
+    }
+    patch.category_id = resolvedCategoryId;
   }
-  patch.category_id = resolvedCategoryId;
   patch.currency = SPECIALIST_SERVICE_CURRENCY;
 
   const { data, error } = await ctx.supabase
@@ -296,7 +305,7 @@ export async function PATCH(request: NextRequest) {
     .update(patch)
     .eq("id", id)
     .eq("specialist_id", ctx.specialistId)
-    .select("id, title, description, price_comment, pricing_type, price_from, price_to, currency, duration_minutes, is_active, created_at, updated_at")
+    .select(SERVICE_SELECT)
     .maybeSingle();
 
   if (error) {
@@ -359,4 +368,3 @@ export async function DELETE(request: NextRequest) {
 
   return NextResponse.json({ success: true }, { headers: { "Cache-Control": "no-store" } });
 }
-
