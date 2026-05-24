@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkPublishableCategory } from "@/lib/dashboard/publicationReadiness";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { normalizeRouteLangToDbContentCode } from "@/lib/specialists/normalizeContentLanguageCode";
 
@@ -7,6 +8,7 @@ type PricingType = (typeof ALLOWED_PRICING_TYPES)[number];
 const ACTIVE_PRICE_REQUIRED_ERROR =
   "Чтобы показывать услугу в профиле и использовать её для публикации, укажите цену больше 0.";
 const SPECIALIST_CATEGORY_REQUIRED_ERROR = "SPECIALIST_CATEGORY_REQUIRED";
+const INVALID_SERVICE_CATEGORY_ERROR = "INVALID_SERVICE_CATEGORY";
 const SPECIALIST_SERVICE_CURRENCY = "EUR";
 const SERVICE_SELECT =
   "id, title, description, price_comment, pricing_type, price_from, price_to, currency, duration_minutes, is_active, category_id, created_at, updated_at";
@@ -48,6 +50,32 @@ function hasValidServicePrice(args: {
 
 function hasPositivePriceFrom(priceFrom: number | null): boolean {
   return typeof priceFrom === "number" && Number.isFinite(priceFrom) && priceFrom > 0;
+}
+
+async function validateServiceCategory(
+  supabase: ReturnType<typeof createSupabaseServerClient>,
+  categoryId: string,
+): Promise<NextResponse | null> {
+  const { data: category, error } = await supabase
+    .from("categories")
+    .select("id, parent_id, slug")
+    .eq("id", categoryId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[specialist/services] category validation failed", error);
+    return NextResponse.json({ error: "Failed to validate category" }, { status: 500 });
+  }
+
+  const check = checkPublishableCategory(category);
+  if (!check.ok) {
+    return NextResponse.json(
+      { error: INVALID_SERVICE_CATEGORY_ERROR, reason: check.reason },
+      { status: 400 },
+    );
+  }
+
+  return null;
 }
 
 async function getCurrentSpecialistContext() {
@@ -124,6 +152,9 @@ export async function POST(request: NextRequest) {
   if (!resolvedCategoryId) {
     return NextResponse.json({ error: SPECIALIST_CATEGORY_REQUIRED_ERROR }, { status: 400 });
   }
+
+  const categoryError = await validateServiceCategory(ctx.supabase, resolvedCategoryId);
+  if (categoryError) return categoryError;
 
   if (!title) {
     return NextResponse.json({ error: "title is required" }, { status: 400 });
@@ -296,6 +327,8 @@ export async function PATCH(request: NextRequest) {
     if (!resolvedCategoryId) {
       return NextResponse.json({ error: SPECIALIST_CATEGORY_REQUIRED_ERROR }, { status: 400 });
     }
+    const categoryError = await validateServiceCategory(ctx.supabase, resolvedCategoryId);
+    if (categoryError) return categoryError;
     patch.category_id = resolvedCategoryId;
   }
   patch.currency = SPECIALIST_SERVICE_CURRENCY;
