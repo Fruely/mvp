@@ -15,6 +15,7 @@ function isLang(value: string): value is Lang {
 
 /** BCP 47: Ukrainian uses `uk` in <html lang>, URL segment stays `ua`. */
 const HTML_LANG_HEADER = "x-freuly-html-lang";
+const PATHNAME_HEADER = "x-freuly-pathname";
 
 function pathnameToHtmlLang(pathname: string): string {
   if (pathname === "/impressum" || pathname === "/datenschutzerklaerung") return "de";
@@ -28,6 +29,7 @@ function pathnameToHtmlLang(pathname: string): string {
 function nextWithHtmlLang(request: NextRequest, pathname: string) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(HTML_LANG_HEADER, pathnameToHtmlLang(pathname));
+  requestHeaders.set(PATHNAME_HEADER, pathname);
   return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
@@ -126,6 +128,7 @@ export function middleware(request: NextRequest) {
   ) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set(HTML_LANG_HEADER, pathnameToHtmlLang(pathname));
+    requestHeaders.set(PATHNAME_HEADER, pathname);
     const res = NextResponse.next({ request: { headers: requestHeaders } });
     if (pathname.startsWith("/specialist/claim")) {
       res.headers.set("Cache-Control", "private, no-store, no-cache, must-revalidate, max-age=0");
@@ -165,6 +168,7 @@ export function middleware(request: NextRequest) {
   if (segmentsForI18n.length === 1) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set(HTML_LANG_HEADER, pathnameToHtmlLang(pathname));
+    requestHeaders.set(PATHNAME_HEADER, pathname);
     const res = NextResponse.next({ request: { headers: requestHeaders } });
     res.cookies.set(LANG_COOKIE, lang, { path: "/" });
     res.headers.set(
@@ -177,6 +181,7 @@ export function middleware(request: NextRequest) {
   // For /{lang}/... keep as-is, just set cookie (for future redirects)
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(HTML_LANG_HEADER, pathnameToHtmlLang(pathname));
+  requestHeaders.set(PATHNAME_HEADER, pathname);
   const res = NextResponse.next({ request: { headers: requestHeaders } });
   res.cookies.set(LANG_COOKIE, lang, { path: "/" });
   return res;
