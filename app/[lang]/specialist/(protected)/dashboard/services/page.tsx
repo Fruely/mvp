@@ -40,7 +40,7 @@ export default async function SpecialistDashboardServicesPage({
   const { data, error } = await service
     .from("specialist_services")
     .select(
-      "id, title, description, price_comment, pricing_type, price_from, price_to, currency, duration_minutes, is_active, created_at, updated_at"
+      "id, title, description, price_comment, pricing_type, price_from, price_to, currency, duration_minutes, is_active, category_id, created_at, updated_at"
     )
     .eq("specialist_id", specialist.id)
     .order("created_at", { ascending: false });
@@ -66,10 +66,17 @@ export default async function SpecialistDashboardServicesPage({
         ? row.duration_minutes
         : null,
     is_active: Boolean(row.is_active),
+    category_id: typeof row.category_id === "string" ? row.category_id : null,
     created_at: typeof row.created_at === "string" ? row.created_at : null,
     updated_at: typeof row.updated_at === "string" ? row.updated_at : null,
   }));
-  const hasOnboardingPublishableService = services.some(
+  const servicesInSelectedCategory = services.filter(
+    (item) => item.category_id === specialistCategoryId,
+  );
+  const hasServicesOutsideSelectedCategory = services.some(
+    (item) => item.category_id !== specialistCategoryId,
+  );
+  const hasOnboardingPublishableService = servicesInSelectedCategory.some(
     (item) => item.is_active && Number.isFinite(item.price_from) && item.price_from > 0,
   );
 
@@ -99,6 +106,8 @@ export default async function SpecialistDashboardServicesPage({
         dict={dict}
         onboardingReturnHref={showOnboardingReturn ? onboardingPhotosStepHref : undefined}
         initialShowCreate={showOnboardingReturn}
+        currentCategoryId={specialistCategoryId || null}
+        hasServicesOutsideSelectedCategory={hasServicesOutsideSelectedCategory}
       />
     </>
   );
