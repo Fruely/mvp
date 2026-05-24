@@ -11,6 +11,7 @@ export type SpecialistService = {
   currency: string;
   duration_minutes: number | null;
   is_active: boolean;
+  category_id: string | null;
   created_at: string | null;
   updated_at: string | null;
 };
@@ -24,6 +25,7 @@ type ServicePayload = {
   price_to: number | null;
   duration_minutes: number | null;
   is_active?: boolean;
+  category_id?: string | null;
 };
 
 async function parseApiResponse<T>(response: Response): Promise<T> {
@@ -88,4 +90,3 @@ export async function deleteService(id: string): Promise<void> {
   });
   await parseApiResponse<{ success: true }>(response);
 }
-
