@@ -45,10 +45,8 @@ export default function OnboardingBasicForm({
   dict,
   lang,
   baseHref,
-  dashboardHref,
   initialData,
   categories,
-  preserveProfileData,
 }: {
   dict: Dictionary;
   lang: string;
@@ -105,13 +103,6 @@ export default function OnboardingBasicForm({
         postal_code: form.postal_code.trim(),
         languages: form.languages.map((language) => language.trim()).filter(Boolean),
         lang,
-        about_me: preserveProfileData.about_me,
-        city: preserveProfileData.city,
-        address: preserveProfileData.address,
-        video_url: preserveProfileData.video_url,
-        photo_url: preserveProfileData.photo_url,
-        gallery_urls: preserveProfileData.gallery_urls,
-        certificate_urls: preserveProfileData.certificate_urls,
       };
 
       const res = await fetch("/api/specialist/dashboard/save", {
@@ -261,9 +252,6 @@ export default function OnboardingBasicForm({
         <div className="flex flex-wrap items-center gap-3">
           <Link href={`${baseHref}?step=welcome`} className={secondaryLinkClass}>
             {t(dict, "dashboard.onboarding.nav.back")}
-          </Link>
-          <Link href={dashboardHref} className={secondaryLinkClass}>
-            {t(dict, "dashboard.onboarding.nav.dashboard")}
           </Link>
           <button
             type="submit"
