@@ -39,18 +39,38 @@ function hasValidPrice(service: {
   return true;
 }
 
+function categoryMismatchMessage(lang: string): string {
+  if (lang === "de") {
+    return "Einige vorhandene Leistungen gehören noch zu einer früheren Kategorie. Bearbeiten und speichern Sie die passende Leistung, um sie der aktuellen Kategorie zu bestätigen.";
+  }
+  if (lang === "ua") {
+    return "Деякі наявні послуги ще належать до попередньої категорії. Відредагуйте й збережіть потрібну послугу, щоб підтвердити її для поточної категорії.";
+  }
+  return "Некоторые существующие услуги относятся к предыдущей категории. Отредактируйте и сохраните нужную услугу, чтобы подтвердить её для текущей категории.";
+}
+
+function serviceCategoryHint(lang: string): string {
+  if (lang === "de") return "Nicht für die aktuelle Kategorie bestätigt";
+  if (lang === "ua") return "Не підтверджено для поточної категорії";
+  return "Не подтверждено для текущей категории";
+}
+
 export default function ServicesTable({
   initialServices,
   lang,
   dict,
   onboardingReturnHref,
   initialShowCreate = false,
+  currentCategoryId = null,
+  hasServicesOutsideSelectedCategory = false,
 }: {
   initialServices: SpecialistService[];
   lang: string;
   dict: Dictionary;
   onboardingReturnHref?: string;
   initialShowCreate?: boolean;
+  currentCategoryId?: string | null;
+  hasServicesOutsideSelectedCategory?: boolean;
 }) {
   const router = useRouter();
   const [services, setServices] = useState<SpecialistService[]>(initialServices);
@@ -70,9 +90,19 @@ export default function ServicesTable({
   const formSubmitLabel = isOnboardingMode
     ? t(dict, "dashboard.servicesEditor.saveAndContinue")
     : t(dict, "dashboard.servicesEditor.save");
+  const mismatchHint = serviceCategoryHint(lang);
+
+  function isCurrentCategoryService(service: SpecialistService): boolean {
+    return !currentCategoryId || service.category_id === currentCategoryId;
+  }
 
   function maybeReturnToOnboarding(service: SpecialistService) {
-    if (onboardingReturnHref && service.is_active && hasValidPrice(service)) {
+    if (
+      onboardingReturnHref &&
+      service.is_active &&
+      hasValidPrice(service) &&
+      isCurrentCategoryService(service)
+    ) {
       router.push(onboardingReturnHref);
       router.refresh();
     }
@@ -97,6 +127,7 @@ export default function ServicesTable({
         {
           ...serviceFields,
           is_active: shouldBeActive,
+          category_id: currentCategoryId,
         },
         lang
       );
@@ -132,6 +163,7 @@ export default function ServicesTable({
         {
           ...serviceFields,
           is_active: shouldBeActive,
+          ...(isOnboardingMode ? { category_id: currentCategoryId } : {}),
         },
         lang
       );
@@ -231,6 +263,12 @@ export default function ServicesTable({
         ) : null}
       </div>
 
+      {isOnboardingMode && hasServicesOutsideSelectedCategory ? (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-relaxed text-amber-900">
+          {categoryMismatchMessage(lang)}
+        </div>
+      ) : null}
+
       {toast ? (
         <div
           className={`mb-4 rounded-lg px-3 py-2 text-sm ${
@@ -283,6 +321,7 @@ export default function ServicesTable({
               {services.map((service) => {
                 const busy = Boolean(busyById[service.id]);
                 const isEditing = editingId === service.id;
+                const matchesCurrentCategory = isCurrentCategoryService(service);
                 const shouldShowPublishPriceHint =
                   !service.is_active &&
                   (typeof service.price_from !== "number" ||
@@ -295,6 +334,11 @@ export default function ServicesTable({
                         <div className="font-medium text-gray-900">{service.title}</div>
                         {service.description ? (
                           <div className="mt-1 max-w-[420px] text-xs text-gray-500">{service.description}</div>
+                        ) : null}
+                        {!matchesCurrentCategory ? (
+                          <div className="mt-1 max-w-[360px] text-xs font-medium text-amber-700">
+                            {mismatchHint}
+                          </div>
                         ) : null}
                       </td>
                       <td className="px-2 py-3">
@@ -397,4 +441,3 @@ export default function ServicesTable({
     </section>
   );
 }
-
