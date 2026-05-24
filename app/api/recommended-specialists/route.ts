@@ -81,21 +81,37 @@ function isPremiumPlacement(row: SpecialistRow): boolean {
   return row.is_featured === true || row.status === "featured_verified";
 }
 
+function normalizePrice(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value.trim().replace(/\s/g, "").replace(",", "."));
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function normalizeText(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
+function hasDisplayableServicePrice(priceFrom: number | null, priceComment: string | null): boolean {
+  if (priceFrom == null || !Number.isFinite(priceFrom) || priceFrom < 0) return false;
+  if (priceFrom > 0) return true;
+  return priceFrom === 0 && Boolean(priceComment);
+}
+
 function hasValidServiceForRecommended(services: unknown): boolean {
   if (!Array.isArray(services) || services.length === 0) return false;
   return services.some((s) => {
-    const row = s as { title?: unknown; price_from?: unknown; is_active?: unknown };
-    const title = typeof row.title === "string" ? row.title.trim() : "";
+    const row = s as { title?: unknown; price_from?: unknown; price_comment?: unknown; is_active?: unknown };
+    const title = normalizeText(row.title);
     if (!title) return false;
     if (row.is_active !== true) return false;
-    const p = row.price_from;
-    const n =
-      typeof p === "number" && Number.isFinite(p)
-        ? p
-        : typeof p === "string" && p.trim()
-          ? Number(p.trim().replace(/\s/g, "").replace(",", "."))
-          : NaN;
-    return Number.isFinite(n) && n > 0;
+    const priceFrom = normalizePrice(row.price_from);
+    const priceComment = normalizeText(row.price_comment);
+    return hasDisplayableServicePrice(priceFrom, priceComment);
   });
 }
 
@@ -160,15 +176,17 @@ function visibleQuery(supabase: ReturnType<typeof createSupabaseServerClient>) {
   return supabase
     .from("specialists")
     .select(
-      "id, slug, name, avatar_url, category_id, languages, status, featured_priority, is_featured, founder_badge, published_at, created_at, specialist_services!inner(id, title, price_from, is_active)"
+      "id, slug, name, avatar_url, category_id, languages, status, featured_priority, is_featured, founder_badge, published_at, created_at, specialist_services!inner(id, title, price_from, price_comment, is_active)"
     )
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
     .eq("is_active", true)
     .eq("is_visible", true)
     .or("is_test.is.null,is_test.eq.false")
     .eq("specialist_services.is_active", true)
-    .gt("specialist_services.price_from", 0)
-    .not("specialist_services.title", "eq", "");
+    .not("specialist_services.title", "eq", "")
+    .or("price_from.gt.0,and(price_from.eq.0,price_comment.not.is.null)", {
+      foreignTable: "specialist_services",
+    });
 }
 
 export async function GET() {
