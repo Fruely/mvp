@@ -18,6 +18,7 @@ export default function DashboardShell({
   children,
   lang,
   dict,
+  isPublished,
 }: {
   specialist: SpecialistShellData;
   /** Canonical `specialist_plan.plan_status`. */
@@ -25,12 +26,19 @@ export default function DashboardShell({
   children: ReactNode;
   lang: string;
   dict: Dictionary;
+  isPublished: boolean;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar dict={dict} lang={lang} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        dict={dict}
+        lang={lang}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        isPublished={isPublished}
+      />
       <div className="flex min-h-screen min-w-0 flex-1 flex-col bg-[#f5f7fa]">
         <TopBar
           dict={dict}
