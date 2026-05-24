@@ -4,6 +4,8 @@ import { requireAdminToken } from "@/lib/adminApiAuth";
 
 type Action = "verify" | "feature" | "activate" | "deactivate";
 
+const PUBLISHED_STATUSES = new Set(["published_unverified", "featured_verified"]);
+
 export async function POST(request: NextRequest) {
   const authResponse = requireAdminToken(request);
   if (authResponse) return authResponse;
@@ -31,25 +33,49 @@ export async function POST(request: NextRequest) {
     const patch: Record<string, unknown> = {};
     const supabase = createSupabaseServerClient();
 
-    let currentStatus: string | null = null;
-    if (action === "activate") {
-      const { data: current } = await supabase
-        .from("specialists")
-        .select("status")
-        .eq("id", id)
-        .maybeSingle();
-      currentStatus = typeof current?.status === "string" ? current.status : null;
+    const { data: current, error: currentError } = await supabase
+      .from("specialists")
+      .select("status, is_active, is_visible")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (currentError) {
+      return NextResponse.json(
+        { error: "Failed to load specialist" },
+        { status: 500, headers: { "Cache-Control": "no-store" } }
+      );
+    }
+    if (!current) {
+      return NextResponse.json(
+        { error: "Specialist not found" },
+        { status: 404, headers: { "Cache-Control": "no-store" } }
+      );
+    }
+
+    const currentStatus = typeof current.status === "string" ? current.status : null;
+    const isPublished = currentStatus != null && PUBLISHED_STATUSES.has(currentStatus);
+
+    if ((action === "verify" || action === "feature") && !isPublished) {
+      return NextResponse.json(
+        {
+          error:
+            action === "feature"
+              ? "Премиум-показ можно включить только для уже опубликованного специалиста."
+              : "Верифицировать можно только уже опубликованного специалиста.",
+        },
+        { status: 400, headers: { "Cache-Control": "no-store" } }
+      );
     }
 
     if (action === "verify") {
       patch.is_verified = true;
       patch.is_approved = true;
       patch.approved_at = new Date().toISOString();
-      patch.is_featured = true;
-      patch.featured_at = new Date().toISOString();
-      patch.status = "featured_verified";
       patch.is_active = true;
       patch.is_visible = true;
+      // Verification is not the same as premium placement.
+      // Keep the current publication status unless the specialist is already premium.
+      patch.status = currentStatus === "featured_verified" ? "featured_verified" : "published_unverified";
     }
 
     if (action === "feature") {
@@ -66,6 +92,12 @@ export async function POST(request: NextRequest) {
       if (typeof isActive !== "boolean") {
         return NextResponse.json(
           { error: "is_active must be boolean for activate action" },
+          { status: 400, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+      if (isActive && currentStatus === "draft") {
+        return NextResponse.json(
+          { error: "Нельзя активировать черновик. Специалист должен сначала опубликовать профиль." },
           { status: 400, headers: { "Cache-Control": "no-store" } }
         );
       }
