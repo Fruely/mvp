@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect";
+import { isPublicationReadyForDashboard } from "@/lib/dashboard/publicationReadiness";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { specialistLangBecomePath } from "@/lib/specialists/navigation";
@@ -26,6 +27,19 @@ export type SpecialistRow = {
   password_set_at?: string | null;
 };
 
+export type SpecialistOnboardingGateState = "incomplete" | "ready" | "published";
+
+const PUBLISHED_SPECIALIST_STATUSES = new Set<string>([
+  "published_unverified",
+  "featured_verified",
+  "approved",
+  "paused",
+]);
+
+export function isPublishedSpecialistStatus(status: string | null | undefined): boolean {
+  return Boolean(status && PUBLISHED_SPECIALIST_STATUSES.has(status));
+}
+
 function toSpecialistRow(row: Record<string, unknown> | null): SpecialistRow | null {
   if (!row) return null;
   const first_name = (row.name as string) ?? (row.first_name as string) ?? null;
@@ -35,6 +49,78 @@ function toSpecialistRow(row: Record<string, unknown> | null): SpecialistRow | n
 // Table has "name"; some code expects "first_name" — we map name → first_name when returning
 const COLS =
   "id, user_id, name, email, phone, category_id, status, password_set_at";
+
+export async function getSpecialistOnboardingGateState(
+  specialist: SpecialistRow,
+  service = createServiceClient(),
+): Promise<{
+  state: SpecialistOnboardingGateState;
+  publicationReady: boolean;
+}> {
+  if (isPublishedSpecialistStatus(specialist.status)) {
+    return { state: "published", publicationReady: true };
+  }
+
+  const { data: specExtra } = await service
+    .from("specialists")
+    .select("name, category_id, postal_code, work_format, languages")
+    .eq("id", specialist.id)
+    .maybeSingle();
+
+  const categoryId =
+    typeof specExtra?.category_id === "string"
+      ? specExtra.category_id
+      : typeof specialist.category_id === "string"
+        ? specialist.category_id
+        : "";
+
+  const { data: categoryRow } = categoryId
+    ? await service
+        .from("categories")
+        .select("parent_id")
+        .eq("id", categoryId)
+        .maybeSingle()
+    : { data: null };
+
+  const { data: servicesRows } = await service
+    .from("specialist_services")
+    .select("title, price_from, is_active, category_id")
+    .eq("specialist_id", specialist.id);
+
+  const name =
+    typeof specExtra?.name === "string"
+      ? specExtra.name
+      : specialist.first_name?.trim() || specialist.name?.trim() || "";
+  const languages = Array.isArray(specExtra?.languages)
+    ? (specExtra.languages as unknown[]).filter(
+        (value): value is string => typeof value === "string" && value.trim().length > 0,
+      )
+    : [];
+  const workFormat =
+    specExtra?.work_format === "online" ||
+    specExtra?.work_format === "offline" ||
+    specExtra?.work_format === "hybrid"
+      ? String(specExtra.work_format)
+      : "online";
+  const postalCode = typeof specExtra?.postal_code === "string" ? specExtra.postal_code : "";
+  const categoryParentId =
+    categoryRow && typeof categoryRow.parent_id === "string" ? categoryRow.parent_id : null;
+  const servicesInSelectedCategory = (servicesRows ?? []).filter(
+    (row) => row.is_active === true && typeof row.category_id === "string" && row.category_id === categoryId,
+  );
+
+  const publicationReady = isPublicationReadyForDashboard({
+    name,
+    categoryId,
+    categoryParentId,
+    languages,
+    workFormat,
+    postalCode,
+    servicesInSelectedCategory,
+  });
+
+  return { state: publicationReady ? "ready" : "incomplete", publicationReady };
+}
 
 export async function getCurrentUserAndSpecialist() {
   const supabase = createSupabaseServerComponentClient();
