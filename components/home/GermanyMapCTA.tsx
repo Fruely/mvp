@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 const CTAGermanyMap = dynamic(() => import("@/components/maps/CTAGermanyMap"), {
   ssr: false,
@@ -17,14 +18,36 @@ type Props = {
 };
 
 export default function GermanyMapCTA({ title, body, spark, button, lang }: Props) {
+  const mapHostRef = useRef<HTMLDivElement>(null);
+  const [shouldLoadMap, setShouldLoadMap] = useState(false);
+
+  useEffect(() => {
+    const node = mapHostRef.current;
+    if (!node || shouldLoadMap) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoadMap(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "300px" }
+    );
+
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, [shouldLoadMap]);
+
   return (
     <section className="py-16 md:py-24">
       <div className="max-w-[1280px] mx-auto px-4 md:px-6">
         <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
 
-          <div className="relative w-full md:w-[45%] shrink-0">
+          <div ref={mapHostRef} className="relative w-full md:w-[45%] shrink-0">
             <div className="w-full min-h-[320px] rounded-2xl overflow-hidden bg-[#0F172A]">
-              <CTAGermanyMap />
+              {shouldLoadMap ? <CTAGermanyMap /> : null}
             </div>
           </div>
 
