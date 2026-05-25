@@ -1,5 +1,9 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
+import { jsonWithCache } from "@/lib/http/cache";
+
+const CACHE_PUBLIC_HOMEPAGE_PARENT_SLOTS =
+  "public, s-maxage=300, stale-while-revalidate=1800";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +51,7 @@ export async function GET() {
       title_de: row.categories?.title_de ?? null,
     }));
 
-    return jsonNoStore({ slots });
+    return jsonWithCache({ slots }, CACHE_PUBLIC_HOMEPAGE_PARENT_SLOTS);
   } catch (err) {
     console.error("[api/homepage/parent-category-slots] unexpected", err);
     return jsonNoStore({ slots: [] });
