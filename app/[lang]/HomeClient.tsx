@@ -230,7 +230,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
 
     async function loadBlocks() {
       try {
-        const res = await fetch(`/api/site-blocks?ts=${Date.now()}`, { cache: "no-store" });
+        const res = await fetch("/api/site-blocks");
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || "Ошибка загрузки блоков");
         setBlocks(json.blocks || []);
@@ -244,8 +244,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
     async function loadCategories() {
       try {
         const parentRes = await fetch(
-          "/api/specialists/categories?mode=parents&include_children=1",
-          { cache: "no-store" }
+          "/api/specialists/categories?mode=parents&include_children=1"
         );
         const parentJson = await parentRes.json();
         if (!parentRes.ok) {
@@ -277,9 +276,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
 
     async function loadHomepageParentSlots() {
       try {
-        const res = await fetch("/api/homepage/parent-category-slots", {
-          cache: "no-store",
-        });
+        const res = await fetch("/api/homepage/parent-category-slots");
         const json = await res.json();
         if (!res.ok || !Array.isArray(json?.slots)) {
           setHomepageParentSlotSlugs([]);
@@ -305,7 +302,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
 
     async function loadPopularCategories() {
       try {
-        const res = await fetch("/api/homepage/popular-categories", { cache: "no-store" });
+        const res = await fetch("/api/homepage/popular-categories");
         const json = await res.json();
         if (!res.ok || !Array.isArray(json?.data)) {
           setPopularCategories([]);
@@ -337,7 +334,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
 
     async function loadRecommendedSpecialists() {
       try {
-        const res = await fetch("/api/recommended-specialists", { cache: "no-store" });
+        const res = await fetch("/api/recommended-specialists");
         const json = await res.json();
         if (!res.ok || !Array.isArray(json?.data)) {
           setRecommendedSpecialists([]);
