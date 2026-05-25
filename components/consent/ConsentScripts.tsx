@@ -24,19 +24,19 @@ function loadGoogleAnalytics() {
   if (!GA_MEASUREMENT_ID) return;
   if (document.getElementById("freuly-ga-script")) return;
 
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function gtag(...args: unknown[]) {
+    window.dataLayer.push(args);
+  };
+
   const script = document.createElement("script");
   script.id = "freuly-ga-script";
   script.async = true;
   script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
   document.head.appendChild(script);
 
-  window.dataLayer = window.dataLayer || [];
-  function gtag(...args: unknown[]) {
-    window.dataLayer.push(args);
-  }
-
-  gtag("js", new Date());
-  gtag("config", GA_MEASUREMENT_ID, {
+  window.gtag("js", new Date());
+  window.gtag("config", GA_MEASUREMENT_ID, {
     anonymize_ip: true,
   });
 }
@@ -44,6 +44,7 @@ function loadGoogleAnalytics() {
 declare global {
   interface Window {
     dataLayer: unknown[];
+    gtag: (...args: unknown[]) => void;
   }
 }
 
