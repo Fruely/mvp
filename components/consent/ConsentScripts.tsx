@@ -8,43 +8,93 @@ import {
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
-function hasAnalyticsConsent() {
+type ConsentState = {
+  analytics: boolean;
+  marketing: boolean;
+};
+
+let googleTagInitialized = false;
+let pageViewSent = false;
+
+function readConsentState(): ConsentState {
   try {
     const raw = window.localStorage.getItem(COOKIE_CONSENT_STORAGE_KEY);
-    if (!raw) return false;
+    if (!raw) {
+      return { analytics: false, marketing: false };
+    }
 
-    const parsed = JSON.parse(raw) as { analytics?: boolean };
-    return parsed.analytics === true;
+    const parsed = JSON.parse(raw) as {
+      analytics?: boolean;
+      marketing?: boolean;
+    };
+
+    return {
+      analytics: parsed.analytics === true,
+      marketing: parsed.marketing === true,
+    };
   } catch {
-    return false;
+    return { analytics: false, marketing: false };
   }
 }
 
-function loadGoogleAnalytics() {
+function ensureGoogleTag() {
   if (!GA_MEASUREMENT_ID) return;
-  if (document.getElementById("freuly-ga-script")) return;
 
   window.dataLayer = window.dataLayer || [];
-  window.gtag = function gtag(...args: unknown[]) {
-    window.dataLayer.push(args);
-  };
+  window.gtag =
+    window.gtag ||
+    function gtag() {
+      window.dataLayer.push(arguments);
+    };
 
-  const script = document.createElement("script");
-  script.id = "freuly-ga-script";
-  script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
-  document.head.appendChild(script);
+  if (!googleTagInitialized) {
+    window.gtag("consent", "default", {
+      analytics_storage: "denied",
+      ad_storage: "denied",
+      ad_user_data: "denied",
+      ad_personalization: "denied",
+      wait_for_update: 500,
+    });
 
-  window.gtag("js", new Date());
-  window.gtag("config", GA_MEASUREMENT_ID, {
-    anonymize_ip: true,
-    send_page_view: false,
+    window.gtag("js", new Date());
+    window.gtag("config", GA_MEASUREMENT_ID, {
+      anonymize_ip: true,
+      send_page_view: false,
+    });
+
+    googleTagInitialized = true;
+  }
+
+  if (!document.getElementById("freuly-ga-script")) {
+    const script = document.createElement("script");
+    script.id = "freuly-ga-script";
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+    document.head.appendChild(script);
+  }
+}
+
+function updateGoogleConsent(consent: ConsentState) {
+  if (!GA_MEASUREMENT_ID) return;
+
+  ensureGoogleTag();
+
+  window.gtag("consent", "update", {
+    analytics_storage: consent.analytics ? "granted" : "denied",
+    ad_storage: consent.marketing ? "granted" : "denied",
+    ad_user_data: consent.marketing ? "granted" : "denied",
+    ad_personalization: consent.marketing ? "granted" : "denied",
   });
-  window.gtag("event", "page_view", {
-    page_title: document.title,
-    page_location: window.location.href,
-    page_path: window.location.pathname,
-  });
+
+  if (consent.analytics && !pageViewSent) {
+    window.gtag("event", "page_view", {
+      page_title: document.title,
+      page_location: window.location.href,
+      page_path: window.location.pathname,
+    });
+
+    pageViewSent = true;
+  }
 }
 
 declare global {
@@ -55,11 +105,16 @@ declare global {
 }
 
 export default function ConsentScripts() {
-  const [analyticsAllowed, setAnalyticsAllowed] = useState(false);
+  const [consent, setConsent] = useState<ConsentState>({
+    analytics: false,
+    marketing: false,
+  });
 
   useEffect(() => {
+    ensureGoogleTag();
+
     const syncConsent = () => {
-      setAnalyticsAllowed(hasAnalyticsConsent());
+      setConsent(readConsentState());
     };
 
     syncConsent();
@@ -74,10 +129,8 @@ export default function ConsentScripts() {
   }, []);
 
   useEffect(() => {
-    if (analyticsAllowed) {
-      loadGoogleAnalytics();
-    }
-  }, [analyticsAllowed]);
+    updateGoogleConsent(consent);
+  }, [consent]);
 
   return null;
 }
