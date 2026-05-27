@@ -1,430 +1,264 @@
-import crypto from 'node:crypto'
-import { createClient } from '@supabase/supabase-js'
+#!/usr/bin/env node
 
-const SUPABASE_URL =
-  process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
+import fs from 'node:fs';
 
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+const INPUT_PATH = 'data/market-signals-input.json';
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  console.error('Missing SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
-  process.exit(1)
+function readInput() {
+  if (!fs.existsSync(INPUT_PATH)) {
+    console.error(`Input file not found: ${INPUT_PATH}`);
+    process.exit(1);
+  }
+
+  const raw = fs.readFileSync(INPUT_PATH, 'utf8');
+
+  try {
+    const data = JSON.parse(raw);
+
+    if (!Array.isArray(data)) {
+      throw new Error('Input JSON must be an array');
+    }
+
+    return data;
+  } catch (error) {
+    console.error(`Invalid JSON in ${INPUT_PATH}: ${error.message}`);
+    process.exit(1);
+  }
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-  auth: {
-    persistSession: false,
-  },
-})
-
-const DRY_RUN = process.argv.includes('--dry-run')
-
-const SOURCE_TABLES = [
-  'category_opportunities',
-  'scout_prospects',
-  'content_tasks',
-]
-
-function hashSignal(parts) {
-  return crypto
-    .createHash('sha256')
-    .update(parts.filter(Boolean).join('|'))
-    .digest('hex')
+function normalizeText(value) {
+  return String(value || '').toLowerCase();
 }
 
-function textOf(row, keys) {
-  return keys
-    .map((key) => row?.[key])
-    .filter(Boolean)
-    .map(String)
-    .join(' ')
-    .trim()
+function detectSignalType(text) {
+  const demandMarkers = [
+    'ищу',
+    'шукаю',
+    'нужен',
+    'нужна',
+    'нужно',
+    'потрібен',
+    'потрібна',
+    'посоветуйте',
+    'порадьте',
+    'кто знает',
+    'хто знає',
+    'кто может',
+    'хто може',
+  ];
+
+  const supplyMarkers = [
+    'делаю',
+    'роблю',
+    'помогаю',
+    'допомагаю',
+    'принимаю',
+    'приймаю',
+    'услуги',
+    'послуги',
+    'мастер',
+    'майстер',
+    'запись',
+    'запис',
+    'работаю',
+    'працюю',
+  ];
+
+  const hasDemand = demandMarkers.some((marker) => text.includes(marker));
+  const hasSupply = supplyMarkers.some((marker) => text.includes(marker));
+
+  if (hasDemand && !hasSupply) return 'demand';
+  if (hasSupply && !hasDemand) return 'supply';
+
+  if (hasDemand && hasSupply) return 'demand';
+
+  return 'unknown';
 }
 
-function pickFirst(row, keys) {
-  for (const key of keys) {
-    if (row?.[key] !== undefined && row?.[key] !== null && row?.[key] !== '') {
-      return row[key]
+function detectLanguage(text) {
+  const uaMarkers = [
+    'україн',
+    'потріб',
+    'шукаю',
+    'порадьте',
+    'майстер',
+    'послуги',
+    'допомагаю',
+    'працюю',
+  ];
+
+  const ruMarkers = [
+    'русск',
+    'ищу',
+    'нужен',
+    'нужна',
+    'посоветуйте',
+    'мастер',
+    'услуги',
+    'помогаю',
+    'работаю',
+  ];
+
+  const hasUa = uaMarkers.some((marker) => text.includes(marker));
+  const hasRu = ruMarkers.some((marker) => text.includes(marker));
+
+  if (hasUa && hasRu) return 'mixed';
+  if (hasUa) return 'ua';
+  if (hasRu) return 'ru';
+
+  return 'unknown';
+}
+
+function detectCity(text) {
+  const cities = [
+    { slug: 'köln', value: 'Köln', aliases: ['köln', 'кёльн', 'кельн', 'koeln'] },
+    { slug: 'düsseldorf', value: 'Düsseldorf', aliases: ['düsseldorf', 'дюссельдорф', 'dusseldorf', 'duesseldorf'] },
+    { slug: 'berlin', value: 'Berlin', aliases: ['berlin', 'берлин', 'берлін'] },
+    { slug: 'münchen', value: 'München', aliases: ['münchen', 'мюнхен', 'munich', 'muenchen'] },
+    { slug: 'hamburg', value: 'Hamburg', aliases: ['hamburg', 'гамбург'] },
+    { slug: 'frankfurt', value: 'Frankfurt', aliases: ['frankfurt', 'франкфурт'] },
+  ];
+
+  for (const city of cities) {
+    if (city.aliases.some((alias) => text.includes(alias))) {
+      return city.value;
     }
   }
 
-  return null
+  return null;
 }
 
-function numberOf(value, fallback = 0) {
-  const n = Number(value)
-  return Number.isFinite(n) ? n : fallback
-}
+function detectCategory(text) {
+  const rules = [
+    {
+      category_slug: 'repair',
+      subcategory_candidate: 'electrician',
+      keywords: ['электрик', 'електрик', 'розетк', 'проводк', 'свет', 'світло', 'кабель'],
+    },
+    {
+      category_slug: 'repair',
+      subcategory_candidate: 'plumber',
+      keywords: ['сантехник', 'сантехнік', 'вода', 'трубы', 'труби', 'кран', 'ванн'],
+    },
+    {
+      category_slug: 'beauty',
+      subcategory_candidate: 'manicure',
+      keywords: ['маникюр', 'манікюр', 'ногти', 'нігті', 'гель-лак', 'гель лак'],
+    },
+    {
+      category_slug: 'psychology',
+      subcategory_candidate: 'psychologist',
+      keywords: ['психолог', 'терапия', 'терапія', 'тревог', 'адаптац'],
+    },
+    {
+      category_slug: 'tutoring',
+      subcategory_candidate: 'german_tutor',
+      keywords: ['репетитор', 'немецк', 'німецьк', 'deutsch', 'уроки'],
+    },
+    {
+      category_slug: 'photo-video',
+      subcategory_candidate: 'photographer',
+      keywords: ['фотограф', 'фото', 'съёмк', 'зйомк', 'портрет'],
+    },
+    {
+      category_slug: 'documents-relocation',
+      subcategory_candidate: 'documents_help',
+      keywords: ['документ', 'jobcenter', 'внж', 'ausländerbehörde', 'термин', 'termin'],
+    },
+  ];
 
-function scoreFrom(row, keys, fallback = 0) {
-  return numberOf(pickFirst(row, keys), fallback)
-}
+  for (const rule of rules) {
+    const matchedKeywords = rule.keywords.filter((keyword) => text.includes(keyword));
 
-function clamp(value, min = 0, max = 100) {
-  return Math.max(min, Math.min(max, value))
-}
-
-function normalizeSlug(value) {
-  if (!value) return null
-
-  return String(value)
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-}
-
-function detectLanguage(row) {
-  return pickFirst(row, [
-    'language_code',
-    'language_detected',
-    'lang',
-    'language',
-    'route_locale',
-    'locale',
-  ])
-}
-
-function detectCategory(row) {
-  return normalizeSlug(
-    pickFirst(row, [
-      'category_slug',
-      'slug',
-      'category',
-      'category_name',
-      'target_category',
-    ]),
-  )
-}
-
-function detectCity(row) {
-  return normalizeSlug(
-    pickFirst(row, [
-      'city_slug',
-      'city',
-      'location_city',
-      'target_city',
-    ]),
-  )
-}
-
-function detectSourceId(row) {
-  return String(
-    pickFirst(row, [
-      'id',
-      'uuid',
-      'external_id',
-      'source_id',
-    ]) || '',
-  )
-}
-
-function scoreDemandSignal(row) {
-  const baseScore = scoreFrom(row, [
-    'priority_score',
-    'opportunity_score',
-    'ai_score',
-    'score',
-  ], 20)
-
-  let score = baseScore
-
-  score += Math.min(numberOf(row.search_volume), 20)
-  score += Math.min(numberOf(row.mentions_count), 15)
-  score += Math.min(numberOf(row.leads_count) * 5, 20)
-  score += Math.min(numberOf(row.prospects_count) * 2, 15)
-  score += Math.min(numberOf(row.demand_count) * 5, 20)
-  score += Math.min(numberOf(row.supply_count) * 2, 10)
-  score += Math.min(numberOf(row.unique_source_count) * 3, 15)
-
-  const status = String(row.status || '').toLowerCase()
-  const marketDensity = String(row.market_density || '').toLowerCase()
-  const supplyDemandBalance = String(row.supply_demand_balance || '').toLowerCase()
-
-  if (status.includes('new')) score += 3
-  if (status.includes('hot')) score += 12
-  if (marketDensity === 'high') score += 8
-  if (marketDensity === 'medium') score += 4
-  if (supplyDemandBalance.includes('undersupplied')) score += 12
-  if (row.missing_supply === true) score += 12
-  if (row.has_specialists === false) score += 12
-
-  return clamp(Math.round(score), 0, 100)
-}
-
-function scoreSupplySignal(row) {
-  const baseScore = scoreFrom(row, [
-    'priority_score',
-    'ai_score',
-    'score',
-  ], 15)
-
-  let score = baseScore
-
-  score += Math.min(numberOf(row.followers_count) / 100, 10)
-  score += Math.min(numberOf(row.rating) * 3, 15)
-  score += Math.min(numberOf(row.reviews_count), 10)
-
-  const text = textOf(row, [
-    'title',
-    'name',
-    'business_name',
-    'service_summary',
-    'bio',
-    'description',
-    'notes',
-    'source_text',
-    'source_url',
-  ]).toLowerCase()
-
-  if (text.includes('украин')) score += 5
-  if (text.includes('україн')) score += 5
-  if (text.includes('russisch') || text.includes('русск')) score += 5
-  if (text.includes('deutsch') || text.includes('немец')) score += 3
-  if (row.email || row.phone || row.instagram || row.telegram || row.website) score += 10
-  if (Array.isArray(row.available_channels) && row.available_channels.length > 0) score += 5
-  if (String(row.outreach_status || '') === 'not_contacted') score += 3
-
-  return clamp(Math.round(score), 0, 100)
-}
-
-function scoreContentSignal(row) {
-  const baseScore = scoreFrom(row, [
-    'priority_score',
-    'priority',
-    'ai_score',
-    'score',
-  ], 10)
-
-  let score = baseScore
-
-  const text = textOf(row, [
-    'title',
-    'topic',
-    'description',
-    'notes',
-    'keywords',
-    'target_audience',
-    'angle',
-    'source_insight',
-    'draft_text',
-  ]).toLowerCase()
-
-  if (text.includes('германи') || text.includes('deutschland')) score += 5
-  if (text.includes('украин') || text.includes('україн')) score += 4
-  if (text.includes('специалист') || text.includes('fach')) score += 4
-  if (text.includes('threads') || text.includes('telegram') || text.includes('facebook')) score += 4
-  if (row.status === 'draft_ready') score += 8
-  if (row.draft_text) score += 6
-  if (row.cta) score += 4
-
-  return clamp(Math.round(score), 0, 100)
-}
-
-function buildCategoryOpportunitySignal(row) {
-  const sourceId = detectSourceId(row)
-  const categorySlug = detectCategory(row)
-  const citySlug = detectCity(row)
-  const languageCode = detectLanguage(row)
-
-  const title =
-    pickFirst(row, ['title', 'category_title', 'category_name']) ||
-    `Category opportunity: ${categorySlug || 'unknown category'}`
-
-  const priorityScore = scoreDemandSignal(row)
+    if (matchedKeywords.length > 0) {
+      return {
+        category_slug: rule.category_slug,
+        subcategory_candidate: rule.subcategory_candidate,
+        service_keywords: matchedKeywords,
+      };
+    }
+  }
 
   return {
-    signal_hash: hashSignal([
-      'category_opportunity',
-      sourceId,
-      categorySlug,
-      citySlug,
-      languageCode,
-      title,
-    ]),
-    signal_type: 'category_demand',
-    source_table: 'category_opportunities',
-    source_id: sourceId || null,
-    title: String(title),
-    summary: textOf(row, ['ai_summary', 'summary', 'description', 'notes']) || null,
-    category_slug: categorySlug,
-    city_slug: citySlug,
-    language_code: languageCode,
-    priority_score: priorityScore,
-    confidence_score: clamp(50 + Math.round(priorityScore / 3), 50, 90),
-    recommended_action:
-      row.recommended_action ||
-      (priorityScore >= 75
-        ? 'Prioritize category landing page, outreach and Telegram/FB post'
-        : priorityScore >= 50
-          ? 'Add to content plan and monitor specialist supply'
-          : 'Keep as weak signal'),
-    payload: row,
-    status: 'new',
-  }
+    category_slug: null,
+    subcategory_candidate: null,
+    service_keywords: [],
+  };
 }
 
-function buildScoutProspectSignal(row) {
-  const sourceId = detectSourceId(row)
-  const categorySlug = detectCategory(row)
-  const citySlug = detectCity(row)
-  const languageCode = detectLanguage(row)
+function detectChannels(item, text) {
+  const channels = new Set();
 
-  const name =
-    pickFirst(row, ['name', 'business_name', 'full_name', 'title', 'display_name']) ||
-    pickFirst(row, ['service_summary']) ||
-    'Unnamed specialist prospect'
-
-  const priorityScore = scoreSupplySignal(row)
-  const aiConfidence = numberOf(row.ai_confidence)
-
-  return {
-    signal_hash: hashSignal([
-      'scout_prospect',
-      sourceId,
-      categorySlug,
-      citySlug,
-      languageCode,
-      name,
-    ]),
-    signal_type: 'specialist_supply',
-    source_table: 'scout_prospects',
-    source_id: sourceId || null,
-    title: String(name),
-    summary: textOf(row, ['ai_summary', 'service_summary', 'bio', 'description', 'notes', 'source_text', 'source_url']) || null,
-    category_slug: categorySlug,
-    city_slug: citySlug,
-    language_code: languageCode,
-    priority_score: priorityScore,
-    confidence_score: aiConfidence > 0
-      ? clamp(Math.round(aiConfidence * 100), 0, 100)
-      : clamp(45 + Math.round(priorityScore / 3), 45, 85),
-    recommended_action:
-      priorityScore >= 70
-        ? 'Add to outreach queue'
-        : priorityScore >= 45
-          ? 'Review manually before outreach'
-          : 'Low priority prospect',
-    payload: row,
-    status: 'new',
+  if (item.source_platform) {
+    channels.add(item.source_platform);
   }
+
+  if (text.includes('telegram') || text.includes('телеграм')) channels.add('telegram');
+  if (text.includes('instagram') || text.includes('инстаграм')) channels.add('instagram');
+  if (text.includes('facebook') || text.includes('фейсбук')) channels.add('facebook');
+  if (text.includes('whatsapp') || text.includes('ватсап')) channels.add('whatsapp');
+
+  return Array.from(channels);
 }
 
-function buildContentTaskSignal(row) {
-  const sourceId = detectSourceId(row)
-  const categorySlug = detectCategory(row)
-  const citySlug = detectCity(row)
-  const languageCode = detectLanguage(row)
+function calculateConfidence(result) {
+  let score = 0.35;
 
-  const title =
-    pickFirst(row, ['title', 'topic', 'headline']) ||
-    'Untitled content opportunity'
+  if (result.signal_type !== 'unknown') score += 0.15;
+  if (result.category_slug) score += 0.15;
+  if (result.subcategory_candidate) score += 0.1;
+  if (result.city) score += 0.1;
+  if (result.language_detected !== 'unknown') score += 0.1;
+  if (result.source_platform) score += 0.05;
 
-  const priorityScore = scoreContentSignal(row)
-
-  return {
-    signal_hash: hashSignal([
-      'content_task',
-      sourceId,
-      categorySlug,
-      citySlug,
-      languageCode,
-      title,
-    ]),
-    signal_type: 'content_opportunity',
-    source_table: 'content_tasks',
-    source_id: sourceId || null,
-    title: String(title),
-    summary: textOf(row, ['source_insight', 'summary', 'description', 'notes', 'keywords', 'angle']) || null,
-    category_slug: categorySlug,
-    city_slug: citySlug,
-    language_code: languageCode,
-    priority_score: priorityScore,
-    confidence_score: clamp(45 + Math.round(priorityScore / 4), 45, 80),
-    recommended_action:
-      priorityScore >= 65
-        ? 'Prepare short post/thread and connect it to relevant category'
-        : priorityScore >= 40
-          ? 'Keep in editorial backlog'
-          : 'Low priority content idea',
-    payload: row,
-    status: 'new',
-  }
+  return Math.min(Number(score.toFixed(2)), 0.99);
 }
 
-function buildSignalsForTable(tableName, rows) {
-  if (tableName === 'category_opportunities') {
-    return rows.map(buildCategoryOpportunitySignal)
+function classifySignal(item) {
+  const text = normalizeText(item.source_text);
+
+  const category = detectCategory(text);
+  let signalType = detectSignalType(text);
+
+  const sourceType = String(item.source_type || '').toLowerCase();
+  const sourcePlatform = String(item.source_platform || '').toLowerCase();
+
+  const looksLikeSpecialistProfile =
+    category.category_slug &&
+    (
+      sourceType === 'profile_bio' ||
+      sourceType === 'listing' ||
+      sourceType === 'business_profile' ||
+      sourcePlatform === 'instagram'
+    );
+
+  if (signalType === 'unknown' && looksLikeSpecialistProfile) {
+    signalType = 'supply';
   }
 
-  if (tableName === 'scout_prospects') {
-    return rows.map(buildScoutProspectSignal)
-  }
+  const result = {
+    signal_type: signalType,
+    source_platform: item.source_platform || null,
+    source_type: item.source_type || null,
+    source_url: item.source_url || '',
+    source_text: item.source_text || '',
+    signal_text: item.source_text || '',
+    country: item.country || 'Germany',
+    region: item.region || null,
+    city: detectCity(text),
+    language_detected: detectLanguage(text),
+    category_slug: category.category_slug,
+    subcategory_candidate: category.subcategory_candidate,
+    service_keywords: category.service_keywords,
+    available_channels: detectChannels(item, text),
+  };
 
-  if (tableName === 'content_tasks') {
-    return rows.map(buildContentTaskSignal)
-  }
+  result.confidence = calculateConfidence(result);
 
-  return []
+  return result;
 }
 
-async function readRows(tableName) {
-  const { data, error } = await supabase
-    .from(tableName)
-    .select('*')
-    .limit(500)
+const input = readInput();
+const classified = input.map(classifySignal);
 
-  if (error) {
-    console.warn(`Skipping ${tableName}: ${error.message}`)
-    return []
-  }
-
-  return data || []
-}
-
-async function upsertSignals(signals) {
-  if (signals.length === 0) return { count: 0 }
-
-  if (DRY_RUN) {
-    console.log(JSON.stringify(signals, null, 2))
-    return { count: signals.length }
-  }
-
-  const { error } = await supabase
-    .from('market_signals')
-    .upsert(signals, {
-      onConflict: 'signal_hash',
-    })
-
-  if (error) {
-    throw error
-  }
-
-  return { count: signals.length }
-}
-
-async function main() {
-  console.log('Processing market signals...')
-  console.log(`Mode: ${DRY_RUN ? 'dry-run' : 'write'}`)
-
-  let allSignals = []
-
-  for (const tableName of SOURCE_TABLES) {
-    const rows = await readRows(tableName)
-    const signals = buildSignalsForTable(tableName, rows)
-
-    console.log(`${tableName}: rows=${rows.length}, signals=${signals.length}`)
-
-    allSignals = allSignals.concat(signals)
-  }
-
-  allSignals.sort((a, b) => b.priority_score - a.priority_score)
-
-  const result = await upsertSignals(allSignals)
-
-  console.log(`Done. Processed signals: ${result.count}`)
-}
-
-main().catch((error) => {
-  console.error(error)
-  process.exit(1)
-})
+console.log(JSON.stringify(classified, null, 2));
