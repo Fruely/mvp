@@ -535,6 +535,147 @@ async function insertScoutProspectsFromSignals(insertedSignals) {
   return text ? JSON.parse(text) : [];
 }
 
+function getCategoryLabel(signal) {
+  const subcategory = signal.subcategory_candidate || signal.category_slug || 'услуга';
+
+  const labels = {
+    electrician: 'электрик',
+    plumber: 'сантехник',
+    manicure: 'маникюр',
+    psychologist: 'психолог',
+    german_tutor: 'репетитор немецкого',
+    photographer: 'фотограф',
+    documents_help: 'помощь с документами',
+  };
+
+  return labels[subcategory] || subcategory;
+}
+
+function getLocationLabel(signal) {
+  if (signal.city && signal.region) return `${signal.city} / ${signal.region}`;
+  if (signal.city) return signal.city;
+  if (signal.region) return signal.region;
+  return 'Германия';
+}
+
+function buildClientContentTask(signal) {
+  const categoryLabel = getCategoryLabel(signal);
+  const locationLabel = getLocationLabel(signal);
+
+  return {
+    source_signal_id: signal.id,
+    content_goal: 'attract_clients',
+    channel: 'threads',
+    content_type: 'thread',
+
+    country: signal.country || 'Germany',
+    region: signal.region || null,
+    city: signal.city || null,
+
+    category_slug: signal.category_slug || null,
+    subcategory_candidate: signal.subcategory_candidate || null,
+
+    target_audience: `Русскоязычные и украиноязычные жители, которым нужен ${categoryLabel}`,
+    topic: `Как найти ${categoryLabel} в ${locationLabel} и не искать по десяткам чатов`,
+    angle: 'Показать клиенту, что Freuly может быть спокойнее и понятнее, чем хаотичный поиск в чатах.',
+    source_insight: `Контент создан автоматически из demand-сигнала: ${signal.signal_text || signal.source_text}`,
+
+    draft_text: `Ищете ${categoryLabel} в ${locationLabel}?
+
+Обычно поиск начинается с десятков сообщений в чатах: “посоветуйте кого-нибудь”, “кто свободен?”, “кто говорит по-русски или по-украински?”.
+
+На Freuly идея проще: вы описываете задачу, город и язык, а специалист получает понятную заявку.
+
+Это помогает искать не вслепую, а по конкретной услуге, локации и языку.`,
+
+    cta: 'Оставьте заявку на Freuly — специалист сможет откликнуться.',
+    priority: 70,
+    status: 'draft_ready',
+    notes: 'Created automatically from demand market signal by local Market Signal Processor',
+  };
+}
+
+function buildSpecialistContentTask(signal) {
+  const categoryLabel = getCategoryLabel(signal);
+  const locationLabel = getLocationLabel(signal);
+
+  return {
+    source_signal_id: signal.id,
+    content_goal: 'attract_specialists',
+    channel: 'threads',
+    content_type: 'thread',
+
+    country: signal.country || 'Germany',
+    region: signal.region || null,
+    city: signal.city || null,
+
+    category_slug: signal.category_slug || null,
+    subcategory_candidate: signal.subcategory_candidate || null,
+
+    target_audience: `Русскоязычные и украиноязычные специалисты: ${categoryLabel}`,
+    topic: `Почему специалисту “${categoryLabel}” в ${locationLabel} стоит быть видимым не только в чатах`,
+    angle: 'Показать специалисту, что Freuly — это дополнительная точка видимости и получения заявок.',
+    source_insight: `Контент создан автоматически из supply-сигнала: ${signal.signal_text || signal.source_text}`,
+
+    draft_text: `Если вы оказываете услуги как ${categoryLabel} в ${locationLabel}, одних сообщений в чатах может быть мало.
+
+Пост быстро уходит вниз, люди теряют контакты, а новым клиентам сложно понять, где вас найти.
+
+Профиль на Freuly может стать дополнительной точкой присутствия: с описанием услуг, городом, языками и понятной формой заявки.
+
+Это не заменяет ваши соцсети, а дополняет их.`,
+
+    cta: 'Создайте профиль на Freuly и станьте видимее для клиентов.',
+    priority: 70,
+    status: 'draft_ready',
+    notes: 'Created automatically from supply market signal by local Market Signal Processor',
+  };
+}
+
+function toContentTaskInsert(signal) {
+  if (signal.signal_type === 'demand') {
+    return buildClientContentTask(signal);
+  }
+
+  if (signal.signal_type === 'supply') {
+    return buildSpecialistContentTask(signal);
+  }
+
+  return null;
+}
+
+async function insertContentTasksFromSignals(insertedSignals) {
+  const { supabaseUrl, supabaseKey } = getSupabaseConfig();
+
+  const payload = insertedSignals
+    .map(toContentTaskInsert)
+    .filter(Boolean);
+
+  if (payload.length === 0) {
+    console.log('No signals for content_tasks.');
+    return [];
+  }
+
+  const response = await fetch(`${supabaseUrl}/rest/v1/content_tasks`, {
+    method: 'POST',
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const text = await response.text();
+
+  if (!response.ok) {
+    throw new Error(`Supabase content_tasks insert failed ${response.status}: ${text}`);
+  }
+
+  return text ? JSON.parse(text) : [];
+}
+
 const input = readInput();
 const classified = input.map(classifySignal);
 
@@ -549,9 +690,13 @@ if (!SHOULD_WRITE) {
     const insertedScoutProspects = await insertScoutProspectsFromSignals(inserted);
     console.log(`Inserted scout prospects: ${insertedScoutProspects.length}`);
 
+    const insertedContentTasks = await insertContentTasksFromSignals(inserted);
+    console.log(`Inserted content tasks: ${insertedContentTasks.length}`);
+
     console.log(JSON.stringify({
       market_signals: inserted,
       scout_prospects: insertedScoutProspects,
+      content_tasks: insertedContentTasks,
     }, null, 2));
   } catch (error) {
     console.error(error.message);
