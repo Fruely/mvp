@@ -39,3 +39,6 @@ yarn-error.log*
 .idea
 *.swp
 *.swo
+
+# Local Market Radar input with real working signals
+data/market-signals-input.json
