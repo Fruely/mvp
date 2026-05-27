@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process';
 const scripts = [
   'scripts/sync-baserow-content-tasks.mjs',
   'scripts/sync-baserow-category-opportunities.mjs',
+  'scripts/sync-baserow-operator-category-opportunities.mjs',
   'scripts/sync-baserow-scout-prospects.mjs',
   'scripts/sync-baserow-market-signals.mjs',
 ];
