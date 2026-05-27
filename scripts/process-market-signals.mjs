@@ -154,6 +154,7 @@ function detectLanguage(text) {
 function detectCity(text) {
   const cities = [
     { slug: 'köln', value: 'Köln', aliases: ['köln', 'кёльн', 'кельн', 'koeln'] },
+    { slug: 'bonn', value: 'Bonn', aliases: ['bonn', 'бонн', 'бонне'] },
     { slug: 'düsseldorf', value: 'Düsseldorf', aliases: ['düsseldorf', 'дюссельдорф', 'dusseldorf', 'duesseldorf'] },
     { slug: 'berlin', value: 'Berlin', aliases: ['berlin', 'берлин', 'берлін'] },
     { slug: 'münchen', value: 'München', aliases: ['münchen', 'мюнхен', 'munich', 'muenchen'] },
