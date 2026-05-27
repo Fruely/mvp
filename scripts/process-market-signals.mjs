@@ -361,6 +361,119 @@ async function insertMarketSignals(rows) {
   return text ? JSON.parse(text) : [];
 }
 
+function getAvailableChannelsFromSignal(signal) {
+  const channels = [];
+
+  if (signal.has_telegram) channels.push('telegram');
+  if (signal.has_instagram) channels.push('instagram');
+  if (signal.has_facebook) channels.push('facebook');
+  if (signal.has_website) channels.push('website');
+  if (signal.has_email) channels.push('email');
+  if (signal.has_phone) channels.push('phone');
+
+  if (channels.length === 0 && signal.source_platform) {
+    channels.push(signal.source_platform);
+  }
+
+  return channels;
+}
+
+function pickPreferredContactChannel(channels) {
+  if (channels.includes('instagram')) return 'instagram';
+  if (channels.includes('telegram')) return 'telegram';
+  if (channels.includes('facebook')) return 'facebook';
+  if (channels.includes('website')) return 'website';
+  if (channels.includes('email')) return 'email';
+  if (channels.includes('phone')) return 'phone';
+
+  return channels[0] || null;
+}
+
+function toScoutProspectInsert(signal) {
+  const availableChannels = getAvailableChannelsFromSignal(signal);
+  const preferredChannel = pickPreferredContactChannel(availableChannels);
+
+  return {
+    source_signal_id: signal.id,
+    source_type: 'market_signal',
+    source_platform: signal.source_platform || null,
+    source_url: signal.source_url || null,
+    source_text: signal.source_text || signal.signal_text || null,
+
+    service_summary: signal.signal_text || signal.source_text || null,
+
+    country: signal.country || 'Germany',
+    region: signal.region || null,
+    city: signal.city || null,
+
+    language_detected: signal.language_detected || null,
+    languages: signal.language_detected ? [signal.language_detected] : [],
+
+    category_slug: signal.category_slug || null,
+    subcategory_candidate: signal.subcategory_candidate || null,
+
+    available_channels: availableChannels,
+    preferred_contact_channel: preferredChannel,
+
+    contact_channel_reason: preferredChannel
+      ? `Канал выбран автоматически на основе публичного источника/доступного канала: ${preferredChannel}.`
+      : 'Канал первого контакта не определён автоматически.',
+
+    contact_risk_level: 'medium',
+
+    ai_summary: signal.signal_text || signal.source_text || null,
+    ai_score: Math.round((signal.confidence || 0.5) * 100),
+    ai_confidence: signal.confidence || null,
+
+    status: 'new',
+    outreach_status: 'not_contacted',
+
+    duplicate_key: [
+      signal.source_platform || '',
+      signal.country || '',
+      signal.region || '',
+      signal.city || '',
+      signal.category_slug || '',
+      signal.subcategory_candidate || '',
+      signal.signal_text || signal.source_text || '',
+    ].join('|').toLowerCase(),
+
+    notes: 'Created automatically from supply market signal by local Market Signal Processor',
+  };
+}
+
+async function insertScoutProspectsFromSignals(insertedSignals) {
+  const { supabaseUrl, supabaseKey } = getSupabaseConfig();
+
+  const supplySignals = insertedSignals.filter((signal) => signal.signal_type === 'supply');
+
+  if (supplySignals.length === 0) {
+    console.log('No supply signals for scout_prospects.');
+    return [];
+  }
+
+  const payload = supplySignals.map(toScoutProspectInsert);
+
+  const response = await fetch(`${supabaseUrl}/rest/v1/scout_prospects`, {
+    method: 'POST',
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const text = await response.text();
+
+  if (!response.ok) {
+    throw new Error(`Supabase scout_prospects insert failed ${response.status}: ${text}`);
+  }
+
+  return text ? JSON.parse(text) : [];
+}
+
 const input = readInput();
 const classified = input.map(classifySignal);
 
@@ -371,7 +484,14 @@ if (!SHOULD_WRITE) {
   try {
     const inserted = await insertMarketSignals(classified);
     console.log(`Inserted market signals: ${inserted.length}`);
-    console.log(JSON.stringify(inserted, null, 2));
+
+    const insertedScoutProspects = await insertScoutProspectsFromSignals(inserted);
+    console.log(`Inserted scout prospects: ${insertedScoutProspects.length}`);
+
+    console.log(JSON.stringify({
+      market_signals: inserted,
+      scout_prospects: insertedScoutProspects,
+    }, null, 2));
   } catch (error) {
     console.error(error.message);
     process.exit(1);
