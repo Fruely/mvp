@@ -3,6 +3,26 @@
 import fs from 'node:fs';
 
 const INPUT_PATH = 'data/market-signals-input.json';
+const SHOULD_WRITE = process.argv.includes('--write');
+
+function loadEnv() {
+  if (!fs.existsSync('.env.local')) return;
+
+  for (const line of fs.readFileSync('.env.local', 'utf8').split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+
+    const index = trimmed.indexOf('=');
+    if (index === -1) continue;
+
+    const key = trimmed.slice(0, index).trim();
+    const value = trimmed.slice(index + 1).trim();
+
+    if (!process.env[key]) process.env[key] = value;
+  }
+}
+
+loadEnv();
 
 function readInput() {
   if (!fs.existsSync(INPUT_PATH)) {
@@ -258,7 +278,102 @@ function classifySignal(item) {
   return result;
 }
 
+function getSupabaseConfig() {
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.SUPABASE_URL;
+
+  const supabaseKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.error(
+      'Missing Supabase env variables. Expected NEXT_PUBLIC_SUPABASE_URL/SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY.'
+    );
+    process.exit(1);
+  }
+
+  return {
+    supabaseUrl: supabaseUrl.replace(/\/$/, ''),
+    supabaseKey,
+  };
+}
+
+function toMarketSignalInsert(row) {
+  const channels = new Set(row.available_channels || []);
+
+  return {
+    signal_type: row.signal_type,
+    country: row.country || 'Germany',
+    region: row.region || null,
+    city: row.city || null,
+    language_detected: row.language_detected || null,
+    category_slug: row.category_slug || null,
+    subcategory_candidate: row.subcategory_candidate || null,
+    source_platform: row.source_platform || null,
+    source_url: row.source_url || null,
+    source_text: row.source_text || null,
+    signal_text: row.signal_text || null,
+    has_instagram: channels.has('instagram'),
+    has_telegram: channels.has('telegram'),
+    has_facebook: channels.has('facebook'),
+    has_website: channels.has('website'),
+    has_email: channels.has('email'),
+    has_phone: channels.has('phone'),
+    is_self_employed_signal: row.signal_type === 'supply',
+    is_business_offer: row.signal_type === 'supply',
+    confidence: row.confidence ?? null,
+    notes: 'Inserted by local Market Signal Processor',
+  };
+}
+
+async function insertMarketSignals(rows) {
+  const { supabaseUrl, supabaseKey } = getSupabaseConfig();
+
+  const validRows = rows.filter((row) => row.signal_type === 'supply' || row.signal_type === 'demand');
+
+  if (validRows.length === 0) {
+    console.log('No valid supply/demand signals to insert.');
+    return [];
+  }
+
+  const payload = validRows.map(toMarketSignalInsert);
+
+  const response = await fetch(`${supabaseUrl}/rest/v1/market_signals`, {
+    method: 'POST',
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const text = await response.text();
+
+  if (!response.ok) {
+    throw new Error(`Supabase insert failed ${response.status}: ${text}`);
+  }
+
+  return text ? JSON.parse(text) : [];
+}
+
 const input = readInput();
 const classified = input.map(classifySignal);
 
-console.log(JSON.stringify(classified, null, 2));
+if (!SHOULD_WRITE) {
+  console.log(JSON.stringify(classified, null, 2));
+  console.log('\nDry run only. Add --write to insert into Supabase market_signals.');
+} else {
+  try {
+    const inserted = await insertMarketSignals(classified);
+    console.log(`Inserted market signals: ${inserted.length}`);
+    console.log(JSON.stringify(inserted, null, 2));
+  } catch (error) {
+    console.error(error.message);
+    process.exit(1);
+  }
+}
