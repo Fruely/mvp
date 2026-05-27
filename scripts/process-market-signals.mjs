@@ -207,27 +207,77 @@ function detectCategory(text) {
     {
       category_slug: 'beauty',
       subcategory_candidate: 'manicure',
-      keywords: ['маникюр', 'манікюр', 'ногти', 'нігті', 'гель-лак', 'гель лак'],
+      keywords: ['маникюр', 'манікюр', 'ногти', 'нігті', 'гель-лак', 'гель лак', 'наращивание', 'нарощування'],
+    },
+    {
+      category_slug: 'beauty',
+      subcategory_candidate: 'cosmetologist',
+      keywords: ['косметолог', 'чистка лица', 'чистка обличчя', 'пилинг', 'пілінг', 'уход за лицом', 'догляд за обличчям'],
+    },
+    {
+      category_slug: 'beauty',
+      subcategory_candidate: 'brows_lashes',
+      keywords: ['брови', 'ресницы', 'вії', 'бровист', 'лашмейкер', 'lash', 'lashes'],
+    },
+    {
+      category_slug: 'health-psychology',
+      subcategory_candidate: 'massage',
+      keywords: ['массаж', 'масаж', 'массажист', 'масажист', 'спина', 'релакс массаж'],
     },
     {
       category_slug: 'psychology',
       subcategory_candidate: 'psychologist',
-      keywords: ['психолог', 'терапия', 'терапія', 'тревог', 'адаптац'],
+      keywords: ['психолог', 'терапия', 'терапія', 'тревог', 'адаптац', 'паническ', 'панічн'],
     },
     {
       category_slug: 'tutoring',
       subcategory_candidate: 'german_tutor',
-      keywords: ['репетитор', 'немецк', 'німецьк', 'deutsch', 'уроки'],
+      keywords: ['репетитор', 'немецк', 'німецьк', 'deutsch', 'уроки', 'занятия немецким', 'заняття німецькою'],
+    },
+    {
+      category_slug: 'family-services',
+      subcategory_candidate: 'babysitter',
+      keywords: ['няня', 'бебиситтер', 'babysitter', 'присмотреть за ребенком', 'посидеть с ребенком', 'догляд за дитиною'],
+    },
+    {
+      category_slug: 'home-services',
+      subcategory_candidate: 'cleaning',
+      keywords: ['уборка', 'прибирання', 'клининг', 'клінінг', 'убрать квартиру', 'прибрати квартиру'],
+    },
+    {
+      category_slug: 'business-services',
+      subcategory_candidate: 'accountant',
+      keywords: ['бухгалтер', 'налоги', 'податки', 'steuer', 'steuerberater', 'finanzamt', 'декларация', 'декларація'],
+    },
+    {
+      category_slug: 'legal-services',
+      subcategory_candidate: 'lawyer',
+      keywords: ['юрист', 'адвокат', 'anwalt', 'recht', 'правовая помощь', 'правова допомога'],
+    },
+    {
+      category_slug: 'auto-services',
+      subcategory_candidate: 'car_repair',
+      keywords: ['авто', 'машина', 'сто', 'ремонт машины', 'ремонт авто', 'автомеханик', 'механик', 'kfz'],
+    },
+    {
+      category_slug: 'repair',
+      subcategory_candidate: 'renovation',
+      keywords: ['ремонт квартиры', 'ремонт квартир', 'ремонт дому', 'шпаклевка', 'шпаклівка', 'покраска стен', 'фарбування стін'],
     },
     {
       category_slug: 'photo-video',
       subcategory_candidate: 'photographer',
-      keywords: ['фотограф', 'фото', 'съёмк', 'зйомк', 'портрет'],
+      keywords: ['фотограф', 'фото', 'съёмк', 'зйомк', 'портрет', 'фотосессия', 'фотосесія'],
     },
     {
       category_slug: 'documents-relocation',
       subcategory_candidate: 'documents_help',
-      keywords: ['документ', 'jobcenter', 'внж', 'ausländerbehörde', 'термин', 'termin'],
+      keywords: ['документ', 'jobcenter', 'внж', 'ausländerbehörde', 'термин', 'termin', 'анкета', 'заполнить форму', 'заповнити форму'],
+    },
+    {
+      category_slug: 'documents-relocation',
+      subcategory_candidate: 'translator',
+      keywords: ['переводчик', 'перекладач', 'перевод документов', 'переклад документів', 'присяжный перевод', 'beglaubigte übersetzung'],
     },
   ];
 
