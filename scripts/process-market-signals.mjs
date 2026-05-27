@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 
 const INPUT_PATH = 'data/market-signals-input.json';
@@ -49,6 +50,27 @@ function readInput() {
 function normalizeText(value) {
   return String(value || '').toLowerCase();
 }
+
+function createSignalHash(row) {
+  const raw = [
+    row.signal_type || '',
+    row.source_platform || '',
+    row.source_type || '',
+    row.source_url || '',
+    row.source_text || row.signal_text || '',
+    row.country || '',
+    row.region || '',
+    row.city || '',
+    row.category_slug || '',
+    row.subcategory_candidate || '',
+  ]
+    .join('|')
+    .toLowerCase()
+    .trim();
+
+  return crypto.createHash('sha256').update(raw).digest('hex');
+}
+
 
 function detectSignalType(text) {
   const demandMarkers = [
@@ -274,6 +296,7 @@ function classifySignal(item) {
   };
 
   result.confidence = calculateConfidence(result);
+  result.signal_hash = createSignalHash(result);
 
   return result;
 }
@@ -325,8 +348,35 @@ function toMarketSignalInsert(row) {
     is_self_employed_signal: row.signal_type === 'supply',
     is_business_offer: row.signal_type === 'supply',
     confidence: row.confidence ?? null,
+    signal_hash: row.signal_hash || null,
     notes: 'Inserted by local Market Signal Processor',
   };
+}
+
+async function findExistingSignalHashes(hashes) {
+  if (hashes.length === 0) return new Set();
+
+  const { supabaseUrl, supabaseKey } = getSupabaseConfig();
+
+  const encodedHashes = hashes.map((hash) => `"${hash}"`).join(',');
+  const url = `${supabaseUrl}/rest/v1/market_signals?select=signal_hash&signal_hash=in.(${encodedHashes})`;
+
+  const response = await fetch(url, {
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  const text = await response.text();
+
+  if (!response.ok) {
+    throw new Error(`Supabase duplicate check failed ${response.status}: ${text}`);
+  }
+
+  const rows = text ? JSON.parse(text) : [];
+  return new Set(rows.map((row) => row.signal_hash).filter(Boolean));
 }
 
 async function insertMarketSignals(rows) {
@@ -339,7 +389,18 @@ async function insertMarketSignals(rows) {
     return [];
   }
 
-  const payload = validRows.map(toMarketSignalInsert);
+  const hashes = validRows.map((row) => row.signal_hash).filter(Boolean);
+  const existingHashes = await findExistingSignalHashes(hashes);
+
+  const newRows = validRows.filter((row) => !existingHashes.has(row.signal_hash));
+
+  console.log(`Duplicate market signals skipped: ${validRows.length - newRows.length}`);
+
+  if (newRows.length === 0) {
+    return [];
+  }
+
+  const payload = newRows.map(toMarketSignalInsert);
 
   const response = await fetch(`${supabaseUrl}/rest/v1/market_signals`, {
     method: 'POST',
