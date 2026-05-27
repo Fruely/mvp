@@ -689,20 +689,80 @@ function toContentTaskInsert(signal) {
   return null;
 }
 
-async function insertContentTasksFromSignals(insertedSignals) {
+function buildContentTaskSegmentFilters(row) {
+  const filters = [
+    `content_goal=eq.${encodeURIComponent(row.content_goal)}`,
+    `channel=eq.${encodeURIComponent(row.channel)}`,
+    `country=eq.${encodeURIComponent(row.country || 'Germany')}`,
+    row.region ? `region=eq.${encodeURIComponent(row.region)}` : 'region=is.null',
+    row.city ? `city=eq.${encodeURIComponent(row.city)}` : 'city=is.null',
+    row.category_slug ? `category_slug=eq.${encodeURIComponent(row.category_slug)}` : 'category_slug=is.null',
+    row.subcategory_candidate
+      ? `subcategory_candidate=eq.${encodeURIComponent(row.subcategory_candidate)}`
+      : 'subcategory_candidate=is.null',
+    'select=id,priority,source_insight,notes',
+    'limit=1',
+  ];
+
+  return filters.join('&');
+}
+
+async function findExistingContentTaskBySegment(row) {
   const { supabaseUrl, supabaseKey } = getSupabaseConfig();
 
-  const payload = insertedSignals
-    .map(toContentTaskInsert)
-    .filter(Boolean);
+  const response = await fetch(
+    `${supabaseUrl}/rest/v1/content_tasks?${buildContentTaskSegmentFilters(row)}`,
+    {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
 
-  if (payload.length === 0) {
-    console.log('No signals for content_tasks.');
-    return [];
+  const text = await response.text();
+
+  if (!response.ok) {
+    throw new Error(`Supabase content_tasks duplicate check failed ${response.status}: ${text}`);
   }
 
-  const response = await fetch(`${supabaseUrl}/rest/v1/content_tasks`, {
-    method: 'POST',
+  const rows = text ? JSON.parse(text) : [];
+  return rows[0] || null;
+}
+
+function buildAggregatedContentTaskUpdate(existing, row) {
+  const currentPriority = Number(existing.priority || 0);
+  const nextPriority = Math.min(100, Math.max(currentPriority, row.priority || 0) + 5);
+
+  const additionalInsight = row.source_insight
+    ? `Additional signal: ${row.source_insight}`
+    : 'Additional signal processed by Market Signal Processor.';
+
+  const currentInsight = existing.source_insight || '';
+  const nextInsight = currentInsight.includes(additionalInsight)
+    ? currentInsight
+    : [currentInsight, additionalInsight].filter(Boolean).join('\n\n');
+
+  const aggregationNote = 'Aggregated automatically from additional market signal by local Market Signal Processor.';
+  const currentNotes = existing.notes || '';
+  const nextNotes = currentNotes.includes(aggregationNote)
+    ? currentNotes
+    : [currentNotes, aggregationNote].filter(Boolean).join('\n');
+
+  return {
+    priority: nextPriority,
+    source_insight: nextInsight,
+    notes: nextNotes,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+async function updateContentTask(id, payload) {
+  const { supabaseUrl, supabaseKey } = getSupabaseConfig();
+
+  const response = await fetch(`${supabaseUrl}/rest/v1/content_tasks?id=eq.${id}`, {
+    method: 'PATCH',
     headers: {
       apikey: supabaseKey,
       Authorization: `Bearer ${supabaseKey}`,
@@ -715,10 +775,62 @@ async function insertContentTasksFromSignals(insertedSignals) {
   const text = await response.text();
 
   if (!response.ok) {
-    throw new Error(`Supabase content_tasks insert failed ${response.status}: ${text}`);
+    throw new Error(`Supabase content_tasks update failed ${response.status}: ${text}`);
   }
 
   return text ? JSON.parse(text) : [];
+}
+
+async function insertContentTasksFromSignals(insertedSignals) {
+  const { supabaseUrl, supabaseKey } = getSupabaseConfig();
+
+  const payload = insertedSignals
+    .map(toContentTaskInsert)
+    .filter(Boolean);
+
+  if (payload.length === 0) {
+    console.log('No signals for content_tasks.');
+    return [];
+  }
+
+  const createdRows = [];
+  const updatedRows = [];
+
+  for (const row of payload) {
+    const existing = await findExistingContentTaskBySegment(row);
+
+    if (existing) {
+      const updatePayload = buildAggregatedContentTaskUpdate(existing, row);
+      const updated = await updateContentTask(existing.id, updatePayload);
+      updatedRows.push(...updated);
+      continue;
+    }
+
+    const response = await fetch(`${supabaseUrl}/rest/v1/content_tasks`, {
+      method: 'POST',
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      },
+      body: JSON.stringify(row),
+    });
+
+    const text = await response.text();
+
+    if (!response.ok) {
+      throw new Error(`Supabase content_tasks insert failed ${response.status}: ${text}`);
+    }
+
+    const created = text ? JSON.parse(text) : [];
+    createdRows.push(...created);
+  }
+
+  console.log(`Aggregated content tasks updated: ${updatedRows.length}`);
+  console.log(`New content tasks created: ${createdRows.length}`);
+
+  return [...createdRows, ...updatedRows];
 }
 
 const input = readInput();
