@@ -504,6 +504,40 @@ function toScoutProspectInsert(signal) {
   };
 }
 
+async function findExistingScoutDuplicateKeys(duplicateKeys) {
+  const { supabaseUrl, supabaseKey } = getSupabaseConfig();
+  const existing = new Set();
+
+  for (const duplicateKey of duplicateKeys) {
+    if (!duplicateKey) continue;
+
+    const response = await fetch(
+      `${supabaseUrl}/rest/v1/scout_prospects?select=duplicate_key&duplicate_key=eq.${encodeURIComponent(duplicateKey)}&limit=1`,
+      {
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const text = await response.text();
+
+    if (!response.ok) {
+      throw new Error(`Supabase scout_prospects duplicate check failed ${response.status}: ${text}`);
+    }
+
+    const rows = text ? JSON.parse(text) : [];
+
+    if (rows.length > 0) {
+      existing.add(duplicateKey);
+    }
+  }
+
+  return existing;
+}
+
 async function insertScoutProspectsFromSignals(insertedSignals) {
   const { supabaseUrl, supabaseKey } = getSupabaseConfig();
 
@@ -515,6 +549,16 @@ async function insertScoutProspectsFromSignals(insertedSignals) {
   }
 
   const payload = supplySignals.map(toScoutProspectInsert);
+  const duplicateKeys = payload.map((row) => row.duplicate_key).filter(Boolean);
+  const existingDuplicateKeys = await findExistingScoutDuplicateKeys(duplicateKeys);
+
+  const newPayload = payload.filter((row) => !existingDuplicateKeys.has(row.duplicate_key));
+
+  console.log(`Duplicate scout prospects skipped: ${payload.length - newPayload.length}`);
+
+  if (newPayload.length === 0) {
+    return [];
+  }
 
   const response = await fetch(`${supabaseUrl}/rest/v1/scout_prospects`, {
     method: 'POST',
@@ -524,7 +568,7 @@ async function insertScoutProspectsFromSignals(insertedSignals) {
       'Content-Type': 'application/json',
       Prefer: 'return=representation',
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(newPayload),
   });
 
   const text = await response.text();
