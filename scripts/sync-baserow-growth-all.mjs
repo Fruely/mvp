@@ -8,6 +8,7 @@ const scripts = [
   'scripts/sync-baserow-operator-category-opportunities.mjs',
   'scripts/sync-baserow-operator-content-tasks.mjs',
   'scripts/sync-baserow-scout-prospects.mjs',
+  'scripts/sync-baserow-operator-scout-prospects.mjs',
   'scripts/sync-baserow-market-signals.mjs',
 ];
 
