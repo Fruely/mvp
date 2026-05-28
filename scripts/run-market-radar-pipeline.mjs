@@ -24,7 +24,17 @@ loadEnv();
 
 const steps = [
   {
-    name: 'Process market signals',
+    name: 'Collect public market search results',
+    command: 'node',
+    args: ['scripts/collect-public-market-search-results.mjs', '--write'],
+  },
+  {
+    name: 'Classify raw market items',
+    command: 'node',
+    args: ['scripts/classify-raw-market-items.mjs', '--write'],
+  },
+  {
+    name: 'Process local market signals input',
     command: 'node',
     args: ['scripts/process-market-signals.mjs', '--write'],
   },
