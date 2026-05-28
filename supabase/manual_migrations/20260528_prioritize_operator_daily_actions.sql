@@ -1,7 +1,9 @@
 -- Freuly Growth System: prioritize Operator Daily Actions
 -- Purpose: make the main operator dashboard usable as a daily action queue, not a raw data dump.
 
-create or replace view public.growth_operator_daily_actions_view as
+drop view if exists public.growth_operator_daily_actions_view;
+
+create view public.growth_operator_daily_actions_view as
 
 with category_actions as (
   select
