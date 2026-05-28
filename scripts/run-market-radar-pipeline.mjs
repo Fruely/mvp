@@ -39,6 +39,11 @@ const steps = [
     args: ['scripts/process-market-signals.mjs', '--write'],
   },
   {
+    name: 'Create growth actions from market signals',
+    command: 'node',
+    args: ['scripts/create-growth-actions-from-market-signals.mjs', '--write'],
+  },
+  {
     name: 'Recalculate category opportunities',
     command: 'node',
     args: ['scripts/recalculate-category-opportunities.mjs'],
