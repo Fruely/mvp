@@ -144,6 +144,24 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (specialistError || !specialist) {
+      console.error("[specialists/register] specialist insert failed", {
+        error: {
+          message: specialistError?.message,
+          code: specialistError?.code,
+          details: specialistError?.details,
+          hint: specialistError?.hint,
+        },
+        payload: {
+          user_id: createdUser.user.id,
+          email,
+          name,
+          phone,
+          status: "draft",
+          is_active: false,
+          is_visible: false,
+          specialist_rules_version: rulesVersion,
+        },
+      });
       await supabase.auth.admin.deleteUser(createdUser.user.id).catch(() => undefined);
       return jsonNoStore(
         { error: specialistError?.message || "Не удалось создать профиль специалиста." },
