@@ -60,6 +60,7 @@ export default function SpecialistOnboardingWizard({
   publicProfileHref,
   categories,
   preserveProfileData,
+  categoriesLoadError,
 }: {
   dict: Dictionary;
   lang: string;
@@ -77,6 +78,7 @@ export default function SpecialistOnboardingWizard({
   publicProfileHref: string;
   categories: OnboardingCategory[];
   preserveProfileData: OnboardingPreserveProfileData;
+  categoriesLoadError?: string;
 }) {
   const baseHref = `/${lang}/specialist/dashboard/onboarding`;
   const gateMessage = incompleteProfileGateMessage(lang);
@@ -129,6 +131,12 @@ export default function SpecialistOnboardingWizard({
 
   return (
     <div className="space-y-6">
+      {categoriesLoadError ? (
+        <div className="rounded-xl border border-red-300 bg-red-50 px-5 py-4 text-red-950 shadow-sm">
+          <p className="text-sm font-semibold">Ошибка загрузки</p>
+          <p className="mt-1 text-sm leading-6">{categoriesLoadError}</p>
+        </div>
+      ) : null}
       {showIncompleteProfileGateNotice ? (
         <div className="rounded-xl border border-amber-300 bg-amber-50 px-5 py-4 text-amber-950 shadow-sm">
           <p className="text-sm font-semibold">{gateMessage.title}</p>

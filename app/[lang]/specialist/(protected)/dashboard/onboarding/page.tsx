@@ -96,6 +96,47 @@ export default async function SpecialistDashboardOnboardingPage({
     .or(`parent_id.not.is.null,slug.eq.${UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG}`)
     .order("title", { ascending: true });
 
+  if (!Array.isArray(categoriesRows) || categoriesRows.length === 0) {
+    return (
+      <SpecialistOnboardingWizard
+        dict={dict}
+        lang={lang}
+        activeStep={activeStep}
+        profileStarted={false}
+        publishReady={false}
+        isUncategorizedCategory={false}
+        showIncompleteProfileGateNotice={showIncompleteProfileGateNotice}
+        checklistItems={[]}
+        initialBasicData={{ name: "", category_id: "", work_format: "online", postal_code: "", languages: [] }}
+        initialAboutData={{ about_me: "" }}
+        servicesSummary={{ totalServices: 0, activeServices: 0, hasValidServiceForPublish: false }}
+        currentPhotoUrl=""
+        reviewSummary={{
+          publishReady: false,
+          hasName: false,
+          hasCategory: false,
+          hasPublishableCategory: false,
+          isUncategorizedCategory: false,
+          isRootCategory: false,
+          hasLanguages: false,
+          hasWorkFormat: false,
+          needsPostalCode: false,
+          hasValidPostalCodeWhenNeeded: false,
+          hasActiveServicesAnyCategory: false,
+          hasValidServiceInSelectedCategory: false,
+          servicesMismatch: false,
+          hasAbout: false,
+          hasPhoto: false,
+          hasGallery: false,
+        }}
+        publicProfileHref={publicProfileHref}
+        categories={[]}
+        preserveProfileData={{ about_me: "", city: "", address: "", video_url: "", photo_url: "", gallery_urls: [], certificate_urls: [] }}
+        categoriesLoadError={"Не удалось загрузить список категорий. Пожалуйста, обновите страницу."}
+      />
+    );
+  }
+
   const name = specialist.first_name?.trim() || specialist.name?.trim() || "";
   const languages = Array.isArray(specExtra?.languages)
     ? (specExtra.languages as unknown[]).filter(
