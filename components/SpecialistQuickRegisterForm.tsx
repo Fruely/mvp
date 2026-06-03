@@ -88,8 +88,10 @@ export default function SpecialistQuickRegisterForm({ dict, lang }: Props) {
         return;
       }
 
-      router.refresh();
-      router.replace(lang ? specialistDashboardHref(lang) : specialistDashboardHrefClient());
+      const onboardingHref = lang
+        ? `/${lang}/specialist/dashboard/onboarding?step=welcome&reason=incomplete_profile`
+        : "/ru/specialist/dashboard/onboarding?step=welcome&reason=incomplete_profile";
+      router.replace(onboardingHref);
     } catch {
       setError("Не вдалося створити акаунт. Спробуйте пізніше.");
     } finally {
