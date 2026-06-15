@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
+
+type UiLang = "ru" | "ua" | "de";
 
 type SearchParams = {
   category?: string;
@@ -8,39 +9,60 @@ type SearchParams = {
   remote?: string;
 };
 
-export default function SearchPage({
+function toUiLang(lang: string | undefined): UiLang {
+  const lower = lang?.trim().toLowerCase();
+  if (lower === "ru" || lower === "ua" || lower === "de") return lower;
+  return "ru";
+}
+
+function isRemoteTruthy(value: string | undefined): boolean {
+  if (!value) return false;
+  const normalized = value.trim().toLowerCase();
+  return (
+    normalized === "true" ||
+    normalized === "1" ||
+    normalized === "yes" ||
+    normalized === "on"
+  );
+}
+
+export default async function SearchPage({
   params,
   searchParams,
 }: {
-  params: { lang: string };
-  searchParams: SearchParams;
+  params: { lang: string } | Promise<{ lang: string }>;
+  searchParams: SearchParams | Promise<SearchParams>;
 }) {
-  const lang = params.lang;
-  const category = searchParams.category?.trim() || null;
-  const city = searchParams.city?.trim() || null;
-  const languageRaw = searchParams.language?.trim() || null;
-  const language = languageRaw
-    ? normalizeSearchLangToDbCode(languageRaw) ?? languageRaw
-    : "ru";
-  const remote = searchParams.remote === "true";
+  const { lang: langParam } = await Promise.resolve(params);
+  const sp = await Promise.resolve(searchParams);
 
-  const qp = new URLSearchParams();
-  qp.set("lang", language);
-  if (category) qp.set("category", category);
+  const uiLang = toUiLang(langParam);
+  const category = sp.category?.trim() || null;
+  const city = sp.city?.trim() || null;
+  const searchLang = sp.language?.trim() || uiLang;
+  const remote = isRemoteTruthy(sp.remote);
 
-  if (remote) {
+  if (category && remote) {
+    const qp = new URLSearchParams();
+    qp.set("lang", searchLang);
+    qp.set("category", category);
     qp.set("mode", "online");
     redirect(`/specialists?${qp.toString()}`);
   }
 
-  if (city) {
+  if (category && city) {
+    const qp = new URLSearchParams();
+    qp.set("lang", searchLang);
+    qp.set("category", category);
     qp.set("place", city);
     redirect(`/specialists?${qp.toString()}`);
   }
 
   if (category) {
-    redirect(`/${lang}/category/${category}?lang=${language}`);
+    const qp = new URLSearchParams();
+    qp.set("lang", searchLang);
+    redirect(`/${uiLang}/category/${encodeURIComponent(category)}?${qp.toString()}`);
   }
 
-  redirect(`/${lang}`);
+  redirect(`/${uiLang}`);
 }
