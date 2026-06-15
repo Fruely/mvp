@@ -1,11 +1,24 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { headers } from "next/headers";
 import { getSpecialistUrl } from "@/lib/urls";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
 import { getDictionary, t, type Dictionary } from "@/lib/i18n";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
+
+function getInternalBaseUrl(): string {
+  const h = headers();
+  const host = h.get("host");
+  if (host) {
+    const proto = h.get("x-forwarded-proto") || "https";
+    return `${proto}://${host}`;
+  }
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (siteUrl) return siteUrl.replace(/\/$/, "");
+  return "http://localhost:3000";
+}
 
 export const dynamic = "force-dynamic";
 
@@ -65,11 +78,8 @@ async function fetchSpecialists(
   if (q) params.set("q", q);
   if (category) params.set("category", category);
   if (apiOnlineOnly) params.set("mode", "online");
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    "https://freuly.de";
+  const baseUrl = getInternalBaseUrl();
   const url = `${baseUrl}/api/specialists/search?${params.toString()}`;
-  console.log("FETCH URL:", url);
 
   let res: Response;
   try {
@@ -140,7 +150,7 @@ function logZeroResultsSpecialistsPage(opts: {
   routeTarget: string;
   fallback: string | null | undefined;
 }) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://freuly.de";
+  const baseUrl = getInternalBaseUrl();
   const langFilter = normalizeSearchLangToDbCode(opts.langParam) ?? opts.langParam;
   const metadata: Record<string, unknown> = { source: "search_results" };
   if (opts.fallback) metadata.fallback = opts.fallback;

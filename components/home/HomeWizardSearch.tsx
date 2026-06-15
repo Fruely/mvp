@@ -128,14 +128,22 @@ function buildSearchUrl(
   }
 ): string {
   const params = new URLSearchParams();
+  params.set("lang", opts.language);
   params.set("category", opts.categorySlug);
-  params.set("language", opts.language);
+
   if (opts.locationMode === "online") {
-    params.set("remote", "true");
-  } else if (opts.city.trim()) {
-    params.set("city", opts.city.trim());
+    params.set("mode", "online");
+    return `/specialists?${params.toString()}`;
   }
-  return `/${lang}/search?${params.toString()}`;
+
+  if (opts.locationMode === "city" && opts.city.trim()) {
+    params.set("place", opts.city.trim());
+    return `/specialists?${params.toString()}`;
+  }
+
+  const categoryParams = new URLSearchParams();
+  categoryParams.set("lang", opts.language);
+  return `/${lang}/category/${encodeURIComponent(opts.categorySlug)}?${categoryParams.toString()}`;
 }
 
 function formatWizardProgress(dict: Dictionary, step: number, total: number): string {
