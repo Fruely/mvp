@@ -26,6 +26,8 @@
       "submit": "Spezialisten anzeigen",
       "loading": "Kategorien werden geladen…",
       "noCategories": "Kategorien vorübergehend nicht verfügbar",
+      "showMoreCategories": "Mehr anzeigen",
+      "hideCategories": "Ausblenden",
       "errors": {
         "category": "Bitte wählen Sie eine Kategorie",
         "location": "Bitte wählen Sie Online oder Stadt",

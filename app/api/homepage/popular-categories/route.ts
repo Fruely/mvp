@@ -1,3 +1,4 @@
+import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
 import { CACHE_PUBLIC_POPULAR_CATEGORIES, jsonWithCache } from "@/lib/http/cache";
@@ -17,7 +18,8 @@ type PopularCategoryItem = {
   sort_order: number | null;
 };
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const forWizard = request.nextUrl.searchParams.get("for") === "wizard";
   const supabase = createSupabaseServerClient();
 
   // 1. Count specialists per category
@@ -74,7 +76,7 @@ export async function GET() {
     }
   }
 
-  // 4. Build result: only categories with image_url
+  // 4. Build result: homepage block needs image_url; wizard needs all active categories
   const rows: PopularCategoryItem[] = ((catData ?? []) as Array<{
     id: string;
     slug: string | null;
@@ -84,7 +86,7 @@ export async function GET() {
     title_ua?: string | null;
     image_url: string | null;
   }>)
-    .filter((cat) => cat.image_url)
+    .filter((cat) => forWizard || cat.image_url)
     .map((cat) => ({
       id: cat.id,
       slug: cat.slug,

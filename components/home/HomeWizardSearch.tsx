@@ -23,7 +23,7 @@ const WIZARD_PRIORITY_SLUGS = [
   "housemaster",
 ] as const;
 
-const MAX_WIZARD_CATEGORIES = 8;
+const INITIAL_VISIBLE_CATEGORIES = 10;
 
 type WizardLanguage = (typeof LANG_OPTIONS)[number]["value"];
 type LocationMode = "online" | "city";
@@ -92,20 +92,20 @@ function orderWizardCategories(categories: WizardCategory[]): WizardCategory[] {
     if (!item) continue;
     ordered.push(item);
     used.add(slug);
-    if (ordered.length >= MAX_WIZARD_CATEGORIES) return ordered;
   }
 
   for (const item of categories) {
     if (used.has(item.slug)) continue;
     ordered.push(item);
-    if (ordered.length >= MAX_WIZARD_CATEGORIES) break;
   }
 
   return ordered;
 }
 
 async function fetchPopularCategories(): Promise<WizardCategory[]> {
-  const res = await fetch("/api/homepage/popular-categories", { cache: "no-store" });
+  const res = await fetch("/api/homepage/popular-categories?for=wizard", {
+    cache: "no-store",
+  });
   if (!res.ok) return [];
 
   try {
@@ -163,6 +163,7 @@ export default function HomeWizardSearch({
 
   const [categories, setCategories] = useState<WizardCategory[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesExpanded, setCategoriesExpanded] = useState(false);
   const [mobileStep, setMobileStep] = useState(1);
   const [categorySlug, setCategorySlug] = useState<string | null>(null);
   const [locationMode, setLocationMode] = useState<LocationMode | null>(null);
@@ -203,6 +204,15 @@ export default function HomeWizardSearch({
     if (!isMobile) return 3;
     return mobileStep;
   }, [isMobile, mobileStep]);
+
+  const visibleCategories = useMemo(() => {
+    if (categoriesExpanded || categories.length <= INITIAL_VISIBLE_CATEGORIES) {
+      return categories;
+    }
+    return categories.slice(0, INITIAL_VISIBLE_CATEGORIES);
+  }, [categories, categoriesExpanded]);
+
+  const showCategoryToggle = categories.length > INITIAL_VISIBLE_CATEGORIES;
 
   const step2Enabled = Boolean(categorySlug);
   const step3Enabled = Boolean(
@@ -296,19 +306,32 @@ export default function HomeWizardSearch({
               ) : categories.length === 0 ? (
                 <p className="text-sm text-textSecondary">{t(dict, "home.wizard.noCategories")}</p>
               ) : (
-                categories.map((category) => {
-                  const selected = categorySlug === category.slug;
-                  return (
+                <>
+                  {visibleCategories.map((category) => {
+                    const selected = categorySlug === category.slug;
+                    return (
+                      <button
+                        key={category.slug}
+                        type="button"
+                        onClick={() => selectCategory(category.slug)}
+                        className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${chipClass(selected)}`}
+                      >
+                        {getCategoryTitle(category, categoryTitleLang)}
+                      </button>
+                    );
+                  })}
+                  {showCategoryToggle ? (
                     <button
-                      key={category.slug}
                       type="button"
-                      onClick={() => selectCategory(category.slug)}
-                      className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${chipClass(selected)}`}
+                      onClick={() => setCategoriesExpanded((expanded) => !expanded)}
+                      className="w-full rounded-lg border border-dashed border-gray-300 px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:border-gray-400 hover:bg-gray-50 sm:w-auto"
                     >
-                      {getCategoryTitle(category, categoryTitleLang)}
+                      {categoriesExpanded
+                        ? t(dict, "home.wizard.hideCategories")
+                        : t(dict, "home.wizard.showMoreCategories")}
                     </button>
-                  );
-                })
+                  ) : null}
+                </>
               )}
             </div>
             {isMobile && categorySlug ? (
