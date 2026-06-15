@@ -146,8 +146,8 @@ function formatWizardProgress(dict: Dictionary, step: number, total: number): st
 
 function chipClass(selected: boolean) {
   return selected
-    ? "border-orange-500 bg-orange-50 text-orange-700 ring-1 ring-orange-500"
-    : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50";
+    ? "border-emerald-300 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-200"
+    : "border-gray-200 bg-white text-gray-700 hover:border-emerald-200 hover:bg-emerald-50";
 }
 
 export default function HomeWizardSearch({
