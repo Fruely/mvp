@@ -4,6 +4,7 @@ import Image from "next/image";
 import { getSpecialistUrl } from "@/lib/urls";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
+import { getDictionary, t } from "@/lib/i18n";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 
 export const dynamic = "force-dynamic";
@@ -182,6 +183,7 @@ export default async function SpecialistsPage({
   const pageMode = searchParams?.mode?.trim().toLowerCase() || null;
   const isOnlineList = pageMode === "online";
   const uiLang = toUiLang(lang);
+  const dict = await getDictionary(uiLang);
 
   if (!category) {
     return (
@@ -292,24 +294,23 @@ export default async function SpecialistsPage({
             🔍
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            No specialists found for the selected language in this area.
+            {t(dict, "search.noResults.title")}
           </h1>
           <p className="text-gray-600 mb-8">
-            Try changing the language or expanding your location to see more
-            results.
+            {t(dict, "search.noResults.subtitle")}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link
               href={`/${uiLang}`}
               className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
             >
-              Change language or location
+              {t(dict, "search.noResults.changeFilters")}
             </Link>
             <Link
               href={`/${uiLang}`}
               className="inline-block px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
             >
-              Back to search
+              {t(dict, "search.noResults.backToSearch")}
             </Link>
           </div>
         </div>

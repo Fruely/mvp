@@ -9,7 +9,7 @@ import { getSpecialistUrl } from "@/lib/urls";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import GermanyMapCTA from "@/components/home/GermanyMapCTA";
-import HeroSearch from "@/components/HeroSearch";
+import HomeWizardSearch from "@/components/home/HomeWizardSearch";
 import FounderBadge from "@/components/specialist/FounderBadge";
 
 type MosaicImage = { url: string; alt?: string; category_id?: string };
@@ -583,13 +583,11 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             {copy.subtitle}
           </p>
 
-          <HeroSearch
+          <HomeWizardSearch
             lang={lang}
             dict={dict}
-            primaryCta={copy.search}
-            categoryPlaceholder={copy.categoryPlaceholder}
-            plzPlaceholder={copy.plzLabel}
-            languageLabel={t(dict, "filters.language.label", { defaultValue: "Язык" })}
+            submitLabel={copy.search}
+            initialCity={placeFromUrl}
           />
 
           <div className="mt-6 text-sm font-normal text-textSecondary flex flex-wrap justify-center gap-3">
