@@ -7,18 +7,7 @@ import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
 import { getDictionary, t, type Dictionary } from "@/lib/i18n";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
-
-function getInternalBaseUrl(): string {
-  const h = headers();
-  const host = h.get("host");
-  if (host) {
-    const proto = h.get("x-forwarded-proto") || "https";
-    return `${proto}://${host}`;
-  }
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  if (siteUrl) return siteUrl.replace(/\/$/, "");
-  return "http://localhost:3000";
-}
+import { searchSpecialists, type SpecialistResult } from "@/lib/search/specialistSearch";
 
 export const dynamic = "force-dynamic";
 
@@ -34,80 +23,6 @@ function toUiLang(lang: string): UiLang {
   if (lower === "ru") return "ru";
   if (lower === "uk") return "ua";
   return "ua";
-}
-
-type Specialist = {
-  id: string;
-  slug?: string | null;
-  name: string;
-  bio: string | null;
-  avatar_url: string | null;
-  category_slug: string | null;
-  category_title: string | null;
-  category_title_ru: string | null;
-  category_title_de: string | null;
-  category_title_ua: string | null;
-  languages: string[];
-  work_format: string;
-  postal_code: string | null;
-  /** From local radius search API; omitted for online/all lists. */
-  distance?: number;
-  is_pro?: boolean;
-};
-
-type SpecialistsSearchResponse = {
-  data: Specialist[];
-  error: string | null;
-  mode?: string;
-  radius?: number;
-  fallback?: string;
-};
-
-async function fetchSpecialists(
-  lang: string | null | undefined,
-  place: string | null,
-  q: string | null,
-  category: string | null,
-  apiOnlineOnly: boolean
-): Promise<SpecialistsSearchResponse> {
-  const langForApi =
-    typeof lang === "string" && lang.trim() ? lang.trim() : DEFAULT_SPECIALISTS_SEARCH_LANG;
-  const params = new URLSearchParams();
-  params.set("lang", langForApi);
-  if (place) params.set("place", place);
-  if (q) params.set("q", q);
-  if (category) params.set("category", category);
-  if (apiOnlineOnly) params.set("mode", "online");
-  const baseUrl = getInternalBaseUrl();
-  const url = `${baseUrl}/api/specialists/search?${params.toString()}`;
-
-  let res: Response;
-  try {
-    res = await fetch(url, { cache: "no-store" });
-  } catch {
-    return { data: [], error: "Network error" };
-  }
-
-  let json: any = null;
-  try {
-    json = await res.json();
-  } catch {
-    return { data: [], error: "Invalid response" };
-  }
-
-  const radiusRaw = json?.radius;
-  const radius =
-    typeof radiusRaw === "number" && Number.isFinite(radiusRaw)
-      ? radiusRaw
-      : undefined;
-
-  return {
-    data: Array.isArray(json?.data) ? json.data : [],
-    error: json?.error || null,
-    mode: typeof json?.mode === "string" ? json.mode : undefined,
-    radius,
-    fallback: typeof json?.fallback === "string" ? json.fallback : undefined,
-  };
 }
 
 type SearchParams = {
@@ -141,6 +56,18 @@ function formatResultsCount(
   return t(dict, key)
     .replace("{{count}}", String(count))
     .replace("{{language}}", language);
+}
+
+function getInternalBaseUrl(): string {
+  const h = headers();
+  const host = h.get("host");
+  if (host) {
+    const proto = h.get("x-forwarded-proto") || "https";
+    return `${proto}://${host}`;
+  }
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (siteUrl) return siteUrl.replace(/\/$/, "");
+  return "http://localhost:3000";
 }
 
 function logZeroResultsSpecialistsPage(opts: {
@@ -201,8 +128,7 @@ export default async function SpecialistsPage({
   searchParams: SearchParams;
 }) {
   const lang = searchParams?.lang?.trim() || DEFAULT_SPECIALISTS_SEARCH_LANG;
-  const place = searchParams?.place?.trim();
-  const q = searchParams?.q?.trim() || null;
+  const place = searchParams?.place?.trim() || null;
   const category = searchParams?.category?.trim() || null;
   const pageMode = searchParams?.mode?.trim().toLowerCase() || null;
   const isOnlineList = pageMode === "online";
@@ -249,36 +175,17 @@ export default async function SpecialistsPage({
     );
   }
 
-  const result = await fetchSpecialists(
-    searchParams?.lang?.trim(),
-    isOnlineList ? null : place ?? null,
-    q,
+  // Direct call — no HTTP roundtrip.
+  const result = await searchSpecialists({
+    lang,
     category,
-    isOnlineList
-  );
-  const specialists = Array.isArray(result?.data) ? result.data : [];
-  const error = result?.error || null;
+    mode: isOnlineList ? "online" : null,
+    place: isOnlineList ? null : place,
+  });
+
+  const specialists: SpecialistResult[] = Array.isArray(result.data) ? result.data : [];
   const searchMode = result.mode;
   const searchRadius = result.radius;
-
-  if (error && specialists.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
-          <h1 className="text-xl font-bold text-gray-900 mb-2">
-            Something went wrong
-          </h1>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <Link
-            href={`/${uiLang}`}
-            className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
-          >
-            Back to search
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   const empty = specialists.length === 0;
 
@@ -286,14 +193,15 @@ export default async function SpecialistsPage({
     logZeroResultsSpecialistsPage({
       uiLang,
       langParam: lang,
-      place: place ?? null,
+      place,
       routeTarget: buildSpecialistsRouteTarget(searchParams),
       fallback: result.fallback,
     });
+
     if (result.fallback === "no_local_results" && place) {
       const onlineHref = `/specialists?mode=online&lang=${encodeURIComponent(lang)}${
         category ? `&category=${encodeURIComponent(category)}` : ""
-      }${q ? `&q=${encodeURIComponent(q)}` : ""}`;
+      }`;
       return (
         <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
           <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
@@ -343,105 +251,95 @@ export default async function SpecialistsPage({
   }
 
   const localSpecialists = specialists.filter(
-    (s) =>
-      place != null &&
-      s.work_format !== "online" &&
-      s.postal_code === place
+    (s) => place != null && s.work_format !== "online" && s.postal_code === place
   );
   const onlineSpecialists = specialists.filter(
     (s) => s.work_format === "online" || s.work_format === "hybrid"
   );
   const otherSpecialists = specialists.filter(
-    (s) =>
-      !localSpecialists.includes(s) && !onlineSpecialists.includes(s)
+    (s) => !localSpecialists.includes(s) && !onlineSpecialists.includes(s)
   );
 
-  const renderCard = (s: Specialist) => {
-            const categoryLabel = getCategoryTitle(
-              {
-                title: s.category_title,
-                title_ru: s.category_title_ru,
-                title_de: s.category_title_de,
-                title_ua: s.category_title_ua,
-              },
-              toCategoryTitleLang(uiLang)
-            ) || "Category";
-            const hasCategory = Boolean(categoryLabel && categoryLabel !== "Category");
+  const renderCard = (s: SpecialistResult) => {
+    const categoryLabel =
+      getCategoryTitle(
+        {
+          title: s.category_title,
+          title_ru: s.category_title_ru,
+          title_de: s.category_title_de,
+          title_ua: s.category_title_ua,
+        },
+        toCategoryTitleLang(uiLang)
+      ) || "Category";
+    const hasCategory = Boolean(categoryLabel && categoryLabel !== "Category");
 
-            return (
-            <li key={s.id}>
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-                <div className="flex flex-col sm:flex-row gap-5 p-6">
-                  <div className="flex-shrink-0">
-                    <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-xl overflow-hidden bg-gray-100">
-                      {s.avatar_url ? (
-                        <Image
-                          src={s.avatar_url}
-                          alt={s.name}
-                          fill
-                          sizes="128px"
-                          unoptimized
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div
-                          className="absolute inset-0 flex items-center justify-center text-4xl"
-                          aria-hidden
-                        >
-                          👤
-                        </div>
-                      )}
-                    </div>
+    return (
+      <li key={s.id}>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+          <div className="flex flex-col sm:flex-row gap-5 p-6">
+            <div className="flex-shrink-0">
+              <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-xl overflow-hidden bg-gray-100">
+                {s.avatar_url ? (
+                  <Image
+                    src={s.avatar_url}
+                    alt={s.name ?? ""}
+                    fill
+                    sizes="128px"
+                    unoptimized
+                    className="object-cover"
+                  />
+                ) : (
+                  <div
+                    className="absolute inset-0 flex items-center justify-center text-4xl"
+                    aria-hidden
+                  >
+                    👤
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-baseline gap-2">
-                      <h2 className="text-lg font-bold text-gray-900">{s.name}</h2>
-                      {s.is_pro === true ? (
-                        <span className="rounded bg-gray-900 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-                          PRO
-                        </span>
-                      ) : null}
-                    </div>
-                    {hasCategory && (
-                      <p className="text-sm text-gray-500 mt-0.5">
-                        {categoryLabel}
-                      </p>
-                    )}
-                    <p className="text-gray-600 text-sm leading-relaxed mt-2 line-clamp-2">
-                      {s.bio || t(dict, "search.results.specialistFallbackBio")}
-                    </p>
-                    {s.postal_code && (
-                      <p className="text-xs text-textSecondary mt-2">
-                        {s.postal_code}
-                        {s.work_format && s.work_format !== "online" && (
-                          <span> · {s.work_format}</span>
-                        )}
-                      </p>
-                    )}
-                    {typeof s.distance === "number" && Number.isFinite(s.distance) && (
-                      <p className="text-xs text-textSecondary mt-1">
-                        {s.distance} км от вас
-                      </p>
-                    )}
-                    <div className="flex flex-wrap gap-3 mt-4">
-                      <Link
-                        href={`${getSpecialistUrl(uiLang, s)}?open=form`}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-xl shadow-soft hover:bg-gray-800 transition"
-                      >
-                        {t(dict, "search.results.sendRequest")}
-                      </Link>
-                      <Link
-                        href={getSpecialistUrl(uiLang, s)}
-                        className="inline-flex items-center gap-1 px-4 py-2 text-gray-700 text-sm font-medium hover:text-gray-900 transition"
-                      >
-                        {t(dict, "search.results.viewProfile")}
-                      </Link>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
-            </li>
-            );
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-baseline gap-2">
+                <h2 className="text-lg font-bold text-gray-900">{s.name}</h2>
+              </div>
+              {hasCategory && (
+                <p className="text-sm text-gray-500 mt-0.5">{categoryLabel}</p>
+              )}
+              <p className="text-gray-600 text-sm leading-relaxed mt-2 line-clamp-2">
+                {s.bio || t(dict, "search.results.specialistFallbackBio")}
+              </p>
+              {s.postal_code && (
+                <p className="text-xs text-textSecondary mt-2">
+                  {s.postal_code}
+                  {s.work_format && s.work_format !== "online" && (
+                    <span> · {s.work_format}</span>
+                  )}
+                </p>
+              )}
+              {typeof s.distance === "number" && Number.isFinite(s.distance) && (
+                <p className="text-xs text-textSecondary mt-1">
+                  {s.distance} км от вас
+                </p>
+              )}
+              <div className="flex flex-wrap gap-3 mt-4">
+                <Link
+                  href={`${getSpecialistUrl(uiLang, s)}?open=form`}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-xl shadow-soft hover:bg-gray-800 transition"
+                >
+                  {t(dict, "search.results.sendRequest")}
+                </Link>
+                <Link
+                  href={getSpecialistUrl(uiLang, s)}
+                  className="inline-flex items-center gap-1 px-4 py-2 text-gray-700 text-sm font-medium hover:text-gray-900 transition"
+                >
+                  {t(dict, "search.results.viewProfile")}
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </li>
+    );
   };
 
   return (
