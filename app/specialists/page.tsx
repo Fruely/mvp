@@ -4,7 +4,7 @@ import Image from "next/image";
 import { getSpecialistUrl } from "@/lib/urls";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
-import { getDictionary, t } from "@/lib/i18n";
+import { getDictionary, t, type Dictionary } from "@/lib/i18n";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 
 export const dynamic = "force-dynamic";
@@ -117,6 +117,20 @@ function buildSpecialistsRouteTarget(sp: SearchParams): string {
   if (sp.mode?.trim()) params.set("mode", sp.mode.trim());
   const qs = params.toString();
   return qs ? `/specialists?${qs}` : "/specialists";
+}
+
+function formatResultsCount(
+  dict: Dictionary,
+  count: number,
+  language: string,
+  isOnlineList: boolean
+): string {
+  const key = isOnlineList
+    ? "search.results.countOnline"
+    : "search.results.count";
+  return t(dict, key)
+    .replace("{{count}}", String(count))
+    .replace("{{language}}", language);
 }
 
 function logZeroResultsSpecialistsPage(opts: {
@@ -384,7 +398,7 @@ export default async function SpecialistsPage({
                       </p>
                     )}
                     <p className="text-gray-600 text-sm leading-relaxed mt-2 line-clamp-2">
-                      {s.bio || "Specialist profile."}
+                      {s.bio || t(dict, "search.results.specialistFallbackBio")}
                     </p>
                     {s.postal_code && (
                       <p className="text-xs text-textSecondary mt-2">
@@ -404,13 +418,13 @@ export default async function SpecialistsPage({
                         href={`${getSpecialistUrl(uiLang, s)}?open=form`}
                         className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-xl shadow-soft hover:bg-gray-800 transition"
                       >
-                        Send request
+                        {t(dict, "search.results.sendRequest")}
                       </Link>
                       <Link
                         href={getSpecialistUrl(uiLang, s)}
                         className="inline-flex items-center gap-1 px-4 py-2 text-gray-700 text-sm font-medium hover:text-gray-900 transition"
                       >
-                        View profile →
+                        {t(dict, "search.results.viewProfile")}
                       </Link>
                     </div>
                   </div>
@@ -428,22 +442,13 @@ export default async function SpecialistsPage({
             href={`/${uiLang}`}
             className="text-gray-600 hover:text-gray-900 text-sm font-medium inline-flex items-center gap-1 mb-4"
           >
-            ← Back to search
+            ← {t(dict, "search.results.backToSearch")}
           </Link>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            Specialists
+            {t(dict, "search.results.title")}
           </h1>
           <p className="text-gray-600 mt-1">
-            {specialists.length} {specialists.length === 1 ? "result" : "results"}{" "}
-            for language &quot;{lang}&quot;
-            {place ? (
-              <>
-                {" "}
-                in &quot;{place}&quot;
-              </>
-            ) : null}
-            {isOnlineList ? " (online)" : null}
-            {q ? ` matching "${q}"` : ""}.
+            {formatResultsCount(dict, specialists.length, lang, isOnlineList)}
           </p>
         </div>
 
@@ -466,7 +471,9 @@ export default async function SpecialistsPage({
 
         {onlineSpecialists.length > 0 && (
           <>
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">Работают онлайн</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">
+              {t(dict, "search.results.onlineSectionTitle")}
+            </h2>
             <ul className="space-y-4 mb-8">
               {onlineSpecialists.map(renderCard)}
             </ul>

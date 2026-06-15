@@ -40,6 +40,16 @@
       "subtitle": "Спробуйте змінити категорію, місто або мову спілкування.",
       "changeFilters": "Змінити параметри",
       "backToSearch": "Повернутися до пошуку"
+    },
+    "results": {
+      "backToSearch": "Повернутися до пошуку",
+      "title": "Спеціалісти",
+      "count": "{{count}} результатів для мови \"{{language}}\".",
+      "countOnline": "{{count}} результатів для мови \"{{language}}\" онлайн.",
+      "onlineSectionTitle": "Працюють онлайн",
+      "specialistFallbackBio": "Профіль спеціаліста.",
+      "sendRequest": "Залишити заявку",
+      "viewProfile": "Переглянути профіль"
     }
   },
   "site.title": "Freuly",

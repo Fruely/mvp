@@ -40,6 +40,16 @@
       "subtitle": "Попробуйте изменить категорию, город или язык общения.",
       "changeFilters": "Изменить параметры",
       "backToSearch": "Вернуться к поиску"
+    },
+    "results": {
+      "backToSearch": "Вернуться к поиску",
+      "title": "Специалисты",
+      "count": "{{count}} результатов для языка \"{{language}}\".",
+      "countOnline": "{{count}} результатов для языка \"{{language}}\" онлайн.",
+      "onlineSectionTitle": "Работают онлайн",
+      "specialistFallbackBio": "Профиль специалиста.",
+      "sendRequest": "Оставить заявку",
+      "viewProfile": "Смотреть профиль"
     }
   },
   "site.slogan": "Твой язык — твой специалист",

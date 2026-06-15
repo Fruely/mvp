@@ -40,6 +40,16 @@
       "subtitle": "Versuchen Sie, Kategorie, Stadt oder Sprache zu ändern.",
       "changeFilters": "Filter ändern",
       "backToSearch": "Zurück zur Suche"
+    },
+    "results": {
+      "backToSearch": "Zurück zur Suche",
+      "title": "Spezialisten",
+      "count": "{{count}} Ergebnisse für Sprache \"{{language}}\".",
+      "countOnline": "{{count}} Ergebnisse für Sprache \"{{language}}\" online.",
+      "onlineSectionTitle": "Online verfügbar",
+      "specialistFallbackBio": "Spezialistenprofil.",
+      "sendRequest": "Anfrage senden",
+      "viewProfile": "Profil ansehen"
     }
   },
   "site.title": "Freuly",
