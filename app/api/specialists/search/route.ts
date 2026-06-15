@@ -4,6 +4,12 @@ import { jsonNoStore } from "@/lib/api/response";
 import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
+import {
+  normalizePlaceInput,
+  isPostalCodeLike,
+  expandPlaceAliases,
+  sanitizeCityFilter,
+} from "@/lib/search/placeSearch";
 
 export const dynamic = "force-dynamic";
 
@@ -195,6 +201,37 @@ export async function GET(request: NextRequest) {
       return jsonNoStore({ data, mode: "all" });
     }
 
+    // --- City-name search (place is not a 5-digit PLZ) ---
+    if (!isPostalCodeLike(place)) {
+      const normalized = normalizePlaceInput(place);
+      if (!normalized) {
+        return jsonNoStore({ data: [], fallback: "invalid_plz" });
+      }
+
+      const cityVariants = expandPlaceAliases(normalized);
+      const citySearchResult = await searchSpecialistsByCity(supabase, {
+        cityVariants,
+        rawInput: normalized,
+        lang: normalizedLang,
+        categoryId,
+        offset,
+      });
+
+      if (citySearchResult.error) {
+        console.error("search city error:", citySearchResult.error);
+        return jsonNoStore({ data: [] });
+      }
+
+      const cityList = await excludeTestSpecialistsById(supabase, citySearchResult.rows);
+      if (cityList.length > 0) {
+        const data = await mapSpecialistsWithCategories(supabase, cityList);
+        return jsonNoStore({ data, mode: "city" });
+      }
+
+      return jsonNoStore({ data: [], fallback: "no_local_results" });
+    }
+
+    // --- PLZ-based radius search (existing logic) ---
     const { data: plzData, error: plzError } = await supabase
       .from("postal_codes")
       .select("lat, lng")
@@ -252,6 +289,62 @@ export async function GET(request: NextRequest) {
     console.error("search error:", e);
     return jsonNoStore({ data: [] });
   }
+}
+
+/**
+ * Search specialists by city name via `specialist_profiles.city`.
+ * Tries exact canonical match first, then falls back to ilike.
+ */
+async function searchSpecialistsByCity(
+  supabase: ReturnType<typeof createSupabaseServerClient>,
+  params: {
+    cityVariants: string[];
+    rawInput: string;
+    lang: string | null;
+    categoryId: string | null;
+    offset: number;
+  }
+): Promise<{ rows: SpecialistRow[]; error: unknown }> {
+  const safeCityVariants = params.cityVariants
+    .map(sanitizeCityFilter)
+    .filter((v) => v.length > 0);
+
+  if (safeCityVariants.length === 0) {
+    return { rows: [], error: null };
+  }
+
+  const cityFilters = safeCityVariants.map((v) => `city.ilike.%${v}%`).join(",");
+
+  const { data: profileRows, error: profileError } = await supabase
+    .from("specialist_profiles")
+    .select("specialist_id")
+    .or(cityFilters);
+
+  if (profileError) {
+    return { rows: [], error: profileError };
+  }
+
+  const matchedIds = (profileRows ?? [])
+    .map((r) => (r as { specialist_id: string }).specialist_id)
+    .filter(Boolean);
+
+  if (matchedIds.length === 0) {
+    return { rows: [], error: null };
+  }
+
+  let query = buildSpecialistSearchQuery(supabase, {
+    lang: params.lang,
+    categoryId: params.categoryId,
+    mode: null,
+    requireCoords: false,
+  });
+  query = query
+    .in("id", matchedIds)
+    .range(params.offset, params.offset + 19)
+    .limit(20);
+
+  const { data: rows, error } = await query;
+  return { rows: (rows ?? []) as SpecialistRow[], error };
 }
 
 async function mapSpecialistsWithCategories(
