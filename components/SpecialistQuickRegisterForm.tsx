@@ -12,6 +12,18 @@ type Props = {
   dict: Dictionary;
 };
 
+function getEarlyAccessConsentHint(lang?: string) {
+  if (lang === "de") {
+    return "Dazu gehören die Bedingungen des kostenlosen 3-monatigen Startangebots für die ersten 50 veröffentlichten Spezialisten. Es wird kein kostenpflichtiges Abo automatisch aktiviert und es erfolgen keine automatischen Abbuchungen ohne separate Zustimmung.";
+  }
+
+  if (lang === "ua") {
+    return "До них входять умови безкоштовного стартового розміщення на 3 місяці для перших 50 опублікованих спеціалістів. Платна підписка не підключається автоматично, автоматичних списань без окремої згоди не буде.";
+  }
+
+  return "В них входят условия бесплатного стартового размещения на 3 месяца для первых 50 опубликованных специалистов. Платная подписка не подключается автоматически, автоматических списаний без отдельного согласия не будет.";
+}
+
 export default function SpecialistQuickRegisterForm({ dict, lang }: Props) {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
@@ -186,7 +198,7 @@ export default function SpecialistQuickRegisterForm({ dict, lang }: Props) {
               className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600"
             />
             <span className="text-sm text-gray-800 leading-snug">
-              {t(dict, "application.specialistRulesCheckbox.before")}{" "}
+              {t(dict, "application.specialistRulesCheckbox.before")} {" "}
               <Link
                 href={rulesHref}
                 className="font-semibold text-blue-600 underline hover:text-blue-700"
@@ -199,6 +211,9 @@ export default function SpecialistQuickRegisterForm({ dict, lang }: Props) {
               <span className="text-red-500"> *</span>
             </span>
           </label>
+          <p className="mt-2 pl-7 text-xs leading-relaxed text-gray-600">
+            {getEarlyAccessConsentHint(lang)}
+          </p>
         </div>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
@@ -215,7 +230,7 @@ export default function SpecialistQuickRegisterForm({ dict, lang }: Props) {
         </button>
       </form>
       <p className="mt-4 text-xs text-gray-500">
-        {t(dict, "application.quickRegister.loginLine", { defaultValue: "Вже є акаунт?" })}{" "}
+        {t(dict, "application.quickRegister.loginLine", { defaultValue: "Вже є акаунт?" })} {" "}
         <a className="text-blue-600 hover:text-blue-700" href="/login">
           {t(dict, "application.quickRegister.loginLink", { defaultValue: "Увійти" })}
         </a>
