@@ -4,6 +4,7 @@ import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import LanguageBar from "@/components/LanguageBar";
+import EarlyAccessPromoBanner from "@/components/EarlyAccessPromoBanner";
 
 export default async function LangLayout({
   children,
@@ -32,6 +33,7 @@ export default async function LangLayout({
         <LanguageBar />
       </Suspense>
       <Header lang={lang} dict={dict} />
+      <EarlyAccessPromoBanner lang={lang} />
       {children}
       <Footer dict={dict} lang={lang} />
     </div>
