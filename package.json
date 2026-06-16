@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "preinstall": "node scripts/check-node-version.js",
-    "dev": "next dev",
-    "dev:reset": "rm -rf .next && next dev",
+    "dev": "WATCHPACK_POLLING=true next dev",
+    "dev:reset": "rm -rf .next node_modules/.cache && WATCHPACK_POLLING=true next dev",
     "check:prepush": "bash scripts/check-prepush.sh",
     "build": "next build",
     "start": "next start",
