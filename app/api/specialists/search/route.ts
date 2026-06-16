@@ -19,9 +19,10 @@ export async function GET(request: NextRequest) {
   const category = searchParams.get("category")?.trim() || null;
   const mode = searchParams.get("mode")?.trim().toLowerCase() || null;
   const place = searchParams.get("place")?.trim() || null;
+  const q = searchParams.get("q")?.trim() || null;
   const offsetRaw = Number.parseInt(searchParams.get("offset") ?? "0", 10);
   const offset = Number.isFinite(offsetRaw) && offsetRaw > 0 ? offsetRaw : 0;
 
-  const result = await searchSpecialists({ lang, category, mode, place, offset });
+  const result = await searchSpecialists({ lang, category, mode, place, q, offset });
   return jsonNoStore(result);
 }

@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { headers } from "next/headers";
-import { getSpecialistUrl } from "@/lib/urls";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
 import { getDictionary, t, type Dictionary } from "@/lib/i18n";
@@ -42,6 +41,11 @@ function buildSpecialistsRouteTarget(sp: SearchParams): string {
   if (sp.mode?.trim()) params.set("mode", sp.mode.trim());
   const qs = params.toString();
   return qs ? `/specialists?${qs}` : "/specialists";
+}
+
+function safeSpecialistUrl(lang: string, specialist: { id: string; slug?: string | null }): string {
+  const segment = specialist.slug?.trim() || specialist.id;
+  return `/${lang}/specialist/${encodeURIComponent(segment)}`;
 }
 
 function formatResultsCount(
@@ -129,13 +133,14 @@ export default async function SpecialistsPage({
 }) {
   const lang = searchParams?.lang?.trim() || DEFAULT_SPECIALISTS_SEARCH_LANG;
   const place = searchParams?.place?.trim() || null;
+  const q = searchParams?.q?.trim() || null;
   const category = searchParams?.category?.trim() || null;
   const pageMode = searchParams?.mode?.trim().toLowerCase() || null;
   const isOnlineList = pageMode === "online";
   const uiLang = toUiLang(lang);
   const dict = await getDictionary(uiLang);
 
-  if (!category) {
+  if (!category && !q) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
         <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
@@ -153,7 +158,7 @@ export default async function SpecialistsPage({
     );
   }
 
-  if (!isOnlineList && !place) {
+  if (!isOnlineList && !place && !q) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
@@ -176,12 +181,19 @@ export default async function SpecialistsPage({
   }
 
   // Direct call — no HTTP roundtrip.
-  const result = await searchSpecialists({
-    lang,
-    category,
-    mode: isOnlineList ? "online" : null,
-    place: isOnlineList ? null : place,
-  });
+  let result: Awaited<ReturnType<typeof searchSpecialists>>;
+  try {
+    result = await searchSpecialists({
+      lang,
+      category,
+      q,
+      mode: isOnlineList ? "online" : null,
+      place: isOnlineList ? null : place,
+    });
+  } catch (error) {
+    console.error("[specialists/page] searchSpecialists failed:", error);
+    result = { data: [] };
+  }
 
   const specialists: SpecialistResult[] = Array.isArray(result.data) ? result.data : [];
   const searchMode = result.mode;
@@ -323,13 +335,13 @@ export default async function SpecialistsPage({
               )}
               <div className="flex flex-wrap gap-3 mt-4">
                 <Link
-                  href={`${getSpecialistUrl(uiLang, s)}?open=form`}
+                  href={`${safeSpecialistUrl(uiLang, s)}?open=form`}
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-xl shadow-soft hover:bg-gray-800 transition"
                 >
                   {t(dict, "search.results.sendRequest")}
                 </Link>
                 <Link
-                  href={getSpecialistUrl(uiLang, s)}
+                  href={safeSpecialistUrl(uiLang, s)}
                   className="inline-flex items-center gap-1 px-4 py-2 text-gray-700 text-sm font-medium hover:text-gray-900 transition"
                 >
                   {t(dict, "search.results.viewProfile")}
