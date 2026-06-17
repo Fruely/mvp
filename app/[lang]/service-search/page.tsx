@@ -30,6 +30,7 @@ type PageText = {
   nextCta: string;
   backCta: string;
   emptyServiceError: string;
+  emptyLocationError: string;
 };
 
 const pageText: Record<Lang, PageText> = {
@@ -71,6 +72,7 @@ const pageText: Record<Lang, PageText> = {
     nextCta: "Дальше",
     backCta: "Назад",
     emptyServiceError: "Введите услугу, чтобы продолжить.",
+    emptyLocationError: "Укажите город или индекс, чтобы продолжить.",
   },
   ua: {
     headline: "Яку послугу ви шукаєте?",
@@ -110,6 +112,7 @@ const pageText: Record<Lang, PageText> = {
     nextCta: "Далі",
     backCta: "Назад",
     emptyServiceError: "Введіть послугу, щоб продовжити.",
+    emptyLocationError: "Вкажіть місто або індекс, щоб продовжити.",
   },
   de: {
     headline: "Welche Dienstleistung suchen Sie?",
@@ -149,6 +152,7 @@ const pageText: Record<Lang, PageText> = {
     nextCta: "Weiter",
     backCta: "Zurück",
     emptyServiceError: "Bitte geben Sie eine Dienstleistung ein.",
+    emptyLocationError: "Bitte geben Sie Stadt oder PLZ ein.",
   },
 };
 

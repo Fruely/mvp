@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { FormEvent } from "react";
 
@@ -32,6 +33,7 @@ type FlowText = {
   nextCta: string;
   backCta: string;
   emptyServiceError: string;
+  emptyLocationError: string;
 };
 
 type Step = "start" | "service" | "language" | "format" | "location";
@@ -40,7 +42,31 @@ type ServiceSearchFlowProps = {
   text: FlowText;
 };
 
+function toSearchLang(value: LanguageOption["value"]): string {
+  return value === "ua" ? "uk" : value;
+}
+
+function buildResultsUrl(opts: {
+  service: string;
+  language: LanguageOption["value"];
+  format: FormatOption["value"];
+  location: string;
+}): string {
+  const params = new URLSearchParams();
+  params.set("lang", toSearchLang(opts.language));
+  params.set("q", opts.service.trim());
+
+  if (opts.format === "online") {
+    params.set("mode", "online");
+  } else if (opts.format === "nearby" && opts.location.trim()) {
+    params.set("place", opts.location.trim());
+  }
+
+  return `/specialists?${params.toString()}`;
+}
+
 export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
+  const router = useRouter();
   const [step, setStep] = useState<Step>("start");
   const [service, setService] = useState("");
   const [selectedLanguage, setSelectedLanguage] =
@@ -86,6 +112,33 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
 
     setError(null);
     setStep("language");
+  }
+
+  function redirectToResults(
+    format: FormatOption["value"],
+    locationValue = location
+  ) {
+    if (!selectedLanguage || !service.trim()) return;
+
+    if (format === "nearby" && !locationValue.trim()) {
+      setError(text.emptyLocationError);
+      return;
+    }
+
+    setError(null);
+    router.push(
+      buildResultsUrl({
+        service,
+        language: selectedLanguage,
+        format,
+        location: locationValue,
+      })
+    );
+  }
+
+  function handleLocationSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    redirectToResults("nearby", location);
   }
 
   return (
@@ -213,9 +266,12 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
                     type="button"
                     onClick={() => {
                       setSelectedFormat(option.value);
+                      setError(null);
                       if (option.value === "nearby") {
                         setStep("location");
+                        return;
                       }
+                      redirectToResults(option.value);
                     }}
                     className={`rounded-2xl border px-5 py-4 text-left transition ${
                       isSelected
@@ -249,18 +305,31 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
               {text.locationQuestion}
             </h1>
 
-            <label className="block">
-              <span className="mb-2 block text-sm font-medium text-textSecondary">
-                {text.locationInputLabel}
-              </span>
+            <form onSubmit={handleLocationSubmit} className="space-y-5">
+              <label className="block">
+                <span className="mb-2 block text-sm font-medium text-textSecondary">
+                  {text.locationInputLabel}
+                </span>
 
-              <input
-                value={location}
-                onChange={(event) => setLocation(event.target.value)}
-                placeholder={text.locationInputPlaceholder}
-                className="w-full rounded-2xl border border-blue-100 bg-white px-5 py-4 text-lg text-textPrimary outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-100"
-              />
-            </label>
+                <input
+                  value={location}
+                  onChange={(event) => {
+                    setLocation(event.target.value);
+                    if (error) setError(null);
+                  }}
+                  placeholder={text.locationInputPlaceholder}
+                  className="w-full rounded-2xl border border-blue-100 bg-white px-5 py-4 text-lg text-textPrimary outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-100"
+                />
+              </label>
+
+              {error ? (
+                <p className="text-sm font-medium text-red-600">{error}</p>
+              ) : null}
+
+              <button type="submit" className="btn-primary px-8 py-4 text-lg">
+                {text.nextCta}
+              </button>
+            </form>
           </section>
         ) : null}
 
