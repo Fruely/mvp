@@ -6,6 +6,12 @@ type LanguageOption = {
   label: string;
 };
 
+type FormatOption = {
+  value: "online" | "nearby" | "any";
+  label: string;
+  description: string;
+};
+
 type PageText = {
   headline: string;
   description: string;
@@ -16,6 +22,8 @@ type PageText = {
   serviceInputPlaceholder: string;
   languageQuestion: string;
   languageOptions: LanguageOption[];
+  formatQuestion: string;
+  formatOptions: FormatOption[];
   nextCta: string;
   backCta: string;
   emptyServiceError: string;
@@ -36,6 +44,24 @@ const pageText: Record<Lang, PageText> = {
       { value: "ru", label: "Русский" },
       { value: "de", label: "Deutsch" },
     ],
+    formatQuestion: "Какой формат вам подходит?",
+    formatOptions: [
+      {
+        value: "online",
+        label: "Онлайн",
+        description: "Специалист сможет работать с вами дистанционно.",
+      },
+      {
+        value: "nearby",
+        label: "Рядом со мной",
+        description: "Покажем специалистов поблизости, если это возможно.",
+      },
+      {
+        value: "any",
+        label: "Без разницы",
+        description: "Подойдут и онлайн, и локальные варианты.",
+      },
+    ],
     nextCta: "Дальше",
     backCta: "Назад",
     emptyServiceError: "Введите услугу, чтобы продолжить.",
@@ -54,6 +80,24 @@ const pageText: Record<Lang, PageText> = {
       { value: "ru", label: "Русский" },
       { value: "de", label: "Deutsch" },
     ],
+    formatQuestion: "Який формат вам підходить?",
+    formatOptions: [
+      {
+        value: "online",
+        label: "Онлайн",
+        description: "Спеціаліст зможе працювати з вами дистанційно.",
+      },
+      {
+        value: "nearby",
+        label: "Поруч зі мною",
+        description: "Покажемо спеціалістів поблизу, якщо це можливо.",
+      },
+      {
+        value: "any",
+        label: "Без різниці",
+        description: "Підійдуть і онлайн, і локальні варіанти.",
+      },
+    ],
     nextCta: "Далі",
     backCta: "Назад",
     emptyServiceError: "Введіть послугу, щоб продовжити.",
@@ -71,6 +115,24 @@ const pageText: Record<Lang, PageText> = {
       { value: "ua", label: "Українська" },
       { value: "ru", label: "Русский" },
       { value: "de", label: "Deutsch" },
+    ],
+    formatQuestion: "Welches Format passt zu Ihnen?",
+    formatOptions: [
+      {
+        value: "online",
+        label: "Online",
+        description: "Der Spezialist kann aus der Ferne mit Ihnen arbeiten.",
+      },
+      {
+        value: "nearby",
+        label: "In meiner Nähe",
+        description: "Wir zeigen passende Spezialisten in Ihrer Nähe, wenn möglich.",
+      },
+      {
+        value: "any",
+        label: "Egal",
+        description: "Online- und lokale Angebote sind beide in Ordnung.",
+      },
     ],
     nextCta: "Weiter",
     backCta: "Zurück",
