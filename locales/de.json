@@ -2,6 +2,7 @@
   "home": {
     "hero": {
       "popularTags": "Psychologen • Anwälte • Nachhilfe • Migration",
+      "tryNewSearch": "Neue Suche ausprobieren",
       "errors": {
         "selectCategory": "Bitte wählen Sie eine Kategorie aus der Liste"
       }

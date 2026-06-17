@@ -590,6 +590,15 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             initialCity={placeFromUrl}
           />
 
+          <div className="mt-5">
+            <Link
+              href={`/${lang}/service-search`}
+              className="inline-flex min-h-[44px] items-center justify-center rounded-xl border-2 border-primary/20 bg-white px-5 py-2.5 text-sm font-semibold text-primary shadow-sm transition hover:border-primary/40 hover:bg-blue-50"
+            >
+              {t(dict, "home.hero.tryNewSearch")}
+            </Link>
+          </div>
+
           <div className="mt-6 text-sm font-normal text-textSecondary flex flex-wrap justify-center gap-3">
             <span>{copy.popularLabel}</span>
             <span>{t(dict, "home.hero.popularTags")}</span>
