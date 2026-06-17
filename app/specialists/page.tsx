@@ -7,6 +7,7 @@ import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbC
 import { getDictionary, t, type Dictionary } from "@/lib/i18n";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { searchSpecialists, type SpecialistResult } from "@/lib/search/specialistSearch";
+import { getSearchSuggestions } from "@/lib/search/searchSuggestions";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,20 @@ function buildSpecialistsRouteTarget(sp: SearchParams): string {
   if (sp.mode?.trim()) params.set("mode", sp.mode.trim());
   const qs = params.toString();
   return qs ? `/specialists?${qs}` : "/specialists";
+}
+
+/** Query-based link for a no-result suggestion; keeps mode=online / place when present. */
+function buildSuggestionHref(
+  lang: string,
+  query: string,
+  opts: { mode?: string | null; place?: string | null }
+): string {
+  const params = new URLSearchParams();
+  params.set("lang", lang);
+  params.set("q", query);
+  if (opts.mode === "online") params.set("mode", "online");
+  if (opts.place?.trim()) params.set("place", opts.place.trim());
+  return `/specialists?${params.toString()}`;
 }
 
 function safeSpecialistUrl(lang: string, specialist: { id: string; slug?: string | null }): string {
@@ -238,6 +253,8 @@ export default async function SpecialistsPage({
       );
     }
 
+    const suggestions = q ? getSearchSuggestions({ q, lang: uiLang }) : [];
+
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
         <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
@@ -252,6 +269,27 @@ export default async function SpecialistsPage({
               ? t(dict, "search.noResults.serviceSubtitle")
               : t(dict, "search.noResults.subtitle")}
           </p>
+          {suggestions.length > 0 && (
+            <div className="mb-8">
+              <p className="text-sm font-medium text-gray-700 mb-3">
+                {t(dict, "search.noResults.suggestionsTitle")}
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {suggestions.map((s) => (
+                  <Link
+                    key={s.query}
+                    href={buildSuggestionHref(lang, s.query, {
+                      mode: pageMode,
+                      place,
+                    })}
+                    className="inline-block px-4 py-2 rounded-full border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 hover:border-gray-400 transition"
+                  >
+                    {s.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="flex flex-wrap justify-center gap-3">
             <Link
               href={serviceSearchHref(uiLang)}
