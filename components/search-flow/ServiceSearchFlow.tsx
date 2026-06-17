@@ -3,6 +3,11 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 
+type LanguageOption = {
+  value: "ua" | "ru" | "de";
+  label: string;
+};
+
 type FlowText = {
   headline: string;
   description: string;
@@ -11,12 +16,14 @@ type FlowText = {
   serviceQuestion: string;
   serviceInputLabel: string;
   serviceInputPlaceholder: string;
+  languageQuestion: string;
+  languageOptions: LanguageOption[];
   nextCta: string;
   backCta: string;
   emptyServiceError: string;
 };
 
-type Step = "start" | "service";
+type Step = "start" | "service" | "language";
 
 type ServiceSearchFlowProps = {
   text: FlowText;
@@ -25,6 +32,8 @@ type ServiceSearchFlowProps = {
 export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
   const [step, setStep] = useState<Step>("start");
   const [service, setService] = useState("");
+  const [selectedLanguage, setSelectedLanguage] =
+    useState<LanguageOption["value"] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   function goToServiceStep() {
@@ -34,6 +43,12 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
 
   function goBack() {
     setError(null);
+
+    if (step === "language") {
+      setStep("service");
+      return;
+    }
+
     setStep("start");
   }
 
@@ -46,6 +61,7 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
     }
 
     setError(null);
+    setStep("language");
   }
 
   return (
@@ -65,7 +81,9 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
               {text.startCta}
             </button>
           </section>
-        ) : (
+        ) : null}
+
+        {step === "service" ? (
           <section className="rounded-[2rem] bg-white/80 px-6 py-10 text-left shadow-sm ring-1 ring-blue-100 backdrop-blur sm:px-10 sm:py-12">
             <button
               type="button"
@@ -105,7 +123,44 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
               </button>
             </form>
           </section>
-        )}
+        ) : null}
+
+        {step === "language" ? (
+          <section className="rounded-[2rem] bg-white/80 px-6 py-10 text-left shadow-sm ring-1 ring-blue-100 backdrop-blur sm:px-10 sm:py-12">
+            <button
+              type="button"
+              onClick={goBack}
+              className="mb-8 text-sm font-medium text-textSecondary transition hover:text-textPrimary"
+            >
+              ← {text.backCta}
+            </button>
+
+            <h1 className="mb-8 text-3xl font-bold leading-tight text-textPrimary sm:text-4xl md:text-5xl">
+              {text.languageQuestion}
+            </h1>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              {text.languageOptions.map((option) => {
+                const isSelected = selectedLanguage === option.value;
+
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setSelectedLanguage(option.value)}
+                    className={`rounded-2xl border px-5 py-4 text-lg font-semibold transition ${
+                      isSelected
+                        ? "border-blue-500 bg-blue-50 text-blue-700 ring-4 ring-blue-100"
+                        : "border-blue-100 bg-white text-textPrimary hover:border-blue-300 hover:bg-blue-50"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
       </div>
     </main>
   );

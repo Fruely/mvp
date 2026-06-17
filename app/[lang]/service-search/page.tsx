@@ -1,6 +1,11 @@
 import { isSupportedLang, type Lang } from "@/lib/i18n";
 import ServiceSearchFlow from "@/components/search-flow/ServiceSearchFlow";
 
+type LanguageOption = {
+  value: "ua" | "ru" | "de";
+  label: string;
+};
+
 type PageText = {
   headline: string;
   description: string;
@@ -9,6 +14,8 @@ type PageText = {
   serviceQuestion: string;
   serviceInputLabel: string;
   serviceInputPlaceholder: string;
+  languageQuestion: string;
+  languageOptions: LanguageOption[];
   nextCta: string;
   backCta: string;
   emptyServiceError: string;
@@ -23,6 +30,12 @@ const pageText: Record<Lang, PageText> = {
     serviceQuestion: "Какая услуга вам нужна?",
     serviceInputLabel: "Услуга",
     serviceInputPlaceholder: "Введите услугу",
+    languageQuestion: "На каком языке вам удобно получить услугу?",
+    languageOptions: [
+      { value: "ua", label: "Українська" },
+      { value: "ru", label: "Русский" },
+      { value: "de", label: "Deutsch" },
+    ],
     nextCta: "Дальше",
     backCta: "Назад",
     emptyServiceError: "Введите услугу, чтобы продолжить.",
@@ -35,6 +48,12 @@ const pageText: Record<Lang, PageText> = {
     serviceQuestion: "Яка послуга вам потрібна?",
     serviceInputLabel: "Послуга",
     serviceInputPlaceholder: "Введіть послугу",
+    languageQuestion: "Якою мовою вам зручно отримати послугу?",
+    languageOptions: [
+      { value: "ua", label: "Українська" },
+      { value: "ru", label: "Русский" },
+      { value: "de", label: "Deutsch" },
+    ],
     nextCta: "Далі",
     backCta: "Назад",
     emptyServiceError: "Введіть послугу, щоб продовжити.",
@@ -47,6 +66,12 @@ const pageText: Record<Lang, PageText> = {
     serviceQuestion: "Welche Dienstleistung benötigen Sie?",
     serviceInputLabel: "Dienstleistung",
     serviceInputPlaceholder: "Dienstleistung eingeben",
+    languageQuestion: "In welcher Sprache möchten Sie die Dienstleistung erhalten?",
+    languageOptions: [
+      { value: "ua", label: "Українська" },
+      { value: "ru", label: "Русский" },
+      { value: "de", label: "Deutsch" },
+    ],
     nextCta: "Weiter",
     backCta: "Zurück",
     emptyServiceError: "Bitte geben Sie eine Dienstleistung ein.",
