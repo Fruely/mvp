@@ -215,9 +215,12 @@ export default async function SpecialistsPage({
     });
 
     if (result.fallback === "no_local_results" && place) {
-      const onlineHref = `/specialists?mode=online&lang=${encodeURIComponent(lang)}${
-        category ? `&category=${encodeURIComponent(category)}` : ""
-      }`;
+      const onlineParams = new URLSearchParams();
+      onlineParams.set("mode", "online");
+      onlineParams.set("lang", lang);
+      if (category) onlineParams.set("category", category);
+      if (q) onlineParams.set("q", q);
+      const onlineHref = `/specialists?${onlineParams.toString()}`;
       return (
         <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
           <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
