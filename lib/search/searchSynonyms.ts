@@ -49,6 +49,9 @@ const SYNONYM_GROUPS: readonly SynonymGroup[] = [
       "web design",
       "вебсайт",
       "сайт под ключ",
+      "логотип",
+      "разработка логотипа",
+      "дизайн логотипа",
     ],
   },
   {
@@ -85,6 +88,38 @@ const SYNONYM_GROUPS: readonly SynonymGroup[] = [
       "косметика",
       "уход за кожей",
       "skin care",
+    ],
+  },
+  {
+    categorySlugs: ["massage-therapists"],
+    terms: [
+      "массаж",
+      "массажист",
+      "массажисты",
+      "масаж",
+      "масажист",
+      "massage",
+      "masseur",
+    ],
+  },
+  {
+    categorySlugs: ["tutors"],
+    terms: [
+      "репетитор",
+      "репетиторы",
+      "репетиторство",
+      "nachhilfe",
+      "nachhilfelehrer",
+    ],
+  },
+  {
+    categorySlugs: ["translator"],
+    terms: [
+      "переводчик",
+      "перевод документов",
+      "перекладач",
+      "übersetzer",
+      "dolmetscher",
     ],
   },
 ];

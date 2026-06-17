@@ -24,6 +24,10 @@ function toUiLang(lang: string): UiLang {
   return "ua";
 }
 
+function serviceSearchHref(uiLang: UiLang): string {
+  return `/${uiLang}/service-search`;
+}
+
 type SearchParams = {
   lang?: string;
   place?: string;
@@ -148,7 +152,7 @@ export default async function SpecialistsPage({
             Выберите, какого специалиста вы ищете
           </h1>
           <Link
-            href={`/${uiLang}`}
+            href={serviceSearchHref(uiLang)}
             className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
           >
             Назад к поиску
@@ -170,7 +174,7 @@ export default async function SpecialistsPage({
             homepage.
           </p>
           <Link
-            href="/ua"
+            href={serviceSearchHref(uiLang)}
             className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
           >
             Back to search
@@ -211,9 +215,12 @@ export default async function SpecialistsPage({
     });
 
     if (result.fallback === "no_local_results" && place) {
-      const onlineHref = `/specialists?mode=online&lang=${encodeURIComponent(lang)}${
-        category ? `&category=${encodeURIComponent(category)}` : ""
-      }`;
+      const onlineParams = new URLSearchParams();
+      onlineParams.set("mode", "online");
+      onlineParams.set("lang", lang);
+      if (category) onlineParams.set("category", category);
+      if (q) onlineParams.set("q", q);
+      const onlineHref = `/specialists?${onlineParams.toString()}`;
       return (
         <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
           <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
@@ -241,17 +248,19 @@ export default async function SpecialistsPage({
             {t(dict, "search.noResults.title")}
           </h1>
           <p className="text-gray-600 mb-8">
-            {t(dict, "search.noResults.subtitle")}
+            {q
+              ? t(dict, "search.noResults.serviceSubtitle")
+              : t(dict, "search.noResults.subtitle")}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link
-              href={`/${uiLang}`}
+              href={serviceSearchHref(uiLang)}
               className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
             >
               {t(dict, "search.noResults.changeFilters")}
             </Link>
             <Link
-              href={`/${uiLang}`}
+              href={serviceSearchHref(uiLang)}
               className="inline-block px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
             >
               {t(dict, "search.noResults.backToSearch")}
@@ -359,7 +368,7 @@ export default async function SpecialistsPage({
       <div className="max-w-4xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-8">
           <Link
-            href={`/${uiLang}`}
+            href={serviceSearchHref(uiLang)}
             className="text-gray-600 hover:text-gray-900 text-sm font-medium inline-flex items-center gap-1 mb-4"
           >
             ← {t(dict, "search.results.backToSearch")}
