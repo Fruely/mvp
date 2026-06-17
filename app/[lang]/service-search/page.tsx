@@ -24,6 +24,9 @@ type PageText = {
   languageOptions: LanguageOption[];
   formatQuestion: string;
   formatOptions: FormatOption[];
+  locationQuestion: string;
+  locationInputLabel: string;
+  locationInputPlaceholder: string;
   nextCta: string;
   backCta: string;
   emptyServiceError: string;
@@ -62,6 +65,9 @@ const pageText: Record<Lang, PageText> = {
         description: "Подойдут и онлайн, и локальные варианты.",
       },
     ],
+    locationQuestion: "Где вам нужна услуга?",
+    locationInputLabel: "Город или индекс",
+    locationInputPlaceholder: "Например: Köln или 50667",
     nextCta: "Дальше",
     backCta: "Назад",
     emptyServiceError: "Введите услугу, чтобы продолжить.",
@@ -98,6 +104,9 @@ const pageText: Record<Lang, PageText> = {
         description: "Підійдуть і онлайн, і локальні варіанти.",
       },
     ],
+    locationQuestion: "Де вам потрібна послуга?",
+    locationInputLabel: "Місто або індекс",
+    locationInputPlaceholder: "Наприклад: Köln або 50667",
     nextCta: "Далі",
     backCta: "Назад",
     emptyServiceError: "Введіть послугу, щоб продовжити.",
@@ -134,6 +143,9 @@ const pageText: Record<Lang, PageText> = {
         description: "Online- und lokale Angebote sind beide in Ordnung.",
       },
     ],
+    locationQuestion: "Wo benötigen Sie die Dienstleistung?",
+    locationInputLabel: "Stadt oder Postleitzahl",
+    locationInputPlaceholder: "Zum Beispiel: Köln oder 50667",
     nextCta: "Weiter",
     backCta: "Zurück",
     emptyServiceError: "Bitte geben Sie eine Dienstleistung ein.",

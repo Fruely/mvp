@@ -26,12 +26,15 @@ type FlowText = {
   languageOptions: LanguageOption[];
   formatQuestion: string;
   formatOptions: FormatOption[];
+  locationQuestion: string;
+  locationInputLabel: string;
+  locationInputPlaceholder: string;
   nextCta: string;
   backCta: string;
   emptyServiceError: string;
 };
 
-type Step = "start" | "service" | "language" | "format";
+type Step = "start" | "service" | "language" | "format" | "location";
 
 type ServiceSearchFlowProps = {
   text: FlowText;
@@ -44,6 +47,7 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
     useState<LanguageOption["value"] | null>(null);
   const [selectedFormat, setSelectedFormat] =
     useState<FormatOption["value"] | null>(null);
+  const [location, setLocation] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   function goToServiceStep() {
@@ -53,6 +57,11 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
 
   function goBack() {
     setError(null);
+
+    if (step === "location") {
+      setStep("format");
+      return;
+    }
 
     if (step === "format") {
       setStep("language");
@@ -202,7 +211,12 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
                   <button
                     key={option.value}
                     type="button"
-                    onClick={() => setSelectedFormat(option.value)}
+                    onClick={() => {
+                      setSelectedFormat(option.value);
+                      if (option.value === "nearby") {
+                        setStep("location");
+                      }
+                    }}
                     className={`rounded-2xl border px-5 py-4 text-left transition ${
                       isSelected
                         ? "border-blue-500 bg-blue-50 text-blue-700 ring-4 ring-blue-100"
@@ -221,6 +235,35 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
             </div>
           </section>
         ) : null}
+        {step === "location" ? (
+          <section className="rounded-[2rem] bg-white/80 px-6 py-10 text-left shadow-sm ring-1 ring-blue-100 backdrop-blur sm:px-10 sm:py-12">
+            <button
+              type="button"
+              onClick={goBack}
+              className="mb-8 text-sm font-medium text-textSecondary transition hover:text-textPrimary"
+            >
+              ← {text.backCta}
+            </button>
+
+            <h1 className="mb-8 text-3xl font-bold leading-tight text-textPrimary sm:text-4xl md:text-5xl">
+              {text.locationQuestion}
+            </h1>
+
+            <label className="block">
+              <span className="mb-2 block text-sm font-medium text-textSecondary">
+                {text.locationInputLabel}
+              </span>
+
+              <input
+                value={location}
+                onChange={(event) => setLocation(event.target.value)}
+                placeholder={text.locationInputPlaceholder}
+                className="w-full rounded-2xl border border-blue-100 bg-white px-5 py-4 text-lg text-textPrimary outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-100"
+              />
+            </label>
+          </section>
+        ) : null}
+
       </div>
     </main>
   );
