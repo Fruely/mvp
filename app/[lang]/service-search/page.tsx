@@ -1,23 +1,55 @@
 import { isSupportedLang, type Lang } from "@/lib/i18n";
+import ServiceSearchFlow from "@/components/search-flow/ServiceSearchFlow";
 
-const translations: Record<
-  Lang,
-  {
-    headline: string;
-    cta: string;
-  }
-> = {
+type PageText = {
+  headline: string;
+  description: string;
+  startHeadline: string;
+  startCta: string;
+  serviceQuestion: string;
+  serviceInputLabel: string;
+  serviceInputPlaceholder: string;
+  nextCta: string;
+  backCta: string;
+  emptyServiceError: string;
+};
+
+const pageText: Record<Lang, PageText> = {
   ru: {
     headline: "Какую услугу вы ищете?",
-    cta: "Начать поиск",
+    description: "Короткий подбор услуги и специалиста на Freuly",
+    startHeadline: "Какую услугу вы ищете?",
+    startCta: "Начать поиск",
+    serviceQuestion: "Какая услуга вам нужна?",
+    serviceInputLabel: "Услуга",
+    serviceInputPlaceholder: "Введите услугу",
+    nextCta: "Дальше",
+    backCta: "Назад",
+    emptyServiceError: "Введите услугу, чтобы продолжить.",
   },
   ua: {
     headline: "Яку послугу ви шукаєте?",
-    cta: "Почати пошук",
+    description: "Короткий підбір послуги та спеціаліста на Freuly",
+    startHeadline: "Яку послугу ви шукаєте?",
+    startCta: "Почати пошук",
+    serviceQuestion: "Яка послуга вам потрібна?",
+    serviceInputLabel: "Послуга",
+    serviceInputPlaceholder: "Введіть послугу",
+    nextCta: "Далі",
+    backCta: "Назад",
+    emptyServiceError: "Введіть послугу, щоб продовжити.",
   },
   de: {
     headline: "Welche Dienstleistung suchen Sie?",
-    cta: "Suche starten",
+    description: "Kurze Auswahl einer Dienstleistung und passender Spezialisten auf Freuly",
+    startHeadline: "Welche Dienstleistung suchen Sie?",
+    startCta: "Suche starten",
+    serviceQuestion: "Welche Dienstleistung benötigen Sie?",
+    serviceInputLabel: "Dienstleistung",
+    serviceInputPlaceholder: "Dienstleistung eingeben",
+    nextCta: "Weiter",
+    backCta: "Zurück",
+    emptyServiceError: "Bitte geben Sie eine Dienstleistung ein.",
   },
 };
 
@@ -26,10 +58,11 @@ export const revalidate = 0;
 
 export async function generateMetadata({ params }: { params: { lang: string } }) {
   const lang: Lang = isSupportedLang(params.lang) ? params.lang : "ua";
+  const text = pageText[lang];
 
   return {
-    title: `${translations[lang].headline} | Freuly`,
-    description: "Find the perfect service on Freuly",
+    title: `${text.headline} | Freuly`,
+    description: text.description,
   };
 }
 
@@ -39,19 +72,6 @@ export default function ServiceSearchPage({
   params: { lang: string };
 }) {
   const lang: Lang = isSupportedLang(params.lang) ? params.lang : "ua";
-  const t = translations[lang];
 
-  return (
-    <main className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      <div className="max-w-3xl mx-auto px-4 text-center">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-textPrimary mb-8 leading-tight">
-          {t.headline}
-        </h1>
-
-        <button type="button" className="btn-primary px-8 py-4 text-lg">
-          {t.cta}
-        </button>
-      </div>
-    </main>
-  );
+  return <ServiceSearchFlow text={pageText[lang]} />;
 }
