@@ -40,6 +40,7 @@
     "noResults": {
       "title": "Keine Spezialisten gefunden",
       "subtitle": "Versuchen Sie, Kategorie, Stadt oder Sprache zu ändern.",
+      "serviceSubtitle": "Für diese Dienstleistung haben wir derzeit noch keine passenden Spezialisten. Versuchen Sie bitte eine andere oder ähnliche Anfrage.",
       "changeFilters": "Filter ändern",
       "backToSearch": "Zurück zur Suche"
     },

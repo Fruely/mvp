@@ -245,7 +245,9 @@ export default async function SpecialistsPage({
             {t(dict, "search.noResults.title")}
           </h1>
           <p className="text-gray-600 mb-8">
-            {t(dict, "search.noResults.subtitle")}
+            {q
+              ? t(dict, "search.noResults.serviceSubtitle")
+              : t(dict, "search.noResults.subtitle")}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link
