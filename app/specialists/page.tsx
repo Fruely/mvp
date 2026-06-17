@@ -24,6 +24,10 @@ function toUiLang(lang: string): UiLang {
   return "ua";
 }
 
+function serviceSearchHref(uiLang: UiLang): string {
+  return `/${uiLang}/service-search`;
+}
+
 type SearchParams = {
   lang?: string;
   place?: string;
@@ -148,7 +152,7 @@ export default async function SpecialistsPage({
             Выберите, какого специалиста вы ищете
           </h1>
           <Link
-            href={`/${uiLang}`}
+            href={serviceSearchHref(uiLang)}
             className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
           >
             Назад к поиску
@@ -170,7 +174,7 @@ export default async function SpecialistsPage({
             homepage.
           </p>
           <Link
-            href="/ua"
+            href={serviceSearchHref(uiLang)}
             className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
           >
             Back to search
@@ -245,13 +249,13 @@ export default async function SpecialistsPage({
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link
-              href={`/${uiLang}`}
+              href={serviceSearchHref(uiLang)}
               className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
             >
               {t(dict, "search.noResults.changeFilters")}
             </Link>
             <Link
-              href={`/${uiLang}`}
+              href={serviceSearchHref(uiLang)}
               className="inline-block px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
             >
               {t(dict, "search.noResults.backToSearch")}
@@ -359,7 +363,7 @@ export default async function SpecialistsPage({
       <div className="max-w-4xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-8">
           <Link
-            href={`/${uiLang}`}
+            href={serviceSearchHref(uiLang)}
             className="text-gray-600 hover:text-gray-900 text-sm font-medium inline-flex items-center gap-1 mb-4"
           >
             ← {t(dict, "search.results.backToSearch")}
