@@ -116,7 +116,7 @@ const SYNONYM_GROUPS: readonly SynonymGroup[] = [
     categorySlugs: ["translator"],
     terms: [
       "переводчик",
-      "перевод",
+      "перевод документов",
       "перекладач",
       "übersetzer",
       "dolmetscher",

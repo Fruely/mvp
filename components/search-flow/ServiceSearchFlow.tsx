@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import type { FormEvent, ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { FormEvent, ReactNode, RefObject } from "react";
 
 type LanguageOption = {
   value: "ua" | "ru" | "de";
@@ -80,11 +80,12 @@ function getProgressStep(step: Step): number | null {
 
 function choiceButtonClass(isSelected: boolean): string {
   return [
-    "w-full rounded-2xl border-2 px-5 py-4 text-left transition-all duration-200",
-    "min-h-[3.5rem] active:scale-[0.99]",
+    "w-full rounded-2xl border px-5 py-4 text-left transition-all duration-200",
+    "min-h-[3.75rem] active:scale-[0.99]",
+    "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100",
     isSelected
-      ? "border-primary bg-blue-50/90 text-primary shadow-sm ring-4 ring-blue-100/70"
-      : "border-gray-200 bg-white text-textPrimary hover:border-blue-200 hover:bg-slate-50",
+      ? "border-primary bg-blue-50 text-primary shadow-sm"
+      : "border-gray-200 bg-white text-textPrimary hover:border-blue-200 hover:bg-blue-50/40",
   ].join(" ");
 }
 
@@ -93,7 +94,7 @@ function StepProgress({ current }: { current: number }) {
 
   return (
     <div
-      className="mb-6 flex items-center justify-center gap-2"
+      className="mb-7 flex items-center justify-center gap-1.5"
       role="progressbar"
       aria-valuenow={current}
       aria-valuemin={1}
@@ -111,10 +112,10 @@ function StepProgress({ current }: { current: number }) {
             className={[
               "rounded-full transition-all duration-300",
               isComplete
-                ? "h-2 w-2 bg-primary"
+                ? "h-1.5 w-1.5 bg-primary/70"
                 : isCurrent
-                  ? "h-2 w-9 bg-primary"
-                  : "h-2 w-2 bg-gray-200",
+                  ? "h-1.5 w-8 bg-primary"
+                  : "h-1.5 w-1.5 bg-gray-200",
             ].join(" ")}
           />
         );
@@ -135,8 +136,8 @@ function FlowCard({
   return (
     <section
       className={[
-        "animate-fadeIn rounded-3xl border border-gray-200/80 bg-white",
-        "p-6 shadow-[0_12px_48px_rgba(15,23,42,0.07)] sm:p-10",
+        "rounded-3xl border border-gray-100 bg-white",
+        "p-6 shadow-[0_18px_50px_-20px_rgba(30,64,175,0.18)] sm:p-9",
         centered ? "text-center" : "text-left",
       ].join(" ")}
     >
@@ -151,7 +152,7 @@ function BackButton({ label, onClick }: { label: string; onClick: () => void }) 
     <button
       type="button"
       onClick={onClick}
-      className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-textSecondary transition hover:text-textPrimary"
+      className="mb-5 inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-textSecondary transition hover:text-textPrimary"
     >
       <span aria-hidden>←</span>
       {label}
@@ -175,7 +176,7 @@ function PrimaryButton({
       type={type}
       onClick={onClick}
       className={[
-        "btn-primary w-full px-8 py-4 text-base font-semibold sm:w-auto sm:min-w-[12rem]",
+        "btn-primary w-full min-h-[48px] px-8 py-4 text-base font-semibold",
         className,
       ].join(" ")}
     >
@@ -191,6 +192,9 @@ function TextField({
   placeholder,
   onChange,
   error,
+  inputRef,
+  autoFocus = false,
+  large = false,
 }: {
   id: string;
   label: string;
@@ -198,30 +202,45 @@ function TextField({
   placeholder: string;
   onChange: (value: string) => void;
   error?: string | null;
+  inputRef?: RefObject<HTMLInputElement | null>;
+  autoFocus?: boolean;
+  large?: boolean;
 }) {
   return (
-    <label className="block" htmlFor={id}>
-      <span className="mb-2.5 block text-sm font-medium text-textSecondary">{label}</span>
-      <input
-        id={id}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        className={[
-          "w-full rounded-2xl border bg-white px-5 py-4 text-lg text-textPrimary outline-none transition",
-          "placeholder:text-slate-400 focus:ring-4",
-          error
-            ? "border-red-300 focus:border-red-400 focus:ring-red-100"
-            : "border-gray-200 focus:border-blue-300 focus:ring-blue-100",
-        ].join(" ")}
-      />
-    </label>
+    <div>
+      <label className="block" htmlFor={id}>
+        <span className="mb-2 block text-sm font-medium text-textSecondary">{label}</span>
+        <input
+          ref={inputRef}
+          id={id}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
+          autoFocus={autoFocus}
+          autoComplete="off"
+          aria-invalid={Boolean(error)}
+          className={[
+            "w-full rounded-2xl border bg-white px-5 text-textPrimary outline-none transition",
+            "placeholder:text-slate-400 focus:ring-4",
+            large ? "py-5 text-xl sm:text-2xl" : "py-4 text-lg",
+            error
+              ? "border-red-300 focus:border-red-400 focus:ring-red-100"
+              : "border-gray-200 focus:border-blue-300 focus:ring-blue-100",
+          ].join(" ")}
+        />
+      </label>
+      {error ? (
+        <p className="mt-2 text-sm font-medium text-red-600" role="alert">
+          {error}
+        </p>
+      ) : null}
+    </div>
   );
 }
 
 function StepTitle({ children }: { children: ReactNode }) {
   return (
-    <h1 className="mb-8 text-[1.75rem] font-bold leading-tight tracking-tight text-textPrimary sm:text-4xl">
+    <h1 className="mb-7 text-[1.65rem] font-bold leading-[1.2] tracking-tight text-textPrimary sm:text-[2rem]">
       {children}
     </h1>
   );
@@ -238,7 +257,18 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
   const [location, setLocation] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  const serviceInputRef = useRef<HTMLInputElement>(null);
+  const locationInputRef = useRef<HTMLInputElement>(null);
   const progressStep = getProgressStep(step);
+
+  useEffect(() => {
+    if (step === "service") {
+      serviceInputRef.current?.focus();
+    }
+    if (step === "location") {
+      locationInputRef.current?.focus();
+    }
+  }, [step]);
 
   function goToServiceStep() {
     setError(null);
@@ -306,19 +336,14 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-blue-50/40 px-4 py-8 sm:py-14">
-      <div className="mx-auto w-full max-w-xl">
+    <main className="flex min-h-screen items-center justify-center bg-[#f7f9fc] px-4 py-8 sm:py-12">
+      <div key={step} className="mx-auto w-full max-w-lg animate-fadeIn">
         {step === "start" ? (
           <FlowCard centered>
-            <p className="mb-3 text-sm font-medium uppercase tracking-[0.14em] text-blue-700/70">
-              Freuly
-            </p>
-            <h1 className="mb-10 text-[2rem] font-bold leading-[1.15] tracking-tight text-textPrimary sm:text-5xl">
+            <h1 className="mb-10 text-[1.85rem] font-bold leading-[1.15] tracking-tight text-textPrimary sm:text-[2.35rem]">
               {text.startHeadline}
             </h1>
-            <PrimaryButton onClick={goToServiceStep} className="sm:mx-auto">
-              {text.startCta}
-            </PrimaryButton>
+            <PrimaryButton onClick={goToServiceStep}>{text.startCta}</PrimaryButton>
           </FlowCard>
         ) : null}
 
@@ -334,13 +359,13 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
                 value={service}
                 placeholder={text.serviceInputPlaceholder}
                 error={error}
+                large
+                inputRef={serviceInputRef}
                 onChange={(value) => {
                   setService(value);
                   if (error) setError(null);
                 }}
               />
-
-              {error ? <p className="text-sm font-medium text-red-600">{error}</p> : null}
 
               <PrimaryButton type="submit">{text.nextCta}</PrimaryButton>
             </form>
@@ -352,7 +377,7 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
             <BackButton label={text.backCta} onClick={goBack} />
             <StepTitle>{text.languageQuestion}</StepTitle>
 
-            <div className="grid gap-3 sm:grid-cols-1">
+            <div className="grid gap-3">
               {text.languageOptions.map((option) => {
                 const isSelected = selectedLanguage === option.value;
 
@@ -399,7 +424,7 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
                     className={choiceButtonClass(isSelected)}
                   >
                     <span className="block text-lg font-semibold">{option.label}</span>
-                    <span className="mt-1.5 block text-sm leading-relaxed text-textSecondary">
+                    <span className="mt-1 block text-sm leading-relaxed text-textSecondary">
                       {option.description}
                     </span>
                   </button>
@@ -421,13 +446,13 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
                 value={location}
                 placeholder={text.locationInputPlaceholder}
                 error={error}
+                large
+                inputRef={locationInputRef}
                 onChange={(value) => {
                   setLocation(value);
                   if (error) setError(null);
                 }}
               />
-
-              {error ? <p className="text-sm font-medium text-red-600">{error}</p> : null}
 
               <PrimaryButton type="submit">{text.nextCta}</PrimaryButton>
             </form>
