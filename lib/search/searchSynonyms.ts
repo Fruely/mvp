@@ -21,9 +21,14 @@ const SYNONYM_GROUPS: readonly SynonymGroup[] = [
   // House & garden — repairs, handyman, assembly, plumbing, electrical, garden
   // ---------------------------------------------------------------------------
   {
+    // Broad single-word repair queries — discovery fallback across repair categories.
+    categorySlugs: ["small-repairs", "housemaster", "computer-repair"],
+    terms: ["ремонт", "reparatur"],
+  },
+  {
     categorySlugs: ["small-repairs"],
     terms: [
-      // RU — general / finishing repairs (avoid bare "ремонт" — overlaps computer repair)
+      // RU — general / finishing repairs
       "мелкий ремонт",
       "мелкие работы",
       "ремонт квартиры",
@@ -155,8 +160,8 @@ const SYNONYM_GROUPS: readonly SynonymGroup[] = [
     ],
   },
   {
-    // Slug confirmed in growth operator migrations; not yet in locales/categories.*
-    categorySlugs: ["plumber"],
+    // Primary slug from growth migrations; housemaster/small-repairs as prod fallbacks.
+    categorySlugs: ["plumber", "housemaster", "small-repairs"],
     terms: [
       "сантехник",
       "поменять кран",
@@ -169,7 +174,6 @@ const SYNONYM_GROUPS: readonly SynonymGroup[] = [
       "смеситель течёт",
       "поменять сифон",
       "засор",
-      "забилась раковина",
       "забилась раковина",
       "сантехнік",
       "поміняти кран",
@@ -195,11 +199,10 @@ const SYNONYM_GROUPS: readonly SynonymGroup[] = [
     ],
   },
   {
-    categorySlugs: ["electrician"],
+    categorySlugs: ["electrician", "housemaster", "small-repairs"],
     terms: [
       "электрик",
       "електрик",
-      "elektriker",
       "elektriker",
       "подключить стиральную машину",
       "подключить посудомойку",
@@ -658,7 +661,8 @@ const SYNONYM_GROUPS: readonly SynonymGroup[] = [
     ],
   },
   {
-    categorySlugs: ["photographer"],
+    // photographer from growth migrations; photo-video as confirmed sibling slug in DB seeds.
+    categorySlugs: ["photographer", "photo-video"],
     terms: [
       "фотограф",
       "фотосессия",
