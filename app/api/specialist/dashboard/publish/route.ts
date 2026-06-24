@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
+import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
 import { notify } from "@/lib/notifications/notify";
 import { buildSpecialistSlug } from "@/lib/slugify";
@@ -24,7 +25,13 @@ export async function POST() {
     return jsonNoStore({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const { data: specialist, error: specialistError } = await supabase
+  // All reads/writes go through the service-role client. Ownership is enforced
+  // explicitly: the specialist is resolved by user_id = auth.uid() and every
+  // operation (including the privileged publish status transition) is scoped to
+  // that specialist.id.
+  const service = createServiceClient();
+
+  const { data: specialist, error: specialistError } = await service
     .from("specialists")
     .select("id, slug, status, name, category_id, languages, work_format, postal_code")
     .eq("user_id", user.id)
@@ -63,7 +70,7 @@ export async function POST() {
     );
   }
 
-  const { data: category } = await supabase
+  const { data: category } = await service
     .from("categories")
     .select("id, parent_id, slug")
     .eq("id", specialist.category_id)
@@ -87,7 +94,7 @@ export async function POST() {
     );
   }
 
-  const { data: services, error: servicesCheckError } = await supabase
+  const { data: services, error: servicesCheckError } = await service
     .from("specialist_services")
     .select("title, price_from, is_active")
     .eq("specialist_id", specialistId)
@@ -121,7 +128,7 @@ export async function POST() {
   if (!specialist.slug) {
     let categorySlug: string | null = null;
     if (specialist.category_id) {
-      const { data: cat } = await supabase
+      const { data: cat } = await service
         .from("categories")
         .select("slug")
         .eq("id", specialist.category_id)
@@ -132,7 +139,7 @@ export async function POST() {
     let citySlug: string | null = null;
 
     if (specialist.postal_code) {
-      const { data: cityRow } = await supabase
+      const { data: cityRow } = await service
         .from("cities")
         .select("slug")
         .eq("postal_code", specialist.postal_code)
@@ -141,13 +148,13 @@ export async function POST() {
     }
 
     if (!citySlug) {
-      const { data: profile } = await supabase
+      const { data: profile } = await service
         .from("specialist_profiles")
         .select("city")
         .eq("specialist_id", specialistId)
         .maybeSingle();
       if (profile?.city) {
-        const { data: cityRow } = await supabase
+        const { data: cityRow } = await service
           .from("cities")
           .select("slug")
           .eq("name", profile.city)
@@ -161,7 +168,7 @@ export async function POST() {
       let candidate = base;
       let suffix = 2;
       while (true) {
-        const { data: existing } = await supabase
+        const { data: existing } = await service
           .from("specialists")
           .select("id")
           .eq("slug", candidate)
@@ -182,7 +189,7 @@ export async function POST() {
   };
   if (generatedSlug) updatePayload.slug = generatedSlug;
 
-  const { data: updated, error: updateError } = await supabase
+  const { data: updated, error: updateError } = await service
     .from("specialists")
     .update(updatePayload)
     .eq("id", specialistId)
@@ -194,7 +201,7 @@ export async function POST() {
   }
 
   if (!updated) {
-    const { data: current } = await supabase
+    const { data: current } = await service
       .from("specialists")
       .select("status")
       .eq("id", specialistId)
@@ -207,7 +214,7 @@ export async function POST() {
     });
   }
 
-  const { data: publishedRow } = await supabase
+  const { data: publishedRow } = await service
     .from("specialists")
     .select("id, name, published_at, is_active, is_visible")
     .eq("id", specialistId)
@@ -223,7 +230,7 @@ export async function POST() {
     });
   }
 
-  const { error: founderRpcError } = await supabase.rpc("try_assign_founder_badge", {
+  const { error: founderRpcError } = await service.rpc("try_assign_founder_badge", {
     p_specialist_id: specialistId,
   });
   if (founderRpcError) {

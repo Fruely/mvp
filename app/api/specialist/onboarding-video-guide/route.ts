@@ -5,6 +5,7 @@ import {
   type VideoGuideAction,
 } from "@/lib/specialists/onboardingState";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
+import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -17,11 +18,11 @@ function isValidAction(value: unknown): value is VideoGuideAction {
 }
 
 export async function POST(request: Request) {
-  const supabase = createSupabaseServerClient();
+  const supabaseAuth = createSupabaseServerClient();
   const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = await supabaseAuth.auth.getUser();
 
   if (authError || !user) {
     return jsonNoStore({ error: "Not authenticated" }, { status: 401 });
@@ -36,6 +37,10 @@ export async function POST(request: Request) {
     );
   }
 
+  // Reads/writes use the service-role client. Ownership is enforced explicitly:
+  // resolve the specialist by user_id = auth.uid() and scope the controlled
+  // onboarding_state merge to that specialist.id.
+  const supabase = createServiceClient();
   const { data: specialist, error: specialistError } = await supabase
     .from("specialists")
     .select("id, onboarding_state")

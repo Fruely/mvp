@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
+import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email";
 
 const ALLOWED_STATUSES = ["new", "accepted", "contacted", "closed"] as const;
@@ -7,11 +8,11 @@ type LeadStatus = (typeof ALLOWED_STATUSES)[number];
 
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = createSupabaseServerClient();
+    const supabaseAuth = createSupabaseServerClient();
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
+    } = await supabaseAuth.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -19,6 +20,11 @@ export async function PATCH(request: NextRequest) {
         { status: 401, headers: { "Cache-Control": "no-store" } }
       );
     }
+
+    // Reads/writes use the service-role client. Ownership is enforced explicitly:
+    // resolve the specialist by user_id = auth.uid(), then update the lead only
+    // where id = leadId AND specialist_id = specialist.id.
+    const supabase = createServiceClient();
 
     const body = await request.json().catch(() => null);
     const leadId = body?.lead_id;

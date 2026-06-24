@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkPublishableCategory } from "@/lib/dashboard/publicationReadiness";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
+import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { normalizeRouteLangToDbContentCode } from "@/lib/specialists/normalizeContentLanguageCode";
 
 const ALLOWED_PRICING_TYPES = ["fixed", "range", "hourly"] as const;
@@ -101,7 +102,7 @@ function isValidActiveServiceForPublication(row: ServiceValidationRow, profileCa
 }
 
 async function validateServiceCategory(
-  supabase: ReturnType<typeof createSupabaseServerClient>,
+  supabase: ReturnType<typeof createServiceClient>,
   categoryId: string,
 ): Promise<NextResponse | null> {
   const { data: category, error } = await supabase
@@ -127,16 +128,19 @@ async function validateServiceCategory(
 }
 
 async function getCurrentSpecialistContext() {
-  const supabase = createSupabaseServerClient();
+  // Identity comes from the auth-server (cookie) client; all reads/writes use
+  // the service-role client with explicit ownership scoping by specialist.id.
+  const supabaseAuth = createSupabaseServerClient();
   const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = await supabaseAuth.auth.getUser();
 
   if (authError || !user) {
     return { error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }), supabase: null, specialistId: null, categoryId: null, status: null };
   }
 
+  const supabase = createServiceClient();
   const { data: specialist, error: specialistError } = await supabase
     .from("specialists")
     .select("id, category_id, status")
@@ -163,7 +167,7 @@ async function getCurrentSpecialistContext() {
 }
 
 async function validatePublishedProfileWouldStillHaveService(args: {
-  supabase: ReturnType<typeof createSupabaseServerClient>;
+  supabase: ReturnType<typeof createServiceClient>;
   specialistId: string;
   profileCategoryId: string | null;
   specialistStatus: string | null;

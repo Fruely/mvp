@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
+import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
 import { notify } from "@/lib/notifications/notify";
 import { normalizeRouteLangToDbContentCode } from "@/lib/specialists/normalizeContentLanguageCode";
@@ -72,6 +73,11 @@ export async function PUT(request: NextRequest) {
     return jsonNoStore({ error: "Not authenticated" }, { status: 401 });
   }
 
+  // All reads/writes go through the service-role client. Ownership is enforced
+  // explicitly in code: we resolve the specialist by user_id = auth.uid() and
+  // scope every subsequent operation to that specialist.id.
+  const service = createServiceClient();
+
   const body = (await request.json().catch(() => null)) as Payload | null;
   if (!body) return jsonNoStore({ error: "Invalid payload" }, { status: 400 });
 
@@ -135,7 +141,7 @@ export async function PUT(request: NextRequest) {
     return jsonNoStore({ error: "Invalid payload: category_id must be a UUID" }, { status: 400 });
   }
 
-  const { data: specialist, error: specialistError } = await supabase
+  const { data: specialist, error: specialistError } = await service
     .from("specialists")
     .select("id, category_id, postal_code, lat, lng")
     .eq("user_id", user.id)
@@ -155,7 +161,7 @@ export async function PUT(request: NextRequest) {
     : null;
 
   if (effectiveCategoryId) {
-    const { data: category } = await supabase
+    const { data: category } = await service
       .from("categories")
       .select("id, parent_id, slug")
       .eq("id", effectiveCategoryId)
@@ -247,7 +253,7 @@ export async function PUT(request: NextRequest) {
     Object.entries(specialistPatch).filter(([_, v]) => v !== undefined)
   );
 
-  const { error: specialistPatchError } = await supabase
+  const { error: specialistPatchError } = await service
     .from("specialists")
     .update(cleanedPatch)
     .eq("id", specialistId);
@@ -255,7 +261,7 @@ export async function PUT(request: NextRequest) {
     return jsonNoStore({ error: "Failed to update specialist profile" }, { status: 500 });
   }
 
-  const { data: specialistAfter, error: specialistAfterError } = await supabase
+  const { data: specialistAfter, error: specialistAfterError } = await service
     .from("specialists")
     .select("category_id")
     .eq("id", specialistId)
@@ -299,20 +305,20 @@ export async function PUT(request: NextRequest) {
   }
 
   if (Object.keys(profilePatch).length > 0) {
-    const { data: existingProfile } = await supabase
+    const { data: existingProfile } = await service
       .from("specialist_profiles")
       .select("specialist_id")
       .eq("specialist_id", specialistId)
       .maybeSingle();
 
     if (existingProfile?.specialist_id) {
-      const { error } = await supabase
+      const { error } = await service
         .from("specialist_profiles")
         .update(profilePatch)
         .eq("specialist_id", specialistId);
       if (error) return jsonNoStore({ error: "Failed to update specialist details" }, { status: 500 });
     } else {
-      const { error } = await supabase
+      const { error } = await service
         .from("specialist_profiles")
         .insert({ specialist_id: specialistId, ...profilePatch });
       if (error) return jsonNoStore({ error: "Failed to create specialist details" }, { status: 500 });
@@ -321,7 +327,7 @@ export async function PUT(request: NextRequest) {
 
   if (languageCode && hasOwn(body, "about_me") && typeof body.about_me === "string") {
     const aboutForTranslation = body.about_me.trim() || null;
-    const { error: profileTranslationError } = await supabase
+    const { error: profileTranslationError } = await service
       .from("specialist_profile_translations")
       .upsert(
         {
@@ -347,7 +353,7 @@ export async function PUT(request: NextRequest) {
     );
   }
 
-  const { data: notifyRow } = await supabase
+  const { data: notifyRow } = await service
     .from("specialists")
     .select(
       "name, first_dashboard_visit_at, published_at, dashboard_save_count, category_blocked_notified_at"
@@ -357,7 +363,7 @@ export async function PUT(request: NextRequest) {
 
   if (notifyRow) {
     const newCount = (notifyRow.dashboard_save_count ?? 0) + 1;
-    const { error: saveCountError } = await supabase
+    const { error: saveCountError } = await service
       .from("specialists")
       .update({
         dashboard_save_count: newCount,
@@ -376,7 +382,7 @@ export async function PUT(request: NextRequest) {
         await notify("NEW_SPECIALIST", {
           name: `🟣 Не может опубликоваться (возможно категория): ${notifyRow.name || "Без имени"}`,
         });
-        await supabase
+        await service
           .from("specialists")
           .update({
             category_blocked_notified_at: new Date().toISOString(),
