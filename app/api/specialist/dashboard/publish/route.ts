@@ -15,6 +15,89 @@ const PUBLISHED_SPECIALIST_STATUSES = new Set([
   "paused",
 ]);
 
+/**
+ * Guarantee Russian source rows exist in the translation tables for the
+ * specialist's profile and active services, so the out-of-band de/uk generator
+ * always has a source to translate from.
+ *
+ * Additive + idempotent: uses ignoreDuplicates so existing translation rows
+ * (including any hand-curated ones) are never overwritten. Does NOT call DeepL.
+ * Errors are logged but never block publication.
+ */
+async function ensureRussianSourceTranslations(
+  service: ReturnType<typeof createServiceClient>,
+  specialistId: string
+): Promise<void> {
+  try {
+    const { data: profile } = await service
+      .from("specialist_profiles")
+      .select("about_me")
+      .eq("specialist_id", specialistId)
+      .maybeSingle();
+
+    const aboutMe =
+      typeof profile?.about_me === "string" ? profile.about_me.trim() : "";
+    if (aboutMe) {
+      const { error: profileTranslationError } = await service
+        .from("specialist_profile_translations")
+        .upsert(
+          { specialist_id: specialistId, language_code: "ru", about_me: aboutMe },
+          { onConflict: "specialist_id,language_code", ignoreDuplicates: true }
+        );
+      if (profileTranslationError) {
+        console.error(
+          "[specialist/dashboard/publish] ensure ru profile translation failed",
+          profileTranslationError
+        );
+      }
+    }
+
+    const { data: services } = await service
+      .from("specialist_services")
+      .select("id, title, description, price_comment, is_active")
+      .eq("specialist_id", specialistId)
+      .eq("is_active", true);
+
+    const rows = (services ?? [])
+      .filter(
+        (s) => typeof s.title === "string" && s.title.trim().length > 0
+      )
+      .map((s) => ({
+        specialist_service_id: String(s.id),
+        language_code: "ru",
+        title: (s.title as string).trim(),
+        description:
+          typeof s.description === "string" && s.description.trim()
+            ? s.description.trim()
+            : null,
+        price_comment:
+          typeof s.price_comment === "string" && s.price_comment.trim()
+            ? s.price_comment.trim()
+            : null,
+      }));
+
+    if (rows.length > 0) {
+      const { error: serviceTranslationError } = await service
+        .from("specialist_service_translations")
+        .upsert(rows, {
+          onConflict: "specialist_service_id,language_code",
+          ignoreDuplicates: true,
+        });
+      if (serviceTranslationError) {
+        console.error(
+          "[specialist/dashboard/publish] ensure ru service translations failed",
+          serviceTranslationError
+        );
+      }
+    }
+  } catch (err) {
+    console.error(
+      "[specialist/dashboard/publish] ensureRussianSourceTranslations crashed",
+      err
+    );
+  }
+}
+
 export async function POST() {
   const supabase = createSupabaseServerClient();
   const {
@@ -213,6 +296,10 @@ export async function POST() {
       alreadyPublished: true,
     });
   }
+
+  // Publish succeeded for the first time — guarantee ru-source translation rows
+  // so the out-of-band de/uk generator always has a source. Non-blocking.
+  await ensureRussianSourceTranslations(service, specialistId);
 
   const { data: publishedRow } = await service
     .from("specialists")
