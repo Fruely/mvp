@@ -26,6 +26,14 @@ type Application = {
   claim_token_used_at?: string | null;
   specialist_id?: string | null;
   is_active?: boolean | null;
+  // Specialist classification fields — present only for source === "specialist".
+  category_id?: string | null;
+  is_visible?: boolean | null;
+  published_at?: string | null;
+  slug?: string | null;
+  avatar_url?: string | null;
+  dashboard_save_count?: number | null;
+  languages?: string[] | null;
   source?: "application" | "specialist";
   can_resend_claim?: boolean;
   subscription?: SubscriptionInfo | null;
@@ -81,6 +89,84 @@ function isPublishedSpecialistStatus(status: string | null | undefined): boolean
   return status === "published_unverified" || status === "featured_verified";
 }
 
+type SpecialistClassFilter =
+  | "all"
+  | "published"
+  | "unpublished"
+  | "empty_draft"
+  | "started_draft"
+  | "blocked";
+
+const SPECIALIST_CLASS_TABS: { value: SpecialistClassFilter; label: string }[] = [
+  { value: "all", label: "Все" },
+  { value: "published", label: "Опубликованные" },
+  { value: "unpublished", label: "Не опубликованы" },
+  { value: "empty_draft", label: "Пустые черновики" },
+  { value: "started_draft", label: "Начатые черновики" },
+  { value: "blocked", label: "Заблокированные" },
+];
+
+type SpecialistClass =
+  | "published"
+  | "empty_draft"
+  | "started_draft"
+  | "blocked"
+  | "other";
+
+function nonEmptyString(value: unknown): boolean {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+/** Base shape shared by both unpublished-draft buckets (empty + started). */
+function isUnpublishedDraftBase(app: Application): boolean {
+  return (
+    app.status === "draft" &&
+    app.published_at == null &&
+    app.is_active === false &&
+    app.is_visible === false
+  );
+}
+
+/** At least one signal that the specialist began filling the profile. */
+function hasStartedDraftSignal(app: Application): boolean {
+  const hasLanguages = Array.isArray(app.languages) && app.languages.length > 0;
+  return (
+    nonEmptyString(app.category_id) ||
+    nonEmptyString(app.slug) ||
+    nonEmptyString(app.avatar_url) ||
+    (typeof app.dashboard_save_count === "number" && app.dashboard_save_count > 0) ||
+    hasLanguages
+  );
+}
+
+function classifySpecialist(app: Application): SpecialistClass {
+  if (app.status === "blocked") return "blocked";
+  if (
+    app.is_active === true &&
+    app.is_visible === true &&
+    app.published_at != null &&
+    (app.status === "published_unverified" || app.status === "featured_verified")
+  ) {
+    return "published";
+  }
+  if (isUnpublishedDraftBase(app)) {
+    return hasStartedDraftSignal(app) ? "started_draft" : "empty_draft";
+  }
+  return "other";
+}
+
+function rowMatchesSpecialistClass(
+  app: Application,
+  filter: SpecialistClassFilter
+): boolean {
+  if (filter === "all") return true;
+  const cls = classifySpecialist(app);
+  if (filter === "unpublished") {
+    return cls === "empty_draft" || cls === "started_draft";
+  }
+  return cls === filter;
+}
+
 function adminErrorMessage(error: string | undefined): string {
   if (!error) return "Не удалось выполнить действие";
   if (error === "SPECIALIST_NOT_READY_FOR_PUBLICATION") {
@@ -115,6 +201,8 @@ export default function AdminSpecialistsPage() {
   const [pendingCount, setPendingCount] = useState<number>(0);
   const [lastClaimUrl, setLastClaimUrl] = useState<string | null>(null);
   const [planStatusFilter, setPlanStatusFilter] = useState<PlanStatusFilter>("all");
+  const [specialistClassFilter, setSpecialistClassFilter] =
+    useState<SpecialistClassFilter>("all");
   const [subscriptionEditId, setSubscriptionEditId] = useState<string | null>(null);
   const [savingSubscriptionById, setSavingSubscriptionById] = useState<Record<string, boolean>>({});
   const [subscriptionFormDraft, setSubscriptionFormDraft] = useState<{
@@ -154,9 +242,41 @@ export default function AdminSpecialistsPage() {
     return st === filter;
   }
 
+  // Specialist classification counts (meaningful on the specialists list, i.e.
+  // the "approved" tab which loads the full specialists table).
+  const specialistClassCounts = useMemo(() => {
+    const counts: Record<SpecialistClassFilter, number> = {
+      all: data.length,
+      published: 0,
+      unpublished: 0,
+      empty_draft: 0,
+      started_draft: 0,
+      blocked: 0,
+    };
+    for (const app of data) {
+      const cls = classifySpecialist(app);
+      if (cls === "published") counts.published += 1;
+      else if (cls === "blocked") counts.blocked += 1;
+      else if (cls === "empty_draft") {
+        counts.empty_draft += 1;
+        counts.unpublished += 1;
+      } else if (cls === "started_draft") {
+        counts.started_draft += 1;
+        counts.unpublished += 1;
+      }
+    }
+    return counts;
+  }, [data]);
+
   const filteredData = useMemo(
-    () => data.filter((app) => rowMatchesPlanFilter(app, planStatusFilter)),
-    [data, planStatusFilter]
+    () =>
+      data.filter(
+        (app) =>
+          rowMatchesPlanFilter(app, planStatusFilter) &&
+          (activeStatus !== "approved" ||
+            rowMatchesSpecialistClass(app, specialistClassFilter))
+      ),
+    [data, planStatusFilter, activeStatus, specialistClassFilter]
   );
 
   function isoToDatetimeLocalValue(iso: string | null): string {
@@ -750,6 +870,28 @@ export default function AdminSpecialistsPage() {
                     {pendingCount}
                   </span>
                 )}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {hasToken && activeStatus === "approved" && (
+          <div className="mb-4 flex flex-wrap gap-1.5">
+            {SPECIALIST_CLASS_TABS.map((tab) => (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => setSpecialistClassFilter(tab.value)}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                  specialistClassFilter === tab.value
+                    ? "border-blue-600 bg-blue-50 text-blue-700"
+                    : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                {tab.label}
+                <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[11px] font-semibold text-gray-700">
+                  {specialistClassCounts[tab.value]}
+                </span>
               </button>
             ))}
           </div>
