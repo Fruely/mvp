@@ -39,6 +39,22 @@ function subscriptionStatusBadgeClass(planStatus: string): string {
   return "bg-gray-100 text-gray-700";
 }
 
+function planDisplayLabel(dict: Dictionary, planCode: string): string {
+  const code = planCode.trim().toLowerCase();
+  const key = `dashboard.subscriptionPage.plan.${code}`;
+  const translated = t(dict, key);
+  if (translated !== key) return translated;
+  return planCode.trim() || t(dict, "dashboard.subscriptionPage.plan.starter");
+}
+
+function subscriptionStatusLabel(dict: Dictionary, planStatus: string): string {
+  const raw = planStatus.trim().toLowerCase();
+  const key = `dashboard.subscriptionPage.status.${raw}`;
+  const translated = t(dict, key);
+  if (translated !== key) return translated;
+  return t(dict, "dashboard.subscriptionPage.status.unknown");
+}
+
 function specialistStatusLabel(dict: Dictionary, raw: string | null | undefined): string {
   const key = raw && String(raw).trim() ? String(raw).trim() : "draft";
   return t(dict, `dashboard.home.specialistStatus.${key}`, { defaultValue: key });
@@ -143,6 +159,8 @@ export default async function SpecialistDashboardHomePage({
 
   const profileHref = `/${lang}/specialist/dashboard/profile`;
   const subscriptionHref = `/${lang}/specialist/dashboard/subscription`;
+  const billingHref = `/${lang}/specialist/dashboard/billing`;
+  const pricingHref = `/${lang}/pricing`;
   const leadsHref = `/${lang}/specialist/dashboard/leads`;
 
   const plan = await getSpecialistPlanForDashboard(service, specialist.id);
@@ -374,7 +392,7 @@ export default async function SpecialistDashboardHomePage({
               <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                 {t(dict, "dashboard.home.subscription.plan")}
               </p>
-              <p className="mt-1 font-medium text-gray-900">{planCode}</p>
+              <p className="mt-1 font-medium text-gray-900">{planDisplayLabel(dict, planCode)}</p>
             </div>
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
@@ -384,7 +402,7 @@ export default async function SpecialistDashboardHomePage({
                 <span
                   className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${subscriptionStatusBadgeClass(planStatus)}`}
                 >
-                  {planStatus}
+                  {subscriptionStatusLabel(dict, planStatus)}
                 </span>
               </div>
             </div>
@@ -413,18 +431,26 @@ export default async function SpecialistDashboardHomePage({
               </p>
             </div>
           ) : null}
-          <Link
-            href={subscriptionHref}
-            className={`mt-4 inline-flex h-10 w-full items-center justify-center rounded-lg px-4 text-sm font-semibold text-white transition sm:w-auto ${
-              subscriptionNeedsAttention
-                ? "bg-blue-600 hover:bg-blue-700"
-                : "border border-gray-200 bg-white text-gray-800 hover:bg-gray-50"
-            }`}
-          >
-            {subscriptionNeedsAttention
-              ? t(dict, "dashboard.home.subscription.ctaUrgent")
-              : t(dict, "dashboard.home.subscription.cta")}
-          </Link>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <Link
+              href={pricingHref}
+              className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 sm:w-auto"
+            >
+              {t(dict, "dashboard.home.subscription.ctaChoosePlan")}
+            </Link>
+            <Link
+              href={billingHref}
+              className={`inline-flex h-10 w-full items-center justify-center rounded-lg px-4 text-sm font-semibold transition sm:w-auto ${
+                subscriptionNeedsAttention
+                  ? "bg-amber-600 text-white hover:bg-amber-700"
+                  : "border border-gray-200 bg-white text-gray-800 hover:bg-gray-50"
+              }`}
+            >
+              {subscriptionNeedsAttention
+                ? t(dict, "dashboard.home.subscription.ctaUrgent")
+                : t(dict, "dashboard.home.subscription.ctaPay")}
+            </Link>
+          </div>
         </section>
 
         <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">

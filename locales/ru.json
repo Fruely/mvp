@@ -738,6 +738,8 @@
   "dashboard.home.subscription.expires": "Действует до",
   "dashboard.home.subscription.grace": "Grace до",
   "dashboard.home.subscription.cta": "Подробнее о подписке",
+  "dashboard.home.subscription.ctaChoosePlan": "Выбрать тариф",
+  "dashboard.home.subscription.ctaPay": "Перейти к оплате",
   "dashboard.home.subscription.ctaUrgent": "Управление подпиской",
   "dashboard.subscriptionPage.kicker": "Кабинет специалиста",
   "dashboard.subscriptionPage.title": "Подписка и доступ",
@@ -770,11 +772,14 @@
   "dashboard.subscriptionPage.faq.contactsA": "Если статус плана «Истёк», email и телефон клиента в списке заявок скрыты, пока доступ не будет восстановлен. Напишите в поддержку — подскажем дальнейшие шаги.",
   "dashboard.subscriptionPage.faq.leadsA": "Сами заявки остаются доступны: дата, сообщение и смена статуса по заявке.",
   "dashboard.subscriptionPage.cta.support": "Написать в поддержку",
+  "dashboard.subscriptionPage.cta.viewPlans": "Все тарифы",
+  "dashboard.subscriptionPage.cta.manageBilling": "Оплата и выбор тарифа",
   "dashboard.subscriptionPage.mailto.subject": "Freuly Subscription",
   "dashboard.subscriptionPage.link.billingStub": "Информация об оплате и счетах",
   "dashboard.billingPage.kicker": "Кабинет специалиста",
   "dashboard.billingPage.title": "Оплата и счета",
   "dashboard.billingPage.subtitle": "Раздел для будущих способов оплаты и счетов. Сейчас здесь только информация — списаний и выставления счетов нет.",
+  "dashboard.billingPage.currentPlanLabel": "Сейчас:",
   "dashboard.billingPage.disabledTitle": "Оплата пока недоступна",
   "dashboard.billingPage.disabledBody": "Freuly находится на раннем этапе запуска. Сейчас размещение специалистов бесплатно, платежи на платформе не принимаются, счета на оплату не выставляются.",
   "dashboard.billingPage.paymentsTitle": "Платежи на платформе",
@@ -786,6 +791,21 @@
   "dashboard.billingPage.backToSubscription": "Вернуться к подписке",
   "dashboard.billingPage.contactSupport": "Связаться с поддержкой",
   "dashboard.billingPage.mailtoSubject": "Freuly Billing",
+  "dashboard.billingPage.planPicker.title": "Выбор тарифа",
+  "dashboard.billingPage.planPicker.subtitle": "Сравните тарифы и подготовьте переход на платный план. Онлайн-оплата будет подключена позже — сейчас платежи не принимаются.",
+  "dashboard.billingPage.planPicker.currentBadge": "Текущий",
+  "dashboard.billingPage.planPicker.freeHint": "Бесплатный тариф на этапе раннего доступа.",
+  "dashboard.billingPage.planPicker.paidHint": "Платный тариф — оформление через checkout будет доступно после запуска оплаты.",
+  "dashboard.billingPage.planPicker.starterActive": "Доступен без оплаты в текущий период.",
+  "dashboard.billingPage.planPicker.viewAllPlans": "Сравнить все тарифы на публичной странице",
+  "dashboard.billingPage.checkout.cta": "Перейти к оплате",
+  "dashboard.billingPage.checkout.loading": "Проверка…",
+  "dashboard.billingPage.checkout.paymentsDisabled": "Онлайн-оплата пока не подключена. Мы сообщим, когда можно будет оформить подписку на платформе.",
+  "dashboard.billingPage.checkout.providerNotConfigured": "Платёжный провайдер ещё не настроен. Пока доступен только ранний бесплатный доступ — напишите в поддержку при вопросах.",
+  "dashboard.billingPage.checkout.unauthorized": "Войдите в кабинет специалиста, чтобы продолжить.",
+  "dashboard.billingPage.checkout.genericError": "Не удалось начать оплату. Попробуйте позже или напишите в поддержку.",
+  "dashboard.billingPage.checkout.successNotice": "Оплата пока не подключена — это заготовка checkout. Ваш текущий тариф не изменился.",
+  "dashboard.billingPage.checkout.cancelNotice": "Оформление оплаты отменено. Текущий тариф не изменился.",
   "dashboard.subscriptionNotice.earlyAccessTitle": "Ранний доступ",
   "dashboard.subscriptionNotice.earlyAccessBody": "Сейчас для специалистов действует бесплатный ранний доступ Freuly. Оплата пока не требуется, платежи на платформе не принимаются.",
   "dashboard.subscriptionNotice.expiringSoonTitle": "Скоро окончание периода",
@@ -936,7 +956,13 @@
         "a": "Да. Текущие возможности кабинета и публичного профиля доступны без оплаты."
       }
     ],
-    "disclaimer": "Информация на этой странице носит справочный характер и может обновляться. Актуальные условия будут сообщены до включения платных тарифов."
+    "disclaimer": "Информация на этой странице носит справочный характер и может обновляться. Актуальные условия будут сообщены до включения платных тарифов.",
+    "cta": {
+      "choosePlan": "Выбрать тариф",
+      "loginToChoose": "Войти, чтобы выбрать тариф",
+      "completeProfile": "Перейти в кабинет",
+      "currentPlan": "Мой тариф в кабинете"
+    }
   },
   "specialist.radiusLabel": "Выезд до {{km}} км"
 }

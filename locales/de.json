@@ -618,6 +618,8 @@
   "dashboard.home.subscription.expires": "Gültig bis",
   "dashboard.home.subscription.grace": "Grace bis",
   "dashboard.home.subscription.cta": "Details zum Abo",
+  "dashboard.home.subscription.ctaChoosePlan": "Tarif wählen",
+  "dashboard.home.subscription.ctaPay": "Zur Zahlung",
   "dashboard.home.subscription.ctaUrgent": "Abo verwalten",
   "dashboard.subscriptionPage.kicker": "Spezialistenbereich",
   "dashboard.subscriptionPage.title": "Abo und Zugang",
@@ -650,11 +652,14 @@
   "dashboard.subscriptionPage.faq.contactsA": "Ist der Planstatus «Abgelaufen», werden E-Mail und Telefonnummer des Kunden in der Anfragenliste ausgeblendet, bis der Zugang wiederhergestellt ist. Schreiben Sie dem Support — wir helfen beim nächsten Schritt.",
   "dashboard.subscriptionPage.faq.leadsA": "Die Anfragen selbst bleiben sichtbar: Datum, Nachricht und Statusbearbeitung.",
   "dashboard.subscriptionPage.cta.support": "Support kontaktieren",
+  "dashboard.subscriptionPage.cta.viewPlans": "Alle Tarife",
+  "dashboard.subscriptionPage.cta.manageBilling": "Zahlung und Tarifwahl",
   "dashboard.subscriptionPage.mailto.subject": "Freuly Subscription",
   "dashboard.subscriptionPage.link.billingStub": "Informationen zu Zahlung und Rechnungen",
   "dashboard.billingPage.kicker": "Spezialistenbereich",
   "dashboard.billingPage.title": "Zahlung und Rechnungen",
   "dashboard.billingPage.subtitle": "Bereich für künftige Zahlungsarten und Rechnungen. Aktuell finden Sie hier nur Informationen — es erfolgen keine Abbuchungen und es werden keine Rechnungen gestellt.",
+  "dashboard.billingPage.currentPlanLabel": "Aktuell:",
   "dashboard.billingPage.disabledTitle": "Zahlung derzeit nicht verfügbar",
   "dashboard.billingPage.disabledBody": "Freuly befindet sich in einer frühen Startphase. Die Eintragung von Spezialistinnen und Spezialisten ist derzeit kostenlos; auf der Plattform werden keine Zahlungen entgegengenommen und es werden keine Zahlungsaufforderungen (Rechnungen) ausgestellt.",
   "dashboard.billingPage.paymentsTitle": "Zahlungen auf der Plattform",
@@ -666,6 +671,21 @@
   "dashboard.billingPage.backToSubscription": "Zurück zum Abo",
   "dashboard.billingPage.contactSupport": "Support kontaktieren",
   "dashboard.billingPage.mailtoSubject": "Freuly Billing",
+  "dashboard.billingPage.planPicker.title": "Tarif auswählen",
+  "dashboard.billingPage.planPicker.subtitle": "Vergleichen Sie Tarife und bereiten Sie den Wechsel auf einen kostenpflichtigen Plan vor. Online-Zahlung wird später aktiviert — derzeit werden keine Zahlungen angenommen.",
+  "dashboard.billingPage.planPicker.currentBadge": "Aktuell",
+  "dashboard.billingPage.planPicker.freeHint": "Kostenloser Tarif in der Early-Access-Phase.",
+  "dashboard.billingPage.planPicker.paidHint": "Kostenpflichtiger Tarif — Checkout wird nach dem Zahlungsstart verfügbar sein.",
+  "dashboard.billingPage.planPicker.starterActive": "Im aktuellen Zeitraum ohne Zahlung nutzbar.",
+  "dashboard.billingPage.planPicker.viewAllPlans": "Alle Tarife auf der öffentlichen Seite vergleichen",
+  "dashboard.billingPage.checkout.cta": "Zur Zahlung",
+  "dashboard.billingPage.checkout.loading": "Prüfung…",
+  "dashboard.billingPage.checkout.paymentsDisabled": "Online-Zahlung ist noch nicht aktiviert. Wir informieren Sie, sobald Sie ein Abo über die Plattform abschließen können.",
+  "dashboard.billingPage.checkout.providerNotConfigured": "Der Zahlungsanbieter ist noch nicht konfiguriert. Derzeit gilt der kostenlose Frühzugang — bei Fragen schreiben Sie dem Support.",
+  "dashboard.billingPage.checkout.unauthorized": "Melden Sie sich im Spezialistenkonto an, um fortzufahren.",
+  "dashboard.billingPage.checkout.genericError": "Zahlung konnte nicht gestartet werden. Bitte später erneut versuchen oder den Support kontaktieren.",
+  "dashboard.billingPage.checkout.successNotice": "Zahlung ist noch nicht aktiv — dies ist ein Checkout-Platzhalter. Ihr aktueller Tarif hat sich nicht geändert.",
+  "dashboard.billingPage.checkout.cancelNotice": "Zahlungsvorgang abgebrochen. Ihr aktueller Tarif hat sich nicht geändert.",
   "dashboard.subscriptionNotice.earlyAccessTitle": "Frühzugang",
   "dashboard.subscriptionNotice.earlyAccessBody": "Für Spezialistinnen und Spezialisten gilt derzeit der kostenlose Frühzugang von Freuly. Es ist aktuell keine Zahlung erforderlich und es werden keine Zahlungen angenommen.",
   "dashboard.subscriptionNotice.expiringSoonTitle": "Zeitraum endet bald",
@@ -1028,6 +1048,12 @@
         "a": "Ja. Die aktuellen Funktionen im Konto und das öffentliche Profil sind ohne Zahlung nutzbar."
       }
     ],
-    "disclaimer": "Die Angaben auf dieser Seite sind unverbindlich und können sich ändern. Verbindliche Konditionen kommunizieren wir vor Aktivierung kostenpflichtiger Tarife."
+    "disclaimer": "Die Angaben auf dieser Seite sind unverbindlich und können sich ändern. Verbindliche Konditionen kommunizieren wir vor Aktivierung kostenpflichtiger Tarife.",
+    "cta": {
+      "choosePlan": "Tarif wählen",
+      "loginToChoose": "Anmelden, um Tarif zu wählen",
+      "completeProfile": "Zum Konto",
+      "currentPlan": "Mein Tarif im Konto"
+    }
   }
 }

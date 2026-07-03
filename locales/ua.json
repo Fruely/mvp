@@ -618,6 +618,8 @@
   "dashboard.home.subscription.expires": "Діє до",
   "dashboard.home.subscription.grace": "Grace до",
   "dashboard.home.subscription.cta": "Докладніше про підписку",
+  "dashboard.home.subscription.ctaChoosePlan": "Обрати тариф",
+  "dashboard.home.subscription.ctaPay": "Перейти до оплати",
   "dashboard.home.subscription.ctaUrgent": "Керування підпискою",
   "dashboard.subscriptionPage.kicker": "Кабінет спеціаліста",
   "dashboard.subscriptionPage.title": "Підписка та доступ",
@@ -650,11 +652,14 @@
   "dashboard.subscriptionPage.faq.contactsA": "Якщо статус плану «Завершився», email і телефон клієнта в списку запитів приховані, доки доступ не буде відновлено. Напишіть у підтримку — підкажемо подальші кроки.",
   "dashboard.subscriptionPage.faq.leadsA": "Самі запити лишаються доступними: дата, повідомлення та зміна статусу.",
   "dashboard.subscriptionPage.cta.support": "Написати в підтримку",
+  "dashboard.subscriptionPage.cta.viewPlans": "Усі тарифи",
+  "dashboard.subscriptionPage.cta.manageBilling": "Оплата та вибір тарифу",
   "dashboard.subscriptionPage.mailto.subject": "Freuly Subscription",
   "dashboard.subscriptionPage.link.billingStub": "Інформація про оплату та рахунки",
   "dashboard.billingPage.kicker": "Кабінет спеціаліста",
   "dashboard.billingPage.title": "Оплата та рахунки",
   "dashboard.billingPage.subtitle": "Розділ для майбутніх способів оплати та рахунків. Зараз тут лише інформація — списань і виставлення рахунків немає.",
+  "dashboard.billingPage.currentPlanLabel": "Зараз:",
   "dashboard.billingPage.disabledTitle": "Оплата поки недоступна",
   "dashboard.billingPage.disabledBody": "Freuly на ранній стадії запуску. Зараз розміщення спеціалістів безкоштовне, платежі на платформі не приймаються, рахунки до оплати не виставляються.",
   "dashboard.billingPage.paymentsTitle": "Платежі на платформі",
@@ -666,6 +671,21 @@
   "dashboard.billingPage.backToSubscription": "Повернутися до підписки",
   "dashboard.billingPage.contactSupport": "Зв’язатися з підтримкою",
   "dashboard.billingPage.mailtoSubject": "Freuly Billing",
+  "dashboard.billingPage.planPicker.title": "Вибір тарифу",
+  "dashboard.billingPage.planPicker.subtitle": "Порівняйте тарифи та підготуйте перехід на платний план. Онлайн-оплата буде підключена пізніше — зараз платежі не приймаються.",
+  "dashboard.billingPage.planPicker.currentBadge": "Поточний",
+  "dashboard.billingPage.planPicker.freeHint": "Безкоштовний тариф на етапі раннього доступу.",
+  "dashboard.billingPage.planPicker.paidHint": "Платний тариф — оформлення через checkout буде доступне після запуску оплати.",
+  "dashboard.billingPage.planPicker.starterActive": "Доступний без оплати в поточний період.",
+  "dashboard.billingPage.planPicker.viewAllPlans": "Порівняти всі тарифи на публічній сторінці",
+  "dashboard.billingPage.checkout.cta": "Перейти до оплати",
+  "dashboard.billingPage.checkout.loading": "Перевірка…",
+  "dashboard.billingPage.checkout.paymentsDisabled": "Онлайн-оплата поки не підключена. Ми повідомимо, коли можна буде оформити підписку на платформі.",
+  "dashboard.billingPage.checkout.providerNotConfigured": "Платіжний провайдер ще не налаштований. Поки доступний лише ранній безкоштовний доступ — напишіть у підтримку з питаннями.",
+  "dashboard.billingPage.checkout.unauthorized": "Увійдіть у кабінет спеціаліста, щоб продовжити.",
+  "dashboard.billingPage.checkout.genericError": "Не вдалося розпочати оплату. Спробуйте пізніше або напишіть у підтримку.",
+  "dashboard.billingPage.checkout.successNotice": "Оплата поки не підключена — це заготовка checkout. Ваш поточний тариф не змінився.",
+  "dashboard.billingPage.checkout.cancelNotice": "Оформлення оплати скасовано. Поточний тариф не змінився.",
   "dashboard.subscriptionNotice.earlyAccessTitle": "Ранній доступ",
   "dashboard.subscriptionNotice.earlyAccessBody": "Зараз для спеціалістів діє безкоштовний ранній доступ Freuly. Оплата поки не потрібна, платежі на платформі не приймаються.",
   "dashboard.subscriptionNotice.expiringSoonTitle": "Незабаром закінчиться період",
@@ -965,6 +985,12 @@
         "a": "Так. Поточні можливості кабінету та публічного профілю доступні без оплати."
       }
     ],
-    "disclaimer": "Інформація на цій сторінці має довідковий характер і може оновлюватися. Актуальні умови буде повідомлено до увімкнення платних тарифів."
+    "disclaimer": "Інформація на цій сторінці має довідковий характер і може оновлюватися. Актуальні умови буде повідомлено до увімкнення платних тарифів.",
+    "cta": {
+      "choosePlan": "Обрати тариф",
+      "loginToChoose": "Увійти, щоб обрати тариф",
+      "completeProfile": "Перейти в кабінет",
+      "currentPlan": "Мій тариф у кабінеті"
+    }
   }
 }

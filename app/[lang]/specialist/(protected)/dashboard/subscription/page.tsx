@@ -92,14 +92,20 @@ export default async function SpecialistDashboardSubscriptionPage({
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-gray-600 sm:text-base">
           {t(dict, "dashboard.subscriptionPage.subtitle")}
         </p>
-        <p className="mt-5">
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <Link
+            href={`/${lang}/pricing`}
+            className="inline-flex h-10 items-center justify-center rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+          >
+            {t(dict, "dashboard.subscriptionPage.cta.viewPlans")}
+          </Link>
           <Link
             href={`/${lang}/specialist/dashboard/billing`}
-            className="text-sm font-medium text-indigo-700 underline-offset-4 hover:text-indigo-800 hover:underline"
+            className="inline-flex h-10 items-center justify-center rounded-xl border border-gray-200 bg-white px-5 text-sm font-semibold text-gray-800 shadow-sm transition hover:bg-gray-50"
           >
-            {t(dict, "dashboard.subscriptionPage.link.billingStub")}
+            {t(dict, "dashboard.subscriptionPage.cta.manageBilling")}
           </Link>
-        </p>
+        </div>
       </section>
 
       <section className="rounded-2xl border border-gray-200/90 bg-white p-6 shadow-sm sm:p-8">

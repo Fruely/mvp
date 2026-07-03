@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getDictionary, getDictValue, t, isSupportedLang, type Lang } from "@/lib/i18n";
 import { PRICING_METADATA, hreflangPricing, SITE_DOMAIN } from "@/lib/seo/siteMetadata";
+import { getOptionalAuthenticatedSpecialist } from "@/lib/specialists/optionalAuth";
+import type { PaidPlanCode } from "@/lib/billing/plans";
 
 export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
   const lang =
@@ -63,9 +65,60 @@ function FeatureList({ items }: { items: string[] }) {
   );
 }
 
+function paidPlanBillingHref(lang: Lang, plan: PaidPlanCode): string {
+  return `/${lang}/specialist/dashboard/billing?plan=${plan}`;
+}
+
+function PricingPaidPlanCta({
+  lang,
+  dict,
+  plan,
+  hasSpecialist,
+  isAuthenticated,
+}: {
+  lang: Lang;
+  dict: Awaited<ReturnType<typeof getDictionary>>;
+  plan: PaidPlanCode;
+  hasSpecialist: boolean;
+  isAuthenticated: boolean;
+}) {
+  if (hasSpecialist) {
+    return (
+      <Link
+        href={paidPlanBillingHref(lang, plan)}
+        className="inline-flex w-full items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+      >
+        {t(dict, "pricing.cta.choosePlan")}
+      </Link>
+    );
+  }
+
+  if (isAuthenticated) {
+    return (
+      <Link
+        href={`/${lang}/specialist/dashboard`}
+        className="inline-flex w-full items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+      >
+        {t(dict, "pricing.cta.completeProfile")}
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      href="/login"
+      className="inline-flex w-full items-center justify-center rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 shadow-sm transition hover:border-gray-300 hover:bg-gray-50"
+    >
+      {t(dict, "pricing.cta.loginToChoose")}
+    </Link>
+  );
+}
+
 export default async function PricingPage({ params }: { params: { lang: string } }) {
   const lang: Lang = isSupportedLang(params.lang) ? params.lang : "ua";
   const dict = await getDictionary(lang);
+  const { specialist, isAuthenticated } = await getOptionalAuthenticatedSpecialist();
+  const hasSpecialist = Boolean(specialist?.id);
 
   const starterFeatures = asStringArray(getDictValue(dict, "pricing.starter.features"));
   const basicFeatures = asStringArray(getDictValue(dict, "pricing.basic.features"));
@@ -115,12 +168,21 @@ export default async function PricingPage({ params }: { params: { lang: string }
             <p className="mt-4 text-sm leading-relaxed text-gray-600">{t(dict, "pricing.starter.description")}</p>
             <FeatureList items={starterFeatures} />
             <div className="mt-8">
-              <Link
-                href={`/${lang}/become-specialist`}
-                className="inline-flex w-full items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-              >
-                {t(dict, "pricing.starter.cta")}
-              </Link>
+              {hasSpecialist ? (
+                <Link
+                  href={`/${lang}/specialist/dashboard/subscription`}
+                  className="inline-flex w-full items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+                >
+                  {t(dict, "pricing.cta.currentPlan")}
+                </Link>
+              ) : (
+                <Link
+                  href={`/${lang}/become-specialist`}
+                  className="inline-flex w-full items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+                >
+                  {t(dict, "pricing.starter.cta")}
+                </Link>
+              )}
             </div>
           </div>
 
@@ -136,12 +198,14 @@ export default async function PricingPage({ params }: { params: { lang: string }
             <p className="mt-4 text-sm leading-relaxed text-gray-600">{t(dict, "pricing.basic.description")}</p>
             <FeatureList items={basicFeatures} />
             <div className="mt-8">
-              <span
-                className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-full border border-gray-200 bg-gray-50 px-5 py-2.5 text-sm font-semibold text-gray-500"
-                role="note"
-              >
-                {t(dict, "pricing.basic.ctaDisabled")}
-              </span>
+              <PricingPaidPlanCta
+                lang={lang}
+                dict={dict}
+                plan="basic"
+                hasSpecialist={hasSpecialist}
+                isAuthenticated={isAuthenticated}
+              />
+              <p className="mt-2 text-center text-xs text-gray-500">{t(dict, "pricing.basic.ctaDisabled")}</p>
             </div>
           </div>
 
@@ -154,12 +218,14 @@ export default async function PricingPage({ params }: { params: { lang: string }
             <p className="mt-4 text-sm leading-relaxed text-gray-600">{t(dict, "pricing.premium.description")}</p>
             <FeatureList items={premiumFeatures} />
             <div className="mt-8">
-              <span
-                className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-full border border-gray-200 bg-gray-50 px-5 py-2.5 text-sm font-semibold text-gray-500"
-                role="note"
-              >
-                {t(dict, "pricing.premium.ctaDisabled")}
-              </span>
+              <PricingPaidPlanCta
+                lang={lang}
+                dict={dict}
+                plan="premium"
+                hasSpecialist={hasSpecialist}
+                isAuthenticated={isAuthenticated}
+              />
+              <p className="mt-2 text-center text-xs text-gray-500">{t(dict, "pricing.premium.ctaDisabled")}</p>
             </div>
           </div>
         </div>
