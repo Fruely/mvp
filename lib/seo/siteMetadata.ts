@@ -136,3 +136,13 @@ export function hreflangSpecialistRules(): HreflangTriple {
     de: `${SITE_DOMAIN}/de/specialist-rules`,
   };
 }
+
+/** hreflang for app/[lang]/{slug} SEO category landing pages. */
+export function hreflangSeoCategory(slug: string): HreflangTriple & { "x-default": string } {
+  return {
+    uk: `${SITE_DOMAIN}/ua/${slug}`,
+    ru: `${SITE_DOMAIN}/ru/${slug}`,
+    de: `${SITE_DOMAIN}/de/${slug}`,
+    "x-default": `${SITE_DOMAIN}/de/${slug}`,
+  };
+}

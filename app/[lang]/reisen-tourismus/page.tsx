@@ -4,10 +4,10 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 import CategoryContentPage from "@/components/seo/CategoryContentPage";
 import { reisenTourismusContent } from "@/content/seo/v2/reisen-tourismus.content";
+import { hreflangSeoCategory, SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 
 export const dynamic = "force-dynamic";
 
-const DOMAIN = process.env.APP_URL || "https://freuly.de";
 const SLUG = reisenTourismusContent.slug;
 
 export async function generateMetadata({ params }: { params: { lang: string } }) {
@@ -17,13 +17,8 @@ export async function generateMetadata({ params }: { params: { lang: string } })
     title: c.metaTitle,
     description: c.metaDescription,
     alternates: {
-      canonical: `${DOMAIN}/${lang}/${SLUG}`,
-      languages: {
-        de: `${DOMAIN}/de/${SLUG}`,
-        ru: `${DOMAIN}/ru/${SLUG}`,
-        ua: `${DOMAIN}/ua/${SLUG}`,
-        "x-default": `${DOMAIN}/de/${SLUG}`,
-      },
+      canonical: `${SITE_DOMAIN}/${lang}/${SLUG}`,
+      languages: hreflangSeoCategory(SLUG),
     },
   };
 }
