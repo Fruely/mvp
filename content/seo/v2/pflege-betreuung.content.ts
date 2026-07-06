@@ -347,7 +347,7 @@ export const pflegeBetreuungContent: LocalizedSeoCategory = {
         },
         {
           slug: "kinderbetreuung",
-          label: "Присмотр за дітьми",
+          label: "Догляд за дітьми",
           description:
             "Надійна людина для дитини, яка говорить українською, російською або німецькою.",
         },
@@ -361,7 +361,7 @@ export const pflegeBetreuungContent: LocalizedSeoCategory = {
           slug: "begleitdienst",
           label: "Супровід",
           description:
-            "Допомога з візитами до лікаря чи в установи, коли бракує німецької.",
+            "Допомога з візитами до лікаря чи в установи, коли складно спілкуватися німецькою.",
         },
       ],
       sections: [
