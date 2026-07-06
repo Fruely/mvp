@@ -255,12 +255,6 @@ export default function CategoryContentPage({
         </section>
       ) : null}
 
-      {content.seoText ? (
-        <section className="mt-12 text-sm leading-relaxed text-gray-600">
-          <p>{content.seoText}</p>
-        </section>
-      ) : null}
-
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
