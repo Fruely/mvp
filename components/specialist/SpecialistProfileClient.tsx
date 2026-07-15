@@ -338,7 +338,6 @@ export default function SpecialistProfileClient({
     },
     toCategoryTitleLang(lang)
   ) || t(dict, "specialist.about", { defaultValue: "Спеціаліст" });
-  const galleryPlaceholders = Array.from({ length: 4 }, (_, idx) => idx);
   const workMode = getWorkFormat(specialist.format)
     ?? getWorkFormat(specialist.work_format)
     ?? (typeof specialist.is_online === "boolean" ? (specialist.is_online ? "online" : "offline") : null)
@@ -505,6 +504,8 @@ export default function SpecialistProfileClient({
         <aside className="order-1 mt-6 md:order-none md:col-start-2 md:row-start-1 md:mt-0 md:self-start md:sticky md:top-6">
           {!hideHero ? (
             <SpecialistHero
+              avatarUrl={specialist.avatar_url}
+              avatarAlt={displayName}
               name={displayName}
               specialization={specializationText}
               city={specialist.city ?? null}
@@ -607,48 +608,7 @@ export default function SpecialistProfileClient({
                 </div>
               </SectionCard>
             </section>
-          ) : (
-            <section>
-              <SectionCard title={sectionText.profilePhotoTitle} subtitle={sectionText.profilePhotoSubtitle}>
-                {!hasPortfolio && specialist.avatar_url && (
-                  <div className="relative rounded-xl bg-slate-100 aspect-[4/3] flex items-center justify-center">
-                    <Image
-                      src={specialist.avatar_url}
-                      alt={displayName}
-                      fill
-                      className="object-contain object-center"
-                    />
-                    {(() => {
-                      const authUserId = typeof window !== "undefined" ? window.localStorage.getItem("authUserId") : null;
-                      const handleAddPhotos = () => {
-                        // Placeholder: open upload dialog or similar
-                        alert("Добавить фото: функция в разработке");
-                      };
-                      return authUserId === specialist.user_id && (
-                        <button
-                          className="absolute bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-full shadow text-sm font-medium"
-                          type="button"
-                          onClick={handleAddPhotos}
-                        >
-                          Добавить фото
-                        </button>
-                      );
-                    })()}
-                  </div>
-                )}
-                {!hasPortfolio && !specialist.avatar_url && (
-                  <div className="grid grid-cols-2 gap-3">
-                    {galleryPlaceholders.map((item) => (
-                      <div
-                        key={item}
-                        className={item === 0 ? "col-span-2 aspect-[16/10] rounded-xl border border-dashed border-slate-300 bg-slate-100/70" : "aspect-[4/3] rounded-xl border border-dashed border-slate-300 bg-slate-100/70"}
-                      />
-                    ))}
-                  </div>
-                )}
-              </SectionCard>
-            </section>
-          )}
+          ) : null}
 
           {videoEmbedUrl ? (
             <SectionCard title={sectionText.videoTitle} subtitle="">

@@ -8,6 +8,7 @@ import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 import { isPublicationReadyForDashboard } from "@/lib/dashboard/publicationReadiness";
+import SpecialistAvatarImage from "@/components/specialist/SpecialistAvatarImage";
 
 type ServiceInput = {
   id?: string;
@@ -114,6 +115,8 @@ export default function SpecialistDashboardEditor({
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [avatarSuccess, setAvatarSuccess] = useState<string | null>(null);
   const [galleryUploading, setGalleryUploading] = useState(false);
   const [documentsUploading, setDocumentsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -284,14 +287,34 @@ export default function SpecialistDashboardEditor({
     event.target.value = "";
     if (!file) return;
     setAvatarUploading(true);
-    setError(null);
-    setSuccess(null);
+    setAvatarError(null);
+    setAvatarSuccess(null);
     try {
-      const url = await uploadSingleImage("/api/specialist/avatar/upload", file);
-      setForm((prev) => ({ ...prev, photo_url: url }));
-      setSuccess(t(dict, "dashboard.messages.avatarUploaded"));
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/specialist/avatar/upload", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      const json = (await res.json().catch(() => ({}))) as {
+        url?: unknown;
+        avatar_url?: unknown;
+        error?: unknown;
+      };
+      const uploadedUrl =
+        typeof json.avatar_url === "string"
+          ? json.avatar_url
+          : typeof json.url === "string"
+            ? json.url
+            : null;
+      if (!res.ok || !uploadedUrl) {
+        throw new Error(typeof json.error === "string" ? json.error : t(dict, "dashboard.messages.avatarFailed"));
+      }
+      setForm((prev) => ({ ...prev, photo_url: uploadedUrl }));
+      setAvatarSuccess(t(dict, "dashboard.messages.avatarUploaded"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : t(dict, "dashboard.messages.avatarFailed"));
+      setAvatarError(err instanceof Error ? err.message : t(dict, "dashboard.messages.avatarFailed"));
     } finally {
       setAvatarUploading(false);
     }
@@ -714,29 +737,32 @@ export default function SpecialistDashboardEditor({
 
         <div className="space-y-2">
           <p className="text-sm font-medium text-gray-700">{t(dict, "dashboard.fields.avatar")}</p>
-          <div className="flex items-center gap-3">
-            {form.photo_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+            <div className="w-full max-w-xs shrink-0">
+              <SpecialistAvatarImage
                 src={form.photo_url}
                 alt={t(dict, "dashboard.avatar.alt")}
-                className="h-16 w-16 rounded-full border border-gray-200 object-cover"
+                loading={avatarUploading}
               />
-            ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full border border-dashed border-gray-300 text-xs text-textSecondary">
-                {t(dict, "dashboard.avatar.noPhoto")}
-              </div>
-            )}
-            <label className="inline-flex cursor-pointer items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-              {avatarUploading ? t(dict, "dashboard.buttons.uploading") : t(dict, "dashboard.buttons.uploadPhoto")}
-              <input
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp"
-                className="hidden"
-                onChange={handleAvatarUpload}
-                disabled={avatarUploading}
-              />
-            </label>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="inline-flex cursor-pointer items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                {avatarUploading ? t(dict, "dashboard.buttons.uploading") : t(dict, "dashboard.buttons.uploadPhoto")}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  className="hidden"
+                  onChange={handleAvatarUpload}
+                  disabled={avatarUploading}
+                />
+              </label>
+              {avatarError ? (
+                <p className="text-sm font-medium text-red-600">{avatarError}</p>
+              ) : null}
+              {avatarSuccess ? (
+                <p className="text-sm font-medium text-green-700">{avatarSuccess}</p>
+              ) : null}
+            </div>
           </div>
         </div>
 

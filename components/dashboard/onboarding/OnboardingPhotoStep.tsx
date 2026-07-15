@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import SpecialistAvatarImage from "@/components/specialist/SpecialistAvatarImage";
 import { t, type Dictionary } from "@/lib/i18n";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -70,9 +71,20 @@ export default function OnboardingPhotoStep({
         method: "POST",
         body: formData,
       });
-      const json = (await res.json().catch(() => ({}))) as { url?: unknown; error?: unknown };
+      const json = (await res.json().catch(() => ({}))) as {
+        url?: unknown;
+        avatar_url?: unknown;
+        error?: unknown;
+      };
 
-      if (!res.ok || typeof json.url !== "string") {
+      const uploadedUrl =
+        typeof json.avatar_url === "string"
+          ? json.avatar_url.trim()
+          : typeof json.url === "string"
+            ? json.url.trim()
+            : "";
+
+      if (!res.ok || !uploadedUrl) {
         setError(
           typeof json.error === "string"
             ? json.error
@@ -81,7 +93,6 @@ export default function OnboardingPhotoStep({
         return;
       }
 
-      const uploadedUrl = json.url.trim();
       setPreviewUrl(uploadedUrl);
       setFile(null);
       setUploaded(true);
@@ -113,19 +124,14 @@ export default function OnboardingPhotoStep({
           <p className="text-sm font-medium text-gray-700">
             {t(dict, "dashboard.onboarding.photoStep.currentPhoto")}
           </p>
-          <div className="flex items-center gap-4">
-            {previewUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+            <div className="w-full max-w-xs shrink-0">
+              <SpecialistAvatarImage
                 src={previewUrl}
                 alt={t(dict, "dashboard.onboarding.photoStep.currentPhoto")}
-                className="h-28 w-28 shrink-0 rounded-full border border-gray-200 object-cover shadow-sm"
+                loading={uploading}
               />
-            ) : (
-              <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-full border border-dashed border-gray-300 text-xs text-gray-500">
-                {t(dict, "dashboard.onboarding.steps.photo")}
-              </div>
-            )}
+            </div>
             <p className="max-w-xs text-xs leading-relaxed text-gray-500">
               {t(dict, "dashboard.onboarding.photoStep.previewHint")}
             </p>

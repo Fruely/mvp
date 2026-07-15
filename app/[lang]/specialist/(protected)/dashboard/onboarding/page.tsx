@@ -55,7 +55,7 @@ export default async function SpecialistDashboardOnboardingPage({
 
   const { data: specExtra } = await service
     .from("specialists")
-    .select("postal_code, country_code, work_format, languages")
+    .select("postal_code, country_code, work_format, languages, avatar_url")
     .eq("id", specialist.id)
     .maybeSingle();
 
@@ -174,7 +174,13 @@ export default async function SpecialistDashboardOnboardingPage({
   });
 
   const hasAbout = typeof profile?.about_me === "string" && profile.about_me.trim().length > 0;
-  const hasPhoto = typeof profile?.photo_url === "string" && profile.photo_url.trim().length > 0;
+  const avatarUrl =
+    typeof specExtra?.avatar_url === "string" && specExtra.avatar_url.trim()
+      ? specExtra.avatar_url
+      : typeof profile?.photo_url === "string"
+        ? profile.photo_url
+        : "";
+  const hasPhoto = avatarUrl.trim().length > 0;
   const hasGallery = Array.isArray(profile?.gallery_urls)
     ? profile.gallery_urls.some((value) => typeof value === "string" && value.trim().length > 0)
     : false;
@@ -264,7 +270,7 @@ export default async function SpecialistDashboardOnboardingPage({
         activeServices,
         hasValidServiceForPublish: hasValidService,
       }}
-      currentPhotoUrl={typeof profile?.photo_url === "string" ? profile.photo_url : ""}
+      currentPhotoUrl={avatarUrl}
       reviewSummary={{
         publishReady,
         hasName: Boolean(name.trim()),
@@ -306,7 +312,7 @@ export default async function SpecialistDashboardOnboardingPage({
         city: typeof profile?.city === "string" ? profile.city : "",
         address: typeof profile?.address === "string" ? profile.address : "",
         video_url: typeof profile?.video_url === "string" ? profile.video_url : "",
-        photo_url: typeof profile?.photo_url === "string" ? profile.photo_url : "",
+        photo_url: avatarUrl,
         gallery_urls: Array.isArray(profile?.gallery_urls)
           ? profile.gallery_urls.filter(
               (value): value is string => typeof value === "string" && value.trim().length > 0,

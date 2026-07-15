@@ -31,7 +31,7 @@ export default async function SpecialistDashboardProfilePage({
   const { data: specExtra } = await service
     .from("specialists")
     .select(
-      "postal_code, country_code, telegram_chat_id, mobile_service, service_radius_km, work_format, languages",
+      "postal_code, country_code, telegram_chat_id, mobile_service, service_radius_km, work_format, languages, avatar_url",
     )
     .eq("id", specialist.id)
     .maybeSingle();
@@ -97,7 +97,12 @@ export default async function SpecialistDashboardProfilePage({
               : "",
           city: typeof profile?.city === "string" ? profile.city : "",
           address: typeof profile?.address === "string" ? profile.address : "",
-          photo_url: typeof profile?.photo_url === "string" ? profile.photo_url : "",
+          photo_url:
+            typeof specExtra?.avatar_url === "string" && specExtra.avatar_url.trim()
+              ? specExtra.avatar_url
+              : typeof profile?.photo_url === "string"
+                ? profile.photo_url
+                : "",
           gallery_urls: Array.isArray(profile?.gallery_urls)
             ? profile.gallery_urls.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
             : [],

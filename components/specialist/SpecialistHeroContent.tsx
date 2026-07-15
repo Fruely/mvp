@@ -1,7 +1,10 @@
 import { Globe, Laptop, MapPin } from "lucide-react";
 import FounderBadge from "@/components/specialist/FounderBadge";
+import SpecialistAvatarImage from "@/components/specialist/SpecialistAvatarImage";
 
 export type SpecialistHeroContentProps = {
+  avatarUrl?: string | null;
+  avatarAlt: string;
   name: string;
   specialization: string | null;
   city?: string | null;
@@ -17,6 +20,8 @@ export type SpecialistHeroContentProps = {
 };
 
 export default function SpecialistHeroContent({
+  avatarUrl,
+  avatarAlt,
   name,
   specialization,
   city,
@@ -32,6 +37,8 @@ export default function SpecialistHeroContent({
 }: SpecialistHeroContentProps) {
   return (
     <>
+      <SpecialistAvatarImage src={avatarUrl} alt={avatarAlt} />
+
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-2xl font-semibold leading-tight tracking-tight text-textPrimary">{name}</h1>

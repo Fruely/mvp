@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import SpecialistHeroContent from "@/components/specialist/SpecialistHeroContent";
 
 export default function SpecialistHero({
+  avatarUrl,
+  avatarAlt,
   name,
   specialization,
   city,
@@ -20,6 +22,8 @@ export default function SpecialistHero({
   formTitle,
   formNode,
 }: {
+  avatarUrl?: string | null;
+  avatarAlt: string;
   name: string;
   specialization: string | null;
   city?: string | null;
@@ -40,6 +44,8 @@ export default function SpecialistHero({
     <aside className="rounded-xl border border-black/5 bg-white p-4 shadow-card sm:p-6">
       <div className="space-y-4">
         <SpecialistHeroContent
+          avatarUrl={avatarUrl}
+          avatarAlt={avatarAlt}
           name={name}
           specialization={specialization}
           city={city}
