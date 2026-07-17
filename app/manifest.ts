@@ -15,7 +15,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Freuly",
     short_name: "Freuly",
-    start_url: "/",
+    start_url: "/app?source=pwa",
     scope: "/",
     display: "standalone",
     theme_color: "#4B50E6",

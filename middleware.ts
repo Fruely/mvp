@@ -54,6 +54,18 @@ export function middleware(request: NextRequest) {
     return nextWithHtmlLang(request, pathname);
   }
 
+  // PWA app-shell entry (top-level /app): must stay reachable in closed mode and
+  // must NOT be i18n-redirected to /{lang}/app. Language is resolved from the
+  // existing `freuly_lang` cookie (default `ua`) so <html lang> matches the shell.
+  if (pathname === "/app") {
+    const cookieLang = request.cookies.get(LANG_COOKIE)?.value;
+    const appLang: Lang = isLang(cookieLang || "") ? (cookieLang as Lang) : "ua";
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set(HTML_LANG_HEADER, appLang === "ua" ? "uk" : appLang);
+    requestHeaders.set(PATHNAME_HEADER, pathname);
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
+
   // STEP 1: Check for dev access key in URL parameter FIRST (before anything else)
   const devKey = searchParams.get("dev");
   const expectedKey = process.env.DEV_ACCESS_KEY;
