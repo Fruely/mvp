@@ -42,3 +42,7 @@ yarn-error.log*
 
 # Local Market Radar input with real working signals
 data/market-signals-input.json
+
+# serwist / pwa (generated at build time)
+public/sw.js
+public/swe-worker-*.js
