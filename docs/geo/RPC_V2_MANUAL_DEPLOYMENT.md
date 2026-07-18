@@ -119,7 +119,7 @@ After v2, those profiles **disappear from local radius search** until they have 
 Migration does **not** backfill or alter specialist rows.  
 Do **not** unpublish specialists as part of this remediation.
 
-### Chosen legacy strategy: Option 2
+### Chosen legacy strategy: Option 2 → controlled one-shot backfill
 
 ```text
 Chosen legacy strategy: Option 2.
@@ -131,10 +131,18 @@ specialist affected by missing or invalid service_radius_km has either:
 No radius may be inferred or assigned automatically.
 ```
 
+Owner follow-up (after remediation report): apply the **controlled one-shot**
+file that backfills only the 16 reported IDs, then installs RPC v2 in the same
+transaction:
+
+- Apply (manual, one Run):  
+  `supabase/manual_migrations/2026-07-18_geo_legacy_backfill_and_rpc_v2.sql`
+- RPC-only rollback (does **not** undo backfill data):  
+  `supabase/manual-rollbacks/2026-07-18_geo_legacy_backfill_and_rpc_v2.sql`
+
 - **No** compatibility fallback for null/invalid radius.  
-- **No** automatic radius assignment.  
-- **No** apply of RPC v2 until legacy remediation above is complete.  
-- Remediation is manual: specialist saves an allowlisted radius, or owner/admin confirms from reliable source data (dashboard/admin tools only — not this migration).
+- **No** wide automatic radius assignment outside the locked 16-ID mapping.  
+- Do not unpublish specialists as part of remediation.
 
 ### Other options (not chosen)
 
