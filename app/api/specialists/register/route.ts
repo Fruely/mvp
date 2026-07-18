@@ -7,6 +7,8 @@ import {
   hashEmailForRateLimit,
   RATE_LIMIT_PUBLIC_MESSAGE,
 } from "@/lib/rate-limit/shared";
+import { PARTNER_REF_COOKIE } from "@/lib/partners/cookie";
+import { tryCreateAttributionFromCookie } from "@/lib/partners/attribution";
 
 function normalizeEmail(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -178,6 +180,22 @@ export async function POST(request: NextRequest) {
     if (profileError) {
       // Non-fatal: dashboard can still operate and create profile later.
       console.warn("[specialists/register] specialist profile init failed", profileError.message);
+    }
+
+    // Partner first-touch attribution (best-effort; never fails registration).
+    const partnerCookie = request.cookies.get(PARTNER_REF_COOKIE)?.value;
+    if (partnerCookie) {
+      const attr = await tryCreateAttributionFromCookie(supabase, {
+        userId: createdUser.user.id,
+        specialistId: specialist.id,
+        cookieRaw: partnerCookie,
+      });
+      if (!attr.ok && attr.reason !== "no_valid_cookie") {
+        console.warn("[specialists/register] partner attribution skipped", {
+          reason: attr.reason,
+          specialist_id: specialist.id,
+        });
+      }
     }
 
     return jsonNoStore({ success: true, specialist }, { status: 201 });
