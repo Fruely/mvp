@@ -77,13 +77,17 @@ export function shouldShowInstallCta(input: {
   nowMs: number;
   canPrompt: boolean;
   platform: PlatformCategory;
+  /** Advertising landing may still show an unsupported-browser hint. */
+  allowUnsupportedHint?: boolean;
 }): boolean {
   if (input.isStandalone) return false;
   if (input.installedFlag) return false;
   if (isDismissCoolingDown(input.dismissedAtMs, input.nowMs)) return false;
   if (input.canPrompt) return true;
   if (input.platform === "ios") return true;
-  // Unsupported: no prompt and not iOS → hide working install button.
+  // Unsupported: no prompt and not iOS → hide working install button,
+  // unless the surface explicitly needs a neutral fallback hint.
+  if (input.allowUnsupportedHint) return true;
   return false;
 }
 

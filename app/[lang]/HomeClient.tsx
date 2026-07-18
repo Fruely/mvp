@@ -604,17 +604,17 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             <span>{copy.popularLabel}</span>
             <span>{t(dict, "home.hero.popularTags")}</span>
           </div>
-
-          <div className="mt-6 md:hidden max-w-xl mx-auto text-left">
-            <InstallFreuly
-              lang={lang}
-              audience="client"
-              placement="home_mobile"
-              variant="card"
-            />
-          </div>
         </div>
       </section>
+
+      <div className="md:hidden mx-auto w-full max-w-xl px-3 -mt-4 mb-2 text-left">
+        <InstallFreuly
+          lang={lang}
+          audience="client"
+          placement="home_mobile"
+          variant="card"
+        />
+      </div>
 
       <section className="pt-12 pb-10 md:pt-16 md:pb-12">
         <div className="max-w-5xl mx-auto px-3 md:px-4 text-center">

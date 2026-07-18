@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { isSupportedLang, type Lang } from "@/lib/i18n";
-import { INSTALL_COPY, installBody, installTitle } from "@/lib/pwa/installCopy";
+import { INSTALL_SHARED_COPY, landingHeroMessage } from "@/lib/pwa/installCopy";
 import { parseAudience, preserveUtmParams } from "@/lib/pwa/installLogic";
 import { loginHref, serviceSearchHref } from "@/lib/app-shell/links";
 import InstallFreuly from "@/components/pwa/InstallFreuly";
@@ -24,25 +24,27 @@ function resolveLang(): Lang {
   return cookieLang && isSupportedLang(cookieLang) ? cookieLang : "ua";
 }
 
+function firstString(value: string | string[] | undefined): string | undefined {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
 export default function AppInstallPage({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const lang = resolveLang();
-  const copy = INSTALL_COPY[lang];
-  const audienceRaw = typeof searchParams.audience === "string" ? searchParams.audience : null;
+  const shared = INSTALL_SHARED_COPY[lang];
+  const audienceRaw = firstString(searchParams.audience) ?? null;
   const audience = parseAudience(audienceRaw);
-  const source = typeof searchParams.utm_source === "string"
-    ? searchParams.utm_source
-    : typeof searchParams.source === "string"
-      ? searchParams.source
-      : undefined;
-  const campaign = typeof searchParams.utm_campaign === "string"
-    ? searchParams.utm_campaign
-    : typeof searchParams.campaign === "string"
-      ? searchParams.campaign
-      : undefined;
+  const hero = landingHeroMessage(lang, audience);
+
+  const source =
+    firstString(searchParams.utm_source) ?? firstString(searchParams.source);
+  const medium = firstString(searchParams.utm_medium);
+  const campaign =
+    firstString(searchParams.utm_campaign) ?? firstString(searchParams.campaign);
+  const content = firstString(searchParams.utm_content);
 
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(searchParams)) {
@@ -52,12 +54,15 @@ export default function AppInstallPage({
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col bg-gradient-to-b from-[#EEF1FF] via-white to-[#FFF6EC]">
-      <AppShellHeader lang={lang} languageSwitcherLabel={lang === "de" ? "Sprache" : lang === "ua" ? "Мова" : "Язык"} />
+      <AppShellHeader
+        lang={lang}
+        languageSwitcherLabel={lang === "de" ? "Sprache" : lang === "ua" ? "Мова" : "Язык"}
+      />
 
       <main className="flex flex-1 flex-col gap-6 px-4 py-6">
-        <section className="rounded-3xl bg-gradient-to-br from-[#4B50E6] via-[#5A5FEF] to-[#7A5CF0] p-6 text-white shadow-[0_14px_34px_-16px_rgba(75,80,230,0.65)]">
-          <h1 className="text-2xl font-bold leading-tight">{installTitle(copy, audience)}</h1>
-          <p className="mt-2 text-sm text-white/85">{installBody(copy, audience)}</p>
+        <section className="rounded-3xl bg-gradient-to-br from-[#4B50E6] via-[#5A5FEF] to-[#7A5CF0] p-6 text-white">
+          <h1 className="text-2xl font-bold leading-tight">{hero.title}</h1>
+          <p className="mt-2 text-sm text-white/85">{hero.body}</p>
         </section>
 
         <InstallFreuly
@@ -66,7 +71,9 @@ export default function AppInstallPage({
           placement="install_page"
           variant="landing"
           source={source}
+          medium={medium}
           campaign={campaign}
+          content={content}
         />
 
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -74,13 +81,13 @@ export default function AppInstallPage({
             href={`${serviceSearchHref(lang)}${utmSuffix}`}
             className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-xl bg-white px-4 py-3 text-sm font-semibold text-[#3B3FBF] ring-1 ring-[#DDE1FF] transition hover:bg-[#F7F8FF]"
           >
-            {copy.openSearch}
+            {shared.openSearch}
           </Link>
           <Link
             href={loginHref}
             className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-xl bg-[#FFF7ED] px-4 py-3 text-sm font-semibold text-gray-900 ring-1 ring-[#F3C79C] transition hover:bg-[#FFF0E4]"
           >
-            {copy.openCabinet}
+            {shared.openCabinet}
           </Link>
         </div>
       </main>

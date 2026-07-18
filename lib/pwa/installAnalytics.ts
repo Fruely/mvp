@@ -18,7 +18,9 @@ export type PwaInstallEventParams = {
   audience?: string;
   language?: string;
   source?: string;
+  medium?: string;
   campaign?: string;
+  content?: string;
   display_mode?: string;
   platform?: string;
   variant?: string;

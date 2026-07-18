@@ -533,9 +533,10 @@ export default function SpecialistProfileClient({
             />
           ) : null}
           <InstallFreuly
+            key={leadSuccessMessage ? "lead_success" : "specialist_profile"}
             lang={lang}
             audience="client"
-            placement="specialist_profile"
+            placement={leadSuccessMessage ? "lead_success" : "specialist_profile"}
             variant="compact"
             className="mt-4"
           />
