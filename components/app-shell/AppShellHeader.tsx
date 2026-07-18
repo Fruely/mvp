@@ -21,8 +21,11 @@ export default function AppShellHeader({
   languageSwitcherLabel: string;
 }) {
   return (
-    <header className="flex items-center justify-between gap-4 border-b border-gray-100 px-4 py-3">
-      <span className="text-lg font-bold tracking-tight text-[#3B5BDB]">FREULY</span>
+    <header className="flex items-center justify-between gap-4 border-b border-black/[0.04] px-4 py-3">
+      <span className="inline-flex items-baseline gap-1 text-lg font-bold tracking-tight text-[#3B5BDB]">
+        FREULY
+        <span className="h-1.5 w-1.5 rounded-full bg-[#F97316]" aria-hidden />
+      </span>
       <nav aria-label={languageSwitcherLabel} className="flex items-center gap-1">
         {SUPPORTED_LANGS.map((option) => {
           const active = option === lang;

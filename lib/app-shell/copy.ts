@@ -25,6 +25,7 @@ export type AppShellCategorySlug = (typeof APP_SHELL_CATEGORY_SLUGS)[number];
 
 export type AppShellCopy = {
   languageSwitcherLabel: string;
+  heroBadge: string;
   primaryActionTitle: string;
   primaryActionSubtitle: string;
   primaryActionCta: string;
@@ -43,6 +44,7 @@ export type AppShellCopy = {
 export const APP_SHELL_COPY: Record<Lang, AppShellCopy> = {
   ua: {
     languageSwitcherLabel: "Мова",
+    heroBadge: "Вітаємо у Freuly",
     primaryActionTitle: "Знайдіть спеціаліста",
     primaryActionSubtitle: "Вашою мовою — поруч або онлайн.",
     primaryActionCta: "Знайти спеціаліста",
@@ -59,6 +61,7 @@ export const APP_SHELL_COPY: Record<Lang, AppShellCopy> = {
   },
   ru: {
     languageSwitcherLabel: "Язык",
+    heroBadge: "Добро пожаловать в Freuly",
     primaryActionTitle: "Найдите специалиста",
     primaryActionSubtitle: "На вашем языке — рядом или онлайн.",
     primaryActionCta: "Найти специалиста",
@@ -75,6 +78,7 @@ export const APP_SHELL_COPY: Record<Lang, AppShellCopy> = {
   },
   de: {
     languageSwitcherLabel: "Sprache",
+    heroBadge: "Willkommen bei Freuly",
     primaryActionTitle: "Finden Sie einen Spezialisten",
     primaryActionSubtitle: "In Ihrer Sprache — in der Nähe oder online.",
     primaryActionCta: "Spezialisten finden",
