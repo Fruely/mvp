@@ -9,7 +9,7 @@ WITH fixtures AS (
   SELECT *
   FROM (
     VALUES
-      -- id, work_format, lat, lng, service_radius_km, languages, category_id, is_active, is_visible, is_featured, rating, dist_km, expect_null_mode
+      -- id, work_format, lat, lng, service_radius_km, languages, category_id, is_active, is_visible, is_pro, rating, dist_km, expect_null_mode
       ('11111111-1111-1111-1111-111111111111'::uuid, 'offline', 50.74::float8, 7.10::float8, 25, ARRAY['ru']::text[], 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid, true, true, true, 4.5::numeric, 3.0::float8, true),
       ('22222222-2222-2222-2222-222222222222'::uuid, 'offline', 50.74::float8, 7.10::float8, 25, ARRAY['ru']::text[], 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid, true, true, false, 4.0::numeric, 12.0::float8, false), -- outside user 10
       ('33333333-3333-3333-3333-333333333333'::uuid, 'offline', 50.74::float8, 7.10::float8, 10, ARRAY['ru']::text[], 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid, true, true, false, 3.0::numeric, 12.0::float8, false), -- outside specialist
@@ -21,7 +21,7 @@ WITH fixtures AS (
       ('99999999-9999-9999-9999-999999999999'::uuid, 'offline', 0::float8, 0::float8, 25, ARRAY['ru']::text[], 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid, true, true, false, NULL::numeric, 999::float8, false)
   ) AS v(
     id, work_format, lat, lng, service_radius_km, languages, category_id,
-    is_active, is_visible, is_featured, rating, dist_km, expect_match_p_mode_null
+    is_active, is_visible, is_pro, rating, dist_km, expect_match_p_mode_null
   )
 ),
 params AS (

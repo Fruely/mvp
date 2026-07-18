@@ -38,6 +38,26 @@ Security: `LANGUAGE plpgsql`, `SECURITY INVOKER`, owner `postgres`, `VOLATILE`.
 EXECUTE: `PUBLIC`, `anon`, `authenticated`, `service_role`.  
 `proconfig`: null (no forced `search_path`).
 
+## Production SELECT projection (pg_get_functiondef)
+
+```sql
+SELECT
+  s.id,
+  s.name,
+  s.postal_code,
+  s.lat,
+  s.lng,
+  s.work_format,
+  s.category_id,
+  s.languages,
+  s.is_pro,
+  s.rating,
+  distance_km(...) AS distance
+FROM specialists s
+```
+
+`is_pro` and `rating` are **columns on `specialists`**. Not `is_featured`. Not `specialist_rating_stats.rating_avg`.
+
 ## Production logic (pre-v2)
 
 - `is_active = true`, `is_visible = true`
@@ -46,7 +66,7 @@ EXECUTE: `PUBLIC`, `anon`, `authenticated`, `service_role`.
 - optional language / category filters
 - `p_mode` NULL → all `work_format` values
 - `p_mode = 'online'` → `work_format = 'online'` only
-- ORDER BY `distance ASC`, `is_pro DESC`, `rating DESC NULLS LAST`
+- ORDER BY `distance ASC`, `s.is_pro DESC`, `s.rating DESC NULLS LAST`
 - `OFFSET` / `LIMIT` (defaults 0 / 20)
 
 ## Dependency: `public.distance_km`

@@ -4,7 +4,7 @@
 -- This file is prepared only. Agent must not execute it against Supabase.
 -- =============================================================================
 --
--- Production baseline (captured 2026-07-18; dependency distance_km confirmed):
+-- Production baseline (captured 2026-07-18; pg_get_functiondef from Supabase):
 --   public.search_specialists_local_radius(
 --     p_ref_lat double precision,
 --     p_ref_lng double precision,
@@ -22,10 +22,13 @@
 --   )
 --   LANGUAGE plpgsql, SECURITY INVOKER, owner postgres, VOLATILE
 --   EXECUTE: PUBLIC, anon, authenticated, service_role
---   Old logic: is_active/is_visible, lat/lng NOT NULL, distance_km <= p_radius_km,
+--   Production SELECT projection (exact):
+--     s.id, s.name, s.postal_code, s.lat, s.lng, s.work_format, s.category_id,
+--     s.languages, s.is_pro, s.rating, distance_km(...) AS distance
+--   Production ranking: distance ASC, s.is_pro DESC, s.rating DESC NULLS LAST
+--   Old WHERE: is_active/is_visible, lat/lng NOT NULL, distance_km <= p_radius_km,
 --              optional lang/category; p_mode NULL = all formats;
---              p_mode='online' = online only;
---              ORDER BY distance ASC, is_pro DESC, rating DESC NULLS LAST
+--              p_mode='online' = online only
 --
 -- Baseline hash (canonical contract + distance_km body, sha256):
 --   30084e7337e800663ebfeb53bdf748d45a366e5f7e9ded5caa9c2b357781268d
@@ -35,13 +38,12 @@
 -- Note: production distance_km uses acos without clamp; floating-point edge cases
 --       near antipodes may yield NaN. Propose a separate clamp change if needed.
 --
--- Projection assumptions (verify against archived pg_get_functiondef before apply):
---   is_pro  ← COALESCE(specialists.is_featured, false)
---   rating  ← specialist_rating_stats.rating_avg (LEFT JOIN LATERAL)
--- If production used different expressions, replace both here and in the rollback
--- file so ORDER BY is_pro/rating stays behaviour-compatible.
+-- Projection (MUST match production pg_get_functiondef — do not remap):
+--   is_pro ← specialists.is_pro
+--   rating ← specialists.rating
+--   No join to specialist_rating_stats. No is_featured aliasing.
 --
--- v2 changes (local-search only):
+-- v2 changes (local-search geography only):
 --   - work_format restricted by p_mode (see below); online never returned
 --   - dual radius: distance <= p_radius_km AND distance <= service_radius_km
 --   - service_radius_km IN (5,10,25,50,100); null/invalid radius excluded
@@ -125,18 +127,13 @@ BEGIN
     s.work_format,
     s.category_id,
     s.languages,
-    COALESCE(s.is_featured, false) AS is_pro,
-    rs.rating_avg AS rating,
+    s.is_pro,
+    s.rating,
     d.dist AS distance
   FROM public.specialists s
   CROSS JOIN LATERAL (
     SELECT public.distance_km(p_ref_lat, p_ref_lng, s.lat, s.lng) AS dist
   ) d
-  LEFT JOIN LATERAL (
-    SELECT r.rating_avg
-    FROM public.specialist_rating_stats r
-    WHERE r.specialist_id = s.id
-  ) rs ON TRUE
   WHERE s.is_active IS TRUE
     AND s.is_visible IS TRUE
     AND s.lat IS NOT NULL
@@ -157,8 +154,8 @@ BEGIN
     )
   ORDER BY
     d.dist ASC,
-    COALESCE(s.is_featured, false) DESC,
-    rs.rating_avg DESC NULLS LAST,
+    s.is_pro DESC,
+    s.rating DESC NULLS LAST,
     s.id ASC
   OFFSET v_offset
   LIMIT v_limit;
@@ -180,7 +177,7 @@ GRANT EXECUTE ON FUNCTION public.search_specialists_local_radius(
 COMMENT ON FUNCTION public.search_specialists_local_radius(
   double precision, double precision, double precision, text, uuid, text, integer, integer
 ) IS
-'v2 dual-radius local search (2026-07-18). Baseline: 2026-07-18_prod_search_local_radius+distance_km. Offline/hybrid only; distance <= user radius AND specialist service_radius_km allowlist; online → empty. Uses public.distance_km unchanged. SECURITY INVOKER. Rollback: supabase/manual-rollbacks/2026-07-18_search_specialists_local_radius_v2.sql';
+'v2 dual-radius local search (2026-07-18). Baseline: 2026-07-18_prod_search_local_radius+distance_km. Projection: s.is_pro, s.rating (production). Offline/hybrid only; dual radius allowlist; online → empty. Uses public.distance_km unchanged. SECURITY INVOKER. Rollback: supabase/manual-rollbacks/2026-07-18_search_specialists_local_radius_v2.sql';
 
 -- Verification (read-only; does not apply data changes)
 SELECT
