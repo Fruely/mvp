@@ -47,20 +47,30 @@
 --   - work_format restricted by p_mode (see below); online never returned
 --   - dual radius: distance <= p_radius_km AND distance <= service_radius_km
 --   - service_radius_km IN (5,10,25,50,100); null/invalid radius excluded
---   - reject (0,0) coords
+--   - reject null / (0,0) / lat∉[-90,90] / lng∉[-180,180] on specialist rows
+--   - reject invalid / (0,0) reference coords with empty set (no exception)
+--   - reject non-finite distance (NaN from acos drift) via dist = dist
 --   - ranking: production order + s.id ASC tie-breaker
---   - distance computed once via CROSS JOIN LATERAL
+--   - distance via CROSS JOIN LATERAL → single SQL column d.dist reused in
+--     SELECT/WHERE/ORDER BY (avoids writing three call sites). Planner may still
+--     inline IMMUTABLE public.distance_km; do not claim a hard physical single
+--     evaluation. No MATERIALIZED CTE.
 --
--- p_mode (compatible, safe):
+-- p_mode (case-sensitive text equality; no lower()):
 --   NULL / 'local' → offline + hybrid
 --   'offline'      → offline only
 --   'hybrid'       → hybrid only
---   'online'       → empty set (no exception; online search is a separate app query)
---   other          → empty set
+--   'online'       → empty set (early RETURN; no exception)
+--   other / mixed case ('Online', 'LOCAL') → empty set
 --
--- Pagination: defaults unchanged (offset 0, limit 20).
---   Internal normalize: negative offset → 0; NULL limit → 20; limit <= 0 → 0 rows.
---   No upper cap (matches production; app passes p_limit=20).
+-- Pagination (v2 internal normalize; API defaults unchanged):
+--   p_offset NULL     → 0
+--   p_offset negative → 0
+--   p_limit NULL      → 20
+--   p_limit <= 0      → 0 rows (LIMIT 0)
+--   p_limit large     → no upper cap (same as production)
+--   Production (pre-v2) used OFFSET COALESCE(p_offset,0) / LIMIT COALESCE(p_limit,20)
+--   without clamping negatives (negative OFFSET is an error in Postgres).
 --
 -- Rollout risk: any external caller using p_mode='online' on this RPC will get []
 -- instead of online rows. In-repo caller always passes p_mode=null
@@ -113,7 +123,20 @@ BEGIN
   END IF;
 
   -- Safe empty for online / unknown modes (no exception → no PostgREST 500).
+  -- Comparisons are case-sensitive: 'Online' / 'LOCAL' are unknown → empty.
   IF p_mode IS NOT NULL AND p_mode NOT IN ('offline', 'hybrid', 'local') THEN
+    RETURN;
+  END IF;
+
+  -- Invalid reference point → empty (do not call distance_km with bad inputs).
+  IF p_ref_lat IS NULL
+     OR p_ref_lng IS NULL
+     OR p_ref_lat < -90::double precision
+     OR p_ref_lat > 90::double precision
+     OR p_ref_lng < -180::double precision
+     OR p_ref_lng > 180::double precision
+     OR (p_ref_lat = 0::double precision AND p_ref_lng = 0::double precision)
+  THEN
     RETURN;
   END IF;
 
@@ -138,6 +161,10 @@ BEGIN
     AND s.is_visible IS TRUE
     AND s.lat IS NOT NULL
     AND s.lng IS NOT NULL
+    AND s.lat >= -90::double precision
+    AND s.lat <= 90::double precision
+    AND s.lng >= -180::double precision
+    AND s.lng <= 180::double precision
     AND NOT (s.lat = 0::double precision AND s.lng = 0::double precision)
     AND (
       ((p_mode IS NULL OR p_mode = 'local') AND s.work_format IN ('offline', 'hybrid'))
@@ -145,6 +172,8 @@ BEGIN
       OR (p_mode = 'hybrid' AND s.work_format = 'hybrid')
     )
     AND s.service_radius_km IN (5, 10, 25, 50, 100)
+    AND d.dist IS NOT NULL
+    AND d.dist = d.dist -- exclude NaN (NaN is not equal to itself)
     AND d.dist <= p_radius_km
     AND d.dist <= s.service_radius_km::double precision
     AND (p_category_id IS NULL OR s.category_id = p_category_id)

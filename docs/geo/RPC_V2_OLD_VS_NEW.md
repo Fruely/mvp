@@ -15,7 +15,7 @@
 | volatility | VOLATILE | **same** |
 | proconfig / search_path | null | **same** (not set) |
 | active/visible | `is_active` + `is_visible` | **same** |
-| coords | lat/lng NOT NULL | NOT NULL **and** NOT (0,0) |
+| coords | lat/lng NOT NULL | NOT NULL; ∈[-90,90]/[-180,180]; NOT (0,0); invalid ref → empty; NaN dist excluded |
 | work_format | any (when `p_mode` null) | offline + hybrid only for null/`local` |
 | p_mode null | all formats (incl. online) | offline + hybrid |
 | p_mode offline | equality | offline only |
@@ -31,8 +31,8 @@
 | languages | optional `@>` array contains | **same** |
 | status / published_at | none | **none** (not added) |
 | ranking | distance ASC, `s.is_pro` DESC, `s.rating` DESC NULLS LAST | **same** + `s.id ASC` tie-breaker |
-| pagination | offset/limit | **same** defaults; normalize neg offset→0, null limit→20, limit≤0→0 rows; **no upper cap** |
-| distance_km | production helper | **same helper, unchanged**; computed once via LATERAL |
+| pagination | `OFFSET COALESCE(offset,0)` / `LIMIT COALESCE(limit,20)` (neg OFFSET errors) | defaults same; v2 clamps neg offset→0; null limit→20; limit≤0→0 rows; **no upper cap** |
+| distance_km | production helper | **same helper, unchanged**; LATERAL column `d.dist` (planner may still inline IMMUTABLE body) |
 | output `service_radius_km` | not present | **not present** |
 
 ## Note on app UI fields
