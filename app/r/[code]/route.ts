@@ -69,7 +69,9 @@ export async function GET(
     sanitizeTargetPath(link.target_path) ?? defaultBecomeSpecialistPath("ua");
 
   const sp = request.nextUrl.searchParams;
-  void recordPartnerClick(supabase, {
+  // Await insert so serverless runtime does not freeze the isolate before the
+  // best-effort click write finishes (void caused intermittent missing rows).
+  await recordPartnerClick(supabase, {
     partnerId: partner.id,
     partnerLinkId: link.id,
     visitorSeed: `${ip}:${code}`,
