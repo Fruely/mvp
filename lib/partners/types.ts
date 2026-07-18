@@ -79,3 +79,50 @@ export type ReferralCookiePayload = {
   partnerId: string;
   issuedAt: number;
 };
+
+export type PartnerApplicationStatus = "pending" | "approved" | "rejected";
+
+export type PartnerApplicationRow = {
+  id: string;
+  name: string;
+  email: string;
+  channel_name: string;
+  channel_url: string;
+  extra_links: unknown;
+  platform: string | null;
+  topic: string | null;
+  audience_lang: string | null;
+  audience_geo: string | null;
+  subscribers_approx: string | null;
+  reach_approx: string | null;
+  comment: string | null;
+  privacy_accepted_at: string;
+  status: PartnerApplicationStatus;
+  reject_reason: string | null;
+  partner_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PartnerInvitationRow = {
+  id: string;
+  partner_id: string;
+  email: string;
+  token_hash: string;
+  expires_at: string;
+  used_at: string | null;
+  created_at: string;
+  created_by_label: string;
+};
+
+export type PartnerNotificationRow = {
+  id: string;
+  partner_id: string;
+  user_id: string | null;
+  type: string;
+  title: string;
+  body: string;
+  commission_id: string | null;
+  read_at: string | null;
+  created_at: string;
+};

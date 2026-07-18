@@ -8,14 +8,18 @@
       }
     },
     "wizard": {
-      "step1": { "title": "Wen suchen Sie?" },
+      "step1": {
+        "title": "Wen suchen Sie?"
+      },
       "step2": {
         "title": "Wo ist es für Sie am bequemsten?",
         "online": "Online",
         "city": "Stadt / PLZ angeben",
         "cityPlaceholder": "Stadt oder Postleitzahl"
       },
-      "step3": { "title": "In welcher Sprache möchten Sie kommunizieren?" },
+      "step3": {
+        "title": "In welcher Sprache möchten Sie kommunizieren?"
+      },
       "lang": {
         "ru": "Russisch",
         "uk": "Ukrainisch",
@@ -106,7 +110,6 @@
   "transitional.final": "Deshalb verbindet Freuly Sie mit Fachkräften, die Ihre Muttersprache sprechen.",
   "categories": {
     "default": "Kategorie",
-
     "health-psychology": "Gesundheit & Psychologie",
     "beauty-care": "Schönheit & Pflege",
     "house-garden": "Haus & Garten",
@@ -116,48 +119,40 @@
     "tech-it-support": "Technik & IT-Support",
     "legal-consulting": "Recht & Beratung",
     "other-specialization": "Andere Spezialisierung",
-
     "psychologists": "Psychologen",
     "psychotherapists": "Psychotherapeuten",
     "speech-therapists": "Logopäden",
     "massage-therapists": "Masseure",
     "nutritionists": "Ernährungsberater",
-
     "cosmetologists": "Kosmetiker",
     "nails": "Maniküre & Pediküre",
     "hairdressers": "Friseure",
     "barbers": "Barbiere",
     "makeup-artists": "Visagisten",
     "brows-lashes": "Augenbrauen & Wimpern",
-
     "cleaning": "Reinigung",
     "furniture-assembly": "Möbelmontage",
     "gardening": "Gartenarbeit",
     "housemaster": "Hausmeister",
     "moving-help": "Umzugshilfe",
     "small-repairs": "Kleinreparaturen",
-
     "business-analytics": "Business-Analytik",
     "coaches": "Coaches",
     "buchfuehrung": "Buchhaltung",
-
     "tutors": "Nachhilfelehrer",
     "language-teachers": "Sprachlehrer",
     "music-teachers": "Musiklehrer",
     "online-education": "Online-Bildung",
     "exam-prep": "Prüfungsvorbereitung",
-
     "apartment-moving": "Wohnungsumzüge",
     "furniture-removal": "Möbelentsorgung",
     "movers": "Möbelpacker",
     "international-moving": "Internationale Umzüge",
     "taxi-transfer": "Taxi & Transfer",
-
     "it-support": "IT-Spezialisten",
     "network-setup": "Netzwerk & Internet",
     "computer-repair": "Computerreparatur",
     "printer-repair": "Drucker & Bürotechnik",
-
     "lawyers": "Anwälte",
     "migration-consultants": "Migrationsberater",
     "tax-consultants": "Steuerberater"
@@ -187,8 +182,14 @@
     }
   },
   "filters": {
-    "language": { "label": "Sprache", "all": "Alle Sprachen" },
-    "city": { "label": "Stadt", "all": "Alle Städte" },
+    "language": {
+      "label": "Sprache",
+      "all": "Alle Sprachen"
+    },
+    "city": {
+      "label": "Stadt",
+      "all": "Alle Städte"
+    },
     "sort": {
       "label": "Sortierung",
       "best_match": "Beste Übereinstimmung",
@@ -220,8 +221,12 @@
     "buildRoute": "Route planen",
     "mapEmbedTitle": "Karte"
   },
-  "about": { "title": "Über die Plattform Freuly" },
-  "support": { "title": "Freuly-Support" },
+  "about": {
+    "title": "Über die Plattform Freuly"
+  },
+  "support": {
+    "title": "Freuly-Support"
+  },
   "page": {
     "notice": {
       "originalRuTitle": "Diese Seite ist nur auf Russisch verfügbar",
@@ -1054,6 +1059,117 @@
       "loginToChoose": "Anmelden, um Tarif zu wählen",
       "completeProfile": "Zum Konto",
       "currentPlan": "Mein Tarif im Konto"
+    }
+  },
+  "partner": {
+    "public": {
+      "title": "Verdienen Sie gemeinsam mit Freuly",
+      "subtitle": "Erzählen Sie Ihrer Community von Freuly und erhalten Sie eine Vergütung für neue Fachkräfte, die sich über Ihren persönlichen Link registrieren und die Platzierung bezahlen.",
+      "howTitle": "So funktioniert es",
+      "howSteps": "Erhalten Sie Ihren persönlichen Link.|Erzählen Sie Ihrer Community von Freuly.|Erhalten Sie eine feste Vergütung für die bestätigte erste Zahlung einer neuen Fachkraft.",
+      "rewardTitle": "Vergütung",
+      "rewardBody": "Die Basisvergütung beträgt 29 € für die bestätigte erste Zahlung einer neuen Fachkraft. Für einzelne Partner können individuelle Konditionen gelten.",
+      "rewardNote": "Das Beispiel gilt für den Basissatz von 29 €. Die tatsächlichen Konditionen stehen in der Partnervereinbarung.",
+      "audienceTitle": "Für wen",
+      "audienceItems": "Videoblogger|Telegram-Kanäle|Community-Admins|thematische Medien|Leitpersonen lokaler und beruflicher Communities",
+      "faqTitle": "Häufige Fragen"
+    },
+    "form": {
+      "title": "Bewerbung für das Partnerprogramm",
+      "name": "Name",
+      "email": "E-Mail",
+      "channelName": "Kanal- / Projektname",
+      "channelUrl": "Hauptlink",
+      "extraLinks": "Weitere Links",
+      "platform": "Plattform",
+      "topic": "Thema",
+      "audienceLang": "Sprache der Zielgruppe",
+      "audienceGeo": "Geografie der Zielgruppe",
+      "subscribers": "Ungefähre Followerzahl",
+      "reach": "Durchschnittliche Reichweite",
+      "comment": "Kommentar",
+      "privacy": "Ich akzeptiere die Verarbeitung personenbezogener Daten zur Prüfung meiner Bewerbung.",
+      "submit": "Bewerbung senden",
+      "submitting": "Wird gesendet…",
+      "success": "Danke! Ihre Bewerbung ist eingegangen. Wir melden uns nach der Prüfung.",
+      "error": "Bewerbung konnte nicht gesendet werden. Bitte prüfen Sie die Felder."
+    },
+    "faq": {
+      "q1": "Wer kann Partner werden?",
+      "a1": "Creator und Admins von Kanälen und Communities, die Freuly ehrlich ihrer Zielgruppe vorstellen möchten.",
+      "q2": "Kostet die Teilnahme etwas?",
+      "a2": "Nein. Die Teilnahme am Partnerprogramm ist kostenlos.",
+      "q3": "Wofür gibt es eine Vergütung?",
+      "a3": "Für die bestätigte erste Zahlung einer neuen Fachkraft über Ihren persönlichen Link.",
+      "q4": "Muss ich für die spätere Arbeit der Fachkraft haften?",
+      "a4": "Nein. Sie haften nicht für die Qualität der Leistungen auf der Plattform.",
+      "q5": "Wie werden Klicks und Registrierungen gezählt?",
+      "a5": "Klicks werden beim Öffnen Ihres Links erfasst; Registrierungen folgen dem First-Touch-Prinzip.",
+      "q6": "Wann erfolgen Auszahlungen?",
+      "a6": "Auszahlungen erfolgen manuell nach bestätigtem Bericht und Partnerrechnung.",
+      "q7": "Wo sehe ich Statistiken?",
+      "a7": "Im Partner-Dashboard nach Freigabe und Kontoverknüpfung.",
+      "q8": "Kann ich mehrere Links nutzen?",
+      "a8": "Ja, bei Bedarf können zusätzliche Kampagnenlinks erstellt werden.",
+      "q9": "Wie werden personenbezogene Daten geschützt?",
+      "a9": "Partner sehen nur Aggregate und anonymisierte Gutschrift-Referenzen ohne Spezialisten-PII."
+    },
+    "dashboard": {
+      "title": "Partner-Dashboard",
+      "loading": "Laden…",
+      "error": "Daten konnten nicht geladen werden. Bitte erneut anmelden.",
+      "balanceTitle": "Ihr Partnerguthaben",
+      "availableLabel": "Zur Auszahlung verfügbar",
+      "totalEarned": "Insgesamt verdient: {{amount}}",
+      "linkTitle": "Ihr Link",
+      "copy": "Kopieren",
+      "copied": "Kopiert",
+      "share": "Teilen",
+      "periodMonth": "Monat",
+      "periodAll": "Gesamt",
+      "metricClicks": "Klicks",
+      "metricRegs": "Registrierungen",
+      "metricPayments": "Zahlungen",
+      "metricEarned": "Verdient",
+      "payoutsTitle": "Auszahlungen",
+      "pendingLabel": "Wartet auf Bestätigung",
+      "paidLabel": "Bereits ausgezahlt",
+      "payoutNote": "Auszahlungen erfolgen nach bestätigtem Bericht und Partnerrechnung.",
+      "historyTitle": "Gutschriftverlauf",
+      "historyEmpty": "Noch keine Gutschriften.",
+      "historyItem": "Neue Fachkraft hat die Platzierung bezahlt",
+      "campaignsTitle": "Kampagnenlinks",
+      "pausedBanner": "Konto pausiert: Ansicht möglich, neue Gutschriften können eingeschränkt sein.",
+      "disabledBanner": "Konto deaktiviert: nur historische Finanzdaten verfügbar.",
+      "unread": "{{count}} ungelesene Hinweise — tippen zum Markieren"
+    },
+    "claim": {
+      "title": "Partnerzugang aktivieren",
+      "subtitle": "Melden Sie sich an oder erstellen Sie ein Konto mit der E-Mail aus der Einladung und bestätigen Sie den Token.",
+      "token": "Einladungstoken",
+      "signIn": "Anmelden",
+      "signUp": "Konto erstellen",
+      "password": "Passwort",
+      "submit": "Konto verknüpfen",
+      "needAuth": "Bitte E-Mail und Passwort angeben oder zuerst anmelden.",
+      "authFailed": "Anmeldung fehlgeschlagen. Bitte Daten prüfen.",
+      "checkEmail": "Bitte E-Mail zur Bestätigung prüfen und erneut versuchen.",
+      "invalid": "Einladung ungültig oder bereits verwendet.",
+      "success": "Zugang aktiviert. Weiter zum Dashboard…"
+    },
+    "status": {
+      "pending": "ausstehend",
+      "approved": "bestätigt",
+      "rejected": "abgelehnt",
+      "paid": "ausgezahlt",
+      "reversed": "storniert",
+      "active": "aktiv",
+      "paused": "pausiert",
+      "disabled": "deaktiviert"
+    },
+    "notification": {
+      "accrualTitle": "Neue Gutschrift: {{amount}}",
+      "accrualBody": "Eine neue Fachkraft hat sich über Ihren Partnerlink registriert und bezahlt."
     }
   }
 }

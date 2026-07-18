@@ -5,6 +5,9 @@
 **Phase 1 status (2026-07-18):** foundation implemented in code — see `docs/PARTNER_PROGRAM_PHASE_1.md`.  
 Manual migration file added; apply on staging before using admin APIs against a live DB.
 
+**Phase 2 status (2026-07-18):** onboarding + mini dashboard + public apply implemented in code — see `docs/PARTNER_PROGRAM_PHASE_2.md`.  
+Stage A DB smoke **blocked** (no safe local/staging apply in agent env). Phase 2 SQL not applied. No production DB changes.
+
 ### Phase 1 completion checklist
 
 | Item | Status |
@@ -15,7 +18,20 @@ Manual migration file added; apply on staging before using admin APIs against a 
 | Commission ledger + admin-confirm | Done |
 | Minimal admin APIs + `/admin/partners` | Done |
 | Unit tests (codes/cookie/path/commission rules) | Done |
-| Partner dashboard / public `/partners` / push / auto payouts | Deferred |
+| Partner dashboard / public `/partners` / push / auto payouts | Phase 2 (dashboard+public); push/payouts still deferred |
+
+### Phase 2 completion checklist
+
+| Item | Status |
+|------|--------|
+| Applications / invitations / notifications SQL | Done (apply separately) |
+| Auth bind + claim flow | Done (code) |
+| Partner dashboard API + UI | Done (code) |
+| Public `/partners` + apply | Done (code) |
+| In-app accrual notifications | Done (code) |
+| Monthly aggregation helper | Done (code; no auto send) |
+| Stage A DB smoke | **Blocked** |
+| Stripe / push / auto payouts | Deferred |
 
 ---
 

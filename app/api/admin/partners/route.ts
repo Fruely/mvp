@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
           commission_amount_cents: p.commission_amount_cents,
           currency: p.currency,
           channel_name: p.channel_name,
+          user_id: p.user_id,
           created_at: p.created_at,
           // Aggregates only — no specialist PII
           summary,

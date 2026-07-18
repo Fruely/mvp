@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { writePartnerAudit } from "@/lib/partners/audit";
 import { PartnerDomainError } from "@/lib/partners/errors";
+import { createCommissionNotification } from "@/lib/partners/notifications";
 import type { PartnerCommissionRow } from "@/lib/partners/types";
 
 const ADMIN_ACTOR = "admin_token";
@@ -148,6 +149,15 @@ export async function confirmFirstPaymentCommission(
     },
   });
 
+  // Notify only on real create (not idempotent replay)
+  await createCommissionNotification(supabase, {
+    partnerId: partner.id,
+    userId: (partner.user_id as string | null) ?? null,
+    commissionId: created.id,
+    amountCents: amount,
+    currency: partner.currency as string,
+  });
+
   return { commission: created as PartnerCommissionRow, created: true };
 }
 
@@ -247,6 +257,14 @@ export async function createCommissionFromStripeInvoice(
       source_event_id: invoiceId,
       amount_cents: amount,
     },
+  });
+
+  await createCommissionNotification(supabase, {
+    partnerId: partner.id,
+    userId: (partner.user_id as string | null) ?? null,
+    commissionId: created.id,
+    amountCents: amount,
+    currency: partner.currency as string,
   });
 
   return { commission: created as PartnerCommissionRow, created: true };

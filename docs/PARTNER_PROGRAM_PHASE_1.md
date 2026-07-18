@@ -2,6 +2,10 @@
 
 Implemented foundation for Freuly Partner Program (no partner dashboard, no public `/partners` landing, no push, no auto payouts).
 
+### Stage A note (2026-07-18)
+
+**DB smoke blocked** in the development environment used for Phase 2: no local Docker/Supabase CLI; `.env.local` targets a production-like project and must not receive migrations. Phase 1 SQL file remains apply-on-staging. See `docs/PARTNER_PROGRAM_PHASE_2.md` Stage A blocker. Phase 2 code landed without applying SQL.
+
 ## 1. What was implemented
 
 - Manual SQL migration for partner tables + RLS deny-by-default

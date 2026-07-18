@@ -112,6 +112,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/update-password") ||
     pathname.startsWith("/r/") ||
     pathname === "/r" ||
+    pathname === "/partners" ||
+    pathname.startsWith("/partners/") ||
     pathname.startsWith("/_next") ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
@@ -137,6 +139,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/update-password") ||
     pathname.startsWith("/r/") ||
     pathname === "/r" ||
+    pathname === "/partners" ||
+    pathname.startsWith("/partners/") ||
     pathname.startsWith("/_next") ||
     pathname === "/favicon.ico" ||
     pathname === "/robots.txt" ||
