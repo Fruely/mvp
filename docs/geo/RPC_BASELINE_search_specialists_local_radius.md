@@ -3,7 +3,7 @@
 Captured 2026-07-18 from production via PostgREST OpenAPI + live RPC probes.
 
 **Full `pg_get_functiondef` was NOT available** (no direct Postgres URL in agent env).  
-Use `supabase/manual_migrations/2026-07-18_geo_rpc_baseline_diagnostics.sql` to dump the definition before applying v2.
+Use `supabase/manual_checks/2026-07-18_geo_rpc_baseline_diagnostics.sql` to dump the definition before applying v2.
 
 ## Observed signature (OpenAPI)
 
@@ -64,5 +64,5 @@ Progressive `10 → 30 → 50 → 100` is **application-side**, not inside the R
 
 - **Blocked for apply:** full `pg_get_functiondef` was not retrieved.
 - Prepared (not applied): `supabase/manual_migrations/2026-07-18_search_specialists_local_radius_v2.sql`
-- Diagnostics (not applied): `supabase/manual_migrations/2026-07-18_geo_rpc_baseline_diagnostics.sql`
+- Diagnostics (not applied): `supabase/manual_checks/2026-07-18_geo_rpc_baseline_diagnostics.sql`
 - App-side dual-radius + online exclusion is already enforced in `lib/search/specialistSearch.ts` without applying the DB migration.
