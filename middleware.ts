@@ -54,10 +54,11 @@ export function middleware(request: NextRequest) {
     return nextWithHtmlLang(request, pathname);
   }
 
-  // PWA app-shell entry (top-level /app): must stay reachable in closed mode and
-  // must NOT be i18n-redirected to /{lang}/app. Language is resolved from the
-  // existing `freuly_lang` cookie (default `ua`) so <html lang> matches the shell.
-  if (pathname === "/app") {
+  // PWA app-shell entry (top-level /app and /app/*): must stay reachable in
+  // closed mode and must NOT be i18n-redirected to /{lang}/app. Language is
+  // resolved from the existing `freuly_lang` cookie (default `ua`) so
+  // <html lang> matches the shell. Includes /app/install for install landing.
+  if (pathname === "/app" || pathname.startsWith("/app/")) {
     const cookieLang = request.cookies.get(LANG_COOKIE)?.value;
     const appLang: Lang = isLang(cookieLang || "") ? (cookieLang as Lang) : "ua";
     const requestHeaders = new Headers(request.headers);

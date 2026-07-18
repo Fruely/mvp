@@ -10,6 +10,7 @@ import AppShellHeader from "@/components/app-shell/AppShellHeader";
 import AppShellActions from "@/components/app-shell/AppShellActions";
 import AppShellCategoryGrid from "@/components/app-shell/AppShellCategoryGrid";
 import AppShellSpecialistCta from "@/components/app-shell/AppShellSpecialistCta";
+import InstallFreuly from "@/components/pwa/InstallFreuly";
 
 const LANG_COOKIE = "freuly_lang";
 
@@ -93,6 +94,13 @@ export default async function AppShellPage() {
         <AppShellCategoryGrid title={copy.categoriesTitle} categories={categories} />
 
         <AppShellSpecialistCta lang={lang} copy={copy} isSpecialist={isSpecialist} />
+
+        <InstallFreuly
+          lang={lang}
+          audience={isSpecialist ? "specialist" : "client"}
+          placement="app_shell"
+          variant="compact"
+        />
       </main>
 
       <footer className="px-4 py-5 text-center">
