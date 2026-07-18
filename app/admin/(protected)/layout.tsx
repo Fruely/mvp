@@ -58,6 +58,12 @@ export default async function AdminProtectedLayout({
               Specialists
             </Link>
             <Link
+              href="/admin/partners"
+              className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition"
+            >
+              Partners
+            </Link>
+            <Link
               href="/admin/site-blocks"
               className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition"
             >
