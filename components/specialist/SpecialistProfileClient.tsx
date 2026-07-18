@@ -16,6 +16,7 @@ import SectionCard from "@/components/specialist/SectionCard";
 import SpecialistHero from "@/components/specialist/SpecialistHero";
 import SpecialistDocumentsLightbox from "@/components/specialist/SpecialistDocumentsLightbox";
 import MobileStickyCTA from "@/components/MobileStickyCTA";
+import InstallFreuly from "@/components/pwa/InstallFreuly";
 
 const LEGACY_SLUGS: Record<string, string> = {
   "zkeiy-lbztieh": "cosmetologists-kassel-irina-melnik",
@@ -531,6 +532,13 @@ export default function SpecialistProfileClient({
               }
             />
           ) : null}
+          <InstallFreuly
+            lang={lang}
+            audience="client"
+            placement="specialist_profile"
+            variant="compact"
+            className="mt-4"
+          />
         </aside>
 
         <main className="order-2 mt-6 space-y-6 md:order-none md:col-start-1 md:row-start-1 md:mt-0">

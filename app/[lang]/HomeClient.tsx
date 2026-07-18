@@ -11,6 +11,7 @@ import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import GermanyMapCTA from "@/components/home/GermanyMapCTA";
 import HomeWizardSearch from "@/components/home/HomeWizardSearch";
 import FounderBadge from "@/components/specialist/FounderBadge";
+import InstallFreuly from "@/components/pwa/InstallFreuly";
 
 type MosaicImage = { url: string; alt?: string; category_id?: string };
 
@@ -602,6 +603,15 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
           <div className="mt-6 text-sm font-normal text-textSecondary flex flex-wrap justify-center gap-3">
             <span>{copy.popularLabel}</span>
             <span>{t(dict, "home.hero.popularTags")}</span>
+          </div>
+
+          <div className="mt-6 md:hidden max-w-xl mx-auto text-left">
+            <InstallFreuly
+              lang={lang}
+              audience="client"
+              placement="home_mobile"
+              variant="card"
+            />
           </div>
         </div>
       </section>
