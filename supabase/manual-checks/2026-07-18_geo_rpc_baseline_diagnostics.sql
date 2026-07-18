@@ -6,7 +6,7 @@
 -- Target: public.search_specialists_local_radius
 -- Purpose: capture full production baseline (definition, security, grants,
 --          dependencies, PostGIS) BEFORE comparing/applying any v2 migration.
--- Location: supabase/manual_checks/ (read-only diagnostics; NOT a deploy migration).
+-- Location: supabase/manual-checks/ (read-only diagnostics; NOT a deploy migration).
 -- Do NOT run CREATE/REPLACE/DROP/UPDATE from this file.
 -- =============================================================================
 

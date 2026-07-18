@@ -3,7 +3,7 @@
 -- =============================================================================
 -- Production RPC baseline diagnostics live with other read-only checks:
 --
---   supabase/manual_checks/2026-07-18_geo_rpc_baseline_diagnostics.sql
+--   supabase/manual-checks/2026-07-18_geo_rpc_baseline_diagnostics.sql
 --
 -- This file under manual_migrations is intentionally NOT an executable migration.
 -- Do not apply. Do not confuse with:
