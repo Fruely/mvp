@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { SUPPORTED_LANGS, type Lang } from "@/lib/i18n";
 import { languageSwitchHref } from "@/lib/app-shell/links";
 
@@ -12,6 +11,10 @@ const LANG_LABEL: Record<Lang, string> = {
  * Compact, app-shell-only header. Intentionally NOT the marketing Header —
  * just a text logo and a language switcher that swaps the `freuly_lang` cookie
  * while keeping the user on /app.
+ *
+ * Language chips use plain <a> (not next/link): the target is an API route that
+ * Set-Cookies + 307 redirects. Client-side Link navigation can skip the cookie
+ * write and leave the shell language unchanged.
  */
 export default function AppShellHeader({
   lang,
@@ -30,7 +33,7 @@ export default function AppShellHeader({
         {SUPPORTED_LANGS.map((option) => {
           const active = option === lang;
           return (
-            <Link
+            <a
               key={option}
               href={languageSwitchHref(option)}
               aria-current={active ? "true" : undefined}
@@ -41,7 +44,7 @@ export default function AppShellHeader({
               }`}
             >
               {LANG_LABEL[option]}
-            </Link>
+            </a>
           );
         })}
       </nav>
