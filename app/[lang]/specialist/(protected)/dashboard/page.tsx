@@ -21,6 +21,7 @@ import {
   subscriptionNoticePanelClass,
 } from "@/lib/specialists/subscriptionDisplay";
 import SpecialistLaunchVideoGuide from "@/components/specialist/SpecialistLaunchVideoGuide";
+import InstallFreuly from "@/components/pwa/InstallFreuly";
 import VerificationBanner from "./VerificationBanner";
 
 function formatDashboardDate(value: string | null, lang: string): string {
@@ -334,6 +335,12 @@ export default async function SpecialistDashboardHomePage({
   return (
     <div className="space-y-6">
       <VerificationBanner status={status} dict={dict} />
+      <InstallFreuly
+        lang={lang}
+        audience="specialist"
+        placement="dashboard"
+        variant="dashboard"
+      />
 
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">{t(dict, "dashboard.home.title")}</h1>

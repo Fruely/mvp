@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import uaDict from "@/locales/ua.json";
+import InstallFreuly from "@/components/pwa/InstallFreuly";
 
 interface LeadFormProps {
   specialistId?: string;
@@ -171,6 +172,15 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
       </button>
 
       {isSuccess && <div className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{statusMessage}</div>}
+      {isSuccess ? (
+        <InstallFreuly
+          lang={lang}
+          audience="client"
+          placement="lead_success"
+          variant="compact"
+          className="mt-1"
+        />
+      ) : null}
       {isError && <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{statusMessage}</div>}
     </form>
   );
