@@ -5,27 +5,17 @@ import { jsonNoStore } from "@/lib/api/response";
 import { notify } from "@/lib/notifications/notify";
 import { normalizeRouteLangToDbContentCode } from "@/lib/specialists/normalizeContentLanguageCode";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
-
-async function geocodePlz(
-  postalCode: string
-): Promise<{ lat: number; lng: number } | null> {
-  const url = `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(postalCode)}&country=Germany&format=json&limit=1`;
-  try {
-    const res = await fetch(url, {
-      headers: { "User-Agent": "Freuly-App" },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!res.ok) return null;
-    const data = (await res.json()) as { lat?: string; lon?: string }[];
-    if (!Array.isArray(data) || !data[0]?.lat || !data[0]?.lon) return null;
-    return {
-      lat: parseFloat(data[0].lat),
-      lng: parseFloat(data[0].lon),
-    };
-  } catch {
-    return null;
-  }
-}
+import {
+  GERMANY_COUNTRY_CODE,
+  isAllowedServiceRadiusKm,
+  normalizeCountryCode,
+  normalizePostalCode,
+  parseServiceRadiusKm,
+  saveTouchesGeography,
+  validatePublicationGeography,
+} from "@/lib/specialists/geography";
+import { resolveGermanPostalLocation } from "@/lib/specialists/resolvePostalLocation";
+import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 const MAX_CERTIFICATE_URLS = 10;
 
@@ -40,8 +30,9 @@ type Payload = {
   work_format?: "online" | "offline" | "hybrid";
   languages?: string[];
   postal_code?: string;
+  country_code?: string;
   mobile_service?: boolean;
-  service_radius_km?: string;
+  service_radius_km?: string | number | null;
   city?: string;
   address?: string;
   about_me?: string;
@@ -143,7 +134,9 @@ export async function PUT(request: NextRequest) {
 
   const { data: specialist, error: specialistError } = await service
     .from("specialists")
-    .select("id, category_id, postal_code, lat, lng")
+    .select(
+      "id, category_id, postal_code, lat, lng, country_code, work_format, service_radius_km, status, is_active, is_visible"
+    )
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -152,6 +145,13 @@ export async function PUT(request: NextRequest) {
   }
 
   const specialistId = specialist.id as string;
+  const isCurrentlyPublished =
+    typeof specialist.status === "string" &&
+    VISIBLE_PUBLIC_SPECIALIST_STATUSES.includes(
+      specialist.status as (typeof VISIBLE_PUBLIC_SPECIALIST_STATUSES)[number]
+    ) &&
+    specialist.is_active === true &&
+    specialist.is_visible === true;
   const effectiveCategoryId =
     body.category_id !== undefined
       ? (typeof body.category_id === "string" ? body.category_id.trim() || null : null)
@@ -191,17 +191,41 @@ export async function PUT(request: NextRequest) {
     specialistPatch.postal_code = body.postal_code.trim() || null;
   }
 
+  if (hasOwn(body, "country_code")) {
+    const code = normalizeCountryCode(body.country_code);
+    if (code && code !== GERMANY_COUNTRY_CODE) {
+      return jsonNoStore(
+        { error: "publication_country_not_supported", code: "publication_country_not_supported" },
+        { status: 400 }
+      );
+    }
+    // Germany MVP: persist DE when provided; never wipe with null on partial payloads.
+    if (code === GERMANY_COUNTRY_CODE) {
+      specialistPatch.country_code = GERMANY_COUNTRY_CODE;
+    }
+  }
+
   if (typeof body.mobile_service === "boolean") {
     specialistPatch.mobile_service = body.mobile_service;
   }
 
   if (typeof body.service_radius_km !== "undefined") {
-    const raw = String(body.service_radius_km ?? "").trim();
+    const raw =
+      body.service_radius_km == null ? "" : String(body.service_radius_km).trim();
     if (raw === "") {
       specialistPatch.service_radius_km = null;
     } else {
-      const n = Number(raw);
-      specialistPatch.service_radius_km = Number.isFinite(n) && n > 0 ? n : null;
+      const n = parseServiceRadiusKm(raw);
+      if (n == null || !isAllowedServiceRadiusKm(n)) {
+        return jsonNoStore(
+          {
+            error: "publication_service_radius_invalid",
+            code: "publication_service_radius_invalid",
+          },
+          { status: 400 }
+        );
+      }
+      specialistPatch.service_radius_km = n;
     }
   }
 
@@ -215,37 +239,69 @@ export async function PUT(request: NextRequest) {
   }
   specialistPatch.updated_at = new Date().toISOString();
 
-  if (specialistPatch.postal_code) {
-    const plz = String(specialistPatch.postal_code);
+  // Derived city written with specialists geo in one logical step.
+  let derivedCity: string | null | undefined = undefined;
+  let geocodeWarning: string | null = null;
 
-    if (!/^\d{5}$/.test(plz)) {
-      return NextResponse.json(
-        { error: "Invalid postal code" },
-        { status: 400 }
-      );
-    }
-  }
-
-  // Geocode postal_code → lat/lng when postal_code is new or changed, or coords are missing
-  const newPlz =
-    typeof specialistPatch.postal_code === "string"
-      ? (specialistPatch.postal_code as string)
-      : null;
   const oldPlz =
     typeof specialist.postal_code === "string" ? specialist.postal_code : null;
-  const plzChanged = newPlz !== null && newPlz !== oldPlz;
-  const coordsMissing =
-    (newPlz ?? oldPlz) !== null &&
-    (specialist.lat == null || specialist.lng == null);
+  const newPlzRaw =
+    typeof specialistPatch.postal_code === "string"
+      ? (specialistPatch.postal_code as string)
+      : undefined;
+  const newPlzNormalized =
+    newPlzRaw === undefined
+      ? undefined
+      : newPlzRaw
+        ? normalizePostalCode(newPlzRaw)
+        : null;
 
-  if (plzChanged || coordsMissing) {
-    const plzToGeocode = newPlz ?? oldPlz;
-    if (plzToGeocode) {
-      const coords = await geocodePlz(plzToGeocode);
-      if (coords) {
-        specialistPatch.lat = coords.lat;
-        specialistPatch.lng = coords.lng;
+  if (newPlzRaw !== undefined && newPlzRaw && !newPlzNormalized) {
+    return NextResponse.json({ error: "Invalid postal code" }, { status: 400 });
+  }
+
+  const plzChanged =
+    newPlzNormalized !== undefined && newPlzNormalized !== oldPlz;
+  const coordsMissing =
+    (newPlzNormalized ?? oldPlz) !== null &&
+    (specialist.lat == null || specialist.lng == null);
+  const needsResolve = plzChanged || (coordsMissing && newPlzNormalized !== null);
+
+  if (needsResolve) {
+    const plzToResolve = newPlzNormalized ?? oldPlz;
+    if (plzToResolve) {
+      const resolved = await resolveGermanPostalLocation(service, plzToResolve);
+      if (resolved.ok) {
+        specialistPatch.postal_code = resolved.location.postalCode;
+        specialistPatch.country_code = resolved.location.countryCode;
+        specialistPatch.lat = resolved.location.lat;
+        specialistPatch.lng = resolved.location.lng;
+        derivedCity = resolved.location.city;
+      } else {
+        // Do not keep stale city/coords from a previous PLZ.
+        specialistPatch.lat = null;
+        specialistPatch.lng = null;
+        derivedCity = null;
+        geocodeWarning = "geocode_failed";
+        console.warn("[specialist/dashboard/save] PLZ resolve failed", {
+          plz: plzToResolve,
+          reason: resolved.reason,
+        });
       }
+    }
+  } else if (newPlzNormalized === null && newPlzRaw !== undefined) {
+    // Explicit clear of PLZ → clear derived geo.
+    specialistPatch.lat = null;
+    specialistPatch.lng = null;
+    derivedCity = null;
+  }
+
+  // User-typed city is display-only override when geo is not being re-derived.
+  // Never treat free-text city as confirmed geography source for coords.
+  if (derivedCity === undefined && hasOwn(body, "city") && typeof body.city === "string") {
+    // Allow clearing/setting city text only when PLZ did not change this request.
+    if (!plzChanged) {
+      derivedCity = body.city.trim() || null;
     }
   }
 
@@ -253,12 +309,89 @@ export async function PUT(request: NextRequest) {
     Object.entries(specialistPatch).filter(([_, v]) => v !== undefined)
   );
 
+  // Strict geo BEFORE write when a published profile changes geo-significant fields.
+  // Avoids persisting incomplete PLZ/city/coords on legacy published rows.
+  if (isCurrentlyPublished && saveTouchesGeography(body as Record<string, unknown>)) {
+    const { data: currentProfile } = await service
+      .from("specialist_profiles")
+      .select("city")
+      .eq("specialist_id", specialistId)
+      .maybeSingle();
+
+    const mergedWorkFormat =
+      typeof cleanedPatch.work_format === "string"
+        ? cleanedPatch.work_format
+        : specialist.work_format;
+    const mergedCountry =
+      typeof cleanedPatch.country_code === "string"
+        ? cleanedPatch.country_code
+        : specialist.country_code;
+    const mergedPostal =
+      typeof cleanedPatch.postal_code === "string" || cleanedPatch.postal_code === null
+        ? (cleanedPatch.postal_code as string | null)
+        : specialist.postal_code;
+    const mergedLat =
+      typeof cleanedPatch.lat === "number" || cleanedPatch.lat === null
+        ? (cleanedPatch.lat as number | null)
+        : specialist.lat;
+    const mergedLng =
+      typeof cleanedPatch.lng === "number" || cleanedPatch.lng === null
+        ? (cleanedPatch.lng as number | null)
+        : specialist.lng;
+    const mergedRadius =
+      typeof cleanedPatch.service_radius_km === "number" ||
+      cleanedPatch.service_radius_km === null
+        ? (cleanedPatch.service_radius_km as number | null)
+        : specialist.service_radius_km;
+    const mergedCity =
+      derivedCity !== undefined
+        ? derivedCity
+        : typeof currentProfile?.city === "string"
+          ? currentProfile.city
+          : null;
+
+    const geoCheck = validatePublicationGeography({
+      workFormat: mergedWorkFormat,
+      countryCode: mergedCountry,
+      postalCode: mergedPostal,
+      city: mergedCity,
+      lat: mergedLat,
+      lng: mergedLng,
+      serviceRadiusKm: mergedRadius,
+    });
+    if (!geoCheck.ok) {
+      return jsonNoStore(
+        {
+          error: geoCheck.code,
+          code: geoCheck.code,
+          warning: geocodeWarning,
+        },
+        { status: 400 }
+      );
+    }
+  }
+
   const { error: specialistPatchError } = await service
     .from("specialists")
     .update(cleanedPatch)
     .eq("id", specialistId);
   if (specialistPatchError) {
     return jsonNoStore({ error: "Failed to update specialist profile" }, { status: 500 });
+  }
+
+  // Keep profile.city in sync when derived or explicitly updated.
+  if (derivedCity !== undefined) {
+    const { error: citySyncError } = await service.from("specialist_profiles").upsert(
+      {
+        specialist_id: specialistId,
+        city: derivedCity,
+      },
+      { onConflict: "specialist_id" }
+    );
+    if (citySyncError) {
+      console.error("[specialist/dashboard/save] city sync failed", citySyncError.message);
+      return jsonNoStore({ error: "Failed to update specialist city" }, { status: 500 });
+    }
   }
 
   const { data: specialistAfter, error: specialistAfterError } = await service
@@ -278,7 +411,13 @@ export async function PUT(request: NextRequest) {
   if (hasOwn(body, "about_me") && typeof body.about_me === "string") {
     profilePatch.about_me = body.about_me.trim() || null;
   }
-  if (hasOwn(body, "city") && typeof body.city === "string") {
+  // City is managed by PLZ resolution above when geography changes.
+  // Only apply free-text city here if we did not already sync derivedCity.
+  if (
+    derivedCity === undefined &&
+    hasOwn(body, "city") &&
+    typeof body.city === "string"
+  ) {
     profilePatch.city = body.city.trim() || null;
   }
   if (hasOwn(body, "address") && typeof body.address === "string") {
@@ -392,5 +531,28 @@ export async function PUT(request: NextRequest) {
     }
   }
 
-  return jsonNoStore({ success: true });
+  const { data: geoAfter } = await service
+    .from("specialists")
+    .select("postal_code, country_code, lat, lng")
+    .eq("id", specialistId)
+    .maybeSingle();
+  const { data: cityAfter } = await service
+    .from("specialist_profiles")
+    .select("city")
+    .eq("specialist_id", specialistId)
+    .maybeSingle();
+
+  return jsonNoStore({
+    success: true,
+    geography: {
+      postal_code:
+        typeof geoAfter?.postal_code === "string" ? geoAfter.postal_code : null,
+      country_code:
+        typeof geoAfter?.country_code === "string" ? geoAfter.country_code : null,
+      city: typeof cityAfter?.city === "string" ? cityAfter.city : null,
+      lat: typeof geoAfter?.lat === "number" ? geoAfter.lat : null,
+      lng: typeof geoAfter?.lng === "number" ? geoAfter.lng : null,
+    },
+    ...(geocodeWarning ? { warning: geocodeWarning } : {}),
+  });
 }

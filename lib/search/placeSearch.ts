@@ -5,7 +5,60 @@
  * in Latin/Cyrillic via a curated alias map.
  */
 
+import {
+  GERMANY_COUNTRY_CODE,
+  areValidCoordinates,
+} from "@/lib/specialists/geography";
+
 const PLZ_RE = /^\d{5}$/;
+
+export type CityGeocodeResult = {
+  lat: number;
+  lng: number;
+  displayName: string | null;
+};
+
+/**
+ * Resolve a city name to coordinates via Nominatim (Germany).
+ * Used for city → radius RPC search; callers should fall back to ILIKE if null.
+ */
+export async function geocodeGermanCityViaNominatim(
+  city: string
+): Promise<CityGeocodeResult | null> {
+  const q = city.trim();
+  if (!q) return null;
+
+  const url =
+    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}` +
+    `&country=Germany&format=json&limit=1`;
+
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": "Freuly-App" },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as Array<{
+      lat?: string;
+      lon?: string;
+      display_name?: string;
+    }>;
+    if (!Array.isArray(data) || !data[0]?.lat || !data[0]?.lon) return null;
+    const lat = parseFloat(data[0].lat);
+    const lng = parseFloat(data[0].lon);
+    if (!areValidCoordinates(lat, lng, { countryCode: GERMANY_COUNTRY_CODE })) {
+      return null;
+    }
+    return {
+      lat,
+      lng,
+      displayName:
+        typeof data[0].display_name === "string" ? data[0].display_name : null,
+    };
+  } catch {
+    return null;
+  }
+}
 
 /** Canonical city name → lowercase aliases (Latin + Cyrillic). */
 const CITY_ALIAS_MAP: Record<string, readonly string[]> = {

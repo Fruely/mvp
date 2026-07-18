@@ -3,6 +3,14 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { jsonNoStore } from "@/lib/api/response";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
+import {
+  isAllowedServiceRadiusKm,
+  isWithinDualRadius,
+  distanceKm,
+  normalizeWorkFormat,
+  areValidCoordinates,
+  type AllowedServiceRadiusKm,
+} from "@/lib/specialists/geography";
 
 // Force dynamic so Next.js does not attempt to prerender this API route
 export const dynamic = 'force-dynamic';
@@ -96,19 +104,7 @@ function parseExperienceYears(value: string | null | undefined): number | null {
   return Number.isFinite(years) ? years : null;
 }
 
-function getDistanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLng = ((lng2 - lng1) * Math.PI) / 180;
-
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) ** 2;
-
-  return 2 * R * Math.asin(Math.sqrt(a));
-}
+const DEFAULT_LIST_USER_RADIUS_KM: AllowedServiceRadiusKm = 50;
 
 function parseOptionalCoord(value: string | null): number | null {
   if (value == null || !String(value).trim()) return null;
@@ -266,6 +262,11 @@ export async function GET(request: NextRequest) {
     const userLng =
       parseOptionalCoord(searchParams.get("user_lng")) ??
       parseOptionalCoord(searchParams.get("lng"));
+
+    const radiusRaw = Number(searchParams.get("radius") ?? searchParams.get("user_radius") ?? "");
+    const userSearchRadiusKm: AllowedServiceRadiusKm = isAllowedServiceRadiusKm(radiusRaw)
+      ? radiusRaw
+      : DEFAULT_LIST_USER_RADIUS_KM;
 
     const _trace: Record<string, unknown> = {};
 
@@ -602,44 +603,44 @@ export async function GET(request: NextRequest) {
     }
     console.log("STEP 1 merged:", merged.length);
 
+    const hasUserCoords =
+      userLat != null &&
+      userLng != null &&
+      areValidCoordinates(userLat, userLng);
+
     const withDistance = merged.map((s) => {
       if (
-        userLat == null ||
-        userLng == null ||
-        !Number.isFinite(userLat) ||
-        !Number.isFinite(userLng) ||
+        !hasUserCoords ||
         s.lat == null ||
         s.lng == null ||
-        !Number.isFinite(s.lat) ||
-        !Number.isFinite(s.lng)
+        !areValidCoordinates(s.lat, s.lng)
       ) {
         return { ...s, distance: null as number | null };
       }
 
+      const dist = distanceKm(userLat!, userLng!, s.lat, s.lng);
       return {
         ...s,
-        distance: getDistanceKm(userLat, userLng, s.lat, s.lng),
+        distance: Number.isFinite(dist) ? Math.round(dist * 10) / 10 : null,
       };
     });
 
+    // Category list shows all formats. With user coords: online always included;
+    // offline/hybrid only within dual radius (user radius + allowlisted specialist radius).
     const geoFiltered = withDistance.filter((s) => {
-      if (s.work_format === "online") return true;
+      const wf = normalizeWorkFormat(s.work_format) ?? s.work_format;
 
-      if (userLat == null || userLng == null || !Number.isFinite(userLat) || !Number.isFinite(userLng)) {
-        return true;
-      }
+      if (!hasUserCoords) return true;
+      if (wf === "online") return true;
 
-      if (s.lat == null || s.lng == null || !Number.isFinite(s.lat) || !Number.isFinite(s.lng)) {
-        return true;
-      }
+      if (s.distance == null || !Number.isFinite(s.distance)) return false;
 
-      if (!s.mobile_service) return true;
-
-      if (s.service_radius_km == null || s.service_radius_km <= 0) return true;
-
-      if (s.distance === null) return true;
-
-      return s.distance <= s.service_radius_km;
+      return isWithinDualRadius({
+        workFormat: s.work_format,
+        distanceKm: s.distance,
+        userSearchRadiusKm,
+        specialistServiceRadiusKm: s.service_radius_km,
+      });
     });
 
     _trace.geoFiltered = geoFiltered.length;
@@ -680,7 +681,7 @@ export async function GET(request: NextRequest) {
 
     const total = ordered.length;
     const page = ordered.slice(offset, offset + limit).map((row) => {
-      const { distance: _d, lat: _lat, lng: _lng, ...rest } = row;
+      const { lat: _lat, lng: _lng, ...rest } = row;
       return {
         id: rest.id,
         slug: rest.slug,
@@ -705,6 +706,7 @@ export async function GET(request: NextRequest) {
         has_real_price: rest.has_real_price,
         mobile_service: rest.mobile_service,
         service_radius_km: rest.service_radius_km,
+        ...(rest.distance != null ? { distance: rest.distance } : {}),
       };
     });
     const hasMore = offset + page.length < total;
@@ -728,7 +730,7 @@ export async function GET(request: NextRequest) {
     _trace.page = page.length;
     _trace.total = total;
     _trace.categoryId = categoryId;
-    _trace.params = { language, city, sort, userLat, userLng };
+    _trace.params = { language, city, sort, userLat, userLng, userSearchRadiusKm };
 
     const payload: Record<string, unknown> = {
       data: page,

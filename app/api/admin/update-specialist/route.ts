@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireAdminToken } from "@/lib/adminApiAuth";
+import { assertSpecialistCanBePublished } from "@/lib/specialists/publicationGeography";
 
 type Action = "verify" | "feature" | "activate" | "deactivate";
 
@@ -116,6 +117,25 @@ export async function POST(request: NextRequest) {
       patch.is_active = false;
       patch.is_visible = false;
       patch.status = "blocked";
+    }
+
+    // Public transitions (verify/feature/reactivate) must satisfy geography invariant.
+    const makesPublic =
+      action === "verify" ||
+      action === "feature" ||
+      (action === "activate" && isActive === true);
+    if (makesPublic) {
+      const geoCheck = await assertSpecialistCanBePublished(supabase, id);
+      if (!geoCheck.ok) {
+        return NextResponse.json(
+          {
+            error: "SPECIALIST_NOT_READY_FOR_PUBLICATION",
+            code: geoCheck.code,
+            fields: [geoCheck.code],
+          },
+          { status: 400, headers: { "Cache-Control": "no-store" } }
+        );
+      }
     }
 
     const { data, error } = await supabase

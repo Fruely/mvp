@@ -55,7 +55,7 @@ export default async function SpecialistDashboardOnboardingPage({
 
   const { data: specExtra } = await service
     .from("specialists")
-    .select("postal_code, country_code, work_format, languages, avatar_url")
+    .select("postal_code, country_code, work_format, languages, avatar_url, service_radius_km")
     .eq("id", specialist.id)
     .maybeSingle();
 
@@ -150,6 +150,10 @@ export default async function SpecialistDashboardOnboardingPage({
       ? String(specExtra.work_format)
       : "online";
   const postalCode = typeof specExtra?.postal_code === "string" ? specExtra.postal_code : "";
+  const serviceRadiusKm =
+    typeof specExtra?.service_radius_km === "number" && Number.isFinite(specExtra.service_radius_km)
+      ? specExtra.service_radius_km
+      : null;
   const city = typeof profile?.city === "string" ? profile.city.trim() : "";
   const countryCode = typeof specExtra?.country_code === "string" ? specExtra.country_code.trim() : "";
   const categoryParentId =
@@ -170,6 +174,7 @@ export default async function SpecialistDashboardOnboardingPage({
     languages,
     workFormat,
     postalCode,
+    serviceRadiusKm,
     servicesInSelectedCategory,
   });
 

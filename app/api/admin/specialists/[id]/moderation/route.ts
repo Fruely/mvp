@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireAdminToken } from "@/lib/adminApiAuth";
+import { assertSpecialistCanBePublished } from "@/lib/specialists/publicationGeography";
 
 type ModerationAction = "approve" | "feature" | "deactivate";
 
@@ -27,6 +28,22 @@ export async function PATCH(
         { error: "Invalid action" },
         { status: 400, headers: { "Cache-Control": "no-store" } }
       );
+    }
+
+    const supabase = createSupabaseServerClient();
+
+    if (action === "approve" || action === "feature") {
+      const geoCheck = await assertSpecialistCanBePublished(supabase, id);
+      if (!geoCheck.ok) {
+        return NextResponse.json(
+          {
+            error: "SPECIALIST_NOT_READY_FOR_PUBLICATION",
+            code: geoCheck.code,
+            fields: [geoCheck.code],
+          },
+          { status: 400, headers: { "Cache-Control": "no-store" } }
+        );
+      }
     }
 
     let patch: Record<string, unknown> = {};
@@ -58,7 +75,6 @@ export async function PATCH(
       };
     }
 
-    const supabase = createSupabaseServerClient();
     const { data, error } = await supabase
       .from("specialists")
       .update(patch)

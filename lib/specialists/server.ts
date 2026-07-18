@@ -63,7 +63,7 @@ export async function getSpecialistOnboardingGateState(
 
   const { data: specExtra } = await service
     .from("specialists")
-    .select("name, category_id, postal_code, work_format, languages")
+    .select("name, category_id, postal_code, work_format, languages, service_radius_km")
     .eq("id", specialist.id)
     .maybeSingle();
 
@@ -103,6 +103,10 @@ export async function getSpecialistOnboardingGateState(
       ? String(specExtra.work_format)
       : "online";
   const postalCode = typeof specExtra?.postal_code === "string" ? specExtra.postal_code : "";
+  const serviceRadiusKm =
+    typeof specExtra?.service_radius_km === "number" && Number.isFinite(specExtra.service_radius_km)
+      ? specExtra.service_radius_km
+      : null;
   const categoryParentId =
     categoryRow && typeof categoryRow.parent_id === "string" ? categoryRow.parent_id : null;
   const servicesInSelectedCategory = (servicesRows ?? []).filter(
@@ -116,6 +120,7 @@ export async function getSpecialistOnboardingGateState(
     languages,
     workFormat,
     postalCode,
+    serviceRadiusKm,
     servicesInSelectedCategory,
   });
 

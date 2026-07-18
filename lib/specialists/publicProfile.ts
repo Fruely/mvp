@@ -9,6 +9,8 @@ export type PublicSpecialistProfile = {
   name: string | null;
   description: string | null;
   city: string | null;
+  postalCode: string | null;
+  workFormat: string | null;
   categoryTitle: string | null;
   languages: string[];
   avatarUrl: string | null;
@@ -48,7 +50,7 @@ export async function getPublicSpecialistProfile(
   const { data: specialist, error: specialistError } = await supabase
     .from("specialists")
     .select(
-      "id, slug, name, avatar_url, category_id, status, is_active, is_visible, languages, created_at"
+      "id, slug, name, avatar_url, category_id, status, is_active, is_visible, languages, created_at, work_format, postal_code"
     )
     .eq("id", resolvedId)
     .maybeSingle();
@@ -89,6 +91,8 @@ export async function getPublicSpecialistProfile(
     name: specialist.name ?? null,
     description: profile?.about_me ?? null,
     city: profile?.city ?? null,
+    postalCode: typeof specialist.postal_code === "string" ? specialist.postal_code : null,
+    workFormat: typeof specialist.work_format === "string" ? specialist.work_format : null,
     categoryTitle:
       category && getCategoryTitle(category, toCategoryTitleLang(lang))
         ? getCategoryTitle(category, toCategoryTitleLang(lang))

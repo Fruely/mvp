@@ -1,4 +1,8 @@
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
+import {
+  isAllowedServiceRadiusKm,
+  parseServiceRadiusKm,
+} from "@/lib/specialists/geography";
 
 /**
  * Server-side checks aligned with client `publicationReady` in SpecialistDashboardEditor
@@ -46,7 +50,7 @@ export function hasValidServiceForPublish(
   });
 }
 
-/** Core rules (name, category, languages, format, PLZ, at least one valid service row). */
+/** Core rules (name, category, languages, format, DE geo, radius for offline/hybrid, services). */
 export function isPublicationReadyCore(input: {
   name: string;
   categoryId: string;
@@ -54,18 +58,30 @@ export function isPublicationReadyCore(input: {
   workFormat: string;
   postalCode: string;
   services: Array<{ title?: unknown; price_from?: unknown; is_active?: unknown }>;
+  /** Required (allowlisted) for offline/hybrid. Ignored for online. */
+  serviceRadiusKm?: number | string | null;
+  /** Required for all formats (online included — admin geo, not venue). */
+  city?: string | null;
 }): boolean {
-  const needsPostalCode = input.workFormat !== "online";
+  const needsServiceRadius =
+    input.workFormat === "offline" || input.workFormat === "hybrid";
   const hasWorkFormat =
     input.workFormat === "online" ||
     input.workFormat === "offline" ||
     input.workFormat === "hybrid";
+  const hasPostalCode = /^\d{5}$/.test(input.postalCode.trim());
+  const hasServiceRadius =
+    !needsServiceRadius ||
+    isAllowedServiceRadiusKm(parseServiceRadiusKm(input.serviceRadiusKm));
+  const hasCity = typeof input.city === "string" && input.city.trim().length > 0;
   return Boolean(
     input.name.trim() &&
       input.categoryId.trim() &&
       input.languages.length > 0 &&
       hasWorkFormat &&
-      (!needsPostalCode || /^\d{5}$/.test(input.postalCode.trim())) &&
+      hasPostalCode &&
+      hasServiceRadius &&
+      hasCity &&
       hasValidServiceForPublish(input.services),
   );
 }
@@ -83,6 +99,8 @@ export function isPublicationReadyForDashboard(input: {
   workFormat: string;
   postalCode: string;
   servicesInSelectedCategory: Array<{ title?: unknown; price_from?: unknown; is_active?: unknown }>;
+  serviceRadiusKm?: number | string | null;
+  city?: string | null;
 }): boolean {
   if (input.categoryParentId == null) return false;
   return isPublicationReadyCore({
@@ -92,5 +110,7 @@ export function isPublicationReadyForDashboard(input: {
     workFormat: input.workFormat,
     postalCode: input.postalCode,
     services: input.servicesInSelectedCategory,
+    serviceRadiusKm: input.serviceRadiusKm,
+    city: input.city,
   });
 }

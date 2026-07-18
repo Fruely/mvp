@@ -1,8 +1,14 @@
 import { sendTelegramToOwners } from "@/lib/telegram/sendMessage";
+import { buildNewSpecialistTelegramMessage } from "@/lib/notifications/specialistPublishNotify";
 
 const errorCooldown = new Map<string, { last: number; count: number }>();
 
 export type NotifyEventType = "NEW_SPECIALIST" | "NEW_LEAD" | "SYSTEM_ERROR";
+
+export type NewSpecialistNotifyPayload = {
+  name: string;
+  details?: string | null;
+};
 
 /** Owner Telegram text for a new lead (from /api/leads/create). */
 export type NewLeadOwnerPayload = {
@@ -54,7 +60,7 @@ function formatErrorForMessage(error: unknown): string {
 
 export async function notify(
   eventType: "NEW_SPECIALIST",
-  payload: { name: string }
+  payload: NewSpecialistNotifyPayload
 ): Promise<void>;
 export async function notify(
   eventType: "NEW_LEAD",
@@ -67,14 +73,18 @@ export async function notify(
 export async function notify(
   eventType: NotifyEventType,
   payload:
-    | { name: string }
+    | NewSpecialistNotifyPayload
     | NewLeadOwnerPayload
     | { route: string; error?: unknown }
 ): Promise<void> {
   console.log("[FREULY][EVENT]", eventType);
   let message: string;
   if (eventType === "NEW_SPECIALIST") {
-    message = `Новый специалист:\n${(payload as { name: string }).name}`;
+    const p = payload as NewSpecialistNotifyPayload;
+    message = buildNewSpecialistTelegramMessage({
+      name: p.name,
+      details: p.details,
+    });
   } else if (eventType === "NEW_LEAD") {
     message = formatNewLeadOwnerMessage(payload as NewLeadOwnerPayload);
   } else {

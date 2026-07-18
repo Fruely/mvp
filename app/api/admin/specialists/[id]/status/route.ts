@@ -5,6 +5,7 @@ import {
 } from "@/lib/dashboard/publicationReadiness";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireAdminToken } from "@/lib/adminApiAuth";
+import { assertSpecialistCanBePublished } from "@/lib/specialists/publicationGeography";
 
 const ALLOWED_STATUSES = new Set([
   "draft",
@@ -39,7 +40,6 @@ async function validateAdminPublishReadiness(
     ? specialist.languages.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
   const workFormat = typeof specialist.work_format === "string" ? specialist.work_format : "";
-  const postalCode = typeof specialist.postal_code === "string" ? specialist.postal_code.trim() : "";
 
   if (!name) missing.push("name");
   if (!categoryId) missing.push("category_id");
@@ -47,13 +47,22 @@ async function validateAdminPublishReadiness(
   if (workFormat !== "online" && workFormat !== "offline" && workFormat !== "hybrid") {
     missing.push("work_format");
   }
-  if (workFormat !== "online" && !/^\d{5}$/.test(postalCode)) {
-    missing.push("postal_code");
-  }
 
   if (missing.length > 0) {
     return NextResponse.json(
       { error: "SPECIALIST_NOT_READY_FOR_PUBLICATION", fields: missing },
+      { status: 400 },
+    );
+  }
+
+  const geoCheck = await assertSpecialistCanBePublished(supabase, specialistId);
+  if (!geoCheck.ok) {
+    return NextResponse.json(
+      {
+        error: "SPECIALIST_NOT_READY_FOR_PUBLICATION",
+        code: geoCheck.code,
+        fields: [geoCheck.code],
+      },
       { status: 400 },
     );
   }

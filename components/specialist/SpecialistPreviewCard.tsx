@@ -6,6 +6,7 @@ import Link from "next/link";
 import { t, type Dictionary } from "@/lib/i18n";
 import { getSpecialistUrl } from "@/lib/urls";
 import FounderBadge from "@/components/specialist/FounderBadge";
+import { getPublicSpecialistLocation } from "@/lib/specialists/geography";
 
 type SpecialistPreview = {
   id: string;
@@ -15,6 +16,7 @@ type SpecialistPreview = {
   specialization_line?: string | null;
   about_line?: string | null;
   city: string | null;
+  postal_code?: string | null;
   work_format: "online" | "offline" | "hybrid";
   languages?: string[];
   is_verified: boolean;
@@ -197,23 +199,36 @@ export default function SpecialistPreviewCard({
         </div>
 
         <div className="flex flex-wrap items-center gap-3 text-xs font-normal text-textSecondary">
-          {specialist.city ? (
+          {(() => {
+            const loc = getPublicSpecialistLocation({
+              workFormat: specialist.work_format,
+              city: specialist.city,
+              postalCode: specialist.postal_code,
+              onlineLabel: t(dict, "specialist.workFormat.online"),
+            });
+            if (!loc.label) return null;
+            return (
+              <span className="inline-flex items-center gap-1">
+                <span aria-hidden>{loc.kind === "online" ? "💻" : "📍"}</span>
+                {loc.label}
+              </span>
+            );
+          })()}
+          {specialist.work_format !== "online" ? (
             <span className="inline-flex items-center gap-1">
-              <span aria-hidden>📍</span>
-              {specialist.city}
+              <span aria-hidden>🏢</span>
+              {workFormatLabel(specialist.work_format)}
             </span>
           ) : null}
-          <span className="inline-flex items-center gap-1">
-            <span aria-hidden>{specialist.work_format === "online" ? "💻" : "🏢"}</span>
-            {workFormatLabel(specialist.work_format)}
-          </span>
           {experienceText ? (
             <span className="inline-flex items-center gap-1">
               <span aria-hidden>🧭</span>
               {experienceText}
             </span>
           ) : null}
-          {specialist.mobile_service && specialist.service_radius_km != null && specialist.service_radius_km > 0 ? (
+          {specialist.work_format !== "online" &&
+          specialist.service_radius_km != null &&
+          specialist.service_radius_km > 0 ? (
             <span className="inline-flex items-center gap-1">
               <span aria-hidden>🚗</span>
               {t(dict, "specialist.radiusLabel").replace("{{km}}", String(specialist.service_radius_km))}

@@ -17,6 +17,7 @@ import SpecialistHero from "@/components/specialist/SpecialistHero";
 import SpecialistDocumentsLightbox from "@/components/specialist/SpecialistDocumentsLightbox";
 import MobileStickyCTA from "@/components/MobileStickyCTA";
 import InstallFreuly from "@/components/pwa/InstallFreuly";
+import { getPublicSpecialistLocation } from "@/lib/specialists/geography";
 
 const LEGACY_SLUGS: Record<string, string> = {
   "zkeiy-lbztieh": "cosmetologists-kassel-irina-melnik",
@@ -343,6 +344,13 @@ export default function SpecialistProfileClient({
     ?? getWorkFormat(specialist.work_format)
     ?? (typeof specialist.is_online === "boolean" ? (specialist.is_online ? "online" : "offline") : null)
     ?? (typeof specialist.online === "boolean" ? (specialist.online ? "online" : "offline") : null);
+  const publicLocation = getPublicSpecialistLocation({
+    workFormat: workMode,
+    city: specialist.city,
+    onlineLabel: t(dict, "specialist.workFormat.online"),
+  });
+  const publicLocationLabel = publicLocation.label || null;
+  const showPhysicalAddress = workMode !== "online" && Boolean(specialist.address?.trim());
   const parseList = (value: unknown): string[] => {
     if (Array.isArray(value)) return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
     if (typeof value === "string" && value.trim()) {
@@ -509,9 +517,9 @@ export default function SpecialistProfileClient({
               avatarAlt={displayName}
               name={displayName}
               specialization={specializationText}
-              city={specialist.city ?? null}
+              city={publicLocationLabel}
               languages={Array.isArray(specialist.languages) ? specialist.languages : []}
-              workModeText={workModeLabel}
+              workModeText={workMode !== "online" ? workModeLabel : null}
               isNew={isNewActive}
               newBadgeLabel={sectionText.newBadge}
               showFounderBadge={specialist.founder_badge === true}
@@ -806,22 +814,22 @@ export default function SpecialistProfileClient({
             </SectionCard>
           )}
 
-          {(specialist.city || (specialist.languages && specialist.languages.length > 0) || workModeLabel) ? (
+          {(publicLocationLabel || (specialist.languages && specialist.languages.length > 0) || (workMode !== "online" && workModeLabel)) ? (
             <SectionCard title={sectionText.contactsTitle} subtitle={sectionText.contactsSubtitle}>
               <div className="space-y-2 text-sm text-gray-700">
-                {specialist.city ? (
+                {publicLocationLabel ? (
                   <p>
                     <span className="font-medium">{sectionText.contactsLineLocation}: </span>
-                    {specialist.city}
+                    {publicLocationLabel}
                   </p>
                 ) : null}
-                {specialist.address ? (
+                {showPhysicalAddress ? (
                   <p>
                     <span className="font-medium">{t(dict, "specialistPage.contactsLineAddress")}: </span>
                     {specialist.address}
                   </p>
                 ) : null}
-                {(specialist.address || specialist.city) ? (() => {
+                {workMode !== "online" && (showPhysicalAddress || specialist.city) ? (() => {
                   const destination = [specialist.address, specialist.city].filter(Boolean).join(", ");
                   return (
                     <>

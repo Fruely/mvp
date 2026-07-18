@@ -8,6 +8,7 @@ import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 import { isPublicationReadyForDashboard } from "@/lib/dashboard/publicationReadiness";
+import { ALLOWED_SERVICE_RADII_KM } from "@/lib/specialists/geography";
 import SpecialistAvatarImage from "@/components/specialist/SpecialistAvatarImage";
 
 type ServiceInput = {
@@ -65,6 +66,7 @@ const READINESS_SECTION_ID: Record<string, string> = {
   languages: "dashboard-section-languages",
   work_format: "dashboard-section-work-format",
   plz: "dashboard-section-plz",
+  service_radius: "dashboard-section-service-radius",
   service: "dashboard-services-section",
 };
 
@@ -140,7 +142,50 @@ export default function SpecialistDashboardEditor({
     [],
   );
 
-  const needsPostalCode = form.work_format !== "online";
+  /**
+   * Preview city from the same server resolver as save (resolveGermanPostalLocation).
+   * Do not use Zippopotam or other divergent client geocoders.
+   */
+  useEffect(() => {
+    const postalCode = (form.postal_code || "").trim();
+    if (!/^\d{5}$/.test(postalCode)) return;
+
+    let cancelled = false;
+    const controller = new AbortController();
+
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/specialist/resolve-postal?postal_code=${encodeURIComponent(postalCode)}`,
+          { signal: controller.signal, cache: "no-store" }
+        );
+        const json = (await res.json().catch(() => null)) as {
+          ok?: boolean;
+          location?: { city?: string; countryCode?: string };
+        } | null;
+        if (cancelled || !res.ok || !json?.ok) return;
+        const city = typeof json.location?.city === "string" ? json.location.city.trim() : "";
+        if (!city) return;
+        _setFormRaw((prev) => {
+          if (prev.postal_code.trim() !== postalCode) return prev;
+          if (prev.city === city && prev.country_code === "DE") return prev;
+          return { ...prev, city, country_code: "DE" };
+        });
+      } catch {
+        // Preview failure must not block editing; save/publish enforce geo.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [form.postal_code]);
+
+  /** All formats require DE + PLZ + city (+ coords via PLZ). Radius only for offline/hybrid. */
+  const needsLocationGeo = true;
+  const needsServiceRadius =
+    form.work_format === "offline" || form.work_format === "hybrid";
   const hasValidServiceFlag = useMemo(
     () => hasValidService(form.services),
     [form.services]
@@ -167,13 +212,30 @@ export default function SpecialistDashboardEditor({
       languages: form.languages,
       workFormat: form.work_format,
       postalCode: form.postal_code,
+      serviceRadiusKm: form.service_radius_km,
+      city: form.city,
       servicesInSelectedCategory: form.services.map((service) => ({
         title: service.title,
         price_from: service.price_from,
         is_active: service.is_active,
       })),
     });
-  }, [categoryParentId, form.category_id, form.languages, form.name, form.postal_code, form.services, form.work_format]);
+  }, [
+    categoryParentId,
+    form.category_id,
+    form.city,
+    form.languages,
+    form.name,
+    form.postal_code,
+    form.service_radius_km,
+    form.services,
+    form.work_format,
+  ]);
+
+  const hasAllowlistedServiceRadius = useMemo(() => {
+    const n = Number(String(form.service_radius_km).trim());
+    return Number.isFinite(n) && (ALLOWED_SERVICE_RADII_KM as readonly number[]).includes(n);
+  }, [form.service_radius_km]);
 
   /** Checklist items mirror the same publish minimum; order matches form sections. */
   const readinessItems = useMemo(() => {
@@ -195,11 +257,23 @@ export default function SpecialistDashboardEditor({
         done: hasWorkFormat,
       },
     ];
-    if (needsPostalCode) {
+    if (needsLocationGeo) {
       items.push({
         key: "plz",
         label: t(dict, "dashboard.fields.plz"),
         done: /^\d{5}$/.test(form.postal_code.trim()),
+      });
+      items.push({
+        key: "city",
+        label: t(dict, "dashboard.fields.city"),
+        done: Boolean(form.city.trim()),
+      });
+    }
+    if (needsServiceRadius) {
+      items.push({
+        key: "service_radius",
+        label: t(dict, "dashboard.fields.serviceRadius"),
+        done: hasAllowlistedServiceRadius,
       });
     }
     items.push({
@@ -208,7 +282,16 @@ export default function SpecialistDashboardEditor({
       done: hasValidServiceFlag,
     });
     return items;
-  }, [dict, form, needsPostalCode, hasWorkFormat, hasValidServiceFlag, hasPublishableCategory]);
+  }, [
+    dict,
+    form,
+    needsLocationGeo,
+    needsServiceRadius,
+    hasWorkFormat,
+    hasValidServiceFlag,
+    hasPublishableCategory,
+    hasAllowlistedServiceRadius,
+  ]);
 
   const readinessDoneCount = readinessItems.filter((item) => item.done).length;
   const readinessTotalCount = readinessItems.length;
@@ -383,8 +466,13 @@ export default function SpecialistDashboardEditor({
         ...form,
         category_id: form.category_id || null,
         video_url: form.video_url.trim(),
+        country_code: "DE",
+        postal_code: form.postal_code,
         mobile_service: form.mobile_service,
-        service_radius_km: form.mobile_service ? form.service_radius_km : "",
+        service_radius_km:
+          form.work_format === "offline" || form.work_format === "hybrid"
+            ? form.service_radius_km
+            : "",
         languages: form.languages.map((lang) => lang.trim()).filter(Boolean),
         gallery_urls: form.gallery_urls.map((url) => url.trim()).filter(Boolean),
         certificate_urls: form.certificate_urls.map((url) => url.trim()).filter(Boolean),
@@ -397,13 +485,44 @@ export default function SpecialistDashboardEditor({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const json = await res.json().catch(() => ({}));
+      const json = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        warning?: string;
+        geography?: {
+          postal_code?: string | null;
+          country_code?: string | null;
+          city?: string | null;
+        };
+      };
       if (!res.ok) {
         setError(typeof json.error === "string" ? json.error : t(dict, "dashboard.messages.saveFailed"));
         return;
       }
+      if (json.geography) {
+        _setFormRaw((prev) => ({
+          ...prev,
+          postal_code:
+            typeof json.geography?.postal_code === "string"
+              ? json.geography.postal_code
+              : prev.postal_code,
+          country_code:
+            typeof json.geography?.country_code === "string"
+              ? json.geography.country_code
+              : prev.country_code,
+          city:
+            typeof json.geography?.city === "string"
+              ? json.geography.city
+              : json.geography?.city === null
+                ? ""
+                : prev.city,
+        }));
+      }
       setIsDirty(false);
-      setSuccess(t(dict, "dashboard.messages.saved"));
+      setSuccess(
+        json.warning === "geocode_failed"
+          ? t(dict, "dashboard.messages.publication_coordinates_required")
+          : t(dict, "dashboard.messages.saved")
+      );
     } catch {
       setError(t(dict, "dashboard.messages.saveFailed"));
     } finally {
@@ -429,7 +548,23 @@ export default function SpecialistDashboardEditor({
       }
       if (!form.languages.length) missing.push(t(dict, "dashboard.fields.languages"));
       if (!hasWorkFormat) missing.push(t(dict, "dashboard.fields.format"));
-      if (needsPostalCode && !/^\d{5}$/.test(form.postal_code.trim())) missing.push(t(dict, "dashboard.fields.plz"));
+      if (needsLocationGeo && !/^\d{5}$/.test(form.postal_code.trim())) {
+        missing.push(
+          form.work_format === "online"
+            ? t(dict, "dashboard.messages.publication_online_geo_required")
+            : t(dict, "dashboard.messages.publication_postal_code_required")
+        );
+      }
+      if (needsServiceRadius && !hasAllowlistedServiceRadius) {
+        missing.push(t(dict, "dashboard.messages.publication_service_radius_required"));
+      }
+      if (needsLocationGeo && !form.city.trim()) {
+        missing.push(
+          form.work_format === "online"
+            ? t(dict, "dashboard.messages.publication_online_geo_required")
+            : t(dict, "dashboard.messages.publication_city_required")
+        );
+      }
       if (!hasValidServiceFlag) {
         missing.push(t(dict, "dashboard.messages.publishNeedsServiceAndPricePositive"));
       }
@@ -605,7 +740,7 @@ export default function SpecialistDashboardEditor({
           >
             <label className="space-y-1 text-sm">
               <span className="font-medium text-gray-700">
-                {t(dict, "dashboard.fields.plzLabel")} {needsPostalCode && <span className="text-red-500">*</span>}
+                {t(dict, "dashboard.fields.plzLabel")} {needsLocationGeo && <span className="text-red-500">*</span>}
               </span>
               <input
                 value={form.postal_code}
@@ -619,17 +754,30 @@ export default function SpecialistDashboardEditor({
                 placeholder={t(dict, "dashboard.fields.plzPlaceholder")}
                 className="w-full rounded-lg border border-gray-200 px-3 py-2"
               />
-              {needsPostalCode && <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.plzHint")}</p>}
+              {needsLocationGeo && (
+                <p className="text-xs text-gray-500">
+                  {form.work_format === "online"
+                    ? t(dict, "dashboard.messages.publication_online_geo_required")
+                    : t(dict, "dashboard.fields.plzHint")}
+                </p>
+              )}
             </label>
           </div>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.city")}</span>
+            <span className="font-medium text-gray-700">
+              {t(dict, "dashboard.fields.city")} {needsLocationGeo && <span className="text-red-500">*</span>}
+            </span>
             <input
               value={form.city}
               onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
               placeholder={t(dict, "dashboard.fields.cityPlaceholder")}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2"
+              disabled={form.postal_code.length === 5}
+              readOnly={form.postal_code.length === 5}
+              className={`w-full rounded-lg border border-gray-200 px-3 py-2 ${
+                form.postal_code.length === 5 ? "bg-gray-50 text-gray-600" : ""
+              }`}
             />
+            <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.cityFromPlzHint")}</p>
           </label>
           <label className="space-y-1 text-sm">
             <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.address")}</span>
@@ -644,15 +792,11 @@ export default function SpecialistDashboardEditor({
           <label className="space-y-1 text-sm">
             <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.country")}</span>
             <select
-              value={form.country_code}
-              onChange={(e) => setForm((prev) => ({ ...prev, country_code: e.target.value }))}
+              value="DE"
+              onChange={() => setForm((prev) => ({ ...prev, country_code: "DE" }))}
               className="w-full rounded-lg border border-gray-200 px-3 py-2"
             >
               <option value="DE">{t(dict, "dashboard.country.DE")}</option>
-              <option value="GR">{t(dict, "dashboard.country.GR")}</option>
-              <option value="IT">{t(dict, "dashboard.country.IT")}</option>
-              <option value="PL">{t(dict, "dashboard.country.PL")}</option>
-              <option value="XX">{t(dict, "dashboard.country.XX")}</option>
             </select>
           </label>
           <div
@@ -673,7 +817,42 @@ export default function SpecialistDashboardEditor({
             </label>
           </div>
           {form.work_format !== "online" && (
-            <div className="space-y-2 text-sm md:col-span-2">
+            <div className="space-y-3 text-sm md:col-span-2">
+              <div
+                id={READINESS_SECTION_ID.service_radius}
+                className={`scroll-mt-6 space-y-1 ${
+                  highlightedSectionId === READINESS_SECTION_ID.service_radius
+                    ? READINESS_JUMP_HIGHLIGHT_CLASS
+                    : ""
+                }`}
+              >
+                <label className="block space-y-1">
+                  <span className="font-medium text-gray-700">
+                    {t(dict, "dashboard.fields.serviceRadius")} <span className="text-red-500">*</span>
+                  </span>
+                  <select
+                    value={
+                      (ALLOWED_SERVICE_RADII_KM as readonly number[]).includes(
+                        Number(form.service_radius_km),
+                      )
+                        ? form.service_radius_km
+                        : ""
+                    }
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, service_radius_km: e.target.value }))
+                    }
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2"
+                  >
+                    <option value="">{t(dict, "dashboard.fields.serviceRadiusPlaceholder")}</option>
+                    {ALLOWED_SERVICE_RADII_KM.map((km) => (
+                      <option key={km} value={String(km)}>
+                        {km} km
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.serviceRadiusHint")}</p>
+                </label>
+              </div>
               <label className="inline-flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -685,23 +864,7 @@ export default function SpecialistDashboardEditor({
               </label>
               <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.mobileServiceHint")}</p>
               {form.mobile_service && (
-                <label className="block space-y-1">
-                  <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.serviceRadius")}</span>
-                  <input
-                    value={form.service_radius_km}
-                    onChange={(e) => {
-                      const v = e.target.value.replace(/[^\d]/g, "").slice(0, 4);
-                      setForm((prev) => ({ ...prev, service_radius_km: v }));
-                    }}
-                    type="number"
-                    min="1"
-                    max="500"
-                    inputMode="numeric"
-                    placeholder={t(dict, "dashboard.fields.serviceRadiusPlaceholder")}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2"
-                  />
-                  <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.serviceRadiusHint")}</p>
-                </label>
+                <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.serviceRadiusMobileHint")}</p>
               )}
             </div>
           )}

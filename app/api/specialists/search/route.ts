@@ -20,9 +20,11 @@ export async function GET(request: NextRequest) {
   const mode = searchParams.get("mode")?.trim().toLowerCase() || null;
   const place = searchParams.get("place")?.trim() || null;
   const q = searchParams.get("q")?.trim() || null;
+  const radiusRaw = Number(searchParams.get("radius") ?? "");
+  const radius = Number.isFinite(radiusRaw) ? radiusRaw : null;
   const offsetRaw = Number.parseInt(searchParams.get("offset") ?? "0", 10);
   const offset = Number.isFinite(offsetRaw) && offsetRaw > 0 ? offsetRaw : 0;
 
-  const result = await searchSpecialists({ lang, category, mode, place, q, offset });
+  const result = await searchSpecialists({ lang, category, mode, place, q, radius, offset });
   return jsonNoStore(result);
 }

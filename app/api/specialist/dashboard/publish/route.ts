@@ -3,8 +3,16 @@ import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
 import { notify } from "@/lib/notifications/notify";
+import {
+  formatCategoryNotifyBlock,
+  formatGeographyNotifyBlock,
+  formatSpecialistPublishNotifyDetails,
+  type CategoryTitleRow,
+} from "@/lib/notifications/specialistPublishNotify";
 import { buildSpecialistSlug } from "@/lib/slugify";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
+import { assertSpecialistCanBePublished } from "@/lib/specialists/publicationGeography";
+import { publicationGeoErrorMessageRu } from "@/lib/specialists/geography";
 
 export const dynamic = "force-dynamic";
 
@@ -116,7 +124,9 @@ export async function POST() {
 
   const { data: specialist, error: specialistError } = await service
     .from("specialists")
-    .select("id, slug, status, name, category_id, languages, work_format, postal_code")
+    .select(
+      "id, slug, status, name, category_id, languages, work_format, postal_code, country_code, lat, lng, service_radius_km"
+    )
     .eq("user_id", user.id)
     .maybeSingle();
   if (specialistError || !specialist?.id) {
@@ -139,15 +149,23 @@ export async function POST() {
   if (!specialist.category_id) missing.push("Категория");
   if (!specialist.languages || specialist.languages.length === 0) missing.push("Языки");
   if (!specialist.work_format) missing.push("Формат работы");
-  if (specialist.work_format !== "online" && !specialist.postal_code) {
-    missing.push("Почтовый индекс");
-  }
 
   if (missing.length) {
     return NextResponse.json(
       {
         error: "Заполните обязательные поля",
         fields: missing,
+      },
+      { status: 400 }
+    );
+  }
+
+  const geoCheck = await assertSpecialistCanBePublished(service, specialistId);
+  if (!geoCheck.ok) {
+    return jsonNoStore(
+      {
+        error: publicationGeoErrorMessageRu(geoCheck.code, specialist.work_format),
+        code: geoCheck.code,
       },
       { status: 400 }
     );
@@ -221,29 +239,20 @@ export async function POST() {
 
     let citySlug: string | null = null;
 
-    if (specialist.postal_code) {
+    // Production `cities` has name/slug only (no postal_code column).
+    const { data: profile } = await service
+      .from("specialist_profiles")
+      .select("city")
+      .eq("specialist_id", specialistId)
+      .maybeSingle();
+    if (profile?.city) {
       const { data: cityRow } = await service
         .from("cities")
         .select("slug")
-        .eq("postal_code", specialist.postal_code)
+        .ilike("name", profile.city)
+        .eq("is_active", true)
         .maybeSingle();
       citySlug = cityRow?.slug ?? null;
-    }
-
-    if (!citySlug) {
-      const { data: profile } = await service
-        .from("specialist_profiles")
-        .select("city")
-        .eq("specialist_id", specialistId)
-        .maybeSingle();
-      if (profile?.city) {
-        const { data: cityRow } = await service
-          .from("cities")
-          .select("slug")
-          .eq("name", profile.city)
-          .maybeSingle();
-        citySlug = cityRow?.slug ?? null;
-      }
     }
 
     if (specialist.name) {
@@ -303,7 +312,9 @@ export async function POST() {
 
   const { data: publishedRow } = await service
     .from("specialists")
-    .select("id, name, published_at, is_active, is_visible")
+    .select(
+      "id, name, slug, status, category_id, work_format, postal_code, country_code, lat, lng, service_radius_km, published_at, is_active, is_visible"
+    )
     .eq("id", specialistId)
     .maybeSingle();
 
@@ -312,9 +323,80 @@ export async function POST() {
     (publishedRow.published_at ||
       (publishedRow.is_active === true && publishedRow.is_visible === true))
   ) {
-    await notify("NEW_SPECIALIST", {
-      name: `🟢 Опубликовался: ${publishedRow.name || "Без имени"}`,
-    });
+    let notifyDetails: string | null = null;
+    try {
+      const categoryId =
+        typeof publishedRow.category_id === "string" ? publishedRow.category_id : null;
+      let selected: CategoryTitleRow | null = null;
+      let parent: CategoryTitleRow | null = null;
+      let loadError: string | null = null;
+      if (categoryId) {
+        const { data: cat, error: catErr } = await service
+          .from("categories")
+          .select("id, parent_id, slug, title, title_ru, title_ua, title_de")
+          .eq("id", categoryId)
+          .maybeSingle();
+        if (catErr) {
+          loadError = catErr.message;
+          console.error("[publish] category notify lookup failed", catErr);
+        } else {
+          selected = (cat as CategoryTitleRow | null) ?? null;
+        }
+        if (selected?.parent_id) {
+          const { data: parentRow } = await service
+            .from("categories")
+            .select("id, parent_id, slug, title, title_ru, title_ua, title_de")
+            .eq("id", selected.parent_id)
+            .maybeSingle();
+          parent = (parentRow as CategoryTitleRow | null) ?? null;
+        }
+      }
+      const { data: profile } = await service
+        .from("specialist_profiles")
+        .select("city")
+        .eq("specialist_id", specialistId)
+        .maybeSingle();
+
+      notifyDetails = formatSpecialistPublishNotifyDetails({
+        categoryBlock: formatCategoryNotifyBlock({
+          categoryId,
+          selected,
+          parent,
+          loadError,
+        }),
+        geographyBlock: formatGeographyNotifyBlock({
+          workFormat: publishedRow.work_format,
+          postalCode: publishedRow.postal_code,
+          city: profile?.city,
+          countryCode: publishedRow.country_code,
+          lat: publishedRow.lat,
+          lng: publishedRow.lng,
+          serviceRadiusKm: publishedRow.service_radius_km,
+        }),
+        slug:
+          (typeof publishedRow.slug === "string" && publishedRow.slug) ||
+          generatedSlug ||
+          (typeof specialist.slug === "string" ? specialist.slug : null),
+        status:
+          (typeof publishedRow.status === "string" && publishedRow.status) ||
+          (typeof updated.status === "string" ? updated.status : null),
+        siteUrl:
+          process.env.NEXT_PUBLIC_SITE_URL ||
+          process.env.APP_URL ||
+          "https://freuly.de",
+      });
+    } catch (err) {
+      console.error("[publish] notify details crashed", err);
+    }
+
+    try {
+      await notify("NEW_SPECIALIST", {
+        name: `🟢 Опубликовался: ${publishedRow.name || "Без имени"}`,
+        details: notifyDetails,
+      });
+    } catch (err) {
+      console.error("[publish] Telegram notify failed after publish", err);
+    }
   }
 
   const { error: founderRpcError } = await service.rpc("try_assign_founder_badge", {

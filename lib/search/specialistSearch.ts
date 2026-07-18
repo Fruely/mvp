@@ -16,6 +16,7 @@ import {
   isPostalCodeLike,
   expandPlaceAliases,
   sanitizeCityFilter,
+  geocodeGermanCityViaNominatim,
 } from "@/lib/search/placeSearch";
 import {
   normalizeSearchQuery,
@@ -23,6 +24,15 @@ import {
   resolveCategorySlugsFromQuery,
   buildIlikeOrFilter,
 } from "@/lib/search/searchSynonyms";
+import {
+  ALLOWED_SERVICE_RADII_KM,
+  isAllowedServiceRadiusKm,
+  isWithinDualRadius,
+  distanceKm,
+  normalizeWorkFormat,
+  areValidCoordinates,
+  type AllowedServiceRadiusKm,
+} from "@/lib/specialists/geography";
 
 // ---------------------------------------------------------------------------
 // Internal types (not exported; used only in this module)
@@ -49,6 +59,7 @@ type SpecialistRow = {
   postal_code: string | null;
   lat: number | null;
   lng: number | null;
+  service_radius_km?: number | null;
   distance?: number | null;
 };
 
@@ -90,6 +101,11 @@ export type SpecialistSearchInput = {
   place?: string | null;
   /** Free-text smart search query. */
   q?: string | null;
+  /**
+   * Optional user search radius (km). When in allowlist [5,10,25,50,100],
+   * used as the hard local limit (no progressive expand).
+   */
+  radius?: number | null;
   /** Pagination offset (default 0). */
   offset?: number;
 };
@@ -106,11 +122,15 @@ export type SpecialistSearchResult = {
 // Constants
 // ---------------------------------------------------------------------------
 
-/** Progressive local search radii (km). */
-const LOCAL_SEARCH_RADII_KM = [10, 30, 50, 100] as const;
+/**
+ * Progressive local search radii when the user did not pick an explicit radius.
+ * Subset of ALLOWED_SERVICE_RADII_KM (skip 5 km for progressive expand).
+ */
+const LOCAL_SEARCH_RADII_KM: readonly AllowedServiceRadiusKm[] =
+  ALLOWED_SERVICE_RADII_KM.filter((r) => r >= 10);
 
 const SELECT_COLS =
-  "id, slug, name, bio, avatar_url, category_id, languages, work_format, postal_code, lat, lng";
+  "id, slug, name, bio, avatar_url, category_id, languages, work_format, postal_code, lat, lng, service_radius_km";
 
 const VISIBLE_STATUS_FILTER = [...VISIBLE_PUBLIC_SPECIALIST_STATUSES];
 const TEST_FILTER = "is_test.is.null,is_test.eq.false";
@@ -124,6 +144,12 @@ function normalizeDistanceKm(raw: unknown): number | undefined {
   const n = typeof raw === "number" ? raw : Number(raw);
   if (!Number.isFinite(n)) return undefined;
   return Math.round(n * 10) / 10;
+}
+
+function parseUserSearchRadius(value: unknown): AllowedServiceRadiusKm | null {
+  if (value == null || value === "") return null;
+  const n = typeof value === "number" ? value : Number(value);
+  return isAllowedServiceRadiusKm(n) ? n : null;
 }
 
 function applyVisibleSpecialistFilters<T extends { in: Function; eq: Function; or: Function }>(
@@ -181,6 +207,8 @@ async function fetchByRadius(
     idFilter?: string[] | null;
   }
 ) {
+  // p_mode null: RPC may return online rows; we exclude them in applyLocalDualRadiusFilter.
+  // Do not pass p_mode 'offline' — observed empty in production baseline.
   return supabase.rpc("search_specialists_local_radius", {
     p_ref_lat: params.refLat,
     p_ref_lng: params.refLng,
@@ -207,6 +235,82 @@ async function excludeTestSpecialists(
     .or(TEST_FILTER);
   const allowed = new Set((data ?? []).map((r) => r.id as string));
   return specialists.filter((s) => allowed.has(s.id));
+}
+
+/** RPC baseline may omit service_radius_km — hydrate from specialists. */
+async function hydrateServiceRadiusKm(
+  supabase: ReturnType<typeof createSupabaseServerClient>,
+  specialists: SpecialistRow[]
+): Promise<SpecialistRow[]> {
+  const ids = specialists.map((s) => s.id).filter(Boolean);
+  if (ids.length === 0) return [];
+  const { data } = await supabase
+    .from("specialists")
+    .select("id, service_radius_km")
+    .in("id", ids);
+  const radiusById = new Map<string, number | null>();
+  for (const row of data ?? []) {
+    if (!row?.id) continue;
+    const raw = (row as { service_radius_km?: unknown }).service_radius_km;
+    const n = typeof raw === "number" ? raw : Number(raw);
+    radiusById.set(row.id as string, Number.isFinite(n) ? n : null);
+  }
+  return specialists.map((s) => ({
+    ...s,
+    service_radius_km:
+      radiusById.has(s.id) ? radiusById.get(s.id) ?? null : s.service_radius_km ?? null,
+  }));
+}
+
+/**
+ * Local geo post-filter: drop pure online; require dual-radius for offline/hybrid;
+ * attach distance; sort by distance asc, then id.
+ */
+function applyLocalDualRadiusFilter(
+  rows: SpecialistRow[],
+  refLat: number,
+  refLng: number,
+  userSearchRadiusKm: AllowedServiceRadiusKm
+): SpecialistRow[] {
+  const filtered: SpecialistRow[] = [];
+
+  for (const row of rows) {
+    const wf = normalizeWorkFormat(row.work_format);
+    // Local/PLZ/city geo search must exclude pure online (RPC returns them when p_mode null).
+    if (!wf || wf === "online") continue;
+
+    let dist = normalizeDistanceKm(row.distance);
+    if (dist === undefined) {
+      const lat = typeof row.lat === "number" ? row.lat : Number(row.lat);
+      const lng = typeof row.lng === "number" ? row.lng : Number(row.lng);
+      if (areValidCoordinates(lat, lng)) {
+        dist = normalizeDistanceKm(distanceKm(refLat, refLng, lat, lng));
+      }
+    }
+    if (dist === undefined) continue;
+
+    if (
+      !isWithinDualRadius({
+        workFormat: row.work_format,
+        distanceKm: dist,
+        userSearchRadiusKm,
+        specialistServiceRadiusKm: row.service_radius_km,
+      })
+    ) {
+      continue;
+    }
+
+    filtered.push({ ...row, distance: dist });
+  }
+
+  filtered.sort((a, b) => {
+    const da = typeof a.distance === "number" ? a.distance : Number.POSITIVE_INFINITY;
+    const db = typeof b.distance === "number" ? b.distance : Number.POSITIVE_INFINITY;
+    if (da !== db) return da - db;
+    return a.id.localeCompare(b.id);
+  });
+
+  return filtered;
 }
 
 async function filterRowsByIdFilter(
@@ -260,7 +364,7 @@ async function mapWithCategories(
   });
 }
 
-async function searchByCity(
+async function searchByCityIlike(
   supabase: ReturnType<typeof createSupabaseServerClient>,
   params: {
     cityVariants: string[];
@@ -304,6 +408,69 @@ async function searchByCity(
 
   const { data: rows, error } = await q;
   return { rows: (rows ?? []) as SpecialistRow[], error };
+}
+
+/**
+ * Last-resort city ILIKE when Nominatim geocode failed (no ref coords for dual-radius).
+ * Still excludes pure online; keeps offline/hybrid only when service_radius_km is allowlisted.
+ */
+function filterCityIlikeLocalRows(rows: SpecialistRow[]): SpecialistRow[] {
+  return rows.filter((row) => {
+    const wf = normalizeWorkFormat(row.work_format);
+    if (!wf || wf === "online") return false;
+    return isAllowedServiceRadiusKm(row.service_radius_km);
+  });
+}
+
+async function searchLocalByRadii(
+  supabase: ReturnType<typeof createSupabaseServerClient>,
+  params: {
+    refLat: number;
+    refLng: number;
+    /** When set, single hard-limit fetch — no progressive expand. */
+    explicitRadius: AllowedServiceRadiusKm | null;
+    lang: string | null;
+    categoryId: string | null;
+    offset: number;
+    idFilter?: string[] | null;
+  }
+): Promise<{ rows: SpecialistRow[]; radiusKm: number; error: unknown }> {
+  const radii: readonly AllowedServiceRadiusKm[] = params.explicitRadius
+    ? [params.explicitRadius]
+    : LOCAL_SEARCH_RADII_KM;
+
+  for (const radiusKm of radii) {
+    const { data: rows, error: rpcError } = await fetchByRadius(supabase, {
+      refLat: params.refLat,
+      refLng: params.refLng,
+      radiusKm,
+      lang: params.lang,
+      categoryId: params.categoryId,
+      offset: params.offset,
+      idFilter: params.idFilter,
+    });
+
+    if (rpcError) {
+      return { rows: [], radiusKm, error: rpcError };
+    }
+
+    const listRaw = (rows ?? []) as SpecialistRow[];
+    const listFiltered = await filterRowsByIdFilter(listRaw, params.idFilter);
+    const listNoTest = await excludeTestSpecialists(supabase, listFiltered);
+    const hydrated = await hydrateServiceRadiusKm(supabase, listNoTest);
+    const local = applyLocalDualRadiusFilter(
+      hydrated,
+      params.refLat,
+      params.refLng,
+      radiusKm
+    );
+
+    if (local.length > 0 || params.explicitRadius != null) {
+      return { rows: local, radiusKm, error: null };
+    }
+  }
+
+  return { rows: [], radiusKm: radii[radii.length - 1] ?? 100, error: null };
 }
 
 async function fetchIdsByOrFilter(
@@ -468,6 +635,7 @@ export async function searchSpecialists(
   const mode = input.mode?.trim().toLowerCase() || null;
   const place = input.place?.trim() || null;
   const normalizedQ = normalizeSearchQuery(input.q ?? null);
+  const explicitRadius = parseUserSearchRadius(input.radius);
   const offsetRaw = input.offset ?? 0;
   const offset = Number.isFinite(offsetRaw) && offsetRaw > 0 ? offsetRaw : 0;
   const hasQuery = Boolean(normalizedQ);
@@ -546,13 +714,46 @@ export async function searchSpecialists(
       return { data, mode: resultMode ?? "all" };
     }
 
-    // --- City-name search ---
+    // --- City-name search: Nominatim → radius RPC; ILIKE only if geocode fails ---
     if (!isPostalCodeLike(place)) {
       const normalized = normalizePlaceInput(place);
       if (!normalized) return { data: [], fallback: "invalid_plz" };
 
       const cityVariants = expandPlaceAliases(normalized);
-      const cityResult = await searchByCity(supabase, {
+      const geocodeQuery = cityVariants[0] ?? normalized;
+      const geocoded = await geocodeGermanCityViaNominatim(geocodeQuery);
+
+      if (geocoded) {
+        const localResult = await searchLocalByRadii(supabase, {
+          refLat: geocoded.lat,
+          refLng: geocoded.lng,
+          explicitRadius,
+          lang: normalizedLang,
+          categoryId,
+          offset,
+          idFilter: queryIdFilter,
+        });
+
+        if (localResult.error) {
+          console.error("[searchSpecialists] city radius error:", localResult.error);
+          return { data: [] };
+        }
+
+        if (localResult.rows.length > 0) {
+          const data = await mapWithCategories(supabase, localResult.rows);
+          return {
+            data,
+            mode: resultMode ?? "local",
+            radius: localResult.radiusKm,
+          };
+        }
+
+        return { data: [], fallback: "no_local_results", radius: localResult.radiusKm };
+      }
+
+      // Last-resort fallback: ILIKE on specialist_profiles.city when Nominatim geocode fails.
+      // Dual-radius cannot run without ref coordinates; online is still excluded.
+      const cityResult = await searchByCityIlike(supabase, {
         cityVariants,
         lang: normalizedLang,
         categoryId,
@@ -562,11 +763,13 @@ export async function searchSpecialists(
       });
 
       if (cityResult.error) {
-        console.error("[searchSpecialists] city error:", cityResult.error);
+        console.error("[searchSpecialists] city ilike fallback error:", cityResult.error);
         return { data: [] };
       }
 
-      const cityList = await excludeTestSpecialists(supabase, cityResult.rows);
+      const cityList = filterCityIlikeLocalRows(
+        await excludeTestSpecialists(supabase, cityResult.rows)
+      );
       if (cityList.length > 0) {
         const data = await mapWithCategories(supabase, cityList);
         return { data, mode: resultMode ?? "city" };
@@ -590,36 +793,35 @@ export async function searchSpecialists(
 
     const plzLat = plzData.lat != null ? Number(plzData.lat) : NaN;
     const plzLng = plzData.lng != null ? Number(plzData.lng) : NaN;
-    if (!Number.isFinite(plzLat) || !Number.isFinite(plzLng)) {
+    if (!areValidCoordinates(plzLat, plzLng)) {
       return { data: [], fallback: "invalid_plz" };
     }
 
-    for (const radiusKm of LOCAL_SEARCH_RADII_KM) {
-      const { data: rows, error: rpcError } = await fetchByRadius(supabase, {
-        refLat: plzLat,
-        refLng: plzLng,
-        radiusKm,
-        lang: normalizedLang,
-        categoryId,
-        offset,
-        idFilter: queryIdFilter,
-      });
+    const localResult = await searchLocalByRadii(supabase, {
+      refLat: plzLat,
+      refLng: plzLng,
+      explicitRadius,
+      lang: normalizedLang,
+      categoryId,
+      offset,
+      idFilter: queryIdFilter,
+    });
 
-      if (rpcError) {
-        console.error("[searchSpecialists] radius error:", rpcError);
-        return { data: [] };
-      }
-
-      const listRaw = (rows ?? []) as SpecialistRow[];
-      const listFiltered = await filterRowsByIdFilter(listRaw, queryIdFilter);
-      const list = await excludeTestSpecialists(supabase, listFiltered);
-      if (list.length > 0) {
-        const data = await mapWithCategories(supabase, list);
-        return { data, mode: resultMode ?? "local", radius: radiusKm };
-      }
+    if (localResult.error) {
+      console.error("[searchSpecialists] radius error:", localResult.error);
+      return { data: [] };
     }
 
-    return { data: [], fallback: "no_local_results" };
+    if (localResult.rows.length > 0) {
+      const data = await mapWithCategories(supabase, localResult.rows);
+      return {
+        data,
+        mode: resultMode ?? "local",
+        radius: localResult.radiusKm,
+      };
+    }
+
+    return { data: [], fallback: "no_local_results", radius: localResult.radiusKm };
   } catch (e: unknown) {
     console.error("[searchSpecialists] unexpected error:", e);
     return { data: [] };

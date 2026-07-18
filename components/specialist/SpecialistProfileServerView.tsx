@@ -1,5 +1,6 @@
 import type { PublicSpecialistProfile } from '@/lib/specialists/publicProfile';
 import SpecialistAvatarImage from '@/components/specialist/SpecialistAvatarImage';
+import { getPublicSpecialistLocation } from '@/lib/specialists/geography';
 
 interface SpecialistProfileServerViewProps {
   profile: PublicSpecialistProfile;
@@ -11,20 +12,28 @@ export default function SpecialistProfileServerView({ profile, lang }: Specialis
       ru: {
         fallbackName: 'Специалист',
         languagesLabel: 'Языки:',
+        onlineLabel: 'Онлайн',
       },
       ua: {
         fallbackName: 'Спеціаліст',
         languagesLabel: 'Мови:',
+        onlineLabel: 'Онлайн',
       },
       de: {
         fallbackName: 'Spezialist',
         languagesLabel: 'Sprachen:',
+        onlineLabel: 'Online',
       },
     }[lang];
 
     const displayName = profile.name ?? localized.fallbackName;
     const category = profile.categoryTitle ?? null;
-    const city = profile.city ?? null;
+    const locationLabel = getPublicSpecialistLocation({
+      workFormat: profile.workFormat,
+      city: profile.city,
+      postalCode: profile.postalCode,
+      onlineLabel: localized.onlineLabel,
+    }).label;
     const description = profile.description ?? null;
     const languages = Array.isArray(profile.languages) ? profile.languages.filter(Boolean) : [];
 
@@ -45,8 +54,8 @@ export default function SpecialistProfileServerView({ profile, lang }: Specialis
             </p>
           ) : null}
 
-          {city ? (
-            <p className="mt-4 text-base text-slate-700">{city}</p>
+          {locationLabel ? (
+            <p className="mt-4 text-base text-slate-700">{locationLabel}</p>
           ) : null}
 
           {languages.length > 0 ? (
