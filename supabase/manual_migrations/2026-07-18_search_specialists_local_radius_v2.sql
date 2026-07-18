@@ -1,27 +1,71 @@
+-- =============================================================================
 -- Freuly geography: search_specialists_local_radius v2 (DUAL RADIUS)
 -- MANUAL migration — DO NOT apply to staging/production without approval.
+-- This file is prepared only. Agent must not execute it against Supabase.
+-- =============================================================================
 --
--- BEFORE applying:
--- 1) Run 2026-07-18_geo_rpc_baseline_diagnostics.sql and archive pg_get_functiondef.
--- 2) Confirm grants / security_definer / search_path from baseline.
+-- Production baseline (captured 2026-07-18; dependency distance_km confirmed):
+--   public.search_specialists_local_radius(
+--     p_ref_lat double precision,
+--     p_ref_lng double precision,
+--     p_radius_km double precision,
+--     p_lang text DEFAULT NULL,
+--     p_category_id uuid DEFAULT NULL,
+--     p_mode text DEFAULT NULL,
+--     p_offset integer DEFAULT 0,
+--     p_limit integer DEFAULT 20
+--   )
+--   RETURNS TABLE(
+--     id uuid, name text, postal_code text, lat double precision, lng double precision,
+--     work_format text, category_id uuid, languages text[], is_pro boolean,
+--     rating numeric, distance double precision
+--   )
+--   LANGUAGE plpgsql, SECURITY INVOKER, owner postgres, VOLATILE
+--   EXECUTE: PUBLIC, anon, authenticated, service_role
+--   Old logic: is_active/is_visible, lat/lng NOT NULL, distance_km <= p_radius_km,
+--              optional lang/category; p_mode NULL = all formats;
+--              p_mode='online' = online only;
+--              ORDER BY distance ASC, is_pro DESC, rating DESC NULLS LAST
 --
--- Baseline observation (2026-07-18, PostgREST probes; full DDL unavailable without direct Postgres access):
---   args: p_ref_lat, p_ref_lng, p_radius_km (required);
---         p_lang, p_category_id, p_mode, p_offset, p_limit (optional)
---   returns: id, name, category_id, languages, work_format, postal_code, lat, lng,
---            distance, rating, is_pro
---   p_mode=null returned online+offline (online polluted local).
+-- Baseline hash (canonical contract + distance_km body, sha256):
+--   30084e7337e800663ebfeb53bdf748d45a366e5f7e9ded5caa9c2b357781268d
+--   (label: 2026-07-18_prod_search_local_radius+distance_km)
 --
--- v2 rules:
---   local rows: work_format IN ('offline','hybrid')
---   distance <= p_radius_km
---   AND distance <= specialists.service_radius_km
---   service_radius_km must be in (5,10,25,50,100)
---   only public visible specialists
---   pure online excluded from this RPC (use separate online query)
+-- Dependency: public.distance_km(lat1,lng1,lat2,lng2) — DO NOT ALTER in this migration.
+-- Note: production distance_km uses acos without clamp; floating-point edge cases
+--       near antipodes may yield NaN. Propose a separate clamp change if needed.
 --
--- Distance: Haversine via earth-like formula (no PostGIS requirement).
--- Replace body with PostGIS ST_DWithin if production baseline uses PostGIS.
+-- Projection assumptions (verify against archived pg_get_functiondef before apply):
+--   is_pro  ← COALESCE(specialists.is_featured, false)
+--   rating  ← specialist_rating_stats.rating_avg (LEFT JOIN LATERAL)
+-- If production used different expressions, replace both here and in the rollback
+-- file so ORDER BY is_pro/rating stays behaviour-compatible.
+--
+-- v2 changes (local-search only):
+--   - work_format restricted by p_mode (see below); online never returned
+--   - dual radius: distance <= p_radius_km AND distance <= service_radius_km
+--   - service_radius_km IN (5,10,25,50,100); null/invalid radius excluded
+--   - reject (0,0) coords
+--   - ranking: production order + s.id ASC tie-breaker
+--   - distance computed once via CROSS JOIN LATERAL
+--
+-- p_mode (compatible, safe):
+--   NULL / 'local' → offline + hybrid
+--   'offline'      → offline only
+--   'hybrid'       → hybrid only
+--   'online'       → empty set (no exception; online search is a separate app query)
+--   other          → empty set
+--
+-- Pagination: defaults unchanged (offset 0, limit 20).
+--   Internal normalize: negative offset → 0; NULL limit → 20; limit <= 0 → 0 rows.
+--   No upper cap (matches production; app passes p_limit=20).
+--
+-- Rollout risk: any external caller using p_mode='online' on this RPC will get []
+-- instead of online rows. In-repo caller always passes p_mode=null
+-- (lib/search/specialistSearch.ts). Online search uses a separate table query.
+--
+-- Rollback: supabase/manual-rollbacks/2026-07-18_search_specialists_local_radius_v2.sql
+-- =============================================================================
 
 BEGIN;
 
@@ -38,94 +82,134 @@ CREATE OR REPLACE FUNCTION public.search_specialists_local_radius(
 RETURNS TABLE (
   id uuid,
   name text,
-  category_id uuid,
-  languages text[],
-  work_format text,
   postal_code text,
   lat double precision,
   lng double precision,
-  distance double precision,
-  rating numeric,
+  work_format text,
+  category_id uuid,
+  languages text[],
   is_pro boolean,
-  service_radius_km integer
+  rating numeric,
+  distance double precision
 )
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  WITH params AS (
-    SELECT
-      p_ref_lat AS ref_lat,
-      p_ref_lng AS ref_lng,
-      GREATEST(p_radius_km, 0)::double precision AS user_radius_km,
-      GREATEST(COALESCE(p_offset, 0), 0) AS off,
-      LEAST(GREATEST(COALESCE(p_limit, 20), 1), 100) AS lim
-  ),
-  scored AS (
-    SELECT
-      s.id,
-      s.name,
-      s.category_id,
-      s.languages,
-      s.work_format,
-      s.postal_code,
-      s.lat,
-      s.lng,
-      (
-        6371 * 2 * ASIN(
-          SQRT(
-            POWER(SIN(RADIANS((s.lat - p.ref_lat) / 2)), 2) +
-            COS(RADIANS(p.ref_lat)) * COS(RADIANS(s.lat)) *
-            POWER(SIN(RADIANS((s.lng - p.ref_lng) / 2)), 2)
-          )
-        )
-      ) AS distance,
-      NULL::numeric AS rating,
-      COALESCE(s.is_featured, false) AS is_pro,
-      s.service_radius_km
-    FROM public.specialists s
-    CROSS JOIN params p
-    WHERE s.is_active IS TRUE
-      AND s.is_visible IS TRUE
-      AND s.status IN ('published_unverified', 'featured_verified', 'approved')
-      AND (s.is_test IS NULL OR s.is_test IS FALSE)
-      AND s.lat IS NOT NULL
-      AND s.lng IS NOT NULL
-      AND NOT (s.lat = 0 AND s.lng = 0)
-      AND s.work_format IN ('offline', 'hybrid')
-      AND s.service_radius_km IN (5, 10, 25, 50, 100)
-      AND (p_category_id IS NULL OR s.category_id = p_category_id)
-      AND (
-        p_lang IS NULL
-        OR s.languages @> ARRAY[p_lang]::text[]
-      )
-  )
-  SELECT
-    sc.id,
-    sc.name,
-    sc.category_id,
-    sc.languages,
-    sc.work_format,
-    sc.postal_code,
-    sc.lat,
-    sc.lng,
-    sc.distance,
-    sc.rating,
-    sc.is_pro,
-    sc.service_radius_km
-  FROM scored sc
-  CROSS JOIN params p
-  WHERE sc.distance <= p.user_radius_km
-    AND sc.distance <= sc.service_radius_km::double precision
-  ORDER BY sc.distance ASC, sc.id ASC
-  OFFSET (SELECT off FROM params)
-  LIMIT (SELECT lim FROM params);
-$$;
+LANGUAGE plpgsql
+VOLATILE
+SECURITY INVOKER
+AS $function$
+DECLARE
+  v_offset integer;
+  v_limit integer;
+BEGIN
+  v_offset := GREATEST(COALESCE(p_offset, 0), 0);
 
--- Grants: align with baseline after diagnostics. Typical PostgREST:
+  IF p_limit IS NULL THEN
+    v_limit := 20;
+  ELSIF p_limit <= 0 THEN
+    v_limit := 0;
+  ELSE
+    v_limit := p_limit;
+  END IF;
+
+  -- Safe empty for online / unknown modes (no exception → no PostgREST 500).
+  IF p_mode IS NOT NULL AND p_mode NOT IN ('offline', 'hybrid', 'local') THEN
+    RETURN;
+  END IF;
+
+  RETURN QUERY
+  SELECT
+    s.id,
+    s.name,
+    s.postal_code,
+    s.lat,
+    s.lng,
+    s.work_format,
+    s.category_id,
+    s.languages,
+    COALESCE(s.is_featured, false) AS is_pro,
+    rs.rating_avg AS rating,
+    d.dist AS distance
+  FROM public.specialists s
+  CROSS JOIN LATERAL (
+    SELECT public.distance_km(p_ref_lat, p_ref_lng, s.lat, s.lng) AS dist
+  ) d
+  LEFT JOIN LATERAL (
+    SELECT r.rating_avg
+    FROM public.specialist_rating_stats r
+    WHERE r.specialist_id = s.id
+  ) rs ON TRUE
+  WHERE s.is_active IS TRUE
+    AND s.is_visible IS TRUE
+    AND s.lat IS NOT NULL
+    AND s.lng IS NOT NULL
+    AND NOT (s.lat = 0::double precision AND s.lng = 0::double precision)
+    AND (
+      ((p_mode IS NULL OR p_mode = 'local') AND s.work_format IN ('offline', 'hybrid'))
+      OR (p_mode = 'offline' AND s.work_format = 'offline')
+      OR (p_mode = 'hybrid' AND s.work_format = 'hybrid')
+    )
+    AND s.service_radius_km IN (5, 10, 25, 50, 100)
+    AND d.dist <= p_radius_km
+    AND d.dist <= s.service_radius_km::double precision
+    AND (p_category_id IS NULL OR s.category_id = p_category_id)
+    AND (
+      p_lang IS NULL
+      OR s.languages @> ARRAY[p_lang]::text[]
+    )
+  ORDER BY
+    d.dist ASC,
+    COALESCE(s.is_featured, false) DESC,
+    rs.rating_avg DESC NULLS LAST,
+    s.id ASC
+  OFFSET v_offset
+  LIMIT v_limit;
+END;
+$function$;
+
+ALTER FUNCTION public.search_specialists_local_radius(
+  double precision, double precision, double precision, text, uuid, text, integer, integer
+) OWNER TO postgres;
+
+GRANT EXECUTE ON FUNCTION public.search_specialists_local_radius(
+  double precision, double precision, double precision, text, uuid, text, integer, integer
+) TO PUBLIC;
+
 GRANT EXECUTE ON FUNCTION public.search_specialists_local_radius(
   double precision, double precision, double precision, text, uuid, text, integer, integer
 ) TO anon, authenticated, service_role;
 
+COMMENT ON FUNCTION public.search_specialists_local_radius(
+  double precision, double precision, double precision, text, uuid, text, integer, integer
+) IS
+'v2 dual-radius local search (2026-07-18). Baseline: 2026-07-18_prod_search_local_radius+distance_km. Offline/hybrid only; distance <= user radius AND specialist service_radius_km allowlist; online → empty. Uses public.distance_km unchanged. SECURITY INVOKER. Rollback: supabase/manual-rollbacks/2026-07-18_search_specialists_local_radius_v2.sql';
+
+-- Verification (read-only; does not apply data changes)
+SELECT
+  n.nspname AS schema_name,
+  p.proname,
+  pg_get_function_identity_arguments(p.oid) AS identity_arguments,
+  pg_get_function_result(p.oid) AS result_type,
+  l.lanname AS language,
+  pg_get_userbyid(p.proowner) AS owner,
+  p.prosecdef AS security_definer,
+  p.provolatile AS volatility,
+  p.proconfig
+FROM pg_proc p
+JOIN pg_namespace n ON n.oid = p.pronamespace
+JOIN pg_language l ON l.oid = p.prolang
+WHERE n.nspname = 'public'
+  AND p.proname = 'search_specialists_local_radius';
+
+SELECT
+  r.grantee,
+  r.privilege_type
+FROM information_schema.routine_privileges r
+WHERE r.routine_schema = 'public'
+  AND r.routine_name = 'search_specialists_local_radius'
+ORDER BY r.grantee, r.privilege_type;
+
 COMMIT;
+
+-- =============================================================================
+-- ROLLBACK (do not run with this migration). Full SQL:
+--   supabase/manual-rollbacks/2026-07-18_search_specialists_local_radius_v2.sql
+-- =============================================================================
