@@ -24,7 +24,7 @@ export default async function SpecialistClaimInvalidPage({ searchParams }: Props
       </p>
       <p>
         Написать в поддержку:{" "}
-        <a href="mailto:info@freuly.de">info@freuly.de</a>.
+        <a href="mailto:freuly.de@gmail.com">freuly.de@gmail.com</a>.
       </p>
     </div>
   );

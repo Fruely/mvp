@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
 
     try {
       await sendEmail({
-        to: "info@freuly.de",
+        to: "freuly.de@gmail.com",
         subject: "Новая заявка специалиста на модерацию — Freuly",
         html: `<p>Получена новая заявка специалиста для модерации.</p>
 <ul>

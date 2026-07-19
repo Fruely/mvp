@@ -59,7 +59,7 @@ export default async function SpecialistDashboardBillingPage({
         ? t(dict, "dashboard.billingPage.checkout.cancelNotice")
         : null;
 
-  const mailtoHref = `mailto:info@freuly.de?subject=${encodeURIComponent(
+  const mailtoHref = `mailto:freuly.de@gmail.com?subject=${encodeURIComponent(
     t(dict, "dashboard.billingPage.mailtoSubject"),
   )}`;
 

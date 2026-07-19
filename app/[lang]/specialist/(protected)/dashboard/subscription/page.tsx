@@ -78,7 +78,7 @@ export default async function SpecialistDashboardSubscriptionPage({
   const startedAt = plan.started_at;
 
   const mailSubject = t(dict, "dashboard.subscriptionPage.mailto.subject");
-  const mailtoHref = `mailto:info@freuly.de?subject=${encodeURIComponent(mailSubject)}`;
+  const mailtoHref = `mailto:freuly.de@gmail.com?subject=${encodeURIComponent(mailSubject)}`;
 
   return (
     <div className="space-y-8">

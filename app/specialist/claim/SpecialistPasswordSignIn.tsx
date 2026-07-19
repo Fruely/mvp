@@ -107,8 +107,8 @@ export default function SpecialistPasswordSignIn() {
       </form>
       <p className="mt-4 text-xs text-gray-500">
         Нет пароля? Откройте ссылку из письма или запросите новую на{" "}
-        <a href="mailto:info@freuly.de" className="text-blue-600 underline">
-          info@freuly.de
+        <a href="mailto:freuly.de@gmail.com" className="text-blue-600 underline">
+          freuly.de@gmail.com
         </a>
         .
       </p>

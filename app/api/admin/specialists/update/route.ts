@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
   <h2>Заявка не одобрена</h2>
   <p>К сожалению, ваша заявка на платформе Freuly не была одобрена.</p>
   <p><strong>Причина:</strong> ${reason}</p>
-  <p>Если у вас есть вопросы, напишите на <a href="mailto:info@freuly.de">info@freuly.de</a></p>
+  <p>Если у вас есть вопросы, напишите на <a href="mailto:freuly.de@gmail.com">freuly.de@gmail.com</a></p>
 </div>`,
           });
         } catch (emailErr: unknown) {

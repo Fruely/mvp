@@ -54,7 +54,9 @@ export default async function SupportPage({ params }: { params: { lang: string }
         </p>
 
         <p className="text-blue-600 font-semibold">
-          info@freuly.de
+          <a href="mailto:freuly.de@gmail.com" className="hover:underline">
+            freuly.de@gmail.com
+          </a>
         </p>
 
         <p className="text-gray-700 mt-4">

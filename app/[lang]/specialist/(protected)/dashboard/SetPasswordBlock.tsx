@@ -31,7 +31,7 @@ export default function SetPasswordBlock() {
       const data = await res.json();
       if (!res.ok) {
         if (res.status === 401) {
-          setError("Сессия истекла. Перейдите по ссылке из письма снова или запросите новую на info@freuly.de.");
+          setError("Сессия истекла. Перейдите по ссылке из письма снова или запросите новую на freuly.de@gmail.com.");
           return;
         }
         setError((data.error as string) || "Не удалось установить пароль");
@@ -106,7 +106,7 @@ export default function SetPasswordBlock() {
       <p className="mt-3 text-xs text-amber-700">
         Можно отложить и задать пароль позже, но для доступа к кабинету после
         истечения ссылки потребуется пароль или запрос новой ссылки на
-        info@freuly.de.
+        freuly.de@gmail.com.
       </p>
     </section>
   );
