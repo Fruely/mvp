@@ -54,5 +54,26 @@
   "footer.address": "Address",
   "footer.privacy": "Privacy Policy",
   "footer.terms": "Terms of Service",
-  "footer.copyright": "© 2025 Froyle. All rights reserved."
+  "footer.copyright": "© 2025 Froyle. All rights reserved.",
+  "cookieConsent": {
+    "title": "Cookie settings",
+    "body": "We use cookies and similar technologies to ensure that the website works properly and, with your consent, to enable additional features. Necessary cookies are always used. Optional cookies (analytics, marketing, and external media) are used only after you give your consent. You can accept all, reject optional cookies, or adjust your settings.",
+    "privacyLink": "Privacy policy",
+    "privacyHref": "/datenschutzerklaerung",
+    "acceptAll": "Accept all",
+    "rejectOptional": "Reject optional",
+    "settings": "Settings",
+    "saveSelection": "Save selection",
+    "close": "Close",
+    "necessaryTitle": "Necessary",
+    "necessaryDescription": "Required for basic website operation. Always active.",
+    "necessaryAlwaysOn": "Always on",
+    "analyticsTitle": "Analytics",
+    "analyticsDescription": "Help us understand how the website is used (for example, Google Analytics).",
+    "marketingTitle": "Marketing",
+    "marketingDescription": "Used for advertising and marketing measurement when you consent.",
+    "externalMediaTitle": "External media",
+    "externalMediaDescription": "Allow loading external content (for example, embedded media) only after consent.",
+    "settingsAria": "Cookie category settings"
+  }
 }

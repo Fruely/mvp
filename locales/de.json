@@ -1181,5 +1181,26 @@
       "accrualTitle": "Neue Gutschrift: {{amount}}",
       "accrualBody": "Eine neue Fachkraft hat sich über Ihren Partnerlink registriert und bezahlt."
     }
+  },
+  "cookieConsent": {
+    "title": "Cookie-Einstellungen",
+    "body": "Wir verwenden Cookies und ähnliche Technologien, um den Betrieb der Website zu gewährleisten und, mit Ihrer Einwilligung, zusätzliche Funktionen zu nutzen. Notwendige Cookies werden immer verwendet. Optionale Cookies (Analyse, Marketing und externe Medien) werden nur nach Ihrer Einwilligung eingesetzt. Sie können alle akzeptieren, optionale Cookies ablehnen oder Ihre Einstellungen anpassen.",
+    "privacyLink": "Datenschutzerklärung",
+    "privacyHref": "/datenschutzerklaerung",
+    "acceptAll": "Alle akzeptieren",
+    "rejectOptional": "Optionale ablehnen",
+    "settings": "Einstellungen",
+    "saveSelection": "Auswahl speichern",
+    "close": "Schließen",
+    "necessaryTitle": "Notwendig",
+    "necessaryDescription": "Erforderlich für den Grundbetrieb der Website. Immer aktiv.",
+    "necessaryAlwaysOn": "Immer aktiv",
+    "analyticsTitle": "Analyse",
+    "analyticsDescription": "Helfen zu verstehen, wie die Website genutzt wird (z. B. Google Analytics).",
+    "marketingTitle": "Marketing",
+    "marketingDescription": "Werden für Werbe- und Marketingmessungen bei vorliegender Einwilligung verwendet.",
+    "externalMediaTitle": "Externe Medien",
+    "externalMediaDescription": "Ermöglichen das Laden externer Inhalte (z. B. eingebettete Medien) erst nach Einwilligung.",
+    "settingsAria": "Einstellungen der Cookie-Kategorien"
   }
 }
