@@ -18,7 +18,6 @@ const HTML_LANG_HEADER = "x-freuly-html-lang";
 const PATHNAME_HEADER = "x-freuly-pathname";
 
 function pathnameToHtmlLang(pathname: string): string {
-  if (pathname === "/impressum" || pathname === "/datenschutzerklaerung") return "de";
   const seg = pathname.split("/").filter(Boolean)[0];
   if (seg === "ua") return "uk";
   if (seg === "ru") return "ru";
@@ -36,8 +35,16 @@ function nextWithHtmlLang(request: NextRequest, pathname: string) {
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
-  if (pathname === "/impressum" || pathname === "/datenschutzerklaerung") {
-    return nextWithHtmlLang(request, pathname);
+  // Legacy legal URLs → localized German editions (SEO + external links)
+  if (pathname === "/impressum") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/de/impressum";
+    return NextResponse.redirect(url, 308);
+  }
+  if (pathname === "/datenschutzerklaerung") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/de/datenschutzerklaerung";
+    return NextResponse.redirect(url, 308);
   }
 
   // Legacy specialist dashboard URLs → /{lang}/specialist/dashboard

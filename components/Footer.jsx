@@ -59,12 +59,12 @@ export default function Footer(props) {
                 </Link>
               </li>
               <li>
-                <Link href="/impressum" className="hover:text-white">
+                <Link href={`${prefix}/impressum`} className="hover:text-white">
                   {t(dict, "footer.impressumLink")}
                 </Link>
               </li>
               <li>
-                <Link href="/datenschutzerklaerung" className="hover:text-white">
+                <Link href={`${prefix}/datenschutzerklaerung`} className="hover:text-white">
                   {t(dict, "footer.privacyLink")}
                 </Link>
               </li>

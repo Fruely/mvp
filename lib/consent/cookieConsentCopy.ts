@@ -36,7 +36,7 @@ function asCopy(raw: unknown): CookieConsentCopy {
     title: req("title"),
     body: req("body"),
     privacyLink: req("privacyLink"),
-    privacyHref: req("privacyHref") || "/datenschutzerklaerung",
+    privacyHref: req("privacyHref") || "/de/datenschutzerklaerung",
     acceptAll: req("acceptAll"),
     rejectOptional: req("rejectOptional"),
     settings: req("settings"),

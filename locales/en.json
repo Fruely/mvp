@@ -58,8 +58,8 @@
   "cookieConsent": {
     "title": "Cookie settings",
     "body": "We use cookies and similar technologies to ensure that the website works properly and, with your consent, to enable additional features. Necessary cookies are always used. Optional cookies (analytics, marketing, and external media) are used only after you give your consent. You can accept all, reject optional cookies, or adjust your settings.",
-    "privacyLink": "Privacy policy",
-    "privacyHref": "/datenschutzerklaerung",
+    "privacyLink": "Privacy policy (German version)",
+    "privacyHref": "/de/datenschutzerklaerung",
     "acceptAll": "Accept all",
     "rejectOptional": "Reject optional",
     "settings": "Settings",

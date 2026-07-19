@@ -87,6 +87,12 @@ export default async function SpecialistRulesPage({
 
   const back = t(dict, "specialistRules.backToHome", { defaultValue: "← На головну" });
   const startOffer = getStartOfferCopy(lang);
+  const translationNotice =
+    lang === "ru"
+      ? "Этот перевод предоставлен для удобства. В случае расхождений определяющей является немецкая версия."
+      : lang === "ua"
+        ? "Цей переклад надано для зручності. У разі розбіжностей визначальною є німецька версія."
+        : null;
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
@@ -99,6 +105,14 @@ export default async function SpecialistRulesPage({
 
       <article className="prose prose-gray max-w-none">
         <h1 className="mb-6 text-3xl font-bold text-gray-900">{sr.title}</h1>
+        {translationNotice ? (
+          <p
+            className="not-prose mb-4 rounded-lg border border-amber-200/80 bg-amber-50/80 px-3 py-2 text-sm text-amber-950/90"
+            role="note"
+          >
+            {translationNotice}
+          </p>
+        ) : null}
         <p className="text-lg text-gray-700">{sr.intro}</p>
 
         <ol className="mt-8 list-decimal space-y-8 pl-5 marker:font-semibold">

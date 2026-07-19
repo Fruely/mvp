@@ -61,6 +61,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.4,
     });
 
+    entries.push({
+      url: `${SITE_DOMAIN}/${lang}/impressum`,
+      lastModified,
+      changeFrequency: "yearly",
+      priority: 0.3,
+    });
+
+    entries.push({
+      url: `${SITE_DOMAIN}/${lang}/datenschutzerklaerung`,
+      lastModified,
+      changeFrequency: "yearly",
+      priority: 0.3,
+    });
+
     for (const slug of SEO_CATEGORY_SLUGS) {
       entries.push({
         url: `${SITE_DOMAIN}/${lang}/${slug}`,
@@ -70,20 +84,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
   }
-
-  entries.push({
-    url: `${SITE_DOMAIN}/impressum`,
-    lastModified,
-    changeFrequency: "yearly",
-    priority: 0.3,
-  });
-
-  entries.push({
-    url: `${SITE_DOMAIN}/datenschutzerklaerung`,
-    lastModified,
-    changeFrequency: "yearly",
-    priority: 0.3,
-  });
 
   const supabase = createSupabaseServerClient();
   const { data: specialists } = await supabase

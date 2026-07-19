@@ -137,6 +137,24 @@ export function hreflangSpecialistRules(): HreflangTriple {
   };
 }
 
+export function hreflangImpressum(): HreflangTriple & { "x-default": string } {
+  return {
+    uk: `${SITE_DOMAIN}/ua/impressum`,
+    ru: `${SITE_DOMAIN}/ru/impressum`,
+    de: `${SITE_DOMAIN}/de/impressum`,
+    "x-default": `${SITE_DOMAIN}/de/impressum`,
+  };
+}
+
+export function hreflangDatenschutz(): HreflangTriple & { "x-default": string } {
+  return {
+    uk: `${SITE_DOMAIN}/ua/datenschutzerklaerung`,
+    ru: `${SITE_DOMAIN}/ru/datenschutzerklaerung`,
+    de: `${SITE_DOMAIN}/de/datenschutzerklaerung`,
+    "x-default": `${SITE_DOMAIN}/de/datenschutzerklaerung`,
+  };
+}
+
 /** hreflang for app/[lang]/{slug} SEO category landing pages. */
 export function hreflangSeoCategory(slug: string): HreflangTriple & { "x-default": string } {
   return {

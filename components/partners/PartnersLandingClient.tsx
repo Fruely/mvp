@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { t, type Dictionary } from "@/lib/i18n";
+import Link from "next/link";
+import { isSupportedLang, t, type Dictionary, type Lang } from "@/lib/i18n";
+import { privacyPath } from "@/lib/legal/paths";
 
 type Props = {
   lang: string;
@@ -173,7 +175,17 @@ export default function PartnersLandingClient({ lang, dict }: Props) {
                 onChange={(e) => setForm((f) => ({ ...f, privacy_accepted: e.target.checked }))}
                 required
               />
-              <span>{t(dict, "partner.form.privacy")}</span>
+              <span>
+                {t(dict, "partner.form.privacy")}{" "}
+                <Link
+                  href={privacyPath(isSupportedLang(lang) ? (lang as Lang) : "de")}
+                  className="underline underline-offset-2 hover:opacity-80"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t(dict, "footer.privacyLink")}
+                </Link>
+              </span>
             </label>
             {error ? <p className="text-sm text-red-600">{error}</p> : null}
             <button

@@ -21,6 +21,20 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/impressum",
+        destination: "/de/impressum",
+        permanent: true,
+      },
+      {
+        source: "/datenschutzerklaerung",
+        destination: "/de/datenschutzerklaerung",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default withSerwist(nextConfig);
