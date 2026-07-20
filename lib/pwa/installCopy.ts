@@ -54,17 +54,17 @@ export const INSTALL_SHARED_COPY: Record<Lang, InstallSharedCopy> = {
     chromeStepHome: "Оберіть «Додати на екран «Додому»»",
     chromeStepAdd: "Натисніть «Додати»",
     androidHeading: "Android · Chrome",
-    androidHint: "Натисніть «Додати на телефон» і підтвердіть встановлення в системному вікні.",
+    androidHint: "Натисніть «Встановити застосунок» і підтвердіть встановлення в системному вікні.",
     androidFallback:
       "Якщо вікно встановлення не з’явилось: меню Chrome (⋮) → «Встановити додаток» або «Додати на головний екран».",
     unsupportedHint: "Відкрийте сайт у Safari (iPhone) або Chrome (Android), щоб додати Freuly.",
     openSearch: "Відкрити пошук",
     openCabinet: "Увійти спеціалісту",
     closeInstructions: "Закрити",
-    ctaInstall: "Встановити Freuly",
-    ctaHow: "Як додати на екран",
-    ctaAddPhone: "Додати на телефон",
-    ctaAddCabinet: "Додати кабінет на телефон",
+    ctaInstall: "Встановити застосунок",
+    ctaHow: "Встановити застосунок",
+    ctaAddPhone: "Встановити застосунок",
+    ctaAddCabinet: "Встановити застосунок",
     guideTitle: "Інструкція зі встановлення",
   },
   ru: {
@@ -83,17 +83,17 @@ export const INSTALL_SHARED_COPY: Record<Lang, InstallSharedCopy> = {
     chromeStepHome: "Выберите «Добавить на экран «Домой»»",
     chromeStepAdd: "Нажмите «Добавить»",
     androidHeading: "Android · Chrome",
-    androidHint: "Нажмите «Добавить на телефон» и подтвердите установку в системном окне.",
+    androidHint: "Нажмите «Установить приложение» и подтвердите установку в системном окне.",
     androidFallback:
       "Если окно установки не появилось: меню Chrome (⋮) → «Установить приложение» или «Добавить на главный экран».",
     unsupportedHint: "Откройте сайт в Safari (iPhone) или Chrome (Android), чтобы добавить Freuly.",
     openSearch: "Открыть поиск",
     openCabinet: "Войти специалисту",
     closeInstructions: "Закрыть",
-    ctaInstall: "Установить Freuly",
-    ctaHow: "Как добавить на экран",
-    ctaAddPhone: "Добавить на телефон",
-    ctaAddCabinet: "Добавить кабинет на телефон",
+    ctaInstall: "Установить приложение",
+    ctaHow: "Установить приложение",
+    ctaAddPhone: "Установить приложение",
+    ctaAddCabinet: "Установить приложение",
     guideTitle: "Инструкция по установке",
   },
   de: {
@@ -113,7 +113,7 @@ export const INSTALL_SHARED_COPY: Record<Lang, InstallSharedCopy> = {
     chromeStepAdd: "Tippen Sie auf «Hinzufügen»",
     androidHeading: "Android · Chrome",
     androidHint:
-      "Tippen Sie auf «Zum Telefon hinzufügen» und bestätigen Sie die Installation im Systemdialog.",
+      "Tippen Sie auf «App installieren» und bestätigen Sie die Installation im Systemdialog.",
     androidFallback:
       "Wenn kein Dialog erscheint: Chrome-Menü (⋮) → «App installieren» oder «Zum Startbildschirm hinzufügen».",
     unsupportedHint:
@@ -121,10 +121,10 @@ export const INSTALL_SHARED_COPY: Record<Lang, InstallSharedCopy> = {
     openSearch: "Suche öffnen",
     openCabinet: "Als Spezialist anmelden",
     closeInstructions: "Schließen",
-    ctaInstall: "Freuly installieren",
-    ctaHow: "So zum Startbildschirm hinzufügen",
-    ctaAddPhone: "Zum Telefon hinzufügen",
-    ctaAddCabinet: "Dashboard zum Telefon hinzufügen",
+    ctaInstall: "App installieren",
+    ctaHow: "App installieren",
+    ctaAddPhone: "App installieren",
+    ctaAddCabinet: "App installieren",
     guideTitle: "Installationsanleitung",
   },
 };
@@ -156,22 +156,22 @@ export function landingHeroMessage(lang: Lang, audience: InstallAudience): Insta
 
   if (lang === "ua") {
     return {
-      title: "Усі спеціалісти поруч і онлайн — в одному додатку Freuly",
-      body: "Шукайте швидше з головного екрана телефону — без зайвих вкладок.",
-      cta: shared.ctaAddPhone,
+      title: "Встановіть мобільний застосунок Freuly",
+      body: "Будьте завжди на зв’язку",
+      cta: shared.ctaInstall,
     };
   }
   if (lang === "de") {
     return {
-      title: "Alle Spezialisten in der Nähe und online — in einer Freuly-App",
-      body: "Suchen Sie schneller direkt vom Startbildschirm — ohne extra Tabs.",
-      cta: shared.ctaAddPhone,
+      title: "Installieren Sie die Freuly-App",
+      body: "Bleiben Sie jederzeit verbunden",
+      cta: shared.ctaInstall,
     };
   }
   return {
-    title: "Все специалисты рядом и онлайн — в одном приложении Freuly",
-    body: "Ищите быстрее с главного экрана телефона — без лишних вкладок.",
-    cta: shared.ctaAddPhone,
+    title: "Установите мобильное приложение Freuly",
+    body: "Будьте всегда на связи",
+    cta: shared.ctaInstall,
   };
 }
 
@@ -186,22 +186,22 @@ export function resolveInstallMessage(
   if (placement === "home_mobile") {
     if (lang === "ua") {
       return {
-        title: "Freuly завжди під рукою",
-        body: "Додайте Freuly на головний екран і швидше повертайтеся до пошуку спеціалістів.",
-        cta: shared.ctaAddPhone,
+        title: "Встановіть мобільний застосунок Freuly",
+        body: "Будьте завжди на зв’язку",
+        cta: shared.ctaInstall,
       };
     }
     if (lang === "de") {
       return {
-        title: "Freuly immer griffbereit",
-        body: "Fügen Sie Freuly zum Startbildschirm hinzu und kehren Sie schneller zur Spezialistensuche zurück.",
-        cta: shared.ctaAddPhone,
+        title: "Installieren Sie die Freuly-App",
+        body: "Bleiben Sie jederzeit verbunden",
+        cta: shared.ctaInstall,
       };
     }
     return {
-      title: "Freuly всегда под рукой",
-      body: "Добавьте Freuly на главный экран и быстрее возвращайтесь к поиску специалистов.",
-      cta: shared.ctaAddPhone,
+      title: "Установите мобильное приложение Freuly",
+      body: "Будьте всегда на связи",
+      cta: shared.ctaInstall,
     };
   }
 
@@ -274,57 +274,52 @@ export function resolveInstallMessage(
   if (placement === "install_page") {
     const hero = landingHeroMessage(lang, audience);
     return {
-      title: audience === "specialist" ? shared.ctaAddCabinet : shared.ctaAddPhone,
-      body:
-        lang === "ua"
-          ? "На Android натисніть кнопку встановлення. На iPhone виконайте кроки в інструкції нижче."
-          : lang === "de"
-            ? "Unter Android tippen Sie auf die Installationsschaltfläche. Auf dem iPhone folgen Sie der Anleitung unten."
-            : "На Android нажмите кнопку установки. На iPhone выполните шаги в инструкции ниже.",
+      title: hero.title,
+      body: hero.body,
       cta: hero.cta,
     };
   }
 
-  // app_shell + button fallback
+  // app_shell + button fallback — client product copy; specialist keeps cabinet framing
   if (audience === "specialist") {
     if (lang === "ua") {
       return {
         title: "Кабінет Freuly завжди під рукою",
         body: "Додайте кабінет на головний екран телефону.",
-        cta: shared.ctaAddCabinet,
+        cta: shared.ctaInstall,
       };
     }
     if (lang === "de") {
       return {
         title: "Freuly-Dashboard immer griffbereit",
         body: "Fügen Sie das Dashboard zum Startbildschirm hinzu.",
-        cta: shared.ctaAddCabinet,
+        cta: shared.ctaInstall,
       };
     }
     return {
       title: "Кабинет Freuly всегда под рукой",
       body: "Добавьте кабинет на главный экран телефона.",
-      cta: shared.ctaAddCabinet,
+      cta: shared.ctaInstall,
     };
   }
 
   if (lang === "ua") {
     return {
-      title: "Freuly завжди під рукою",
-      body: "Додайте Freuly на головний екран і шукайте швидше.",
-      cta: shared.ctaAddPhone,
+      title: "Встановіть мобільний застосунок Freuly",
+      body: "Будьте завжди на зв’язку",
+      cta: shared.ctaInstall,
     };
   }
   if (lang === "de") {
     return {
-      title: "Freuly immer griffbereit",
-      body: "Fügen Sie Freuly zum Startbildschirm hinzu und suchen Sie schneller.",
-      cta: shared.ctaAddPhone,
+      title: "Installieren Sie die Freuly-App",
+      body: "Bleiben Sie jederzeit verbunden",
+      cta: shared.ctaInstall,
     };
   }
   return {
-    title: "Freuly всегда под рукой",
-    body: "Добавьте Freuly на главный экран и ищите быстрее.",
-    cta: shared.ctaAddPhone,
+    title: "Установите мобильное приложение Freuly",
+    body: "Будьте всегда на связи",
+    cta: shared.ctaInstall,
   };
 }

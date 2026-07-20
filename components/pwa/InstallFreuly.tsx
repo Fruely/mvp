@@ -94,6 +94,8 @@ export default function InstallFreuly({
   const titleId = useId();
   const [visible, setVisible] = useState(false);
   const [platform, setPlatform] = useState<PlatformCategory>("unknown");
+  /** React state — deferredRef alone does not re-render when BIP arrives. */
+  const [canPrompt, setCanPrompt] = useState(false);
   const [busy, setBusy] = useState(false);
   const deferredRef = useRef<BeforeInstallPromptEvent | null>(null);
   const viewedRef = useRef(false);
@@ -101,7 +103,7 @@ export default function InstallFreuly({
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const refreshVisibility = (canPrompt: boolean, plat: PlatformCategory) => {
+    const refreshVisibility = (promptAvailable: boolean, plat: PlatformCategory) => {
       const dismissedAt = parseDismissedAt(window.localStorage.getItem(INSTALL_DISMISS_KEY));
       const installedFlag = window.localStorage.getItem(INSTALL_DONE_KEY) === "1";
       const show = shouldShowInstallCta({
@@ -109,7 +111,7 @@ export default function InstallFreuly({
         installedFlag,
         dismissedAtMs: dismissedAt,
         nowMs: Date.now(),
-        canPrompt,
+        canPrompt: promptAvailable,
         platform: plat,
         allowUnsupportedHint: placement === "install_page",
       });
@@ -122,17 +124,21 @@ export default function InstallFreuly({
       hasBeforeInstallPromptApi: "onbeforeinstallprompt" in window,
     });
     setPlatform(plat);
+    // Initial paint: Android must show even if BIP has not fired yet.
     refreshVisibility(Boolean(deferredRef.current), plat);
+    setCanPrompt(Boolean(deferredRef.current));
 
     const onBip = (event: Event) => {
       event.preventDefault();
       deferredRef.current = event as BeforeInstallPromptEvent;
+      setCanPrompt(true);
       refreshVisibility(true, plat);
     };
 
     const onInstalled = () => {
       window.localStorage.setItem(INSTALL_DONE_KEY, "1");
       deferredRef.current = null;
+      setCanPrompt(false);
       setVisible(false);
       trackPwaInstallEvent(
         "pwa_app_installed",
@@ -179,14 +185,20 @@ export default function InstallFreuly({
 
   if (!visible) return null;
 
-  const canPrompt = Boolean(deferredRef.current);
   const isIos = platform === "ios";
-  const canOfferAction = canPrompt || isIos;
-  /** iOS: open localized guide. On the guide page itself, rely on static steps. */
-  const linkToInstallPage = isIos && placement !== "install_page";
-  const showPrimaryCta = !(placement === "install_page" && isIos && !canPrompt);
-  const showAndroidFallback =
-    placement === "install_page" && platform === "chromium" && !canPrompt;
+  const isAndroid = platform === "chromium";
+  /** Offer a primary action on iOS (guide) and Android (prompt or guide). */
+  const canOfferAction = canPrompt || isIos || isAndroid;
+  /**
+   * Link to localized guide: iOS always (except on the guide page itself);
+   * Android when native prompt is not available yet / was missed.
+   */
+  const linkToInstallPage =
+    placement !== "install_page" && (isIos || (isAndroid && !canPrompt));
+  /** On the guide page without a native prompt, steps/fallback replace the CTA. */
+  const showPrimaryCta = !(placement === "install_page" && !canPrompt);
+  /** Compact home uses the CTA → guide; full fallback copy lives on the install page. */
+  const showAndroidFallback = isAndroid && !canPrompt && placement === "install_page";
 
   const guideHref = installPageHref(lang, {
     audience,
@@ -194,13 +206,10 @@ export default function InstallFreuly({
     medium,
     campaign,
     content,
+    platform: isAndroid ? "android" : isIos ? "ios" : undefined,
   });
 
-  const primaryLabel = linkToInstallPage
-    ? shared.ctaHow
-    : canPrompt || !isIos
-      ? message.cta
-      : shared.ctaHow;
+  const primaryLabel = message.cta;
 
   const track = (name: Parameters<typeof trackPwaInstallEvent>[0]) => {
     trackPwaInstallEvent(
@@ -235,6 +244,7 @@ export default function InstallFreuly({
         await deferredRef.current.prompt();
         const choice = await deferredRef.current.userChoice;
         deferredRef.current = null;
+        setCanPrompt(false);
         if (choice.outcome === "accepted") {
           window.localStorage.setItem(INSTALL_DONE_KEY, "1");
           setVisible(false);
@@ -250,34 +260,39 @@ export default function InstallFreuly({
 
   const onGuideLinkClick = () => {
     track("pwa_install_cta_click");
-    track("pwa_ios_instructions_opened");
+    if (isIos) track("pwa_ios_instructions_opened");
   };
 
+  const isCompact = variant === "compact";
   const shell =
     variant === "button"
       ? "inline-flex"
-      : variant === "compact"
-        ? "rounded-xl border border-orange-200 bg-orange-50/80 p-3"
+      : isCompact
+        ? "rounded-xl border border-orange-200 bg-orange-50/90 p-2.5"
         : variant === "dashboard"
           ? "rounded-2xl border border-orange-200 bg-gradient-to-br from-[#FFF7ED] to-[#FFF0E4] p-4"
           : variant === "landing"
             ? "rounded-2xl border border-orange-200 bg-white p-4"
             : "rounded-2xl border border-orange-200 bg-white p-4";
 
+  const ctaClass = isCompact
+    ? `${INSTALL_CTA_CLASS} w-full min-h-[40px] py-2 text-sm`
+    : INSTALL_CTA_CLASS;
+
   const primaryControl = linkToInstallPage ? (
-    <Link href={guideHref} onClick={onGuideLinkClick} className={INSTALL_CTA_CLASS}>
+    <Link href={guideHref} onClick={onGuideLinkClick} className={ctaClass}>
       {primaryLabel}
     </Link>
   ) : (
-        <button
-          type="button"
-          onClick={() => void onPrimary()}
-          disabled={busy}
-      className={INSTALL_CTA_CLASS}
-        >
-          {primaryLabel}
-        </button>
-    );
+    <button
+      type="button"
+      onClick={() => void onPrimary()}
+      disabled={busy}
+      className={ctaClass}
+    >
+      {primaryLabel}
+    </button>
+  );
 
   if (variant === "button") {
     if (!canOfferAction) return null;
@@ -289,17 +304,34 @@ export default function InstallFreuly({
       className={`min-w-0 ${shell} ${className}`}
       aria-labelledby={titleId}
       data-pwa-install-placement={placement}
+      data-pwa-platform={platform}
+      data-pwa-can-prompt={canPrompt ? "1" : "0"}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className={`flex items-start justify-between ${isCompact ? "gap-2" : "gap-3"}`}>
         <div className="min-w-0">
-          <h2 id={titleId} className="text-sm font-semibold text-gray-900 sm:text-base">
+          <h2
+            id={titleId}
+            className={
+              isCompact
+                ? "text-sm font-semibold leading-snug text-gray-900"
+                : "text-sm font-semibold text-gray-900 sm:text-base"
+            }
+          >
             {message.title}
           </h2>
-          <p className="mt-1 text-sm leading-relaxed text-gray-600 break-words">{message.body}</p>
-          {canPrompt ? (
+          <p
+            className={
+              isCompact
+                ? "mt-0.5 text-xs leading-snug text-gray-600 break-words"
+                : "mt-1 text-sm leading-relaxed text-gray-600 break-words"
+            }
+          >
+            {message.body}
+          </p>
+          {!isCompact && canPrompt && isAndroid ? (
             <p className="mt-1.5 text-xs leading-relaxed text-gray-500">{shared.androidHint}</p>
           ) : null}
-          {showAndroidFallback ? (
+          {!isCompact && showAndroidFallback ? (
             <p className="mt-1.5 text-xs leading-relaxed text-gray-500">{shared.androidFallback}</p>
           ) : null}
         </div>
@@ -309,11 +341,11 @@ export default function InstallFreuly({
           className="shrink-0 rounded-lg px-2 py-1 text-xs font-medium text-gray-500 hover:bg-black/[0.04] hover:text-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
           aria-label={shared.dismiss}
         >
-          {shared.dismiss}
+          {isCompact ? "×" : shared.dismiss}
         </button>
       </div>
 
-      <div className="mt-3 flex min-w-0 flex-wrap gap-2">
+      <div className={`flex min-w-0 flex-wrap gap-2 ${isCompact ? "mt-2" : "mt-3"}`}>
         {canOfferAction && showPrimaryCta ? (
           primaryControl
         ) : !canOfferAction ? (

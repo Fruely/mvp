@@ -573,25 +573,36 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
   return (
     <div className="flex min-h-[100dvh] flex-col">
       <>
-      <section className="py-16 sm:py-24 bg-gradient-to-b from-white to-blue-50">
-        <div className="max-w-7xl mx-auto px-3 md:px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-tight text-textPrimary">
+      <section className="bg-gradient-to-b from-white to-blue-50 pt-5 pb-6 sm:py-16 md:py-24">
+        <div className="mx-auto max-w-7xl px-3 text-center md:px-4">
+          <h1 className="text-3xl font-semibold tracking-tight leading-tight text-textPrimary sm:text-4xl md:text-5xl">
             <span className="block">{copy.titleLines[0]}</span>
             <span className="block">{copy.titleLines[1]}</span>
             <span className="block">{copy.titleLines[2]}</span>
           </h1>
-          <p className="text-lg font-normal text-textSecondary mt-6 max-w-2xl mx-auto">
+          <p className="mx-auto mt-3 max-w-2xl text-base font-normal text-textSecondary sm:mt-6 sm:text-lg">
             {copy.subtitle}
           </p>
+
+          {/* Compact install in first mobile viewport — before tall wizard chips */}
+          <div className="mx-auto mt-4 w-full max-w-xl text-left md:hidden">
+            <InstallFreuly
+              lang={lang}
+              audience="client"
+              placement="home_mobile"
+              variant="compact"
+            />
+          </div>
 
           <HomeWizardSearch
             lang={lang}
             dict={dict}
             submitLabel={copy.search}
             initialCity={placeFromUrl}
+            className="mt-4 max-w-4xl mx-auto rounded-xl bg-white shadow-soft border border-gray-100 p-3 sm:mt-8 sm:p-6 text-left"
           />
 
-          <div className="mt-5">
+          <div className="mt-4 sm:mt-5">
             <Link
               href={`/${lang}/service-search`}
               className="inline-flex min-h-[44px] items-center justify-center rounded-xl border-2 border-primary/20 bg-white px-5 py-2.5 text-sm font-semibold text-primary shadow-sm transition hover:border-primary/40 hover:bg-blue-50"
@@ -600,21 +611,12 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             </Link>
           </div>
 
-          <div className="mt-6 text-sm font-normal text-textSecondary flex flex-wrap justify-center gap-3">
+          <div className="mt-4 hidden flex-wrap justify-center gap-3 text-sm font-normal text-textSecondary sm:mt-6 sm:flex">
             <span>{copy.popularLabel}</span>
             <span>{t(dict, "home.hero.popularTags")}</span>
           </div>
         </div>
       </section>
-
-      <div className="md:hidden mx-auto w-full max-w-xl px-3 -mt-4 mb-2 text-left">
-        <InstallFreuly
-          lang={lang}
-          audience="client"
-          placement="home_mobile"
-          variant="card"
-        />
-      </div>
 
       <section className="pt-12 pb-10 md:pt-16 md:pb-12">
         <div className="max-w-5xl mx-auto px-3 md:px-4 text-center">

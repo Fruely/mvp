@@ -88,6 +88,8 @@ export function installPageHref(
     medium?: string;
     campaign?: string;
     content?: string;
+    /** Optional guide focus, e.g. android fallback from home CTA. */
+    platform?: "android" | "ios";
   }
 ): string {
   const params = new URLSearchParams();
@@ -96,10 +98,16 @@ export function installPageHref(
   if (input?.medium) params.set("utm_medium", input.medium);
   if (input?.campaign) params.set("utm_campaign", input.campaign);
   if (input?.content) params.set("utm_content", input.content);
+  if (input?.platform) params.set("platform", input.platform);
   const qs = params.toString();
   return qs ? `/${lang}/install?${qs}` : `/${lang}/install`;
 }
 
+/**
+ * Visibility for the install surface (card/banner), not the native prompt.
+ * Android (chromium) must stay visible even before beforeinstallprompt —
+ * otherwise the whole block returns null when the event is late or missed.
+ */
 export function shouldShowInstallCta(input: {
   isStandalone: boolean;
   installedFlag: boolean;
@@ -115,14 +123,27 @@ export function shouldShowInstallCta(input: {
   if (isDismissCoolingDown(input.dismissedAtMs, input.nowMs)) return false;
   if (input.canPrompt) return true;
   if (input.platform === "ios") return true;
-  // Unsupported: no prompt and not iOS → hide working install button,
-  // unless the surface explicitly needs a neutral fallback hint.
+  // Android Chrome (and Chromium installable browsers): show CTA with native
+  // prompt when available, otherwise guide/fallback — never hide the block.
+  if (input.platform === "chromium") return true;
+  // Unsupported desktop: hide working install button unless the surface
+  // explicitly needs a neutral fallback hint (install page).
   if (input.allowUnsupportedHint) return true;
   return false;
 }
 
 export function preserveUtmParams(searchParams: URLSearchParams): string {
-  const keep = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "source", "campaign", "audience"];
+  const keep = [
+    "utm_source",
+    "utm_medium",
+    "utm_campaign",
+    "utm_content",
+    "utm_term",
+    "source",
+    "campaign",
+    "audience",
+    "platform",
+  ];
   const next = new URLSearchParams();
   for (const key of keep) {
     const v = searchParams.get(key);
