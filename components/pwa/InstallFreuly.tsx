@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import Link from "next/link";
 import type { Lang } from "@/lib/i18n";
 import { INSTALL_SHARED_COPY, resolveInstallMessage } from "@/lib/pwa/installCopy";
 import {
   INSTALL_DISMISS_KEY,
   INSTALL_DONE_KEY,
   classifyPlatform,
+  installPageHref,
   parseDismissedAt,
   shouldShowInstallCta,
   type InstallAudience,
@@ -20,6 +22,10 @@ type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 };
+
+/** Semantic install CTA — orange, distinct from platform blue / specialist green. */
+const INSTALL_CTA_CLASS =
+  "inline-flex min-h-[44px] flex-1 items-center justify-center rounded-xl bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700 disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 sm:flex-none";
 
 function readStandalone(): boolean {
   if (typeof window === "undefined") return false;
@@ -88,7 +94,6 @@ export default function InstallFreuly({
   const titleId = useId();
   const [visible, setVisible] = useState(false);
   const [platform, setPlatform] = useState<PlatformCategory>("unknown");
-  const [showIosHelp, setShowIosHelp] = useState(false);
   const [busy, setBusy] = useState(false);
   const deferredRef = useRef<BeforeInstallPromptEvent | null>(null);
   const viewedRef = useRef(false);
@@ -177,7 +182,25 @@ export default function InstallFreuly({
   const canPrompt = Boolean(deferredRef.current);
   const isIos = platform === "ios";
   const canOfferAction = canPrompt || isIos;
-  const primaryLabel = canPrompt || !isIos ? message.cta : shared.ctaHow;
+  /** iOS: open localized guide. On the guide page itself, rely on static steps. */
+  const linkToInstallPage = isIos && placement !== "install_page";
+  const showPrimaryCta = !(placement === "install_page" && isIos && !canPrompt);
+  const showAndroidFallback =
+    placement === "install_page" && platform === "chromium" && !canPrompt;
+
+  const guideHref = installPageHref(lang, {
+    audience,
+    source,
+    medium,
+    campaign,
+    content,
+  });
+
+  const primaryLabel = linkToInstallPage
+    ? shared.ctaHow
+    : canPrompt || !isIos
+      ? message.cta
+      : shared.ctaHow;
 
   const track = (name: Parameters<typeof trackPwaInstallEvent>[0]) => {
     trackPwaInstallEvent(
@@ -199,7 +222,6 @@ export default function InstallFreuly({
   const onDismiss = () => {
     window.localStorage.setItem(INSTALL_DISMISS_KEY, String(Date.now()));
     setVisible(false);
-    setShowIosHelp(false);
     track("pwa_install_dismissed");
   };
 
@@ -223,45 +245,48 @@ export default function InstallFreuly({
       } finally {
         setBusy(false);
       }
-      return;
     }
+  };
 
-    if (isIos) {
-      setShowIosHelp(true);
-      track("pwa_ios_instructions_opened");
-    }
+  const onGuideLinkClick = () => {
+    track("pwa_install_cta_click");
+    track("pwa_ios_instructions_opened");
   };
 
   const shell =
     variant === "button"
       ? "inline-flex"
       : variant === "compact"
-        ? "rounded-xl border border-[#DDE1FF] bg-[#F7F8FF] p-3"
+        ? "rounded-xl border border-orange-200 bg-orange-50/80 p-3"
         : variant === "dashboard"
-          ? "rounded-2xl border border-[#F3C79C] bg-gradient-to-br from-[#FFF7ED] to-[#FFF0E4] p-4"
+          ? "rounded-2xl border border-orange-200 bg-gradient-to-br from-[#FFF7ED] to-[#FFF0E4] p-4"
           : variant === "landing"
-            ? "rounded-2xl border border-[#DDE1FF] bg-white p-4"
-            : "rounded-2xl border border-[#DDE1FF] bg-white p-4";
+            ? "rounded-2xl border border-orange-200 bg-white p-4"
+            : "rounded-2xl border border-orange-200 bg-white p-4";
 
-  if (variant === "button") {
-    if (!canOfferAction) return null;
-    return (
-      <div className={`${shell} ${className}`}>
+  const primaryControl = linkToInstallPage ? (
+    <Link href={guideHref} onClick={onGuideLinkClick} className={INSTALL_CTA_CLASS}>
+      {primaryLabel}
+    </Link>
+  ) : (
         <button
           type="button"
           onClick={() => void onPrimary()}
           disabled={busy}
-          className="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-[#4B50E6] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3B3FBF] disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4B50E6]"
+      className={INSTALL_CTA_CLASS}
         >
           {primaryLabel}
         </button>
-      </div>
     );
+
+  if (variant === "button") {
+    if (!canOfferAction) return null;
+    return <div className={`${shell} ${className}`}>{primaryControl}</div>;
   }
 
   return (
     <section
-      className={`${shell} ${className}`}
+      className={`min-w-0 ${shell} ${className}`}
       aria-labelledby={titleId}
       data-pwa-install-placement={placement}
     >
@@ -270,57 +295,31 @@ export default function InstallFreuly({
           <h2 id={titleId} className="text-sm font-semibold text-gray-900 sm:text-base">
             {message.title}
           </h2>
-          <p className="mt-1 text-sm leading-relaxed text-gray-600">{message.body}</p>
+          <p className="mt-1 text-sm leading-relaxed text-gray-600 break-words">{message.body}</p>
           {canPrompt ? (
             <p className="mt-1.5 text-xs leading-relaxed text-gray-500">{shared.androidHint}</p>
+          ) : null}
+          {showAndroidFallback ? (
+            <p className="mt-1.5 text-xs leading-relaxed text-gray-500">{shared.androidFallback}</p>
           ) : null}
         </div>
         <button
           type="button"
           onClick={onDismiss}
-          className="shrink-0 rounded-lg px-2 py-1 text-xs font-medium text-gray-500 hover:bg-black/[0.04] hover:text-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4B50E6]"
+          className="shrink-0 rounded-lg px-2 py-1 text-xs font-medium text-gray-500 hover:bg-black/[0.04] hover:text-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
           aria-label={shared.dismiss}
         >
           {shared.dismiss}
         </button>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        {canOfferAction ? (
-          <button
-            type="button"
-            onClick={() => void onPrimary()}
-            disabled={busy}
-            className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-xl bg-[#4B50E6] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3B3FBF] disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4B50E6] sm:flex-none"
-          >
-            {primaryLabel}
-          </button>
-        ) : (
+      <div className="mt-3 flex min-w-0 flex-wrap gap-2">
+        {canOfferAction && showPrimaryCta ? (
+          primaryControl
+        ) : !canOfferAction ? (
           <p className="text-xs leading-relaxed text-gray-500">{shared.unsupportedHint}</p>
-        )}
+        ) : null}
       </div>
-
-      {showIosHelp ? (
-        <div
-          className="mt-3 rounded-xl bg-[#F7F8FF] p-3 text-sm text-gray-700"
-          role="region"
-          aria-label={shared.iosTitle}
-        >
-          <p className="font-semibold text-gray-900">{shared.iosTitle}</p>
-          <ol className="mt-2 list-decimal space-y-1 pl-5">
-            <li>{shared.iosStepShare}</li>
-            <li>{shared.iosStepHome}</li>
-            <li>{shared.iosStepAdd}</li>
-          </ol>
-          <button
-            type="button"
-            className="mt-2 text-xs font-semibold text-[#4B50E6] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4B50E6]"
-            onClick={() => setShowIosHelp(false)}
-          >
-            {shared.closeInstructions}
-          </button>
-        </div>
-      ) : null}
     </section>
   );
 }

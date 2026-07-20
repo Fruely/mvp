@@ -43,14 +43,14 @@ export default function Header({ lang, dict = fallbackDict }: HeaderProps) {
             </Link>
             <Link
               href={`/${lang}/become-specialist`}
-              className="hidden shrink-0 rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 sm:inline-flex"
+              className="hidden shrink-0 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 sm:inline-flex"
             >
               {t(d, "header.joinButton")}
             </Link>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-gray-100 py-2.5 sm:hidden">
+        <div className="flex min-w-0 flex-wrap items-center justify-end gap-x-3 gap-y-2 border-t border-gray-100 py-2.5 sm:hidden">
           <Link
             href={`/${lang}/pricing`}
             className="text-sm font-medium text-gray-700 transition hover:text-blue-600"
@@ -65,7 +65,7 @@ export default function Header({ lang, dict = fallbackDict }: HeaderProps) {
           </Link>
           <Link
             href={`/${lang}/become-specialist`}
-            className="inline-flex shrink-0 rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+            className="inline-flex max-w-full min-w-0 text-sm font-semibold text-emerald-700 transition hover:text-emerald-800"
           >
             {t(d, "header.joinButton")}
           </Link>

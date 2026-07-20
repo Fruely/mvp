@@ -4,10 +4,22 @@ import type { InstallAudience, InstallPlacement } from "@/lib/pwa/installLogic";
 export type InstallSharedCopy = {
   dismiss: string;
   iosTitle: string;
+  /** Legacy short steps; prefer safari/chrome fields on the install guide. */
   iosStepShare: string;
   iosStepHome: string;
   iosStepAdd: string;
+  safariHeading: string;
+  safariStepShare: string;
+  safariStepHome: string;
+  safariStepAdd: string;
+  chromeHeading: string;
+  chromeStepShare: string;
+  chromeStepMore: string;
+  chromeStepHome: string;
+  chromeStepAdd: string;
+  androidHeading: string;
   androidHint: string;
+  androidFallback: string;
   unsupportedHint: string;
   openSearch: string;
   openCabinet: string;
@@ -16,6 +28,7 @@ export type InstallSharedCopy = {
   ctaHow: string;
   ctaAddPhone: string;
   ctaAddCabinet: string;
+  guideTitle: string;
 };
 
 export type InstallMessage = {
@@ -28,10 +41,22 @@ export const INSTALL_SHARED_COPY: Record<Lang, InstallSharedCopy> = {
   ua: {
     dismiss: "Не зараз",
     iosTitle: "Додайте Freuly на головний екран",
-    iosStepShare: "Натисніть «Поділитися»",
-    iosStepHome: "Оберіть «На екран Додому»",
-    iosStepAdd: "Потім натисніть «Додати»",
-    androidHint: "Натисніть кнопку нижче і підтвердіть встановлення в браузері.",
+    iosStepShare: "У Safari натисніть «Поділитися» внизу екрана",
+    iosStepHome: "Оберіть «На екран «Додому»»",
+    iosStepAdd: "Натисніть «Додати»",
+    safariHeading: "iPhone · Safari",
+    safariStepShare: "Натисніть іконку «Поділитися» внизу екрана",
+    safariStepHome: "Оберіть «На екран «Додому»»",
+    safariStepAdd: "Натисніть «Додати»",
+    chromeHeading: "iPhone · Chrome",
+    chromeStepShare: "Натисніть іконку «Поділитися» справа вгорі в адресному рядку",
+    chromeStepMore: "Оберіть «Показати більше»",
+    chromeStepHome: "Оберіть «Додати на екран «Додому»»",
+    chromeStepAdd: "Натисніть «Додати»",
+    androidHeading: "Android · Chrome",
+    androidHint: "Натисніть «Додати на телефон» і підтвердіть встановлення в системному вікні.",
+    androidFallback:
+      "Якщо вікно встановлення не з’явилось: меню Chrome (⋮) → «Встановити додаток» або «Додати на головний екран».",
     unsupportedHint: "Відкрийте сайт у Safari (iPhone) або Chrome (Android), щоб додати Freuly.",
     openSearch: "Відкрити пошук",
     openCabinet: "Увійти спеціалісту",
@@ -40,14 +65,27 @@ export const INSTALL_SHARED_COPY: Record<Lang, InstallSharedCopy> = {
     ctaHow: "Як додати на екран",
     ctaAddPhone: "Додати на телефон",
     ctaAddCabinet: "Додати кабінет на телефон",
+    guideTitle: "Інструкція зі встановлення",
   },
   ru: {
     dismiss: "Не сейчас",
     iosTitle: "Добавьте Freuly на главный экран",
-    iosStepShare: "Нажмите «Поделиться»",
-    iosStepHome: "Выберите «На экран Домой»",
-    iosStepAdd: "Затем нажмите «Добавить»",
-    androidHint: "Нажмите кнопку ниже и подтвердите установку в браузере.",
+    iosStepShare: "В Safari нажмите «Поделиться» внизу экрана",
+    iosStepHome: "Выберите «На экран «Домой»»",
+    iosStepAdd: "Нажмите «Добавить»",
+    safariHeading: "iPhone · Safari",
+    safariStepShare: "Нажмите иконку «Поделиться» внизу экрана",
+    safariStepHome: "Выберите «На экран «Домой»»",
+    safariStepAdd: "Нажмите «Добавить»",
+    chromeHeading: "iPhone · Chrome",
+    chromeStepShare: "Нажмите иконку «Поделиться» справа вверху в адресной строке",
+    chromeStepMore: "Выберите «Показать больше»",
+    chromeStepHome: "Выберите «Добавить на экран «Домой»»",
+    chromeStepAdd: "Нажмите «Добавить»",
+    androidHeading: "Android · Chrome",
+    androidHint: "Нажмите «Добавить на телефон» и подтвердите установку в системном окне.",
+    androidFallback:
+      "Если окно установки не появилось: меню Chrome (⋮) → «Установить приложение» или «Добавить на главный экран».",
     unsupportedHint: "Откройте сайт в Safari (iPhone) или Chrome (Android), чтобы добавить Freuly.",
     openSearch: "Открыть поиск",
     openCabinet: "Войти специалисту",
@@ -56,15 +94,30 @@ export const INSTALL_SHARED_COPY: Record<Lang, InstallSharedCopy> = {
     ctaHow: "Как добавить на экран",
     ctaAddPhone: "Добавить на телефон",
     ctaAddCabinet: "Добавить кабинет на телефон",
+    guideTitle: "Инструкция по установке",
   },
   de: {
     dismiss: "Nicht jetzt",
     iosTitle: "Freuly zum Startbildschirm hinzufügen",
-    iosStepShare: "Tippen Sie auf «Teilen»",
+    iosStepShare: "Tippen Sie in Safari unten auf «Teilen»",
     iosStepHome: "Wählen Sie «Zum Home-Bildschirm»",
-    iosStepAdd: "Tippen Sie danach auf «Hinzufügen»",
-    androidHint: "Tippen Sie unten auf die Schaltfläche und bestätigen Sie die Installation im Browser.",
-    unsupportedHint: "Öffnen Sie die Seite in Safari (iPhone) oder Chrome (Android), um Freuly hinzuzufügen.",
+    iosStepAdd: "Tippen Sie auf «Hinzufügen»",
+    safariHeading: "iPhone · Safari",
+    safariStepShare: "Tippen Sie unten auf das Symbol «Teilen»",
+    safariStepHome: "Wählen Sie «Zum Home-Bildschirm»",
+    safariStepAdd: "Tippen Sie auf «Hinzufügen»",
+    chromeHeading: "iPhone · Chrome",
+    chromeStepShare: "Tippen Sie rechts oben in der Adresszeile auf «Teilen»",
+    chromeStepMore: "Wählen Sie «Mehr anzeigen»",
+    chromeStepHome: "Wählen Sie «Zum Home-Bildschirm»",
+    chromeStepAdd: "Tippen Sie auf «Hinzufügen»",
+    androidHeading: "Android · Chrome",
+    androidHint:
+      "Tippen Sie auf «Zum Telefon hinzufügen» und bestätigen Sie die Installation im Systemdialog.",
+    androidFallback:
+      "Wenn kein Dialog erscheint: Chrome-Menü (⋮) → «App installieren» oder «Zum Startbildschirm hinzufügen».",
+    unsupportedHint:
+      "Öffnen Sie die Seite in Safari (iPhone) oder Chrome (Android), um Freuly hinzuzufügen.",
     openSearch: "Suche öffnen",
     openCabinet: "Als Spezialist anmelden",
     closeInstructions: "Schließen",
@@ -72,10 +125,11 @@ export const INSTALL_SHARED_COPY: Record<Lang, InstallSharedCopy> = {
     ctaHow: "So zum Startbildschirm hinzufügen",
     ctaAddPhone: "Zum Telefon hinzufügen",
     ctaAddCabinet: "Dashboard zum Telefon hinzufügen",
+    guideTitle: "Installationsanleitung",
   },
 };
 
-/** Marketing copy for /app/install hero (audience only). */
+/** Marketing copy for install hero (audience only). */
 export function landingHeroMessage(lang: Lang, audience: InstallAudience): InstallMessage {
   const shared = INSTALL_SHARED_COPY[lang];
   if (audience === "specialist") {
@@ -223,10 +277,10 @@ export function resolveInstallMessage(
       title: audience === "specialist" ? shared.ctaAddCabinet : shared.ctaAddPhone,
       body:
         lang === "ua"
-          ? "Натисніть кнопку нижче та підтвердіть додавання в браузері або через «Поділитися»."
+          ? "На Android натисніть кнопку встановлення. На iPhone виконайте кроки в інструкції нижче."
           : lang === "de"
-            ? "Tippen Sie unten auf die Schaltfläche und bestätigen Sie das Hinzufügen im Browser oder über «Teilen»."
-            : "Нажмите кнопку ниже и подтвердите добавление в браузере или через «Поделиться».",
+            ? "Unter Android tippen Sie auf die Installationsschaltfläche. Auf dem iPhone folgen Sie der Anleitung unten."
+            : "На Android нажмите кнопку установки. На iPhone выполните шаги в инструкции ниже.",
       cta: hero.cta,
     };
   }

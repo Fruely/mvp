@@ -61,13 +61,13 @@ export default function GermanyMapCTA({ title, body, spark, button, lang }: Prop
               {body}
             </p>
 
-            <p className="mt-4 text-teal-600 text-base font-semibold tracking-tight">
+            <p className="mt-4 text-emerald-700 text-base font-semibold tracking-tight">
               {spark}
             </p>
 
             <Link
               href={`/${lang}/for-specialists`}
-              className="mt-8 inline-flex h-12 items-center justify-center rounded-lg bg-teal-600 px-8 text-sm font-semibold text-white transition-all duration-300 hover:bg-teal-700 hover:shadow-lg"
+              className="mt-8 inline-flex h-12 max-w-full items-center justify-center rounded-lg bg-emerald-600 px-6 text-sm font-semibold text-white transition-all duration-300 hover:bg-emerald-700 hover:shadow-lg sm:px-8"
             >
               {button}
             </Link>

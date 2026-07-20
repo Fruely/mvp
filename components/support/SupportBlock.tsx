@@ -12,12 +12,12 @@ export default function SupportBlock() {
       <p className="mt-1 text-sm text-gray-600">
         Мы поможем разобраться и довести профиль до публикации.
       </p>
-      <div className="mt-4 flex flex-row gap-5">
+      <div className="mt-4 flex flex-row flex-wrap gap-4 overflow-hidden pb-1">
         <a
           href={waHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="relative flex h-28 w-28 shrink-0 flex-col items-center justify-center overflow-visible rounded-3xl bg-gradient-to-br from-green-400 via-green-500 to-green-600 text-white shadow-[0_14px_30px_rgba(0,0,0,0.18),_0_4px_10px_rgba(0,0,0,0.08)] transition hover:scale-[1.03] active:scale-95 before:pointer-events-none before:absolute before:inset-0 before:rounded-3xl before:bg-white/15 before:opacity-40 after:pointer-events-none after:absolute after:bottom-[-6px] after:left-1/2 after:h-[10px] after:w-[80%] after:-translate-x-1/2 after:rounded-full after:bg-black/20 after:blur-md"
+          className="relative flex h-28 w-28 shrink-0 flex-col items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-green-400 via-green-500 to-green-600 text-white shadow-[0_10px_22px_rgba(0,0,0,0.14)] transition [@media(hover:hover)]:hover:scale-[1.03] active:scale-95 before:pointer-events-none before:absolute before:inset-0 before:rounded-3xl before:bg-white/15 before:opacity-40"
         >
           <MessageCircle className="relative z-10" size={34} strokeWidth={2.2} aria-hidden />
           <span className="relative z-10 mt-2 text-center text-xs font-medium">WhatsApp</span>
@@ -26,7 +26,7 @@ export default function SupportBlock() {
           href={tgHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="relative flex h-28 w-28 shrink-0 flex-col items-center justify-center overflow-visible rounded-3xl bg-gradient-to-br from-sky-400 via-blue-500 to-blue-600 text-white shadow-[0_14px_30px_rgba(0,0,0,0.18),_0_4px_10px_rgba(0,0,0,0.08)] transition hover:scale-[1.03] active:scale-95 before:pointer-events-none before:absolute before:inset-0 before:rounded-3xl before:bg-white/15 before:opacity-40 after:pointer-events-none after:absolute after:bottom-[-6px] after:left-1/2 after:h-[10px] after:w-[80%] after:-translate-x-1/2 after:rounded-full after:bg-black/20 after:blur-md"
+          className="relative flex h-28 w-28 shrink-0 flex-col items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-sky-400 via-blue-500 to-blue-600 text-white shadow-[0_10px_22px_rgba(0,0,0,0.14)] transition [@media(hover:hover)]:hover:scale-[1.03] active:scale-95 before:pointer-events-none before:absolute before:inset-0 before:rounded-3xl before:bg-white/15 before:opacity-40"
         >
           <Send className="relative z-10" size={34} strokeWidth={2.2} aria-hidden />
           <span className="relative z-10 mt-2 text-center text-xs font-medium">Telegram</span>

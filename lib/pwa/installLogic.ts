@@ -45,6 +45,7 @@ export function parseDismissedAt(raw: string | null | undefined): number | null 
 }
 
 export type PlatformCategory = "ios" | "chromium" | "desktop_other" | "unknown";
+export type IosBrowserKind = "safari" | "chrome" | "other";
 
 /**
  * Capability-leaning platform category. UA is only a fallback for iOS Safari
@@ -68,6 +69,35 @@ export function classifyPlatform(input: {
 
   if (/Windows|Macintosh|Linux/i.test(ua) && !android) return "desktop_other";
   return "unknown";
+}
+
+/** Distinguish iOS Safari vs Chrome (CriOS) for install instructions. */
+export function classifyIosBrowser(userAgent: string): IosBrowserKind {
+  const ua = userAgent || "";
+  if (/CriOS/i.test(ua)) return "chrome";
+  if (/FxiOS|EdgiOS|OPiOS|YaBrowser/i.test(ua)) return "other";
+  return "safari";
+}
+
+/** Localized public install guide route (not PWA shell). */
+export function installPageHref(
+  lang: string,
+  input?: {
+    audience?: InstallAudience;
+    source?: string;
+    medium?: string;
+    campaign?: string;
+    content?: string;
+  }
+): string {
+  const params = new URLSearchParams();
+  if (input?.audience) params.set("audience", input.audience);
+  if (input?.source) params.set("utm_source", input.source);
+  if (input?.medium) params.set("utm_medium", input.medium);
+  if (input?.campaign) params.set("utm_campaign", input.campaign);
+  if (input?.content) params.set("utm_content", input.content);
+  const qs = params.toString();
+  return qs ? `/${lang}/install?${qs}` : `/${lang}/install`;
 }
 
 export function shouldShowInstallCta(input: {

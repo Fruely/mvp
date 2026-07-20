@@ -83,16 +83,16 @@ export default function EarlyAccessPromoBanner({ lang }: Props) {
               <p className="mt-0.5 text-xs leading-relaxed text-gray-600 sm:text-sm">{copy.body}</p>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex w-full min-w-0 flex-wrap items-center gap-2 md:w-auto md:shrink-0 md:flex-nowrap">
               <Link
                 href={`/${lang}/become-specialist`}
-                className="inline-flex h-9 items-center justify-center rounded-full bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+                className="inline-flex h-9 min-w-0 flex-1 items-center justify-center rounded-full bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 sm:flex-none"
               >
                 {copy.primaryCta}
               </Link>
               <Link
                 href={`/${lang}/specialist-rules`}
-                className="inline-flex h-9 items-center justify-center rounded-full border border-blue-100 bg-white/80 px-4 text-sm font-semibold text-blue-700 transition hover:border-blue-200 hover:bg-blue-50"
+                className="inline-flex h-9 min-w-0 items-center justify-center rounded-full border border-gray-200 bg-white/80 px-4 text-sm font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50"
               >
                 {copy.secondaryCta}
               </Link>

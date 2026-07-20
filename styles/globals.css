@@ -5,14 +5,27 @@
 :root {
   --primary: #1E40AF;
   --accent: #DC2626;
+  /* CTA semantics */
+  --color-platform: #4B50E6;
+  --color-specialist: #059669;
+  --color-install: #EA580C;
 }
 
-html, body, #__next {
-  height: 100%;
+html {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+html,
+body,
+#__next {
+  min-height: 100%;
 }
 
 body {
   @apply font-sans;
+  max-width: 100%;
+  overflow-x: clip;
   color: #111827;
   background: #ffffff;
 }

@@ -121,7 +121,7 @@ export default function SpecialistPreviewCard({
   const showPriceCommentSecondary = Boolean(minPrice != null && Number.isFinite(minPrice) && minPrice > 0 && priceCommentTrimmed);
 
   return (
-    <article className="group overflow-hidden rounded-md border border-black/5 bg-white shadow-card transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg">
+    <article className="group overflow-hidden rounded-md border border-black/5 bg-white shadow-card transition-all duration-200 ease-out [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:scale-[1.02] [@media(hover:hover)]:hover:shadow-lg">
       <div className="relative aspect-square overflow-hidden">
         {specialist.avatar_url ? (
           <Image
@@ -155,7 +155,7 @@ export default function SpecialistPreviewCard({
           >
             <path d="M12 21s-6.5-3.9-9.2-8a5.7 5.7 0 0 1 .7-7.1A5.6 5.6 0 0 1 12 6a5.6 5.6 0 0 1 8.5-.1 5.7 5.7 0 0 1 .7 7.1C18.5 17.1 12 21 12 21Z" />
           </svg>
-          <span className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-[10px] font-medium text-white opacity-0 transition group-hover:opacity-100">
+          <span className="pointer-events-none absolute -bottom-9 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-[10px] font-medium text-white opacity-0 transition [@media(hover:hover)]:block [@media(hover:hover)]:group-hover:opacity-100">
             {saved ? t(dict, "specialist.unsave") : t(dict, "specialist.save")}
           </span>
         </button>

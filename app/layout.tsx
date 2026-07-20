@@ -36,6 +36,9 @@ export const metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#4B50E6",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -47,7 +50,7 @@ export default function RootLayout({
 
   return (
     <html lang={htmlLang} className={inter.variable}>
-      <body className="min-h-screen font-sans text-textPrimary antialiased bg-white">
+      <body className="min-h-[100dvh] font-sans text-textPrimary antialiased bg-white">
         {children}
         <CookieConsentBanner />
         <ConsentScripts />

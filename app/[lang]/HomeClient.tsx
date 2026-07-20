@@ -419,7 +419,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             <Link
               key={specialist.id}
               href={getSpecialistUrl(lang, specialist)}
-              className="group rounded-md border bg-white shadow-card overflow-hidden flex h-full flex-col transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
+              className="group flex h-full flex-col overflow-hidden rounded-md border bg-white shadow-card transition-all duration-200 ease-out [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:scale-[1.02] [@media(hover:hover)]:hover:shadow-lg"
             >
               <div className="relative aspect-square w-full overflow-hidden bg-gray-100">
                 {specialist.founder_badge ? (
@@ -571,7 +571,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
   const copy = HERO_COPY[lang] ?? HERO_COPY.ru;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex min-h-[100dvh] flex-col">
       <>
       <section className="py-16 sm:py-24 bg-gradient-to-b from-white to-blue-50">
         <div className="max-w-7xl mx-auto px-3 md:px-4 text-center">
@@ -635,46 +635,46 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
 
       <section className="pt-14 pb-10 md:pt-16 md:pb-12">
         <div className="max-w-[1280px] mx-auto px-3 md:px-6">
-          <div className="rounded-xl bg-[#EEF1FF] px-6 py-8 md:px-12 md:py-10">
+          <div className="rounded-xl bg-[#EEF1FF] px-3 py-6 sm:px-6 sm:py-8 md:px-12 md:py-10">
             {true && (
-              <div className="mt-7 md:mt-8 overflow-x-hidden">
-                <div className="relative min-h-[520px] overflow-hidden rounded-md">
+              <div className="mt-7 md:mt-8">
+                <div className="relative min-h-[320px] overflow-hidden rounded-md sm:min-h-[420px] md:min-h-[520px]">
                   {textImageContent?.url ? (
                     <>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={textImageContent.url}
                         alt={textImageContent.title || ""}
-                        className="absolute inset-0 w-full h-full object-cover object-right rounded-md z-0"
+                        className="absolute inset-0 z-0 h-full w-full rounded-md object-cover object-right"
                       />
                     </>
                   ) : null}
 
-                  <div className="absolute left-6 top-6 w-[calc(80%-1.6rem)] md:left-8 md:top-8 md:w-auto max-w-[22.4rem] bg-white/90 rounded-md shadow-sm p-[1.6rem] backdrop-blur-sm z-10">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-8">
+                  <div className="absolute inset-x-3 top-3 z-10 min-w-0 max-w-[22.4rem] rounded-md bg-white/90 p-4 shadow-sm backdrop-blur-sm sm:inset-x-auto sm:left-6 sm:top-6 sm:p-5 md:left-8 md:top-8 md:p-[1.6rem]">
+                    <h2 className="mb-5 text-xl font-bold text-gray-900 sm:mb-8 sm:text-3xl">
                       {t(dict, "home.howItWorks.title")}
                     </h2>
 
-                    <div className="space-y-6 text-gray-700">
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
+                    <div className="min-w-0 space-y-4 text-gray-700 sm:space-y-6">
+                      <div className="flex min-w-0 items-start gap-3 sm:gap-4">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600 sm:h-10 sm:w-10 sm:text-base">
                           1
                         </div>
-                        <p>{t(dict, "home.howItWorks.step1")}</p>
+                        <p className="min-w-0 break-words">{t(dict, "home.howItWorks.step1")}</p>
                       </div>
 
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
+                      <div className="flex min-w-0 items-start gap-3 sm:gap-4">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600 sm:h-10 sm:w-10 sm:text-base">
                           2
                         </div>
-                        <p>{t(dict, "home.howItWorks.step2")}</p>
+                        <p className="min-w-0 break-words">{t(dict, "home.howItWorks.step2")}</p>
                       </div>
 
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
+                      <div className="flex min-w-0 items-start gap-3 sm:gap-4">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600 sm:h-10 sm:w-10 sm:text-base">
                           3
                         </div>
-                        <p>{t(dict, "home.howItWorks.step3")}</p>
+                        <p className="min-w-0 break-words">{t(dict, "home.howItWorks.step3")}</p>
                       </div>
                     </div>
                   </div>
@@ -782,8 +782,8 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
         lang={lang}
       />
 
-      {/* CTA for specialists */}
-      <section className="bg-gray-50 px-3 py-16 text-center md:px-4">
+      {/* Desktop-only — mobile already has EarlyAccess (green) + Map CTA (green) */}
+      <section className="hidden bg-gray-50 px-3 py-16 text-center md:block md:px-4">
         <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">{t(dict, "home.cta.title")}</h2>
         <p className="mx-auto mt-3 max-w-lg text-gray-600">
           {t(dict, "home.cta.subtitle")}
@@ -814,4 +814,3 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
     </div>
   );
 }
-

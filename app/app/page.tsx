@@ -70,7 +70,7 @@ export default async function AppShellPage() {
   }));
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col bg-gradient-to-b from-[#EEF1FF] via-white to-[#FFF6EC]">
+    <div className="mx-auto flex min-h-[100dvh] w-full max-w-2xl flex-col bg-gradient-to-b from-[#EEF1FF] via-white to-[#FFF6EC]">
       <AppShellHeader lang={lang} languageSwitcherLabel={copy.languageSwitcherLabel} />
 
       <main className="flex flex-1 flex-col gap-6 px-4 py-5">

@@ -110,8 +110,8 @@ export default function CookieConsentBanner() {
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[1000] px-4 pb-4">
-      <div className="mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
+    <div className="fixed inset-x-0 bottom-0 z-[1000] max-w-[100%] px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <div className="mx-auto max-w-4xl min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
         <div className="flex items-start justify-between gap-3">
           <h2 className="text-lg font-semibold text-slate-950">{copy.title}</h2>
           {settingsOpen ? (
