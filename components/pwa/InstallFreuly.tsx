@@ -9,7 +9,7 @@ import {
   INSTALL_DONE_KEY,
   classifyPlatform,
   installPageHref,
-  parseDismissedAt,
+  readInstallVisibilityState,
   shouldShowInstallCta,
   type InstallAudience,
   type InstallPlacement,
@@ -104,12 +104,15 @@ export default function InstallFreuly({
     if (typeof window === "undefined") return;
 
     const refreshVisibility = (promptAvailable: boolean, plat: PlatformCategory) => {
-      const dismissedAt = parseDismissedAt(window.localStorage.getItem(INSTALL_DISMISS_KEY));
-      const installedFlag = window.localStorage.getItem(INSTALL_DONE_KEY) === "1";
+      const isStandalone = readStandalone();
+      const { dismissedAtMs, installedFlag } = readInstallVisibilityState(window.localStorage, {
+        isStandalone,
+        nowMs: Date.now(),
+      });
       const show = shouldShowInstallCta({
-        isStandalone: readStandalone(),
+        isStandalone,
         installedFlag,
-        dismissedAtMs: dismissedAt,
+        dismissedAtMs,
         nowMs: Date.now(),
         canPrompt: promptAvailable,
         platform: plat,
@@ -124,7 +127,7 @@ export default function InstallFreuly({
       hasBeforeInstallPromptApi: "onbeforeinstallprompt" in window,
     });
     setPlatform(plat);
-    // Initial paint: Android must show even if BIP has not fired yet.
+    // Migrate legacy localStorage, then paint. Android must show even without BIP.
     refreshVisibility(Boolean(deferredRef.current), plat);
     setCanPrompt(Boolean(deferredRef.current));
 
@@ -136,6 +139,7 @@ export default function InstallFreuly({
     };
 
     const onInstalled = () => {
+      // Session hide only — migrateInstallState clears this in normal browser tabs.
       window.localStorage.setItem(INSTALL_DONE_KEY, "1");
       deferredRef.current = null;
       setCanPrompt(false);
