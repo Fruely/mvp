@@ -115,7 +115,10 @@ Audit snapshot (2026-07-18, PostgREST, published-like statuses):
 
 Pre-apply query #7 (active+visible, no status filter) may differ slightly — **use the live ID list from pre-apply as source of truth**.
 
-After v2, those profiles **disappear from local radius search** until they have `service_radius_km ∈ {5,10,25,50,100}`.  
+After v2, those profiles **disappear from local radius search** until they have an allowlisted radius.  
+**Current allowlist (v2.1):** `service_radius_km ∈ {5,10,25,30,50,100}`  
+(v2 originally used `{5,10,25,50,100}`; v2.1 adds `30` — see  
+`supabase/manual_migrations/2026-07-20_search_specialists_local_radius_v2_1_radius30.sql`).  
 Migration does **not** backfill or alter specialist rows.  
 Do **not** unpublish specialists as part of this remediation.
 

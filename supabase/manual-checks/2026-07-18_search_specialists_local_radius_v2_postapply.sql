@@ -1,7 +1,8 @@
 -- =============================================================================
 -- READ ONLY. SELECT only (calls RPC; no DDL/DML).
--- Post-apply verification for search_specialists_local_radius v2.
--- Run immediately after applying the migration.
+-- Post-apply verification for search_specialists_local_radius v2 / v2.1.
+-- Current allowlist expectation: service_radius_km IN (5, 10, 25, 30, 50, 100)
+-- (v2.1 adds 30 km). Run after applying v2 + v2.1 (or equivalent).
 -- =============================================================================
 
 -- A) New function metadata
@@ -66,7 +67,7 @@ WITH seed AS (
   WHERE s.is_active IS TRUE
     AND s.is_visible IS TRUE
     AND s.work_format IN ('offline', 'hybrid')
-    AND s.service_radius_km IN (5, 10, 25, 50, 100)
+    AND s.service_radius_km IN (5, 10, 25, 30, 50, 100)
     AND s.lat IS NOT NULL
     AND s.lng IS NOT NULL
     AND NOT (s.lat = 0 AND s.lng = 0)
@@ -97,7 +98,7 @@ WITH params AS (
         (SELECT lat FROM public.specialists
          WHERE is_active AND is_visible
            AND work_format IN ('offline','hybrid')
-           AND service_radius_km IN (5,10,25,50,100)
+           AND service_radius_km IN (5,10,25,30,50,100)
            AND lat IS NOT NULL AND lng IS NOT NULL
            AND NOT (lat = 0 AND lng = 0)
          ORDER BY id LIMIT 1),
@@ -107,7 +108,7 @@ WITH params AS (
         (SELECT lng FROM public.specialists
          WHERE is_active AND is_visible
            AND work_format IN ('offline','hybrid')
-           AND service_radius_km IN (5,10,25,50,100)
+           AND service_radius_km IN (5,10,25,30,50,100)
            AND lat IS NOT NULL AND lng IS NOT NULL
            AND NOT (lat = 0 AND lng = 0)
          ORDER BY id LIMIT 1),
@@ -189,7 +190,7 @@ hits AS (
 SELECT
   'dual_radius_check' AS probe,
   count(*) AS n,
-  bool_and(s.service_radius_km IN (5, 10, 25, 50, 100)) AS all_allowlisted,
+  bool_and(s.service_radius_km IN (5, 10, 25, 30, 50, 100)) AS all_allowlisted,
   bool_and(h.distance <= s.service_radius_km::float8) AS all_within_specialist_radius,
   bool_and(h.distance <= 100::float8) AS all_within_user_radius,
   bool_and(h.work_format IN ('offline', 'hybrid')) AS no_online
@@ -212,7 +213,7 @@ WITH lang AS (
   FROM public.specialists s
   WHERE s.is_active AND s.is_visible
     AND s.work_format IN ('offline','hybrid')
-    AND s.service_radius_km IN (5,10,25,50,100)
+    AND s.service_radius_km IN (5,10,25,30,50,100)
     AND s.languages IS NOT NULL
     AND cardinality(s.languages) >= 1
     AND s.lat IS NOT NULL AND s.lng IS NOT NULL
@@ -236,7 +237,7 @@ WITH cat AS (
   FROM public.specialists s
   WHERE s.is_active AND s.is_visible
     AND s.work_format IN ('offline','hybrid')
-    AND s.service_radius_km IN (5,10,25,50,100)
+    AND s.service_radius_km IN (5,10,25,30,50,100)
     AND s.category_id IS NOT NULL
     AND s.lat IS NOT NULL AND s.lng IS NOT NULL
   ORDER BY s.id

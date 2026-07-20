@@ -25,7 +25,7 @@
 | p_mode unknown | (legacy) | **empty set** (no exception) |
 | user radius | `distance_km <= p_radius_km` | **same** |
 | specialist radius | none | `distance_km <= service_radius_km` |
-| radius allowlist | none | `service_radius_km IN (5,10,25,50,100)` |
+| radius allowlist | none | `service_radius_km IN (5,10,25,50,100)` (v2); **v2.1 adds 30** → `(5,10,25,30,50,100)` |
 | null/invalid radius | included if in geo radius | **excluded** |
 | category | optional `category_id` | **same** |
 | languages | optional `@>` array contains | **same** |

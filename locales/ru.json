@@ -865,7 +865,7 @@
   "dashboard.messages.publication_city_required": "Для офлайн-работы укажите действительный почтовый индекс, город и зону обслуживания. Без этих данных клиенты не смогут найти ваш профиль.",
   "dashboard.messages.publication_coordinates_required": "Для офлайн-работы укажите действительный почтовый индекс, город и зону обслуживания. Без этих данных клиенты не смогут найти ваш профиль.",
   "dashboard.messages.publication_service_radius_required": "Для офлайн-работы укажите действительный почтовый индекс, город и зону обслуживания. Без этих данных клиенты не смогут найти ваш профиль.",
-  "dashboard.messages.publication_service_radius_invalid": "Выберите допустимую зону обслуживания: 5, 10, 25, 50 или 100 км.",
+  "dashboard.messages.publication_service_radius_invalid": "Выберите допустимую зону обслуживания: 10, 30, 50 или 100 км.",
   "dashboard.messages.publication_country_required": "Укажите страну, почтовый индекс и город вашего местонахождения. Эти данные нужны для проверки профиля и не означают очный приём.",
   "dashboard.messages.publication_country_not_supported": "Пока поддерживается только Германия (DE)",
   "dashboard.messages.publication_postal_code_required": "Для офлайн-работы укажите действительный почтовый индекс, город и зону обслуживания. Без этих данных клиенты не смогут найти ваш профиль.",
@@ -1110,5 +1110,19 @@
     "externalMediaTitle": "Внешние медиа",
     "externalMediaDescription": "Позволяют загружать внешний контент (например, встроенные медиа) только после согласия.",
     "settingsAria": "Настройки категорий файлов cookie"
-  }
+  },
+  "dashboard.onboarding.basicForm.locationSectionTitle": "Местонахождение (обязательно)",
+  "dashboard.onboarding.basicForm.locationSectionHint": "Страна, индекс и населённый пункт обязательны для всех форматов работы, включая онлайн. Это нужно для рынка, отображения города и доверия к профилю. Город и координаты определяются по почтовому индексу.",
+  "dashboard.onboarding.basicForm.germanyOnlyHint": "Сейчас Freuly доступен только специалистам с местонахождением в Германии.",
+  "dashboard.onboarding.basicForm.locationResolving": "Определяем населённый пункт…",
+  "dashboard.onboarding.basicForm.locationResolveFailed": "Не удалось определить населённый пункт. Проверьте индекс и попробуйте снова.",
+  "dashboard.onboarding.basicForm.locationRetry": "Повторить",
+  "dashboard.onboarding.basicForm.locationFound": "Найдено:",
+  "dashboard.onboarding.basicForm.citySelectLabel": "Выберите населённый пункт",
+  "dashboard.onboarding.basicForm.locationRequired": "Укажите корректный индекс и подтвердите определённый населённый пункт.",
+  "dashboard.onboarding.reviewStep.fixCountry": "Страна (местонахождение)",
+  "dashboard.onboarding.reviewStep.fixPostalCodeAll": "Почтовый индекс",
+  "dashboard.onboarding.reviewStep.fixCityResolved": "Населённый пункт определён",
+  "dashboard.onboarding.reviewStep.fixCoordinates": "Координаты определены",
+  "dashboard.onboarding.reviewStep.fixServiceRadius": "Зона оказания услуг (км)"
 }

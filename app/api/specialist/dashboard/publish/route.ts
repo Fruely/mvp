@@ -11,7 +11,8 @@ import {
 } from "@/lib/notifications/specialistPublishNotify";
 import { buildSpecialistSlug } from "@/lib/slugify";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
-import { assertSpecialistCanBePublished } from "@/lib/specialists/publicationGeography";
+import { validatePublication } from "@/lib/dashboard/publicationValidator";
+import { loadSpecialistGeoSnapshot } from "@/lib/specialists/publicationGeography";
 import { publicationGeoErrorMessageRu } from "@/lib/specialists/geography";
 
 export const dynamic = "force-dynamic";
@@ -144,38 +145,89 @@ export async function POST() {
     });
   }
 
-  const missing: string[] = [];
-  if (!specialist.name) missing.push("Имя");
-  if (!specialist.category_id) missing.push("Категория");
-  if (!specialist.languages || specialist.languages.length === 0) missing.push("Языки");
-  if (!specialist.work_format) missing.push("Формат работы");
+  const { data: category } = specialist.category_id
+    ? await service
+        .from("categories")
+        .select("id, parent_id, slug")
+        .eq("id", specialist.category_id)
+        .maybeSingle()
+    : { data: null };
 
-  if (missing.length) {
-    return NextResponse.json(
-      {
-        error: "Заполните обязательные поля",
-        fields: missing,
-      },
-      { status: 400 }
-    );
+  const { data: services, error: servicesCheckError } = specialist.category_id
+    ? await service
+        .from("specialist_services")
+        .select("title, price_from, is_active")
+        .eq("specialist_id", specialistId)
+        .eq("category_id", specialist.category_id as string)
+        .eq("is_active", true)
+    : { data: [], error: null };
+
+  if (servicesCheckError) {
+    return jsonNoStore({ error: "Failed to validate services" }, { status: 500 });
   }
 
-  const geoCheck = await assertSpecialistCanBePublished(service, specialistId);
-  if (!geoCheck.ok) {
+  const geo = await loadSpecialistGeoSnapshot(service, specialistId);
+  const validation = validatePublication({
+    name: typeof specialist.name === "string" ? specialist.name : "",
+    categoryId: typeof specialist.category_id === "string" ? specialist.category_id : "",
+    categoryParentId: category && typeof category.parent_id === "string" ? category.parent_id : null,
+    categorySlug: category && typeof category.slug === "string" ? category.slug : null,
+    categoryMissing: Boolean(specialist.category_id) && !category,
+    languages: Array.isArray(specialist.languages) ? specialist.languages : [],
+    workFormat: typeof specialist.work_format === "string" ? specialist.work_format : null,
+    countryCode: geo?.countryCode ?? specialist.country_code,
+    postalCode: geo?.postalCode ?? specialist.postal_code,
+    city: geo?.city ?? null,
+    lat: geo?.lat ?? (typeof specialist.lat === "number" ? specialist.lat : null),
+    lng: geo?.lng ?? (typeof specialist.lng === "number" ? specialist.lng : null),
+    serviceRadiusKm:
+      geo?.serviceRadiusKm ??
+      (typeof specialist.service_radius_km === "number" ? specialist.service_radius_km : null),
+    servicesInSelectedCategory: services ?? [],
+  });
+
+  if (!validation.ready) {
+    const first = validation.blocking[0];
+    const geoLike = first?.code?.includes("country")
+      || first?.code?.includes("postal")
+      || first?.code?.includes("city")
+      || first?.code?.includes("coordinates")
+      || first?.code?.includes("service_radius");
+    const error = geoLike
+      ? publicationGeoErrorMessageRu(
+          first.code === "country_required"
+            ? "publication_country_required"
+            : first.code === "country_not_supported"
+              ? "publication_country_not_supported"
+              : first.code === "postal_code_required"
+                ? "publication_postal_code_required"
+                : first.code === "city_required"
+                  ? "publication_city_required"
+                  : first.code === "coordinates_required"
+                    ? "publication_coordinates_required"
+                    : first.code === "service_radius_required"
+                      ? "publication_service_radius_required"
+                      : first.code === "service_radius_invalid"
+                        ? "publication_service_radius_invalid"
+                        : "publication_coordinates_required",
+          specialist.work_format
+        )
+      : first?.code === "category_uncategorized"
+        ? "Нельзя опубликовать профиль с категорией «Другое». Выберите категорию каталога или дождитесь решения администратора."
+        : first?.code === "services_required"
+          ? "Добавьте хотя бы одну услугу с ценой больше 0"
+          : "Заполните обязательные поля";
+
     return jsonNoStore(
       {
-        error: publicationGeoErrorMessageRu(geoCheck.code, specialist.work_format),
-        code: geoCheck.code,
+        error,
+        code: first?.code ?? "publication_incomplete",
+        issues: validation.blocking,
       },
       { status: 400 }
     );
   }
 
-  const { data: category } = await service
-    .from("categories")
-    .select("id, parent_id, slug")
-    .eq("id", specialist.category_id)
-    .maybeSingle();
   if (!category) {
     return jsonNoStore({ error: "Invalid category" }, { status: 400 });
   }
@@ -184,42 +236,8 @@ export async function POST() {
       {
         error:
           "Нельзя опубликовать профиль с категорией «Другое». Выберите категорию каталога или дождитесь решения администратора.",
+        issues: validation.blocking,
       },
-      { status: 400 }
-    );
-  }
-  if (!category.parent_id) {
-    return jsonNoStore(
-      { error: "Invalid category: parent category cannot be selected" },
-      { status: 400 }
-    );
-  }
-
-  const { data: services, error: servicesCheckError } = await service
-    .from("specialist_services")
-    .select("title, price_from, is_active")
-    .eq("specialist_id", specialistId)
-    .eq("category_id", specialist.category_id as string)
-    .eq("is_active", true);
-
-  if (servicesCheckError) {
-    return jsonNoStore({ error: "Failed to validate services" }, { status: 500 });
-  }
-
-  const hasValid = services?.some((s) => {
-    const title = typeof s?.title === "string" ? s.title.trim() : "";
-    if (!title) return false;
-
-    const raw = String(s.price_from ?? "").trim();
-    if (!raw) return false;
-
-    const n = Number(raw.replace(",", "."));
-    return Number.isFinite(n) && n > 0;
-  });
-
-  if (!hasValid) {
-    return jsonNoStore(
-      { error: "Добавьте хотя бы одну услугу с ценой больше 0" },
       { status: 400 }
     );
   }

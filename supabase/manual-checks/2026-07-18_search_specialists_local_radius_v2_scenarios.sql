@@ -45,7 +45,7 @@ scored AS (
         OR (p.p_mode = 'offline' AND f.work_format = 'offline')
         OR (p.p_mode = 'hybrid' AND f.work_format = 'hybrid')
       )
-      AND f.service_radius_km IN (5, 10, 25, 50, 100)
+      AND f.service_radius_km IN (5, 10, 25, 30, 50, 100)
       AND f.dist_km IS NOT NULL
       AND f.dist_km <= p.p_radius_km
       AND f.dist_km <= f.service_radius_km::float8

@@ -204,7 +204,12 @@ export default function SpecialistOnboardingWizard({
               name: initialBasicData.name,
               category_id: initialBasicData.category_id || null,
               work_format: initialBasicData.work_format,
+              country_code: initialBasicData.country_code,
               postal_code: initialBasicData.postal_code,
+              city: initialBasicData.city,
+              lat: initialBasicData.lat,
+              lng: initialBasicData.lng,
+              service_radius_km: initialBasicData.service_radius_km,
               languages: initialBasicData.languages,
             }}
             preserveProfileData={{

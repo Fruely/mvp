@@ -102,8 +102,8 @@ export type SpecialistSearchInput = {
   /** Free-text smart search query. */
   q?: string | null;
   /**
-   * Optional user search radius (km). When in allowlist [5,10,25,50,100],
-   * used as the hard local limit (no progressive expand).
+   * Optional user search radius (km). When in allowlist
+   * [5,10,25,30,50,100], used as the hard local limit (no progressive expand).
    */
   radius?: number | null;
   /** Pagination offset (default 0). */
@@ -125,6 +125,11 @@ export type SpecialistSearchResult = {
 /**
  * Progressive local search radii when the user did not pick an explicit radius.
  * Subset of ALLOWED_SERVICE_RADII_KM (skip 5 km for progressive expand).
+ * Includes public product radii 10/30/50/100 and legacy 25.
+ *
+ * Two search concerns (do not conflate):
+ * 1) Location metadata (country/city/PLZ/coords) — applies to all specialists.
+ * 2) Distance eligibility — offline/hybrid only via dual-radius; never gates pure online.
  */
 const LOCAL_SEARCH_RADII_KM: readonly AllowedServiceRadiusKm[] =
   ALLOWED_SERVICE_RADII_KM.filter((r) => r >= 10);
@@ -677,6 +682,7 @@ export async function searchSpecialists(
     };
 
     // --- Online mode ---
+    // online + hybrid: no distance filter; location metadata may still exist for display/admin.
     if (mode === "online") {
       let q = buildSpecialistQuery(supabase, {
         lang: normalizedLang,

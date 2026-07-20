@@ -2,17 +2,28 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { t, type Dictionary } from "@/lib/i18n";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
+import {
+  GERMANY_COUNTRY_CODE,
+  PUBLIC_SERVICE_RADII_KM,
+  normalizePostalCode,
+} from "@/lib/specialists/geography";
+import { needsServiceRadius } from "@/lib/dashboard/publicationValidator";
 
 export type OnboardingBasicData = {
   name: string;
   category_id: string;
   work_format: "online" | "offline" | "hybrid";
+  country_code: string;
   postal_code: string;
+  city: string;
+  lat: number | null;
+  lng: number | null;
+  service_radius_km: string;
   languages: string[];
 };
 
@@ -39,7 +50,28 @@ export type OnboardingPreserveProfileData = {
 const LANGUAGE_OPTIONS = ["ru", "uk", "de", "en", "pl"] as const;
 const WORK_FORMAT_OPTIONS = ["online", "offline", "hybrid"] as const;
 
-type FormErrors = Partial<Record<"name" | "category_id" | "work_format" | "postal_code" | "languages" | "submit", string>>;
+type FormErrors = Partial<
+  Record<
+    | "name"
+    | "category_id"
+    | "work_format"
+    | "country_code"
+    | "postal_code"
+    | "location"
+    | "service_radius_km"
+    | "languages"
+    | "submit",
+    string
+  >
+>;
+
+type LocationCandidate = { city: string; lat: number; lng: number };
+
+type ResolveState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "resolved"; candidates: LocationCandidate[]; selectedIndex: number }
+  | { status: "error"; reason: string };
 
 export default function OnboardingBasicForm({
   dict,
@@ -57,16 +89,135 @@ export default function OnboardingBasicForm({
   preserveProfileData: OnboardingPreserveProfileData;
 }) {
   const router = useRouter();
-  const [form, setForm] = useState<OnboardingBasicData>(initialData);
+  const [form, setForm] = useState<OnboardingBasicData>({
+    ...initialData,
+    country_code: GERMANY_COUNTRY_CODE,
+  });
   const [errors, setErrors] = useState<FormErrors>({});
   const [saving, setSaving] = useState(false);
+  const [resolveState, setResolveState] = useState<ResolveState>(() => {
+    if (
+      initialData.city.trim() &&
+      typeof initialData.lat === "number" &&
+      typeof initialData.lng === "number"
+    ) {
+      return {
+        status: "resolved",
+        candidates: [{ city: initialData.city, lat: initialData.lat, lng: initialData.lng }],
+        selectedIndex: 0,
+      };
+    }
+    return { status: "idle" };
+  });
+  const resolveSeq = useRef(0);
 
   const selectedCategory = useMemo(
     () => categories.find((category) => category.id === form.category_id),
-    [categories, form.category_id],
+    [categories, form.category_id]
   );
   const isUncategorizedCategory = selectedCategory?.slug === UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG;
-  const needsPostalCode = form.work_format !== "online";
+  const showRadius = needsServiceRadius(form.work_format);
+
+  async function resolvePostal(postalCode: string, opts?: { keepCity?: string }) {
+    const seq = ++resolveSeq.current;
+    setResolveState({ status: "loading" });
+    setForm((prev) => ({
+      ...prev,
+      city: "",
+      lat: null,
+      lng: null,
+    }));
+
+    try {
+      const res = await fetch(
+        `/api/specialist/resolve-postal?postal_code=${encodeURIComponent(postalCode)}`
+      );
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        code?: string;
+        location?: { city?: string; lat?: number; lng?: number };
+        candidates?: LocationCandidate[];
+      };
+      if (seq !== resolveSeq.current) return;
+
+      if (!res.ok || !json.ok) {
+        setResolveState({
+          status: "error",
+          reason: typeof json.code === "string" ? json.code : "not_found",
+        });
+        return;
+      }
+
+      const candidates =
+        Array.isArray(json.candidates) && json.candidates.length > 0
+          ? json.candidates.filter(
+              (c) =>
+                typeof c.city === "string" &&
+                typeof c.lat === "number" &&
+                typeof c.lng === "number"
+            )
+          : json.location?.city &&
+              typeof json.location.lat === "number" &&
+              typeof json.location.lng === "number"
+            ? [
+                {
+                  city: json.location.city,
+                  lat: json.location.lat,
+                  lng: json.location.lng,
+                },
+              ]
+            : [];
+
+      if (candidates.length === 0) {
+        setResolveState({ status: "error", reason: "geocode_failed" });
+        return;
+      }
+
+      let selectedIndex = 0;
+      if (opts?.keepCity) {
+        const idx = candidates.findIndex(
+          (c) => c.city.toLowerCase() === opts.keepCity!.toLowerCase()
+        );
+        if (idx >= 0) selectedIndex = idx;
+      }
+
+      const selected = candidates[selectedIndex];
+      setForm((prev) => ({
+        ...prev,
+        country_code: GERMANY_COUNTRY_CODE,
+        city: selected.city,
+        lat: selected.lat,
+        lng: selected.lng,
+      }));
+      setResolveState({ status: "resolved", candidates, selectedIndex });
+      setErrors((prev) => ({ ...prev, postal_code: undefined, location: undefined }));
+    } catch {
+      if (seq !== resolveSeq.current) return;
+      setResolveState({ status: "error", reason: "geocode_failed" });
+    }
+  }
+
+  useEffect(() => {
+    const plz = normalizePostalCode(form.postal_code);
+    if (!plz) {
+      setResolveState({ status: "idle" });
+      return;
+    }
+    if (
+      resolveState.status === "resolved" &&
+      form.city &&
+      form.lat != null &&
+      form.lng != null &&
+      normalizePostalCode(form.postal_code) === plz
+    ) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      void resolvePostal(plz);
+    }, 400);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- debounce on PLZ only
+  }, [form.postal_code]);
 
   function validate(): FormErrors {
     const nextErrors: FormErrors = {};
@@ -80,10 +231,23 @@ export default function OnboardingBasicForm({
     if (form.languages.length === 0) {
       nextErrors.languages = t(dict, "dashboard.onboarding.basicForm.languagesRequired");
     }
-    if (needsPostalCode && !form.postal_code.trim()) {
-      nextErrors.postal_code = t(dict, "dashboard.onboarding.basicForm.postalCodeRequired");
-    } else if (needsPostalCode && !/^\d{5}$/.test(form.postal_code.trim())) {
+    if (form.country_code !== GERMANY_COUNTRY_CODE) {
+      nextErrors.country_code = t(dict, "dashboard.messages.publication_country_not_supported");
+    }
+    if (!normalizePostalCode(form.postal_code)) {
       nextErrors.postal_code = t(dict, "dashboard.onboarding.basicForm.postalCodeInvalid");
+    }
+    if (resolveState.status !== "resolved" || !form.city.trim() || form.lat == null || form.lng == null) {
+      nextErrors.location = t(dict, "dashboard.onboarding.basicForm.locationRequired");
+    }
+    if (showRadius) {
+      const n = Number(form.service_radius_km);
+      if (!(PUBLIC_SERVICE_RADII_KM as readonly number[]).includes(n)) {
+        nextErrors.service_radius_km = t(
+          dict,
+          "dashboard.messages.publication_service_radius_invalid"
+        );
+      }
     }
     return nextErrors;
   }
@@ -96,14 +260,23 @@ export default function OnboardingBasicForm({
 
     setSaving(true);
     try {
-      const payload = {
+      const payload: Record<string, unknown> = {
         name: form.name.trim(),
         category_id: form.category_id.trim() || null,
         work_format: form.work_format,
-        postal_code: form.postal_code.trim(),
+        country_code: GERMANY_COUNTRY_CODE,
+        postal_code: normalizePostalCode(form.postal_code),
+        city: form.city.trim(),
+        lat: form.lat,
+        lng: form.lng,
         languages: form.languages.map((language) => language.trim()).filter(Boolean),
         lang,
       };
+      if (showRadius) {
+        payload.service_radius_km = Number(form.service_radius_km);
+      } else {
+        payload.service_radius_km = null;
+      }
 
       const res = await fetch("/api/specialist/dashboard/save", {
         method: "PUT",
@@ -112,7 +285,18 @@ export default function OnboardingBasicForm({
       });
 
       if (!res.ok) {
-        setErrors({ submit: t(dict, "dashboard.onboarding.basicForm.saveFailed") });
+        const json = (await res.json().catch(() => ({}))) as { error?: string; code?: string };
+        const code = typeof json.code === "string" ? json.code : "";
+        if (code.startsWith("publication_") || code.includes("postal") || code.includes("geo")) {
+          setErrors({
+            location:
+              t(dict, `dashboard.messages.${code}`, {
+                defaultValue: t(dict, "dashboard.onboarding.basicForm.locationRequired"),
+              }) || t(dict, "dashboard.onboarding.basicForm.locationRequired"),
+          });
+        } else {
+          setErrors({ submit: t(dict, "dashboard.onboarding.basicForm.saveFailed") });
+        }
         return;
       }
 
@@ -135,6 +319,19 @@ export default function OnboardingBasicForm({
     }));
   }
 
+  function selectCandidate(index: number) {
+    if (resolveState.status !== "resolved") return;
+    const selected = resolveState.candidates[index];
+    if (!selected) return;
+    setForm((prev) => ({
+      ...prev,
+      city: selected.city,
+      lat: selected.lat,
+      lng: selected.lng,
+    }));
+    setResolveState({ ...resolveState, selectedIndex: index });
+  }
+
   const inputClass = "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm";
   const errorClass = "text-xs font-medium text-red-600";
   const secondaryLinkClass =
@@ -153,7 +350,9 @@ export default function OnboardingBasicForm({
 
       <form className="mt-5 space-y-5" onSubmit={handleSubmit}>
         <label className="block space-y-1 text-sm">
-          <span className="font-medium text-gray-700">{t(dict, "dashboard.onboarding.basicForm.nameLabel")}</span>
+          <span className="font-medium text-gray-700">
+            {t(dict, "dashboard.onboarding.basicForm.nameLabel")}
+          </span>
           <input
             value={form.name}
             onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
@@ -163,7 +362,9 @@ export default function OnboardingBasicForm({
         </label>
 
         <label className="block space-y-1 text-sm">
-          <span className="font-medium text-gray-700">{t(dict, "dashboard.onboarding.basicForm.categoryLabel")}</span>
+          <span className="font-medium text-gray-700">
+            {t(dict, "dashboard.onboarding.basicForm.categoryLabel")}
+          </span>
           <select
             value={form.category_id}
             onChange={(event) => setForm((prev) => ({ ...prev, category_id: event.target.value }))}
@@ -185,13 +386,17 @@ export default function OnboardingBasicForm({
         </label>
 
         <label className="block space-y-1 text-sm">
-          <span className="font-medium text-gray-700">{t(dict, "dashboard.onboarding.basicForm.workFormatLabel")}</span>
+          <span className="font-medium text-gray-700">
+            {t(dict, "dashboard.onboarding.basicForm.workFormatLabel")}
+          </span>
           <select
             value={form.work_format}
             onChange={(event) =>
               setForm((prev) => ({
                 ...prev,
                 work_format: event.target.value as OnboardingBasicData["work_format"],
+                service_radius_km:
+                  event.target.value === "online" ? "" : prev.service_radius_km,
               }))
             }
             className={inputClass}
@@ -203,23 +408,140 @@ export default function OnboardingBasicForm({
           {errors.work_format ? <p className={errorClass}>{errors.work_format}</p> : null}
         </label>
 
-        {needsPostalCode ? (
+        <div className="space-y-3 rounded-xl border border-indigo-100 bg-indigo-50/40 p-4">
+          <p className="text-sm font-semibold text-gray-900">
+            {t(dict, "dashboard.onboarding.basicForm.locationSectionTitle")}
+          </p>
+          <p className="text-xs leading-relaxed text-gray-600">
+            {t(dict, "dashboard.onboarding.basicForm.locationSectionHint")}
+          </p>
+
           <label className="block space-y-1 text-sm">
             <span className="font-medium text-gray-700">
-              {t(dict, "dashboard.onboarding.basicForm.postalCodeLabel")}
+              {t(dict, "dashboard.fields.country")} <span className="text-red-500">*</span>
+            </span>
+            <select value={GERMANY_COUNTRY_CODE} disabled className={`${inputClass} bg-gray-50`}>
+              <option value={GERMANY_COUNTRY_CODE}>{t(dict, "dashboard.country.DE")}</option>
+            </select>
+            <p className="text-xs text-gray-500">
+              {t(dict, "dashboard.onboarding.basicForm.germanyOnlyHint")}
+            </p>
+            {errors.country_code ? <p className={errorClass}>{errors.country_code}</p> : null}
+          </label>
+
+          <label className="block space-y-1 text-sm">
+            <span className="font-medium text-gray-700">
+              {t(dict, "dashboard.onboarding.basicForm.postalCodeLabel")}{" "}
+              <span className="text-red-500">*</span>
             </span>
             <input
               value={form.postal_code}
               onChange={(event) => {
                 const value = event.target.value.replace(/\D/g, "").slice(0, 5);
-                setForm((prev) => ({ ...prev, postal_code: value }));
+                setForm((prev) => ({
+                  ...prev,
+                  postal_code: value,
+                  city: "",
+                  lat: null,
+                  lng: null,
+                }));
+                setResolveState({ status: "idle" });
               }}
               inputMode="numeric"
               pattern="\d{5}"
               maxLength={5}
               className={inputClass}
+              autoComplete="postal-code"
             />
             {errors.postal_code ? <p className={errorClass}>{errors.postal_code}</p> : null}
+          </label>
+
+          {resolveState.status === "loading" ? (
+            <p className="text-xs font-medium text-indigo-700">
+              {t(dict, "dashboard.onboarding.basicForm.locationResolving")}
+            </p>
+          ) : null}
+
+          {resolveState.status === "error" ? (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
+              <p className="font-medium">
+                {t(dict, "dashboard.onboarding.basicForm.locationResolveFailed")}
+              </p>
+              <button
+                type="button"
+                className="mt-2 font-semibold text-indigo-700 underline"
+                onClick={() => {
+                  const plz = normalizePostalCode(form.postal_code);
+                  if (plz) void resolvePostal(plz);
+                }}
+              >
+                {t(dict, "dashboard.onboarding.basicForm.locationRetry")}
+              </button>
+            </div>
+          ) : null}
+
+          {resolveState.status === "resolved" ? (
+            <div className="space-y-2">
+              {resolveState.candidates.length > 1 ? (
+                <label className="block space-y-1 text-sm">
+                  <span className="font-medium text-gray-700">
+                    {t(dict, "dashboard.onboarding.basicForm.citySelectLabel")}
+                  </span>
+                  <select
+                    value={String(resolveState.selectedIndex)}
+                    onChange={(e) => selectCandidate(Number(e.target.value))}
+                    className={inputClass}
+                  >
+                    {resolveState.candidates.map((c, idx) => (
+                      <option key={`${c.city}-${idx}`} value={String(idx)}>
+                        {c.city}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : (
+                <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+                  <span className="font-semibold">
+                    {t(dict, "dashboard.onboarding.basicForm.locationFound")}
+                  </span>{" "}
+                  {form.city}
+                </p>
+              )}
+            </div>
+          ) : null}
+
+          {errors.location ? <p className={errorClass}>{errors.location}</p> : null}
+        </div>
+
+        {showRadius ? (
+          <label className="block space-y-1 text-sm">
+            <span className="font-medium text-gray-700">
+              {t(dict, "dashboard.fields.serviceRadius")} <span className="text-red-500">*</span>
+            </span>
+            <select
+              value={
+                (PUBLIC_SERVICE_RADII_KM as readonly number[]).includes(
+                  Number(form.service_radius_km)
+                )
+                  ? form.service_radius_km
+                  : ""
+              }
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, service_radius_km: e.target.value }))
+              }
+              className={inputClass}
+            >
+              <option value="">{t(dict, "dashboard.fields.serviceRadiusPlaceholder")}</option>
+              {PUBLIC_SERVICE_RADII_KM.map((km) => (
+                <option key={km} value={String(km)}>
+                  {km} km
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.serviceRadiusHint")}</p>
+            {errors.service_radius_km ? (
+              <p className={errorClass}>{errors.service_radius_km}</p>
+            ) : null}
           </label>
         ) : null}
 
@@ -255,7 +577,7 @@ export default function OnboardingBasicForm({
           </Link>
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || resolveState.status === "loading"}
             className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {saving

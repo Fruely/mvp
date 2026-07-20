@@ -31,7 +31,7 @@ export default async function SpecialistDashboardProfilePage({
   const { data: specExtra } = await service
     .from("specialists")
     .select(
-      "postal_code, country_code, telegram_chat_id, mobile_service, service_radius_km, work_format, languages, avatar_url",
+      "postal_code, country_code, telegram_chat_id, mobile_service, service_radius_km, work_format, languages, avatar_url, lat, lng",
     )
     .eq("id", specialist.id)
     .maybeSingle();
@@ -89,13 +89,22 @@ export default async function SpecialistDashboardProfilePage({
           about_me: typeof profile?.about_me === "string" ? profile.about_me : "",
           video_url: typeof profile?.video_url === "string" ? profile.video_url : "",
           postal_code: typeof specExtra?.postal_code === "string" ? specExtra.postal_code : "",
-          country_code: typeof specExtra?.country_code === "string" ? specExtra.country_code : "DE",
+          country_code:
+            typeof specExtra?.country_code === "string" ? specExtra.country_code : "",
           mobile_service: Boolean(specExtra?.mobile_service),
           service_radius_km:
             typeof specExtra?.service_radius_km === "number" && Number.isFinite(specExtra.service_radius_km)
               ? String(specExtra.service_radius_km)
               : "",
           city: typeof profile?.city === "string" ? profile.city : "",
+          lat:
+            typeof specExtra?.lat === "number" && Number.isFinite(specExtra.lat)
+              ? specExtra.lat
+              : null,
+          lng:
+            typeof specExtra?.lng === "number" && Number.isFinite(specExtra.lng)
+              ? specExtra.lng
+              : null,
           address: typeof profile?.address === "string" ? profile.address : "",
           photo_url:
             typeof specExtra?.avatar_url === "string" && specExtra.avatar_url.trim()

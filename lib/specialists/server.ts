@@ -63,8 +63,16 @@ export async function getSpecialistOnboardingGateState(
 
   const { data: specExtra } = await service
     .from("specialists")
-    .select("name, category_id, postal_code, work_format, languages, service_radius_km")
+    .select(
+      "name, category_id, postal_code, country_code, work_format, languages, service_radius_km, lat, lng"
+    )
     .eq("id", specialist.id)
+    .maybeSingle();
+
+  const { data: profileRow } = await service
+    .from("specialist_profiles")
+    .select("city")
+    .eq("specialist_id", specialist.id)
     .maybeSingle();
 
   const categoryId =
@@ -77,7 +85,7 @@ export async function getSpecialistOnboardingGateState(
   const { data: categoryRow } = categoryId
     ? await service
         .from("categories")
-        .select("parent_id")
+        .select("parent_id, slug")
         .eq("id", categoryId)
         .maybeSingle()
     : { data: null };
@@ -117,9 +125,15 @@ export async function getSpecialistOnboardingGateState(
     name,
     categoryId,
     categoryParentId,
+    categorySlug: typeof categoryRow?.slug === "string" ? categoryRow.slug : null,
+    categoryMissing: Boolean(categoryId) && !categoryRow,
     languages,
     workFormat,
     postalCode,
+    countryCode: typeof specExtra?.country_code === "string" ? specExtra.country_code : null,
+    city: typeof profileRow?.city === "string" ? profileRow.city : null,
+    lat: typeof specExtra?.lat === "number" ? specExtra.lat : null,
+    lng: typeof specExtra?.lng === "number" ? specExtra.lng : null,
     serviceRadiusKm,
     servicesInSelectedCategory,
   });

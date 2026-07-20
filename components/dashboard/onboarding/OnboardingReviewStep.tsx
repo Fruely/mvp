@@ -4,9 +4,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { t, type Dictionary } from "@/lib/i18n";
+import type {
+  PublicationIssue,
+  PublicationRecommendation,
+} from "@/lib/dashboard/publicationValidator";
 
 export type OnboardingReviewSummary = {
   publishReady: boolean;
+  blocking: PublicationIssue[];
+  recommendations: PublicationRecommendation[];
   hasName: boolean;
   hasCategory: boolean;
   hasPublishableCategory: boolean;
@@ -14,8 +20,12 @@ export type OnboardingReviewSummary = {
   isRootCategory: boolean;
   hasLanguages: boolean;
   hasWorkFormat: boolean;
-  needsPostalCode: boolean;
-  hasValidPostalCodeWhenNeeded: boolean;
+  hasCountry: boolean;
+  hasPostalCode: boolean;
+  hasCity: boolean;
+  hasCoordinates: boolean;
+  needsServiceRadius: boolean;
+  hasServiceRadius: boolean;
   hasActiveServicesAnyCategory: boolean;
   hasValidServiceInSelectedCategory: boolean;
   servicesMismatch: boolean;
@@ -67,6 +77,15 @@ function ReviewList({
   );
 }
 
+function issueLabel(dict: Dictionary, code: string, fallback: string): string {
+  const key = `dashboard.messages.${code.startsWith("publication_") ? code : `publication_${code}`}`;
+  const translated = t(dict, key);
+  if (translated !== key) return translated;
+  const alt = t(dict, `dashboard.onboarding.reviewStep.issue.${code}`);
+  if (alt !== `dashboard.onboarding.reviewStep.issue.${code}`) return alt;
+  return fallback;
+}
+
 export default function OnboardingReviewStep({
   dict,
   lang,
@@ -88,6 +107,7 @@ export default function OnboardingReviewStep({
   const [publishing, setPublishing] = useState(false);
   const [published, setPublished] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [serverIssues, setServerIssues] = useState<PublicationIssue[]>([]);
   const dashboardLink = dashboardHref || `/${lang}/specialist/dashboard`;
   const servicesHref = `/${lang}/specialist/dashboard/services`;
 
@@ -125,12 +145,36 @@ export default function OnboardingReviewStep({
       done: summary.hasWorkFormat,
       href: `${baseHref}?step=basic`,
     },
-    ...(summary.needsPostalCode
+    {
+      key: "country",
+      label: t(dict, "dashboard.onboarding.reviewStep.fixCountry"),
+      done: summary.hasCountry,
+      href: `${baseHref}?step=basic`,
+    },
+    {
+      key: "postalCode",
+      label: t(dict, "dashboard.onboarding.reviewStep.fixPostalCodeAll"),
+      done: summary.hasPostalCode,
+      href: `${baseHref}?step=basic`,
+    },
+    {
+      key: "city",
+      label: t(dict, "dashboard.onboarding.reviewStep.fixCityResolved"),
+      done: summary.hasCity,
+      href: `${baseHref}?step=basic`,
+    },
+    {
+      key: "coordinates",
+      label: t(dict, "dashboard.onboarding.reviewStep.fixCoordinates"),
+      done: summary.hasCoordinates,
+      href: `${baseHref}?step=basic`,
+    },
+    ...(summary.needsServiceRadius
       ? [
           {
-            key: "postalCode",
-            label: t(dict, "dashboard.onboarding.reviewStep.fixPostalCode"),
-            done: summary.hasValidPostalCodeWhenNeeded,
+            key: "serviceRadius",
+            label: t(dict, "dashboard.onboarding.reviewStep.fixServiceRadius"),
+            done: summary.hasServiceRadius,
             href: `${baseHref}?step=basic`,
           },
         ]
@@ -167,19 +211,37 @@ export default function OnboardingReviewStep({
     if (published) return;
     if (!publishReady || !summary.publishReady) {
       setError(t(dict, "dashboard.onboarding.reviewStep.preflightError"));
+      setServerIssues(summary.blocking);
       return;
     }
 
     setPublishing(true);
     setPublished(false);
     setError(null);
+    setServerIssues([]);
 
     try {
       const res = await fetch("/api/specialist/dashboard/publish", { method: "POST" });
-      const json = (await res.json().catch(() => ({}))) as { error?: unknown; fields?: unknown };
+      const json = (await res.json().catch(() => ({}))) as {
+        error?: unknown;
+        fields?: unknown;
+        issues?: PublicationIssue[];
+        code?: string;
+      };
 
       if (!res.ok) {
-        const fields = Array.isArray(json.fields) ? json.fields.filter((field) => typeof field === "string").join(", ") : "";
+        if (Array.isArray(json.issues) && json.issues.length > 0) {
+          setServerIssues(json.issues);
+          setError(
+            typeof json.error === "string"
+              ? json.error
+              : t(dict, "dashboard.onboarding.reviewStep.preflightError")
+          );
+          return;
+        }
+        const fields = Array.isArray(json.fields)
+          ? json.fields.filter((field) => typeof field === "string").join(", ")
+          : "";
         const message =
           typeof json.error === "string"
             ? json.error
@@ -196,6 +258,8 @@ export default function OnboardingReviewStep({
       setPublishing(false);
     }
   }
+
+  const visibleIssues = serverIssues.length > 0 ? serverIssues : summary.blocking;
 
   return (
     <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
@@ -259,6 +323,20 @@ export default function OnboardingReviewStep({
                 ? t(dict, "dashboard.onboarding.reviewStep.readyBody")
                 : t(dict, "dashboard.onboarding.reviewStep.notReadyBody")}
             </p>
+            {!publishReady && visibleIssues.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs font-medium">
+                {visibleIssues.map((issue) => (
+                  <li key={`${issue.code}-${issue.field}`}>
+                    <Link
+                      href={`${baseHref}?step=${issue.step === "services" ? "services" : "basic"}`}
+                      className="underline"
+                    >
+                      {issueLabel(dict, issue.code, issue.field)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </div>
 
           <div className="mt-5 space-y-6">

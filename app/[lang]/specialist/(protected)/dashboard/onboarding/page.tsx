@@ -5,11 +5,20 @@ import SpecialistOnboardingWizard from "@/components/dashboard/onboarding/Specia
 import type { OnboardingChecklistItem } from "@/components/dashboard/onboarding/OnboardingChecklist";
 import { ONBOARDING_STEP_ORDER, type OnboardingStepKey } from "@/components/dashboard/onboarding/OnboardingProgress";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
+import { hasValidServiceForPublish } from "@/lib/dashboard/publicationReadiness";
 import {
-  hasValidServiceForPublish,
-  isPublicationReadyForDashboard,
-} from "@/lib/dashboard/publicationReadiness";
+  needsServiceRadius,
+  validatePublication,
+} from "@/lib/dashboard/publicationValidator";
 import { getDictionary, isSupportedLang, t, type Dictionary } from "@/lib/i18n";
+import {
+  GERMANY_COUNTRY_CODE,
+  areValidCoordinates,
+  isAllowedServiceRadiusKm,
+  normalizeCountryCode,
+  normalizePostalCode,
+  parseServiceRadiusKm,
+} from "@/lib/specialists/geography";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { getSpecialistUrl } from "@/lib/urls";
@@ -55,7 +64,9 @@ export default async function SpecialistDashboardOnboardingPage({
 
   const { data: specExtra } = await service
     .from("specialists")
-    .select("postal_code, country_code, work_format, languages, avatar_url, service_radius_km")
+    .select(
+      "postal_code, country_code, work_format, languages, avatar_url, service_radius_km, lat, lng"
+    )
     .eq("id", specialist.id)
     .maybeSingle();
 
@@ -107,12 +118,25 @@ export default async function SpecialistDashboardOnboardingPage({
         isUncategorizedCategory={false}
         showIncompleteProfileGateNotice={showIncompleteProfileGateNotice}
         checklistItems={[]}
-        initialBasicData={{ name: "", category_id: "", work_format: "online", postal_code: "", languages: [] }}
+        initialBasicData={{
+          name: "",
+          category_id: "",
+          work_format: "online",
+          country_code: GERMANY_COUNTRY_CODE,
+          postal_code: "",
+          city: "",
+          lat: null,
+          lng: null,
+          service_radius_km: "",
+          languages: [],
+        }}
         initialAboutData={{ about_me: "" }}
         servicesSummary={{ totalServices: 0, activeServices: 0, hasValidServiceForPublish: false }}
         currentPhotoUrl=""
         reviewSummary={{
           publishReady: false,
+          blocking: [],
+          recommendations: [],
           hasName: false,
           hasCategory: false,
           hasPublishableCategory: false,
@@ -120,8 +144,12 @@ export default async function SpecialistDashboardOnboardingPage({
           isRootCategory: false,
           hasLanguages: false,
           hasWorkFormat: false,
-          needsPostalCode: false,
-          hasValidPostalCodeWhenNeeded: false,
+          hasCountry: false,
+          hasPostalCode: false,
+          hasCity: false,
+          hasCoordinates: false,
+          needsServiceRadius: false,
+          hasServiceRadius: false,
           hasActiveServicesAnyCategory: false,
           hasValidServiceInSelectedCategory: false,
           servicesMismatch: false,
@@ -155,7 +183,13 @@ export default async function SpecialistDashboardOnboardingPage({
       ? specExtra.service_radius_km
       : null;
   const city = typeof profile?.city === "string" ? profile.city.trim() : "";
-  const countryCode = typeof specExtra?.country_code === "string" ? specExtra.country_code.trim() : "";
+  const countryCodeRaw =
+    typeof specExtra?.country_code === "string" ? specExtra.country_code.trim() : "";
+  const countryCode = normalizeCountryCode(countryCodeRaw) ?? "";
+  const lat =
+    typeof specExtra?.lat === "number" && Number.isFinite(specExtra.lat) ? specExtra.lat : null;
+  const lng =
+    typeof specExtra?.lng === "number" && Number.isFinite(specExtra.lng) ? specExtra.lng : null;
   const categoryParentId =
     categoryRow && typeof categoryRow.parent_id === "string" ? categoryRow.parent_id : null;
   const isUncategorizedCategory = categoryRow?.slug === UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG;
@@ -166,17 +200,6 @@ export default async function SpecialistDashboardOnboardingPage({
   const activeServices = (servicesRows ?? []).filter((row) => row.is_active === true).length;
   const hasActiveServicesAnyCategory = activeServices > 0;
   const hasValidService = hasValidServiceForPublish(servicesInSelectedCategory);
-
-  const publishReady = isPublicationReadyForDashboard({
-    name,
-    categoryId,
-    categoryParentId,
-    languages,
-    workFormat,
-    postalCode,
-    serviceRadiusKm,
-    servicesInSelectedCategory,
-  });
 
   const hasAbout = typeof profile?.about_me === "string" && profile.about_me.trim().length > 0;
   const avatarUrl =
@@ -189,11 +212,38 @@ export default async function SpecialistDashboardOnboardingPage({
   const hasGallery = Array.isArray(profile?.gallery_urls)
     ? profile.gallery_urls.some((value) => typeof value === "string" && value.trim().length > 0)
     : false;
-  const needsPostalCode = workFormat !== "online";
   const hasWorkFormat =
     workFormat === "online" || workFormat === "offline" || workFormat === "hybrid";
   const isRootCategory = Boolean(categoryId && categoryParentId == null && !isUncategorizedCategory);
-  const hasValidPostalCodeWhenNeeded = !needsPostalCode || /^\d{5}$/.test(postalCode.trim());
+  const needsRadius = needsServiceRadius(workFormat);
+  const hasPostal = Boolean(normalizePostalCode(postalCode));
+  const hasCountry = countryCode === GERMANY_COUNTRY_CODE;
+  const hasCity = city.length > 0;
+  const hasCoordinates = areValidCoordinates(lat, lng, { countryCode: GERMANY_COUNTRY_CODE });
+  const hasServiceRadiusOk =
+    !needsRadius || isAllowedServiceRadiusKm(parseServiceRadiusKm(serviceRadiusKm));
+
+  const validation = validatePublication({
+    name,
+    categoryId,
+    categoryParentId,
+    categorySlug: typeof categoryRow?.slug === "string" ? categoryRow.slug : null,
+    categoryMissing: Boolean(categoryId) && !categoryRow,
+    languages,
+    workFormat,
+    countryCode: countryCode || null,
+    postalCode,
+    city,
+    lat,
+    lng,
+    serviceRadiusKm,
+    servicesInSelectedCategory,
+    hasAbout,
+    hasPhoto,
+    hasGallery,
+  });
+  const publishReady = validation.ready;
+
   const servicesMismatch = hasActiveServicesAnyCategory && !hasValidService;
   const profileStarted = Boolean(
     name ||
@@ -224,9 +274,9 @@ export default async function SpecialistDashboardOnboardingPage({
       done: languages.length > 0,
     },
     {
-      key: "format",
-      label: t(dict, "dashboard.onboarding.checklist.format"),
-      done: hasWorkFormat && (!needsPostalCode || /^\d{5}$/.test(postalCode.trim())),
+      key: "location",
+      label: t(dict, "dashboard.onboarding.basicForm.locationSectionTitle"),
+      done: hasCountry && hasPostal && hasCity && hasCoordinates && (!needsRadius || hasServiceRadiusOk),
     },
     {
       key: "services",
@@ -264,7 +314,12 @@ export default async function SpecialistDashboardOnboardingPage({
           workFormat === "online" || workFormat === "offline" || workFormat === "hybrid"
             ? workFormat
             : "online",
+        country_code: countryCode || GERMANY_COUNTRY_CODE,
         postal_code: postalCode,
+        city,
+        lat,
+        lng,
+        service_radius_km: serviceRadiusKm != null ? String(serviceRadiusKm) : "",
         languages,
       }}
       initialAboutData={{
@@ -278,6 +333,8 @@ export default async function SpecialistDashboardOnboardingPage({
       currentPhotoUrl={avatarUrl}
       reviewSummary={{
         publishReady,
+        blocking: validation.blocking,
+        recommendations: validation.recommendations,
         hasName: Boolean(name.trim()),
         hasCategory: Boolean(categoryId),
         hasPublishableCategory: Boolean(categoryId && categoryParentId != null && !isUncategorizedCategory),
@@ -285,8 +342,12 @@ export default async function SpecialistDashboardOnboardingPage({
         isRootCategory,
         hasLanguages: languages.length > 0,
         hasWorkFormat,
-        needsPostalCode,
-        hasValidPostalCodeWhenNeeded,
+        hasCountry,
+        hasPostalCode: hasPostal,
+        hasCity,
+        hasCoordinates,
+        needsServiceRadius: needsRadius,
+        hasServiceRadius: hasServiceRadiusOk,
         hasActiveServicesAnyCategory,
         hasValidServiceInSelectedCategory: hasValidService,
         servicesMismatch,

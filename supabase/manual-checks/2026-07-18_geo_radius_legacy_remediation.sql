@@ -52,7 +52,7 @@ flagged AS (
         CASE WHEN pl.service_radius_km IS NULL THEN 'missing_radius' END,
         CASE
           WHEN pl.service_radius_km IS NOT NULL
-           AND pl.service_radius_km NOT IN (5, 10, 25, 50, 100)
+           AND pl.service_radius_km NOT IN (5, 10, 25, 30, 50, 100)
           THEN 'invalid_radius'
         END,
         CASE

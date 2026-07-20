@@ -746,7 +746,7 @@
   "dashboard.messages.publication_city_required": "Для офлайн-роботи вкажіть дійсний поштовий індекс, місто та зону обслуговування. Без цих даних клієнти не зможуть знайти ваш профіль.",
   "dashboard.messages.publication_coordinates_required": "Для офлайн-роботи вкажіть дійсний поштовий індекс, місто та зону обслуговування. Без цих даних клієнти не зможуть знайти ваш профіль.",
   "dashboard.messages.publication_service_radius_required": "Для офлайн-роботи вкажіть дійсний поштовий індекс, місто та зону обслуговування. Без цих даних клієнти не зможуть знайти ваш профіль.",
-  "dashboard.messages.publication_service_radius_invalid": "Оберіть допустиму зону обслуговування: 5, 10, 25, 50 або 100 км.",
+  "dashboard.messages.publication_service_radius_invalid": "Оберіть допустиму зону обслуговування: 10, 30, 50 або 100 км.",
   "dashboard.messages.publication_country_required": "Вкажіть країну, поштовий індекс і місто вашого місцезнаходження. Ці дані потрібні для перевірки профілю і не означають очний прийом.",
   "dashboard.messages.publication_country_not_supported": "Поки підтримується лише Німеччина (DE)",
   "dashboard.messages.publication_postal_code_required": "Для офлайн-роботи вкажіть дійсний поштовий індекс, місто та зону обслуговування. Без цих даних клієнти не зможуть знайти ваш профіль.",
@@ -1139,5 +1139,19 @@
     "externalMediaTitle": "Зовнішні медіа",
     "externalMediaDescription": "Дозволяють завантажувати зовнішній контент (наприклад, вбудовані медіа) лише після згоди.",
     "settingsAria": "Налаштування категорій файлів cookie"
-  }
+  },
+  "dashboard.onboarding.basicForm.locationSectionTitle": "Місцезнаходження (обов’язково)",
+  "dashboard.onboarding.basicForm.locationSectionHint": "Країна, індекс і населений пункт обов’язкові для всіх форматів роботи, включно з онлайн. Це потрібно для ринку, відображення міста та довіри до профілю. Місто й координати визначаються за поштовим індексом.",
+  "dashboard.onboarding.basicForm.germanyOnlyHint": "Зараз Freuly доступний лише спеціалістам із місцезнаходженням у Німеччині.",
+  "dashboard.onboarding.basicForm.locationResolving": "Визначаємо населений пункт…",
+  "dashboard.onboarding.basicForm.locationResolveFailed": "Не вдалося визначити населений пункт. Перевірте індекс і спробуйте знову.",
+  "dashboard.onboarding.basicForm.locationRetry": "Повторити",
+  "dashboard.onboarding.basicForm.locationFound": "Знайдено:",
+  "dashboard.onboarding.basicForm.citySelectLabel": "Оберіть населений пункт",
+  "dashboard.onboarding.basicForm.locationRequired": "Вкажіть коректний індекс і підтвердіть визначений населений пункт.",
+  "dashboard.onboarding.reviewStep.fixCountry": "Країна (місцезнаходження)",
+  "dashboard.onboarding.reviewStep.fixPostalCodeAll": "Поштовий індекс",
+  "dashboard.onboarding.reviewStep.fixCityResolved": "Населений пункт визначено",
+  "dashboard.onboarding.reviewStep.fixCoordinates": "Координати визначено",
+  "dashboard.onboarding.reviewStep.fixServiceRadius": "Зона надання послуг (км)"
 }

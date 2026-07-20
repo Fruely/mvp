@@ -933,7 +933,8 @@
       "fillRequired": "Bitte füllen Sie die Pflichtfelder aus",
       "publishFailed": "Profil konnte nicht veröffentlicht werden.",
       "published": "Profil veröffentlicht.",
-      "unsavedChanges": "Sie haben ungespeicherte Änderungen"
+      "unsavedChanges": "Sie haben ungespeicherte Änderungen",
+      "publication_service_radius_invalid": "Bitte ein gültiges Servicegebiet wählen: 10, 30, 50 oder 100 km."
     },
     "buttons": {
       "save": "Änderungen speichern",
@@ -1202,5 +1203,19 @@
     "externalMediaTitle": "Externe Medien",
     "externalMediaDescription": "Ermöglichen das Laden externer Inhalte (z. B. eingebettete Medien) erst nach Einwilligung.",
     "settingsAria": "Einstellungen der Cookie-Kategorien"
-  }
+  },
+  "dashboard.onboarding.basicForm.locationSectionTitle": "Standort (erforderlich)",
+  "dashboard.onboarding.basicForm.locationSectionHint": "Land, PLZ und Ort sind für alle Arbeitsformate erforderlich — auch für Online. So können wir Ihren Markt zuordnen und Ihr Profil korrekt anzeigen. Die PLZ bestimmt Stadt und Koordinaten automatisch.",
+  "dashboard.onboarding.basicForm.germanyOnlyHint": "Derzeit ist Freuly nur für Fachkräfte mit Standort in Deutschland verfügbar.",
+  "dashboard.onboarding.basicForm.locationResolving": "Ort wird ermittelt…",
+  "dashboard.onboarding.basicForm.locationResolveFailed": "Ort konnte nicht ermittelt werden. Prüfen Sie die PLZ und versuchen Sie es erneut.",
+  "dashboard.onboarding.basicForm.locationRetry": "Erneut versuchen",
+  "dashboard.onboarding.basicForm.locationFound": "Gefunden:",
+  "dashboard.onboarding.basicForm.citySelectLabel": "Ort auswählen",
+  "dashboard.onboarding.basicForm.locationRequired": "Bitte gültige PLZ eingeben und den ermittelten Ort bestätigen.",
+  "dashboard.onboarding.reviewStep.fixCountry": "Land (Standort)",
+  "dashboard.onboarding.reviewStep.fixPostalCodeAll": "Postleitzahl",
+  "dashboard.onboarding.reviewStep.fixCityResolved": "Ort ermittelt",
+  "dashboard.onboarding.reviewStep.fixCoordinates": "Koordinaten ermittelt",
+  "dashboard.onboarding.reviewStep.fixServiceRadius": "Servicegebiet (km)"
 }

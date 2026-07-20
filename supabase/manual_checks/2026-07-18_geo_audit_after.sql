@@ -30,7 +30,7 @@ WHERE s.status IN ('published_unverified', 'featured_verified', 'approved')
     OR p.city IS NULL OR btrim(p.city) = ''
     OR s.lat IS NULL OR s.lng IS NULL
     OR s.service_radius_km IS NULL
-    OR s.service_radius_km NOT IN (5,10,25,50,100)
+    OR s.service_radius_km NOT IN (5,10,25,30,50,100)
   );
 
 -- C) Online published missing admin geo

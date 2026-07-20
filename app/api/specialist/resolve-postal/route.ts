@@ -43,5 +43,6 @@ export async function GET(request: NextRequest) {
     ok: true,
     source: resolved.source,
     location: resolved.location,
+    candidates: resolved.candidates,
   });
 }

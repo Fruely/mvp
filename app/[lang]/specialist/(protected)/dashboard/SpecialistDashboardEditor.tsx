@@ -8,7 +8,13 @@ import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 import { isPublicationReadyForDashboard } from "@/lib/dashboard/publicationReadiness";
-import { ALLOWED_SERVICE_RADII_KM } from "@/lib/specialists/geography";
+import {
+  GERMANY_COUNTRY_CODE,
+  PUBLIC_SERVICE_RADII_KM,
+  isAllowedServiceRadiusKm,
+  normalizeCountryCode,
+  normalizePostalCode,
+} from "@/lib/specialists/geography";
 import SpecialistAvatarImage from "@/components/specialist/SpecialistAvatarImage";
 
 type ServiceInput = {
@@ -38,6 +44,8 @@ type Props = {
     mobile_service: boolean;
     service_radius_km: string;
     city: string;
+    lat: number | null;
+    lng: number | null;
     address: string;
     photo_url: string;
     gallery_urls: string[];
@@ -65,7 +73,9 @@ const READINESS_SECTION_ID: Record<string, string> = {
   category: "dashboard-section-category",
   languages: "dashboard-section-languages",
   work_format: "dashboard-section-work-format",
+  country: "dashboard-section-plz",
   plz: "dashboard-section-plz",
+  city: "dashboard-section-plz",
   service_radius: "dashboard-section-service-radius",
   service: "dashboard-services-section",
 };
@@ -133,6 +143,14 @@ export default function SpecialistDashboardEditor({
     };
   }, []);
 
+  // DB null country must not look publish-ready until DE is persisted.
+  useEffect(() => {
+    if (normalizeCountryCode(initialData.country_code) === GERMANY_COUNTRY_CODE) return;
+    _setFormRaw((prev) => ({ ...prev, country_code: GERMANY_COUNTRY_CODE }));
+    setIsDirty(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only remount for missing country
+  }, []);
+
   const setForm = useCallback(
     (updater: Props["initialData"] | ((prev: Props["initialData"]) => Props["initialData"])) => {
       _setFormRaw(updater);
@@ -143,12 +161,22 @@ export default function SpecialistDashboardEditor({
   );
 
   /**
-   * Preview city from the same server resolver as save (resolveGermanPostalLocation).
-   * Do not use Zippopotam or other divergent client geocoders.
+   * Preview city/coords from the same server resolver as save (resolveGermanPostalLocation).
+   * Changing PLZ clears stale city/coordinates until a successful resolve.
    */
   useEffect(() => {
-    const postalCode = (form.postal_code || "").trim();
-    if (!/^\d{5}$/.test(postalCode)) return;
+    const postalCode = normalizePostalCode(form.postal_code);
+    if (!postalCode) return;
+
+    // Already resolved for this PLZ — keep selection.
+    if (
+      form.city.trim() &&
+      typeof form.lat === "number" &&
+      typeof form.lng === "number" &&
+      form.country_code === GERMANY_COUNTRY_CODE
+    ) {
+      return;
+    }
 
     let cancelled = false;
     const controller = new AbortController();
@@ -161,15 +189,62 @@ export default function SpecialistDashboardEditor({
         );
         const json = (await res.json().catch(() => null)) as {
           ok?: boolean;
-          location?: { city?: string; countryCode?: string };
+          location?: { city?: string; lat?: number; lng?: number };
+          candidates?: Array<{ city?: string; lat?: number; lng?: number }>;
         } | null;
-        if (cancelled || !res.ok || !json?.ok) return;
-        const city = typeof json.location?.city === "string" ? json.location.city.trim() : "";
-        if (!city) return;
+        if (cancelled || !res.ok || !json?.ok) {
+          if (!cancelled) {
+            _setFormRaw((prev) => {
+              if (normalizePostalCode(prev.postal_code) !== postalCode) return prev;
+              return { ...prev, city: "", lat: null, lng: null };
+            });
+          }
+          return;
+        }
+        const candidates =
+          Array.isArray(json.candidates) && json.candidates.length > 0
+            ? json.candidates.filter(
+                (c): c is { city: string; lat: number; lng: number } =>
+                  typeof c.city === "string" &&
+                  typeof c.lat === "number" &&
+                  typeof c.lng === "number"
+              )
+            : json.location?.city &&
+                typeof json.location.lat === "number" &&
+                typeof json.location.lng === "number"
+              ? [
+                  {
+                    city: json.location.city,
+                    lat: json.location.lat,
+                    lng: json.location.lng,
+                  },
+                ]
+              : [];
+        const selected = candidates[0];
+        if (!selected) {
+          _setFormRaw((prev) => {
+            if (normalizePostalCode(prev.postal_code) !== postalCode) return prev;
+            return { ...prev, city: "", lat: null, lng: null };
+          });
+          return;
+        }
         _setFormRaw((prev) => {
-          if (prev.postal_code.trim() !== postalCode) return prev;
-          if (prev.city === city && prev.country_code === "DE") return prev;
-          return { ...prev, city, country_code: "DE" };
+          if (normalizePostalCode(prev.postal_code) !== postalCode) return prev;
+          if (
+            prev.city === selected.city &&
+            prev.lat === selected.lat &&
+            prev.lng === selected.lng &&
+            prev.country_code === GERMANY_COUNTRY_CODE
+          ) {
+            return prev;
+          }
+          return {
+            ...prev,
+            city: selected.city,
+            lat: selected.lat,
+            lng: selected.lng,
+            country_code: GERMANY_COUNTRY_CODE,
+          };
         });
       } catch {
         // Preview failure must not block editing; save/publish enforce geo.
@@ -180,9 +255,9 @@ export default function SpecialistDashboardEditor({
       cancelled = true;
       controller.abort();
     };
-  }, [form.postal_code]);
+  }, [form.postal_code, form.city, form.lat, form.lng, form.country_code]);
 
-  /** All formats require DE + PLZ + city (+ coords via PLZ). Radius only for offline/hybrid. */
+  /** All formats require DE + PLZ + city + coords. Radius only for offline/hybrid. */
   const needsLocationGeo = true;
   const needsServiceRadius =
     form.work_format === "offline" || form.work_format === "hybrid";
@@ -209,11 +284,15 @@ export default function SpecialistDashboardEditor({
       name: form.name,
       categoryId: form.category_id,
       categoryParentId,
+      categorySlug: selectedCategory?.slug ?? null,
       languages: form.languages,
       workFormat: form.work_format,
+      countryCode: form.country_code,
       postalCode: form.postal_code,
-      serviceRadiusKm: form.service_radius_km,
       city: form.city,
+      lat: form.lat,
+      lng: form.lng,
+      serviceRadiusKm: form.service_radius_km,
       servicesInSelectedCategory: form.services.map((service) => ({
         title: service.title,
         price_from: service.price_from,
@@ -224,17 +303,30 @@ export default function SpecialistDashboardEditor({
     categoryParentId,
     form.category_id,
     form.city,
+    form.country_code,
     form.languages,
+    form.lat,
+    form.lng,
     form.name,
     form.postal_code,
     form.service_radius_km,
     form.services,
     form.work_format,
+    selectedCategory?.slug,
   ]);
 
   const hasAllowlistedServiceRadius = useMemo(() => {
     const n = Number(String(form.service_radius_km).trim());
-    return Number.isFinite(n) && (ALLOWED_SERVICE_RADII_KM as readonly number[]).includes(n);
+    return isAllowedServiceRadiusKm(n);
+  }, [form.service_radius_km]);
+
+  const radiusSelectOptions = useMemo(() => {
+    const current = Number(String(form.service_radius_km).trim());
+    const options = [...PUBLIC_SERVICE_RADII_KM] as number[];
+    if (Number.isFinite(current) && isAllowedServiceRadiusKm(current) && !options.includes(current)) {
+      options.unshift(current);
+    }
+    return options;
   }, [form.service_radius_km]);
 
   /** Checklist items mirror the same publish minimum; order matches form sections. */
@@ -259,14 +351,22 @@ export default function SpecialistDashboardEditor({
     ];
     if (needsLocationGeo) {
       items.push({
+        key: "country",
+        label: t(dict, "dashboard.fields.country"),
+        done: (form.country_code || "").toUpperCase() === GERMANY_COUNTRY_CODE,
+      });
+      items.push({
         key: "plz",
         label: t(dict, "dashboard.fields.plz"),
-        done: /^\d{5}$/.test(form.postal_code.trim()),
+        done: Boolean(normalizePostalCode(form.postal_code)),
       });
       items.push({
         key: "city",
         label: t(dict, "dashboard.fields.city"),
-        done: Boolean(form.city.trim()),
+        done:
+          Boolean(form.city.trim()) &&
+          typeof form.lat === "number" &&
+          typeof form.lng === "number",
       });
     }
     if (needsServiceRadius) {
@@ -492,6 +592,8 @@ export default function SpecialistDashboardEditor({
           postal_code?: string | null;
           country_code?: string | null;
           city?: string | null;
+          lat?: number | null;
+          lng?: number | null;
         };
       };
       if (!res.ok) {
@@ -515,6 +617,18 @@ export default function SpecialistDashboardEditor({
               : json.geography?.city === null
                 ? ""
                 : prev.city,
+          lat:
+            typeof json.geography?.lat === "number"
+              ? json.geography.lat
+              : json.geography?.lat === null
+                ? null
+                : prev.lat,
+          lng:
+            typeof json.geography?.lng === "number"
+              ? json.geography.lng
+              : json.geography?.lng === null
+                ? null
+                : prev.lng,
         }));
       }
       setIsDirty(false);
@@ -558,7 +672,10 @@ export default function SpecialistDashboardEditor({
       if (needsServiceRadius && !hasAllowlistedServiceRadius) {
         missing.push(t(dict, "dashboard.messages.publication_service_radius_required"));
       }
-      if (needsLocationGeo && !form.city.trim()) {
+      if (
+        needsLocationGeo &&
+        (!form.city.trim() || form.lat == null || form.lng == null)
+      ) {
         missing.push(
           form.work_format === "online"
             ? t(dict, "dashboard.messages.publication_online_geo_required")
@@ -746,7 +863,13 @@ export default function SpecialistDashboardEditor({
                 value={form.postal_code}
                 onChange={(e) => {
                   const v = e.target.value.replace(/\D/g, "").slice(0, 5);
-                  setForm((prev) => ({ ...prev, postal_code: v }));
+                  setForm((prev) => ({
+                    ...prev,
+                    postal_code: v,
+                    city: "",
+                    lat: null,
+                    lng: null,
+                  }));
                 }}
                 inputMode="numeric"
                 pattern="\d{5}"
@@ -832,9 +955,7 @@ export default function SpecialistDashboardEditor({
                   </span>
                   <select
                     value={
-                      (ALLOWED_SERVICE_RADII_KM as readonly number[]).includes(
-                        Number(form.service_radius_km),
-                      )
+                      radiusSelectOptions.includes(Number(form.service_radius_km))
                         ? form.service_radius_km
                         : ""
                     }
@@ -844,7 +965,7 @@ export default function SpecialistDashboardEditor({
                     className="w-full rounded-lg border border-gray-200 px-3 py-2"
                   >
                     <option value="">{t(dict, "dashboard.fields.serviceRadiusPlaceholder")}</option>
-                    {ALLOWED_SERVICE_RADII_KM.map((km) => (
+                    {radiusSelectOptions.map((km) => (
                       <option key={km} value={String(km)}>
                         {km} km
                       </option>

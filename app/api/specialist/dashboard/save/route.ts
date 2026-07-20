@@ -7,6 +7,7 @@ import { normalizeRouteLangToDbContentCode } from "@/lib/specialists/normalizeCo
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 import {
   GERMANY_COUNTRY_CODE,
+  areValidCoordinates,
   isAllowedServiceRadiusKm,
   normalizeCountryCode,
   normalizePostalCode,
@@ -267,16 +268,43 @@ export async function PUT(request: NextRequest) {
     (specialist.lat == null || specialist.lng == null);
   const needsResolve = plzChanged || (coordsMissing && newPlzNormalized !== null);
 
+  const bodyCity =
+    hasOwn(body, "city") && typeof body.city === "string" ? body.city.trim() : "";
+  const bodyLat =
+    typeof (body as Record<string, unknown>).lat === "number"
+      ? ((body as Record<string, unknown>).lat as number)
+      : null;
+  const bodyLng =
+    typeof (body as Record<string, unknown>).lng === "number"
+      ? ((body as Record<string, unknown>).lng as number)
+      : null;
+
   if (needsResolve) {
     const plzToResolve = newPlzNormalized ?? oldPlz;
     if (plzToResolve) {
       const resolved = await resolveGermanPostalLocation(service, plzToResolve);
       if (resolved.ok) {
-        specialistPatch.postal_code = resolved.location.postalCode;
-        specialistPatch.country_code = resolved.location.countryCode;
-        specialistPatch.lat = resolved.location.lat;
-        specialistPatch.lng = resolved.location.lng;
-        derivedCity = resolved.location.city;
+        // Prefer the user-selected candidate when city matches a resolved option.
+        const matched =
+          bodyCity.length > 0
+            ? resolved.candidates.find(
+                (c) => c.city.toLowerCase() === bodyCity.toLowerCase()
+              )
+            : undefined;
+        const chosen = matched
+          ? {
+              postalCode: resolved.location.postalCode,
+              countryCode: resolved.location.countryCode,
+              city: matched.city,
+              lat: matched.lat,
+              lng: matched.lng,
+            }
+          : resolved.location;
+        specialistPatch.postal_code = chosen.postalCode;
+        specialistPatch.country_code = chosen.countryCode;
+        specialistPatch.lat = chosen.lat;
+        specialistPatch.lng = chosen.lng;
+        derivedCity = chosen.city;
       } else {
         // Do not keep stale city/coords from a previous PLZ.
         specialistPatch.lat = null;
@@ -294,12 +322,19 @@ export async function PUT(request: NextRequest) {
     specialistPatch.lat = null;
     specialistPatch.lng = null;
     derivedCity = null;
+  } else if (
+    !plzChanged &&
+    bodyCity &&
+    areValidCoordinates(bodyLat, bodyLng, { countryCode: GERMANY_COUNTRY_CODE })
+  ) {
+    // Same PLZ, user picked another candidate: persist matching city + coords together.
+    specialistPatch.lat = bodyLat;
+    specialistPatch.lng = bodyLng;
+    derivedCity = bodyCity;
   }
 
-  // User-typed city is display-only override when geo is not being re-derived.
-  // Never treat free-text city as confirmed geography source for coords.
+  // City text without coords is display-only; never invent coordinates from free text.
   if (derivedCity === undefined && hasOwn(body, "city") && typeof body.city === "string") {
-    // Allow clearing/setting city text only when PLZ did not change this request.
     if (!plzChanged) {
       derivedCity = body.city.trim() || null;
     }

@@ -5,8 +5,15 @@
 
 export const GERMANY_COUNTRY_CODE = "DE" as const;
 
-export const ALLOWED_SERVICE_RADII_KM = [5, 10, 25, 50, 100] as const;
+/**
+ * Radii offered in onboarding / editor UI (product model).
+ * Legacy values 5 and 25 remain allowed for existing rows + search eligibility.
+ */
+export const PUBLIC_SERVICE_RADII_KM = [10, 30, 50, 100] as const;
+export const LEGACY_SERVICE_RADII_KM = [5, 25] as const;
+export const ALLOWED_SERVICE_RADII_KM = [5, 10, 25, 30, 50, 100] as const;
 export type AllowedServiceRadiusKm = (typeof ALLOWED_SERVICE_RADII_KM)[number];
+export type PublicServiceRadiusKm = (typeof PUBLIC_SERVICE_RADII_KM)[number];
 
 export type WorkFormat = "online" | "offline" | "hybrid";
 
@@ -200,7 +207,8 @@ export type PublicLocationDisplay = {
 
 /**
  * Privacy-safe public location label.
- * Online → "Онлайн" / localized by caller; does not advertise home city as venue.
+ * Online: format label + optional city (location metadata, not a venue claim).
+ * Offline/hybrid: city (optionally masked PLZ).
  */
 export function getPublicSpecialistLocation(input: {
   workFormat: string | null | undefined;
@@ -211,13 +219,16 @@ export function getPublicSpecialistLocation(input: {
   includeMaskedPlz?: boolean;
 }): PublicLocationDisplay {
   const wf = normalizeWorkFormat(input.workFormat);
-  if (wf === "online") {
-    return {
-      label: input.onlineLabel?.trim() || "Онлайн",
-      kind: "online",
-    };
-  }
   const city = typeof input.city === "string" ? input.city.trim() : "";
+  const onlineLabel = input.onlineLabel?.trim() || "Онлайн";
+
+  if (wf === "online") {
+    if (city) {
+      return { label: `${onlineLabel} · ${city}`, kind: "online" };
+    }
+    return { label: onlineLabel, kind: "online" };
+  }
+
   const plz = normalizePostalCode(input.postalCode);
   if (city && input.includeMaskedPlz && plz) {
     return { label: `${plz.slice(0, 3)}xx ${city}`, kind: "plz_city" };

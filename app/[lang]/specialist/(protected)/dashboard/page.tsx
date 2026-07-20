@@ -100,13 +100,15 @@ export default async function SpecialistDashboardHomePage({
 
   const { data: specExtra } = await service
     .from("specialists")
-    .select("postal_code, work_format, languages, telegram_chat_id, onboarding_state, service_radius_km")
+    .select(
+      "postal_code, country_code, work_format, languages, telegram_chat_id, onboarding_state, service_radius_km, lat, lng"
+    )
     .eq("id", specialist.id)
     .maybeSingle();
 
   const { data: profileRow } = await service
     .from("specialist_profiles")
-    .select("photo_url, about_me, video_url, gallery_urls, certificate_urls")
+    .select("photo_url, about_me, video_url, gallery_urls, certificate_urls, city")
     .eq("specialist_id", specialist.id)
     .maybeSingle();
 
@@ -117,7 +119,7 @@ export default async function SpecialistDashboardHomePage({
 
   const { data: categoryRow } = await service
     .from("categories")
-    .select("parent_id")
+    .select("parent_id, slug")
     .eq("id", categoryId)
     .maybeSingle();
 
@@ -156,9 +158,15 @@ export default async function SpecialistDashboardHomePage({
     name,
     categoryId,
     categoryParentId,
+    categorySlug: typeof categoryRow?.slug === "string" ? categoryRow.slug : null,
+    categoryMissing: Boolean(categoryId) && !categoryRow,
     languages,
     workFormat,
     postalCode,
+    countryCode: typeof specExtra?.country_code === "string" ? specExtra.country_code : null,
+    city: typeof profileRow?.city === "string" ? profileRow.city : null,
+    lat: typeof specExtra?.lat === "number" ? specExtra.lat : null,
+    lng: typeof specExtra?.lng === "number" ? specExtra.lng : null,
     serviceRadiusKm,
     servicesInSelectedCategory: servicesInCategory,
   });

@@ -7,8 +7,19 @@ import {
   type NormalizedSpecialistLocation,
 } from "@/lib/specialists/geography";
 
+export type PostalLocationCandidate = {
+  city: string;
+  lat: number;
+  lng: number;
+};
+
 export type ResolvePostalLocationResult =
-  | { ok: true; location: NormalizedSpecialistLocation; source: "postal_codes+nominatim" | "nominatim" | "postal_codes" }
+  | {
+      ok: true;
+      location: NormalizedSpecialistLocation;
+      source: "postal_codes+nominatim" | "nominatim" | "postal_codes";
+      candidates: PostalLocationCandidate[];
+    }
   | { ok: false; reason: "invalid_postal_code" | "not_found" | "geocode_failed" };
 
 type NominatimHit = {
@@ -19,25 +30,35 @@ type NominatimHit = {
 
 async function geocodeGermanPlzViaNominatim(
   postalCode: string
-): Promise<{ lat: number; lng: number; city: string | null } | null> {
+): Promise<PostalLocationCandidate[]> {
   const url =
     `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(postalCode)}` +
-    `&country=Germany&format=json&addressdetails=1&limit=1`;
+    `&country=Germany&format=json&addressdetails=1&limit=5`;
   try {
     const res = await fetch(url, {
       headers: { "User-Agent": "Freuly-App" },
       signal: AbortSignal.timeout(5000),
     });
-    if (!res.ok) return null;
+    if (!res.ok) return [];
     const data = (await res.json()) as NominatimHit[];
-    if (!Array.isArray(data) || !data[0]?.lat || !data[0]?.lon) return null;
-    const lat = parseFloat(data[0].lat);
-    const lng = parseFloat(data[0].lon);
-    if (!areValidCoordinates(lat, lng, { countryCode: GERMANY_COUNTRY_CODE })) return null;
-    const city = extractCityFromNominatimAddress(data[0].address ?? null);
-    return { lat, lng, city };
+    if (!Array.isArray(data)) return [];
+    const out: PostalLocationCandidate[] = [];
+    const seen = new Set<string>();
+    for (const hit of data) {
+      if (!hit?.lat || !hit?.lon) continue;
+      const lat = parseFloat(hit.lat);
+      const lng = parseFloat(hit.lon);
+      if (!areValidCoordinates(lat, lng, { countryCode: GERMANY_COUNTRY_CODE })) continue;
+      const city = extractCityFromNominatimAddress(hit.address ?? null)?.trim();
+      if (!city) continue;
+      const key = city.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ city, lat, lng });
+    }
+    return out;
   } catch {
-    return null;
+    return [];
   }
 }
 
@@ -74,51 +95,61 @@ export async function resolveGermanPostalLocation(
     fromTable = true;
   }
 
-  const nominatim = await geocodeGermanPlzViaNominatim(postalCode);
-  if (!nominatim && !fromTable) {
+  const nominatimHits = await geocodeGermanPlzViaNominatim(postalCode);
+  if (nominatimHits.length === 0 && !fromTable) {
     return { ok: false, reason: "not_found" };
   }
 
-  if (nominatim) {
-    // Prefer Nominatim coords when table missing; keep table coords if already valid.
-    if (!fromTable) {
-      lat = nominatim.lat;
-      lng = nominatim.lng;
-    }
-  }
+  const candidates: PostalLocationCandidate[] = [];
 
-  if (!areValidCoordinates(lat, lng, { countryCode: GERMANY_COUNTRY_CODE })) {
-    return { ok: false, reason: "geocode_failed" };
-  }
-
-  let city = nominatim?.city?.trim() || null;
-
-  // Optional canonicalize against cities.name (table has no postal_code column in prod).
-  if (city) {
+  async function canonicalizeCity(raw: string): Promise<string> {
     const { data: cityRow } = await supabase
       .from("cities")
       .select("name")
-      .ilike("name", city)
+      .ilike("name", raw)
       .eq("is_active", true)
       .maybeSingle();
     if (cityRow?.name && typeof cityRow.name === "string" && cityRow.name.trim()) {
-      city = cityRow.name.trim();
+      return cityRow.name.trim();
     }
+    return raw.trim();
   }
 
-  if (!city) {
+  for (const hit of nominatimHits) {
+    const cityName = await canonicalizeCity(hit.city);
+    const useLat = fromTable && lat != null ? lat : hit.lat;
+    const useLng = fromTable && lng != null ? lng : hit.lng;
+    if (!areValidCoordinates(useLat, useLng, { countryCode: GERMANY_COUNTRY_CODE })) continue;
+    if (candidates.some((c) => c.city.toLowerCase() === cityName.toLowerCase())) continue;
+    candidates.push({ city: cityName, lat: useLat as number, lng: useLng as number });
+  }
+
+  if (candidates.length === 0 && fromTable && areValidCoordinates(lat, lng, { countryCode: GERMANY_COUNTRY_CODE })) {
+    // Table coords only — city still required from Nominatim; fail soft if missing.
     return { ok: false, reason: "geocode_failed" };
   }
+
+  if (candidates.length === 0) {
+    return { ok: false, reason: "geocode_failed" };
+  }
+
+  const primary = candidates[0];
 
   return {
     ok: true,
     location: {
       countryCode: GERMANY_COUNTRY_CODE,
       postalCode,
-      city,
-      lat: lat as number,
-      lng: lng as number,
+      city: primary.city,
+      lat: primary.lat,
+      lng: primary.lng,
     },
-    source: fromTable && nominatim ? "postal_codes+nominatim" : fromTable ? "postal_codes" : "nominatim",
+    source:
+      fromTable && nominatimHits.length > 0
+        ? "postal_codes+nominatim"
+        : fromTable
+          ? "postal_codes"
+          : "nominatim",
+    candidates,
   };
 }
