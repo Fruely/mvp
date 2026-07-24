@@ -25,6 +25,10 @@ import {
   buildIlikeOrFilter,
 } from "@/lib/search/searchSynonyms";
 import {
+  buildDescriptionSearchTerms,
+  mergeQuerySpecialistIds,
+} from "@/lib/search/serviceQueryMatch";
+import {
   ALLOWED_SERVICE_RADII_KM,
   isAllowedServiceRadiusKm,
   isWithinDualRadius,
@@ -576,16 +580,58 @@ async function resolveQueryMatches(
     profileIds.forEach((id) => specialistIds.add(id));
   }
 
-  const serviceTitleFilter = buildIlikeOrFilter(terms, ["title"]);
-  if (serviceTitleFilter) {
+  // Published services: title over all terms; description only over "safe"
+  // terms (multi-word phrases / long compounds) to avoid overly broad ILIKE.
+  const descriptionTerms = buildDescriptionSearchTerms(normalizedQuery, terms);
+  const serviceTitlePart = buildIlikeOrFilter(terms, ["title"]);
+  const serviceDescPart =
+    descriptionTerms.length > 0
+      ? buildIlikeOrFilter(descriptionTerms, ["description"])
+      : null;
+  const serviceMatchFilter =
+    [serviceTitlePart, serviceDescPart].filter(Boolean).join(",") || null;
+
+  if (serviceMatchFilter) {
+    // Direct service match → keep the specialist even if their MAIN category
+    // differs (cross-category published service must not be lost). We do NOT
+    // expand to the service's category_id (see Phase 2 §7): a unique service
+    // name must not reveal the whole category.
     const serviceIds = await fetchIdsByOrFilter(
       supabase,
       "specialist_services",
       "specialist_id",
-      serviceTitleFilter,
+      serviceMatchFilter,
       { activeServicesOnly: true }
     );
     serviceIds.forEach((id) => specialistIds.add(id));
+
+    // Service translations (any language_code). The table has no is_active,
+    // so activity is enforced by mapping back through active parent services.
+    const translationServiceRowIds = await fetchIdsByOrFilter(
+      supabase,
+      "specialist_service_translations",
+      "specialist_service_id",
+      serviceMatchFilter
+    );
+    if (translationServiceRowIds.length > 0) {
+      const { data: activeServiceRows, error: translationMapError } =
+        await supabase
+          .from("specialist_services")
+          .select("specialist_id")
+          .in("id", translationServiceRowIds)
+          .eq("is_active", true);
+      if (translationMapError) {
+        console.error(
+          "[searchSpecialists] service translation map error:",
+          translationMapError
+        );
+      } else {
+        for (const row of activeServiceRows ?? []) {
+          const sid = (row as { specialist_id?: string }).specialist_id;
+          if (sid) specialistIds.add(sid);
+        }
+      }
+    }
   }
 
   return { specialistIds, categoryIds };
@@ -605,6 +651,11 @@ async function resolveQuerySpecialistIds(
     terms
   );
 
+  // Direct matches (name / profile / service title+description / translations)
+  // must NEVER be dropped, even when the query also matched a category.
+  const directIds = Array.from(specialistIds);
+
+  let categoryDerivedIds: string[] = [];
   if (categoryIds.size > 0) {
     let q = applyVisibleSpecialistFilters(
       supabase.from("specialists").select("id")
@@ -613,15 +664,18 @@ async function resolveQuerySpecialistIds(
 
     const { data, error } = await q;
     if (error) {
+      // Category expansion failed — keep direct matches rather than losing them.
       console.error("[searchSpecialists] category expansion error:", error);
-      return [];
+    } else {
+      categoryDerivedIds = (data ?? [])
+        .map((row) => row?.id as string)
+        .filter(Boolean);
     }
-    return (data ?? [])
-      .map((row) => row?.id as string)
-      .filter(Boolean);
   }
 
-  return Array.from(specialistIds);
+  // Union: category matches expand the set; they never replace direct matches.
+  // All ids still pass the downstream public/lang/format/geo/dual-radius filters.
+  return mergeQuerySpecialistIds(directIds, categoryDerivedIds);
 }
 
 // ---------------------------------------------------------------------------
