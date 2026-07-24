@@ -27,6 +27,8 @@ type PageText = {
   locationQuestion: string;
   locationInputLabel: string;
   locationInputPlaceholder: string;
+  radiusLabel: string;
+  radiusUnit: string;
   nextCta: string;
   backCta: string;
   emptyServiceError: string;
@@ -69,6 +71,8 @@ const pageText: Record<Lang, PageText> = {
     locationQuestion: "Где вам нужна услуга?",
     locationInputLabel: "Город или индекс",
     locationInputPlaceholder: "Например: Köln или 50667",
+    radiusLabel: "Радиус поиска",
+    radiusUnit: "км",
     nextCta: "Дальше",
     backCta: "Назад",
     emptyServiceError: "Введите услугу, чтобы продолжить.",
@@ -109,6 +113,8 @@ const pageText: Record<Lang, PageText> = {
     locationQuestion: "Де вам потрібна послуга?",
     locationInputLabel: "Місто або індекс",
     locationInputPlaceholder: "Наприклад: Köln або 50667",
+    radiusLabel: "Радіус пошуку",
+    radiusUnit: "км",
     nextCta: "Далі",
     backCta: "Назад",
     emptyServiceError: "Введіть послугу, щоб продовжити.",
@@ -149,6 +155,8 @@ const pageText: Record<Lang, PageText> = {
     locationQuestion: "Wo benötigen Sie die Dienstleistung?",
     locationInputLabel: "Stadt oder Postleitzahl",
     locationInputPlaceholder: "Zum Beispiel: Köln oder 50667",
+    radiusLabel: "Suchradius",
+    radiusUnit: "km",
     nextCta: "Weiter",
     backCta: "Zurück",
     emptyServiceError: "Bitte geben Sie eine Dienstleistung ein.",

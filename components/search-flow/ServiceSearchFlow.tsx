@@ -3,6 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode, RefObject } from "react";
+import {
+  DEFAULT_SERVICE_SEARCH_RADIUS_KM,
+  SERVICE_SEARCH_UI_RADII_KM,
+  buildServiceSearchResultsUrl,
+} from "@/lib/search/serviceSearchUrl";
 
 type LanguageOption = {
   value: "ua" | "ru" | "de";
@@ -30,6 +35,8 @@ type FlowText = {
   locationQuestion: string;
   locationInputLabel: string;
   locationInputPlaceholder: string;
+  radiusLabel: string;
+  radiusUnit: string;
   nextCta: string;
   backCta: string;
   emptyServiceError: string;
@@ -48,29 +55,6 @@ const FLOW_STEPS: readonly Exclude<Step, "start">[] = [
   "format",
   "location",
 ];
-
-function toSearchLang(value: LanguageOption["value"]): string {
-  return value === "ua" ? "uk" : value;
-}
-
-function buildResultsUrl(opts: {
-  service: string;
-  language: LanguageOption["value"];
-  format: FormatOption["value"];
-  location: string;
-}): string {
-  const params = new URLSearchParams();
-  params.set("lang", toSearchLang(opts.language));
-  params.set("q", opts.service.trim());
-
-  if (opts.format === "online") {
-    params.set("mode", "online");
-  } else if (opts.format === "nearby" && opts.location.trim()) {
-    params.set("place", opts.location.trim());
-  }
-
-  return `/specialists?${params.toString()}`;
-}
 
 function getProgressStep(step: Step): number | null {
   if (step === "start") return null;
@@ -255,6 +239,9 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
   const [selectedFormat, setSelectedFormat] =
     useState<FormatOption["value"] | null>(null);
   const [location, setLocation] = useState("");
+  const [radiusKm, setRadiusKm] = useState<number>(
+    DEFAULT_SERVICE_SEARCH_RADIUS_KM
+  );
   const [error, setError] = useState<string | null>(null);
 
   const serviceInputRef = useRef<HTMLInputElement>(null);
@@ -321,11 +308,12 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
 
     setError(null);
     router.push(
-      buildResultsUrl({
+      buildServiceSearchResultsUrl({
         service,
         language: selectedLanguage,
         format,
         location: locationValue,
+        radiusKm,
       })
     );
   }
@@ -453,6 +441,35 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
                   if (error) setError(null);
                 }}
               />
+
+              <fieldset>
+                <legend className="mb-2 block text-sm font-medium text-textSecondary">
+                  {text.radiusLabel}
+                </legend>
+                <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label={text.radiusLabel}>
+                  {SERVICE_SEARCH_UI_RADII_KM.map((km) => {
+                    const isSelected = radiusKm === km;
+                    return (
+                      <button
+                        key={km}
+                        type="button"
+                        role="radio"
+                        aria-checked={isSelected}
+                        onClick={() => setRadiusKm(km)}
+                        className={[
+                          "min-h-[44px] rounded-xl border px-2 py-2 text-sm font-semibold transition",
+                          "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100",
+                          isSelected
+                            ? "border-primary bg-blue-50 text-primary shadow-sm"
+                            : "border-gray-200 bg-white text-textPrimary hover:border-blue-200 hover:bg-blue-50/40",
+                        ].join(" ")}
+                      >
+                        {km} {text.radiusUnit}
+                      </button>
+                    );
+                  })}
+                </div>
+              </fieldset>
 
               <PrimaryButton type="submit">{text.nextCta}</PrimaryButton>
             </form>

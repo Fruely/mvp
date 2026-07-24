@@ -35,6 +35,7 @@ type SearchParams = {
   q?: string;
   category?: string;
   mode?: string;
+  radius?: string;
 };
 
 function buildSpecialistsRouteTarget(sp: SearchParams): string {
@@ -44,21 +45,28 @@ function buildSpecialistsRouteTarget(sp: SearchParams): string {
   if (sp.q?.trim()) params.set("q", sp.q.trim());
   if (sp.category?.trim()) params.set("category", sp.category.trim());
   if (sp.mode?.trim()) params.set("mode", sp.mode.trim());
+  if (sp.radius?.trim()) params.set("radius", sp.radius.trim());
   const qs = params.toString();
   return qs ? `/specialists?${qs}` : "/specialists";
 }
 
-/** Query-based link for a no-result suggestion; keeps mode=online / place when present. */
+/**
+ * Query-based link for a no-result suggestion; keeps mode=online / place when
+ * present, and preserves radius when the search was a local (place) search.
+ */
 function buildSuggestionHref(
   lang: string,
   query: string,
-  opts: { mode?: string | null; place?: string | null }
+  opts: { mode?: string | null; place?: string | null; radius?: string | null }
 ): string {
   const params = new URLSearchParams();
   params.set("lang", lang);
   params.set("q", query);
   if (opts.mode === "online") params.set("mode", "online");
-  if (opts.place?.trim()) params.set("place", opts.place.trim());
+  if (opts.place?.trim()) {
+    params.set("place", opts.place.trim());
+    if (opts.radius?.trim()) params.set("radius", opts.radius.trim());
+  }
   return `/specialists?${params.toString()}`;
 }
 
@@ -155,6 +163,7 @@ export default async function SpecialistsPage({
   const q = searchParams?.q?.trim() || null;
   const category = searchParams?.category?.trim() || null;
   const pageMode = searchParams?.mode?.trim().toLowerCase() || null;
+  const radiusParam = searchParams?.radius?.trim() || null;
   const isOnlineList = pageMode === "online";
   const uiLang = toUiLang(lang);
   const dict = await getDictionary(uiLang);
@@ -208,6 +217,8 @@ export default async function SpecialistsPage({
       q,
       mode: isOnlineList ? "online" : null,
       place: isOnlineList ? null : place,
+      // Radius only matters for local (place) searches; ignored by online/all.
+      radius: isOnlineList ? null : radiusParam ? Number(radiusParam) : null,
     });
   } catch (error) {
     console.error("[specialists/page] searchSpecialists failed:", error);
@@ -281,6 +292,7 @@ export default async function SpecialistsPage({
                     href={buildSuggestionHref(lang, s.query, {
                       mode: pageMode,
                       place,
+                      radius: radiusParam,
                     })}
                     className="inline-block px-4 py-2 rounded-full border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 hover:border-gray-400 transition"
                   >
@@ -309,11 +321,15 @@ export default async function SpecialistsPage({
     );
   }
 
+  // Local rows are the ones the dual-radius search attached a distance to
+  // (offline/hybrid within radius). Do not rely on postal_code === place.
   const localSpecialists = specialists.filter(
-    (s) => place != null && s.work_format !== "online" && s.postal_code === place
+    (s) => typeof s.distance === "number" && Number.isFinite(s.distance)
   );
   const onlineSpecialists = specialists.filter(
-    (s) => s.work_format === "online" || s.work_format === "hybrid"
+    (s) =>
+      !localSpecialists.includes(s) &&
+      (s.work_format === "online" || s.work_format === "hybrid")
   );
   const otherSpecialists = specialists.filter(
     (s) => !localSpecialists.includes(s) && !onlineSpecialists.includes(s)
@@ -419,9 +435,12 @@ export default async function SpecialistsPage({
           </p>
         </div>
 
-        {searchMode === "local" &&
-          typeof searchRadius === "number" &&
-          Number.isFinite(searchRadius) && (
+        {/* Radius label depends on the returned radius + local results, not on
+            searchMode, so it also shows when a query search ran locally
+            (mode="query"). */}
+        {typeof searchRadius === "number" &&
+          Number.isFinite(searchRadius) &&
+          localSpecialists.length > 0 && (
             <p className="text-sm text-gray-600 mb-6">
               Найдено специалистов в радиусе {searchRadius} км
             </p>
