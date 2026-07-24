@@ -18,6 +18,14 @@ export type CityGeocodeResult = {
   displayName: string | null;
 };
 
+/** Build Nominatim /search URL restricted to Germany. */
+export function buildNominatimSearchUrl(city: string): string {
+  return (
+    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}` +
+    `&countrycodes=de&format=json&limit=1`
+  );
+}
+
 /**
  * Resolve a city name to coordinates via Nominatim (Germany).
  * Used for city → radius RPC search; callers should fall back to ILIKE if null.
@@ -28,9 +36,7 @@ export async function geocodeGermanCityViaNominatim(
   const q = city.trim();
   if (!q) return null;
 
-  const url =
-    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}` +
-    `&country=Germany&format=json&limit=1`;
+  const url = buildNominatimSearchUrl(q);
 
   try {
     const res = await fetch(url, {
