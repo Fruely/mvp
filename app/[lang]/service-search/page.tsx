@@ -31,6 +31,8 @@ type PageText = {
   radiusUnit: string;
   nextCta: string;
   backCta: string;
+  submitCta: string;
+  submittingCta: string;
   emptyServiceError: string;
   emptyLocationError: string;
 };
@@ -75,6 +77,8 @@ const pageText: Record<Lang, PageText> = {
     radiusUnit: "км",
     nextCta: "Дальше",
     backCta: "Назад",
+    submitCta: "Показать специалистов",
+    submittingCta: "Поиск…",
     emptyServiceError: "Введите услугу, чтобы продолжить.",
     emptyLocationError: "Укажите город или индекс, чтобы продолжить.",
   },
@@ -117,6 +121,8 @@ const pageText: Record<Lang, PageText> = {
     radiusUnit: "км",
     nextCta: "Далі",
     backCta: "Назад",
+    submitCta: "Показати спеціалістів",
+    submittingCta: "Пошук…",
     emptyServiceError: "Введіть послугу, щоб продовжити.",
     emptyLocationError: "Вкажіть місто або індекс, щоб продовжити.",
   },
@@ -159,6 +165,8 @@ const pageText: Record<Lang, PageText> = {
     radiusUnit: "km",
     nextCta: "Weiter",
     backCta: "Zurück",
+    submitCta: "Spezialisten anzeigen",
+    submittingCta: "Suche…",
     emptyServiceError: "Bitte geben Sie eine Dienstleistung ein.",
     emptyLocationError: "Bitte geben Sie Stadt oder PLZ ein.",
   },

@@ -8,14 +8,26 @@ import {
   SERVICE_SEARCH_UI_RADII_KM,
   buildServiceSearchResultsUrl,
 } from "@/lib/search/serviceSearchUrl";
+import {
+  canAdvanceFromStep,
+  getActionLabel,
+  getNextStep,
+  getPreviousStep,
+  getProgressMeta,
+  shouldShowBackButton,
+  type FlowFormat,
+  type FlowLanguage,
+  type FlowState,
+  type FlowStep,
+} from "@/lib/search/serviceSearchFlow.logic";
 
 type LanguageOption = {
-  value: "ua" | "ru" | "de";
+  value: FlowLanguage;
   label: string;
 };
 
 type FormatOption = {
-  value: "online" | "nearby" | "any";
+  value: FlowFormat;
   label: string;
   description: string;
 };
@@ -39,11 +51,13 @@ export type ServiceSearchFlowText = {
   radiusUnit: string;
   nextCta: string;
   backCta: string;
+  submitCta: string;
+  submittingCta: string;
   emptyServiceError: string;
   emptyLocationError: string;
 };
 
-type Step = "start" | "service" | "language" | "format" | "location";
+type Step = FlowStep;
 
 type ServiceSearchFlowVariant = "page" | "home";
 
@@ -95,6 +109,8 @@ export const SERVICE_SEARCH_FLOW_TEXT: Record<"ru" | "ua" | "de", ServiceSearchF
     radiusUnit: "км",
     nextCta: "Дальше",
     backCta: "Назад",
+    submitCta: "Показать специалистов",
+    submittingCta: "Поиск…",
     emptyServiceError: "Введите услугу, чтобы продолжить.",
     emptyLocationError: "Укажите город или индекс, чтобы продолжить.",
   },
@@ -137,6 +153,8 @@ export const SERVICE_SEARCH_FLOW_TEXT: Record<"ru" | "ua" | "de", ServiceSearchF
     radiusUnit: "км",
     nextCta: "Далі",
     backCta: "Назад",
+    submitCta: "Показати спеціалістів",
+    submittingCta: "Пошук…",
     emptyServiceError: "Введіть послугу, щоб продовжити.",
     emptyLocationError: "Вкажіть місто або індекс, щоб продовжити.",
   },
@@ -179,23 +197,12 @@ export const SERVICE_SEARCH_FLOW_TEXT: Record<"ru" | "ua" | "de", ServiceSearchF
     radiusUnit: "km",
     nextCta: "Weiter",
     backCta: "Zurück",
+    submitCta: "Spezialisten anzeigen",
+    submittingCta: "Suche…",
     emptyServiceError: "Bitte geben Sie eine Dienstleistung ein.",
     emptyLocationError: "Bitte geben Sie Stadt oder PLZ ein.",
   },
 };
-
-const FLOW_STEPS: readonly Exclude<Step, "start">[] = [
-  "service",
-  "language",
-  "format",
-  "location",
-];
-
-function getProgressStep(step: Step): number | null {
-  if (step === "start") return null;
-  const index = FLOW_STEPS.indexOf(step);
-  return index >= 0 ? index + 1 : null;
-}
 
 function choiceButtonClass(isSelected: boolean): string {
   return [
@@ -208,8 +215,8 @@ function choiceButtonClass(isSelected: boolean): string {
   ].join(" ");
 }
 
-function StepProgress({ current }: { current: number }) {
-  const total = FLOW_STEPS.length;
+function StepProgress({ current, total }: { current: number; total: number }) {
+  const steps = Array.from({ length: total }, (_, index) => index + 1);
 
   return (
     <div
@@ -220,8 +227,7 @@ function StepProgress({ current }: { current: number }) {
       aria-valuemax={total}
       aria-label={`Step ${current} of ${total}`}
     >
-      {FLOW_STEPS.map((_, index) => {
-        const stepNumber = index + 1;
+      {steps.map((stepNumber) => {
         const isComplete = stepNumber < current;
         const isCurrent = stepNumber === current;
 
@@ -251,7 +257,7 @@ function FlowCard({
 }: {
   children: ReactNode;
   centered?: boolean;
-  progressStep?: number | null;
+  progressStep?: { current: number; total: number } | null;
   compact?: boolean;
 }) {
   return (
@@ -264,7 +270,9 @@ function FlowCard({
         centered ? "text-center" : "",
       ].join(" ")}
     >
-      {progressStep ? <StepProgress current={progressStep} /> : null}
+      {progressStep ? (
+        <StepProgress current={progressStep.current} total={progressStep.total} />
+      ) : null}
       {children}
     </section>
   );
@@ -283,28 +291,32 @@ function BackButton({ label, onClick }: { label: string; onClick: () => void }) 
   );
 }
 
-function PrimaryButton({
-  children,
-  type = "button",
-  onClick,
-  className = "",
+function ActionFooter({
+  label,
+  loadingLabel,
+  disabled = false,
+  loading = false,
 }: {
-  children: ReactNode;
-  type?: "button" | "submit";
-  onClick?: () => void;
-  className?: string;
+  label: string;
+  loadingLabel: string;
+  disabled?: boolean;
+  loading?: boolean;
 }) {
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      className={[
-        "btn-primary w-full min-h-[48px] px-8 py-4 text-base font-semibold",
-        className,
-      ].join(" ")}
-    >
-      {children}
-    </button>
+    <div className="sticky bottom-0 -mx-1 mt-6 border-t border-gray-100 bg-white/95 px-1 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-4 backdrop-blur-sm">
+      <button
+        type="submit"
+        disabled={disabled || loading}
+        aria-disabled={disabled || loading}
+        aria-busy={loading}
+        className={[
+          "btn-primary w-full min-h-[48px] px-8 py-4 text-base font-semibold",
+          disabled || loading ? "cursor-not-allowed opacity-60" : "",
+        ].join(" ")}
+      >
+        {loading ? loadingLabel : label}
+      </button>
+    </div>
   );
 }
 
@@ -361,11 +373,39 @@ function TextField({
   );
 }
 
-function StepTitle({ children }: { children: ReactNode }) {
+function StepTitle({
+  children,
+  titleRef,
+}: {
+  children: ReactNode;
+  titleRef?: RefObject<HTMLHeadingElement | null>;
+}) {
   return (
-    <h1 className="mb-7 text-[1.65rem] font-bold leading-[1.2] tracking-tight text-textPrimary sm:text-[2rem]">
+    <h1
+      ref={titleRef}
+      tabIndex={-1}
+      className="mb-7 text-[1.65rem] font-bold leading-[1.2] tracking-tight text-textPrimary outline-none sm:text-[2rem]"
+    >
       {children}
     </h1>
+  );
+}
+
+function PrimaryButton({
+  children,
+  onClick,
+}: {
+  children: ReactNode;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="btn-primary w-full min-h-[48px] px-8 py-4 text-base font-semibold"
+    >
+      {children}
+    </button>
   );
 }
 
@@ -389,10 +429,26 @@ export default function ServiceSearchFlow({
     DEFAULT_SERVICE_SEARCH_RADIUS_KM
   );
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const serviceInputRef = useRef<HTMLInputElement>(null);
   const locationInputRef = useRef<HTMLInputElement>(null);
-  const progressStep = getProgressStep(step);
+  const stepTitleRef = useRef<HTMLHeadingElement>(null);
+
+  const flowState = {
+    service,
+    selectedLanguage,
+    selectedFormat,
+    location,
+    radiusKm,
+  };
+
+  const progressStep = getProgressMeta(step, selectedFormat);
+  const canAdvance = canAdvanceFromStep(step, flowState);
+  const actionLabel = getActionLabel(step, flowState, {
+    nextCta: text.nextCta,
+    submitCta: text.submitCta,
+  });
 
   useEffect(() => {
     if (step === "service") {
@@ -401,6 +457,7 @@ export default function ServiceSearchFlow({
     if (step === "location") {
       locationInputRef.current?.focus();
     }
+    stepTitleRef.current?.focus();
   }, [step]);
 
   function goToServiceStep() {
@@ -408,71 +465,78 @@ export default function ServiceSearchFlow({
     setStep("service");
   }
 
-  function showBackButton(): boolean {
-    if (step === "start") return false;
-    if (isHomeVariant && step === "service") return false;
+  function goBack() {
+    setError(null);
+    setStep(getPreviousStep(step, isHomeVariant));
+  }
+
+  function validateStep(currentStep: Step): boolean {
+    if (currentStep === "service" && !service.trim()) {
+      setError(text.emptyServiceError);
+      return false;
+    }
+
+    if (currentStep === "location" && !location.trim()) {
+      setError(text.emptyLocationError);
+      return false;
+    }
+
+    if (currentStep === "radius" && !location.trim()) {
+      setError(text.emptyLocationError);
+      return false;
+    }
+
+    setError(null);
     return true;
   }
 
-  function goBack() {
-    setError(null);
-
-    if (step === "location") {
-      setStep("format");
-      return;
+  function buildFlowResultsUrl(state: FlowState): string | null {
+    if (!state.selectedLanguage || !state.selectedFormat || !state.service.trim()) {
+      return null;
     }
 
-    if (step === "format") {
-      setStep("language");
-      return;
+    if (state.selectedFormat === "nearby" && !state.location.trim()) {
+      return null;
     }
 
-    if (step === "language") {
-      setStep("service");
-      return;
-    }
-
-    setStep("start");
+    return buildServiceSearchResultsUrl({
+      service: state.service,
+      language: state.selectedLanguage,
+      format: state.selectedFormat,
+      location: state.location,
+      radiusKm: state.radiusKm || DEFAULT_SERVICE_SEARCH_RADIUS_KM,
+    });
   }
 
-  function handleServiceSubmit(event: FormEvent<HTMLFormElement>) {
+  function submitResults() {
+    if (isSubmitting) return;
+
+    const url = buildFlowResultsUrl(flowState);
+    if (!url) {
+      if (selectedFormat === "nearby" && !location.trim()) {
+        setError(text.emptyLocationError);
+      }
+      return;
+    }
+
+    setIsSubmitting(true);
+    router.push(url);
+  }
+
+  function handleStepSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmitting) return;
+    if (!validateStep(step)) return;
+    if (!canAdvanceFromStep(step, flowState)) return;
 
-    if (!service.trim()) {
-      setError(text.emptyServiceError);
+    const next = getNextStep(step, flowState);
+    if (next === "submit") {
+      submitResults();
       return;
     }
 
     setError(null);
-    setStep("language");
-  }
-
-  function redirectToResults(
-    format: FormatOption["value"],
-    locationValue = location
-  ) {
-    if (!selectedLanguage || !service.trim()) return;
-
-    if (format === "nearby" && !locationValue.trim()) {
-      setError(text.emptyLocationError);
-      return;
-    }
-
-    setError(null);
-    router.push(
-      buildServiceSearchResultsUrl({
-        service,
-        language: selectedLanguage,
-        format,
-        location: locationValue,
-        radiusKm,
-      })
-    );
-  }
-
-  function handleLocationSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    redirectToResults("nearby", location);
+    setStep(next);
   }
 
   const rootClassName = isHomeVariant
@@ -480,52 +544,62 @@ export default function ServiceSearchFlow({
     : "flex min-h-screen items-center justify-center bg-[#f7f9fc] px-4 py-8 sm:py-12";
 
   const content = (
-    <div key={step} className={isHomeVariant ? "w-full animate-fadeIn" : "mx-auto w-full max-w-lg animate-fadeIn"}>
-        {!isHomeVariant && step === "start" ? (
-          <FlowCard centered>
-            <h1 className="mb-10 text-[1.85rem] font-bold leading-[1.15] tracking-tight text-textPrimary sm:text-[2.35rem]">
-              {text.startHeadline}
-            </h1>
-            <PrimaryButton onClick={goToServiceStep}>{text.startCta}</PrimaryButton>
-          </FlowCard>
-        ) : null}
+    <div
+      key={step}
+      className={
+        isHomeVariant ? "w-full animate-fadeIn" : "mx-auto w-full max-w-lg animate-fadeIn"
+      }
+    >
+      {!isHomeVariant && step === "start" ? (
+        <FlowCard centered>
+          <h1 className="mb-10 text-[1.85rem] font-bold leading-[1.15] tracking-tight text-textPrimary sm:text-[2.35rem]">
+            {text.startHeadline}
+          </h1>
+          <PrimaryButton onClick={goToServiceStep}>{text.startCta}</PrimaryButton>
+        </FlowCard>
+      ) : null}
 
-        {step === "service" ? (
-          <FlowCard progressStep={progressStep} compact={isHomeVariant}>
-            {showBackButton() ? (
-              <BackButton label={text.backCta} onClick={goBack} />
-            ) : null}
-            <StepTitle>
-              {isHomeVariant ? text.headline : text.serviceQuestion}
-            </StepTitle>
+      {step === "service" ? (
+        <FlowCard progressStep={progressStep} compact={isHomeVariant}>
+          {shouldShowBackButton(step, isHomeVariant) ? (
+            <BackButton label={text.backCta} onClick={goBack} />
+          ) : null}
+          <StepTitle titleRef={stepTitleRef}>
+            {isHomeVariant ? text.headline : text.serviceQuestion}
+          </StepTitle>
 
-            <form onSubmit={handleServiceSubmit} className="space-y-6">
-              <TextField
-                id="service-query"
-                label={text.serviceInputLabel}
-                value={service}
-                placeholder={text.serviceInputPlaceholder}
-                error={error}
-                large
-                inputRef={serviceInputRef}
-                onChange={(value) => {
-                  setService(value);
-                  if (error) setError(null);
-                }}
-              />
+          <form onSubmit={handleStepSubmit} className="space-y-1">
+            <TextField
+              id="service-query"
+              label={text.serviceInputLabel}
+              value={service}
+              placeholder={text.serviceInputPlaceholder}
+              error={error}
+              large
+              inputRef={serviceInputRef}
+              onChange={(value) => {
+                setService(value);
+                if (error) setError(null);
+              }}
+            />
+            <ActionFooter
+              label={actionLabel}
+              loadingLabel={text.submittingCta}
+              disabled={!canAdvance}
+              loading={isSubmitting}
+            />
+          </form>
+        </FlowCard>
+      ) : null}
 
-              <PrimaryButton type="submit">{text.nextCta}</PrimaryButton>
-            </form>
-          </FlowCard>
-        ) : null}
+      {step === "language" ? (
+        <FlowCard progressStep={progressStep} compact={isHomeVariant}>
+          {shouldShowBackButton(step, isHomeVariant) ? (
+            <BackButton label={text.backCta} onClick={goBack} />
+          ) : null}
+          <StepTitle titleRef={stepTitleRef}>{text.languageQuestion}</StepTitle>
 
-        {step === "language" ? (
-          <FlowCard progressStep={progressStep} compact={isHomeVariant}>
-            {showBackButton() ? (
-              <BackButton label={text.backCta} onClick={goBack} />
-            ) : null}
-            <StepTitle>{text.languageQuestion}</StepTitle>
-
+          <form onSubmit={handleStepSubmit}>
             <div className="grid gap-3">
               {text.languageOptions.map((option) => {
                 const isSelected = selectedLanguage === option.value;
@@ -534,10 +608,8 @@ export default function ServiceSearchFlow({
                   <button
                     key={option.value}
                     type="button"
-                    onClick={() => {
-                      setSelectedLanguage(option.value);
-                      setStep("format");
-                    }}
+                    aria-pressed={isSelected}
+                    onClick={() => setSelectedLanguage(option.value)}
                     className={choiceButtonClass(isSelected)}
                   >
                     <span className="block text-lg font-semibold">{option.label}</span>
@@ -545,16 +617,24 @@ export default function ServiceSearchFlow({
                 );
               })}
             </div>
-          </FlowCard>
-        ) : null}
+            <ActionFooter
+              label={actionLabel}
+              loadingLabel={text.submittingCta}
+              disabled={!canAdvance}
+              loading={isSubmitting}
+            />
+          </form>
+        </FlowCard>
+      ) : null}
 
-        {step === "format" ? (
-          <FlowCard progressStep={progressStep} compact={isHomeVariant}>
-            {showBackButton() ? (
-              <BackButton label={text.backCta} onClick={goBack} />
-            ) : null}
-            <StepTitle>{text.formatQuestion}</StepTitle>
+      {step === "format" ? (
+        <FlowCard progressStep={progressStep} compact={isHomeVariant}>
+          {shouldShowBackButton(step, isHomeVariant) ? (
+            <BackButton label={text.backCta} onClick={goBack} />
+          ) : null}
+          <StepTitle titleRef={stepTitleRef}>{text.formatQuestion}</StepTitle>
 
+          <form onSubmit={handleStepSubmit}>
             <div className="grid gap-3">
               {text.formatOptions.map((option) => {
                 const isSelected = selectedFormat === option.value;
@@ -563,14 +643,10 @@ export default function ServiceSearchFlow({
                   <button
                     key={option.value}
                     type="button"
+                    aria-pressed={isSelected}
                     onClick={() => {
                       setSelectedFormat(option.value);
-                      setError(null);
-                      if (option.value === "nearby") {
-                        setStep("location");
-                        return;
-                      }
-                      redirectToResults(option.value);
+                      if (error) setError(null);
                     }}
                     className={choiceButtonClass(isSelected)}
                   >
@@ -582,65 +658,91 @@ export default function ServiceSearchFlow({
                 );
               })}
             </div>
-          </FlowCard>
-        ) : null}
+            <ActionFooter
+              label={actionLabel}
+              loadingLabel={text.submittingCta}
+              disabled={!canAdvance}
+              loading={isSubmitting}
+            />
+          </form>
+        </FlowCard>
+      ) : null}
 
-        {step === "location" ? (
-          <FlowCard progressStep={progressStep} compact={isHomeVariant}>
-            {showBackButton() ? (
-              <BackButton label={text.backCta} onClick={goBack} />
-            ) : null}
-            <StepTitle>{text.locationQuestion}</StepTitle>
+      {step === "location" ? (
+        <FlowCard progressStep={progressStep} compact={isHomeVariant}>
+          {shouldShowBackButton(step, isHomeVariant) ? (
+            <BackButton label={text.backCta} onClick={goBack} />
+          ) : null}
+          <StepTitle titleRef={stepTitleRef}>{text.locationQuestion}</StepTitle>
 
-            <form onSubmit={handleLocationSubmit} className="space-y-6">
-              <TextField
-                id="service-location"
-                label={text.locationInputLabel}
-                value={location}
-                placeholder={text.locationInputPlaceholder}
-                error={error}
-                large
-                inputRef={locationInputRef}
-                onChange={(value) => {
-                  setLocation(value);
-                  if (error) setError(null);
-                }}
-              />
+          <form onSubmit={handleStepSubmit} className="space-y-1">
+            <TextField
+              id="service-location"
+              label={text.locationInputLabel}
+              value={location}
+              placeholder={text.locationInputPlaceholder}
+              error={error}
+              large
+              inputRef={locationInputRef}
+              onChange={(value) => {
+                setLocation(value);
+                if (error) setError(null);
+              }}
+            />
+            <ActionFooter
+              label={actionLabel}
+              loadingLabel={text.submittingCta}
+              disabled={!canAdvance}
+              loading={isSubmitting}
+            />
+          </form>
+        </FlowCard>
+      ) : null}
 
-              <fieldset>
-                <legend className="mb-2 block text-sm font-medium text-textSecondary">
-                  {text.radiusLabel}
-                </legend>
-                <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label={text.radiusLabel}>
-                  {SERVICE_SEARCH_UI_RADII_KM.map((km) => {
-                    const isSelected = radiusKm === km;
-                    return (
-                      <button
-                        key={km}
-                        type="button"
-                        role="radio"
-                        aria-checked={isSelected}
-                        onClick={() => setRadiusKm(km)}
-                        className={[
-                          "min-h-[44px] rounded-xl border px-2 py-2 text-sm font-semibold transition",
-                          "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100",
-                          isSelected
-                            ? "border-primary bg-blue-50 text-primary shadow-sm"
-                            : "border-gray-200 bg-white text-textPrimary hover:border-blue-200 hover:bg-blue-50/40",
-                        ].join(" ")}
-                      >
-                        {km} {text.radiusUnit}
-                      </button>
-                    );
-                  })}
-                </div>
-              </fieldset>
+      {step === "radius" ? (
+        <FlowCard progressStep={progressStep} compact={isHomeVariant}>
+          {shouldShowBackButton(step, isHomeVariant) ? (
+            <BackButton label={text.backCta} onClick={goBack} />
+          ) : null}
+          <StepTitle titleRef={stepTitleRef}>{text.radiusLabel}</StepTitle>
 
-              <PrimaryButton type="submit">{text.nextCta}</PrimaryButton>
-            </form>
-          </FlowCard>
-        ) : null}
-      </div>
+          <form onSubmit={handleStepSubmit}>
+            <fieldset>
+              <legend className="sr-only">{text.radiusLabel}</legend>
+              <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label={text.radiusLabel}>
+                {SERVICE_SEARCH_UI_RADII_KM.map((km) => {
+                  const isSelected = radiusKm === km;
+                  return (
+                    <button
+                      key={km}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      onClick={() => setRadiusKm(km)}
+                      className={[
+                        "min-h-[44px] rounded-xl border px-2 py-2 text-sm font-semibold transition",
+                        "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100",
+                        isSelected
+                          ? "border-primary bg-blue-50 text-primary shadow-sm"
+                          : "border-gray-200 bg-white text-textPrimary hover:border-blue-200 hover:bg-blue-50/40",
+                      ].join(" ")}
+                    >
+                      {km} {text.radiusUnit}
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
+            <ActionFooter
+              label={actionLabel}
+              loadingLabel={text.submittingCta}
+              disabled={!canAdvance}
+              loading={isSubmitting}
+            />
+          </form>
+        </FlowCard>
+      ) : null}
+    </div>
   );
 
   if (isHomeVariant) {
