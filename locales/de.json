@@ -2,10 +2,7 @@
   "home": {
     "hero": {
       "popularTags": "Psychologen • Anwälte • Nachhilfe • Migration",
-      "tryNewSearch": "Neue Suche ausprobieren",
-      "errors": {
-        "selectCategory": "Bitte wählen Sie eine Kategorie aus der Liste"
-      }
+      "tryNewSearch": "Neue Suche ausprobieren"
     },
     "wizard": {
       "step1": {
@@ -85,13 +82,8 @@
   "home.categories.title": "Beliebte Kategorien",
   "home.categories.subtitle": "Wähle eine Kategorie von Fachkräften, die dir in deiner Muttersprache helfen können",
   "home.popularServices.title": "Beliebte Dienstleistungen",
-  "home.heroPopularLabel": "Beliebt:",
   "home.heroLang.ru": "Russisch",
   "home.heroLang.uk": "Ukrainisch",
-  "home.heroQuick.psychologists": "Psychologen",
-  "home.heroQuick.lawyers": "Anwälte",
-  "home.heroQuick.tutors": "Nachhilfe",
-  "home.heroQuick.migration": "Migration",
   "home.recommended.title": "Empfohlene Spezialisten",
   "home.recommended.newSpecialist": "Neuer Spezialist",
   "home.recommended.defaultCategory": "Dienstleistungen",

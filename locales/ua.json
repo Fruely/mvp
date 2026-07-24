@@ -2,10 +2,7 @@
   "home": {
     "hero": {
       "popularTags": "Психологи • Юристи • Репетитори • Міграція",
-      "tryNewSearch": "Спробувати новий пошук",
-      "errors": {
-        "selectCategory": "Виберіть категорію зі списку"
-      }
+      "tryNewSearch": "Спробувати новий пошук"
     },
     "wizard": {
       "step1": {
@@ -97,13 +94,8 @@
   "home.mapCta.body": "Приєднуйтесь до платформи та почніть отримувати заявки від клієнтів.",
   "home.mapCta.spark": "Запаліть свою точку на карті.",
   "home.mapCta.button": "Стати спеціалістом",
-  "home.heroPopularLabel": "Популярні:",
   "home.heroLang.ru": "Русский",
   "home.heroLang.uk": "Українська",
-  "home.heroQuick.psychologists": "Психологи",
-  "home.heroQuick.lawyers": "Юристи",
-  "home.heroQuick.tutors": "Репетитори",
-  "home.heroQuick.migration": "Міграція",
   "transitional.line1": "Іноді ви пояснюєте — але вас не розуміють.",
   "transitional.line2": "Ви сумніваєтесь — бо складно поставити запитання.",
   "transitional.line3": "Ви відкладаєте важливе — боячись бути неправильно зрозумілими.",
