@@ -9,7 +9,9 @@ import { getSpecialistUrl } from "@/lib/urls";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import GermanyMapCTA from "@/components/home/GermanyMapCTA";
-import HomeWizardSearch from "@/components/home/HomeWizardSearch";
+import ServiceSearchFlow, {
+  SERVICE_SEARCH_FLOW_TEXT,
+} from "@/components/search-flow/ServiceSearchFlow";
 import FounderBadge from "@/components/specialist/FounderBadge";
 import InstallFreuly from "@/components/pwa/InstallFreuly";
 
@@ -126,35 +128,23 @@ const HERO_COPY: Record<
   {
     titleLines: [string, string, string];
     subtitle: string;
-    search: string;
-    plzLabel: string;
     popularLabel: string;
-    categoryPlaceholder: string;
   }
 > = {
   ru: {
     titleLines: ["Найдите специалиста", "на вашем языке", "в Германии"],
     subtitle: "Рядом с вами и онлайн. Выберите того, с кем вам удобно.",
-    search: "Найти специалиста",
-    plzLabel: "PLZ / почтовый индекс",
     popularLabel: "Популярные категории:",
-    categoryPlaceholder: "Психолог, массаж, репетитор…",
   },
   ua: {
     titleLines: ["Знайдіть спеціаліста", "вашою мовою", "в Німеччині"],
     subtitle: "Поруч із вами та онлайн. Оберіть того, з ким вам зручно.",
-    search: "Знайти спеціаліста",
-    plzLabel: "PLZ / поштовий індекс",
     popularLabel: "Популярні категорії:",
-    categoryPlaceholder: "Психолог, масаж, репетитор…",
   },
   de: {
     titleLines: ["Finden Sie einen Spezialisten", "in Ihrer Sprache", "in\u00a0Deutschland"],
     subtitle: "In Ihrer Nähe und online. Wählen Sie jemanden, mit dem Sie sich wohlfühlen.",
-    search: "Spezialisten finden",
-    plzLabel: "PLZ / Postleitzahl",
     popularLabel: "Beliebte Kategorien:",
-    categoryPlaceholder: "Psychologe, Massage, Nachhilfe…",
   },
 };
 
@@ -584,7 +574,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             {copy.subtitle}
           </p>
 
-          {/* Compact install in first mobile viewport — before tall wizard chips */}
+          {/* Compact install in first mobile viewport — before search flow */}
           <div className="mx-auto mt-4 w-full max-w-xl text-left md:hidden">
             <InstallFreuly
               lang={lang}
@@ -594,22 +584,13 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             />
           </div>
 
-          <HomeWizardSearch
-            lang={lang}
-            dict={dict}
-            submitLabel={copy.search}
-            initialCity={placeFromUrl}
-            className="mt-4 max-w-4xl mx-auto rounded-xl bg-white shadow-soft border border-gray-100 p-3 sm:mt-8 sm:p-6 text-left"
+          <ServiceSearchFlow
+            variant="home"
+            text={SERVICE_SEARCH_FLOW_TEXT[lang]}
+            defaultLanguage={lang}
+            initialLocation={placeFromUrl}
+            className="mt-4 sm:mt-8"
           />
-
-          <div className="mt-4 sm:mt-5">
-            <Link
-              href={`/${lang}/service-search`}
-              className="inline-flex min-h-[44px] items-center justify-center rounded-xl border-2 border-primary/20 bg-white px-5 py-2.5 text-sm font-semibold text-primary shadow-sm transition hover:border-primary/40 hover:bg-blue-50"
-            >
-              {t(dict, "home.hero.tryNewSearch")}
-            </Link>
-          </div>
 
           <div className="mt-4 hidden flex-wrap justify-center gap-3 text-sm font-normal text-textSecondary sm:mt-6 sm:flex">
             <span>{copy.popularLabel}</span>

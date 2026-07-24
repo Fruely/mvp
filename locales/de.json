@@ -1,41 +1,7 @@
 {
   "home": {
     "hero": {
-      "popularTags": "Psychologen • Anwälte • Nachhilfe • Migration",
-      "tryNewSearch": "Neue Suche ausprobieren"
-    },
-    "wizard": {
-      "step1": {
-        "title": "Wen suchen Sie?"
-      },
-      "step2": {
-        "title": "Wo ist es für Sie am bequemsten?",
-        "online": "Online",
-        "city": "Stadt / PLZ angeben",
-        "cityPlaceholder": "Stadt oder Postleitzahl"
-      },
-      "step3": {
-        "title": "In welcher Sprache möchten Sie kommunizieren?"
-      },
-      "lang": {
-        "ru": "Russisch",
-        "uk": "Ukrainisch",
-        "de": "Deutsch"
-      },
-      "mobileProgress": "Schritt {{step}} von {{total}}",
-      "next": "Weiter",
-      "back": "Zurück",
-      "submit": "Spezialisten anzeigen",
-      "loading": "Kategorien werden geladen…",
-      "noCategories": "Kategorien vorübergehend nicht verfügbar",
-      "showMoreCategories": "Mehr anzeigen",
-      "hideCategories": "Ausblenden",
-      "errors": {
-        "category": "Bitte wählen Sie eine Kategorie",
-        "location": "Bitte wählen Sie Online oder Stadt",
-        "city": "Bitte geben Sie Stadt oder PLZ an",
-        "language": "Bitte wählen Sie eine Sprache"
-      }
+      "popularTags": "Psychologen • Anwälte • Nachhilfe • Migration"
     }
   },
   "search": {

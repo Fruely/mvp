@@ -20,7 +20,7 @@ type FormatOption = {
   description: string;
 };
 
-type FlowText = {
+export type ServiceSearchFlowText = {
   headline: string;
   description: string;
   startHeadline: string;
@@ -45,8 +45,143 @@ type FlowText = {
 
 type Step = "start" | "service" | "language" | "format" | "location";
 
+type ServiceSearchFlowVariant = "page" | "home";
+
 type ServiceSearchFlowProps = {
-  text: FlowText;
+  text: ServiceSearchFlowText;
+  variant?: ServiceSearchFlowVariant;
+  defaultLanguage?: LanguageOption["value"];
+  initialLocation?: string;
+  className?: string;
+};
+
+export const SERVICE_SEARCH_FLOW_TEXT: Record<"ru" | "ua" | "de", ServiceSearchFlowText> = {
+  ru: {
+    headline: "Какую услугу вы ищете?",
+    description: "Короткий подбор услуги и специалиста на Freuly",
+    startHeadline: "Какую услугу вы ищете?",
+    startCta: "Начать поиск",
+    serviceQuestion: "Какая услуга вам нужна?",
+    serviceInputLabel: "Услуга",
+    serviceInputPlaceholder: "Введите услугу",
+    languageQuestion: "На каком языке вам удобно получить услугу?",
+    languageOptions: [
+      { value: "ua", label: "Українська" },
+      { value: "ru", label: "Русский" },
+      { value: "de", label: "Deutsch" },
+    ],
+    formatQuestion: "Какой формат вам подходит?",
+    formatOptions: [
+      {
+        value: "online",
+        label: "Онлайн",
+        description: "Специалист сможет работать с вами дистанционно.",
+      },
+      {
+        value: "nearby",
+        label: "Рядом со мной",
+        description: "Покажем специалистов поблизости, если это возможно.",
+      },
+      {
+        value: "any",
+        label: "Без разницы",
+        description: "Подойдут и онлайн, и локальные варианты.",
+      },
+    ],
+    locationQuestion: "Где вам нужна услуга?",
+    locationInputLabel: "Город или индекс",
+    locationInputPlaceholder: "Например: Köln или 50667",
+    radiusLabel: "Радиус поиска",
+    radiusUnit: "км",
+    nextCta: "Дальше",
+    backCta: "Назад",
+    emptyServiceError: "Введите услугу, чтобы продолжить.",
+    emptyLocationError: "Укажите город или индекс, чтобы продолжить.",
+  },
+  ua: {
+    headline: "Яку послугу ви шукаєте?",
+    description: "Короткий підбір послуги та спеціаліста на Freuly",
+    startHeadline: "Яку послугу ви шукаєте?",
+    startCta: "Почати пошук",
+    serviceQuestion: "Яка послуга вам потрібна?",
+    serviceInputLabel: "Послуга",
+    serviceInputPlaceholder: "Введіть послугу",
+    languageQuestion: "Якою мовою вам зручно отримати послугу?",
+    languageOptions: [
+      { value: "ua", label: "Українська" },
+      { value: "ru", label: "Русский" },
+      { value: "de", label: "Deutsch" },
+    ],
+    formatQuestion: "Який формат вам підходить?",
+    formatOptions: [
+      {
+        value: "online",
+        label: "Онлайн",
+        description: "Спеціаліст зможе працювати з вами дистанційно.",
+      },
+      {
+        value: "nearby",
+        label: "Поруч зі мною",
+        description: "Покажемо спеціалістів поблизу, якщо це можливо.",
+      },
+      {
+        value: "any",
+        label: "Без різниці",
+        description: "Підійдуть і онлайн, і локальні варіанти.",
+      },
+    ],
+    locationQuestion: "Де вам потрібна послуга?",
+    locationInputLabel: "Місто або індекс",
+    locationInputPlaceholder: "Наприклад: Köln або 50667",
+    radiusLabel: "Радіус пошуку",
+    radiusUnit: "км",
+    nextCta: "Далі",
+    backCta: "Назад",
+    emptyServiceError: "Введіть послугу, щоб продовжити.",
+    emptyLocationError: "Вкажіть місто або індекс, щоб продовжити.",
+  },
+  de: {
+    headline: "Welche Dienstleistung suchen Sie?",
+    description: "Kurze Auswahl einer Dienstleistung und passender Spezialisten auf Freuly",
+    startHeadline: "Welche Dienstleistung suchen Sie?",
+    startCta: "Suche starten",
+    serviceQuestion: "Welche Dienstleistung benötigen Sie?",
+    serviceInputLabel: "Dienstleistung",
+    serviceInputPlaceholder: "Dienstleistung eingeben",
+    languageQuestion: "In welcher Sprache möchten Sie die Dienstleistung erhalten?",
+    languageOptions: [
+      { value: "ua", label: "Українська" },
+      { value: "ru", label: "Русский" },
+      { value: "de", label: "Deutsch" },
+    ],
+    formatQuestion: "Welches Format passt zu Ihnen?",
+    formatOptions: [
+      {
+        value: "online",
+        label: "Online",
+        description: "Der Spezialist kann aus der Ferne mit Ihnen arbeiten.",
+      },
+      {
+        value: "nearby",
+        label: "In meiner Nähe",
+        description: "Wir zeigen passende Spezialisten in Ihrer Nähe, wenn möglich.",
+      },
+      {
+        value: "any",
+        label: "Egal",
+        description: "Online- und lokale Angebote sind beide in Ordnung.",
+      },
+    ],
+    locationQuestion: "Wo benötigen Sie die Dienstleistung?",
+    locationInputLabel: "Stadt oder Postleitzahl",
+    locationInputPlaceholder: "Zum Beispiel: Köln oder 50667",
+    radiusLabel: "Suchradius",
+    radiusUnit: "km",
+    nextCta: "Weiter",
+    backCta: "Zurück",
+    emptyServiceError: "Bitte geben Sie eine Dienstleistung ein.",
+    emptyLocationError: "Bitte geben Sie Stadt oder PLZ ein.",
+  },
 };
 
 const FLOW_STEPS: readonly Exclude<Step, "start">[] = [
@@ -112,17 +247,21 @@ function FlowCard({
   children,
   centered = false,
   progressStep,
+  compact = false,
 }: {
   children: ReactNode;
   centered?: boolean;
   progressStep?: number | null;
+  compact?: boolean;
 }) {
   return (
     <section
       className={[
-        "rounded-3xl border border-gray-100 bg-white",
-        "p-6 shadow-[0_18px_50px_-20px_rgba(30,64,175,0.18)] sm:p-9",
-        centered ? "text-center" : "text-left",
+        "rounded-3xl border border-gray-100 bg-white text-left",
+        compact
+          ? "p-4 shadow-soft sm:p-5"
+          : "p-6 shadow-[0_18px_50px_-20px_rgba(30,64,175,0.18)] sm:p-9",
+        centered ? "text-center" : "",
       ].join(" ")}
     >
       {progressStep ? <StepProgress current={progressStep} /> : null}
@@ -230,15 +369,22 @@ function StepTitle({ children }: { children: ReactNode }) {
   );
 }
 
-export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
+export default function ServiceSearchFlow({
+  text,
+  variant = "page",
+  defaultLanguage,
+  initialLocation = "",
+  className = "",
+}: ServiceSearchFlowProps) {
   const router = useRouter();
-  const [step, setStep] = useState<Step>("start");
+  const isHomeVariant = variant === "home";
+  const [step, setStep] = useState<Step>(isHomeVariant ? "service" : "start");
   const [service, setService] = useState("");
   const [selectedLanguage, setSelectedLanguage] =
-    useState<LanguageOption["value"] | null>(null);
+    useState<LanguageOption["value"] | null>(defaultLanguage ?? null);
   const [selectedFormat, setSelectedFormat] =
     useState<FormatOption["value"] | null>(null);
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState(initialLocation);
   const [radiusKm, setRadiusKm] = useState<number>(
     DEFAULT_SERVICE_SEARCH_RADIUS_KM
   );
@@ -260,6 +406,12 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
   function goToServiceStep() {
     setError(null);
     setStep("service");
+  }
+
+  function showBackButton(): boolean {
+    if (step === "start") return false;
+    if (isHomeVariant && step === "service") return false;
+    return true;
   }
 
   function goBack() {
@@ -323,10 +475,13 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
     redirectToResults("nearby", location);
   }
 
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-[#f7f9fc] px-4 py-8 sm:py-12">
-      <div key={step} className="mx-auto w-full max-w-lg animate-fadeIn">
-        {step === "start" ? (
+  const rootClassName = isHomeVariant
+    ? ["w-full max-w-lg mx-auto text-left", className].filter(Boolean).join(" ")
+    : "flex min-h-screen items-center justify-center bg-[#f7f9fc] px-4 py-8 sm:py-12";
+
+  const content = (
+    <div key={step} className={isHomeVariant ? "w-full animate-fadeIn" : "mx-auto w-full max-w-lg animate-fadeIn"}>
+        {!isHomeVariant && step === "start" ? (
           <FlowCard centered>
             <h1 className="mb-10 text-[1.85rem] font-bold leading-[1.15] tracking-tight text-textPrimary sm:text-[2.35rem]">
               {text.startHeadline}
@@ -336,9 +491,13 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
         ) : null}
 
         {step === "service" ? (
-          <FlowCard progressStep={progressStep}>
-            <BackButton label={text.backCta} onClick={goBack} />
-            <StepTitle>{text.serviceQuestion}</StepTitle>
+          <FlowCard progressStep={progressStep} compact={isHomeVariant}>
+            {showBackButton() ? (
+              <BackButton label={text.backCta} onClick={goBack} />
+            ) : null}
+            <StepTitle>
+              {isHomeVariant ? text.headline : text.serviceQuestion}
+            </StepTitle>
 
             <form onSubmit={handleServiceSubmit} className="space-y-6">
               <TextField
@@ -361,8 +520,10 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
         ) : null}
 
         {step === "language" ? (
-          <FlowCard progressStep={progressStep}>
-            <BackButton label={text.backCta} onClick={goBack} />
+          <FlowCard progressStep={progressStep} compact={isHomeVariant}>
+            {showBackButton() ? (
+              <BackButton label={text.backCta} onClick={goBack} />
+            ) : null}
             <StepTitle>{text.languageQuestion}</StepTitle>
 
             <div className="grid gap-3">
@@ -388,8 +549,10 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
         ) : null}
 
         {step === "format" ? (
-          <FlowCard progressStep={progressStep}>
-            <BackButton label={text.backCta} onClick={goBack} />
+          <FlowCard progressStep={progressStep} compact={isHomeVariant}>
+            {showBackButton() ? (
+              <BackButton label={text.backCta} onClick={goBack} />
+            ) : null}
             <StepTitle>{text.formatQuestion}</StepTitle>
 
             <div className="grid gap-3">
@@ -423,8 +586,10 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
         ) : null}
 
         {step === "location" ? (
-          <FlowCard progressStep={progressStep}>
-            <BackButton label={text.backCta} onClick={goBack} />
+          <FlowCard progressStep={progressStep} compact={isHomeVariant}>
+            {showBackButton() ? (
+              <BackButton label={text.backCta} onClick={goBack} />
+            ) : null}
             <StepTitle>{text.locationQuestion}</StepTitle>
 
             <form onSubmit={handleLocationSubmit} className="space-y-6">
@@ -476,6 +641,11 @@ export default function ServiceSearchFlow({ text }: ServiceSearchFlowProps) {
           </FlowCard>
         ) : null}
       </div>
-    </main>
   );
+
+  if (isHomeVariant) {
+    return <div className={rootClassName}>{content}</div>;
+  }
+
+  return <main className={rootClassName}>{content}</main>;
 }
