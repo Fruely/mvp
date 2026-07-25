@@ -42,6 +42,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "agreement_version_mismatch" }, { status: 400, headers: NO_STORE });
     }
 
+    const localeRaw =
+      body &&
+      typeof body === "object" &&
+      typeof (body as { agreement_locale?: unknown }).agreement_locale === "string"
+        ? (body as { agreement_locale: string }).agreement_locale.trim()
+        : null;
+
     const service = createServiceClient();
     const partner = await getPartnerForUser(user.id, service);
     if (!partner) {
@@ -52,6 +59,7 @@ export async function POST(request: NextRequest) {
       partnerId: partner.id,
       userId: user.id,
       agreementVersion: version,
+      agreementLocale: localeRaw,
     });
 
     return NextResponse.json(

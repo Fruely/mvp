@@ -2,13 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireAdminToken } from "@/lib/adminApiAuth";
 import { PartnerDomainError } from "@/lib/partners/errors";
-import { confirmFirstPaymentCommission } from "@/lib/partners/commissions";
+import {
+  confirmFirstPaymentCommission,
+  parsePaymentFinancialFacts,
+} from "@/lib/partners/commissions";
 
 const NO_STORE = { "Cache-Control": "no-store" } as const;
 
 /**
  * Interim commission source while Stripe webhooks are not live.
- * Does NOT consult specialist_plan. Requires explicit externalPaymentReference.
+ * Requires Agreement v1.0 payment financial facts (gross / VAT / fee) + monthly interval.
+ * Does NOT accept a precomputed reward amount and does NOT use partners.commission_amount_cents.
  */
 export async function POST(request: NextRequest) {
   const auth = requireAdminToken(request);
@@ -21,37 +25,44 @@ export async function POST(request: NextRequest) {
     }
 
     const specialistId =
-      typeof body.specialistId === "string"
-        ? body.specialistId
-        : typeof body.specialist_id === "string"
-          ? body.specialist_id
+      typeof (body as { specialistId?: unknown }).specialistId === "string"
+        ? (body as { specialistId: string }).specialistId
+        : typeof (body as { specialist_id?: unknown }).specialist_id === "string"
+          ? (body as { specialist_id: string }).specialist_id
           : "";
     const externalPaymentReference =
-      typeof body.externalPaymentReference === "string"
-        ? body.externalPaymentReference
-        : typeof body.external_payment_reference === "string"
-          ? body.external_payment_reference
+      typeof (body as { externalPaymentReference?: unknown }).externalPaymentReference ===
+      "string"
+        ? (body as { externalPaymentReference: string }).externalPaymentReference
+        : typeof (body as { external_payment_reference?: unknown })
+              .external_payment_reference === "string"
+          ? (body as { external_payment_reference: string }).external_payment_reference
           : "";
-    const paidAt =
-      typeof body.paidAt === "string"
-        ? body.paidAt
-        : typeof body.paid_at === "string"
-          ? body.paid_at
-          : null;
 
-    // Never accept client-supplied commission amount.
-    if ("amount_cents" in body || "amount" in body || "commission_amount_cents" in body) {
+    // Never accept client-supplied final reward amount.
+    if (
+      "amount_cents" in body ||
+      "amount" in body ||
+      "commission_amount_cents" in body ||
+      "reward_cents" in body
+    ) {
       return NextResponse.json(
         { error: "amount_not_accepted" },
         { status: 400, headers: NO_STORE }
       );
     }
 
+    const facts = parsePaymentFinancialFacts(body as Record<string, unknown>);
+
     const supabase = createSupabaseServerClient();
     const result = await confirmFirstPaymentCommission(supabase, {
       specialistId,
       externalPaymentReference,
-      paidAt,
+      paidAt: facts.paidAt,
+      grossAmountCents: facts.grossAmountCents,
+      vatAmountCents: facts.vatAmountCents,
+      providerFeeCents: facts.providerFeeCents,
+      billingInterval: facts.billingInterval,
     });
 
     return NextResponse.json(
@@ -67,6 +78,7 @@ export async function POST(request: NextRequest) {
           currency: result.commission.currency,
           status: result.commission.status,
           earned_at: result.commission.earned_at,
+          approved_at: result.commission.approved_at,
         },
       },
       { status: result.created ? 201 : 200, headers: NO_STORE }

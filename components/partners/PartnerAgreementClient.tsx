@@ -9,8 +9,9 @@ type Props = {
   lang: string;
   dict: Dictionary;
   version: string;
+  effectiveDate: string;
   title: string;
-  disclaimer: string;
+  governingNote: string | null;
   blocks: AgreementBlock[];
   alreadyAccepted: boolean;
 };
@@ -19,8 +20,9 @@ export default function PartnerAgreementClient({
   lang,
   dict,
   version,
+  effectiveDate,
   title,
-  disclaimer,
+  governingNote,
   blocks,
   alreadyAccepted,
 }: Props) {
@@ -39,7 +41,11 @@ export default function PartnerAgreementClient({
       const res = await fetch("/api/partner/agreement/accept", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accepted: true, agreement_version: version }),
+        body: JSON.stringify({
+          accepted: true,
+          agreement_version: version,
+          agreement_locale: lang,
+        }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -63,11 +69,15 @@ export default function PartnerAgreementClient({
       <header className="space-y-2">
         <p className="text-sm font-medium text-indigo-700">
           {t(dict, "partner.agreement.versionLabel")}: {version}
+          {" · "}
+          {t(dict, "partner.agreement.effectiveLabel")}: {effectiveDate}
         </p>
         <h1 className="text-3xl font-semibold text-gray-900">{title}</h1>
-        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-          {disclaimer}
-        </p>
+        {governingNote ? (
+          <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800">
+            {governingNote}
+          </p>
+        ) : null}
       </header>
 
       <article className="space-y-4 rounded-xl border border-gray-200 bg-white p-5">

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { writePartnerAudit } from "@/lib/partners/audit";
+import { getPartnerAgreementProofPayload } from "@/lib/partners/agreementHash";
 import { PartnerDomainError } from "@/lib/partners/errors";
 import { PARTNER_AGREEMENT_VERSION } from "@/lib/partners/featureFlags";
 import type { PartnerRow } from "@/lib/partners/types";
@@ -12,6 +13,8 @@ export async function acceptPartnerAgreement(
     partnerId: string;
     userId: string;
     agreementVersion?: string;
+    /** UI locale at acceptance time (audit only; no DB column required). */
+    agreementLocale?: string | null;
   }
 ): Promise<{ partner: PartnerRow; alreadyAccepted: boolean }> {
   const partnerId = input.partnerId.trim();
@@ -84,6 +87,7 @@ export async function acceptPartnerAgreement(
       .eq("code", updated.referral_code);
   }
 
+  const proof = getPartnerAgreementProofPayload(input.agreementLocale);
   await writePartnerAudit(supabase, {
     actorLabel: `user:${userId}`,
     action: "partner_agreement_accepted",
@@ -91,6 +95,7 @@ export async function acceptPartnerAgreement(
     entityId: partnerId,
     partnerId,
     payload: {
+      ...proof,
       agreement_version: version,
       accepted_at: ts,
       status_after: updated.status,

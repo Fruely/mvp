@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { getCommissionEligibleAt } from "@/lib/partners/commissionValidation";
 import { t, type Dictionary } from "@/lib/i18n";
 
 type DashboardPayload = {
@@ -68,6 +69,16 @@ function formatMoney(cents: number, currency: string, lang: string): string {
 
 function statusLabel(dict: Dictionary, status: string): string {
   return t(dict, `partner.status.${status}`, { defaultValue: status });
+}
+
+function expectedConfirmationDate(earnedAt: string, lang: string): string {
+  try {
+    return getCommissionEligibleAt(earnedAt).toLocaleDateString(
+      lang === "de" ? "de-DE" : lang === "ru" ? "ru-RU" : "uk-UA"
+    );
+  } catch {
+    return "";
+  }
 }
 
 export default function PartnerDashboardClient({
@@ -319,6 +330,12 @@ export default function PartnerDashboardClient({
                 <p className="mt-1 text-xs text-gray-400">
                   {c.public_ref} · {new Date(c.earned_at).toLocaleDateString()}
                 </p>
+                {c.status === "pending" ? (
+                  <p className="mt-1 text-xs text-gray-500">
+                    {t(dict, "partner.dashboard.expectedConfirmLabel")}:{" "}
+                    {expectedConfirmationDate(c.earned_at, lang)}
+                  </p>
+                ) : null}
               </li>
             ))}
           </ul>

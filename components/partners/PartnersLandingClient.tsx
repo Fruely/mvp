@@ -12,8 +12,6 @@ type Props = {
   partnerState?: "none" | "continue" | "dashboard";
 };
 
-const BASE_RATE_CENTS = 2900;
-
 export default function PartnersLandingClient({
   lang,
   dict,
@@ -46,10 +44,6 @@ export default function PartnersLandingClient({
     .split("|")
     .map((s) => s.trim())
     .filter(Boolean);
-  const examples = [10, 20, 50, 100].map((n) => ({
-    n,
-    euros: ((n * BASE_RATE_CENTS) / 100).toLocaleString(lang === "de" ? "de-DE" : "uk-UA"),
-  }));
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -153,14 +147,7 @@ export default function PartnersLandingClient({
           {t(dict, "partner.public.rewardTitle")}
         </h2>
         <p className="text-gray-700">{t(dict, "partner.public.rewardBody")}</p>
-        <ul className="mt-3 space-y-1 text-sm text-gray-700">
-          {examples.map((ex) => (
-            <li key={ex.n}>
-              {ex.n} → {ex.euros} €
-            </li>
-          ))}
-        </ul>
-        <p className="text-xs text-gray-500">{t(dict, "partner.public.rewardNote")}</p>
+        <p className="text-sm text-gray-600">{t(dict, "partner.public.rewardNote")}</p>
       </section>
 
       <section className="space-y-2">

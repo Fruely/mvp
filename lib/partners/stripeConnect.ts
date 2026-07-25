@@ -75,7 +75,7 @@ export async function startStripeConnectOnboarding(input: {
       ok: false,
       reason: "payouts_disabled",
       message:
-        "Partner payouts are not enabled yet. Referral and commissions still work; live payouts stay pending.",
+        "Partner payouts are not enabled yet. Referral and commissions still work; live payouts stay pending. Only approved commissions (after 14-day validation) will be eligible when payouts are enabled.",
     };
   }
 

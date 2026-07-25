@@ -18,10 +18,13 @@
 
 ```
 auth / claim
-  → agreement (version + accepted_at)
+  → agreement (Partnerprogramm-Bedingungen v1.0 + accepted_at)
   → payout onboarding (Stripe Connect boundary)
   → partner dashboard
 ```
+
+Agreement source: `content/partners/agreementContent.ts` (DE authoritative).  
+Versioning: `content/partners/agreementMeta.ts`. Internal legal note: `docs/partners/AGREEMENT_LEGAL_NOTE.md`.
 
 Logical steps (mapped to existing `partners` fields):
 
@@ -41,6 +44,16 @@ Logical steps (mapped to existing `partners` fields):
 - Referral link is available after agreement acceptance
 - Missing Stripe payout onboarding does **not** block attribution
 - Commissions may accrue as pending while live payouts are disabled
+
+## Commission rules (Agreement v1.0)
+
+- Reward = first **monthly** paid subscription: `gross − applicable VAT − actual provider fee`
+- Created as `pending` with `earned_at = first successful payment timestamp`
+- Eligible for `approved` only after **14 calendar days** (`earned_at + 14`), via `approveCommissionIfEligible` / cron `/api/cron/partner-commissions-approve`
+- `partners.commission_amount_cents` is **not** the reward source (legacy/admin hint only)
+- **Annual** billing interval is rejected (`annual_plan_not_eligible`) — no full-year commission
+- One commission per specialist (DB unique); renewals do not create another
+- Refund/cancel/dispute/reverse before approval → `reversed` (admin `/api/admin/partners/commissions/reverse`)
 
 ## Stripe Connect boundary
 
@@ -66,7 +79,7 @@ External blockers only:
 - production webhook secrets
 - Freuly platform bank account
 - `PARTNER_PAYOUTS_ENABLED=true`
-- legal/tax final approval of Partner Agreement text (`TODO LEGAL REVIEW`)
+- legal/tax review of Partnerprogramm-Bedingungen v1.0 before scale-up / live payouts (see `AGREEMENT_LEGAL_NOTE.md`)
 
 ## Manual DB
 
