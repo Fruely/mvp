@@ -26,13 +26,18 @@ export default function PartnerAgreementClient({
   blocks,
   alreadyAccepted,
 }: Props) {
-  const [checked, setChecked] = useState(alreadyAccepted);
+  const [checked, setChecked] = useState(false);
+  const [householdChecked, setHouseholdChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function accept() {
     if (!checked) {
       setError(t(dict, "partner.agreement.needCheck"));
+      return;
+    }
+    if (!householdChecked) {
+      setError(t(dict, "partner.agreement.needHouseholdCheck"));
       return;
     }
     setLoading(true);
@@ -43,6 +48,7 @@ export default function PartnerAgreementClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           accepted: true,
+          household_rules_accepted: true,
           agreement_version: version,
           agreement_locale: lang,
         }),
@@ -56,7 +62,7 @@ export default function PartnerAgreementClient({
         );
         return;
       }
-      window.location.assign(`/${lang}/partners/payout-onboarding`);
+      window.location.assign(`/${lang}/partner/dashboard`);
     } catch {
       setError(t(dict, "partner.agreement.error"));
     } finally {
@@ -110,7 +116,7 @@ export default function PartnerAgreementClient({
         <div className="space-y-3">
           <p className="text-sm text-emerald-700">{t(dict, "partner.agreement.alreadyAccepted")}</p>
           <Link
-            href={`/${lang}/partners/payout-onboarding`}
+            href={`/${lang}/partner/dashboard`}
             className="inline-flex rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white"
           >
             {t(dict, "partner.agreement.continue")}
@@ -127,16 +133,25 @@ export default function PartnerAgreementClient({
             />
             <span>{t(dict, "partner.agreement.checkbox")}</span>
           </label>
+          <label className="flex items-start gap-2 text-sm text-gray-800">
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={householdChecked}
+              onChange={(e) => setHouseholdChecked(e.target.checked)}
+            />
+            <span>{t(dict, "partner.agreement.householdCheckbox")}</span>
+          </label>
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
           <button
             type="button"
-            disabled={loading || !checked}
+            disabled={loading || !checked || !householdChecked}
             onClick={() => void accept()}
             className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
           >
             {loading
               ? t(dict, "partner.agreement.submitting")
-              : t(dict, "partner.agreement.submit")}
+              : t(dict, "partner.agreement.joinCta")}
           </button>
         </div>
       )}

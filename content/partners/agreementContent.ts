@@ -74,6 +74,10 @@ export function getPartnerAgreement(lang: Lang): {
         },
         {
           type: "p",
+          text: "Die Teilnahme erfolgt durch elektronische Annahme dieser Bedingungen. Eine vorherige Freigabe durch Freuly-Admin ist für die normale Teilnahme nicht erforderlich. Freuly kann die Teilnahme aus wichtigem Grund (insbesondere Missbrauch) sperren oder beenden.",
+        },
+        {
+          type: "p",
           text: "Der Partner ist selbst für steuerliche, registrierungsbezogene und öffentlich-rechtliche Pflichten verantwortlich. Freuly erbringt keine Steuer- oder Rechtsberatung.",
         },
         {
@@ -82,7 +86,15 @@ export function getPartnerAgreement(lang: Lang): {
         },
         {
           type: "p",
-          text: "Nach wirksamer Teilnahme erhält der Partner einen persönlichen Referral-Link bzw. Referral-Code. Eine Vergütung setzt eine technisch nachvollziehbare Attribution gemäß den Systemregeln von Freuly voraus. Eine manuelle Zuordnung wird nicht zugesagt, wenn die Herkunft einer Registrierung nicht zuverlässig festgestellt werden kann.",
+          text: "Nach wirksamer Teilnahme erhält der Partner einen persönlichen Referral-Link bzw. Referral-Code. Dieser gehört ausschließlich dem Partnerkonto, dem er zugeordnet ist. Das Kopieren oder Verbreiten eines fremden Codes überträgt kein Recht auf Vergütung. Für eine eigene Vergütung ist die eigene Teilnahme und der eigene Code erforderlich.",
+        },
+        {
+          type: "p",
+          text: "Der persönliche Referral-Link darf öffentlich und wiederholt genutzt werden, solange Partner und Programm aktiv sind. Die Attribution eines anonymen Besuchs bis zur Registrierung gilt für 90 Tage ab dem ersten gültigen Referral-Touch (First-Touch). Innerhalb dieses Fensters überschreibt ein späterer Klick einer anderen Partner-Link die bestehende Attribution nicht. Nach Registrierung ist die Attribution gesperrt.",
+        },
+        {
+          type: "p",
+          text: "Eine Vergütung setzt eine technisch nachvollziehbare Attribution gemäß den Systemregeln von Freuly voraus. Eine manuelle Zuordnung wird nicht zugesagt, wenn die Herkunft einer Registrierung nicht zuverlässig festgestellt werden kann.",
         },
         {
           type: "h2",
@@ -122,11 +134,15 @@ export function getPartnerAgreement(lang: Lang): {
         },
         {
           type: "h2",
-          text: "§ 7 Auszahlung",
+          text: "§ 7 Auszahlung und Freuly-Guthaben",
         },
         {
           type: "p",
-          text: "Nach Bestätigung einer Vergütung leitet Freuly die Auszahlung ohne unangemessene Verzögerung über den eingesetzten Auszahlungsdienstleister ein. Es gibt keinen Mindestauszahlungsbetrag. Der tatsächliche Zahlungseingang auf dem Bankkonto kann von Stripe, der Bank oder dem Auszahlungsdienstleister abhängen; eine konkrete Bankgutschriftfrist wird nicht zugesagt.",
+          text: "Nach Bestätigung einer Vergütung kann der Partner wählen: (a) Auszahlung in Geld über den eingesetzten Auszahlungsdienstleister, oder (b) Verwendung des bestätigten Betrags ganz oder teilweise als Guthaben für das eigene Freuly-Abonnement. Derselbe Betrag kann nicht zugleich ausgezahlt und als Abo-Guthaben verwendet werden. Es gibt keinen Mindestauszahlungsbetrag.",
+        },
+        {
+          type: "p",
+          text: "Die Nutzung als Abo-Guthaben ist kein Self-Referral; Voraussetzung ist eine bereits berechtigt erworbene Vergütung für einen unabhängigen Drittspezialisten. Der tatsächliche Zahlungseingang bei Auszahlung kann von Stripe, der Bank oder dem Auszahlungsdienstleister abhängen; eine konkrete Bankgutschriftfrist wird nicht zugesagt.",
         },
         {
           type: "h2",
@@ -142,7 +158,11 @@ export function getPartnerAgreement(lang: Lang): {
         },
         {
           type: "p",
-          text: "Keine Vergütung entsteht insbesondere bei Self-Referral, Scheinkonten, Doppelregistrierungen, Identitätsfälschung, Manipulation der Attribution, automatisierten Scheinregistrierungen, Registrierungen/Zahlungen hauptsächlich zur künstlichen Erzeugung von Rewards, koordiniertem Zahlungs-/Erstattungsmissbrauch, Spam, irreführender Werbung oder sonstigen künstlichen Konversionen.",
+          text: "Keine Vergütung entsteht insbesondere bei Self-Referral (eigene Person, eigener Spezialisten-Account, eigene Subscription), Empfehlungen von Ehepartnern, eingetragenen Lebenspartnern oder Personen, die mit dem Partner in einem gemeinsamen Haushalt leben, sowie bei Scheinkonten, Doppelregistrierungen, Identitätsfälschung, Manipulation der Attribution, automatisierten Scheinregistrierungen, Registrierungen/Zahlungen hauptsächlich zur künstlichen Erzeugung von Rewards, koordiniertem Zahlungs-/Erstattungsmissbrauch, Spam, irreführender Werbung oder sonstigen künstlichen Konversionen.",
+        },
+        {
+          type: "p",
+          text: "Zulässig sind Empfehlungen von Freunden, Bekannten, Kollegen, Nachbarn, Community-Mitgliedern und der eigenen Öffentlichkeit/Audience, sofern kein Self-Referral und kein Haushaltsmissbrauch vorliegt und die übrigen Bedingungen erfüllt sind.",
         },
         {
           type: "p",
@@ -276,12 +296,24 @@ export function getPartnerAgreement(lang: Lang): {
         },
         {
           type: "p",
+          text: "Участь відбувається через електронне прийняття цих умов. Попереднє схвалення адміном Freuly для звичайної участі не потрібне. Freuly може заблокувати або припинити участь з важливої причини (зокрема abuse).",
+        },
+        {
+          type: "p",
           text: "Партнер самостійно відповідає за податкові, реєстраційні та публічно-правові обов’язки. Freuly не надає податкових або юридичних консультацій.",
         },
         { type: "h2", text: "§ 3 Referral-посилання" },
         {
           type: "p",
-          text: "Після участі партнер отримує персональне referral-посилання / код. Винагорода можлива лише за технічно достовірної attribution за правилами Freuly. Ручна атрибуція не гарантується, якщо джерело реєстрації неможливо надійно встановити.",
+          text: "Після участі партнер отримує персональне referral-посилання / код. Він належить лише партнерському акаунту, за яким закріплений. Копіювання чи поширення чужого коду не передає права на винагороду. Для власної винагороди потрібна власна участь і власний код.",
+        },
+        {
+          type: "p",
+          text: "Персональне referral-посилання можна поширювати публічно й багаторазово, поки партнер і програма активні. Attribution анонімного візиту до реєстрації діє 90 днів від першого валідного referral-touch (first-touch). Усередині цього вікна пізніший клік іншої партнерської ланки не перезаписує attribution. Після реєстрації attribution фіксується.",
+        },
+        {
+          type: "p",
+          text: "Винагорода можлива лише за технічно достовірної attribution за правилами Freuly. Ручна атрибуція не гарантується, якщо джерело реєстрації неможливо надійно встановити.",
         },
         { type: "h2", text: "§ 4 Кваліфікована рекомендація" },
         {
@@ -310,10 +342,14 @@ export function getPartnerAgreement(lang: Lang): {
           type: "p",
           text: `${DAYS} днів — це validation rule програми, а не твердження, що платіж після цього неможливо повернути чи оскаржити. Пізні card disputes/chargebacks залишаються окремим payment risk.`,
         },
-        { type: "h2", text: "§ 7 Виплата" },
+        { type: "h2", text: "§ 7 Виплата та Freuly-кредит" },
         {
           type: "p",
-          text: "Після confirmed reward Freuly ініціює виплату без невиправданої затримки через payout provider. Мінімального порогу виплати немає. Фактичне зарахування на банківський рахунок може залежати від Stripe/банку/провайдера; конкретний строк зарахування не гарантується.",
+          text: "Після confirmed reward партнер може обрати: (a) грошову виплату через payout provider, або (b) використання підтвердженої суми повністю чи частково як кредиту на власну підписку Freuly. Ту саму суму не можна одночасно виплатити й використати як кредит. Мінімального порогу виплати немає.",
+        },
+        {
+          type: "p",
+          text: "Використання як кредиту на підписку не є self-referral; умова — уже законно зароблена винагорода за незалежного стороннього specialist. Фактичне зарахування при грошовій виплаті може залежати від Stripe/банку/провайдера.",
         },
         { type: "h2", text: "§ 8 Відсутність постійної частки" },
         {
@@ -323,7 +359,11 @@ export function getPartnerAgreement(lang: Lang): {
         { type: "h2", text: "§ 9 Зловживання" },
         {
           type: "p",
-          text: "Винагорода не нараховується зокрема за self-referral, фейкові акаунти, дублікати реєстрацій, фальшиві особи, маніпуляцію attribution, автоматизовані фейкові реєстрації, реєстрації/платежі переважно для штучного отримання reward, скоординований payment/refund abuse, spam, оманливу рекламу та інші штучні conversions.",
+          text: "Винагорода не нараховується зокрема за self-referral (власна особа, власний specialist-акаунт, власна підписка), рекомендації подружжя / зареєстрованого партнера / осіб спільного домогосподарства, а також за фейкові акаунти, дублікати реєстрацій, маніпуляцію attribution, штучні conversions, spam чи оманливу рекламу.",
+        },
+        {
+          type: "p",
+          text: "Дозволені рекомендації друзів, знайомих, колег, сусідів, community та власної аудиторії, якщо немає self-referral чи household abuse і виконуються інші умови.",
         },
         {
           type: "p",
@@ -420,12 +460,24 @@ export function getPartnerAgreement(lang: Lang): {
       },
       {
         type: "p",
+        text: "Участие происходит через электронное принятие этих условий. Предварительное одобрение админом Freuly для обычного вступления не требуется. Freuly может заблокировать или прекратить участие по важной причине (в частности abuse).",
+      },
+      {
+        type: "p",
         text: "Партнёр самостоятельно отвечает за налоговые, регистрационные и публично-правовые обязанности. Freuly не оказывает налоговое или юридическое консультирование.",
       },
       { type: "h2", text: "§ 3 Referral-ссылка" },
       {
         type: "p",
-        text: "После участия партнёр получает персональную referral-ссылку / код. Вознаграждение возможно только при технически достоверной attribution по правилам Freuly. Ручная атрибуция не обещается, если источник регистрации нельзя надёжно установить.",
+        text: "После участия партнёр получает персональную referral-ссылку / код. Он принадлежит только партнёрскому аккаунту, за которым закреплён. Копирование или распространение чужого кода не передаёт права на вознаграждение. Для собственного вознаграждения нужны собственное участие и собственный код.",
+      },
+      {
+        type: "p",
+        text: "Персональную referral-ссылку можно распространять публично и многократно, пока партнёр и программа активны. Attribution анонимного визита до регистрации действует 90 дней с первого валидного referral-touch (first-touch). Внутри этого окна поздний клик другой партнёрской ссылки не перезаписывает attribution. После регистрации attribution фиксируется.",
+      },
+      {
+        type: "p",
+        text: "Вознаграждение возможно только при технически достоверной attribution по правилам Freuly. Ручная атрибуция не обещается, если источник регистрации нельзя надёжно установить.",
       },
       { type: "h2", text: "§ 4 Квалифицированная рекомендация" },
       {
@@ -454,10 +506,14 @@ export function getPartnerAgreement(lang: Lang): {
         type: "p",
         text: `${DAYS} дней — это validation rule программы, а не утверждение, что платёж после этого нельзя вернуть или оспорить. Поздние card disputes/chargebacks остаются отдельным payment risk.`,
       },
-      { type: "h2", text: "§ 7 Выплата" },
+      { type: "h2", text: "§ 7 Выплата и Freuly-кредит" },
       {
         type: "p",
-        text: "После confirmed reward Freuly инициирует выплату без неоправданной задержки через payout provider. Минимального порога выплаты нет. Фактическое поступление на банковский счёт может зависеть от Stripe/банка/провайдера; конкретный срок зачисления не обещается.",
+        text: "После confirmed reward партнёр может выбрать: (a) денежную выплату через payout provider, или (b) использование подтверждённой суммы полностью или частично как кредита на собственную подписку Freuly. Одну и ту же сумму нельзя одновременно выплатить и использовать как кредит. Минимального порога выплаты нет.",
+      },
+      {
+        type: "p",
+        text: "Использование как кредита на подписку не является self-referral; условие — уже законно заработанное вознаграждение за независимого стороннего specialist. Фактическое поступление при денежной выплате может зависеть от Stripe/банка/провайдера.",
       },
       { type: "h2", text: "§ 8 Отсутствие постоянного участия" },
       {
@@ -467,7 +523,11 @@ export function getPartnerAgreement(lang: Lang): {
       { type: "h2", text: "§ 9 Злоупотребления" },
       {
         type: "p",
-        text: "Вознаграждение не начисляется в частности за self-referral, фейковые аккаунты, дубликаты регистраций, ложные личности, манипуляцию attribution, автоматизированные фейковые регистрации, регистрации/платежи преимущественно для искусственного получения reward, координированный payment/refund abuse, spam, вводящую в заблуждение рекламу и иные искусственные conversions.",
+        text: "Вознаграждение не начисляется в частности за self-referral (собственная личность, собственный specialist-аккаунт, собственная подписка), рекомендации супруга / зарегистрированного партнёра / лиц общего домашнего хозяйства, а также за фейковые аккаунты, дубликаты регистраций, манипуляцию attribution, искусственные conversions, spam или вводящую в заблуждение рекламу.",
+      },
+      {
+        type: "p",
+        text: "Разрешены рекомендации друзей, знакомых, коллег, соседей, community и собственной аудитории, если нет self-referral или household abuse и выполнены остальные условия.",
       },
       {
         type: "p",

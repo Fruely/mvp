@@ -30,12 +30,13 @@ export default async function PartnerOnboardingPage({
   } = await auth.auth.getUser();
 
   if (!user) {
-    redirect(`/${lang}/partners#apply`);
+    redirect(`/${lang}/login?next=/${lang}/partners/onboarding`);
   }
 
   const partner = await getPartnerForUser(user.id, createServiceClient());
   if (!partner) {
-    redirect(`/${lang}/partners#apply`);
+    // Public self-serve: agreement acceptance creates + activates the partner.
+    redirect(`/${lang}/partners/agreement`);
   }
 
   const connect = mapPartnerConnectFields(partner);

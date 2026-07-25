@@ -4,6 +4,7 @@ import {
   computeDashboardAmounts,
   type DashboardAmountTotals,
 } from "@/lib/partners/dashboardAmounts";
+import { partnerPayoutsEnabled } from "@/lib/partners/featureFlags";
 import { getBerlinMonthBoundsUtc } from "@/lib/partners/monthlyBounds";
 import { publicCommissionRef } from "@/lib/partners/publicRef";
 import type { PartnerRow, PartnerStatus } from "@/lib/partners/types";
@@ -66,6 +67,7 @@ export type PartnerDashboardDto = {
   }>;
   unread_notifications: number;
   last_payout_at: string | null;
+  payouts_enabled: boolean;
 };
 
 export async function getPartnerDashboard(
@@ -98,7 +100,7 @@ export async function getPartnerDashboard(
     .eq("partner_id", partnerId);
   let periodCommissionsQuery = supabase
     .from("partner_commissions")
-    .select("amount_cents, status")
+    .select("amount_cents, status, credited_cents, paid_out_cents")
     .eq("partner_id", partnerId);
 
   if (startIso && endIso) {
@@ -122,7 +124,10 @@ export async function getPartnerDashboard(
     clicksQuery,
     attrQuery,
     periodCommissionsQuery,
-    supabase.from("partner_commissions").select("amount_cents, status").eq("partner_id", partnerId),
+    supabase
+      .from("partner_commissions")
+      .select("amount_cents, status, credited_cents, paid_out_cents")
+      .eq("partner_id", partnerId),
     supabase
       .from("partner_links")
       .select("id, code, campaign, target_path, is_active")
@@ -130,7 +135,7 @@ export async function getPartnerDashboard(
       .order("created_at", { ascending: false }),
     supabase
       .from("partner_commissions")
-      .select("id, amount_cents, currency, status, earned_at")
+      .select("id, amount_cents, currency, status, earned_at, credited_cents, paid_out_cents")
       .eq("partner_id", partnerId)
       .order("earned_at", { ascending: false })
       .limit(50),
@@ -148,14 +153,38 @@ export async function getPartnerDashboard(
       .limit(20),
   ]);
 
-  const periodCommissions = (periodCommissionsRes.data ?? []) as Array<{
+  // If phase4 credit columns are not migrated yet, PostgREST may error — retry without them.
+  let periodCommissions = (periodCommissionsRes.data ?? []) as Array<{
     amount_cents: number;
     status: string;
+    credited_cents?: number | null;
+    paid_out_cents?: number | null;
   }>;
-  const allCommissions = (allCommissionsRes.data ?? []) as Array<{
+  let allCommissions = (allCommissionsRes.data ?? []) as Array<{
     amount_cents: number;
     status: string;
+    credited_cents?: number | null;
+    paid_out_cents?: number | null;
   }>;
+
+  if (
+    periodCommissionsRes.error &&
+    /credited_cents|paid_out_cents/i.test(periodCommissionsRes.error.message || "")
+  ) {
+    let legacyPeriod = supabase
+      .from("partner_commissions")
+      .select("amount_cents, status")
+      .eq("partner_id", partnerId);
+    if (startIso && endIso) {
+      legacyPeriod = legacyPeriod.gte("earned_at", startIso).lt("earned_at", endIso);
+    }
+    const [pRes, aRes] = await Promise.all([
+      legacyPeriod,
+      supabase.from("partner_commissions").select("amount_cents, status").eq("partner_id", partnerId),
+    ]);
+    periodCommissions = (pRes.data ?? []) as typeof periodCommissions;
+    allCommissions = (aRes.data ?? []) as typeof allCommissions;
+  }
 
   const periodAmounts = computeDashboardAmounts(periodCommissions);
   const balances = computeDashboardAmounts(allCommissions);
@@ -220,5 +249,6 @@ export async function getPartnerDashboard(
     notifications,
     unread_notifications: unread,
     last_payout_at: lastPaid,
+    payouts_enabled: partnerPayoutsEnabled,
   };
 }

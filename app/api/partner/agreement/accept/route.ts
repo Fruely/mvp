@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { acceptPartnerAgreement } from "@/lib/partners/agreement";
 import { PartnerDomainError } from "@/lib/partners/errors";
+import { ensureSelfServePartner } from "@/lib/partners/join";
 import { getPartnerForUser } from "@/lib/partners/session";
 import { PARTNER_AGREEMENT_VERSION } from "@/lib/partners/featureFlags";
 
@@ -31,6 +32,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "agreement_not_accepted" }, { status: 400, headers: NO_STORE });
     }
 
+    const householdOk =
+      body &&
+      typeof body === "object" &&
+      (body as { household_rules_accepted?: unknown }).household_rules_accepted === true;
+    if (!householdOk) {
+      return NextResponse.json(
+        { error: "household_rules_not_accepted" },
+        { status: 400, headers: NO_STORE }
+      );
+    }
+
     const version =
       body &&
       typeof body === "object" &&
@@ -50,9 +62,19 @@ export async function POST(request: NextRequest) {
         : null;
 
     const service = createServiceClient();
-    const partner = await getPartnerForUser(user.id, service);
+    let partner = await getPartnerForUser(user.id, service);
     if (!partner) {
-      return NextResponse.json({ error: "partner_not_bound" }, { status: 403, headers: NO_STORE });
+      const ensured = await ensureSelfServePartner(service, {
+        userId: user.id,
+        email: user.email || "",
+        name:
+          typeof user.user_metadata?.full_name === "string"
+            ? user.user_metadata.full_name
+            : typeof user.user_metadata?.name === "string"
+              ? user.user_metadata.name
+              : null,
+      });
+      partner = ensured.partner;
     }
 
     const result = await acceptPartnerAgreement(service, {
@@ -69,7 +91,8 @@ export async function POST(request: NextRequest) {
         agreement_version: version,
         accepted_at: result.partner.contract_signed_at,
         partner_status: result.partner.status,
-        next: "/partners/payout-onboarding",
+        referral_code: result.partner.referral_code,
+        next: "/partner/dashboard",
       },
       { headers: NO_STORE }
     );

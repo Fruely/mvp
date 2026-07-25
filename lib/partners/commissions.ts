@@ -64,7 +64,7 @@ async function createFirstPaymentCommission(
 
   const { data: specialist, error: specErr } = await supabase
     .from("specialists")
-    .select("id")
+    .select("id, user_id, email")
     .eq("id", specialistId)
     .maybeSingle();
   if (specErr) throw new PartnerDomainError("specialist_lookup_failed", 500);
@@ -108,29 +108,57 @@ async function createFirstPaymentCommission(
     throw new PartnerDomainError("partner_rejected", 409);
   }
 
+  // Enforceable self-referral: same auth user or same email identity.
+  const specialistUserId = (specialist as { user_id?: string | null }).user_id;
+  if (partner.user_id && specialistUserId && partner.user_id === specialistUserId) {
+    throw new PartnerDomainError("self_referral", 409);
+  }
+  const partnerEmail = String(partner.email || "")
+    .trim()
+    .toLowerCase();
+  const specialistEmail = String((specialist as { email?: string | null }).email || "")
+    .trim()
+    .toLowerCase();
+  if (partnerEmail && specialistEmail && partnerEmail === specialistEmail) {
+    throw new PartnerDomainError("self_referral", 409);
+  }
+
   const currency = (input.currency || (partner.currency as string) || "EUR")
     .trim()
     .toUpperCase();
   const ts = new Date().toISOString();
 
-  const { data: created, error: insertErr } = await supabase
+  const insertRow: Record<string, unknown> = {
+    partner_id: partner.id,
+    attribution_id: attribution.id,
+    specialist_id: specialistId,
+    source_type: input.sourceType,
+    source_event_id: sourceEventId,
+    amount_cents: reward.amountCents,
+    currency,
+    status: "pending",
+    earned_at: earnedAt,
+    approved_at: null,
+    credited_cents: 0,
+    paid_out_cents: 0,
+    created_at: ts,
+    updated_at: ts,
+  };
+
+  let { data: created, error: insertErr } = await supabase
     .from("partner_commissions")
-    .insert({
-      partner_id: partner.id,
-      attribution_id: attribution.id,
-      specialist_id: specialistId,
-      source_type: input.sourceType,
-      source_event_id: sourceEventId,
-      amount_cents: reward.amountCents,
-      currency,
-      status: "pending",
-      earned_at: earnedAt,
-      approved_at: null,
-      created_at: ts,
-      updated_at: ts,
-    })
+    .insert(insertRow)
     .select("*")
     .single();
+
+  if (insertErr && /credited_cents|paid_out_cents/i.test(insertErr.message || "")) {
+    const legacy = { ...insertRow };
+    delete legacy.credited_cents;
+    delete legacy.paid_out_cents;
+    const retry = await supabase.from("partner_commissions").insert(legacy).select("*").single();
+    created = retry.data;
+    insertErr = retry.error;
+  }
 
   if (insertErr) {
     if (insertErr.code === "23505") {

@@ -130,6 +130,20 @@ export default function PartnersLandingClient({
 
       <section className="space-y-2">
         <h2 className="text-xl font-semibold text-gray-900">
+          {t(dict, "partner.public.ownershipTitle")}
+        </h2>
+        {t(dict, "partner.public.ownershipBody")
+          .split("\n")
+          .filter(Boolean)
+          .map((para) => (
+            <p key={para.slice(0, 48)} className="text-gray-700 whitespace-pre-line">
+              {para}
+            </p>
+          ))}
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-xl font-semibold text-gray-900">
           {t(dict, "partner.public.limitsTitle")}
         </h2>
         <p className="text-gray-700">{t(dict, "partner.public.limitsBody")}</p>
@@ -161,82 +175,91 @@ export default function PartnersLandingClient({
         </ul>
       </section>
 
-      <section className="space-y-4" id="apply">
-        <h2 className="text-xl font-semibold text-gray-900">{t(dict, "partner.form.title")}</h2>
-        {done ? (
-          <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            {t(dict, "partner.form.success")}
-          </p>
-        ) : (
-          <form onSubmit={onSubmit} className="space-y-3 rounded-xl border border-gray-200 bg-white p-4">
-            {(
-              [
-                ["name", "partner.form.name", "text"],
-                ["email", "partner.form.email", "email"],
-                ["channel_name", "partner.form.channelName", "text"],
-                ["channel_url", "partner.form.channelUrl", "url"],
-                ["extra_links", "partner.form.extraLinks", "text"],
-                ["platform", "partner.form.platform", "text"],
-                ["topic", "partner.form.topic", "text"],
-                ["audience_lang", "partner.form.audienceLang", "text"],
-                ["audience_geo", "partner.form.audienceGeo", "text"],
-                ["subscribers_approx", "partner.form.subscribers", "text"],
-                ["reach_approx", "partner.form.reach", "text"],
-              ] as const
-            ).map(([key, labelKey, type]) => (
-              <label key={key} className="block text-sm">
-                <span className="font-medium text-gray-700">{t(dict, labelKey)}</span>
-                <input
-                  type={type}
-                  required={key === "name" || key === "email" || key === "channel_name" || key === "channel_url"}
+      <details className="rounded-xl border border-gray-200 bg-white p-4" id="apply">
+        <summary className="cursor-pointer text-lg font-semibold text-gray-900">
+          {t(dict, "partner.form.title")}
+        </summary>
+        <div className="mt-4 space-y-4">
+          {done ? (
+            <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              {t(dict, "partner.form.success")}
+            </p>
+          ) : (
+            <form onSubmit={onSubmit} className="space-y-3">
+              {(
+                [
+                  ["name", "partner.form.name", "text"],
+                  ["email", "partner.form.email", "email"],
+                  ["channel_name", "partner.form.channelName", "text"],
+                  ["channel_url", "partner.form.channelUrl", "url"],
+                  ["extra_links", "partner.form.extraLinks", "text"],
+                  ["platform", "partner.form.platform", "text"],
+                  ["topic", "partner.form.topic", "text"],
+                  ["audience_lang", "partner.form.audienceLang", "text"],
+                  ["audience_geo", "partner.form.audienceGeo", "text"],
+                  ["subscribers_approx", "partner.form.subscribers", "text"],
+                  ["reach_approx", "partner.form.reach", "text"],
+                ] as const
+              ).map(([key, labelKey, type]) => (
+                <label key={key} className="block text-sm">
+                  <span className="font-medium text-gray-700">{t(dict, labelKey)}</span>
+                  <input
+                    type={type}
+                    required={
+                      key === "name" ||
+                      key === "email" ||
+                      key === "channel_name" ||
+                      key === "channel_url"
+                    }
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
+                    value={form[key]}
+                    onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                  />
+                </label>
+              ))}
+              <label className="block text-sm">
+                <span className="font-medium text-gray-700">{t(dict, "partner.form.comment")}</span>
+                <textarea
                   className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                  value={form[key]}
-                  onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                  rows={3}
+                  value={form.comment}
+                  onChange={(e) => setForm((f) => ({ ...f, comment: e.target.value }))}
                 />
               </label>
-            ))}
-            <label className="block text-sm">
-              <span className="font-medium text-gray-700">{t(dict, "partner.form.comment")}</span>
-              <textarea
-                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-                rows={3}
-                value={form.comment}
-                onChange={(e) => setForm((f) => ({ ...f, comment: e.target.value }))}
-              />
-            </label>
-            <label className="flex items-start gap-2 text-sm text-gray-700">
-              <input
-                type="checkbox"
-                className="mt-1"
-                checked={form.privacy_accepted}
-                onChange={(e) => setForm((f) => ({ ...f, privacy_accepted: e.target.checked }))}
-                required
-              />
-              <span>
-                {t(dict, "partner.form.privacy")}{" "}
-                <Link
-                  href={privacyPath(isSupportedLang(lang) ? (lang as Lang) : "de")}
-                  className="underline underline-offset-2 hover:opacity-80"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {t(dict, "footer.privacyLink")}
-                </Link>
-              </span>
-            </label>
-            {error ? <p className="text-sm text-red-600">{error}</p> : null}
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
-            >
-              {submitting
-                ? t(dict, "partner.form.submitting")
-                : t(dict, "partner.form.submit")}
-            </button>
-          </form>
-        )}
-      </section>
+              <label className="flex items-start gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={form.privacy_accepted}
+                  onChange={(e) => setForm((f) => ({ ...f, privacy_accepted: e.target.checked }))}
+                  required
+                />
+                <span>
+                  {t(dict, "partner.form.privacy")}{" "}
+                  <Link
+                    href={privacyPath(isSupportedLang(lang) ? (lang as Lang) : "de")}
+                    className="underline underline-offset-2 hover:opacity-80"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t(dict, "footer.privacyLink")}
+                  </Link>
+                </span>
+              </label>
+              {error ? <p className="text-sm text-red-600">{error}</p> : null}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {submitting
+                  ? t(dict, "partner.form.submitting")
+                  : t(dict, "partner.form.submit")}
+              </button>
+            </form>
+          )}
+        </div>
+      </details>
 
       <section className="space-y-3">
         <h2 className="text-xl font-semibold text-gray-900">{t(dict, "partner.public.faqTitle")}</h2>

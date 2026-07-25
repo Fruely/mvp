@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { getCommissionEligibleAt } from "@/lib/partners/commissionValidation";
 import { t, type Dictionary } from "@/lib/i18n";
 
@@ -25,6 +26,7 @@ type DashboardPayload = {
     pending_cents: number;
     approved_unpaid_cents: number;
     paid_cents: number;
+    credited_cents?: number;
     total_earned_cents: number;
     available_for_payout_cents: number;
   };
@@ -52,6 +54,7 @@ type DashboardPayload = {
   }>;
   unread_notifications: number;
   last_payout_at: string | null;
+  payouts_enabled?: boolean;
 };
 
 function formatMoney(cents: number, currency: string, lang: string): string {
@@ -60,7 +63,8 @@ function formatMoney(cents: number, currency: string, lang: string): string {
     return new Intl.NumberFormat(lang === "de" ? "de-DE" : lang === "ru" ? "ru-RU" : "uk-UA", {
       style: "currency",
       currency: currency || "EUR",
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(amount);
   } catch {
     return `€${amount.toFixed(0)}`;
@@ -93,6 +97,8 @@ export default function PartnerDashboardClient({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [creditMsg, setCreditMsg] = useState<string | null>(null);
+  const [creditLoading, setCreditLoading] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -148,6 +154,36 @@ export default function PartnerDashboardClient({
     await load();
   }
 
+  async function applyCredit() {
+    if (!data) return;
+    const available = data.balances.available_for_payout_cents;
+    if (!available || available <= 0) return;
+    setCreditLoading(true);
+    setCreditMsg(null);
+    try {
+      const res = await fetch("/api/partner/credits/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount_cents: available }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setCreditMsg(
+          typeof json.error === "string"
+            ? json.error
+            : t(dict, "partner.dashboard.creditError")
+        );
+        return;
+      }
+      setCreditMsg(t(dict, "partner.dashboard.creditSuccess"));
+      await load();
+    } catch {
+      setCreditMsg(t(dict, "partner.dashboard.creditError"));
+    } finally {
+      setCreditLoading(false);
+    }
+  }
+
   if (loading && !data) {
     return (
       <div className="mx-auto max-w-lg px-4 py-10 text-sm text-gray-500">
@@ -176,6 +212,12 @@ export default function PartnerDashboardClient({
         <p className="text-sm text-gray-500">
           {data.partner.name} · {statusLabel(dict, data.partner.status)}
         </p>
+        <Link
+          href={`/${lang}/partners/agreement`}
+          className="inline-block text-sm font-medium text-indigo-700 underline-offset-2 hover:underline"
+        >
+          {t(dict, "partner.public.agreementLink")}
+        </Link>
       </header>
 
       {data.access_mode === "read_only" ? (
@@ -288,7 +330,7 @@ export default function PartnerDashboardClient({
         ))}
       </section>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-4 space-y-2">
+      <section className="rounded-xl border border-gray-200 bg-white p-4 space-y-3">
         <h2 className="text-sm font-semibold text-gray-900">
           {t(dict, "partner.dashboard.payoutsTitle")}
         </h2>
@@ -301,9 +343,49 @@ export default function PartnerDashboardClient({
           {formatMoney(data.balances.pending_cents, data.partner.currency, lang)}
         </p>
         <p className="text-sm text-gray-700">
+          {t(dict, "partner.dashboard.creditedLabel")}:{" "}
+          {formatMoney(data.balances.credited_cents ?? 0, data.partner.currency, lang)}
+        </p>
+        <p className="text-sm text-gray-700">
           {t(dict, "partner.dashboard.paidLabel")}:{" "}
           {formatMoney(data.balances.paid_cents, data.partner.currency, lang)}
         </p>
+
+        {data.balances.available_for_payout_cents > 0 ? (
+          <div className="flex flex-col gap-2 pt-1">
+            <button
+              type="button"
+              disabled={!data.payouts_enabled}
+              className="w-full rounded-lg bg-gray-900 px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-600"
+              title={
+                data.payouts_enabled
+                  ? undefined
+                  : t(dict, "partner.dashboard.cashPayoutPendingHint")
+              }
+            >
+              {data.payouts_enabled
+                ? t(dict, "partner.dashboard.cashPayoutCta")
+                : t(dict, "partner.dashboard.cashPayoutPendingCta")}
+            </button>
+            {!data.payouts_enabled ? (
+              <p className="text-xs text-gray-500">
+                {t(dict, "partner.dashboard.cashPayoutPendingHint")}
+              </p>
+            ) : null}
+            <button
+              type="button"
+              disabled={creditLoading}
+              onClick={() => void applyCredit()}
+              className="w-full rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-900 disabled:opacity-60"
+            >
+              {creditLoading
+                ? t(dict, "partner.dashboard.creditSubmitting")
+                : t(dict, "partner.dashboard.creditCta")}
+            </button>
+            {creditMsg ? <p className="text-xs text-gray-600">{creditMsg}</p> : null}
+          </div>
+        ) : null}
+
         <p className="text-xs text-gray-500">{t(dict, "partner.dashboard.payoutNote")}</p>
       </section>
 
