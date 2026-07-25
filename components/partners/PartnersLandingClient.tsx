@@ -8,11 +8,17 @@ import { privacyPath } from "@/lib/legal/paths";
 type Props = {
   lang: string;
   dict: Dictionary;
+  /** bound partner view for logged-in visitors */
+  partnerState?: "none" | "continue" | "dashboard";
 };
 
 const BASE_RATE_CENTS = 2900;
 
-export default function PartnersLandingClient({ lang, dict }: Props) {
+export default function PartnersLandingClient({
+  lang,
+  dict,
+  partnerState = "none",
+}: Props) {
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -85,6 +91,36 @@ export default function PartnersLandingClient({ lang, dict }: Props) {
         <p className="text-base text-gray-600 leading-relaxed">
           {t(dict, "partner.public.subtitle")}
         </p>
+        <div className="flex flex-wrap gap-3 pt-2">
+          {partnerState === "dashboard" ? (
+            <Link
+              href={`/${lang}/partner/dashboard`}
+              className="inline-flex rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white"
+            >
+              {t(dict, "partner.public.openDashboard")}
+            </Link>
+          ) : partnerState === "continue" ? (
+            <Link
+              href={`/${lang}/partners/onboarding`}
+              className="inline-flex rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white"
+            >
+              {t(dict, "partner.public.continueOnboarding")}
+            </Link>
+          ) : (
+            <Link
+              href={`/${lang}/partners/onboarding`}
+              className="inline-flex rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white"
+            >
+              {t(dict, "partner.public.becomeCta")}
+            </Link>
+          )}
+          <Link
+            href={`/${lang}/partners/agreement`}
+            className="inline-flex rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-800"
+          >
+            {t(dict, "partner.public.agreementLink")}
+          </Link>
+        </div>
       </header>
 
       <section className="space-y-3">
@@ -96,6 +132,20 @@ export default function PartnersLandingClient({ lang, dict }: Props) {
             <li key={step}>{step}</li>
           ))}
         </ol>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-xl font-semibold text-gray-900">
+          {t(dict, "partner.public.limitsTitle")}
+        </h2>
+        <p className="text-gray-700">{t(dict, "partner.public.limitsBody")}</p>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-xl font-semibold text-gray-900">
+          {t(dict, "partner.public.payoutTitle")}
+        </h2>
+        <p className="text-gray-700">{t(dict, "partner.public.payoutBody")}</p>
       </section>
 
       <section className="space-y-2">

@@ -45,7 +45,8 @@ export async function POST(
         email: invite.email,
         expires_at: invite.expiresAt,
         token: invite.rawToken,
-        claim_path_template: "/{lang}/partner/claim?token=…",
+        claim_path_template: "/{lang}/partners/invite/{token}",
+        invite_path: `/{lang}/partners/invite/${invite.rawToken}`,
       },
       { status: 201, headers: NO_STORE }
     );

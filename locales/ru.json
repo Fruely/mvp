@@ -948,7 +948,15 @@
       "rewardNote": "Пример приведён для базовой ставки 29 €. Фактические условия указываются в партнёрском соглашении.",
       "audienceTitle": "Для кого",
       "audienceItems": "видеоблогеры|Telegram-каналы|администраторы сообществ|авторы тематических медиа|лидеры профессиональных и локальных сообществ",
-      "faqTitle": "Частые вопросы"
+      "faqTitle": "Частые вопросы",
+      "becomeCta": "Стать партнёром",
+      "openDashboard": "Открыть кабинет партнёра",
+      "continueOnboarding": "Продолжить оформление",
+      "agreementLink": "Партнёрское соглашение",
+      "limitsTitle": "Ограничения",
+      "limitsBody": "Нет гарантированного заработка. Запрещены спам, вводящая в заблуждение реклама и пирамидальные схемы. Вознаграждение только за подтверждённый квалифицированный результат.",
+      "payoutTitle": "Как происходят выплаты",
+      "payoutBody": "После принятия соглашения вы получаете referral-ссылку и кабинет. Выплаты через Stripe Connect; до активации live payouts начисления могут оставаться pending."
     },
     "form": {
       "title": "Заявка в партнёрскую программу",
@@ -1046,6 +1054,32 @@
     "notification": {
       "accrualTitle": "Новое начисление: {{amount}}",
       "accrualBody": "По вашей партнёрской ссылке оплатил новый специалист."
+    },
+    "agreement": {
+      "versionLabel": "Версия",
+      "checkbox": "Я прочитал(а) и принимаю условия партнёрской программы",
+      "submit": "Принять и продолжить",
+      "submitting": "Сохранение…",
+      "needCheck": "Подтвердите согласие с условиями.",
+      "error": "Не удалось сохранить согласие. Попробуйте снова.",
+      "alreadyAccepted": "Соглашение уже принято.",
+      "continue": "Продолжить",
+      "publicHint": "Чтобы принять соглашение, войдите по приглашению Freuly или дождитесь одобрения заявки и привязки аккаунта."
+    },
+    "payout": {
+      "title": "Настройка выплат",
+      "subtitle": "Freuly не хранит IBAN и KYC-документы. Данные банковского счёта собирает Stripe Connect.",
+      "statusTitle": "Статус",
+      "liveLabel": "Live payouts",
+      "on": "включены",
+      "off": "выключены",
+      "connectLabel": "Stripe Connect",
+      "referralReady": "Ваша referral-ссылка",
+      "disabledBody": "Регистрация, соглашение, referral-ссылка, статистика и начисления работают. Реальные выплаты пока отключены до активации Stripe-аккаунта Freuly.",
+      "startConnect": "Начать Stripe Connect onboarding",
+      "starting": "Проверка…",
+      "openDashboard": "Открыть кабинет партнёра",
+      "error": "Не удалось начать onboarding. Попробуйте позже."
     }
   },
   "cookieConsent": {
@@ -1082,5 +1116,6 @@
   "dashboard.onboarding.reviewStep.fixPostalCodeAll": "Почтовый индекс",
   "dashboard.onboarding.reviewStep.fixCityResolved": "Населённый пункт определён",
   "dashboard.onboarding.reviewStep.fixCoordinates": "Координаты определены",
-  "dashboard.onboarding.reviewStep.fixServiceRadius": "Зона оказания услуг (км)"
+  "dashboard.onboarding.reviewStep.fixServiceRadius": "Зона оказания услуг (км)",
+  "header.nav.partners": "Партнёрам"
 }

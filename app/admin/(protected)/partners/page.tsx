@@ -164,7 +164,7 @@ export default function AdminPartnersPage() {
       setMessage(`Invite failed: ${json.error || res.status}`);
       return;
     }
-    const claimHint = `/ua/partner/claim?token=${json.token}`;
+    const claimHint = `/ua/partners/invite/${encodeURIComponent(json.token)}`;
     setLastInvite(claimHint);
     setMessage(`Invite created for ${json.email} (expires ${json.expires_at})`);
   }
@@ -183,7 +183,7 @@ export default function AdminPartnersPage() {
       return;
     }
     if (json.invite?.token) {
-      setLastInvite(`/ua/partner/claim?token=${json.invite.token}`);
+      setLastInvite(`/ua/partners/invite/${encodeURIComponent(json.invite.token)}`);
     }
     setMessage(`Approved → partner ${json.partner?.referral_code}`);
     await load();

@@ -1,0 +1,39 @@
+---
+description: Commit verified implementation work before ending a task; do not leave changes only in the working tree
+alwaysApply: true
+---
+
+# Commit completed work
+
+Lost changes happen when implementation is finished and verified but only reported as "READY TO COMMIT" without a git commit. Prevent that in this repo.
+
+## Default behavior
+
+When you finish an implementation task and verification passes (lint, typecheck, build, and any requested tests):
+
+1. Run `git status --short` and confirm which files belong to the task.
+2. **Create a git commit** with a clear message unless the user explicitly asked not to commit in that turn.
+3. Report the commit hash and `git status` after committing.
+
+Treat "pre-commit report / READY TO COMMIT" as **commit now**, not "stop without committing", unless the user explicitly says:
+- do not commit
+- no commit
+- only report / review only
+
+## Push
+
+- **Do not push** unless the user explicitly asks (e.g. "commit and push", "push", "пуш").
+- After push, report the remote branch update.
+
+## Before ending the turn
+
+If the working tree still has task-related uncommitted changes and the user did not forbid committing:
+
+- Do not end the turn with "done" or "READY TO COMMIT" only.
+- Commit first, then summarize.
+
+## Commit hygiene
+
+- Follow existing commit message style (`fix:`, `feat:`, `refactor:`, scope in parentheses when useful).
+- Do not commit unrelated files (e.g. `tsconfig.tsbuildinfo`); revert accidental artifacts before committing.
+- Do not amend or force-push unless user rules explicitly allow it.

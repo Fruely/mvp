@@ -20,6 +20,13 @@ export type PartnerRow = {
   commission_amount_cents: number;
   currency: string;
   contract_signed_at: string | null;
+  /** Present after Phase 3 migration; may be null if column not applied yet. */
+  agreement_version?: string | null;
+  stripe_account_id?: string | null;
+  stripe_onboarding_status?: string | null;
+  stripe_payouts_enabled?: boolean | null;
+  stripe_details_submitted?: boolean | null;
+  stripe_last_synced_at?: string | null;
   approved_at: string | null;
   approved_by: string | null;
   disabled_at: string | null;

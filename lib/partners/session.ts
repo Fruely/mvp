@@ -8,6 +8,12 @@ import {
   type PartnerAccessMode,
 } from "./access";
 import { PartnerDomainError } from "@/lib/partners/errors";
+import {
+  partnerOnboardingHref,
+  resolvePartnerOnboarding,
+} from "@/lib/partners/onboarding";
+import { partnerPayoutsEnabled } from "@/lib/partners/featureFlags";
+import { isStripeConnectReady, mapPartnerConnectFields } from "@/lib/partners/stripeConnect";
 import type { PartnerRow } from "@/lib/partners/types";
 
 export type { PartnerAccessMode };
@@ -69,6 +75,16 @@ export async function requirePartnerSession(options?: {
   const partner = await getPartnerForUser(user.id, service);
   if (!partner) {
     redirect(claimPath);
+  }
+
+  const connect = mapPartnerConnectFields(partner);
+  const onboarding = resolvePartnerOnboarding(partner, {
+    payoutsEnabled: partnerPayoutsEnabled,
+    stripeReady: isStripeConnectReady(connect),
+  });
+
+  if (onboarding.step === "agreement_pending") {
+    redirect(partnerOnboardingHref(lang, "/partners/agreement"));
   }
 
   if (!canAccessPartnerDashboard(partner.status)) {

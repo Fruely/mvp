@@ -1041,7 +1041,15 @@
       "rewardNote": "Das Beispiel gilt für den Basissatz von 29 €. Die tatsächlichen Konditionen stehen in der Partnervereinbarung.",
       "audienceTitle": "Für wen",
       "audienceItems": "Videoblogger|Telegram-Kanäle|Community-Admins|thematische Medien|Leitpersonen lokaler und beruflicher Communities",
-      "faqTitle": "Häufige Fragen"
+      "faqTitle": "Häufige Fragen",
+      "becomeCta": "Partner werden",
+      "openDashboard": "Partner-Dashboard öffnen",
+      "continueOnboarding": "Registrierung fortsetzen",
+      "agreementLink": "Partnervereinbarung",
+      "limitsTitle": "Einschränkungen",
+      "limitsBody": "Es gibt kein garantiertes Einkommen. Spam, irreführende Werbung und Pyramidensysteme sind verboten. Vergütung nur für bestätigte qualifizierte Ergebnisse.",
+      "payoutTitle": "Auszahlungen",
+      "payoutBody": "Nach Annahme der Vereinbarung erhalten Sie Ihren Empfehlungslink und das Dashboard. Auszahlungen über Stripe Connect; bis zur Live-Freigabe können Gutschriften ausstehend bleiben."
     },
     "form": {
       "title": "Bewerbung für das Partnerprogramm",
@@ -1139,6 +1147,32 @@
     "notification": {
       "accrualTitle": "Neue Gutschrift: {{amount}}",
       "accrualBody": "Eine neue Fachkraft hat sich über Ihren Partnerlink registriert und bezahlt."
+    },
+    "agreement": {
+      "versionLabel": "Version",
+      "checkbox": "Ich habe die Bedingungen des Partnerprogramms gelesen und akzeptiere sie",
+      "submit": "Akzeptieren und fortfahren",
+      "submitting": "Speichern…",
+      "needCheck": "Bitte bestätigen Sie die Zustimmung.",
+      "error": "Zustimmung konnte nicht gespeichert werden. Bitte erneut versuchen.",
+      "alreadyAccepted": "Vereinbarung bereits akzeptiert.",
+      "continue": "Weiter",
+      "publicHint": "Um die Vereinbarung zu akzeptieren, melden Sie sich über eine Freuly-Einladung an oder warten Sie auf die Freigabe Ihres Antrags."
+    },
+    "payout": {
+      "title": "Auszahlungen einrichten",
+      "subtitle": "Freuly speichert keine IBAN- oder KYC-Dokumente. Kontodaten werden über Stripe Connect erfasst.",
+      "statusTitle": "Status",
+      "liveLabel": "Live payouts",
+      "on": "aktiv",
+      "off": "deaktiviert",
+      "connectLabel": "Stripe Connect",
+      "referralReady": "Ihr Empfehlungslink",
+      "disabledBody": "Registrierung, Vereinbarung, Empfehlungslink, Statistik und Gutschriften funktionieren. Live-Auszahlungen sind bis zur Stripe-Aktivierung von Freuly deaktiviert.",
+      "startConnect": "Stripe-Connect-Onboarding starten",
+      "starting": "Prüfung…",
+      "openDashboard": "Partner-Dashboard öffnen",
+      "error": "Onboarding konnte nicht gestartet werden. Bitte später erneut versuchen."
     }
   },
   "cookieConsent": {
@@ -1175,5 +1209,6 @@
   "dashboard.onboarding.reviewStep.fixPostalCodeAll": "Postleitzahl",
   "dashboard.onboarding.reviewStep.fixCityResolved": "Ort ermittelt",
   "dashboard.onboarding.reviewStep.fixCoordinates": "Koordinaten ermittelt",
-  "dashboard.onboarding.reviewStep.fixServiceRadius": "Servicegebiet (km)"
+  "dashboard.onboarding.reviewStep.fixServiceRadius": "Servicegebiet (km)",
+  "header.nav.partners": "Partnerprogramm"
 }

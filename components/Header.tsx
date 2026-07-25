@@ -5,6 +5,7 @@ import { t } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/i18n";
 const fallbackDict: Dictionary = {
   "header.nav.pricing": "Тарифи",
+  "header.nav.partners": "Партнерам",
   "header.cabinet": "Кабінет",
   "header.joinButton": "Приєднатися до Freuly",
 };
@@ -36,6 +37,12 @@ export default function Header({ lang, dict = fallbackDict }: HeaderProps) {
               {t(d, "header.nav.pricing")}
             </Link>
             <Link
+              href={`/${lang}/partners`}
+              className="hidden text-sm font-medium text-gray-700 transition hover:text-blue-600 sm:inline"
+            >
+              {t(d, "header.nav.partners")}
+            </Link>
+            <Link
               href={`/${lang}/specialist/dashboard`}
               className="hidden text-sm font-medium text-gray-700 transition hover:text-blue-600 sm:inline"
             >
@@ -56,6 +63,12 @@ export default function Header({ lang, dict = fallbackDict }: HeaderProps) {
             className="text-sm font-medium text-gray-700 transition hover:text-blue-600"
           >
             {t(d, "header.nav.pricing")}
+          </Link>
+          <Link
+            href={`/${lang}/partners`}
+            className="text-sm font-medium text-gray-700 transition hover:text-blue-600"
+          >
+            {t(d, "header.nav.partners")}
           </Link>
           <Link
             href={`/${lang}/specialist/dashboard`}

@@ -8,12 +8,20 @@ import { t, type Dictionary } from "@/lib/i18n";
 export default function PartnerClaimClient({
   lang,
   dict,
+  initialToken = "",
+  nextPath = "onboarding",
 }: {
   lang: string;
   dict: Dictionary;
+  initialToken?: string;
+  /** After claim: onboarding (agreement→payout→dashboard) or dashboard */
+  nextPath?: "onboarding" | "dashboard";
 }) {
   const search = useSearchParams();
-  const tokenFromUrl = useMemo(() => search?.get("token") ?? "", [search]);
+  const tokenFromUrl = useMemo(
+    () => initialToken || search?.get("token") || "",
+    [initialToken, search]
+  );
   const [token, setToken] = useState(tokenFromUrl);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -83,7 +91,11 @@ export default function PartnerClaimClient({
         return;
       }
       setMessage(t(dict, "partner.claim.success"));
-      window.location.assign(`/${lang}/partner/dashboard`);
+      const dest =
+        nextPath === "dashboard"
+          ? `/${lang}/partner/dashboard`
+          : `/${lang}/partners/onboarding`;
+      window.location.assign(dest);
       void json;
     } catch {
       setError(t(dict, "partner.claim.invalid"));
