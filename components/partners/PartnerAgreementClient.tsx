@@ -124,6 +124,7 @@ export default function PartnerAgreementClient({
         </div>
       ) : (
         <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-4">
+          <p className="text-sm text-gray-600">{t(dict, "partner.agreement.payoutSignupHint")}</p>
           <label className="flex items-start gap-2 text-sm text-gray-800">
             <input
               type="checkbox"

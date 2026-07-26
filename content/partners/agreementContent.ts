@@ -198,11 +198,31 @@ export function getPartnerAgreement(lang: Lang): {
         },
         {
           type: "h2",
-          text: "§ 13 Zahlungs- und Abrechnungsdaten",
+          text: "§ 13 Voraussetzungen für die Auszahlung von Partnervergütungen",
         },
         {
           type: "p",
-          text: "Für Auszahlungen werden erforderlichenfalls Identifikations- und Auszahlungsdaten über den eingesetzten Zahlungs-/Auszahlungsdienstleister (z. B. Stripe Connect Hosted Onboarding) erhoben. Freuly speichert keine IBAN- oder KYC-Dokumente des Partners in eigener Datenhaltung, soweit der Dienstleister diese Daten hostet.",
+          text: "Die Teilnahme am Partnerprogramm und die Entstehung bestätigter Partnervergütungen setzen zunächst keine Angabe von Steuer- oder Auszahlungsdaten voraus.",
+        },
+        {
+          type: "p",
+          text: "Vor einer erstmaligen Auszahlung in Geld muss der Partner jedoch die von Freuly für die ordnungsgemäße Abrechnung, Buchführung, steuerliche Dokumentation und Durchführung der Auszahlung benötigten Angaben und, soweit erforderlich, Nachweise bereitstellen.",
+        },
+        {
+          type: "p",
+          text: "Hierzu können insbesondere Name beziehungsweise Unternehmensbezeichnung, Anschrift, Land, Angaben zum steuerlichen oder unternehmerischen Status, erforderliche steuerliche Identifikationsdaten sowie Angaben gehören, die vom eingesetzten Zahlungsdienstleister für die Auszahlung benötigt werden.",
+        },
+        {
+          type: "p",
+          text: "Welche Angaben im Einzelfall erforderlich sind, richtet sich insbesondere nach dem Status des Partners, den gesetzlichen Anforderungen und der verwendeten Auszahlungsmethode.",
+        },
+        {
+          type: "p",
+          text: "Bis die erforderlichen Angaben und Nachweise vollständig vorliegen, kann Freuly die Auszahlung zurückstellen. Bereits bestätigte Partnervergütungen verfallen hierdurch nicht.",
+        },
+        {
+          type: "p",
+          text: "Der Partner ist verpflichtet, die für die Auszahlung gemachten Angaben vollständig und richtig anzugeben und Änderungen mitzuteilen.",
         },
         {
           type: "h2",
@@ -388,10 +408,30 @@ export function getPartnerAgreement(lang: Lang): {
           type: "p",
           text: "Партнер самостійно визначає і виконує свої обов’язки щодо Einkommensteuer, Gewerbe, VAT/Umsatzsteuer, реєстрації та інших публічно-правових вимог, якщо вони до нього застосовуються. Freuly не стверджує єдину податкову кваліфікацію доходу. Freuly може надавати відомості органам влади, якщо зобов’язана законом.",
         },
-        { type: "h2", text: "§ 13 Платіжні та розрахункові дані" },
+        { type: "h2", text: "§ 13 Умови отримання грошової партнерської винагороди" },
         {
           type: "p",
-          text: "Для виплат потрібні ідентифікаційні/виплатні дані збираються через payout provider (наприклад, Stripe Connect hosted onboarding). Freuly не зберігає IBAN і KYC-документи партнера у власній базі, якщо їх хостить провайдер.",
+          text: "Для участі в партнерській програмі та нарахування підтвердженої партнерської винагороди на початковому етапі не потрібно надавати податкові або платіжні дані.",
+        },
+        {
+          type: "p",
+          text: "Проте перед першою грошовою виплатою партнер зобов’язаний надати Freuly відомості та, за потреби, документи, необхідні для коректного розрахунку, бухгалтерського та податкового документування, а також проведення виплати.",
+        },
+        {
+          type: "p",
+          text: "Серед іншого це можуть бути ім’я або найменування організації, адреса, країна, відомості про податковий або підприємницький статус, необхідні податкові ідентифікаційні дані, а також відомості, які вимагає обраний платіжний провайдер.",
+        },
+        {
+          type: "p",
+          text: "Конкретний склад даних залежить, зокрема, від статусу партнера, застосовних законодавчих вимог і обраного способу виплати.",
+        },
+        {
+          type: "p",
+          text: "До надання необхідних відомостей і документів Freuly може відкласти грошову виплату. Уже підтверджена партнерська винагорода при цьому не анулюється.",
+        },
+        {
+          type: "p",
+          text: "Партнер зобов’язаний надавати коректні та повні відомості для виплати й повідомляти про їх зміни.",
         },
         { type: "h2", text: "§ 14 Строк / припинення партнером" },
         {
@@ -552,10 +592,30 @@ export function getPartnerAgreement(lang: Lang): {
         type: "p",
         text: "Партнёр самостоятельно определяет и исполняет обязанности по Einkommensteuer, Gewerbe, VAT/Umsatzsteuer, регистрации и иным публично-правовым требованиям, если они к нему применимы. Freuly не утверждает единую налоговую квалификацию дохода. Freuly может предоставлять сведения властям, если обязана это делать по закону.",
       },
-      { type: "h2", text: "§ 13 Платёжные и расчётные данные" },
+      { type: "h2", text: "§ 13 Условия получения денежного партнёрского вознаграждения" },
       {
         type: "p",
-        text: "Для выплат необходимые идентификационные/выплатные данные собираются через payout provider (например, Stripe Connect hosted onboarding). Freuly не хранит IBAN и KYC-документы партнёра в собственной базе, если их хостит провайдер.",
+        text: "Для участия в партнёрской программе и начисления подтверждённого партнёрского вознаграждения на первоначальном этапе не требуется предоставлять налоговые или платёжные данные.",
+      },
+      {
+        type: "p",
+        text: "Однако перед первой денежной выплатой партнёр обязан предоставить Freuly сведения и, если это необходимо, документы, требуемые для корректного расчёта, бухгалтерского и налогового документирования, а также проведения выплаты.",
+      },
+      {
+        type: "p",
+        text: "К ним могут относиться, в частности, имя либо наименование организации, адрес, страна, сведения о налоговом или предпринимательском статусе, необходимые налоговые идентификационные данные, а также сведения, которые требуются используемому платёжному провайдеру.",
+      },
+      {
+        type: "p",
+        text: "Конкретный состав данных зависит, в частности, от статуса партнёра, применимых законодательных требований и выбранного способа выплаты.",
+      },
+      {
+        type: "p",
+        text: "До предоставления необходимых сведений и документов Freuly вправе отложить денежную выплату. Уже подтверждённое партнёрское вознаграждение при этом не аннулируется.",
+      },
+      {
+        type: "p",
+        text: "Партнёр обязан предоставить корректные и полные сведения и сообщать об их изменениях.",
       },
       { type: "h2", text: "§ 14 Срок / прекращение партнёром" },
       {

@@ -1172,7 +1172,8 @@
       "error": "Zustimmung konnte nicht gespeichert werden. Bitte erneut versuchen.",
       "alreadyAccepted": "Vereinbarung bereits akzeptiert. Sie können die Bedingungen jederzeit erneut lesen.",
       "continue": "Zum Dashboard",
-      "publicHint": "Melden Sie sich an oder erstellen Sie ein Konto, um die Bedingungen zu akzeptieren und Partner zu werden."
+      "publicHint": "Melden Sie sich an oder erstellen Sie ein Konto, um die Bedingungen zu akzeptieren und Partner zu werden.",
+      "payoutSignupHint": "Für die Teilnahme am Partnerprogramm benötigen Sie zunächst keine Steuer- oder Auszahlungsdaten. Vor einer späteren Auszahlung in Geld werden die für Abrechnung, steuerliche Dokumentation und Auszahlung erforderlichen Angaben angefordert."
     },
     "payout": {
       "title": "Auszahlungen einrichten",
