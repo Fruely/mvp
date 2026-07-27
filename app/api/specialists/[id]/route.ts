@@ -2,31 +2,20 @@ export const dynamic = "force-dynamic";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
+import {
+  resolveProfileContent,
+  resolveServiceContent,
+  toContentLocale,
+} from "@/lib/localization";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
-
-/** Query ?lang= route segment → specialist_*_translations.language_code */
-function normalizeRouteLangToDbCode(routeLang: string | null): string | null {
-  if (routeLang == null || typeof routeLang !== "string") return null;
-  const lower = routeLang.trim().toLowerCase();
-  if (lower === "ua") return "uk";
-  if (lower === "ru") return "ru";
-  if (lower === "de") return "de";
-  return null;
-}
-
-function nonEmptyTrimmedString(value: unknown): string | null {
-  if (typeof value !== "string") return null;
-  const t = value.trim();
-  return t.length > 0 ? t : null;
-}
 
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   const url = new URL(request.url);
-  const languageCode = normalizeRouteLangToDbCode(url.searchParams.get("lang"));
+  const languageCode = toContentLocale(url.searchParams.get("lang"));
 
   const param = params.id;
   if (!param) {
@@ -88,50 +77,37 @@ export async function GET(
     .eq("specialist_id", specialist.id)
     .maybeSingle();
 
-  let profileTranslationAbout: string | null | undefined;
-  const serviceTranslationById = new Map<
-    string,
-    { title: string | null; price_comment: string | null }
-  >();
-
-  if (languageCode) {
-    const { data: profileTrans } = await supabase
-      .from("specialist_profile_translations")
-      .select("about_me")
-      .eq("specialist_id", specialist.id)
-      .eq("language_code", languageCode)
-      .maybeSingle();
-    profileTranslationAbout = profileTrans?.about_me;
-
-    const serviceIds = (services ?? [])
-      .map((s) => (s?.id != null ? String(s.id) : null))
-      .filter((id): id is string => Boolean(id));
-
-    if (serviceIds.length > 0) {
-      const { data: serviceTransRows } = await supabase
-        .from("specialist_service_translations")
-        .select("specialist_service_id, title, price_comment")
-        .eq("language_code", languageCode)
-        .in("specialist_service_id", serviceIds);
-
-      for (const row of serviceTransRows ?? []) {
-        const sid = row?.specialist_service_id != null ? String(row.specialist_service_id) : null;
-        if (!sid) continue;
-        serviceTranslationById.set(sid, {
-          title: row.title != null && typeof row.title === "string" ? row.title : null,
-          price_comment:
-            row.price_comment != null && typeof row.price_comment === "string"
-              ? row.price_comment
-              : null,
-        });
-      }
-    }
-  }
-
+  const serviceIds = (services ?? [])
+    .map((service) => (service?.id != null ? String(service.id) : null))
+    .filter((id): id is string => Boolean(id));
+  const [profileContentById, serviceContentById] = languageCode
+    ? await Promise.all([
+        resolveProfileContent(supabase, {
+          specialistIds: [String(specialist.id)],
+          locale: languageCode,
+        }).catch((error) => {
+          console.error(
+            "[specialists/[id]] profile localization resolve failed",
+            error
+          );
+          return null;
+        }),
+        resolveServiceContent(supabase, {
+          serviceIds,
+          locale: languageCode,
+        }).catch((error) => {
+          console.error(
+            "[specialists/[id]] service localization resolve failed",
+            error
+          );
+          return null;
+        }),
+      ])
+    : [null, null];
   const descriptionResolved =
-    languageCode != null
-      ? nonEmptyTrimmedString(profileTranslationAbout) ?? (profile?.about_me ?? null)
-      : profile?.about_me ?? null;
+    profileContentById?.get(String(specialist.id))?.aboutMe ??
+    profile?.about_me ??
+    null;
 
   const plan = await getSpecialistPlanForDashboard(supabase, specialist.id);
 
@@ -165,15 +141,17 @@ export async function GET(
     reviews_count: ratingRow?.reviews_count ?? 0,
     specialist_services: (services ?? []).map((s) => {
       const sid = s?.id != null ? String(s.id) : "";
-      const tr = sid ? serviceTranslationById.get(sid) : undefined;
+      const localized = sid ? serviceContentById?.get(sid) : null;
       const legacyTitle = s.title;
       const legacyPriceComment =
         s.price_comment != null && String(s.price_comment).trim()
           ? String(s.price_comment).trim()
           : null;
-      const titleResolved = nonEmptyTrimmedString(tr?.title) ?? legacyTitle;
+      const titleResolved = localized?.title ?? legacyTitle;
       const priceCommentResolved =
-        nonEmptyTrimmedString(tr?.price_comment) ?? legacyPriceComment;
+        localized?.resolvedFrom.priceComment === "translation"
+          ? localized.priceComment
+          : legacyPriceComment;
       return {
         id: s.id,
         title: titleResolved,
