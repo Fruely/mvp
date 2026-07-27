@@ -2,6 +2,11 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
+import {
+  resolveProfileContent,
+  resolveServiceContent,
+  toContentLocale,
+} from "@/lib/localization";
 
 export type PublicSpecialistProfile = {
   id: string;
@@ -85,11 +90,44 @@ export async function getPublicSpecialistProfile(
     .eq("specialist_id", specialist.id)
     .eq("is_active", true);
 
+  const locale = toContentLocale(lang);
+  const serviceIds = (services ?? [])
+    .map((service) => (service?.id != null ? String(service.id) : null))
+    .filter((id): id is string => Boolean(id));
+  const [profileContentById, serviceContentById] = locale
+    ? await Promise.all([
+        resolveProfileContent(supabase, {
+          specialistIds: [String(specialist.id)],
+          locale,
+        }).catch((error) => {
+          console.error(
+            "[specialists/publicProfile] profile localization resolve failed",
+            error
+          );
+          return null;
+        }),
+        resolveServiceContent(supabase, {
+          serviceIds,
+          locale,
+        }).catch((error) => {
+          console.error(
+            "[specialists/publicProfile] service localization resolve failed",
+            error
+          );
+          return null;
+        }),
+      ])
+    : [null, null];
+  const description =
+    profileContentById?.get(String(specialist.id))?.aboutMe ??
+    profile?.about_me ??
+    null;
+
   return {
     id: specialist.id,
     slug: specialist.slug ?? null,
     name: specialist.name ?? null,
-    description: profile?.about_me ?? null,
+    description,
     city: profile?.city ?? null,
     postalCode: typeof specialist.postal_code === "string" ? specialist.postal_code : null,
     workFormat: typeof specialist.work_format === "string" ? specialist.work_format : null,
@@ -101,13 +139,17 @@ export async function getPublicSpecialistProfile(
     avatarUrl: specialist.avatar_url ?? null,
     createdAt: specialist.created_at ?? new Date(0).toISOString(),
     services: Array.isArray(services)
-      ? services.map((service) => ({
-          id: service.id,
-          title: service.title ?? null,
-          price_from: service.price_from ?? null,
-          price_to: service.price_to ?? null,
-          currency: service.currency ?? null,
-        }))
+      ? services.map((service) => {
+          const serviceId = String(service.id);
+          const localized = serviceContentById?.get(serviceId);
+          return {
+            id: service.id,
+            title: localized?.title ?? service.title ?? null,
+            price_from: service.price_from ?? null,
+            price_to: service.price_to ?? null,
+            currency: service.currency ?? null,
+          };
+        })
       : [],
   };
 }
