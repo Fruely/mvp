@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createHash } from "node:crypto";
 import {
   LOCALE_REGISTRY,
   toProviderLocale,
@@ -17,6 +18,25 @@ export type TranslatableField =
   | "title"
   | "description"
   | "price_comment";
+export type TranslationRepairInstruction = {
+  entityType: "profile" | "service";
+  entityId: string;
+  sourceLocale: ContentLocale;
+  targetLocale: ContentLocale;
+  field: TranslatableField;
+  expectedCurrentHash: string;
+  expectedSourceHash?: string;
+};
+export type TranslationRepairAction =
+  | "repair"
+  | "skip_hash_mismatch"
+  | "skip_missing_source"
+  | "skip_invalid";
+export type TranslationRepairPlanItem = TranslationRepairInstruction & {
+  currentHash: string | null;
+  sourceHash: string | null;
+  action: TranslationRepairAction;
+};
 type TranslationRow = {
   id?: string;
   about_me?: string | null;
@@ -46,9 +66,13 @@ export type TranslationGenerationStats = {
   inserted_service_rows: number;
   updated_profile_rows: number;
   updated_service_rows: number;
+  repaired_fields: number;
+  repair_conflicts: number;
+  repair_skipped: number;
   failed: number;
   dry_run: boolean;
   plan: TranslationGenerationPlanItem[];
+  repair_plan: TranslationRepairPlanItem[];
 };
 
 export type GenerateMissingTranslationsOptions = {
@@ -69,6 +93,11 @@ export type GenerateMissingTranslationsOptions = {
   /** Plan missing fields without calling DeepL or writing to the database. */
   dryRun?: boolean;
   includePlan?: boolean;
+  /**
+   * Exact field-level repair scope. When present, normal missing-only scanning
+   * is disabled and only these guarded instructions are processed.
+   */
+  repairs?: readonly TranslationRepairInstruction[];
 };
 
 function isContentLocale(value: unknown): value is ContentLocale {
@@ -102,6 +131,67 @@ function nonEmpty(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
   return trimmed ? trimmed : null;
+}
+
+export function translationFieldHash(value: unknown): string {
+  const storedValue = value == null ? "" : String(value);
+  return createHash("sha256").update(storedValue, "utf8").digest("hex");
+}
+
+function validateRepairInstructions(
+  repairs: readonly TranslationRepairInstruction[]
+): void {
+  if (repairs.length === 0) {
+    throw new Error("Repair mode requires at least one instruction");
+  }
+
+  const hashPattern = /^[0-9a-f]{64}$/;
+  const seen = new Set<string>();
+  for (const repair of repairs) {
+    if (!repair.entityId) {
+      throw new Error("Repair entityId is required");
+    }
+    if (!isContentLocale(repair.sourceLocale)) {
+      throw new Error(`Unsupported source locale: ${String(repair.sourceLocale)}`);
+    }
+    if (!isContentLocale(repair.targetLocale)) {
+      throw new Error(`Unsupported target locale: ${String(repair.targetLocale)}`);
+    }
+    if (repair.sourceLocale === repair.targetLocale) {
+      throw new Error("Repair source and target locales must differ");
+    }
+    const validField =
+      repair.entityType === "profile"
+        ? repair.field === "about_me"
+        : repair.entityType === "service" &&
+          ["title", "description", "price_comment"].includes(repair.field);
+    if (!validField) {
+      throw new Error(
+        `Unsupported repair field ${String(repair.field)} for ${String(repair.entityType)}`
+      );
+    }
+    if (!hashPattern.test(repair.expectedCurrentHash)) {
+      throw new Error("expectedCurrentHash must be a lowercase SHA-256 hex digest");
+    }
+    if (
+      repair.expectedSourceHash != null &&
+      !hashPattern.test(repair.expectedSourceHash)
+    ) {
+      throw new Error("expectedSourceHash must be a lowercase SHA-256 hex digest");
+    }
+
+    const key = [
+      repair.entityType,
+      repair.entityId,
+      repair.sourceLocale,
+      repair.targetLocale,
+      repair.field,
+    ].join(":");
+    if (seen.has(key)) {
+      throw new Error(`Duplicate repair instruction: ${key}`);
+    }
+    seen.add(key);
+  }
 }
 
 function sleep(ms: number): Promise<void> {
@@ -319,11 +409,8 @@ export async function generateMissingTranslations(
     serviceIds,
     dryRun = false,
     includePlan = false,
+    repairs,
   } = options;
-  const targetLocales = resolveTargetLocales(
-    sourceLocale,
-    options.targetLocales
-  );
   const stats: TranslationGenerationStats = {
     scanned_profiles: 0,
     scanned_services: 0,
@@ -334,10 +421,133 @@ export async function generateMissingTranslations(
     inserted_service_rows: 0,
     updated_profile_rows: 0,
     updated_service_rows: 0,
+    repaired_fields: 0,
+    repair_conflicts: 0,
+    repair_skipped: 0,
     failed: 0,
     dry_run: dryRun,
     plan: [],
+    repair_plan: [],
   };
+
+  if (repairs != null) {
+    validateRepairInstructions(repairs);
+
+    for (const repair of repairs) {
+      const isProfile = repair.entityType === "profile";
+      const table = isProfile
+        ? "specialist_profile_translations"
+        : "specialist_service_translations";
+      const idColumn = isProfile ? "specialist_id" : "specialist_service_id";
+      const [source, target] = await Promise.all([
+        loadTargetRow({
+          supabase,
+          table,
+          idColumn,
+          idValue: repair.entityId,
+          locale: repair.sourceLocale,
+          fields: [repair.field],
+        }),
+        loadTargetRow({
+          supabase,
+          table,
+          idColumn,
+          idValue: repair.entityId,
+          locale: repair.targetLocale,
+          fields: [repair.field],
+        }),
+      ]);
+      const sourceValue = nonEmpty(source?.[repair.field]);
+      const sourceHash =
+        sourceValue == null ? null : translationFieldHash(source?.[repair.field]);
+      const currentHash =
+        target == null ? null : translationFieldHash(target[repair.field]);
+      const planItem: TranslationRepairPlanItem = {
+        ...repair,
+        currentHash,
+        sourceHash,
+        action: "repair",
+      };
+      stats.repair_plan.push(planItem);
+
+      if (!sourceValue) {
+        planItem.action = "skip_missing_source";
+        stats.repair_skipped += 1;
+        continue;
+      }
+      if (
+        repair.expectedSourceHash != null &&
+        repair.expectedSourceHash !== sourceHash
+      ) {
+        planItem.action = "skip_invalid";
+        stats.repair_skipped += 1;
+        continue;
+      }
+      if (!target?.id) {
+        planItem.action = "skip_invalid";
+        stats.repair_skipped += 1;
+        continue;
+      }
+      if (currentHash !== repair.expectedCurrentHash) {
+        planItem.action = "skip_hash_mismatch";
+        stats.repair_conflicts += 1;
+        continue;
+      }
+
+      stats.planned_translations += 1;
+      if (dryRun) continue;
+
+      try {
+        const translated = await deepLTranslate({
+          text: sourceValue,
+          sourceLocale: repair.sourceLocale,
+          targetLocale: repair.targetLocale,
+          apiKey: deeplApiKey,
+          apiUrl: deeplApiUrl,
+        });
+        stats.translated_strings += 1;
+        await sleep(deeplPauseMs);
+
+        const originalTargetValue = target[repair.field];
+        let update = supabase
+          .from(table)
+          .update({
+            [repair.field]: translated,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", target.id);
+        update =
+          originalTargetValue == null
+            ? update.is(repair.field, null)
+            : update.eq(repair.field, originalTargetValue);
+        const { data, error } = await update.select("id");
+        if (error) throw error;
+        if (!data?.length) {
+          planItem.action = "skip_hash_mismatch";
+          stats.repair_conflicts += 1;
+          continue;
+        }
+
+        stats.repaired_fields += 1;
+        if (isProfile) stats.updated_profile_rows += 1;
+        else stats.updated_service_rows += 1;
+      } catch (error) {
+        planItem.action = "skip_invalid";
+        stats.failed += 1;
+        console.error(
+          `[generate-translations] repair ${repair.entityType} entity_id=${repair.entityId} field=${repair.field} ${repair.sourceLocale}->${repair.targetLocale}:`,
+          error instanceof Error ? error.message : error
+        );
+      }
+    }
+
+    return stats;
+  }
+
+  const targetLocales = resolveTargetLocales(
+    sourceLocale,
+    options.targetLocales
+  );
   const shouldIncludePlan = dryRun || includePlan;
 
   function planTarget(args: {
