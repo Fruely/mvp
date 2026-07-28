@@ -12,7 +12,11 @@ const DEEPL_MAX_ATTEMPTS = 3;
 const DEEPL_RETRY_BACKOFF_MS = 200;
 const DEFAULT_DEEPL_API_URL = "https://api.deepl.com/v2/translate";
 
-type TranslatableField = "about_me" | "title" | "description" | "price_comment";
+export type TranslatableField =
+  | "about_me"
+  | "title"
+  | "description"
+  | "price_comment";
 type TranslationRow = {
   id?: string;
   about_me?: string | null;
@@ -21,16 +25,30 @@ type TranslationRow = {
   price_comment?: string | null;
 };
 
+export type TranslationGenerationPlanItem = {
+  entity_type: "profile" | "service";
+  entity_id: string;
+  source_locale: ContentLocale;
+  target_locale: ContentLocale;
+  existing_target: boolean;
+  missing_fields: TranslatableField[];
+  action: "generate" | "skip";
+  reason: "missing_fields" | "target_complete";
+};
+
 export type TranslationGenerationStats = {
   scanned_profiles: number;
   scanned_services: number;
   skipped_existing: number;
+  planned_translations: number;
   translated_strings: number;
   inserted_profile_rows: number;
   inserted_service_rows: number;
   updated_profile_rows: number;
   updated_service_rows: number;
   failed: number;
+  dry_run: boolean;
+  plan: TranslationGenerationPlanItem[];
 };
 
 export type GenerateMissingTranslationsOptions = {
@@ -45,6 +63,12 @@ export type GenerateMissingTranslationsOptions = {
   /** Optional safety caps so a single cron invocation stays bounded. */
   maxProfiles?: number | null;
   maxServices?: number | null;
+  /** Exact operational scope. An empty list disables that entity type. */
+  profileIds?: readonly string[];
+  serviceIds?: readonly string[];
+  /** Plan missing fields without calling DeepL or writing to the database. */
+  dryRun?: boolean;
+  includePlan?: boolean;
 };
 
 function isContentLocale(value: unknown): value is ContentLocale {
@@ -201,8 +225,7 @@ async function loadTargetRow(args: {
 
 async function translateMissingFields(args: {
   source: TranslationRow;
-  target: TranslationRow | null;
-  fields: readonly TranslatableField[];
+  missingFields: readonly TranslatableField[];
   sourceLocale: ContentLocale;
   targetLocale: ContentLocale;
   deeplApiKey: string;
@@ -211,10 +234,9 @@ async function translateMissingFields(args: {
   stats: TranslationGenerationStats;
 }): Promise<Partial<Record<TranslatableField, string>>> {
   const translated: Partial<Record<TranslatableField, string>> = {};
-  for (const field of args.fields) {
+  for (const field of args.missingFields) {
     const sourceValue = nonEmpty(args.source[field]);
-    const targetValue = nonEmpty(args.target?.[field]);
-    if (!sourceValue || targetValue) continue;
+    if (!sourceValue) continue;
 
     translated[field] = await deepLTranslate({
       text: sourceValue,
@@ -293,6 +315,10 @@ export async function generateMissingTranslations(
     deeplPauseMs = DEFAULT_DEEPL_PAUSE_MS,
     maxProfiles = null,
     maxServices = null,
+    profileIds,
+    serviceIds,
+    dryRun = false,
+    includePlan = false,
   } = options;
   const targetLocales = resolveTargetLocales(
     sourceLocale,
@@ -302,13 +328,44 @@ export async function generateMissingTranslations(
     scanned_profiles: 0,
     scanned_services: 0,
     skipped_existing: 0,
+    planned_translations: 0,
     translated_strings: 0,
     inserted_profile_rows: 0,
     inserted_service_rows: 0,
     updated_profile_rows: 0,
     updated_service_rows: 0,
     failed: 0,
+    dry_run: dryRun,
+    plan: [],
   };
+  const shouldIncludePlan = dryRun || includePlan;
+
+  function planTarget(args: {
+    entityType: "profile" | "service";
+    entityId: string;
+    source: TranslationRow;
+    target: TranslationRow | null;
+    targetLocale: ContentLocale;
+    fields: readonly TranslatableField[];
+  }): TranslatableField[] {
+    const missingFields = args.fields.filter(
+      (field) => nonEmpty(args.source[field]) && !nonEmpty(args.target?.[field])
+    );
+    stats.planned_translations += missingFields.length;
+    if (shouldIncludePlan) {
+      stats.plan.push({
+        entity_type: args.entityType,
+        entity_id: args.entityId,
+        source_locale: sourceLocale,
+        target_locale: args.targetLocale,
+        existing_target: args.target != null,
+        missing_fields: missingFields,
+        action: missingFields.length ? "generate" : "skip",
+        reason: missingFields.length ? "missing_fields" : "target_complete",
+      });
+    }
+    return missingFields;
+  }
 
   async function processProfile(row: {
     specialist_id: string;
@@ -327,10 +384,23 @@ export async function generateMissingTranslations(
           locale: targetLocale,
           fields: ["about_me"],
         });
-        const translated = await translateMissingFields({
+        const missingFields = planTarget({
+          entityType: "profile",
+          entityId: row.specialist_id,
           source: row,
           target,
+          targetLocale,
           fields: ["about_me"],
+        });
+        if (missingFields.length === 0) {
+          stats.skipped_existing += 1;
+          continue;
+        }
+        if (dryRun) continue;
+
+        const translated = await translateMissingFields({
+          source: row,
+          missingFields,
           sourceLocale,
           targetLocale,
           deeplApiKey,
@@ -379,10 +449,23 @@ export async function generateMissingTranslations(
           locale: targetLocale,
           fields: ["title", "price_comment", "description"],
         });
-        const translated = await translateMissingFields({
+        const missingFields = planTarget({
+          entityType: "service",
+          entityId: row.specialist_service_id,
           source: row,
           target,
+          targetLocale,
           fields: ["title", "price_comment", "description"],
+        });
+        if (missingFields.length === 0) {
+          stats.skipped_existing += 1;
+          continue;
+        }
+        if (dryRun) continue;
+
+        const translated = await translateMissingFields({
+          source: row,
+          missingFields,
           sourceLocale,
           targetLocale,
           deeplApiKey,
@@ -412,14 +495,27 @@ export async function generateMissingTranslations(
     }
   }
 
+  const profileIdFilter = profileIds
+    ? Array.from(new Set(profileIds.map(String)))
+    : null;
+  const serviceIdFilter = serviceIds
+    ? Array.from(new Set(serviceIds.map(String)))
+    : null;
+
   let offset = 0;
-  for (;;) {
+  while (profileIdFilter == null || profileIdFilter.length > 0) {
     if (maxProfiles != null && stats.scanned_profiles >= maxProfiles) break;
-    const { data, error } = await supabase
+    let query = supabase
       .from("specialist_profile_translations")
       .select("specialist_id, about_me, language_code")
-      .eq("language_code", sourceLocale)
-      .range(offset, offset + profileBatch - 1);
+      .eq("language_code", sourceLocale);
+    if (profileIdFilter) {
+      query = query.in("specialist_id", profileIdFilter);
+    }
+    const { data, error } = await query.range(
+      offset,
+      offset + profileBatch - 1
+    );
     if (error) throw error;
     if (!data?.length) break;
 
@@ -434,13 +530,19 @@ export async function generateMissingTranslations(
   }
 
   offset = 0;
-  for (;;) {
+  while (serviceIdFilter == null || serviceIdFilter.length > 0) {
     if (maxServices != null && stats.scanned_services >= maxServices) break;
-    const { data, error } = await supabase
+    let query = supabase
       .from("specialist_service_translations")
       .select("specialist_service_id, title, price_comment, description, language_code")
-      .eq("language_code", sourceLocale)
-      .range(offset, offset + serviceBatch - 1);
+      .eq("language_code", sourceLocale);
+    if (serviceIdFilter) {
+      query = query.in("specialist_service_id", serviceIdFilter);
+    }
+    const { data, error } = await query.range(
+      offset,
+      offset + serviceBatch - 1
+    );
     if (error) throw error;
     if (!data?.length) break;
 
