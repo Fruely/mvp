@@ -1,16 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { generateMissingDeUkTranslations } from "@/lib/translations/generateDeUkFromRu";
+import type { ContentLocale } from "@/lib/localization";
+import { generateMissingTranslations } from "@/lib/translations/generateMissingTranslations";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
+const ACTIVE_TRANSLATION_LOCALES = ["ru", "uk", "de"] as const satisfies readonly ContentLocale[];
+const PRODUCTION_SOURCE_LOCALE: ContentLocale = "ru";
+
 /**
- * Protected cron/admin endpoint that backfills missing `de`/`uk` specialist
- * translations from existing `ru` rows. Reuses the shared generation logic.
+ * Protected cron/admin endpoint that fills missing specialist translations.
+ * Production V1 keeps the existing `ru` source behavior while the shared
+ * generator accepts any canonical source/target locale pair.
  *
  * Auth: Authorization: Bearer <CRON_SECRET> (same convention as other crons).
- * Idempotent: only missing rows are created; existing rows are never touched.
+ * Idempotent: only missing/blank fields are filled; non-empty fields are never
+ * overwritten.
  * DeepL failures are caught per-string and reported in the stats, never thrown.
  *
  * Optional query params:
@@ -46,10 +52,12 @@ async function handle(request: NextRequest): Promise<NextResponse> {
   const startedAt = Date.now();
   try {
     const supabase = createSupabaseServerClient();
-    const stats = await generateMissingDeUkTranslations({
+    const stats = await generateMissingTranslations({
       supabase,
       deeplApiKey,
       deeplApiUrl,
+      sourceLocale: PRODUCTION_SOURCE_LOCALE,
+      targetLocales: ACTIVE_TRANSLATION_LOCALES,
       maxProfiles,
       maxServices,
     });
