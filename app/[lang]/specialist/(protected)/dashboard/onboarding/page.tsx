@@ -54,6 +54,11 @@ export default async function SpecialistDashboardOnboardingPage({
     "incomplete_profile",
   );
   const { specialist } = await getCurrentUserAndSpecialist();
+
+  if (isPublishedSpecialistStatus(specialist.status)) {
+    redirect(`/${lang}/specialist/dashboard`);
+  }
+
   const service = createServiceClient();
   const dict: Dictionary = await getDictionary(lang);
   const specialistSlug =
@@ -118,7 +123,6 @@ export default async function SpecialistDashboardOnboardingPage({
         activeStep={activeStep}
         profileStarted={false}
         publishReady={false}
-        isAlreadyPublished={false}
         isUncategorizedCategory={false}
         showIncompleteProfileGateNotice={showIncompleteProfileGateNotice}
         checklistItems={[]}
@@ -247,7 +251,6 @@ export default async function SpecialistDashboardOnboardingPage({
     hasGallery,
   });
   const publishReady = validation.ready;
-  const isAlreadyPublished = isPublishedSpecialistStatus(specialist.status);
 
   const servicesMismatch = hasActiveServicesAnyCategory && !hasValidService;
   const profileStarted = Boolean(
@@ -309,7 +312,6 @@ export default async function SpecialistDashboardOnboardingPage({
       activeStep={activeStep}
       profileStarted={profileStarted}
       publishReady={publishReady}
-      isAlreadyPublished={isAlreadyPublished}
       isUncategorizedCategory={isUncategorizedCategory}
       showIncompleteProfileGateNotice={showIncompleteProfileGateNotice}
       checklistItems={checklistItems}

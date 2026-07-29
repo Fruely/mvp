@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { t, type Dictionary } from "@/lib/i18n";
 import type {
   PublicationIssue,
@@ -99,7 +99,6 @@ export default function OnboardingReviewStep({
   dashboardHref,
   publicProfileHref: _publicProfileHref,
   publishReady,
-  isAlreadyPublished,
   summary,
 }: {
   dict: Dictionary;
@@ -108,22 +107,13 @@ export default function OnboardingReviewStep({
   dashboardHref: string;
   publicProfileHref: string;
   publishReady: boolean;
-  isAlreadyPublished: boolean;
   summary: OnboardingReviewSummary;
 }) {
   const router = useRouter();
   const [publishing, setPublishing] = useState(false);
-  const [published, setPublished] = useState(isAlreadyPublished);
   const [error, setError] = useState<string | null>(null);
   const [serverIssues, setServerIssues] = useState<PublicationIssue[]>([]);
   const dashboardLink = dashboardHref || `/${lang}/specialist/dashboard`;
-  const homeHref = `/${lang}`;
-
-  useEffect(() => {
-    if (isAlreadyPublished) {
-      setPublished(true);
-    }
-  }, [isAlreadyPublished]);
 
   const categoryLabel = summary.isUncategorizedCategory
     ? t(dict, "dashboard.onboarding.reviewStep.fixUncategorizedCategory")
@@ -231,7 +221,7 @@ export default function OnboardingReviewStep({
   ];
 
   async function handlePublish() {
-    if (published) return;
+    if (publishing) return;
     if (!publishReady || !summary.publishReady) {
       setError(t(dict, "dashboard.onboarding.reviewStep.preflightError"));
       setServerIssues(summary.blocking);
@@ -239,9 +229,10 @@ export default function OnboardingReviewStep({
     }
 
     setPublishing(true);
-    setPublished(false);
     setError(null);
     setServerIssues([]);
+
+    let publishSucceeded = false;
 
     try {
       const res = await fetch("/api/specialist/dashboard/publish", { method: "POST" });
@@ -273,12 +264,14 @@ export default function OnboardingReviewStep({
         return;
       }
 
-      setPublished(true);
-      router.refresh();
+      publishSucceeded = true;
+      router.push(dashboardLink);
     } catch {
       setError(t(dict, "dashboard.onboarding.reviewStep.publishFailed"));
     } finally {
-      setPublishing(false);
+      if (!publishSucceeded) {
+        setPublishing(false);
+      }
     }
   }
 
@@ -295,110 +288,83 @@ export default function OnboardingReviewStep({
         </p>
       </div>
 
-      {published ? (
-        <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-5">
-          <h3 className="text-lg font-semibold text-emerald-900">
-            {t(dict, "dashboard.onboarding.reviewStep.publishedTitle")}
+      <div
+        className={`mt-5 rounded-lg border px-4 py-3 text-sm ${
+          publishReady
+            ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+            : "border-amber-200 bg-amber-50 text-amber-900"
+        }`}
+      >
+        <p className="font-semibold">
+          {publishReady
+            ? t(dict, "dashboard.onboarding.reviewStep.readyTitle")
+            : t(dict, "dashboard.onboarding.reviewStep.notReadyTitle")}
+        </p>
+        <p className="mt-1">
+          {publishReady
+            ? t(dict, "dashboard.onboarding.reviewStep.readyBody")
+            : t(dict, "dashboard.onboarding.reviewStep.notReadyBody")}
+        </p>
+        {!publishReady && visibleIssues.length > 0 ? (
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-xs font-medium">
+            {visibleIssues.map((issue) => (
+              <li key={`${issue.code}-${issue.field}`}>
+                <Link
+                  href={`${baseHref}?step=${issue.step === "services" ? "services" : "basic"}`}
+                  className="underline"
+                >
+                  {issueLabel(dict, issue.code, issue.field)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+
+      <div className="mt-5 space-y-6">
+        <div>
+          <h3 className="text-base font-semibold text-gray-900">
+            {t(dict, "dashboard.onboarding.reviewStep.hardRequirementsTitle")}
           </h3>
-          <p className="mt-2 text-sm leading-6 text-emerald-800">
-            {t(dict, "dashboard.onboarding.reviewStep.publishedBody")}
-          </p>
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <Link
-              href={dashboardLink}
-              className="inline-flex h-10 items-center justify-center rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700"
-            >
-              {t(dict, "dashboard.onboarding.reviewStep.goDashboard")}
-            </Link>
-            <Link
-              href={homeHref}
-              className="inline-flex h-10 items-center justify-center rounded-lg border border-emerald-200 bg-white px-4 text-sm font-medium text-emerald-800 transition hover:bg-emerald-50"
-            >
-              {t(dict, "dashboard.onboarding.reviewStep.goHome")}
-            </Link>
+          <div className="mt-3">
+            <ReviewList
+              items={hardItems}
+              doneLabel={t(dict, "dashboard.onboarding.checklist.done")}
+            />
           </div>
         </div>
-      ) : (
-        <>
-          <div
-            className={`mt-5 rounded-lg border px-4 py-3 text-sm ${
-              publishReady
-                ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-                : "border-amber-200 bg-amber-50 text-amber-900"
-            }`}
-          >
-            <p className="font-semibold">
-              {publishReady
-                ? t(dict, "dashboard.onboarding.reviewStep.readyTitle")
-                : t(dict, "dashboard.onboarding.reviewStep.notReadyTitle")}
-            </p>
-            <p className="mt-1">
-              {publishReady
-                ? t(dict, "dashboard.onboarding.reviewStep.readyBody")
-                : t(dict, "dashboard.onboarding.reviewStep.notReadyBody")}
-            </p>
-            {!publishReady && visibleIssues.length > 0 ? (
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs font-medium">
-                {visibleIssues.map((issue) => (
-                  <li key={`${issue.code}-${issue.field}`}>
-                    <Link
-                      href={`${baseHref}?step=${issue.step === "services" ? "services" : "basic"}`}
-                      className="underline"
-                    >
-                      {issueLabel(dict, issue.code, issue.field)}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
 
-          <div className="mt-5 space-y-6">
-            <div>
-              <h3 className="text-base font-semibold text-gray-900">
-                {t(dict, "dashboard.onboarding.reviewStep.hardRequirementsTitle")}
-              </h3>
-              <div className="mt-3">
-                <ReviewList
-                  items={hardItems}
-                  doneLabel={t(dict, "dashboard.onboarding.checklist.done")}
-                />
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-base font-semibold text-gray-900">
-                {t(dict, "dashboard.onboarding.reviewStep.recommendationsTitle")}
-              </h3>
-              <div className="mt-3">
-                <ReviewList
-                  items={recommendations}
-                  doneLabel={t(dict, "dashboard.onboarding.checklist.done")}
-                />
-              </div>
-            </div>
+        <div>
+          <h3 className="text-base font-semibold text-gray-900">
+            {t(dict, "dashboard.onboarding.reviewStep.recommendationsTitle")}
+          </h3>
+          <div className="mt-3">
+            <ReviewList
+              items={recommendations}
+              doneLabel={t(dict, "dashboard.onboarding.checklist.done")}
+            />
           </div>
+        </div>
+      </div>
 
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            <Link
-              href={`${baseHref}?step=photos`}
-              className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-            >
-              {t(dict, "dashboard.onboarding.reviewStep.backToPhoto")}
-            </Link>
-            <button
-              type="button"
-              onClick={handlePublish}
-              disabled={publishing || !publishReady}
-              className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {publishing
-                ? t(dict, "dashboard.onboarding.reviewStep.publishing")
-                : t(dict, "dashboard.onboarding.reviewStep.publish")}
-            </button>
-          </div>
-        </>
-      )}
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <Link
+          href={`${baseHref}?step=photos`}
+          className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+        >
+          {t(dict, "dashboard.onboarding.reviewStep.backToPhoto")}
+        </Link>
+        <button
+          type="button"
+          onClick={handlePublish}
+          disabled={publishing || !publishReady}
+          className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          {publishing
+            ? t(dict, "dashboard.onboarding.reviewStep.publishing")
+            : t(dict, "dashboard.onboarding.reviewStep.publish")}
+        </button>
+      </div>
 
       {error ? (
         <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
