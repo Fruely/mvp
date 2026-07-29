@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { t, type Dictionary } from "@/lib/i18n";
 import type {
   PublicationIssue,
@@ -39,10 +39,14 @@ type ReviewItem = {
   label: string;
   done: boolean;
   href?: string;
+  pendingLabel?: string;
+  neutralPending?: boolean;
 };
 
-function itemStatusClass(done: boolean): string {
-  return done ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-800";
+function itemStatusClass(done: boolean, neutralPending?: boolean): string {
+  if (done) return "bg-emerald-50 text-emerald-700";
+  if (neutralPending) return "bg-gray-100 text-gray-600";
+  return "bg-amber-50 text-amber-800";
 }
 
 function ReviewList({
@@ -68,8 +72,10 @@ function ReviewList({
               <p className="text-sm font-medium text-gray-900">{item.label}</p>
             )}
           </div>
-          <span className={`w-fit shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${itemStatusClass(item.done)}`}>
-            {item.done ? doneLabel : "!"}
+          <span
+            className={`w-fit shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${itemStatusClass(item.done, item.neutralPending)}`}
+          >
+            {item.done ? doneLabel : item.pendingLabel ?? "!"}
           </span>
         </div>
       ))}
@@ -91,8 +97,9 @@ export default function OnboardingReviewStep({
   lang,
   baseHref,
   dashboardHref,
-  publicProfileHref,
+  publicProfileHref: _publicProfileHref,
   publishReady,
+  isAlreadyPublished,
   summary,
 }: {
   dict: Dictionary;
@@ -101,15 +108,22 @@ export default function OnboardingReviewStep({
   dashboardHref: string;
   publicProfileHref: string;
   publishReady: boolean;
+  isAlreadyPublished: boolean;
   summary: OnboardingReviewSummary;
 }) {
   const router = useRouter();
   const [publishing, setPublishing] = useState(false);
-  const [published, setPublished] = useState(false);
+  const [published, setPublished] = useState(isAlreadyPublished);
   const [error, setError] = useState<string | null>(null);
   const [serverIssues, setServerIssues] = useState<PublicationIssue[]>([]);
   const dashboardLink = dashboardHref || `/${lang}/specialist/dashboard`;
-  const servicesHref = `/${lang}/specialist/dashboard/services`;
+  const homeHref = `/${lang}`;
+
+  useEffect(() => {
+    if (isAlreadyPublished) {
+      setPublished(true);
+    }
+  }, [isAlreadyPublished]);
 
   const categoryLabel = summary.isUncategorizedCategory
     ? t(dict, "dashboard.onboarding.reviewStep.fixUncategorizedCategory")
@@ -187,23 +201,32 @@ export default function OnboardingReviewStep({
     },
   ];
 
+  const recommendationPendingLabel = t(dict, "dashboard.onboarding.checklist.recommendation");
+  const optionalPendingLabel = t(dict, "dashboard.onboarding.reviewStep.optionalLabel");
+
   const recommendations: ReviewItem[] = [
     {
       key: "about",
       label: t(dict, "dashboard.onboarding.reviewStep.recommendAbout"),
       done: summary.hasAbout,
       href: `${baseHref}?step=about`,
+      pendingLabel: recommendationPendingLabel,
+      neutralPending: true,
     },
     {
       key: "photo",
       label: t(dict, "dashboard.onboarding.reviewStep.recommendPhoto"),
       done: summary.hasPhoto,
       href: `${baseHref}?step=photos`,
+      pendingLabel: recommendationPendingLabel,
+      neutralPending: true,
     },
     {
       key: "gallery",
       label: t(dict, "dashboard.onboarding.reviewStep.recommendGallery"),
       done: summary.hasGallery,
+      pendingLabel: optionalPendingLabel,
+      neutralPending: true,
     },
   ];
 
@@ -273,34 +296,25 @@ export default function OnboardingReviewStep({
       </div>
 
       {published ? (
-        <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-          <p className="text-base font-semibold text-emerald-900">
-            {t(dict, "dashboard.onboarding.reviewStep.published")}
+        <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-5">
+          <h3 className="text-lg font-semibold text-emerald-900">
+            {t(dict, "dashboard.onboarding.reviewStep.publishedTitle")}
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-emerald-800">
+            {t(dict, "dashboard.onboarding.reviewStep.publishedBody")}
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <Link
-              href={publicProfileHref}
+              href={dashboardLink}
               className="inline-flex h-10 items-center justify-center rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700"
             >
-              {t(dict, "dashboard.onboarding.reviewStep.viewProfile")}
-            </Link>
-            <Link
-              href={servicesHref}
-              className="inline-flex h-10 items-center justify-center rounded-lg border border-emerald-200 bg-white px-4 text-sm font-medium text-emerald-800 transition hover:bg-emerald-50"
-            >
-              {t(dict, "dashboard.onboarding.reviewStep.addService")}
-            </Link>
-            <Link
-              href={`${baseHref}?step=photos`}
-              className="inline-flex h-10 items-center justify-center rounded-lg border border-emerald-200 bg-white px-4 text-sm font-medium text-emerald-800 transition hover:bg-emerald-50"
-            >
-              {t(dict, "dashboard.onboarding.reviewStep.addPhoto")}
-            </Link>
-            <Link
-              href={dashboardLink}
-              className="inline-flex h-10 items-center justify-center rounded-lg border border-emerald-200 bg-white px-4 text-sm font-medium text-emerald-800 transition hover:bg-emerald-50"
-            >
               {t(dict, "dashboard.onboarding.reviewStep.goDashboard")}
+            </Link>
+            <Link
+              href={homeHref}
+              className="inline-flex h-10 items-center justify-center rounded-lg border border-emerald-200 bg-white px-4 text-sm font-medium text-emerald-800 transition hover:bg-emerald-50"
+            >
+              {t(dict, "dashboard.onboarding.reviewStep.goHome")}
             </Link>
           </div>
         </div>

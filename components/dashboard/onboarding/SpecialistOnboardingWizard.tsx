@@ -49,6 +49,7 @@ export default function SpecialistOnboardingWizard({
   activeStep,
   profileStarted,
   publishReady,
+  isAlreadyPublished,
   isUncategorizedCategory,
   showIncompleteProfileGateNotice,
   checklistItems,
@@ -67,6 +68,7 @@ export default function SpecialistOnboardingWizard({
   activeStep: OnboardingStepKey;
   profileStarted: boolean;
   publishReady: boolean;
+  isAlreadyPublished: boolean;
   isUncategorizedCategory: boolean;
   showIncompleteProfileGateNotice?: boolean;
   checklistItems: OnboardingChecklistItem[];
@@ -272,6 +274,7 @@ export default function SpecialistOnboardingWizard({
             dashboardHref={`/${lang}/specialist/dashboard`}
             publicProfileHref={publicProfileHref}
             publishReady={publishReady}
+            isAlreadyPublished={isAlreadyPublished}
             summary={reviewSummary}
           />
           <OnboardingChecklist
