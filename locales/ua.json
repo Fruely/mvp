@@ -169,7 +169,10 @@
     "about": "Про спеціаліста",
     "noDescription": "Опис відсутній",
     "sendRequest": "Зробити заявку",
-    "hideForm": "Сховати форму"
+    "hideForm": "Сховати форму",
+    "workFormat": {
+      "online": "Онлайн"
+    }
   },
   "specialistPage": {
     "copyLink": "Скопіювати посилання",

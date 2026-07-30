@@ -169,7 +169,10 @@
     "about": "Über den Spezialisten",
     "noDescription": "Keine Beschreibung verfügbar",
     "sendRequest": "Anfrage senden",
-    "hideForm": "Formular ausblenden"
+    "hideForm": "Formular ausblenden",
+    "workFormat": {
+      "online": "Online"
+    }
   },
   "specialistPage": {
     "copyLink": "Link kopieren",

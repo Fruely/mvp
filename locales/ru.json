@@ -200,7 +200,10 @@
     "about": "О специалисте",
     "noDescription": "Описание отсутствует",
     "sendRequest": "Сделать заявку",
-    "hideForm": "Скрыть форму"
+    "hideForm": "Скрыть форму",
+    "workFormat": {
+      "online": "Онлайн"
+    }
   },
   "specialistPage": {
     "copyLink": "Скопировать ссылку",
