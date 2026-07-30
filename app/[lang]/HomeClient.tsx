@@ -325,7 +325,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
 
     async function loadRecommendedSpecialists() {
       try {
-        const res = await fetch("/api/recommended-specialists");
+        const res = await fetch(`/api/recommended-specialists?lang=${encodeURIComponent(lang)}`);
         const json = await res.json();
         if (!res.ok || !Array.isArray(json?.data)) {
           setRecommendedSpecialists([]);
@@ -387,7 +387,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
     const handler = () => loadBlocks();
     window.addEventListener("storage", handler);
     return () => window.removeEventListener("storage", handler);
-  }, []);
+  }, [lang]);
 
   const textImage = useMemo(
     () => blocks.find((b) => b.key === "homepage_text_image"),

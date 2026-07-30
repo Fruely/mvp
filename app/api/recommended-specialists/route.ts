@@ -1,7 +1,9 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { jsonNoStore } from "@/lib/api/response";
 import { CACHE_PUBLIC_RECOMMENDED, jsonWithCache } from "@/lib/http/cache";
+import { resolveProfileContent, toContentLocale } from "@/lib/localization";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
+import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
@@ -189,7 +191,9 @@ function visibleQuery(supabase: ReturnType<typeof createSupabaseServerClient>) {
     });
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const langParam = request.nextUrl.searchParams.get("lang");
+  const contentLocale = toContentLocale(langParam);
   const supabase = createSupabaseServerClient();
   const now = new Date();
   const seedDay = utcDaySeed(now);
@@ -338,6 +342,16 @@ export async function GET() {
     }
   }
 
+  const profileContentById = contentLocale
+    ? await resolveProfileContent(supabase, {
+        specialistIds,
+        locale: contentLocale,
+      }).catch((error) => {
+        console.error("[api/recommended-specialists] profile localization resolve failed", error);
+        return null;
+      })
+    : null;
+
   const categoryIds = Array.from(
     new Set(
       toShow
@@ -407,7 +421,10 @@ export async function GET() {
       category_title_de: category?.title_de ?? null,
       category_title_ua: category?.title_ua ?? null,
       category_slug: category?.slug ?? null,
-      about_line: profile?.about_me ?? null,
+      about_line:
+        profileContentById?.get(row.id)?.aboutMe ??
+        profile?.about_me ??
+        null,
       featured_priority: row.featured_priority ?? 0,
       is_featured: premiumPlacement,
       rating_avg: ratingBySpecialistId.get(row.id)?.rating_avg ?? null,
@@ -419,5 +436,10 @@ export async function GET() {
     };
   });
 
-  return jsonWithCache({ data }, CACHE_PUBLIC_RECOMMENDED);
+  return jsonWithCache({ data }, CACHE_PUBLIC_RECOMMENDED, {
+    headers: {
+      Vary: "Accept-Language",
+      "X-Content-Locale": contentLocale ?? "legacy",
+    },
+  });
 }

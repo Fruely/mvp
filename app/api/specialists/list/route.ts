@@ -11,6 +11,7 @@ import {
   areValidCoordinates,
   type AllowedServiceRadiusKm,
 } from "@/lib/specialists/geography";
+import { resolveProfileContent, toContentLocale } from "@/lib/localization";
 
 // Force dynamic so Next.js does not attempt to prerender this API route
 export const dynamic = 'force-dynamic';
@@ -252,6 +253,7 @@ export async function GET(request: NextRequest) {
       });
     }
     const language = searchParams.get('language')?.trim().toLowerCase() ?? '';
+    const contentLocale = toContentLocale(searchParams.get('lang'));
     const city = searchParams.get('city')?.trim().toLowerCase() ?? '';
     const sort = (searchParams.get('sort') as SortMode | null) ?? 'relevance';
     const debugEnabled = searchParams.get("debug") === "1";
@@ -520,6 +522,16 @@ export async function GET(request: NextRequest) {
       profileBySpecialistId.set(row.specialist_id, row);
     }
 
+    const profileContentById = contentLocale
+      ? await resolveProfileContent(supabase, {
+          specialistIds,
+          locale: contentLocale,
+        }).catch((error) => {
+          console.error("[api/specialists/list] profile localization resolve failed", error);
+          return null;
+        })
+      : null;
+
     const servicesBySpecialistId = new Map<string, ServiceRow[]>();
     for (const row of serviceRows) {
       if (!row?.specialist_id) continue;
@@ -558,7 +570,10 @@ export async function GET(request: NextRequest) {
         name: nameFromDb,
         avatar_url: profile?.photo_url ?? row.avatar_url ?? null,
         about_line: pickAboutLine({
-          profileAbout: profile?.about_me ?? null,
+          profileAbout:
+            profileContentById?.get(row.id)?.aboutMe ??
+            profile?.about_me ??
+            null,
           profileServices: profile?.services ?? null,
           specialistBio: row.bio ?? null,
           categoryTitle,

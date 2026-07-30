@@ -173,6 +173,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
         limit: String(PAGE_LIMIT),
         offset: String(offset),
         sort: SORT_TO_API[sort],
+        lang,
       });
       if (selectedLanguage) params.set("language", selectedLanguage);
       if (selectedCity) params.set("city", selectedCity);
