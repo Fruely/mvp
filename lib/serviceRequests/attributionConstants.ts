@@ -30,3 +30,6 @@ export type SanitizedUtmFields = {
 
 export const ATTRIBUTION_ROW_SELECT =
   "id, promotion_id, attribution_token, landing_locale, utm_source, utm_medium, utm_campaign, utm_content, referrer_host, first_seen_at, last_seen_at, visit_count";
+
+/** Minimal attribution fields for immutable signup binding (no PII, no join). */
+export const ATTRIBUTION_SIGNUP_BIND_LOOKUP_SELECT = "id, promotion_id";

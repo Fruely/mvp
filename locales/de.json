@@ -85,6 +85,11 @@
     "pageTitle": "Kundenanfrage | Freuly",
     "publishedAt": "Veröffentlicht",
     "specialistCta": "Sind Sie Fachkraft in diesem Bereich? Bald können Sie hier auf die Anfrage reagieren.",
+    "signupCta": {
+      "title": "Sind Sie Fachkraft in diesem Bereich?",
+      "body": "Registrieren Sie sich bei Freuly, um Zugang zu dieser Anfrage zu erhalten.",
+      "button": "Als Fachkraft registrieren"
+    },
     "notFound": "Anfrage nicht verfügbar",
     "admin": {
       "sectionTitle": "Öffentliche Veröffentlichung",

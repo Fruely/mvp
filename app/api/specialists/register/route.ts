@@ -9,6 +9,11 @@ import {
 } from "@/lib/rate-limit/shared";
 import { PARTNER_REF_COOKIE } from "@/lib/partners/cookie";
 import { tryCreateAttributionFromCookie } from "@/lib/partners/attribution";
+import {
+  ATTRIBUTION_COOKIE_NAME,
+  buildAttributionCookieClearOptions,
+} from "@/lib/serviceRequests/attributionCookie";
+import { tryBindPromotionAttributionFromCookie } from "@/lib/serviceRequests/tryBindPromotionAttributionFromCookie";
 
 function normalizeEmail(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -198,7 +203,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return jsonNoStore({ success: true, specialist }, { status: 201 });
+    const promotionBind = await tryBindPromotionAttributionFromCookie({
+      cookieRaw: request.cookies.get(ATTRIBUTION_COOKIE_NAME)?.value,
+      userId: createdUser.user.id,
+      specialistId: specialist.id,
+      supabase,
+    });
+
+    const response = jsonNoStore({ success: true, specialist }, { status: 201 });
+    if (promotionBind.clearCookie) {
+      response.cookies.set(
+        ATTRIBUTION_COOKIE_NAME,
+        "",
+        buildAttributionCookieClearOptions(),
+      );
+    }
+    return response;
   } catch (error: any) {
     return jsonNoStore(
       { error: error?.message || "Internal server error" },
