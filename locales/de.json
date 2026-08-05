@@ -24,6 +24,63 @@
       "viewProfile": "Profil ansehen"
     }
   },
+  "serviceRequest": {
+    "title": "Beschreiben Sie Ihre Aufgabe – Freuly findet die passende Fachkraft",
+    "subtitle": "Erzählen Sie uns, welche Dienstleistung Sie brauchen, wo und in welchem Zeitrahmen. Wir beginnen die Suche nach einer passenden Fachkraft und melden uns, wenn wir eine passende Option gefunden haben.",
+    "submit": "Anfrage senden",
+    "submitting": "Wird gesendet…",
+    "privacyNotice": {
+      "before": "Mit dem Absenden stimmen Sie der Verarbeitung Ihrer Angaben zur Suche nach einer passenden Fachkraft gemäß der ",
+      "link": "Datenschutzerklärung",
+      "after": " zu."
+    },
+    "fields": {
+      "name": "Ihr Name",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "contactHint": "Geben Sie mindestens E-Mail oder Telefon an — so können wir Sie erreichen.",
+      "description": "Aufgabe beschreiben",
+      "category": "Kategorie",
+      "language": "Bevorzugte Sprache",
+      "workFormat": "Arbeitsformat",
+      "city": "Stadt",
+      "postalCode": "PLZ",
+      "radius": "Radius (km)",
+      "urgency": "Gewünschter Zeitraum",
+      "desiredDate": "Konkretes Datum"
+    },
+    "urgency": {
+      "asap": "So schnell wie möglich",
+      "within_24h": "Innerhalb von 24 Stunden",
+      "within_3_days": "Innerhalb von 1–3 Tagen",
+      "within_week": "Innerhalb einer Woche",
+      "within_month": "Innerhalb eines Monats",
+      "flexible": "Zeitrahmen ist flexibel",
+      "specific_date": "Konkretes Datum erforderlich"
+    },
+    "errors": {
+      "nameRequired": "Bitte geben Sie Ihren Namen an",
+      "descriptionRequired": "Bitte beschreiben Sie die Aufgabe",
+      "contactRequired": "Bitte geben Sie E-Mail oder Telefon an",
+      "locationRequired": "Bitte geben Sie Stadt oder PLZ für Offline/Hybrid an",
+      "dateRequired": "Bitte geben Sie ein konkretes Datum an",
+      "submitFailed": "Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es später erneut."
+    },
+    "success": {
+      "title": "Anfrage erhalten",
+      "body": "Wir haben Ihre Aufgabe erhalten und beginnen mit der Suche nach einer passenden Fachkraft. Wir melden uns, sobald eine passende Option verfügbar ist.",
+      "publicIdLabel": "Anfragenummer",
+      "backToSearch": "Zurück zur Suche",
+      "backHome": "Zur Startseite"
+    },
+    "cta": {
+      "emptyTitle": "Keine passende Fachkraft gefunden?",
+      "emptySubtitle": "Beschreiben Sie Ihre Aufgabe – Freuly findet die passende Fachkraft",
+      "fallbackTitle": "Niemand passt? Freuly sucht weiter.",
+      "fallbackSubtitle": "Erzählen Sie uns von Ihrer Aufgabe — wir finden manuell eine Fachkraft.",
+      "button": "Aufgabe beschreiben"
+    }
+  },
   "site.title": "Freuly",
   "site.slogan": "Fachkraft in deiner Sprache",
   "hero.title": "Fachkräfte in Deutschland – in Ihrer Sprache.",

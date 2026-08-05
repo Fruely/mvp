@@ -1,9 +1,17 @@
 import { sendTelegramToOwners } from "@/lib/telegram/sendMessage";
 import { buildNewSpecialistTelegramMessage } from "@/lib/notifications/specialistPublishNotify";
+import {
+  formatNewServiceRequestOwnerMessage,
+  type NewServiceRequestOwnerPayload,
+} from "@/lib/serviceRequests/ownerTelegramMessage";
 
 const errorCooldown = new Map<string, { last: number; count: number }>();
 
-export type NotifyEventType = "NEW_SPECIALIST" | "NEW_LEAD" | "SYSTEM_ERROR";
+export type NotifyEventType =
+  | "NEW_SPECIALIST"
+  | "NEW_LEAD"
+  | "NEW_SERVICE_REQUEST"
+  | "SYSTEM_ERROR";
 
 export type NewSpecialistNotifyPayload = {
   name: string;
@@ -19,6 +27,8 @@ export type NewLeadOwnerPayload = {
   source_path?: string | null;
   referrer?: string | null;
 };
+
+export type { NewServiceRequestOwnerPayload } from "@/lib/serviceRequests/ownerTelegramMessage";
 
 function formatNewLeadOwnerMessage(p: NewLeadOwnerPayload): string {
   const lines: string[] = [
@@ -59,6 +69,10 @@ export async function notify(
   payload: NewLeadOwnerPayload
 ): Promise<void>;
 export async function notify(
+  eventType: "NEW_SERVICE_REQUEST",
+  payload: NewServiceRequestOwnerPayload
+): Promise<void>;
+export async function notify(
   eventType: "SYSTEM_ERROR",
   payload: { route: string; error?: unknown }
 ): Promise<void>;
@@ -67,6 +81,7 @@ export async function notify(
   payload:
     | NewSpecialistNotifyPayload
     | NewLeadOwnerPayload
+    | NewServiceRequestOwnerPayload
     | { route: string; error?: unknown }
 ): Promise<void> {
   console.log("[FREULY][EVENT]", eventType);
@@ -79,6 +94,8 @@ export async function notify(
     });
   } else if (eventType === "NEW_LEAD") {
     message = formatNewLeadOwnerMessage(payload as NewLeadOwnerPayload);
+  } else if (eventType === "NEW_SERVICE_REQUEST") {
+    message = formatNewServiceRequestOwnerMessage(payload as NewServiceRequestOwnerPayload);
   } else {
     const p = payload as { route: string; error?: unknown };
     const key = `${p.route}:${formatErrorForMessage(p.error)}`;

@@ -8,6 +8,7 @@ import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbC
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import uaDict from "@/locales/ua.json";
 import SpecialistPreviewCard from "@/components/specialist/SpecialistPreviewCard";
+import ServiceRequestCtaBlock from "@/components/serviceRequests/ServiceRequestCtaBlock";
 
 interface SpecialistPreview {
   id: string;
@@ -645,6 +646,14 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
             {!loadingSpecialists && specialists.length === 0 ? (
               <div className="rounded-md border border-gray-200 bg-white px-6 py-10 text-center text-gray-600">
                 {t(dict, "category.empty.subtitle")}
+                <ServiceRequestCtaBlock
+                  lang={lang}
+                  dict={dict}
+                  variant="empty"
+                  categoryId={category?.id}
+                  categoryText={categoryLabel}
+                  sourcePath={`${langPrefix}/category/${slug}`}
+                />
               </div>
             ) : null}
 
@@ -661,6 +670,17 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                     : t(dict, "category.loadMore", { defaultValue: "Show more" })}
                 </button>
               </div>
+            ) : null}
+
+            {!loadingSpecialists && specialists.length > 0 ? (
+              <ServiceRequestCtaBlock
+                lang={lang}
+                dict={dict}
+                variant="fallback"
+                categoryId={category?.id}
+                categoryText={categoryLabel}
+                sourcePath={`${langPrefix}/category/${slug}`}
+              />
             ) : null}
           </div>
       </div>

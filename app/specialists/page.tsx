@@ -8,6 +8,7 @@ import { getDictionary, t, type Dictionary } from "@/lib/i18n";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { searchSpecialists, type SpecialistResult } from "@/lib/search/specialistSearch";
 import { getSearchSuggestions } from "@/lib/search/searchSuggestions";
+import ServiceRequestCtaBlock from "@/components/serviceRequests/ServiceRequestCtaBlock";
 
 export const dynamic = "force-dynamic";
 
@@ -316,6 +317,19 @@ export default async function SpecialistsPage({
               {t(dict, "search.noResults.backToSearch")}
             </Link>
           </div>
+          <ServiceRequestCtaBlock
+            lang={uiLang}
+            dict={dict}
+            variant="empty"
+            sourcePath={`/specialists?${new URLSearchParams(
+              Object.entries({
+                lang,
+                ...(category ? { category } : {}),
+                ...(q ? { q } : {}),
+                ...(place ? { place } : {}),
+              }).filter(([, v]) => v != null && v !== "") as [string, string][],
+            ).toString()}`}
+          />
         </div>
       </div>
     );
@@ -471,6 +485,20 @@ export default async function SpecialistsPage({
             {otherSpecialists.map(renderCard)}
           </ul>
         )}
+
+        <ServiceRequestCtaBlock
+          lang={uiLang}
+          dict={dict}
+          variant="fallback"
+          sourcePath={`/specialists?${new URLSearchParams(
+            Object.entries({
+              lang,
+              ...(category ? { category } : {}),
+              ...(q ? { q } : {}),
+              ...(place ? { place } : {}),
+            }).filter(([, v]) => v != null && v !== "") as [string, string][],
+          ).toString()}`}
+        />
       </div>
     </div>
   );
