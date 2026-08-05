@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { resolveSafeNextPath } from "@/lib/auth/safeNextPath";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const code = searchParams.get("code");
   const token = searchParams.get("token");
-  const next = searchParams.get("next") ?? "/update-password";
+  const next = resolveSafeNextPath(searchParams.get("next")) ?? "/update-password";
 
   if (code || token) {
     const cookieStore = cookies();

@@ -1,8 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { getCommissionEligibleAt } from "@/lib/partners/commissionValidation";
+import { buildCanonicalReferralUrl, resolveClientPublicOrigin } from "@/lib/partners/referralUrl";
+import PartnerReferralQr from "@/components/partners/PartnerReferralQr";
 import { t, type Dictionary } from "@/lib/i18n";
 
 type DashboardPayload = {
@@ -123,9 +125,20 @@ export default function PartnerDashboardClient({
     void load();
   }, [load]);
 
+  const canonicalReferralUrl = useMemo(() => {
+    if (!data?.partner.referral_code) return "";
+    return buildCanonicalReferralUrl(
+      resolveClientPublicOrigin(),
+      data.partner.referral_code
+    );
+  }, [data?.partner.referral_code]);
+
+  const canShare =
+    typeof navigator !== "undefined" && typeof navigator.share === "function";
+
   async function copyLink() {
     if (!data) return;
-    const url = `${window.location.origin}${data.partner.referral_path}`;
+    const url = canonicalReferralUrl;
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
@@ -137,9 +150,13 @@ export default function PartnerDashboardClient({
 
   async function shareLink() {
     if (!data || !navigator.share) return;
-    const url = `${window.location.origin}${data.partner.referral_path}`;
+    const url = canonicalReferralUrl;
     try {
-      await navigator.share({ url, title: "Freuly" });
+      await navigator.share({
+        url,
+        title: t(dict, "partner.dashboard.shareTitle", { defaultValue: "Freuly" }),
+        text: t(dict, "partner.dashboard.shareText"),
+      });
     } catch {
       /* user cancelled */
     }
@@ -199,9 +216,6 @@ export default function PartnerDashboardClient({
       </div>
     );
   }
-
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const referralUrl = `${origin}${data.partner.referral_path}`;
 
   return (
     <div className="mx-auto max-w-lg px-4 py-6 space-y-5">
@@ -267,7 +281,7 @@ export default function PartnerDashboardClient({
           {t(dict, "partner.dashboard.linkTitle")}
         </h2>
         <p className="break-all rounded-lg bg-gray-50 px-3 py-2 font-mono text-xs text-gray-800">
-          {referralUrl || data.partner.referral_path}
+          {canonicalReferralUrl || data.partner.referral_path}
         </p>
         <div className="flex gap-2">
           <button
@@ -277,7 +291,7 @@ export default function PartnerDashboardClient({
           >
             {copied ? t(dict, "partner.dashboard.copied") : t(dict, "partner.dashboard.copy")}
           </button>
-          {typeof navigator !== "undefined" && "share" in navigator ? (
+          {canShare ? (
             <button
               type="button"
               onClick={() => void shareLink()}
@@ -287,6 +301,13 @@ export default function PartnerDashboardClient({
             </button>
           ) : null}
         </div>
+        {data.partner.referral_code && canonicalReferralUrl ? (
+          <PartnerReferralQr
+            url={canonicalReferralUrl}
+            code={data.partner.referral_code}
+            dict={dict}
+          />
+        ) : null}
       </section>
 
       <div className="flex rounded-lg border border-gray-200 p-1 text-sm">

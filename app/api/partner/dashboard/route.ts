@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { PartnerDomainError } from "@/lib/partners/errors";
 import { getPartnerDashboard, type DashboardPeriod } from "@/lib/partners/dashboard";
+import { ensurePartnerPrimaryReferralCode } from "@/lib/partners/ensureReferralCode";
 import { requirePartnerApiSession } from "@/lib/partners/session";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +25,10 @@ export async function GET(request: NextRequest) {
 
     // Never accept client partnerId — always session partner
     const supabase = createServiceClient();
-    const dashboard = await getPartnerDashboard(supabase, session.partner.id, period);
+    const partner = await ensurePartnerPrimaryReferralCode(supabase, session.partner, {
+      email: session.user.email,
+    });
+    const dashboard = await getPartnerDashboard(supabase, partner.id, period);
 
     return NextResponse.json(
       {

@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { writePartnerAudit } from "@/lib/partners/audit";
 import { isValidReferralCode, normalizeReferralCode } from "@/lib/partners/codes";
+import { ensurePartnerPrimaryReferralCode } from "@/lib/partners/ensureReferralCode";
 import { PartnerDomainError } from "@/lib/partners/errors";
 import { createPartner } from "@/lib/partners/service";
 import type { PartnerRow } from "@/lib/partners/types";
@@ -35,7 +36,8 @@ export async function ensureSelfServePartner(
 
   const existing = await getPartnerForUser(userId, supabase);
   if (existing) {
-    return { partner: existing, created: false };
+    const withCode = await ensurePartnerPrimaryReferralCode(supabase, existing, { email });
+    return { partner: withCode, created: false };
   }
 
   // Email may already exist as unbound invite partner — bind if free.
@@ -68,7 +70,10 @@ export async function ensureSelfServePartner(
       partnerId: bound.id,
       payload: { email },
     });
-    return { partner: bound as PartnerRow, created: false };
+    const withCode = await ensurePartnerPrimaryReferralCode(supabase, bound as PartnerRow, {
+      email,
+    });
+    return { partner: withCode, created: false };
   }
 
   let lastError: unknown = null;

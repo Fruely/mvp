@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { PartnerDomainError } from "@/lib/partners/errors";
+import { partnerReferralPath } from "@/lib/partners/referralUrl";
 import {
   computeDashboardAmounts,
   type DashboardAmountTotals,
@@ -208,7 +209,7 @@ export async function getPartnerDashboard(
       commission_amount_cents: p.commission_amount_cents,
       currency: p.currency,
       referral_code: p.referral_code,
-      referral_path: `/r/${p.referral_code}`,
+      referral_path: partnerReferralPath(p.referral_code),
     },
     period,
     period_bounds: { start: startIso, end_exclusive: endIso },
@@ -227,7 +228,7 @@ export async function getPartnerDashboard(
       is_active: boolean;
     }>).map((l) => ({
       ...l,
-      referral_path: `/r/${l.code}`,
+      referral_path: partnerReferralPath(l.code),
     })),
     commissions: (
       (recentCommissionsRes.data ?? []) as Array<{
