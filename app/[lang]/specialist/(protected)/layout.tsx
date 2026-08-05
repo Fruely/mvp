@@ -11,14 +11,19 @@ import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
 
 function isOnboardingAllowedPath(pathname: string, lang: Lang): boolean {
   const dashboardBase = `/${lang}/specialist/dashboard`;
-  return (
+  if (
     pathname === `${dashboardBase}/onboarding` ||
     pathname.startsWith(`${dashboardBase}/onboarding/`) ||
     pathname === `${dashboardBase}/services` ||
     pathname.startsWith(`${dashboardBase}/services/`) ||
     pathname === `${dashboardBase}/settings` ||
-    pathname.startsWith(`${dashboardBase}/settings/`)
-  );
+    pathname.startsWith(`${dashboardBase}/settings/`) ||
+    pathname === `${dashboardBase}/requests/promoted` ||
+    pathname.startsWith(`${dashboardBase}/requests/promoted/`)
+  ) {
+    return true;
+  }
+  return false;
 }
 
 export default async function SpecialistProtectedLayout({

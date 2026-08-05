@@ -35,7 +35,11 @@ export default async function SpecialistDashboardBillingPage({
   searchParams,
 }: {
   params: { lang: string } | Promise<{ lang: string }>;
-  searchParams: { plan?: string; checkout?: string } | Promise<{ plan?: string; checkout?: string }>;
+  searchParams: { plan?: string; checkout?: string; promoted_checkout?: string } | Promise<{
+    plan?: string;
+    checkout?: string;
+    promoted_checkout?: string;
+  }>;
 }) {
   const resolved = await Promise.resolve(params);
   const resolvedSearch = await Promise.resolve(searchParams);
@@ -61,6 +65,15 @@ export default async function SpecialistDashboardBillingPage({
       : resolvedSearch.checkout === "cancel"
         ? t(dict, "dashboard.billingPage.checkout.cancelNotice")
         : null;
+
+  const promotedCheckoutNotice =
+    resolvedSearch.promoted_checkout === "success"
+      ? t(dict, "dashboard.billingPage.promotedCheckout.processingNotice")
+      : resolvedSearch.promoted_checkout === "cancel"
+        ? t(dict, "dashboard.billingPage.promotedCheckout.cancelNotice")
+        : null;
+
+  const promotedRequestHref = `/${lang}/specialist/dashboard/requests/promoted`;
 
   const mailtoHref = `mailto:freuly.de@gmail.com?subject=${encodeURIComponent(
     t(dict, "dashboard.billingPage.mailtoSubject"),
@@ -92,6 +105,20 @@ export default async function SpecialistDashboardBillingPage({
       {checkoutNotice ? (
         <section className="rounded-2xl border border-indigo-100/90 bg-indigo-50/40 px-5 py-4 text-sm text-gray-700">
           {checkoutNotice}
+        </section>
+      ) : null}
+
+      {promotedCheckoutNotice ? (
+        <section className="rounded-2xl border border-indigo-100/90 bg-indigo-50/40 px-5 py-4 text-sm text-gray-700">
+          <p>{promotedCheckoutNotice}</p>
+          <p className="mt-3">
+            <Link
+              href={promotedRequestHref}
+              className="font-medium text-indigo-700 underline-offset-4 hover:underline"
+            >
+              {t(dict, "dashboard.billingPage.promotedCheckout.backToRequest")}
+            </Link>
+          </p>
         </section>
       ) : null}
 
