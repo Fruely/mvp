@@ -81,6 +81,21 @@
       "button": "Aufgabe beschreiben"
     }
   },
+  "serviceRequestPromotion": {
+    "pageTitle": "Kundenanfrage | Freuly",
+    "publishedAt": "Veröffentlicht",
+    "specialistCta": "Sind Sie Fachkraft in diesem Bereich? Bald können Sie hier auf die Anfrage reagieren.",
+    "notFound": "Anfrage nicht verfügbar",
+    "admin": {
+      "sectionTitle": "Öffentliche Veröffentlichung",
+      "createDraft": "Entwurf erstellen",
+      "saveDraft": "Entwurf speichern",
+      "save": "Speichern",
+      "publish": "Veröffentlichen",
+      "close": "Veröffentlichung schließen",
+      "copyLink": "Öffentlichen Link kopieren"
+    }
+  },
   "site.title": "Freuly",
   "site.slogan": "Fachkraft in deiner Sprache",
   "hero.title": "Fachkräfte in Deutschland – in Ihrer Sprache.",

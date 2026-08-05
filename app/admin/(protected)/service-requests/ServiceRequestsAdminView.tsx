@@ -4,15 +4,23 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { SERVICE_REQUEST_STATUSES } from "@/lib/serviceRequests/constants";
 import type { ServiceRequestDetail, ServiceRequestListItem } from "@/lib/serviceRequests/adminData";
+import type { ServiceRequestPromotionAdmin } from "@/lib/serviceRequests/promotionAdminData";
 import { updateServiceRequestStatusAction } from "./actions";
+import ServiceRequestPromotionBlock from "./ServiceRequestPromotionBlock";
 
 type Props = {
   rows: ServiceRequestListItem[];
   detail: ServiceRequestDetail | null;
+  promotion: ServiceRequestPromotionAdmin | null;
   selectedId: string | null;
 };
 
-export default function ServiceRequestsAdminView({ rows, detail, selectedId }: Props) {
+export default function ServiceRequestsAdminView({
+  rows,
+  detail,
+  promotion,
+  selectedId,
+}: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -109,6 +117,12 @@ export default function ServiceRequestsAdminView({ rows, detail, selectedId }: P
                   ))}
                 </select>
               </label>
+
+              <ServiceRequestPromotionBlock
+                serviceRequestId={detail.id}
+                initialPromotion={promotion}
+                defaultLocale={detail.locale || "ru"}
+              />
             </div>
           )}
         </div>
