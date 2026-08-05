@@ -1037,7 +1037,7 @@
       "title": "Verdienen Sie gemeinsam mit Freuly",
       "subtitle": "Registrieren Sie sich im Partnerprogramm, akzeptieren Sie die Bedingungen und teilen Sie Ihren persönlichen Referral-Link. Nach der ersten monatlichen Tarifzahlung eines neuen Spezialisten erhalten Sie eine einmalige Vergütung.",
       "howTitle": "So funktioniert es",
-      "howSteps": "Registrieren oder anmelden und Partnerprogramm-Bedingungen Version 1.0 akzeptieren.|Sie werden automatisch aktiv und erhalten sofort Ihren persönlichen Referral-Link.|Teilen Sie den Link mit Freunden, Bekannten, Kollegen oder Ihrer Community.|Ein neuer Spezialist registriert sich über Ihren Link und bezahlt erstmals einen monatlichen Tarif.|Ihre Vergütung ist 14 Tage pending und wird danach bestätigt.|Danach wählen Sie: Auszahlung in Geld oder Guthaben für Ihr Freuly-Abo.",
+      "howSteps": "Registrieren oder anmelden und die Partnerprogramm-Bedingungen akzeptieren.|Sie werden automatisch aktiv und erhalten sofort Ihren persönlichen Referral-Link.|Teilen Sie den Link mit Freunden, Bekannten, Kollegen oder Ihrer Community.|Ein neuer Spezialist registriert sich über Ihren Link und bezahlt erstmals einen monatlichen Tarif.|Ihre Vergütung ist 14 Tage pending und wird danach bestätigt.|Danach wählen Sie: Auszahlung in Geld oder Guthaben für Ihr Freuly-Abo.",
       "rewardTitle": "Vergütung",
       "rewardBody": "Sie erhalten eine einmalige Vergütung in Höhe des ersten bezahlten monatlichen Tarifs des vermittelten Spezialisten, berechnet aus dem von Freuly tatsächlich vereinnahmten Betrag nach Abzug gesetzlich geschuldeter Umsatzsteuer (falls anwendbar) und der tatsächlichen Transaktionsgebühr des Zahlungsdienstleisters.",
       "rewardNote": "Die genaue Höhe hängt vom gewählten Tarif ab. Details stehen in den Partnerprogramm-Bedingungen.",
@@ -1184,7 +1184,7 @@
     "agreement": {
       "versionLabel": "Version",
       "effectiveLabel": "Wirksam ab",
-      "checkbox": "Ich habe die Partnerprogramm-Bedingungen Version 1.0 gelesen und akzeptiere sie.",
+      "checkbox": "Ich habe die Partnerprogramm-Bedingungen Version {{version}} gelesen und akzeptiere sie.",
       "householdCheckbox": "Ich bestätige, dass Self-Referral und Empfehlungen aus demselben Haushalt (Ehepartner, eingetragene Lebenspartner, gemeinsamer Haushalt) nicht vergütungsfähig sind.",
       "joinCta": "Partnerprogramm beitreten",
       "submit": "Partnerprogramm beitreten",

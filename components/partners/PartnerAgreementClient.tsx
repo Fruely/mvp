@@ -132,7 +132,9 @@ export default function PartnerAgreementClient({
               checked={checked}
               onChange={(e) => setChecked(e.target.checked)}
             />
-            <span>{t(dict, "partner.agreement.checkbox")}</span>
+            <span>
+              {t(dict, "partner.agreement.checkbox").replace("{{version}}", version)}
+            </span>
           </label>
           <label className="flex items-start gap-2 text-sm text-gray-800">
             <input
