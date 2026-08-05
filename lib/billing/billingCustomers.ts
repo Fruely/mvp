@@ -126,7 +126,9 @@ export function buildStripeCheckoutMetadata(input: {
   billingInterval: string;
 }): Record<string, string> {
   const meta: Record<string, string> = {
+    purpose: "specialist_subscription",
     specialist_id: input.specialistId,
+    plan_code: input.internalPlan,
     internal_plan: input.internalPlan,
     billing_interval: input.billingInterval,
   };

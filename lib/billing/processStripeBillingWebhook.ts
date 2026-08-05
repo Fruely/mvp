@@ -9,11 +9,18 @@ import {
   processStripeWebhookEventForPromotedAccess,
   type PromotedAccessWebhookResult,
 } from "@/lib/billing/processPromotedAccessWebhook";
+import {
+  processStripeWebhookEventForSubscriptions,
+  shouldMarkSubscriptionBillingEventSkipped,
+  shouldRetrySubscriptionBillingWebhook,
+  type SubscriptionWebhookResult,
+} from "@/lib/billing/processStripeSubscriptionWebhook";
 
 export type StripeBillingWebhookProcessResult = {
   eventType: string;
   partner: StripeWebhookProcessResult;
   promoted: PromotedAccessWebhookResult;
+  subscription: SubscriptionWebhookResult;
 };
 
 export async function processStripeBillingWebhook(
@@ -22,13 +29,15 @@ export async function processStripeBillingWebhook(
 ): Promise<StripeBillingWebhookProcessResult> {
   const partner = await processStripeWebhookEventForPartners(supabase, event);
   const promoted = await processStripeWebhookEventForPromotedAccess(supabase, event);
-  return { eventType: event.type, partner, promoted };
+  const subscription = await processStripeWebhookEventForSubscriptions(supabase, event);
+  return { eventType: event.type, partner, promoted, subscription };
 }
 
 export function shouldMarkBillingEventSkipped(result: StripeBillingWebhookProcessResult): boolean {
   return (
     shouldMarkPartnerBillingEventSkipped(result.partner) &&
-    shouldMarkPromotedBillingEventSkipped(result.promoted)
+    shouldMarkPromotedBillingEventSkipped(result.promoted) &&
+    shouldMarkSubscriptionBillingEventSkipped(result.subscription)
   );
 }
 
@@ -43,5 +52,8 @@ export function shouldMarkPromotedBillingEventSkipped(
 }
 
 export function shouldRetryBillingWebhook(result: StripeBillingWebhookProcessResult): boolean {
-  return result.promoted.outcome === "retryable_failure";
+  return (
+    result.promoted.outcome === "retryable_failure" ||
+    shouldRetrySubscriptionBillingWebhook(result.subscription)
+  );
 }

@@ -91,7 +91,9 @@ export class StripePaymentProvider implements PaymentProvider {
         metadata,
         subscription_data: {
           metadata: {
+            purpose: "specialist_subscription",
             specialist_id: input.specialistId,
+            plan_code: planConfig.internalPlan,
             internal_plan: planConfig.internalPlan,
             billing_interval: planConfig.billingInterval,
           },

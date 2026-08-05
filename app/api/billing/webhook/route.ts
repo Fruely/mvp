@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     const result = await processStripeBillingWebhook(supabase, event);
 
     if (shouldRetryBillingWebhook(result)) {
-      throw new Error("promoted_fulfillment_incomplete");
+      throw new Error("billing_webhook_retryable_failure");
     }
 
     const skipped = shouldMarkBillingEventSkipped(result);
@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
         event_type: event.type,
         partner: result.partner.partnerCommission?.outcome ?? null,
         promoted: result.promoted.outcome,
+        subscription: result.subscription.outcome,
       },
       { status: 200, headers: NO_STORE },
     );
