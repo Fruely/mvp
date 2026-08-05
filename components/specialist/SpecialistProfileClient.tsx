@@ -368,8 +368,8 @@ export default function SpecialistProfileClient({
       .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
       .map((item) => item.trim());
   };
-  /** Gallery slider + grid: only marketing photos from `gallery_urls` (not certificates or legacy merged fields). */
-  const portfolioImages = parseImageList(specialist.gallery_urls).slice(0, 8);
+  /** Gallery slider + grid: server already applies plan-based limits on `gallery_urls`. */
+  const portfolioImages = parseImageList(specialist.gallery_urls);
   const certificateUrls = parseImageList(specialist.certificate_urls).slice(0, 10);
   const hasPortfolio = portfolioImages.length > 0;
   const portfolioCount = portfolioImages.length;
