@@ -17,6 +17,13 @@ import {
 } from "@/lib/specialists/geography";
 import { resolveGermanPostalLocation } from "@/lib/specialists/resolvePostalLocation";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
+import {
+  buildGalleryLimitError,
+  canUpdateGalleryUrls,
+  normalizeGalleryUrls,
+  resolveSpecialistEntitlements,
+} from "@/lib/billing/planEntitlements";
+import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
 
 const MAX_CERTIFICATE_URLS = 10;
 
@@ -465,9 +472,25 @@ export async function PUT(request: NextRequest) {
     profilePatch.photo_url = body.photo_url.trim() || null;
   }
   if (hasOwn(body, "gallery_urls") && Array.isArray(body.gallery_urls)) {
-    profilePatch.gallery_urls = body.gallery_urls
-      .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
-      .slice(0, 5);
+    const plan = await getSpecialistPlanForDashboard(service, specialistId);
+    const entitlements = resolveSpecialistEntitlements(plan);
+
+    const { data: currentProfile } = await service
+      .from("specialist_profiles")
+      .select("gallery_urls")
+      .eq("specialist_id", specialistId)
+      .maybeSingle();
+    const previousUrls = normalizeGalleryUrls(currentProfile?.gallery_urls);
+    const nextUrls = normalizeGalleryUrls(body.gallery_urls);
+
+    if (!canUpdateGalleryUrls(previousUrls, nextUrls, entitlements.galleryLimit)) {
+      return jsonNoStore(
+        buildGalleryLimitError(entitlements, previousUrls.length),
+        { status: 409 },
+      );
+    }
+
+    profilePatch.gallery_urls = nextUrls;
   }
 
   // Only update certificate_urls when the client sends the field explicitly.

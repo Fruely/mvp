@@ -8,6 +8,11 @@ import {
   toContentLocale,
 } from "@/lib/localization";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
+import {
+  normalizeGalleryUrls,
+  resolveSpecialistEntitlements,
+  selectPublicGalleryUrls,
+} from "@/lib/billing/planEntitlements";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 
 export async function GET(
@@ -110,6 +115,8 @@ export async function GET(
     null;
 
   const plan = await getSpecialistPlanForDashboard(supabase, specialist.id);
+  const entitlements = resolveSpecialistEntitlements(plan);
+  const allGalleryUrls = normalizeGalleryUrls(profile?.gallery_urls);
 
   const result = {
     id: specialist.id,
@@ -129,7 +136,7 @@ export async function GET(
     address: profile?.address ?? null,
     description: descriptionResolved,
     video_url: profile?.video_url ?? null,
-    gallery_urls: Array.isArray(profile?.gallery_urls) ? profile.gallery_urls : [],
+    gallery_urls: selectPublicGalleryUrls(allGalleryUrls, entitlements.galleryPublicLimit),
     certificate_urls: Array.isArray(profile?.certificate_urls) ? profile.certificate_urls : [],
     photo_url: profile?.photo_url ?? null,
     lat: specialist.lat ?? null,

@@ -16,6 +16,7 @@ import {
   normalizePostalCode,
 } from "@/lib/specialists/geography";
 import SpecialistAvatarImage from "@/components/specialist/SpecialistAvatarImage";
+import { canAddGalleryImage } from "@/lib/billing/planEntitlements";
 
 type ServiceInput = {
   id?: string;
@@ -28,6 +29,8 @@ type ServiceInput = {
 type Props = {
   dict: Dictionary;
   lang: string;
+  galleryLimit: number;
+  effectivePaidPlan: "basic" | "premium" | null;
   telegramConnected: boolean;
   telegramConnectHref: string | null;
   initialData: {
@@ -64,7 +67,6 @@ type Props = {
   }>;
 };
 
-const MAX_GALLERY_IMAGES = 5;
 const MAX_DOCUMENT_IMAGES = 10;
 
 /** Targets for readiness checklist jump-to-section (ids on form blocks below). */
@@ -113,6 +115,8 @@ function hasValidService(services: ServiceInput[]): boolean {
 export default function SpecialistDashboardEditor({
   dict,
   lang,
+  galleryLimit,
+  effectivePaidPlan,
   initialData,
   initialStatus,
   categories,
@@ -460,6 +464,14 @@ export default function SpecialistDashboardEditor({
     });
     const json = await res.json().catch(() => ({}));
     if (!res.ok || typeof json.url !== "string") {
+      if (json && typeof json === "object" && json.error === "gallery_limit_reached") {
+        throw new Error(
+          t(dict, "dashboard.messages.galleryLimit").replace(
+            "{{limit}}",
+            String(typeof json.limit === "number" ? json.limit : galleryLimit),
+          ),
+        );
+      }
       throw new Error(typeof json.error === "string" ? json.error : t(dict, "dashboard.messages.uploadFailed"));
     }
     return json.url;
@@ -507,8 +519,8 @@ export default function SpecialistDashboardEditor({
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
-    if (form.gallery_urls.length >= MAX_GALLERY_IMAGES) {
-      setError(t(dict, "dashboard.messages.galleryLimit"));
+    if (!canAddGalleryImage(form.gallery_urls.length, galleryLimit)) {
+      setError(t(dict, "dashboard.messages.galleryLimit").replace("{{limit}}", String(galleryLimit)));
       return;
     }
     setGalleryUploading(true);
@@ -518,7 +530,7 @@ export default function SpecialistDashboardEditor({
       const url = await uploadSingleImage("/api/specialist/gallery/upload", file);
       setForm((prev) => ({
         ...prev,
-        gallery_urls: [...prev.gallery_urls, url].slice(0, MAX_GALLERY_IMAGES),
+        gallery_urls: [...prev.gallery_urls, url],
       }));
       setSuccess(t(dict, "dashboard.messages.galleryAdded"));
     } catch (err) {
@@ -1079,20 +1091,42 @@ export default function SpecialistDashboardEditor({
         </label>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <p className="text-sm font-medium text-gray-700">{t(dict, "dashboard.fields.gallery")}</p>
-            <label className="inline-flex cursor-pointer items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-              {galleryUploading ? t(dict, "dashboard.buttons.uploading") : t(dict, "dashboard.buttons.addImage")}
-              <input
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp"
-                className="hidden"
-                onChange={handleGalleryUpload}
-                disabled={galleryUploading || form.gallery_urls.length >= MAX_GALLERY_IMAGES}
-              />
-            </label>
+            <p className="text-xs text-gray-500">
+              {t(dict, "dashboard.gallery.usageCounter")
+                .replace("{{used}}", String(form.gallery_urls.length))
+                .replace("{{limit}}", String(galleryLimit))}
+            </p>
           </div>
-          <p className="text-xs text-gray-500">{t(dict, "dashboard.gallery.maxImagesNote")}</p>
+          {form.gallery_urls.length > galleryLimit ? (
+            <p className="text-xs leading-relaxed text-amber-800">
+              {t(dict, "dashboard.gallery.hiddenByPlan")
+                .replace("{{stored}}", String(form.gallery_urls.length))
+                .replace("{{visible}}", String(galleryLimit))}
+            </p>
+          ) : null}
+          {effectivePaidPlan === "basic" &&
+          form.gallery_urls.length >= galleryLimit &&
+          galleryLimit < 15 ? (
+            <p className="text-xs text-indigo-700">
+              <Link href={`/${lang}/specialist/dashboard/billing?plan=premium`} className="underline-offset-2 hover:underline">
+                {t(dict, "dashboard.gallery.upgradeToGrowth")}
+              </Link>
+            </p>
+          ) : null}
+          <label className="inline-flex cursor-pointer items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            {galleryUploading ? t(dict, "dashboard.buttons.uploading") : t(dict, "dashboard.buttons.addImage")}
+            <input
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              className="hidden"
+              onChange={handleGalleryUpload}
+              disabled={
+                galleryUploading || !canAddGalleryImage(form.gallery_urls.length, galleryLimit)
+              }
+            />
+          </label>
           <p className="text-xs text-gray-500">{t(dict, "dashboard.helpers.gallery.line1")}</p>
           <p className="text-xs text-gray-400">{t(dict, "dashboard.helpers.gallery.line2")}</p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

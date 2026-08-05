@@ -278,7 +278,7 @@
   "dashboard.messages.uploadFailed": "Fehler beim Hochladen der Datei",
   "dashboard.messages.avatarUploaded": "Profilfoto aktualisiert",
   "dashboard.messages.avatarFailed": "Profilfoto konnte nicht aktualisiert werden",
-  "dashboard.messages.galleryLimit": "Maximal 5 Bilder in der Galerie",
+  "dashboard.messages.galleryLimit": "Galerielimit erreicht: maximal {{limit}} Bilder",
   "dashboard.messages.galleryAdded": "Bild hinzugefügt",
   "dashboard.messages.saveFailed": "Speichern fehlgeschlagen",
   "dashboard.messages.saved": "Änderungen gespeichert",
@@ -932,109 +932,203 @@
   "pricing": {
     "hero": {
       "kicker": "Für Fachkräfte",
-      "title": "Freuly Tarife",
-      "subtitle": "Die Nutzung für Spezialistinnen und Spezialisten ist derzeit kostenlos. Kostenpflichtige Tarife werden später aktiviert — wir informieren rechtzeitig über Bedingungen und Zeitplan."
+      "title": "Wählen Sie Ihr Entwicklungsformat auf Freuly",
+      "subtitle": "Führen Sie Ihr Profil selbstständig oder überlassen Sie Freuly die redaktionelle und SEO-Aufbereitung."
     },
     "notice": {
-      "title": "Frühe Plattformphase",
-      "lead": "Freuly befindet sich in einer frühen Launch- und Testphase. Unten finden Sie Orientierung zu künftigen Tarifen — Zahlungen über die Plattform sind derzeit nicht vorgesehen.",
+      "title": "Profilvorbereitung und Testphase",
+      "lead": "Registrierung, Profilerstellung und Vorschau sind kostenlos — auch vor der öffentlichen Veröffentlichung.",
       "points": [
-        "Fachkräfte zahlen derzeit keine Gebühr für die Platzierung.",
-        "Es werden keine Zahlungen entgegengenommen — Abonnement oder Checkout sind nicht möglich.",
-        "Kostenpflichtige Tarife werden später mit klaren Bedingungen aktiviert.",
-        "Wir informieren frühzeitig über Zeitplan und Änderungen — ohne überraschende Abbuchungen."
+        "Registrierung und Profilerstellung sind kostenlos.",
+        "Ausgangsdaten und Vorschau können vor der Veröffentlichung vorbereitet werden.",
+        "Nach der ersten öffentlichen Veröffentlichung gilt eine 7-tägige Testphase.",
+        "Danach ist Freuly Professional oder Freuly Growth erforderlich.",
+        "Das Abo verlängert sich automatisch bis zur Kündigung; Kündigung jederzeit möglich.",
+        "Bezahlter Zugang gilt bis zum Ende des bezahlten Zeitraums."
       ]
     },
-    "starter": {
-      "name": "Starter",
-      "price": "0 €",
-      "priceHint": "Derzeit kostenlos",
-      "description": "Für die ersten Spezialistinnen und Spezialisten in der Aufbauphase von Freuly.",
-      "features": [
-        "persönlicher Bereich",
-        "öffentliche Spezialisten-Seite",
-        "Eintrag in der Kategorie",
-        "Leistungen und Preise",
-        "Fotos, Portfolio und Dokumente",
-        "Anfragen erhalten",
-        "mehrsprachiges Profil"
-      ],
-      "cta": "Als Fachkraft starten"
-    },
-    "basic": {
-      "name": "Basic",
+    "professional": {
+      "name": "Freuly Professional",
       "price": "29 € / Monat",
-      "badge": "Später geplant",
-      "description": "Standard-Platzierung nach Ende der kostenlosen Phase.",
+      "description": "Für Fachkräfte, die ihr öffentliches Profil auf Freuly selbstständig pflegen.",
       "features": [
-        "alles aus dem Starter-Tarif",
-        "dauerhafte Profil-Sichtbarkeit",
-        "Darstellung in Kategorien und Suche",
-        "Anfragen erhalten",
-        "Basissupport",
-        "Profilausbau"
-      ],
-      "ctaDisabled": "Zahlung derzeit nicht verfügbar"
+        "öffentliches Profil",
+        "Leistungen und Preise",
+        "bis zu 5 Galeriebilder (Avatar separat)",
+        "Sprachen und Online/Offline-Formate",
+        "Stadt und Einsatzradius",
+        "Sichtbarkeit in Kategorien und Suche",
+        "Anfragen über Freuly und Benachrichtigungen",
+        "Telegram-Benachrichtigungen bei Verbindung",
+        "eigenständige Textpflege"
+      ]
     },
-    "premium": {
-      "name": "Premium",
-      "status": "In Entwicklung",
-      "description": "Für stärkere Sichtbarkeit und künftige Marketing-Möglichkeiten.",
+    "growth": {
+      "name": "Freuly Growth",
+      "price": "59 € / Monat",
+      "badge": "Erweitertes Format",
+      "description": "Für Fachkräfte mit professioneller Profilaufbereitung und erweiterter Profilseite auf Freuly.",
       "features": [
-        "Premium-Platzierungen",
-        "verstärkte Rotation",
-        "Hervorhebung einzelner Leistungen",
-        "Spezialisten-Kuratiertlisten",
-        "erweiterte Analysen"
-      ],
-      "ctaDisabled": "In Entwicklung"
+        "alles aus Freuly Professional",
+        "bis zu 15 Galeriebilder",
+        "erweiterte Profilseite im Mini-Landing-Format",
+        "redaktionelle Positionierung",
+        "professionelle Beschreibung und starker Titel",
+        "Strukturierung bis zu 5 Kernleistungen",
+        "SEO-optimierter Profiltext",
+        "Empfehlungen zu Visuals und Fotos",
+        "ein Startpost in Freuly-Social-Media",
+        "eine Runde abgestimmter Korrekturen"
+      ]
     },
     "compare": {
-      "title": "Überblick",
-      "colPhase": "Jetzt / später",
-      "colStarter": "Starter",
-      "colBasic": "Basic",
-      "colPremium": "Premium",
+      "title": "Tarifvergleich",
+      "colFeature": "Funktion",
+      "colProfessional": "Freuly Professional",
+      "colGrowth": "Freuly Growth",
       "rows": [
         {
-          "label": "Zugang",
-          "starter": "Kostenlos in der frühen Phase",
-          "basic": "Geplant als kostenpflichtiger Tarif",
-          "premium": "In Entwicklung"
+          "label": "Öffentliches Profil",
+          "professional": "Ja",
+          "growth": "Ja"
         },
         {
-          "label": "Zahlung über die Plattform",
-          "starter": "Nicht erforderlich",
-          "basic": "Später, nach Ankündigung",
-          "premium": "Später, nach Ankündigung"
+          "label": "Leistungen und Preise",
+          "professional": "Ja",
+          "growth": "Ja"
+        },
+        {
+          "label": "Galeriebilder",
+          "professional": "Bis zu 5",
+          "growth": "Bis zu 15"
+        },
+        {
+          "label": "Sprachen und Formate",
+          "professional": "Ja",
+          "growth": "Ja"
+        },
+        {
+          "label": "Region und Radius",
+          "professional": "Ja",
+          "growth": "Ja"
+        },
+        {
+          "label": "Kategorien und Suche",
+          "professional": "Ja",
+          "growth": "Ja"
+        },
+        {
+          "label": "Anfragen über Freuly",
+          "professional": "Ja",
+          "growth": "Ja"
+        },
+        {
+          "label": "Benachrichtigungen",
+          "professional": "Ja",
+          "growth": "Ja"
+        },
+        {
+          "label": "Eigenständige Bearbeitung",
+          "professional": "Ja",
+          "growth": "Ja"
+        },
+        {
+          "label": "Erweiterte Mini-Landingpage",
+          "professional": "—",
+          "growth": "Ja"
+        },
+        {
+          "label": "Professionelle Beschreibung",
+          "professional": "Eigenständig",
+          "growth": "Inklusive"
+        },
+        {
+          "label": "SEO-optimierter Text",
+          "professional": "Eigenständig",
+          "growth": "Inklusive"
+        },
+        {
+          "label": "Kernleistungen strukturieren",
+          "professional": "Eigenständig",
+          "growth": "Bis zu 5"
+        },
+        {
+          "label": "Startpost in Social Media",
+          "professional": "—",
+          "growth": "1 Post"
+        },
+        {
+          "label": "Korrekturrunde",
+          "professional": "—",
+          "growth": "1 Runde"
         }
       ]
     },
     "faqTitle": "Häufige Fragen",
     "faq": [
       {
-        "q": "Muss ich jetzt zahlen?",
-        "a": "Nein. Die Nutzung ist derzeit kostenlos; es werden keine Zahlungen über die Plattform entgegengenommen."
+        "q": "Kann ich mein Profil kostenlos ausfüllen?",
+        "a": "Ja. Registrierung, Profilerstellung und Vorbereitung vor der Veröffentlichung sind kostenlos."
       },
       {
-        "q": "Wann starten kostenpflichtige Tarife?",
-        "a": "Später, mit separater Ankündigung: Wir kommunizieren Bedingungen und Zeitplan im Voraus."
+        "q": "Wann beginnt die Testphase?",
+        "a": "Nach der ersten öffentlichen Veröffentlichung Ihres Profils auf Freuly."
       },
       {
-        "q": "Kann mein Profil plötzlich verborgen werden oder wird abgebucht?",
-        "a": "Es gibt keine überraschenden Abbuchungen — Zahlungen sind derzeit nicht möglich. Wesentliche Änderungen kündigen wir frühzeitig an."
+        "q": "Wie lange dauert die Testphase?",
+        "a": "7 Kalendertage nach der ersten öffentlichen Veröffentlichung."
       },
       {
-        "q": "Kann ich Freuly in der Early-Access-Phase nutzen?",
-        "a": "Ja. Die aktuellen Funktionen im Konto und das öffentliche Profil sind ohne Zahlung nutzbar."
+        "q": "Was passiert nach der Testphase?",
+        "a": "Für die weitere öffentliche Präsenz benötigen Sie Freuly Professional oder Freuly Growth."
+      },
+      {
+        "q": "Verlängert sich das Abo automatisch?",
+        "a": "Ja, bis zur Kündigung. Bezahlter Zugang gilt bis zum Ende des bezahlten Zeitraums."
+      },
+      {
+        "q": "Wie kann ich kündigen?",
+        "a": "Über den Billing-Bereich im Dashboard oder über den Support gemäß den Zahlungsbedingungen."
+      },
+      {
+        "q": "Worin unterscheiden sich Professional und Growth?",
+        "a": "Professional ist eigenständiges Profil-Management mit bis zu 5 Bildern. Growth ergänzt professionelle Aufbereitung, erweiterte Seite und bis zu 15 Bilder."
+      },
+      {
+        "q": "Was ist in der Profilaufbereitung enthalten?",
+        "a": "Redaktionelle Arbeit, SEO-Text, Struktur bis zu 5 Leistungen, Visual-Empfehlungen, ein Startpost und eine Korrekturrunde."
+      },
+      {
+        "q": "Wie viele Fotos sind möglich?",
+        "a": "Freuly Professional: bis zu 5 Galeriebilder. Freuly Growth: bis zu 15. Der Avatar zählt nicht zum Limit."
+      },
+      {
+        "q": "Ist dauerhaftes Social-Media-Management enthalten?",
+        "a": "Nein. Growth enthält einen Startpost, aber kein laufendes Social-Media-Management."
+      },
+      {
+        "q": "Kann ich Branding oder Produktentwicklung separat buchen?",
+        "a": "Nicht im Tarif enthalten. Zusätzliche Marketingleistungen werden separat vereinbart."
+      },
+      {
+        "q": "Garantiert SEO Kunden oder Rankings?",
+        "a": "Nein. SEO verbessert Struktur und Verständlichkeit, aber Freuly garantiert keine Rankings, Views, Anfragen oder Umsatz."
+      },
+      {
+        "q": "Was passiert mit Fotos bei Wechsel zu Professional?",
+        "a": "Fotos werden nicht gelöscht. Öffentlich werden die ersten 5 in fester Reihenfolge gezeigt; der Rest bleibt gespeichert."
+      },
+      {
+        "q": "Kann ich Growth später erneut aktivieren?",
+        "a": "Ja. Danach sind wieder bis zu 15 Bilder sichtbar — ohne erneuten Upload."
       }
     ],
-    "disclaimer": "Die Angaben auf dieser Seite sind unverbindlich und können sich ändern. Verbindliche Konditionen kommunizieren wir vor Aktivierung kostenpflichtiger Tarife.",
+    "disclaimer": "Das Abo bezahlt den Zugang zu Plattformfunktionen und öffentlicher Präsenz. Freuly garantiert keine Views, Anfragen, Aufträge oder Umsatz. Growth umfasst begrenzte Erstaufbereitung; zusätzliche Marketingleistungen werden separat vereinbart. Das Abo verlängert sich automatisch bis zur Kündigung.",
     "cta": {
       "choosePlan": "Tarif wählen",
       "loginToChoose": "Anmelden, um Tarif zu wählen",
-      "completeProfile": "Zum Konto",
-      "currentPlan": "Mein Tarif im Konto"
+      "completeProfile": "Zum Dashboard",
+      "currentPlan": "Mein Tarif im Dashboard"
     }
   },
   "partner": {
@@ -1253,5 +1347,10 @@
   "dashboard.onboarding.reviewStep.fixCityResolved": "Ort ermittelt",
   "dashboard.onboarding.reviewStep.fixCoordinates": "Koordinaten ermittelt",
   "dashboard.onboarding.reviewStep.fixServiceRadius": "Servicegebiet (km)",
-  "header.nav.partners": "Partnerprogramm"
+  "header.nav.partners": "Partnerprogramm",
+  "dashboard.gallery.usageCounter": "{{used}} von {{limit}} Galeriebildern genutzt",
+  "dashboard.gallery.hiddenByPlan": "Im aktuellen Tarif werden öffentlich die ersten {{visible}} Bilder gezeigt. Gespeichert: {{stored}} — löschen Sie überschüssige Bilder oder wählen Sie Freuly Growth.",
+  "dashboard.gallery.upgradeToGrowth": "Freuly Growth für bis zu 15 Bilder",
+  "dashboard.billingPage.planPicker.professionalHint": "Eigenständiges Profil, bis zu 5 Galeriebilder.",
+  "dashboard.billingPage.planPicker.growthHint": "Professionelle Aufbereitung und bis zu 15 Galeriebilder."
 }

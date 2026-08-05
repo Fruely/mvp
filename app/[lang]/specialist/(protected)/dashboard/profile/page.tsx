@@ -8,6 +8,8 @@ import { getDictionary, isSupportedLang, type Dictionary } from "@/lib/i18n";
 import SpecialistDashboardEditor from "../SpecialistDashboardEditor";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import VerificationBanner from "../VerificationBanner";
+import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
+import { resolveSpecialistEntitlements } from "@/lib/billing/planEntitlements";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 
 export default async function SpecialistDashboardProfilePage({
@@ -58,12 +60,17 @@ export default async function SpecialistDashboardProfilePage({
     .or(`parent_id.not.is.null,slug.eq.${UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG}`)
     .order("title", { ascending: true });
 
+  const plan = await getSpecialistPlanForDashboard(service, specialist.id);
+  const entitlements = resolveSpecialistEntitlements(plan);
+
   return (
     <div className="space-y-6">
       <VerificationBanner status={status} dict={dict} />
       <SpecialistDashboardEditor
         dict={dict}
         lang={lang}
+        galleryLimit={entitlements.galleryLimit}
+        effectivePaidPlan={entitlements.effectivePaidPlan}
         initialStatus={status || "draft"}
         telegramConnected={telegramConnected}
         telegramConnectHref={telegramConnectHref}

@@ -87,19 +87,19 @@ export function hreflangSupport(): HreflangTriple {
 
 export const PRICING_METADATA = {
   ua: {
-    title: "Тарифи Freuly — умови для спеціалістів",
+    title: "Тарифи Freuly — Freuly Professional та Freuly Growth",
     description:
-      "Зараз розміщення на Freuly безкоштовне. Майбутні тарифи будуть оголошені заздалегідь. Оплата на платформі поки не приймається.",
+      "Freuly Professional (29 €/міс.) для самостійного профілю та Freuly Growth (59 €/міс.) з професійною упаковкою. До 5 або 15 фото в галереї.",
   },
   ru: {
-    title: "Тарифы Freuly — условия для специалистов",
+    title: "Тарифы Freuly — Freuly Professional и Freuly Growth",
     description:
-      "Сейчас размещение на Freuly бесплатно. Будущие тарифы будут объявлены заранее. Оплата на платформе пока не принимается.",
+      "Freuly Professional (29 €/мес.) для самостоятельного профиля и Freuly Growth (59 €/мес.) с профессиональной упаковкой. До 5 или 15 фото в галерее.",
   },
   de: {
-    title: "Freuly Tarife — Konditionen für Fachkräfte",
+    title: "Freuly Tarife — Freuly Professional und Freuly Growth",
     description:
-      "Die Nutzung für Spezialistinnen und Spezialisten ist derzeit kostenlos. Kostenpflichtige Tarife werden später mit Vorankündigung eingeführt. Es werden noch keine Zahlungen entgegengenommen.",
+      "Freuly Professional (29 €/Monat) für eigenständiges Profil-Management und Freuly Growth (59 €/Monat) mit professioneller Profilaufbereitung. Bis zu 5 oder 15 Galeriebilder.",
   },
 } as const;
 

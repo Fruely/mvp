@@ -12,8 +12,20 @@ export type PlanDefinition = {
   isPaid: boolean;
 };
 
+export type CommercialPlanDefinition = {
+  code: PaidPlanCode;
+  isPaid: true;
+};
+
+/** Internal catalog — includes legacy starter for dashboard compatibility. */
 export const PLAN_CATALOG: readonly PlanDefinition[] = [
   { code: "starter", isPaid: false },
+  { code: "basic", isPaid: true },
+  { code: "premium", isPaid: true },
+] as const;
+
+/** Public commercial plans shown in billing picker (no Starter). */
+export const PUBLIC_COMMERCIAL_PLAN_CATALOG: readonly CommercialPlanDefinition[] = [
   { code: "basic", isPaid: true },
   { code: "premium", isPaid: true },
 ] as const;

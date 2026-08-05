@@ -24,7 +24,7 @@ function asStringArray(value: unknown): string[] {
   return value.filter((x): x is string => typeof x === "string");
 }
 
-type CompareRow = { label: string; starter: string; basic: string; premium: string };
+type CompareRow = { label: string; professional: string; growth: string };
 
 function asCompareRows(value: unknown): CompareRow[] {
   if (!Array.isArray(value)) return [];
@@ -32,9 +32,8 @@ function asCompareRows(value: unknown): CompareRow[] {
     .filter((r): r is Record<string, unknown> => r != null && typeof r === "object")
     .map((r) => ({
       label: typeof r.label === "string" ? r.label : "",
-      starter: typeof r.starter === "string" ? r.starter : "",
-      basic: typeof r.basic === "string" ? r.basic : "",
-      premium: typeof r.premium === "string" ? r.premium : "",
+      professional: typeof r.professional === "string" ? r.professional : "",
+      growth: typeof r.growth === "string" ? r.growth : "",
     }))
     .filter((r) => r.label.length > 0);
 }
@@ -120,9 +119,8 @@ export default async function PricingPage({ params }: { params: { lang: string }
   const { specialist, isAuthenticated } = await getOptionalAuthenticatedSpecialist();
   const hasSpecialist = Boolean(specialist?.id);
 
-  const starterFeatures = asStringArray(getDictValue(dict, "pricing.starter.features"));
-  const basicFeatures = asStringArray(getDictValue(dict, "pricing.basic.features"));
-  const premiumFeatures = asStringArray(getDictValue(dict, "pricing.premium.features"));
+  const professionalFeatures = asStringArray(getDictValue(dict, "pricing.professional.features"));
+  const growthFeatures = asStringArray(getDictValue(dict, "pricing.growth.features"));
   const noticePoints = asStringArray(getDictValue(dict, "pricing.notice.points"));
   const compareRows = asCompareRows(getDictValue(dict, "pricing.compare.rows"));
   const faqItems = asFaqItems(getDictValue(dict, "pricing.faq"));
@@ -157,46 +155,16 @@ export default async function PricingPage({ params }: { params: { lang: string }
       </section>
 
       <section className="mt-14 lg:mt-16">
-        <div className="grid gap-6 lg:grid-cols-3 lg:gap-8">
-          {/* Starter */}
+        <div className="mx-auto grid max-w-4xl gap-6 lg:grid-cols-2 lg:gap-8">
           <div className="flex flex-col rounded-2xl border border-gray-200/90 bg-white p-6 shadow-md shadow-gray-200/30 sm:p-7">
-            <h2 className="text-lg font-semibold text-gray-900">{t(dict, "pricing.starter.name")}</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t(dict, "pricing.professional.name")}</h2>
             <p className="mt-3 text-3xl font-semibold tracking-tight text-gray-900">
-              {t(dict, "pricing.starter.price")}
+              {t(dict, "pricing.professional.price")}
             </p>
-            <p className="mt-1 text-sm font-medium text-indigo-600">{t(dict, "pricing.starter.priceHint")}</p>
-            <p className="mt-4 text-sm leading-relaxed text-gray-600">{t(dict, "pricing.starter.description")}</p>
-            <FeatureList items={starterFeatures} />
-            <div className="mt-8">
-              {hasSpecialist ? (
-                <Link
-                  href={`/${lang}/specialist/dashboard/subscription`}
-                  className="inline-flex w-full items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-                >
-                  {t(dict, "pricing.cta.currentPlan")}
-                </Link>
-              ) : (
-                <Link
-                  href={`/${lang}/become-specialist`}
-                  className="inline-flex w-full items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-                >
-                  {t(dict, "pricing.starter.cta")}
-                </Link>
-              )}
-            </div>
-          </div>
-
-          {/* Basic — subtle emphasis, not “buy now” */}
-          <div className="relative flex flex-col rounded-2xl border border-blue-200/70 bg-white p-6 shadow-md shadow-blue-100/40 ring-1 ring-blue-500/10 sm:p-7 lg:scale-[1.02] lg:shadow-lg lg:shadow-blue-100/50">
-            <p className="absolute right-5 top-5 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
-              {t(dict, "pricing.basic.badge")}
+            <p className="mt-4 text-sm leading-relaxed text-gray-600">
+              {t(dict, "pricing.professional.description")}
             </p>
-            <h2 className="text-lg font-semibold text-gray-900">{t(dict, "pricing.basic.name")}</h2>
-            <p className="mt-3 text-3xl font-semibold tracking-tight text-gray-900">
-              {t(dict, "pricing.basic.price")}
-            </p>
-            <p className="mt-4 text-sm leading-relaxed text-gray-600">{t(dict, "pricing.basic.description")}</p>
-            <FeatureList items={basicFeatures} />
+            <FeatureList items={professionalFeatures} />
             <div className="mt-8">
               <PricingPaidPlanCta
                 lang={lang}
@@ -205,18 +173,21 @@ export default async function PricingPage({ params }: { params: { lang: string }
                 hasSpecialist={hasSpecialist}
                 isAuthenticated={isAuthenticated}
               />
-              <p className="mt-2 text-center text-xs text-gray-500">{t(dict, "pricing.basic.ctaDisabled")}</p>
             </div>
           </div>
 
-          {/* Premium */}
-          <div className="flex flex-col rounded-2xl border border-gray-200/90 bg-white p-6 shadow-md shadow-gray-200/30 sm:p-7">
-            <h2 className="text-lg font-semibold text-gray-900">{t(dict, "pricing.premium.name")}</h2>
-            <p className="mt-3 text-xl font-semibold tracking-tight text-gray-800">
-              {t(dict, "pricing.premium.status")}
+          <div className="relative flex flex-col rounded-2xl border border-indigo-200/80 bg-white p-6 shadow-md shadow-indigo-100/40 ring-1 ring-indigo-500/10 sm:p-7">
+            <p className="absolute right-5 top-5 rounded-full bg-indigo-50 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-indigo-700">
+              {t(dict, "pricing.growth.badge")}
             </p>
-            <p className="mt-4 text-sm leading-relaxed text-gray-600">{t(dict, "pricing.premium.description")}</p>
-            <FeatureList items={premiumFeatures} />
+            <h2 className="text-lg font-semibold text-gray-900">{t(dict, "pricing.growth.name")}</h2>
+            <p className="mt-3 text-3xl font-semibold tracking-tight text-gray-900">
+              {t(dict, "pricing.growth.price")}
+            </p>
+            <p className="mt-4 text-sm leading-relaxed text-gray-600">
+              {t(dict, "pricing.growth.description")}
+            </p>
+            <FeatureList items={growthFeatures} />
             <div className="mt-8">
               <PricingPaidPlanCta
                 lang={lang}
@@ -225,32 +196,28 @@ export default async function PricingPage({ params }: { params: { lang: string }
                 hasSpecialist={hasSpecialist}
                 isAuthenticated={isAuthenticated}
               />
-              <p className="mt-2 text-center text-xs text-gray-500">{t(dict, "pricing.premium.ctaDisabled")}</p>
             </div>
           </div>
         </div>
       </section>
 
       {compareRows.length > 0 && (
-        <section className="mx-auto mt-16 max-w-5xl">
+        <section className="mx-auto mt-16 max-w-4xl">
           <h2 className="text-center text-xl font-semibold text-gray-900">
             {t(dict, "pricing.compare.title")}
           </h2>
           <div className="mt-6 overflow-x-auto rounded-2xl border border-gray-200/90 bg-white shadow-sm">
-            <table className="w-full min-w-[520px] border-collapse text-left text-sm">
+            <table className="w-full min-w-[480px] border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/80">
                   <th className="px-4 py-3 font-semibold text-gray-900 sm:px-6">
-                    {t(dict, "pricing.compare.colPhase")}
+                    {t(dict, "pricing.compare.colFeature")}
                   </th>
                   <th className="px-4 py-3 font-semibold text-gray-900 sm:px-6">
-                    {t(dict, "pricing.compare.colStarter")}
+                    {t(dict, "pricing.compare.colProfessional")}
                   </th>
                   <th className="px-4 py-3 font-semibold text-gray-900 sm:px-6">
-                    {t(dict, "pricing.compare.colBasic")}
-                  </th>
-                  <th className="px-4 py-3 font-semibold text-gray-900 sm:px-6">
-                    {t(dict, "pricing.compare.colPremium")}
+                    {t(dict, "pricing.compare.colGrowth")}
                   </th>
                 </tr>
               </thead>
@@ -258,9 +225,8 @@ export default async function PricingPage({ params }: { params: { lang: string }
                 {compareRows.map((row) => (
                   <tr key={row.label} className="border-b border-gray-100 last:border-0">
                     <td className="px-4 py-3.5 font-medium text-gray-800 sm:px-6">{row.label}</td>
-                    <td className="px-4 py-3.5 sm:px-6">{row.starter}</td>
-                    <td className="px-4 py-3.5 sm:px-6">{row.basic}</td>
-                    <td className="px-4 py-3.5 sm:px-6">{row.premium}</td>
+                    <td className="px-4 py-3.5 sm:px-6">{row.professional}</td>
+                    <td className="px-4 py-3.5 sm:px-6">{row.growth}</td>
                   </tr>
                 ))}
               </tbody>

@@ -6,8 +6,7 @@ import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import {
-  isPaidPlanCode,
-  PLAN_CATALOG,
+  PUBLIC_COMMERCIAL_PLAN_CATALOG,
   parsePaidPlanCode,
   parsePlanCode,
   type PlanCode,
@@ -114,12 +113,16 @@ export default async function SpecialistDashboardBillingPage({
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600">
           {t(dict, "dashboard.billingPage.planPicker.subtitle")}
         </p>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {PLAN_CATALOG.map((entry) => {
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          {PUBLIC_COMMERCIAL_PLAN_CATALOG.map((entry) => {
             const isCurrent = currentPlanCode === entry.code;
             const isSelected = selectedPaidPlan === entry.code;
-            const pricingKey = `pricing.${entry.code}.name`;
+            const pricingKey =
+              entry.code === "basic" ? "pricing.professional.name" : "pricing.growth.name";
             const pricingName = t(dict, pricingKey);
+            const priceKey =
+              entry.code === "basic" ? "pricing.professional.price" : "pricing.growth.price";
+            const priceLabel = t(dict, priceKey);
 
             return (
               <div
@@ -140,25 +143,20 @@ export default async function SpecialistDashboardBillingPage({
                     </span>
                   ) : null}
                 </div>
+                <p className="mt-2 text-sm font-semibold text-gray-900">{priceLabel}</p>
                 <p className="mt-2 flex-1 text-xs leading-relaxed text-gray-600">
-                  {entry.isPaid
-                    ? t(dict, "dashboard.billingPage.planPicker.paidHint")
-                    : t(dict, "dashboard.billingPage.planPicker.freeHint")}
+                  {entry.code === "basic"
+                    ? t(dict, "dashboard.billingPage.planPicker.professionalHint")
+                    : t(dict, "dashboard.billingPage.planPicker.growthHint")}
                 </p>
-                {isPaidPlanCode(entry.code) ? (
-                  <div className="mt-4">
-                    <PlanCheckoutButton
-                      planCode={entry.code}
-                      lang={lang}
-                      dict={dict}
-                      checkoutEnabled={checkoutEnabled}
-                    />
-                  </div>
-                ) : (
-                  <p className="mt-4 text-xs font-medium text-emerald-700">
-                    {t(dict, "dashboard.billingPage.planPicker.starterActive")}
-                  </p>
-                )}
+                <div className="mt-4">
+                  <PlanCheckoutButton
+                    planCode={entry.code}
+                    lang={lang}
+                    dict={dict}
+                    checkoutEnabled={checkoutEnabled}
+                  />
+                </div>
               </div>
             );
           })}
