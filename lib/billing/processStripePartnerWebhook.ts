@@ -88,6 +88,12 @@ export const PARTNER_COMMISSION_STRIPE_EVENT_TYPES = [
 ] as const;
 
 export function shouldMarkBillingEventSkipped(result: StripeWebhookProcessResult): boolean {
+  return shouldMarkPartnerBillingEventSkipped(result);
+}
+
+export function shouldMarkPartnerBillingEventSkipped(
+  result: StripeWebhookProcessResult,
+): boolean {
   if (!result.partnerCommission) return true;
   if (result.partnerCommission.outcome === "skipped") return true;
   if (result.partnerCommission.outcome === "no_commission") return true;

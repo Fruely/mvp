@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { claimBillingEvent, finishBillingEvent } from "@/lib/billing/billingEvents";
 import {
-  processStripeWebhookEventForPartners,
+  processStripeBillingWebhook,
   shouldMarkBillingEventSkipped,
-} from "@/lib/billing/processStripePartnerWebhook";
+  shouldRetryBillingWebhook,
+} from "@/lib/billing/processStripeBillingWebhook";
 import { getStripeClient } from "@/lib/billing/stripeClient";
 import { getStripeWebhookSecret } from "@/lib/billing/stripeConfig";
 import { PartnerDomainError } from "@/lib/partners/errors";
@@ -55,14 +56,24 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const result = await processStripeWebhookEventForPartners(supabase, event);
+    const result = await processStripeBillingWebhook(supabase, event);
+
+    if (shouldRetryBillingWebhook(result)) {
+      throw new Error("promoted_fulfillment_incomplete");
+    }
+
     const skipped = shouldMarkBillingEventSkipped(result);
     await finishBillingEvent(supabase, claim.rowId, {
       status: skipped ? "skipped" : "processed",
     });
     return NextResponse.json(
-      { received: true, event_type: event.type, partner: result.partnerCommission?.outcome ?? null },
-      { status: 200, headers: NO_STORE }
+      {
+        received: true,
+        event_type: event.type,
+        partner: result.partner.partnerCommission?.outcome ?? null,
+        promoted: result.promoted.outcome,
+      },
+      { status: 200, headers: NO_STORE },
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : "processing_failed";
