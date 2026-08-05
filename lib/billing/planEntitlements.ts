@@ -26,13 +26,8 @@ export const PLAN_MONTHLY_PRICE_EUR = {
   premium: 59,
 } as const;
 
-const ENTITLED_STATUSES = new Set([
-  "active",
-  "trialing",
-  "grace",
-  "grace_period",
-  "early_access",
-]);
+/** Paid subscription proof until Stripe sync writes confirmed statuses to specialist_plan. */
+const ENTITLED_STATUSES = new Set(["active", "grace", "grace_period"]);
 
 export type SpecialistEntitlements = {
   internalPlanCode: string;
