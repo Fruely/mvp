@@ -13,5 +13,7 @@ export const PROMOTION_SUMMARY_MAX_LEN = 4000;
 export const PROMOTION_PUBLIC_SELECT =
   "public_title, public_summary, locale, published_at, status, closed_at";
 
+export const PROMOTION_CAPTURE_SELECT = `id, ${PROMOTION_PUBLIC_SELECT}`;
+
 export const PROMOTION_ADMIN_SELECT =
   "id, service_request_id, public_token, locale, public_title, public_summary, status, created_at, updated_at, published_at, closed_at";
