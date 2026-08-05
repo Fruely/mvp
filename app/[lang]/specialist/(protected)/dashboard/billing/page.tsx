@@ -13,6 +13,7 @@ import {
   type PlanCode,
 } from "@/lib/billing/plans";
 import PlanCheckoutButton from "@/components/billing/PlanCheckoutButton";
+import { getStripeCheckoutReadiness } from "@/lib/billing/stripeReadiness";
 
 export const dynamic = "force-dynamic";
 
@@ -52,9 +53,12 @@ export default async function SpecialistDashboardBillingPage({
   const plan = await getSpecialistPlanForDashboard(service, specialist.id);
   const currentPlanCode = parsePlanCode(plan.plan_code) ?? "starter";
   const selectedPaidPlan = parsePaidPlanCode(resolvedSearch.plan);
+  const checkoutReadiness = getStripeCheckoutReadiness();
+  const checkoutEnabled = checkoutReadiness.ready;
+
   const checkoutNotice =
     resolvedSearch.checkout === "success"
-      ? t(dict, "dashboard.billingPage.checkout.successNotice")
+      ? t(dict, "dashboard.billingPage.checkout.processingNotice")
       : resolvedSearch.checkout === "cancel"
         ? t(dict, "dashboard.billingPage.checkout.cancelNotice")
         : null;
@@ -92,14 +96,16 @@ export default async function SpecialistDashboardBillingPage({
         </section>
       ) : null}
 
-      <section className="rounded-2xl border border-amber-100/90 bg-gradient-to-b from-amber-50/50 to-white p-6 shadow-sm sm:p-8">
-        <h2 className="text-base font-semibold text-gray-900">
-          {t(dict, "dashboard.billingPage.disabledTitle")}
-        </h2>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-gray-700 sm:text-base">
-          {t(dict, "dashboard.billingPage.disabledBody")}
-        </p>
-      </section>
+      {!checkoutEnabled ? (
+        <section className="rounded-2xl border border-amber-100/90 bg-gradient-to-b from-amber-50/50 to-white p-6 shadow-sm sm:p-8">
+          <h2 className="text-base font-semibold text-gray-900">
+            {t(dict, "dashboard.billingPage.disabledTitle")}
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-gray-700 sm:text-base">
+            {t(dict, "dashboard.billingPage.disabledBody")}
+          </p>
+        </section>
+      ) : null}
 
       <section className="rounded-2xl border border-gray-200/90 bg-white p-6 shadow-sm sm:p-8">
         <h2 className="text-base font-semibold text-gray-900">
@@ -141,7 +147,12 @@ export default async function SpecialistDashboardBillingPage({
                 </p>
                 {isPaidPlanCode(entry.code) ? (
                   <div className="mt-4">
-                    <PlanCheckoutButton planCode={entry.code} lang={lang} dict={dict} />
+                    <PlanCheckoutButton
+                      planCode={entry.code}
+                      lang={lang}
+                      dict={dict}
+                      checkoutEnabled={checkoutEnabled}
+                    />
                   </div>
                 ) : (
                   <p className="mt-4 text-xs font-medium text-emerald-700">
