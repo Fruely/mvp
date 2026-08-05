@@ -1,35 +1,47 @@
 import type { Lang } from "@/lib/i18n";
-import {
-  PARTNER_AGREEMENT_EFFECTIVE_DATE,
-  PARTNER_AGREEMENT_TITLE,
-  PARTNER_AGREEMENT_VERSION,
-  PARTNER_REWARD_VALIDATION_DAYS,
-} from "@/content/partners/agreementMeta";
-import { getPartnerAgreementProvider } from "@/lib/legal/freulyIdentity";
+
+/** Immutable Partner Agreement v1.0 — do not edit after production acceptances. */
+export const PARTNER_AGREEMENT_V10_VERSION = "1.0";
+export const PARTNER_AGREEMENT_V10_EFFECTIVE_DATE = "2026-07-25";
+const PARTNER_AGREEMENT_V10_TITLE = {
+  de: "Partnerprogramm-Bedingungen von Freuly",
+  ru: "Условия партнёрской программы Freuly",
+  ua: "Умови партнерської програми Freuly",
+} as const;
+const PARTNER_PROVIDER_V10 = {
+  name: "Natalia Sheshenia",
+  tradeName: "Sheshenia – Freuly",
+  street: "Hofolper Straße 46",
+  cityLine: "57399 Kirchhundem OT Hofolpe",
+  country: "Deutschland",
+  email: "freuly.de@gmail.com",
+  phone: "+49 160 92686432",
+} as const;
+const PARTNER_REWARD_VALIDATION_DAYS_V10 = 14;
 
 export type AgreementBlock =
   | { type: "h2"; text: string }
   | { type: "p"; text: string }
   | { type: "ul"; items: string[] };
 
-const P = getPartnerAgreementProvider();
-const V = PARTNER_AGREEMENT_VERSION;
-const D = PARTNER_AGREEMENT_EFFECTIVE_DATE;
-const DAYS = PARTNER_REWARD_VALIDATION_DAYS;
+const P = PARTNER_PROVIDER_V10;
+const V = PARTNER_AGREEMENT_V10_VERSION;
+const D = PARTNER_AGREEMENT_V10_EFFECTIVE_DATE;
+const DAYS = PARTNER_REWARD_VALIDATION_DAYS_V10;
 
 function providerLines(lang: Lang): string {
   if (lang === "de") {
-    return `${P.name}, handelnd unter der Geschäftsbezeichnung „${P.tradeName}“, ${P.street}, ${P.cityLine}, ${P.country}. E-Mail: ${P.email}. Telefon: ${P.phone}. Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG: ${P.vatId}. Wirtschafts-Identifikationsnummer: ${P.widnr}.`;
+    return `${P.name}, handelnd unter der Geschäftsbezeichnung „${P.tradeName}“, ${P.street}, ${P.cityLine}, ${P.country}. E-Mail: ${P.email}. Telefon: ${P.phone}.`;
   }
   if (lang === "ua") {
-    return `${P.name}, що діє під комерційним найменуванням „${P.tradeName}“, ${P.street}, ${P.cityLine}, ${P.country}. E-mail: ${P.email}. Телефон: ${P.phone}. Ідентифікаційний номер з ПДВ (USt-IdNr.) згідно з § 27a UStG: ${P.vatId}. Wirtschafts-Identifikationsnummer: ${P.widnr}.`;
+    return `${P.name}, що діє під комерційним найменуванням „${P.tradeName}“, ${P.street}, ${P.cityLine}, ${P.country}. E-mail: ${P.email}. Телефон: ${P.phone}.`;
   }
-  return `${P.name}, действующая под коммерческим обозначением «${P.tradeName}», ${P.street}, ${P.cityLine}, ${P.country}. E-mail: ${P.email}. Телефон: ${P.phone}. Идентификационный номер НДС (USt-IdNr.) согласно § 27a UStG: ${P.vatId}. Wirtschafts-Identifikationsnummer: ${P.widnr}.`;
+  return `${P.name}, действующая под коммерческим обозначением «${P.tradeName}», ${P.street}, ${P.cityLine}, ${P.country}. E-mail: ${P.email}. Телефон: ${P.phone}.`;
 }
 
-/** Canonical German text used for hashing / proof of accepted wording. */
-export function getGermanAgreementPlainText(): string {
-  return getPartnerAgreement("de")
+/** Canonical German v1.0 text — frozen for hash verification of existing acceptances. */
+export function getGermanAgreementPlainTextV10(): string {
+  return getPartnerAgreementV10("de")
     .blocks.map((b) => {
       if (b.type === "h2") return b.text;
       if (b.type === "ul") return b.items.map((i) => `- ${i}`).join("\n");
@@ -38,7 +50,7 @@ export function getGermanAgreementPlainText(): string {
     .join("\n\n");
 }
 
-export function getPartnerAgreement(lang: Lang): {
+export function getPartnerAgreementV10(lang: Lang): {
   version: string;
   effectiveDate: string;
   title: string;
@@ -49,7 +61,7 @@ export function getPartnerAgreement(lang: Lang): {
     return {
       version: V,
       effectiveDate: D,
-      title: `${PARTNER_AGREEMENT_TITLE.de} — Version ${V}`,
+      title: `${PARTNER_AGREEMENT_V10_TITLE.de} — Version ${V}`,
       governingNote: null,
       blocks: [
         {
@@ -296,7 +308,7 @@ export function getPartnerAgreement(lang: Lang): {
     return {
       version: V,
       effectiveDate: D,
-      title: `${PARTNER_AGREEMENT_TITLE.ua} — версія ${V}`,
+      title: `${PARTNER_AGREEMENT_V10_TITLE.ua} — версія ${V}`,
       governingNote:
         "У разі розбіжностей між цим перекладом і німецькою версією юридично визначальною є німецька версія, наскільки це дозволено законом.",
       blocks: [
@@ -480,7 +492,7 @@ export function getPartnerAgreement(lang: Lang): {
   return {
     version: V,
     effectiveDate: D,
-    title: `${PARTNER_AGREEMENT_TITLE.ru} — версия ${V}`,
+    title: `${PARTNER_AGREEMENT_V10_TITLE.ru} — версия ${V}`,
     governingNote:
       "При расхождениях между этим переводом и немецкой версией юридически определяющей является немецкая версия, насколько это допускается законом.",
     blocks: [

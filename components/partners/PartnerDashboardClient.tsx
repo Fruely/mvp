@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getCommissionEligibleAt } from "@/lib/partners/commissionValidation";
 import { buildCanonicalReferralUrl, resolveClientPublicOrigin } from "@/lib/partners/referralUrl";
 import PartnerReferralQr from "@/components/partners/PartnerReferralQr";
+import PartnerContractSection from "@/components/partners/PartnerContractSection";
 import { t, type Dictionary } from "@/lib/i18n";
 
 type DashboardPayload = {
@@ -309,6 +310,8 @@ export default function PartnerDashboardClient({
           />
         ) : null}
       </section>
+
+      <PartnerContractSection lang={lang} dict={dict} />
 
       <div className="flex rounded-lg border border-gray-200 p-1 text-sm">
         <button

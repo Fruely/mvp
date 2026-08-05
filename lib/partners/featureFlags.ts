@@ -10,4 +10,4 @@ export const partnerPayoutsEnabled = process.env.PARTNER_PAYOUTS_ENABLED === "tr
  * `content/partners/agreementMeta.ts` (canonical document version).
  */
 export const PARTNER_AGREEMENT_VERSION =
-  process.env.PARTNER_AGREEMENT_VERSION?.trim() || "1.0";
+  process.env.PARTNER_AGREEMENT_VERSION?.trim() || "1.1";

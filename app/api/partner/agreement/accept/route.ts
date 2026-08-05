@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       agreementVersion: version,
       agreementLocale: localeRaw,
+      userEmail: user.email,
     });
 
     return NextResponse.json(

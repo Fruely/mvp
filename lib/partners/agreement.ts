@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { writePartnerAudit } from "@/lib/partners/audit";
 import { getPartnerAgreementProofPayload } from "@/lib/partners/agreementHash";
+import {
+  ensurePartnerContractDocument,
+  resolveAcceptedAgreementVersion,
+} from "@/lib/partners/contractDocuments";
 import { PartnerDomainError } from "@/lib/partners/errors";
 import { PARTNER_AGREEMENT_VERSION } from "@/lib/partners/featureFlags";
 import type { PartnerRow } from "@/lib/partners/types";
@@ -15,6 +19,7 @@ export async function acceptPartnerAgreement(
     agreementVersion?: string;
     /** UI locale at acceptance time (audit only; no DB column required). */
     agreementLocale?: string | null;
+    userEmail?: string | null;
   }
 ): Promise<{ partner: PartnerRow; alreadyAccepted: boolean }> {
   const partnerId = input.partnerId.trim();
@@ -34,6 +39,14 @@ export async function acceptPartnerAgreement(
   if (partner.user_id !== userId) throw new PartnerDomainError("partner_access_denied", 403);
 
   if (partner.contract_signed_at) {
+    const version = resolveAcceptedAgreementVersion(partner as PartnerRow);
+    void ensurePartnerContractDocument(supabase, {
+      partner: partner as PartnerRow,
+      agreementVersion: version,
+      agreementLocale: input.agreementLocale,
+      acceptedAt: partner.contract_signed_at,
+      userEmail: input.userEmail || partner.email,
+    }).catch((err) => console.error("[partners/agreement] contract backfill", err));
     return { partner: partner as PartnerRow, alreadyAccepted: true };
   }
 
@@ -87,7 +100,7 @@ export async function acceptPartnerAgreement(
       .eq("code", updated.referral_code);
   }
 
-  const proof = getPartnerAgreementProofPayload(input.agreementLocale);
+  const proof = getPartnerAgreementProofPayload(input.agreementLocale, version);
   await writePartnerAudit(supabase, {
     actorLabel: `user:${userId}`,
     action: "partner_agreement_accepted",
@@ -101,6 +114,14 @@ export async function acceptPartnerAgreement(
       status_after: updated.status,
     },
   });
+
+  void ensurePartnerContractDocument(supabase, {
+    partner: updated as PartnerRow,
+    agreementVersion: version,
+    agreementLocale: input.agreementLocale,
+    acceptedAt: ts,
+    userEmail: input.userEmail || updated.email,
+  }).catch((err) => console.error("[partners/agreement] contract issue", err));
 
   return { partner: updated as PartnerRow, alreadyAccepted: false };
 }

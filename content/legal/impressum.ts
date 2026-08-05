@@ -11,7 +11,7 @@ const de: LegalDocument = {
   metaDescription: "Impressum – Anbieterkennzeichnung für freuly.de",
   title: "Impressum",
   subtitle: "Angaben gemäß § 5 DDG",
-  stand: "Stand: Mai 2026",
+  stand: "Stand: August 2026",
   sections: [
     {
       title: "Anbieter",
@@ -27,7 +27,7 @@ const de: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Natalia Sheshenia\nHofolpe Str. 46\n57399 Kirchhundem\nDeutschland",
+          text: "Natalia Sheshenia\nhandelnd unter der Geschäftsbezeichnung Sheshenia – Freuly\nHofolper Straße 46\n57399 Kirchhundem\nDeutschland",
         },
       ],
     },
@@ -45,9 +45,22 @@ const de: LegalDocument = {
             {
               label: "Telefon:",
               href: "tel:+4916092686432",
-              value: "0160 92686432",
+              value: "+49 160 92686432",
             },
           ],
+        },
+      ],
+    },
+    {
+      title: "Steuerliche Angaben",
+      blocks: [
+        {
+          type: "p",
+          text: "Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG:\nDE464033560",
+        },
+        {
+          type: "p",
+          text: "Wirtschafts-Identifikationsnummer:\nDE464033560-00001",
         },
       ],
     },
@@ -57,7 +70,7 @@ const de: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Natalia Sheshenia\nHofolpe Str. 46\n57399 Kirchhundem\nDeutschland",
+          text: "Natalia Sheshenia\nhandelnd unter der Geschäftsbezeichnung Sheshenia – Freuly\nHofolper Straße 46\n57399 Kirchhundem\nDeutschland",
         },
       ],
     },
@@ -104,7 +117,7 @@ const ua: LegalDocument = {
   metaDescription: "Імпресум (Impressum) — відомості про оператора freuly.de",
   title: "Імпресум (Impressum)",
   subtitle: "Відомості згідно з § 5 DDG",
-  stand: "Станом на: травень 2026",
+  stand: "Станом на: серпень 2026",
   translationNotice: TRANSLATION_NOTICE.ua,
   sections: [
     {
@@ -121,7 +134,7 @@ const ua: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Natalia Sheshenia\nHofolpe Str. 46\n57399 Kirchhundem\nDeutschland",
+          text: "Natalia Sheshenia\nдіє під комерційним найменуванням Sheshenia – Freuly\nHofolper Straße 46\n57399 Kirchhundem\nDeutschland",
         },
       ],
     },
@@ -139,9 +152,22 @@ const ua: LegalDocument = {
             {
               label: "Телефон:",
               href: "tel:+4916092686432",
-              value: "0160 92686432",
+              value: "+49 160 92686432",
             },
           ],
+        },
+      ],
+    },
+    {
+      title: "Податкові відомості (Steuerliche Angaben)",
+      blocks: [
+        {
+          type: "p",
+          text: "Ідентифікаційний номер з ПДВ (USt-IdNr.) згідно з § 27a UStG:\nDE464033560",
+        },
+        {
+          type: "p",
+          text: "Wirtschafts-Identifikationsnummer:\nDE464033560-00001",
         },
       ],
     },
@@ -151,7 +177,7 @@ const ua: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Natalia Sheshenia\nHofolpe Str. 46\n57399 Kirchhundem\nDeutschland",
+          text: "Natalia Sheshenia\nдіє під комерційним найменуванням Sheshenia – Freuly\nHofolper Straße 46\n57399 Kirchhundem\nDeutschland",
         },
       ],
     },
@@ -198,7 +224,7 @@ const ru: LegalDocument = {
   metaDescription: "Импрессум (Impressum) — сведения об операторе freuly.de",
   title: "Импрессум (Impressum)",
   subtitle: "Сведения согласно § 5 DDG",
-  stand: "По состоянию на: май 2026",
+  stand: "По состоянию на: август 2026",
   translationNotice: TRANSLATION_NOTICE.ru,
   sections: [
     {
@@ -215,7 +241,7 @@ const ru: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Natalia Sheshenia\nHofolpe Str. 46\n57399 Kirchhundem\nDeutschland",
+          text: "Natalia Sheshenia\nдействует под коммерческим обозначением Sheshenia – Freuly\nHofolper Straße 46\n57399 Kirchhundem\nDeutschland",
         },
       ],
     },
@@ -233,9 +259,22 @@ const ru: LegalDocument = {
             {
               label: "Телефон:",
               href: "tel:+4916092686432",
-              value: "0160 92686432",
+              value: "+49 160 92686432",
             },
           ],
+        },
+      ],
+    },
+    {
+      title: "Налоговые сведения (Steuerliche Angaben)",
+      blocks: [
+        {
+          type: "p",
+          text: "Идентификационный номер НДС (USt-IdNr.) согласно § 27a UStG:\nDE464033560",
+        },
+        {
+          type: "p",
+          text: "Wirtschafts-Identifikationsnummer:\nDE464033560-00001",
         },
       ],
     },
@@ -245,7 +284,7 @@ const ru: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Natalia Sheshenia\nHofolpe Str. 46\n57399 Kirchhundem\nDeutschland",
+          text: "Natalia Sheshenia\nдействует под коммерческим обозначением Sheshenia – Freuly\nHofolper Straße 46\n57399 Kirchhundem\nDeutschland",
         },
       ],
     },

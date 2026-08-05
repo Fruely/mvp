@@ -1,17 +1,45 @@
 import { createHash } from "node:crypto";
 import { getGermanAgreementPlainText } from "@/content/partners/agreementContent";
-import { PARTNER_AGREEMENT_VERSION } from "@/content/partners/agreementMeta";
+import { getGermanAgreementPlainTextV10 } from "@/content/partners/agreementContentV10";
+import {
+  PARTNER_AGREEMENT_LEGACY_VERSION,
+  PARTNER_AGREEMENT_VERSION,
+} from "@/content/partners/agreementMeta";
 
-/** SHA-256 of the canonical German Partnerprogramm-Bedingungen plain text. */
-export function getPartnerAgreementTextSha256(): string {
-  return createHash("sha256").update(getGermanAgreementPlainText(), "utf8").digest("hex");
+export function resolveAgreementVersion(version?: string | null): string {
+  const v = (version || PARTNER_AGREEMENT_VERSION).trim();
+  if (v === PARTNER_AGREEMENT_LEGACY_VERSION) return PARTNER_AGREEMENT_LEGACY_VERSION;
+  return PARTNER_AGREEMENT_VERSION;
 }
 
-export function getPartnerAgreementProofPayload(locale?: string | null) {
+export function getGermanAgreementPlainTextForVersion(version?: string | null): string {
+  if (resolveAgreementVersion(version) === PARTNER_AGREEMENT_LEGACY_VERSION) {
+    return getGermanAgreementPlainTextV10();
+  }
+  return getGermanAgreementPlainText();
+}
+
+/** SHA-256 of the canonical German Partnerprogramm-Bedingungen plain text for a version. */
+export function getPartnerAgreementTextSha256(version?: string | null): string {
+  return createHash("sha256")
+    .update(getGermanAgreementPlainTextForVersion(version), "utf8")
+    .digest("hex");
+}
+
+export function getPartnerAgreementProofPayload(
+  locale?: string | null,
+  version?: string | null
+) {
+  const resolvedVersion = resolveAgreementVersion(version);
   return {
-    agreement_version: PARTNER_AGREEMENT_VERSION,
+    agreement_version: resolvedVersion,
     agreement_locale: locale || null,
-    agreement_text_sha256: getPartnerAgreementTextSha256(),
+    agreement_text_sha256: getPartnerAgreementTextSha256(resolvedVersion),
     agreement_language_canonical: "de",
   };
 }
+
+/** Frozen v1.0 hash for production acceptance verification. */
+export const PARTNER_AGREEMENT_V10_SHA256 = getPartnerAgreementTextSha256(
+  PARTNER_AGREEMENT_LEGACY_VERSION
+);
