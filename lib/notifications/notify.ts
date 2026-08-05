@@ -15,32 +15,24 @@ export type NewLeadOwnerPayload = {
   lead_id: string;
   specialist_name: string | null;
   category_title: string | null;
-  client_name: string | null;
-  client_phone: string | null;
-  client_email: string | null;
-  message: string | null;
   source?: string | null;
   source_path?: string | null;
   referrer?: string | null;
 };
 
 function formatNewLeadOwnerMessage(p: NewLeadOwnerPayload): string {
-  const lines: string[] = ["Новая заявка Freuly", "", `ID: ${p.lead_id}`];
+  const lines: string[] = [
+    "Новая заявка Freuly",
+    "",
+    `ID: ${p.lead_id}`,
+  ];
   const specName = p.specialist_name?.trim();
   if (specName) lines.push(`Специалист: ${specName}`);
   const catTitle = p.category_title?.trim();
   if (catTitle) lines.push(`Категория: ${catTitle}`);
   lines.push("");
-  const name = p.client_name?.trim();
-  if (name) lines.push(`Имя: ${name}`);
-  const phone = p.client_phone?.trim();
-  if (phone) lines.push(`Телефон: ${phone}`);
-  const email = p.client_email?.trim();
-  if (email) lines.push(`Email: ${email}`);
-  lines.push("");
-  lines.push("Сообщение:");
-  const msg = p.message?.trim();
-  lines.push(msg ? msg : "—");
+  lines.push("Контакты клиента доступны в защищённой admin-зоне.");
+  lines.push("Admin: /admin/leads");
   const src = typeof p.source === "string" ? p.source.trim() : "";
   const path = typeof p.source_path === "string" ? p.source_path.trim() : "";
   const ref = typeof p.referrer === "string" ? p.referrer.trim() : "";

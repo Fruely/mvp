@@ -9,6 +9,7 @@ import {
 import { notify } from "@/lib/notifications/notify";
 import { sendTelegramMessage } from "@/lib/telegram/sendMessage";
 import { specialistDashboardPath } from "@/lib/specialists/navigation";
+import { SPECIALIST_LEAD_TELEGRAM_TEXT } from "@/lib/leads/contactUnlock";
 
 export async function POST(request: NextRequest) {
   try {
@@ -193,10 +194,6 @@ export async function POST(request: NextRequest) {
       lead_id: String(data.id),
       specialist_name: specialistName,
       category_title,
-      client_name: client_name.trim(),
-      client_phone: client_phone.trim(),
-      client_email: client_email.trim(),
-      message: typeof message === "string" ? message : null,
       source:
         typeof source === "string" && source.trim()
           ? source.trim()
@@ -217,18 +214,20 @@ export async function POST(request: NextRequest) {
       (typeof tgRaw === "string" || typeof tgRaw === "number")
     ) {
       const appUrl = process.env.APP_URL || "https://freuly.de";
-      const text = `🔔 Новая заявка Freuly\n\nИмя: ${client_name || "—"}\nТелефон: ${client_phone || "—"}\nEmail: ${client_email || "—"}\n\nСообщение:\n${message || "—"}`;
       const ok = await sendTelegramMessage(
         tgRaw,
-        text,
-        `${appUrl}${specialistDashboardPath("leads")}`
+        SPECIALIST_LEAD_TELEGRAM_TEXT,
+        `${appUrl}${specialistDashboardPath("leads")}`,
       );
       if (!ok) {
         console.error("[leads/create] Telegram notification failed");
       }
     }
 
-    return Response.json({ data }, { status: 200 });
+    return Response.json(
+      { data: { id: String(data.id), created_at: data.created_at ?? null } },
+      { status: 200 },
+    );
   } catch (err: any) {
     await notify("SYSTEM_ERROR", { route: "/api/leads/create", error: err });
     return Response.json(

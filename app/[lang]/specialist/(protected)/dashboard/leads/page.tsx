@@ -11,8 +11,10 @@ import {
   subscriptionNoticePanelClass,
 } from "@/lib/specialists/subscriptionDisplay";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
-import { isContactsLocked } from "@/lib/dashboard/isContactsLocked";
-import type { DashboardLead } from "@/lib/dashboard/getDashboardData";
+import {
+  DASHBOARD_LEAD_REDACTED_SELECT,
+  mapRowToDashboardLead,
+} from "@/lib/leads/contactUnlock";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
 
@@ -34,7 +36,7 @@ export default async function SpecialistDashboardLeadsPage({
 
   const { data, error } = await service
     .from("leads")
-    .select("id, client_name, client_email, client_phone, message, status, created_at")
+    .select(DASHBOARD_LEAD_REDACTED_SELECT)
     .eq("specialist_id", specialist.id)
     .order("created_at", { ascending: false });
 
@@ -42,18 +44,9 @@ export default async function SpecialistDashboardLeadsPage({
     console.error("[dashboard/leads] failed to load leads", error);
   }
 
-  const leads: DashboardLead[] = (data ?? []).map((row) => ({
-    id: String(row.id),
-    client_name: typeof row.client_name === "string" ? row.client_name : null,
-    client_email: typeof row.client_email === "string" ? row.client_email : null,
-    client_phone: typeof row.client_phone === "string" ? row.client_phone : null,
-    message: typeof row.message === "string" ? row.message : null,
-    status: typeof row.status === "string" ? row.status : null,
-    created_at: typeof row.created_at === "string" ? row.created_at : null,
-  }));
+  const leads = (data ?? []).map((row) => mapRowToDashboardLead(row as Record<string, unknown>));
 
   const plan = await getSpecialistPlanForDashboard(service, specialist.id);
-  const contactsLocked = isContactsLocked(plan.plan_status);
   const display = getSubscriptionDisplayState(plan);
   const leadsBanner = leadsSubscriptionBannerText(dict, display);
 
@@ -67,8 +60,7 @@ export default async function SpecialistDashboardLeadsPage({
           {leadsBanner}
         </div>
       ) : null}
-      <LeadsTable initialLeads={leads} contactsLocked={contactsLocked} />
+      <LeadsTable initialLeads={leads} lang={lang} dict={dict} />
     </div>
   );
 }
-

@@ -1,16 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  DASHBOARD_LEAD_REDACTED_SELECT,
+  mapRowToDashboardLead,
+  type DashboardLead,
+} from "@/lib/leads/contactUnlock";
 
-export type LeadStatus = "new" | "contacted" | "closed";
-
-export type DashboardLead = {
-  id: string;
-  client_name: string | null;
-  client_email: string | null;
-  client_phone: string | null;
-  message: string | null;
-  status: string | null;
-  created_at: string | null;
-};
+export type { DashboardLead };
 
 export type DailyLeadPoint = {
   date: string;
@@ -64,7 +59,7 @@ export async function getDashboardData(
 
   const { data, error } = await supabase
     .from("leads")
-    .select("id, client_name, client_email, client_phone, message, status, created_at")
+    .select(DASHBOARD_LEAD_REDACTED_SELECT)
     .eq("specialist_id", specialistId)
     .gte("created_at", since)
     .order("created_at", { ascending: false });
@@ -79,15 +74,9 @@ export async function getDashboardData(
     };
   }
 
-  const leads: DashboardLead[] = (data ?? []).map((row) => ({
-    id: String(row.id),
-    client_name: typeof row.client_name === "string" ? row.client_name : null,
-    client_email: typeof row.client_email === "string" ? row.client_email : null,
-    client_phone: typeof row.client_phone === "string" ? row.client_phone : null,
-    message: typeof row.message === "string" ? row.message : null,
-    status: typeof row.status === "string" ? row.status : null,
-    created_at: typeof row.created_at === "string" ? row.created_at : null,
-  }));
+  const leads: DashboardLead[] = (data ?? []).map((row) =>
+    mapRowToDashboardLead(row as Record<string, unknown>),
+  );
 
   const counts = leads.reduce(
     (acc, lead) => {
@@ -106,4 +95,3 @@ export async function getDashboardData(
     totalLast30Days: leads.length,
   };
 }
-

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { sendTelegramMessage } from "@/lib/telegram/sendMessage";
 import { specialistDashboardPath } from "@/lib/specialists/navigation";
+import { SPECIALIST_LEAD_REMINDER_TELEGRAM_TEXT } from "@/lib/leads/contactUnlock";
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -14,8 +15,9 @@ export async function GET(request: NextRequest) {
 
   const { data: leads, error } = await supabase
     .from("leads")
-    .select("id, client_name, client_phone, specialist_id")
+    .select("id, specialist_id")
     .eq("status", "new")
+    .is("contact_unlocked_at", null)
     .lt("created_at", thirtyMinAgo)
     .order("created_at", { ascending: true })
     .limit(20);
@@ -56,7 +58,7 @@ export async function GET(request: NextRequest) {
       const tgChatId = sid ? chatBySpecialistId.get(sid) : undefined;
       if (tgChatId == null) continue;
 
-      const text = `⏰ Напоминание Freuly\n\nУ вас есть непринятая заявка.\n\nИмя: ${lead.client_name || "—"}\nТелефон: ${lead.client_phone || "—"}\n\nОткройте кабинет:\n${leadsUrl}`;
+      const text = SPECIALIST_LEAD_REMINDER_TELEGRAM_TEXT;
       const ok = await sendTelegramMessage(tgChatId, text, leadsUrl);
       if (ok) reminded++;
       else console.error("[cron/remind-leads] Telegram send failed");
