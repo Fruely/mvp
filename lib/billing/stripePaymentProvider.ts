@@ -8,7 +8,10 @@ import {
 import { getStripeClient } from "@/lib/billing/stripeClient";
 import { isStripeCheckoutReady } from "@/lib/billing/stripeReadiness";
 import { assertNoBlockingStripeSubscription } from "@/lib/billing/stripeSubscriptionGuard";
+import { createSubscriptionCreditDiscount } from "@/lib/billing/createSubscriptionCreditDiscount";
+import { getEligiblePromotedSubscriptionCredit } from "@/lib/billing/getEligiblePromotedSubscriptionCredit";
 import type { CheckoutSessionResult, PaymentProvider } from "@/lib/billing/paymentProvider";
+import { appendPromotedSubscriptionCreditMetadata } from "@/lib/billing/subscriptionCreditValidation";
 
 export type StripeCheckoutContext = {
   supabase: SupabaseClient;
@@ -19,7 +22,11 @@ export type StripeCheckoutContext = {
 };
 
 export class StripePaymentProvider implements PaymentProvider {
-  constructor(private readonly context: StripeCheckoutContext) {}
+  private readonly context: StripeCheckoutContext;
+
+  constructor(context: StripeCheckoutContext) {
+    this.context = context;
+  }
 
   async createCheckoutSession(input: {
     specialistId: string;
@@ -75,12 +82,54 @@ export class StripePaymentProvider implements PaymentProvider {
         return { ok: false, reason: guard.reason };
       }
 
-      const metadata = buildStripeCheckoutMetadata({
+      const baseMetadata = buildStripeCheckoutMetadata({
         specialistId: input.specialistId,
         userId: input.userId ?? ctx.userId,
         internalPlan: planConfig.internalPlan,
         billingInterval: planConfig.billingInterval,
       });
+
+      const eligibleCredit = await getEligiblePromotedSubscriptionCredit(
+        ctx.supabase,
+        input.specialistId,
+      );
+
+      let sessionMetadata = baseMetadata;
+      let subscriptionMetadata: Record<string, string> = {
+        purpose: "specialist_subscription",
+        specialist_id: input.specialistId,
+        plan_code: planConfig.internalPlan,
+        internal_plan: planConfig.internalPlan,
+        billing_interval: planConfig.billingInterval,
+      };
+      let discounts: Array<{ coupon: string }> | undefined;
+
+      if (eligibleCredit) {
+        const discount = await createSubscriptionCreditDiscount({
+          creditId: eligibleCredit.id,
+          specialistId: input.specialistId,
+          planCode: input.planCode,
+        });
+
+        if (!discount.ok) {
+          console.info("[billing/checkout] subscription_credit_coupon_failed", {
+            specialistId: input.specialistId,
+          });
+          return { ok: false, reason: "checkout_error" };
+        }
+
+        const checkedAtIso = new Date().toISOString();
+        sessionMetadata = appendPromotedSubscriptionCreditMetadata(baseMetadata, {
+          creditId: eligibleCredit.id,
+          checkedAtIso,
+        });
+        subscriptionMetadata = {
+          ...subscriptionMetadata,
+          promoted_credit_id: eligibleCredit.id,
+          promoted_credit_cents: sessionMetadata.promoted_credit_cents,
+        };
+        discounts = [{ coupon: discount.couponId }];
+      }
 
       const session = await stripe.checkout.sessions.create({
         mode: "subscription",
@@ -88,15 +137,10 @@ export class StripePaymentProvider implements PaymentProvider {
         line_items: [{ price: planConfig.stripePriceId, quantity: 1 }],
         success_url: input.successUrl,
         cancel_url: input.cancelUrl,
-        metadata,
+        metadata: sessionMetadata,
+        ...(discounts ? { discounts } : {}),
         subscription_data: {
-          metadata: {
-            purpose: "specialist_subscription",
-            specialist_id: input.specialistId,
-            plan_code: planConfig.internalPlan,
-            internal_plan: planConfig.internalPlan,
-            billing_interval: planConfig.billingInterval,
-          },
+          metadata: subscriptionMetadata,
         },
         client_reference_id: input.specialistId,
       });

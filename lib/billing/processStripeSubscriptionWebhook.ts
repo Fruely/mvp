@@ -9,6 +9,7 @@ import {
   SUBSCRIPTION_STRIPE_EVENT_TYPES,
   validateSubscriptionCheckoutSession,
 } from "@/lib/billing/subscriptionWebhookValidation";
+import { consumePromotedSubscriptionCredit } from "@/lib/billing/consumePromotedSubscriptionCredit";
 import { getStripeClient } from "@/lib/billing/stripeClient";
 import { stripeId } from "@/lib/billing/stripeInvoiceEligibility";
 
@@ -145,11 +146,37 @@ async function handleCheckoutSessionCompleted(
     return { outcome: "retryable_failure", logCode: "subscription_retryable_failure" };
   }
 
-  return applySubscriptionLifecycle(supabase, {
+  const lifecycle = await applySubscriptionLifecycle(supabase, {
     subscription,
     eventCreatedIso: eventCreatedIso(event),
     metadataSpecialistId: validated.specialistId,
   });
+
+  if (lifecycle.outcome !== "synced") {
+    return lifecycle;
+  }
+
+  const creditResult = await consumePromotedSubscriptionCredit(supabase, {
+    session,
+    specialistId: validated.specialistId,
+    planCode: validated.planCode,
+    eventCreatedIso: eventCreatedIso(event),
+  });
+
+  if (
+    creditResult.outcome === "no_credit_metadata" ||
+    creditResult.outcome === "consumed" ||
+    creditResult.outcome === "idempotent" ||
+    creditResult.outcome === "source_invalid"
+  ) {
+    return lifecycle;
+  }
+
+  if (creditResult.outcome === "conflict") {
+    return { outcome: "conflict", logCode: creditResult.logCode };
+  }
+
+  return { outcome: "retryable_failure", logCode: creditResult.logCode };
 }
 
 async function handleSubscriptionEvent(
