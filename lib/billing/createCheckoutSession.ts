@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { manualRenewalEnabled, paymentsEnabled } from "@/lib/billing/featureFlags";
+import { isManualRenewalEnabled, paymentsEnabled } from "@/lib/billing/featureFlags";
 import {
   createPlanPaymentCheckout,
   type PlanPaymentCheckoutResult,
@@ -46,7 +46,7 @@ export async function createCheckoutSessionForSpecialist(
     return { ok: false, reason: "invalid_plan" };
   }
 
-  if (manualRenewalEnabled) {
+  if (isManualRenewalEnabled()) {
     const manual = await createPlanPaymentCheckout({
       supabase: input.supabase,
       specialistId: input.specialistId,

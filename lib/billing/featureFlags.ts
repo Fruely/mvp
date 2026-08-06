@@ -13,5 +13,6 @@ export const subscriptionPublicPaidCopyEnabled =
 export const manualInvoicesEnabled = process.env.MANUAL_INVOICES_ENABLED === "true";
 
 /** One-time Checkout manual plan renewal (Phase 4G-B). Strict "true" — legacy subscription path when absent/false. */
-export const manualRenewalEnabled =
-  process.env.BILLING_MANUAL_RENEWAL_ENABLED === "true";
+export function isManualRenewalEnabled(): boolean {
+  return process.env.BILLING_MANUAL_RENEWAL_ENABLED === "true";
+}

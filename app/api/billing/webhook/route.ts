@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { claimBillingEvent, finishBillingEvent } from "@/lib/billing/billingEvents";
 import {
   processStripeBillingWebhook,
+  shouldFinishBillingEventDeferredWithoutHttpRetry,
   shouldMarkBillingEventSkipped,
   shouldRetryBillingWebhook,
 } from "@/lib/billing/processStripeBillingWebhook";
@@ -58,6 +59,22 @@ export async function POST(request: NextRequest) {
   try {
     const result = await processStripeBillingWebhook(supabase, event);
 
+    if (shouldFinishBillingEventDeferredWithoutHttpRetry(result)) {
+      await finishBillingEvent(supabase, claim.rowId, {
+        status: "failed",
+        error: "manual_renewal_disabled",
+      });
+      return NextResponse.json(
+        {
+          received: true,
+          deferred: true,
+          event_type: event.type,
+          plan_payment: result.planPayment.outcome,
+        },
+        { status: 200, headers: NO_STORE },
+      );
+    }
+
     if (shouldRetryBillingWebhook(result)) {
       throw new Error("billing_webhook_retryable_failure");
     }
@@ -71,6 +88,7 @@ export async function POST(request: NextRequest) {
         received: true,
         event_type: event.type,
         partner: result.partner.partnerCommission?.outcome ?? null,
+        plan_payment: result.planPayment.outcome,
         promoted: result.promoted.outcome,
         subscription: result.subscription.outcome,
       },

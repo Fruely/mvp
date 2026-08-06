@@ -1,4 +1,4 @@
-import { manualRenewalEnabled, paymentsEnabled } from "@/lib/billing/featureFlags";
+import { isManualRenewalEnabled, paymentsEnabled } from "@/lib/billing/featureFlags";
 import { getManualPlanPaymentConfig } from "@/lib/billing/planPaymentConfig";
 import type { PaidPlanCode } from "@/lib/billing/plans";
 import { getStripeEnvPresence } from "@/lib/billing/stripeConfig";
@@ -14,7 +14,7 @@ export function getPlanPaymentCheckoutReadiness(
 ): PlanPaymentCheckoutReadiness {
   const blockers: string[] = [];
 
-  if (!manualRenewalEnabled) blockers.push("manual_renewal_disabled");
+  if (!isManualRenewalEnabled()) blockers.push("manual_renewal_disabled");
   if (!paymentsEnabled) blockers.push("payments_disabled");
 
   const stripeEnv = getStripeEnvPresence();

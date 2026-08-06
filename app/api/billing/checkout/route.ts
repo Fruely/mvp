@@ -7,7 +7,7 @@ import {
 } from "@/lib/billing/createCheckoutSession";
 import type { PlanPaymentCheckoutResult } from "@/lib/billing/createPlanPaymentCheckout";
 import { planPaymentFailureToApi } from "@/lib/billing/planPaymentErrors";
-import { manualRenewalEnabled } from "@/lib/billing/featureFlags";
+import { isManualRenewalEnabled } from "@/lib/billing/featureFlags";
 import { isSupportedLang, type Lang } from "@/lib/i18n";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
   const planCodeRaw = "plan_code" in bodyRecord ? bodyRecord.plan_code : null;
   const langRaw = "lang" in bodyRecord && typeof bodyRecord.lang === "string" ? bodyRecord.lang : "ua";
 
-  if (manualRenewalEnabled) {
+  if (isManualRenewalEnabled()) {
     if (!isSupportedLang(langRaw.trim())) {
       return NextResponse.json({ error: "invalid_lang" }, { status: 400, headers: NO_STORE });
     }
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
   console.info("[billing/checkout] requested", {
     specialistId: specialist.id,
-    manualRenewal: manualRenewalEnabled,
+    manualRenewal: isManualRenewalEnabled(),
   });
 
   const result = await createCheckoutSessionForSpecialist({
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (!result.ok) {
-    if (manualRenewalEnabled) {
+    if (isManualRenewalEnabled()) {
       const api = planPaymentFailureToApi(
         result as Extract<PlanPaymentCheckoutResult, { ok: false }>,
       );
