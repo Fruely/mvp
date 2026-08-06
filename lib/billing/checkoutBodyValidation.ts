@@ -30,6 +30,10 @@ export const UNTRUSTED_CHECKOUT_BODY_KEYS = [
   "promotionCode",
   "payment_id",
   "paymentId",
+  "billing_interval",
+  "billingInterval",
+  "provider",
+  "mode",
 ] as const;
 
 export function findUntrustedCheckoutBodyKeys(body: Record<string, unknown>): string[] {

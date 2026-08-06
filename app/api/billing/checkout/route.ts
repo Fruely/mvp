@@ -3,9 +3,15 @@ import { checkoutFailureToApi } from "@/lib/billing/checkoutErrors";
 import {
   createCheckoutSessionForSpecialist,
   findUntrustedCheckoutBodyKeys,
+  type CreateCheckoutResult,
 } from "@/lib/billing/createCheckoutSession";
+import type { PlanPaymentCheckoutResult } from "@/lib/billing/createPlanPaymentCheckout";
+import { planPaymentFailureToApi } from "@/lib/billing/planPaymentErrors";
+import { manualRenewalEnabled } from "@/lib/billing/featureFlags";
+import { isSupportedLang, type Lang } from "@/lib/i18n";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
+import type { CheckoutSessionResult } from "@/lib/billing/paymentProvider";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +24,12 @@ function resolveSiteUrl(request: NextRequest): string {
   const proto = request.headers.get("x-forwarded-proto") ?? "https";
   if (host) return `${proto}://${host}`;
   return "http://localhost:3000";
+}
+
+function isManualPaymentSuccess(
+  result: CreateCheckoutResult,
+): result is Extract<CreateCheckoutResult, { ok: true }> & { mode: "payment"; checkoutUrl: string } {
+  return result.ok === true && result.mode === "payment" && typeof result.checkoutUrl === "string";
 }
 
 export async function POST(request: NextRequest) {
@@ -48,6 +60,14 @@ export async function POST(request: NextRequest) {
   const planCodeRaw = "plan_code" in bodyRecord ? bodyRecord.plan_code : null;
   const langRaw = "lang" in bodyRecord && typeof bodyRecord.lang === "string" ? bodyRecord.lang : "ua";
 
+  if (manualRenewalEnabled) {
+    if (!isSupportedLang(langRaw.trim())) {
+      return NextResponse.json({ error: "invalid_lang" }, { status: 400, headers: NO_STORE });
+    }
+  }
+
+  const lang = langRaw.trim() as Lang;
+
   const service = createServiceClient();
   const { data: specialist, error: specError } = await service
     .from("specialists")
@@ -60,7 +80,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "specialist_not_found" }, { status: 403, headers: NO_STORE });
   }
 
-  console.info("[billing/checkout] requested", { specialistId: specialist.id });
+  console.info("[billing/checkout] requested", {
+    specialistId: specialist.id,
+    manualRenewal: manualRenewalEnabled,
+  });
 
   const result = await createCheckoutSessionForSpecialist({
     supabase: service,
@@ -69,14 +92,41 @@ export async function POST(request: NextRequest) {
     userEmail: user.email ?? specialist.email,
     userName: typeof specialist.name === "string" ? specialist.name : null,
     planCodeRaw,
-    lang: langRaw,
+    lang,
     siteUrl: resolveSiteUrl(request),
   });
 
   if (!result.ok) {
-    const api = checkoutFailureToApi(result);
+    if (manualRenewalEnabled) {
+      const api = planPaymentFailureToApi(
+        result as Extract<PlanPaymentCheckoutResult, { ok: false }>,
+      );
+      return NextResponse.json({ error: api.error }, { status: api.status, headers: NO_STORE });
+    }
+    const api = checkoutFailureToApi(
+      result as Extract<CheckoutSessionResult, { ok: false }>,
+    );
     return NextResponse.json({ error: api.error }, { status: api.status, headers: NO_STORE });
   }
 
-  return NextResponse.json({ url: result.url }, { status: 200, headers: NO_STORE });
+  if (isManualPaymentSuccess(result)) {
+    return NextResponse.json(
+      {
+        checkout_url: result.checkoutUrl,
+        url: result.checkoutUrl,
+        provider: result.provider ?? "stripe",
+        mode: result.mode,
+      },
+      { status: 200, headers: NO_STORE },
+    );
+  }
+
+  return NextResponse.json(
+    {
+      url: result.url,
+      ...(result.provider ? { provider: result.provider } : {}),
+      ...(result.mode ? { mode: result.mode } : {}),
+    },
+    { status: 200, headers: NO_STORE },
+  );
 }
