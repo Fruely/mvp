@@ -139,7 +139,7 @@ BEGIN
 
   ELSE
     -- No active paid coverage — check grace windows
-    v_best_grace := pg_catalog.greatest(
+    v_best_grace := GREATEST(
       COALESCE(v_natural_grace,  '-infinity'::timestamptz),
       COALESCE(v_refund_grace,   '-infinity'::timestamptz),
       COALESCE(v_initial_grace,  '-infinity'::timestamptz)

@@ -114,7 +114,8 @@ fn AS (
     p.prosecdef,
     p.proconfig,
     pg_catalog.pg_get_userbyid(p.proowner) AS owner_name,
-    pg_catalog.pg_get_function_result(p.oid) AS return_type
+    pg_catalog.pg_get_function_result(p.oid) AS return_type,
+    CASE WHEN t.oid IS NOT NULL THEN pg_catalog.pg_get_functiondef(t.oid) END AS function_definition
   FROM target t
   LEFT JOIN pg_catalog.pg_proc p ON p.oid = t.oid
 ),
@@ -182,6 +183,8 @@ SELECT
   NOT a.anon_execute AS anon_execute_false,
   NOT a.authenticated_execute AS authenticated_execute_false,
   a.service_role_execute AS service_role_execute_true,
+  a.function_definition NOT ILIKE '%pg_catalog.greatest%' AS no_pg_catalog_greatest,
+  a.function_definition ILIKE '%GREATEST(%' AS uses_greatest_expression,
   CASE
     WHEN a.oid IS NULL THEN 'FAIL: function missing'
     WHEN a.return_type <> 'jsonb' THEN 'FAIL: return type not jsonb'
@@ -192,6 +195,8 @@ SELECT
     WHEN a.anon_execute THEN 'FAIL: anon can EXECUTE'
     WHEN a.authenticated_execute THEN 'FAIL: authenticated can EXECUTE'
     WHEN NOT a.service_role_execute THEN 'FAIL: service_role cannot EXECUTE'
+    WHEN a.function_definition ILIKE '%pg_catalog.greatest%' THEN 'FAIL: pg_catalog.greatest in function body'
+    WHEN a.function_definition NOT ILIKE '%GREATEST(%' THEN 'FAIL: missing GREATEST grace expression'
     ELSE 'PASS'
   END AS section_status,
   a.return_type,
@@ -460,7 +465,10 @@ rpc AS (
         SELECT 1 FROM pg_catalog.aclexplode(COALESCE(p.proacl, pg_catalog.acldefault('f', p.proowner))) a
         JOIN pg_catalog.pg_roles r ON r.oid = a.grantee
         WHERE r.rolname = 'service_role' AND a.privilege_type = 'EXECUTE'
-      ) AS ok
+      )
+      AND pg_catalog.pg_get_functiondef(p.oid) NOT ILIKE '%pg_catalog.greatest%'
+      AND pg_catalog.pg_get_functiondef(p.oid) ILIKE '%GREATEST(%'
+    AS ok
   FROM rpc_target t
   LEFT JOIN pg_catalog.pg_proc p ON p.oid = t.oid
 ),
