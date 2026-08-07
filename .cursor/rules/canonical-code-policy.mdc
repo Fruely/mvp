@@ -1,0 +1,111 @@
+---
+description: Canonical implementation and legacy code policy
+alwaysApply: true
+---
+
+# Canonical implementation policy
+
+This repository uses Git history as the rollback mechanism.
+Do NOT preserve obsolete runtime code merely to make rollback possible.
+
+## Canonical decisions
+
+When a new implementation has been explicitly accepted as canonical:
+
+1. Treat the canonical implementation as the only active source of truth.
+2. Remove superseded experimental, transitional, placeholder, fallback UI,
+   compatibility, and duplicate business-logic paths unless they are still
+   required by a documented production compatibility constraint.
+3. Do not keep old implementations commented out.
+4. Do not keep dead components, unused helpers, obsolete locale keys,
+   alternative rendering branches, or old feature behavior "just in case".
+5. Do not reintroduce behavior from Git history unless the user explicitly
+   requests restoration.
+
+Git history is the archive. The runtime source tree is not an archive.
+
+## Before adding a new implementation
+
+Search for an existing canonical implementation first.
+
+Prefer:
+- extending the canonical implementation;
+- replacing obsolete logic;
+- deleting superseded logic;
+
+over:
+- creating parallel helpers;
+- adding another fallback branch;
+- preserving two competing implementations.
+
+## Single source of truth
+
+Business rules that affect multiple UI surfaces must have one canonical
+derived model/helper.
+
+Do not independently reproduce the same business-state interpretation in
+multiple pages/components.
+
+When duplicate implementations are found:
+- determine which implementation is canonical;
+- migrate callers to it;
+- remove the obsolete implementation.
+
+## Legacy code classification
+
+Whenever modifying an existing subsystem, classify relevant old code as:
+
+A. CANONICAL — keep and extend.
+B. REQUIRED COMPATIBILITY — keep, document why and under what condition it
+   may be removed.
+C. TRANSITIONAL — remove once its migration/rollout condition is complete.
+D. DEAD / SUPERSEDED — remove now.
+
+Agents are authorized to delete C and D code as part of the task when
+references and tests confirm it is no longer required.
+
+Do not delete B code without proving that its compatibility requirement has
+ended.
+
+## UI experiments and placeholders
+
+Temporary UI, mock payment states, coming-soon placeholders, experimental
+flows, and transitional UX must not survive indefinitely after the real
+feature becomes canonical.
+
+Once the production implementation is accepted:
+- remove the temporary runtime branch;
+- remove its unused translations;
+- remove its obsolete tests;
+- replace them with regression tests for the canonical behavior.
+
+## Feature flags
+
+A feature flag is not permission to preserve obsolete implementations
+forever.
+
+After rollout is accepted and rollback risk is reasonably closed:
+- remove the retired branch;
+- remove the retired flag if no longer needed;
+- preserve rollback capability through Git.
+
+## Safety before deletion
+
+Before deleting code:
+1. search all references/imports;
+2. inspect runtime entry points;
+3. check tests;
+4. check locale keys/config references;
+5. run relevant tests and typecheck.
+
+Deletion of obsolete code must not include unrelated cleanup.
+
+## Agent reporting
+
+When legacy code is encountered during a task, report:
+- what was canonical;
+- what was superseded;
+- what was deleted;
+- what compatibility code remains and why.
+
+Do not preserve obsolete code solely because it may once have been useful.
