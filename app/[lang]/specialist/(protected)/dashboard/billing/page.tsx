@@ -12,7 +12,10 @@ import {
   type PlanCode,
 } from "@/lib/billing/plans";
 import PlanCheckoutButton from "@/components/billing/PlanCheckoutButton";
-import { getStripeCheckoutReadiness } from "@/lib/billing/stripeReadiness";
+import {
+  isBillingPageCheckoutDisabledBannerVisible,
+  isBillingPagePlanCheckoutEnabled,
+} from "@/lib/billing/billingPageCheckoutReadiness";
 
 export const dynamic = "force-dynamic";
 
@@ -56,8 +59,7 @@ export default async function SpecialistDashboardBillingPage({
   const plan = await getSpecialistPlanForDashboard(service, specialist.id);
   const currentPlanCode = parsePlanCode(plan.plan_code) ?? "starter";
   const selectedPaidPlan = parsePaidPlanCode(resolvedSearch.plan);
-  const checkoutReadiness = getStripeCheckoutReadiness();
-  const checkoutEnabled = checkoutReadiness.ready;
+  const checkoutDisabledBannerVisible = isBillingPageCheckoutDisabledBannerVisible();
 
   const checkoutNotice =
     resolvedSearch.checkout === "success"
@@ -122,7 +124,7 @@ export default async function SpecialistDashboardBillingPage({
         </section>
       ) : null}
 
-      {!checkoutEnabled ? (
+      {checkoutDisabledBannerVisible ? (
         <section className="rounded-2xl border border-amber-100/90 bg-gradient-to-b from-amber-50/50 to-white p-6 shadow-sm sm:p-8">
           <h2 className="text-base font-semibold text-gray-900">
             {t(dict, "dashboard.billingPage.disabledTitle")}
@@ -181,7 +183,7 @@ export default async function SpecialistDashboardBillingPage({
                     planCode={entry.code}
                     lang={lang}
                     dict={dict}
-                    checkoutEnabled={checkoutEnabled}
+                    checkoutEnabled={isBillingPagePlanCheckoutEnabled(entry.code)}
                   />
                 </div>
               </div>
