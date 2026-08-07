@@ -20,6 +20,17 @@ import {
 export const dynamic = "force-dynamic";
 
 function planLabel(dict: Dictionary, code: PlanCode): string {
+  const commercialKey =
+    code === "basic"
+      ? "pricing.professional.name"
+      : code === "premium"
+        ? "pricing.growth.name"
+        : null;
+  if (commercialKey) {
+    const commercial = t(dict, commercialKey);
+    if (commercial !== commercialKey) return commercial;
+  }
+
   const key = `dashboard.subscriptionPage.plan.${code}`;
   const translated = t(dict, key);
   return translated !== key ? translated : code;
