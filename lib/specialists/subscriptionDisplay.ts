@@ -1,4 +1,5 @@
 import type { SpecialistPlanForUi } from "@/lib/specialists/subscription";
+import type { PaidPlanCode, PlanCode } from "@/lib/billing/plans";
 import { t, type Dictionary } from "@/lib/i18n";
 
 export type SubscriptionPhase =
@@ -23,7 +24,6 @@ export type SubscriptionDisplayState = {
   isExpiringSoon: boolean;
   isInGracePeriod: boolean;
   isExpired: boolean;
-  isPaymentCurrentlyDisabled: boolean;
   shouldShowDashboardNotice: boolean;
   shouldShowLeadsNotice: boolean;
 };
@@ -89,8 +89,6 @@ export function getSubscriptionDisplayState(plan: SpecialistPlanForUi): Subscrip
   const isExpired = phase === "expired" || phase === "cancelled";
   const isInactive = phase === "inactive";
 
-  const isPaymentCurrentlyDisabled = true;
-
   const shouldShowDashboardNotice =
     isInactive || isExpiringSoon || isInGracePeriod || isExpired || phase === "early_access";
 
@@ -106,7 +104,6 @@ export function getSubscriptionDisplayState(plan: SpecialistPlanForUi): Subscrip
     isExpiringSoon,
     isInGracePeriod,
     isExpired,
-    isPaymentCurrentlyDisabled,
     shouldShowDashboardNotice,
     shouldShowLeadsNotice,
   };
@@ -180,8 +177,8 @@ export function dashboardNoticeTitleBody(
   switch (pick.kind) {
     case "inactive":
       return {
-        title: "Профиль скрыт",
-        body: "Ваш профиль скрыт из каталога. Оплатите подписку, чтобы вернуть видимость.",
+        title: t(dict, "dashboard.subscriptionNotice.inactiveTitle"),
+        body: t(dict, "dashboard.subscriptionNotice.inactiveBody"),
         severity: "danger",
       };
     case "expired":
@@ -235,4 +232,20 @@ export function subscriptionNoticePanelClass(severity: SubscriptionSeverity): st
     default:
       return `${base} border-gray-200/90 bg-gray-50/90 text-gray-900`;
   }
+}
+
+const PAID_ACTIVE_STATUSES = new Set(["active"]);
+
+/**
+ * Whether a paid plan card should show the "CURRENT" badge.
+ * Only true when there is a genuine active paid entitlement matching this card.
+ * Grace/inactive/early_access → never CURRENT.
+ */
+export function isPlanCardCurrent(
+  cardCode: PaidPlanCode,
+  currentPlanCode: PlanCode,
+  planStatus: string,
+): boolean {
+  if (!PAID_ACTIVE_STATUSES.has(planStatus)) return false;
+  return currentPlanCode === cardCode;
 }

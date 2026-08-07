@@ -16,7 +16,7 @@ import {
   isBillingPageCheckoutDisabledBannerVisible,
   isBillingPagePlanCheckoutEnabled,
 } from "@/lib/billing/billingPageCheckoutReadiness";
-import { isPlanCardCurrent } from "@/lib/billing/billingPageUi";
+import { isPlanCardCurrent } from "@/lib/specialists/subscriptionDisplay";
 
 export const dynamic = "force-dynamic";
 

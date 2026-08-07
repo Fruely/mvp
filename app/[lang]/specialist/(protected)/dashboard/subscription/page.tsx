@@ -172,20 +172,10 @@ export default async function SpecialistDashboardSubscriptionPage({
             <p className="mt-2 text-sm leading-relaxed opacity-[0.95]">{subscriptionNoticeCopy.body}</p>
           </div>
         ) : null}
-        {display.isPaymentCurrentlyDisabled ? (
-          <div className="mt-4 rounded-xl border border-gray-200/90 bg-white/70 px-4 py-3.5 text-sm shadow-sm">
-            <p className="font-medium text-gray-900">
-              {t(dict, "dashboard.subscriptionNotice.paymentDisabledShort")}
-            </p>
-            <p className="mt-1.5 leading-relaxed text-gray-600">
-              {t(dict, "dashboard.subscriptionNotice.paymentDisabledBody")}
-            </p>
-          </div>
-        ) : null}
         <ul className="mt-4 space-y-2 text-sm leading-relaxed text-gray-600">
           <li className="flex gap-2">
             <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-indigo-400" aria-hidden />
-            <span>{t(dict, "dashboard.subscriptionPage.context.bulletPaidLater")}</span>
+            <span>{t(dict, "dashboard.subscriptionPage.context.bulletPayment")}</span>
           </li>
           <li className="flex gap-2">
             <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-indigo-400" aria-hidden />
