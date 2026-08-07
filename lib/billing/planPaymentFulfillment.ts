@@ -37,6 +37,34 @@ export async function loadPlanPaymentById(
   return data as PlanPaymentRow;
 }
 
+export async function loadPlanPaymentByStripeChargeId(
+  supabase: SupabaseClient,
+  chargeId: string,
+): Promise<PlanPaymentRow | null> {
+  const { data, error } = await supabase
+    .from("plan_payments")
+    .select(PLAN_PAYMENT_WEBHOOK_SELECT)
+    .eq("stripe_charge_id", chargeId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return data as PlanPaymentRow;
+}
+
+export async function loadPlanPaymentByStripePaymentIntentId(
+  supabase: SupabaseClient,
+  paymentIntentId: string,
+): Promise<PlanPaymentRow | null> {
+  const { data, error } = await supabase
+    .from("plan_payments")
+    .select(PLAN_PAYMENT_WEBHOOK_SELECT)
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return data as PlanPaymentRow;
+}
+
 export async function fulfillPlanPaymentEntitlement(
   supabase: SupabaseClient,
   input: {
@@ -126,6 +154,33 @@ export async function markPlanPaymentExpired(
     })
     .eq("id", payment.id)
     .in("status", ["pending", "checkout_created"]);
+
+  if (error) return "retryable_failure";
+  return "success";
+}
+
+export async function markPlanPaymentRefunded(
+  supabase: SupabaseClient,
+  payment: PlanPaymentRow,
+  refundedAt: string,
+): Promise<PlanPaymentLifecycleResult> {
+  if (payment.status === "refunded") {
+    return "success";
+  }
+
+  if (payment.status !== "paid") {
+    return "noop";
+  }
+
+  const { error } = await supabase
+    .from("plan_payments")
+    .update({
+      status: "refunded",
+      refunded_at: refundedAt,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", payment.id)
+    .in("status", ["paid"]);
 
   if (error) return "retryable_failure";
   return "success";

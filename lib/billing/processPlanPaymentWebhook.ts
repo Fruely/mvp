@@ -4,8 +4,11 @@ import { isManualRenewalEnabled } from "@/lib/billing/featureFlags";
 import {
   fulfillPlanPaymentEntitlement,
   loadPlanPaymentById,
+  loadPlanPaymentByStripeChargeId,
+  loadPlanPaymentByStripePaymentIntentId,
   markPlanPaymentAsyncFailed,
   markPlanPaymentExpired,
+  markPlanPaymentRefunded,
 } from "@/lib/billing/planPaymentFulfillment";
 import {
   extractPlanPaymentIdFromSession,
@@ -14,6 +17,7 @@ import {
   resolvePlanPaymentPaidAt,
   validatePlanPaymentCheckoutSession,
   validateUnpaidCompletedPlanPaymentSession,
+  type PlanPaymentRow,
 } from "@/lib/billing/planPaymentWebhookValidation";
 import { stripeId } from "@/lib/billing/stripeInvoiceEligibility";
 import { getStripeClient } from "@/lib/billing/stripeClient";
@@ -37,6 +41,7 @@ const CHECKOUT_SUCCESS_EVENTS = new Set([
 ]);
 const CHECKOUT_FAILED_EVENT = "checkout.session.async_payment_failed";
 const CHECKOUT_EXPIRED_EVENT = "checkout.session.expired";
+const CHARGE_REFUNDED_EVENT = "charge.refunded";
 
 const PLAN_PAYMENT_CHECKOUT_EVENTS = new Set<string>([
   "checkout.session.completed",
@@ -267,6 +272,71 @@ async function handleCheckoutSessionExpired(
   return { outcome: "success" };
 }
 
+function isFullChargeRefund(charge: Stripe.Charge): boolean {
+  return charge.refunded === true && charge.amount_refunded === charge.amount;
+}
+
+async function resolvePlanPaymentFromCharge(
+  supabase: SupabaseClient,
+  charge: Stripe.Charge,
+): Promise<PlanPaymentRow | null> {
+  const chargeId = stripeId(charge.id) ?? (typeof charge.id === "string" ? charge.id : null);
+  if (chargeId) {
+    const byCharge = await loadPlanPaymentByStripeChargeId(supabase, chargeId);
+    if (byCharge) return byCharge;
+  }
+
+  const paymentIntentId = stripeId(charge.payment_intent);
+  if (paymentIntentId) {
+    const byIntent = await loadPlanPaymentByStripePaymentIntentId(supabase, paymentIntentId);
+    if (byIntent) return byIntent;
+  }
+
+  return null;
+}
+
+async function handlePlanPaymentChargeRefunded(
+  supabase: SupabaseClient,
+  charge: Stripe.Charge,
+  event: Stripe.Event,
+): Promise<PlanPaymentWebhookResult> {
+  if (!isManualRenewalEnabled()) {
+    console.info("[billing/plan-payment] plan_payment_deferred_flag_off", {
+      eventType: event.type,
+      chargeId: stripeId(charge.id),
+    });
+    return { outcome: "deferred_flag_off" };
+  }
+
+  const payment = await resolvePlanPaymentFromCharge(supabase, charge);
+  if (!payment) {
+    return { outcome: "ignored" };
+  }
+
+  if (!isFullChargeRefund(charge)) {
+    console.info("[billing/plan-payment] plan_payment_partial_refund_ignored", {
+      planPaymentId: payment.id,
+      amount: charge.amount,
+      amountRefunded: charge.amount_refunded,
+    });
+    return { outcome: "success" };
+  }
+
+  const result = await markPlanPaymentRefunded(supabase, payment, eventCreatedIso(event));
+  if (result === "retryable_failure") {
+    return { outcome: "retryable_failure", failureCode: "plan_payment_refund_failed" };
+  }
+  if (result === "noop") {
+    console.info("[billing/plan-payment] plan_payment_refund_ignored_status", {
+      planPaymentId: payment.id,
+      status: payment.status,
+    });
+    return { outcome: "ignored" };
+  }
+
+  return { outcome: "success" };
+}
+
 export function sessionLooksLikePlanPayment(session: Stripe.Checkout.Session): boolean {
   return isPlanPaymentPurpose(session.metadata);
 }
@@ -275,6 +345,11 @@ export async function processStripeWebhookEventForPlanPayments(
   supabase: SupabaseClient,
   event: Stripe.Event,
 ): Promise<PlanPaymentWebhookResult> {
+  if (event.type === CHARGE_REFUNDED_EVENT) {
+    const charge = event.data.object as Stripe.Charge;
+    return handlePlanPaymentChargeRefunded(supabase, charge, event);
+  }
+
   if (!PLAN_PAYMENT_CHECKOUT_EVENTS.has(event.type)) {
     return { outcome: "ignored" };
   }
@@ -322,4 +397,5 @@ export const PLAN_PAYMENT_STRIPE_EVENT_TYPES = [
   "checkout.session.async_payment_succeeded",
   "checkout.session.async_payment_failed",
   "checkout.session.expired",
+  "charge.refunded",
 ] as const;
