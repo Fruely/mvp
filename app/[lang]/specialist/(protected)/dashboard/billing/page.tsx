@@ -16,6 +16,7 @@ import {
   isBillingPageCheckoutDisabledBannerVisible,
   isBillingPagePlanCheckoutEnabled,
 } from "@/lib/billing/billingPageCheckoutReadiness";
+import { isPlanCardCurrent } from "@/lib/billing/billingPageUi";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,14 @@ function statusLabel(dict: Dictionary, planStatus: string): string {
   const translated = t(dict, key);
   if (translated !== key) return translated;
   return t(dict, "dashboard.subscriptionPage.status.unknown");
+}
+
+function formatPlanDate(value: string | null, lang: Lang): string {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const locale = lang === "de" ? "de-DE" : lang === "ua" ? "uk-UA" : "ru-RU";
+  return date.toLocaleDateString(locale);
 }
 
 export default async function SpecialistDashboardBillingPage({
@@ -71,6 +80,11 @@ export default async function SpecialistDashboardBillingPage({
   const currentPlanCode = parsePlanCode(plan.plan_code) ?? "starter";
   const selectedPaidPlan = parsePaidPlanCode(resolvedSearch.plan);
   const checkoutDisabledBannerVisible = isBillingPageCheckoutDisabledBannerVisible();
+  const planStatus = (plan.plan_status ?? "").trim().toLowerCase();
+
+  const isGrace = planStatus === "grace" || planStatus === "grace_period";
+  const isInactive = planStatus === "inactive";
+  const graceUntilFormatted = isGrace ? formatPlanDate(plan.grace_until, lang) : null;
 
   const checkoutNotice =
     resolvedSearch.checkout === "success"
@@ -108,12 +122,28 @@ export default async function SpecialistDashboardBillingPage({
           {t(dict, "dashboard.billingPage.subtitle")}
         </p>
         <p className="mt-4 text-sm text-gray-600">
-          {t(dict, "dashboard.billingPage.currentPlanLabel")}{" "}
+          {(isGrace || isInactive)
+            ? t(dict, "dashboard.billingPage.lastPlanLabel")
+            : t(dict, "dashboard.billingPage.currentPlanLabel")}{" "}
           <span className="font-semibold text-gray-900">{planLabel(dict, currentPlanCode)}</span>
           {" · "}
           <span className="text-gray-700">{statusLabel(dict, plan.plan_status)}</span>
         </p>
       </section>
+
+      {isGrace ? (
+        <section className="rounded-2xl border border-amber-200/90 bg-amber-50/55 px-5 py-4 text-sm leading-relaxed text-amber-950">
+          {graceUntilFormatted
+            ? t(dict, "dashboard.billingPage.graceNotice").replace("{{graceUntil}}", graceUntilFormatted)
+            : t(dict, "dashboard.billingPage.graceNoticeNoDays")}
+        </section>
+      ) : null}
+
+      {isInactive ? (
+        <section className="rounded-2xl border border-rose-200/90 bg-rose-50/70 px-5 py-4 text-sm leading-relaxed text-rose-950">
+          {t(dict, "dashboard.billingPage.inactiveNotice")}
+        </section>
+      ) : null}
 
       {checkoutNotice ? (
         <section className="rounded-2xl border border-indigo-100/90 bg-indigo-50/40 px-5 py-4 text-sm text-gray-700">
@@ -155,7 +185,7 @@ export default async function SpecialistDashboardBillingPage({
         </p>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           {PUBLIC_COMMERCIAL_PLAN_CATALOG.map((entry) => {
-            const isCurrent = currentPlanCode === entry.code;
+            const isCurrent = isPlanCardCurrent(entry.code, currentPlanCode, planStatus);
             const isSelected = selectedPaidPlan === entry.code;
             const pricingKey =
               entry.code === "basic" ? "pricing.professional.name" : "pricing.growth.name";
@@ -205,34 +235,6 @@ export default async function SpecialistDashboardBillingPage({
           <Link href={pricingHref} className="font-medium text-indigo-700 underline-offset-4 hover:underline">
             {t(dict, "dashboard.billingPage.planPicker.viewAllPlans")}
           </Link>
-        </p>
-      </section>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border border-gray-200/90 bg-white p-6 shadow-sm sm:p-7">
-          <h2 className="text-sm font-semibold text-gray-900">
-            {t(dict, "dashboard.billingPage.paymentsTitle")}
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-gray-600">
-            {t(dict, "dashboard.billingPage.paymentsBody")}
-          </p>
-        </section>
-        <section className="rounded-2xl border border-gray-200/90 bg-white p-6 shadow-sm sm:p-7">
-          <h2 className="text-sm font-semibold text-gray-900">
-            {t(dict, "dashboard.billingPage.invoiceTitle")}
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-gray-600">
-            {t(dict, "dashboard.billingPage.invoiceBody")}
-          </p>
-        </section>
-      </div>
-
-      <section className="rounded-2xl border border-indigo-100/90 bg-gradient-to-b from-indigo-50/35 to-white p-6 shadow-sm sm:p-8">
-        <h2 className="text-base font-semibold text-gray-900">
-          {t(dict, "dashboard.billingPage.futureTitle")}
-        </h2>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-gray-700">
-          {t(dict, "dashboard.billingPage.futureBody")}
         </p>
       </section>
 
