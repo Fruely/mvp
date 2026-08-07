@@ -168,6 +168,7 @@ function applyVisibleSpecialistFilters<T extends { in: Function; eq: Function; o
     .in("status", VISIBLE_STATUS_FILTER)
     .eq("is_active", true)
     .eq("is_visible", true)
+    .eq("billing_visibility_blocked", false)
     .or(TEST_FILTER) as T;
   return query;
 }

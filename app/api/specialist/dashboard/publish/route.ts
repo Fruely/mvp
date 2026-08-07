@@ -10,6 +10,10 @@ import {
   type CategoryTitleRow,
 } from "@/lib/notifications/specialistPublishNotify";
 import { buildSpecialistSlug } from "@/lib/slugify";
+import {
+  reconcileSpecialistAccess,
+  isLifecycleReconciliationEnabled,
+} from "@/lib/billing/specialistAccessLifecycle";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 import { validatePublication } from "@/lib/dashboard/publicationValidator";
 import { loadSpecialistGeoSnapshot } from "@/lib/specialists/publicationGeography";
@@ -422,6 +426,38 @@ export async function POST() {
   });
   if (founderRpcError) {
     console.warn("[specialist/dashboard/publish] try_assign_founder_badge:", founderRpcError.message);
+  }
+
+  if (isLifecycleReconciliationEnabled()) {
+    try {
+      const nowIso = new Date().toISOString();
+      const { data: existingPlan } = await service
+        .from("specialist_plan")
+        .select("specialist_id, lifecycle_enrolled_at")
+        .eq("specialist_id", specialistId)
+        .maybeSingle();
+
+      if (!existingPlan) {
+        await service.from("specialist_plan").insert({
+          specialist_id: specialistId,
+          plan_code: "starter",
+          plan_status: "active",
+          started_at: nowIso,
+          lifecycle_enrolled_at: nowIso,
+          created_at: nowIso,
+          updated_at: nowIso,
+        });
+      } else if (!existingPlan.lifecycle_enrolled_at) {
+        await service
+          .from("specialist_plan")
+          .update({ lifecycle_enrolled_at: nowIso, updated_at: nowIso })
+          .eq("specialist_id", specialistId);
+      }
+
+      await reconcileSpecialistAccess(service, specialistId);
+    } catch (err) {
+      console.error("[specialist/dashboard/publish] lifecycle enrollment failed", err);
+    }
   }
 
   return jsonNoStore({ success: true, status: updated.status });

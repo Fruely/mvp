@@ -18,6 +18,7 @@ function getStatusBadgeClass(planStatus: string): string {
   if (planStatus === "early_access" || planStatus === "trialing") return "bg-emerald-50 text-emerald-700";
   if (planStatus === "active") return "bg-blue-50 text-blue-700";
   if (planStatus === "grace" || planStatus === "grace_period") return "bg-amber-50 text-amber-700";
+  if (planStatus === "inactive") return "bg-rose-50 text-rose-700";
   if (planStatus === "expired") return "bg-rose-50 text-rose-700";
   if (planStatus === "cancelled") return "bg-slate-100 text-slate-700";
   return "bg-gray-100 text-gray-700";

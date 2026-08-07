@@ -183,6 +183,7 @@ function visibleQuery(supabase: ReturnType<typeof createSupabaseServerClient>) {
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
     .eq("is_active", true)
     .eq("is_visible", true)
+    .eq("billing_visibility_blocked", false)
     .or("is_test.is.null,is_test.eq.false")
     .eq("specialist_services.is_active", true)
     .not("specialist_services.title", "eq", "")

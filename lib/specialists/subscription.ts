@@ -59,3 +59,12 @@ export const ACTIVE_SUBSCRIPTION_PLAN_STATUSES = [
   "grace",
   "grace_period",
 ] as const;
+
+/** Statuses where the specialist's profile should remain publicly visible. */
+export const VISIBLE_LIFECYCLE_STATUSES = new Set([
+  "early_access",
+  "trialing",
+  "active",
+  "grace",
+  "grace_period",
+]);

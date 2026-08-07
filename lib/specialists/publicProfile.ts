@@ -55,7 +55,7 @@ export async function getPublicSpecialistProfile(
   const { data: specialist, error: specialistError } = await supabase
     .from("specialists")
     .select(
-      "id, slug, name, avatar_url, category_id, status, is_active, is_visible, languages, created_at, work_format, postal_code"
+      "id, slug, name, avatar_url, category_id, status, is_active, is_visible, billing_visibility_blocked, languages, created_at, work_format, postal_code"
     )
     .eq("id", resolvedId)
     .maybeSingle();
@@ -65,6 +65,7 @@ export async function getPublicSpecialistProfile(
     !specialist ||
     !specialist.is_active ||
     !specialist.is_visible ||
+    specialist.billing_visibility_blocked === true ||
     !(VISIBLE_PUBLIC_SPECIALIST_STATUSES as readonly string[]).includes(specialist.status ?? "")
   ) {
     return null;

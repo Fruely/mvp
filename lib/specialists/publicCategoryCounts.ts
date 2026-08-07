@@ -37,6 +37,7 @@ export async function getPublicSpecialistCountsByServiceCategory(
     .in("specialists.status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
     .eq("specialists.is_active", true)
     .eq("specialists.is_visible", true)
+    .eq("specialists.billing_visibility_blocked", false)
     .or("is_test.is.null,is_test.eq.false", { referencedTable: "specialists" });
 
   if (error) {

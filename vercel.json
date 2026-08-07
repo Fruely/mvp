@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/partner-commissions-approve",
       "schedule": "15 4 * * *"
+    },
+    {
+      "path": "/api/cron/reconcile-specialist-access",
+      "schedule": "30 */6 * * *"
     }
   ]
 }

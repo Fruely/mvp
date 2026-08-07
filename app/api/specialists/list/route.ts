@@ -323,6 +323,7 @@ export async function GET(request: NextRequest) {
       .in("specialists.status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
       .eq("specialists.is_active", true)
       .eq("specialists.is_visible", true)
+      .eq("specialists.billing_visibility_blocked", false)
       .or("is_test.is.null,is_test.eq.false", { referencedTable: "specialists" });
 
     rows = extractRows(initial.data);
@@ -340,6 +341,7 @@ export async function GET(request: NextRequest) {
         .in("specialists.status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
         .eq("specialists.is_active", true)
         .eq("specialists.is_visible", true)
+        .eq("specialists.billing_visibility_blocked", false)
         .or("is_test.is.null,is_test.eq.false", { referencedTable: "specialists" });
 
       rows = extractRows(safe.data);
@@ -357,6 +359,7 @@ export async function GET(request: NextRequest) {
           .in("specialists.status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
           .eq("specialists.is_active", true)
           .eq("specialists.is_visible", true)
+          .eq("specialists.billing_visibility_blocked", false)
           .or("is_test.is.null,is_test.eq.false", { referencedTable: "specialists" });
         rows = extractRows(fallback.data);
         queryError = fallback.error;
@@ -397,6 +400,7 @@ export async function GET(request: NextRequest) {
         .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
         .eq("is_active", true)
         .eq("is_visible", true)
+        .eq("billing_visibility_blocked", false)
         .or("is_test.is.null,is_test.eq.false");
 
       directSpecialists = fullDirect.data as Record<string, unknown>[] | null;
@@ -411,6 +415,7 @@ export async function GET(request: NextRequest) {
           .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
           .eq("is_active", true)
           .eq("is_visible", true)
+          .eq("billing_visibility_blocked", false)
           .or("is_test.is.null,is_test.eq.false");
 
         directSpecialists = safeDirect.data as Record<string, unknown>[] | null;

@@ -16,3 +16,8 @@ export const manualInvoicesEnabled = process.env.MANUAL_INVOICES_ENABLED === "tr
 export function isManualRenewalEnabled(): boolean {
   return process.env.BILLING_MANUAL_RENEWAL_ENABLED === "true";
 }
+
+/** Lifecycle reconciliation rollout flag. When off, refund/expiry/cron lifecycle mutations are skipped. */
+export function isLifecycleReconciliationEnabledFlag(): boolean {
+  return process.env.LIFECYCLE_RECONCILIATION_ENABLED === "true";
+}

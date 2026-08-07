@@ -109,6 +109,7 @@ export async function POST(request: NextRequest) {
       .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
       .eq("is_active", true)
       .eq("is_visible", true)
+      .eq("billing_visibility_blocked", false)
       .maybeSingle();
 
     if (specialistError) {

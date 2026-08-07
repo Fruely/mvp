@@ -21,6 +21,10 @@ import {
 } from "@/lib/billing/planPaymentWebhookValidation";
 import { stripeId } from "@/lib/billing/stripeInvoiceEligibility";
 import { getStripeClient } from "@/lib/billing/stripeClient";
+import {
+  reconcileSpecialistAccess,
+  isLifecycleReconciliationEnabled,
+} from "@/lib/billing/specialistAccessLifecycle";
 
 export type PlanPaymentWebhookOutcome =
   | "ignored"
@@ -332,6 +336,16 @@ async function handlePlanPaymentChargeRefunded(
       status: payment.status,
     });
     return { outcome: "ignored" };
+  }
+
+  if (isLifecycleReconciliationEnabled()) {
+    const specialistId = payment.specialist_id;
+    if (typeof specialistId === "string" && specialistId) {
+      const reconcileResult = await reconcileSpecialistAccess(supabase, specialistId);
+      if (reconcileResult.outcome === "retryable_failure") {
+        return { outcome: "retryable_failure", failureCode: "lifecycle_reconcile_failed" };
+      }
+    }
   }
 
   return { outcome: "success" };

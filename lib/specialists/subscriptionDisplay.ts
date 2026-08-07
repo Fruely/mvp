@@ -8,6 +8,7 @@ export type SubscriptionPhase =
   | "grace_period"
   | "expired"
   | "cancelled"
+  | "inactive"
   | "unknown";
 
 export type SubscriptionSeverity = "neutral" | "success" | "info" | "warning" | "danger";
@@ -46,6 +47,7 @@ function normalizePhase(raw: string | null | undefined): SubscriptionPhase {
   if (s === "grace" || s === "grace_period") return "grace_period";
   if (s === "expired") return "expired";
   if (s === "cancelled") return "cancelled";
+  if (s === "inactive") return "inactive";
   if (!s) return "unknown";
   return "unknown";
 }
@@ -61,6 +63,7 @@ function severityForPhase(phase: SubscriptionPhase): SubscriptionSeverity {
       return "warning";
     case "expired":
     case "cancelled":
+    case "inactive":
       return "danger";
     default:
       return "neutral";
@@ -84,13 +87,14 @@ export function getSubscriptionDisplayState(plan: SpecialistPlanForUi): Subscrip
 
   const isInGracePeriod = phase === "grace_period";
   const isExpired = phase === "expired" || phase === "cancelled";
+  const isInactive = phase === "inactive";
 
   const isPaymentCurrentlyDisabled = true;
 
   const shouldShowDashboardNotice =
-    isExpiringSoon || isInGracePeriod || isExpired || phase === "early_access";
+    isInactive || isExpiringSoon || isInGracePeriod || isExpired || phase === "early_access";
 
-  const shouldShowLeadsNotice = isInGracePeriod || isExpired || isExpiringSoon;
+  const shouldShowLeadsNotice = isInactive || isInGracePeriod || isExpired || isExpiringSoon;
 
   return {
     planCode: plan.plan_code,
@@ -112,7 +116,8 @@ export type DashboardSubscriptionNoticePick =
   | { kind: "expired" }
   | { kind: "grace"; daysUntilGraceEnds: number | null }
   | { kind: "expiring"; daysUntilExpires: number }
-  | { kind: "early_access" };
+  | { kind: "early_access" }
+  | { kind: "inactive" };
 
 /**
  * Single primary notice for dashboard home / subscription (priority: expired → grace → expiring → early access).
@@ -121,6 +126,7 @@ export function pickDashboardSubscriptionNotice(
   display: SubscriptionDisplayState
 ): DashboardSubscriptionNoticePick | null {
   if (!display.shouldShowDashboardNotice) return null;
+  if (display.phase === "inactive") return { kind: "inactive" };
   if (display.isExpired) return { kind: "expired" };
   if (display.isInGracePeriod) return { kind: "grace", daysUntilGraceEnds: display.daysUntilGraceEnds };
   if (display.isExpiringSoon && display.daysUntilExpires != null) {
@@ -131,6 +137,7 @@ export function pickDashboardSubscriptionNotice(
 }
 
 export function leadsBannerSeverity(display: SubscriptionDisplayState): SubscriptionSeverity {
+  if (display.phase === "inactive") return "danger";
   if (display.isExpired) return "danger";
   if (display.isInGracePeriod || display.isExpiringSoon) return "warning";
   return "info";
@@ -142,6 +149,9 @@ export function leadsSubscriptionBannerText(
   display: SubscriptionDisplayState
 ): string | null {
   if (!display.shouldShowLeadsNotice) return null;
+  if (display.phase === "inactive") {
+    return t(dict, "dashboard.subscriptionNotice.leadsInactive");
+  }
   if (display.isExpired) {
     return t(dict, "dashboard.subscriptionNotice.leadsExpired");
   }
@@ -168,6 +178,12 @@ export function dashboardNoticeTitleBody(
   pick: DashboardSubscriptionNoticePick
 ): { title: string; body: string; severity: SubscriptionSeverity } {
   switch (pick.kind) {
+    case "inactive":
+      return {
+        title: "Профиль скрыт",
+        body: "Ваш профиль скрыт из каталога. Оплатите подписку, чтобы вернуть видимость.",
+        severity: "danger",
+      };
     case "expired":
       return {
         title: t(dict, "dashboard.subscriptionNotice.expiredTitle"),

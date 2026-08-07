@@ -93,6 +93,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .neq("slug", "")
     .eq("is_active", true)
     .eq("is_visible", true)
+    .eq("billing_visibility_blocked", false)
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES]);
 
   if (specialists) {
