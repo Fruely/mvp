@@ -155,6 +155,15 @@ export function hreflangDatenschutz(): HreflangTriple & { "x-default": string } 
   };
 }
 
+export function hreflangAgb(): HreflangTriple & { "x-default": string } {
+  return {
+    uk: `${SITE_DOMAIN}/ua/agb`,
+    ru: `${SITE_DOMAIN}/ru/agb`,
+    de: `${SITE_DOMAIN}/de/agb`,
+    "x-default": `${SITE_DOMAIN}/de/agb`,
+  };
+}
+
 /** hreflang for app/[lang]/{slug} SEO category landing pages. */
 export function hreflangSeoCategory(slug: string): HreflangTriple & { "x-default": string } {
   return {

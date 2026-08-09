@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limit/shared";
+import {
+  CONSENT_COOKIE_NAME,
+  hasReferralConsentFromCookie,
+} from "@/lib/consent/consentCookie";
 import { recordPartnerClick } from "@/lib/partners/clicks";
 import {
   PARTNER_REF_COOKIE,
@@ -11,6 +15,11 @@ import {
 import { findActiveLinkByCode } from "@/lib/partners/service";
 import { normalizeReferralCode } from "@/lib/partners/codes";
 import { defaultBecomeSpecialistPath, sanitizeTargetPath } from "@/lib/partners/targetPath";
+import {
+  REFERRAL_INTENT_COOKIE,
+  encodeReferralIntentToken,
+  referralIntentCookieOptions,
+} from "@/lib/partners/referralIntent";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -25,6 +34,10 @@ function safeHomeRedirect(request: NextRequest): NextResponse {
   return NextResponse.redirect(url);
 }
 
+function secureFromRequest(request: NextRequest): boolean {
+  return request.nextUrl.protocol === "https:";
+}
+
 export async function GET(
   request: NextRequest,
   context: { params: { code: string } | Promise<{ code: string }> }
@@ -32,7 +45,6 @@ export async function GET(
   const params = await Promise.resolve(context.params);
   const code = normalizeReferralCode(params?.code ?? "");
 
-  // Rate limit — fail-open if Upstash missing
   const ip = getClientIP(request);
   try {
     await checkRateLimit(request, {
@@ -69,8 +81,6 @@ export async function GET(
     sanitizeTargetPath(link.target_path) ?? defaultBecomeSpecialistPath("ua");
 
   const sp = request.nextUrl.searchParams;
-  // Await insert so serverless runtime does not freeze the isolate before the
-  // best-effort click write finishes (void caused intermittent missing rows).
   await recordPartnerClick(supabase, {
     partnerId: partner.id,
     partnerLinkId: link.id,
@@ -84,7 +94,6 @@ export async function GET(
 
   const redirectUrl = request.nextUrl.clone();
   redirectUrl.pathname = target;
-  // Preserve campaign UTMs on landing (marketing only; not financial)
   const keep = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "campaign"];
   const nextSearch = new URLSearchParams();
   for (const key of keep) {
@@ -94,10 +103,19 @@ export async function GET(
   redirectUrl.search = nextSearch.toString() ? `?${nextSearch.toString()}` : "";
 
   const response = NextResponse.redirect(redirectUrl);
+  const secure = secureFromRequest(request);
 
   const existing = request.cookies.get(PARTNER_REF_COOKIE)?.value;
   const existingValid = decodeReferralCookie(existing);
-  if (!existingValid) {
+  if (existingValid) {
+    return response;
+  }
+
+  const referralConsentGranted = hasReferralConsentFromCookie(
+    request.cookies.get(CONSENT_COOKIE_NAME)?.value
+  );
+
+  if (referralConsentGranted) {
     const encoded = encodeReferralCookie({
       v: 1,
       linkId: link.id,
@@ -109,10 +127,19 @@ export async function GET(
         path: "/",
         httpOnly: true,
         sameSite: "lax",
-        secure: request.nextUrl.protocol === "https:",
+        secure,
         maxAge: PARTNER_REF_MAX_AGE_SEC,
       });
     }
+    return response;
+  }
+
+  const intent = encodeReferralIntentToken({
+    linkId: link.id,
+    partnerId: partner.id,
+  });
+  if (intent) {
+    response.cookies.set(REFERRAL_INTENT_COOKIE, intent, referralIntentCookieOptions(secure));
   }
 
   return response;

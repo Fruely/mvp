@@ -4,20 +4,34 @@ export const COOKIE_CONSENT_CHANGE_EVENT = "freuly_cookie_consent_change";
 
 export type CookieConsent = {
   analytics: boolean;
-  marketing: boolean;
-  externalMedia: boolean;
+  referral: boolean;
   updatedAt: string;
 };
 
-export function createCookieConsent(values: {
+type LegacyCookieConsent = Partial<{
   analytics: boolean;
   marketing: boolean;
+  referral: boolean;
   externalMedia: boolean;
+  updatedAt: string;
+}>;
+
+export function normalizeCookieConsent(raw: LegacyCookieConsent | null | undefined): CookieConsent | null {
+  if (!raw || typeof raw !== "object") return null;
+  return {
+    analytics: raw.analytics === true,
+    referral: raw.referral === true || raw.marketing === true,
+    updatedAt: typeof raw.updatedAt === "string" ? raw.updatedAt : "",
+  };
+}
+
+export function createCookieConsent(values: {
+  analytics: boolean;
+  referral: boolean;
 }): CookieConsent {
   return {
     analytics: values.analytics,
-    marketing: values.marketing,
-    externalMedia: values.externalMedia,
+    referral: values.referral,
     updatedAt: new Date().toISOString(),
   };
 }

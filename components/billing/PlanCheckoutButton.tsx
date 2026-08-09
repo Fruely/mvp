@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { t, type Dictionary } from "@/lib/i18n";
 import type { PaidPlanCode } from "@/lib/billing/plans";
+import CheckoutLegalDisclosure from "@/components/billing/CheckoutLegalDisclosure";
+import type { LegalPublicLang } from "@/content/legal/types";
 
 type Props = {
   planCode: PaidPlanCode;
@@ -95,6 +97,7 @@ export default function PlanCheckoutButton({
 
   return (
     <div className="space-y-2">
+      <CheckoutLegalDisclosure lang={lang as LegalPublicLang} planCode={planCode} />
       <button
         type="button"
         onClick={() => void handleClick()}

@@ -59,6 +59,11 @@ export default function Footer(props) {
                 </Link>
               </li>
               <li>
+                <Link href={`${prefix}/agb`} className="hover:text-white">
+                  {lang === "de" ? "AGB" : lang === "ru" ? "AGB" : "AGB"}
+                </Link>
+              </li>
+              <li>
                 <Link href={`${prefix}/impressum`} className="hover:text-white">
                   {t(dict, "footer.impressumLink")}
                 </Link>

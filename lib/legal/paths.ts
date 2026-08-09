@@ -6,6 +6,7 @@ import { SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 export const LEGAL_SLUGS = {
   impressum: "impressum",
   privacy: "datenschutzerklaerung",
+  agb: "agb",
 } as const;
 
 export type LegalSlug = (typeof LEGAL_SLUGS)[keyof typeof LEGAL_SLUGS];
@@ -26,6 +27,10 @@ export function impressumPath(lang: LegalPublicLang | Lang): string {
 
 export function privacyPath(lang: LegalPublicLang | Lang): string {
   return legalPath(lang, LEGAL_SLUGS.privacy);
+}
+
+export function agbPath(lang: LegalPublicLang | Lang): string {
+  return legalPath(lang, LEGAL_SLUGS.agb);
 }
 
 /**

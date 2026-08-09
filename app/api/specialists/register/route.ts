@@ -14,6 +14,10 @@ import {
   buildAttributionCookieClearOptions,
 } from "@/lib/serviceRequests/attributionCookie";
 import { tryBindPromotionAttributionFromCookie } from "@/lib/serviceRequests/tryBindPromotionAttributionFromCookie";
+import {
+  SPECIALIST_AGB_VERSION,
+  getSpecialistRulesVersion,
+} from "@/lib/legal/specialistLegalMeta";
 
 function normalizeEmail(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -56,12 +60,24 @@ export async function POST(request: NextRequest) {
     const phone = normalizePhone(body?.phone);
     const password = normalizePassword(body?.password);
     const specialistRulesAccepted = body?.specialist_rules_accepted === true;
+    const b2bDeclarationAccepted = body?.b2b_declaration_accepted === true;
+    const agbAccepted = body?.agb_accepted === true;
+    const privacyAcknowledged = body?.privacy_acknowledged === true;
 
+    if (!b2bDeclarationAccepted) {
+      return jsonNoStore({ error: "b2b_declaration_required" }, { status: 400 });
+    }
+    if (!agbAccepted) {
+      return jsonNoStore({ error: "agb_acceptance_required" }, { status: 400 });
+    }
     if (!specialistRulesAccepted) {
       return jsonNoStore(
         { error: "specialist_rules_required" },
         { status: 400 }
       );
+    }
+    if (!privacyAcknowledged) {
+      return jsonNoStore({ error: "privacy_acknowledgement_required" }, { status: 400 });
     }
 
     if (!name || !email || !phone || !password) {
@@ -132,7 +148,7 @@ export async function POST(request: NextRequest) {
     }
 
     const now = new Date().toISOString();
-    const rulesVersion = process.env.SPECIALIST_RULES_VERSION || "1";
+    const rulesVersion = getSpecialistRulesVersion();
     const { data: specialist, error: specialistError } = await supabase
       .from("specialists")
       .insert({
@@ -144,6 +160,8 @@ export async function POST(request: NextRequest) {
         is_active: false,
         is_visible: false,
         created_at: now,
+        terms_accepted_at: now,
+        terms_version: SPECIALIST_AGB_VERSION,
         specialist_rules_accepted_at: now,
         specialist_rules_version: rulesVersion,
       })

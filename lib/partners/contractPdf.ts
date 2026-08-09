@@ -3,9 +3,10 @@ import PDFDocument from "pdfkit";
 import type { Lang } from "@/lib/i18n";
 import { getPartnerAgreement } from "@/content/partners/agreementContent";
 import { getPartnerAgreementV10 } from "@/content/partners/agreementContentV10";
+import { getPartnerAgreementV11 } from "@/content/partners/agreementContentV11";
 import {
+  PARTNER_AGREEMENT_INTERMEDIATE_VERSION,
   PARTNER_AGREEMENT_LEGACY_VERSION,
-  PARTNER_AGREEMENT_VERSION,
 } from "@/content/partners/agreementMeta";
 import { getFreulyPublicIdentity, formatFreulyWidnr } from "@/lib/legal/freulyIdentity";
 import { resolveAgreementVersion } from "@/lib/partners/agreementHash";
@@ -46,8 +47,12 @@ type BuildPdfInput = {
 };
 
 function agreementForVersion(lang: Lang, version: string) {
-  if (resolveAgreementVersion(version) === PARTNER_AGREEMENT_LEGACY_VERSION) {
+  const resolved = resolveAgreementVersion(version);
+  if (resolved === PARTNER_AGREEMENT_LEGACY_VERSION) {
     return getPartnerAgreementV10(lang);
+  }
+  if (resolved === PARTNER_AGREEMENT_INTERMEDIATE_VERSION) {
+    return getPartnerAgreementV11(lang);
   }
   return getPartnerAgreement(lang);
 }

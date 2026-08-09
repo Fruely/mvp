@@ -1,0 +1,88 @@
+/** @type {import("../lib/render.mjs").default} */
+export const CHECKOUT_COPY_BLOCKS = [
+  {
+    type: "title",
+    de: "# Checkout-Texte Freuly (Spezialisten-Tarife)",
+    ru: "# Тексты оформления заказа Freuly (тарифы для специалистов)",
+    ua: "# Тексти оформлення замовлення Freuly (тарифи для спеціалістів)",
+  },
+  {
+    type: "p",
+    id: "checkout-01-01",
+    de: "Stand: August 2026. Diese Texte werden im Checkout und in unmittelbarer Nähe der Tarifauswahl angezeigt.",
+    ru: "Дата: август 2026 г. Эти тексты отображаются при оформлении заказа и в непосредственной близости от выбора тарифа.",
+    ua: "Дата: серпень 2026 р. Ці тексти відображаються під час оформлення замовлення та безпосередньо поруч із вибором тарифу.",
+  },
+  {
+    type: "h2",
+    de: "Freuly Professional — 29 € / Monat",
+    ru: "Freuly Professional — 29 € / месяц",
+    ua: "Freuly Professional — 29 € / місяць",
+  },
+  {
+    type: "p",
+    id: "checkout-02-01",
+    de: "Monatliches Abonnement Freuly Professional: 29 € pro Monat (brutto, sofern Umsatzsteuer anfällt). Enthält eigenständiges Profil-Management, öffentliche Präsenz auf Freuly und bis zu 5 Galeriebilder. Das Abonnement wird ausschließlich durch manuelle Verlängerung im Checkout fortgeführt; es erfolgt keine automatische wiederkehrende Abbuchung.",
+    ru: "Ежемесячная подписка Freuly Professional: 29 € в месяц (брутто, если применяется НДС). Включает самостоятельное управление профилем, публичное присутствие на Freuly и до 5 изображений в галерее. Подписка продлевается исключительно путём ручного продления при оформлении заказа; автоматическое повторное списание не производится.",
+    ua: "Щомісячна підписка Freuly Professional: 29 € на місяць (брутто, якщо застосовується ПДВ). Містить самостійне керування профілем, публічну присутність на Freuly і до 5 зображень у галереї. Підписка продовжується виключно шляхом ручного продовження під час оформлення замовлення; автоматичне повторне списання не здійснюється.",
+  },
+  {
+    type: "h2",
+    de: "Freuly Growth — 59 € / Monat",
+    ru: "Freuly Growth — 59 € / месяц",
+    ua: "Freuly Growth — 59 € / місяць",
+  },
+  {
+    type: "p",
+    id: "checkout-03-01",
+    de: "Monatliches Abonnement Freuly Growth: 59 € pro Monat (brutto, sofern Umsatzsteuer anfällt). Enthält alles aus Freuly Professional sowie erweiterte Profilaufbereitung, erweiterte Profilseite und bis zu 15 Galeriebilder. Das Abonnement wird ausschließlich durch manuelle Verlängerung im Checkout fortgeführt; es erfolgt keine automatische wiederkehrende Abbuchung.",
+    ru: "Ежемесячная подписка Freuly Growth: 59 € в месяц (брутто, если применяется НДС). Включает всё из Freuly Professional, а также расширенную подготовку профиля, расширенную страницу профиля и до 15 изображений в галерее. Подписка продлевается исключительно путём ручного продления при оформлении заказа; автоматическое повторное списание не производится.",
+    ua: "Щомісячна підписка Freuly Growth: 59 € на місяць (брутто, якщо застосовується ПДВ). Містить усе з Freuly Professional, а також розширену підготовку профілю, розширену сторінку профілю і до 15 зображень у галереї. Підписка продовжується виключно шляхом ручного продовження під час оформлення замовлення; автоматичне повторне списання не здійснюється.",
+  },
+  {
+    type: "h2",
+    de: "Promoted Request — 10 €",
+    ru: "Promoted Request — 10 €",
+    ua: "Promoted Request — 10 €",
+  },
+  {
+    type: "p",
+    id: "checkout-04-01",
+    de: "Einmalige Zahlung Promoted Request: 10 € (brutto, sofern Umsatzsteuer anfällt). Ermöglicht die bevorzugte Sichtbarkeit einer konkreten Serviceanfrage für einen begrenzten Zeitraum gemäß den jeweils gültigen Produktregeln.",
+    ru: "Разовый платёж Promoted Request: 10 € (брутто, если применяется НДС). Обеспечивает приоритетную видимость конкретного запроса на услугу на ограниченный период согласно действующим правилам продукта.",
+    ua: "Разовий платіж Promoted Request: 10 € (брутто, якщо застосовується ПДВ). Забезпечує пріоритетну видимість конкретного запиту на послугу на обмежений період згідно з чинними правилами продукту.",
+  },
+  {
+    type: "h2",
+    de: "7-Tage-Gutschrift-Regel",
+    ru: "Правило 7-дневного зачёта",
+    ua: "Правило 7-денного зарахування",
+  },
+  {
+    type: "p",
+    id: "checkout-05-01",
+    de: "Wenn Sie nach einer erfolgreichen Promoted-Request-Zahlung innerhalb von 7 Kalendertagen erstmals ein Abonnement Freuly Professional oder Freuly Growth abschließen, kann der Betrag von 10 € als Gutschrift auf die erste Abo-Zahlung angerechnet werden, sofern die technischen Voraussetzungen erfüllt sind und die Gutschrift zum Zeitpunkt des Checkouts verfügbar ist.",
+    ru: "Если после успешной оплаты Promoted Request вы в течение 7 календарных дней впервые оформите подписку Freuly Professional или Freuly Growth, сумма 10 € может быть зачтена в первый платёж по подписке при выполнении технических условий и наличии зачёта на момент оформления заказа.",
+    ua: "Якщо після успішної оплати Promoted Request ви протягом 7 календарних днів вперше оформите підписку Freuly Professional або Freuly Growth, суму 10 € може бути зараховано до першого платежу за підпискою за умови виконання технічних вимог і наявності зарахування на момент оформлення замовлення.",
+  },
+  {
+    type: "p",
+    id: "checkout-05-02",
+    de: "Die Gutschrift ist einmalig, nicht übertragbar und an die konkrete Promoted-Request-Zahlung gebunden. Nach Ablauf von 7 Kalendertagen ab der Promoted-Request-Zahlung entfällt der Anspruch auf die Gutschrift.",
+    ru: "Зачёт является одноразовым, непередаваемым и привязан к конкретной оплате Promoted Request. По истечении 7 календарных дней с момента оплаты Promoted Request право на зачёт утрачивается.",
+    ua: "Зарахування є одноразовим, непередаваним і прив’язане до конкретної оплати Promoted Request. Після спливу 7 календарних днів з моменту оплати Promoted Request право на зарахування втрачається.",
+  },
+  {
+    type: "h2",
+    de: "Allgemeiner Checkout-Hinweis",
+    ru: "Общее примечание при оформлении",
+    ua: "Загальна примітка при оформленні",
+  },
+  {
+    type: "p",
+    id: "checkout-06-01",
+    de: "Mit Abschluss des Checkouts schließen Sie ein Abonnement bzw. einen kostenpflichtigen Zusatzdienst mit Freuly ab. Freuly garantiert keine Anfragen, Aufträge, Umsätze oder Sichtbarkeit. Preise verstehen sich als monatliche Abonnementpreise, sofern nicht ausdrücklich als Einmalzahlung gekennzeichnet.",
+    ru: "При завершении оформления заказа вы заключаете подписку или платную дополнительную услугу с Freuly. Freuly не гарантирует запросы, заказы, доход или видимость. Цены указаны как ежемесячные абонентские, если явно не обозначено как разовый платёж.",
+    ua: "Завершуючи оформлення замовлення, ви укладаєте підписку або платну додаткову послугу з Freuly. Freuly не гарантує запити, замовлення, дохід або видимість. Ціни вказані як щомісячні абонентські, якщо явно не позначено як разовий платіж.",
+  },
+];

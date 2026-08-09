@@ -1,0 +1,75 @@
+/** @type {import("../lib/render.mjs").default} */
+export const COOKIE_COPY_BLOCKS = [
+  {
+    type: "title",
+    de: "# Cookie-Banner-Texte Freuly",
+    ru: "# Тексты баннера cookie Freuly",
+    ua: "# Тексти банера cookie Freuly",
+  },
+  {
+    type: "p",
+    id: "cookie-01-01",
+    de: "Stand: August 2026. Freuly verwendet drei Einwilligungskategorien: Notwendig, Analyse und Referral-Attribution. Es gibt keine Kategorie „Externe Medien“ in dieser Fassung.",
+    ru: "Дата: август 2026 г. Freuly использует три категории согласия: Необходимые, Аналитика и Referral-атрибуция. В этой версии нет категории «Внешние медиа».",
+    ua: "Дата: серпень 2026 р. Freuly використовує три категорії згоди: Необхідні, Аналітика та Referral-атрибуція. У цій версії немає категорії «Зовнішні медіа».",
+  },
+  {
+    type: "h2",
+    de: "Banner",
+    ru: "Баннер",
+    ua: "Банер",
+  },
+  {
+    type: "p",
+    id: "cookie-02-01",
+    de: "Wir verwenden Cookies und ähnliche Technologien, um den Betrieb der Website zu gewährleisten und, mit Ihrer Einwilligung, Analysefunktionen sowie Referral-Attribution zu nutzen. Notwendige Cookies werden immer verwendet. Optionale Kategorien werden nur nach Ihrer Einwilligung eingesetzt. Sie können alle akzeptieren, optionale ablehnen oder Ihre Einstellungen anpassen.",
+    ru: "Мы используем cookie и аналогичные технологии для обеспечения работы сайта и, с вашего согласия, для аналитики и referral-атрибуции. Необходимые cookie всегда используются. Дополнительные категории применяются только после вашего согласия. Вы можете принять все, отклонить дополнительные или настроить параметры.",
+    ua: "Ми використовуємо cookie та подібні технології для забезпечення роботи сайту та, за вашої згоди, для аналітики й referral-атрибуції. Необхідні cookie завжди використовуються. Додаткові категорії застосовуються лише після вашої згоди. Ви можете прийняти всі, відхилити додаткові або налаштувати параметри.",
+  },
+  {
+    type: "h2",
+    de: "Notwendig",
+    ru: "Необходимые",
+    ua: "Необхідні",
+  },
+  {
+    type: "p",
+    id: "cookie-03-01",
+    de: "Erforderlich für den Grundbetrieb der Website, Sicherheit, Sitzungsfunktionen und die Speicherung Ihrer Cookie-Auswahl. Diese Kategorie ist stets aktiv und kann nicht deaktiviert werden.",
+    ru: "Необходимы для базовой работы сайта, безопасности, сессионных функций и сохранения вашего выбора cookie. Эта категория всегда активна и не может быть отключена.",
+    ua: "Необхідні для базової роботи сайту, безпеки, сесійних функцій і збереження вашого вибору cookie. Ця категорія завжди активна і не може бути вимкнена.",
+  },
+  {
+    type: "h2",
+    de: "Analyse",
+    ru: "Аналитика",
+    ua: "Аналітика",
+  },
+  {
+    type: "p",
+    id: "cookie-04-01",
+    de: "Helfen zu verstehen, wie die Website genutzt wird, zum Beispiel über Google Analytics 4. Diese Kategorie wird nur nach Ihrer Einwilligung geladen. Ohne Einwilligung werden keine Analyse-Tags freigeschaltet.",
+    ru: "Помогают понять, как используется сайт, например через Google Analytics 4. Эта категория загружается только после вашего согласия. Без согласия аналитические теги не активируются.",
+    ua: "Допомагають зрозуміти, як використовується сайт, наприклад через Google Analytics 4. Ця категорія завантажується лише після вашої згоди. Без згоди аналітичні теги не активуються.",
+  },
+  {
+    type: "h2",
+    de: "Referral-Attribution",
+    ru: "Referral-атрибуция",
+    ua: "Referral-атрибуція",
+  },
+  {
+    type: "p",
+    id: "cookie-05-01",
+    de: "Ermöglicht die Zuordnung von Registrierungen zu Partner-Referral-Links, wenn Sie zuvor über einen solchen Link auf Freuly gelangt sind. Das Cookie freuly_partner_ref wird für 90 Tage gespeichert und nur nach Ihrer Einwilligung in diese Kategorie gesetzt. Rechtsgrundlage: § 25 TDDDG und Art. 6 Abs. 1 lit. a DSGVO.",
+    ru: "Позволяет привязать регистрации к партнёрским referral-ссылкам, если вы ранее перешли на Freuly по такой ссылке. Cookie freuly_partner_ref хранится 90 дней и устанавливается только после вашего согласия на эту категорию. Правовое основание: § 25 TDDDG и ст. 6 п. 1 lit. a GDPR.",
+    ua: "Дозволяє прив’язати реєстрації до партнерських referral-посилань, якщо ви раніше перейшли на Freuly за таким посиланням. Cookie freuly_partner_ref зберігається 90 днів і встановлюється лише після вашої згоди на цю категорію. Правова підстава: § 25 TDDDG і ст. 6 п. 1 lit. a GDPR.",
+  },
+  {
+    type: "p",
+    id: "cookie-05-02",
+    de: "Ohne Einwilligung in Referral-Attribution wird kein freuly_partner_ref-Cookie gesetzt; Partner-Vergütungen können in diesem Fall technisch nicht zugeordnet werden.",
+    ru: "Без согласия на referral-атрибуцию cookie freuly_partner_ref не устанавливается; в этом случае партнёрские вознаграждения технически не могут быть привязаны.",
+    ua: "Без згоди на referral-атрибуцію cookie freuly_partner_ref не встановлюється; у цьому випадку партнерські винагороди технічно не можуть бути прив’язані.",
+  },
+];

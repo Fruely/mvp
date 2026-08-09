@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { t, type Dictionary } from "@/lib/i18n";
+import CheckoutLegalDisclosure from "@/components/billing/CheckoutLegalDisclosure";
+import type { LegalPublicLang } from "@/content/legal/types";
 
 type Props = {
   lang: string;
@@ -81,6 +83,10 @@ export default function PromotedAccessCheckoutButton({ lang, dict, disabled = fa
 
   return (
     <div className="space-y-2">
+      <CheckoutLegalDisclosure
+        lang={lang as LegalPublicLang}
+        planCode="promoted_request"
+      />
       <button
         type="button"
         onClick={() => void handleClick()}

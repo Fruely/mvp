@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getSupabase } from "@/lib/supabaseClient";
 import { specialistDashboardHref, specialistDashboardHrefClient } from "@/lib/specialists/dashboardHref";
+import SpecialistLegalAcceptanceFields from "@/components/legal/SpecialistLegalAcceptanceFields";
 import { t, type Dictionary } from "@/lib/i18n";
 
 type Props = {
@@ -31,22 +32,36 @@ export default function SpecialistQuickRegisterForm({ dict, lang }: Props) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [specialistRulesAccepted, setSpecialistRulesAccepted] = useState(false);
+  const [b2bAccepted, setB2bAccepted] = useState(false);
+  const [agbAccepted, setAgbAccepted] = useState(false);
+  const [rulesAccepted, setRulesAccepted] = useState(false);
+  const [privacyAcknowledged, setPrivacyAcknowledged] = useState(false);
+  const [legalError, setLegalError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const rulesHref = lang ? `/${lang}/specialist-rules` : "/ua/specialist-rules";
 
+  function validateLegalAcceptance(): boolean {
+    if (!b2bAccepted || !agbAccepted || !rulesAccepted || !privacyAcknowledged) {
+      setLegalError(
+        lang === "de"
+          ? "Bitte bestätigen Sie alle erforderlichen rechtlichen Angaben."
+          : lang === "ru"
+            ? "Пожалуйста, подтвердите все обязательные юридические пункты."
+            : "Будь ласка, підтвердьте всі обов’язкові юридичні пункти."
+      );
+      return false;
+    }
+    setLegalError(null);
+    return true;
+  }
+
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
 
-    if (!specialistRulesAccepted) {
-      setError(
-        t(dict, "application.errors.specialistRulesRequired", {
-          defaultValue: "Потрібно прийняти правила розміщення спеціалістів",
-        })
-      );
+    if (!validateLegalAcceptance()) {
       return;
     }
 
@@ -72,6 +87,9 @@ export default function SpecialistQuickRegisterForm({ dict, lang }: Props) {
           phone,
           password,
           name,
+          b2b_declaration_accepted: true,
+          agb_accepted: true,
+          privacy_acknowledged: true,
           specialist_rules_accepted: true,
         }),
       });
@@ -189,37 +207,30 @@ export default function SpecialistQuickRegisterForm({ dict, lang }: Props) {
           />
         </div>
 
-        <div className="rounded-xl border border-gray-100 bg-gray-50/80 p-3">
-          <label className="flex cursor-pointer items-start gap-3">
-            <input
-              type="checkbox"
-              checked={specialistRulesAccepted}
-              onChange={(e) => setSpecialistRulesAccepted(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600"
-            />
-            <span className="text-sm text-gray-800 leading-snug">
-              {t(dict, "application.specialistRulesCheckbox.before")} {" "}
-              <Link
-                href={rulesHref}
-                className="font-semibold text-blue-600 underline hover:text-blue-700"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {t(dict, "application.specialistRulesCheckbox.link")}
-              </Link>{" "}
-              {t(dict, "application.specialistRulesCheckbox.after")}
-              <span className="text-red-500"> *</span>
-            </span>
-          </label>
-          <p className="mt-2 pl-7 text-xs leading-relaxed text-gray-600">
-            {getEarlyAccessConsentHint(lang)}
-          </p>
-        </div>
+        <SpecialistLegalAcceptanceFields
+          lang={(lang ?? "ua") as "de" | "ru" | "ua"}
+          b2bAccepted={b2bAccepted}
+          agbAccepted={agbAccepted}
+          rulesAccepted={rulesAccepted}
+          privacyAcknowledged={privacyAcknowledged}
+          onB2bChange={setB2bAccepted}
+          onAgbChange={setAgbAccepted}
+          onRulesChange={setRulesAccepted}
+          onPrivacyChange={setPrivacyAcknowledged}
+          error={legalError}
+        />
+        <p className="text-xs leading-relaxed text-gray-600">{getEarlyAccessConsentHint(lang)}</p>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
         <button
           type="submit"
-          disabled={loading || !specialistRulesAccepted}
+          disabled={
+            loading ||
+            !b2bAccepted ||
+            !agbAccepted ||
+            !rulesAccepted ||
+            !privacyAcknowledged
+          }
           className="inline-flex h-10 w-full items-center justify-center rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading

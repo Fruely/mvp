@@ -1,0 +1,81 @@
+/** @type {import("../lib/render.mjs").default} */
+export const RANKING_BLOCKS = [
+  {
+    type: "title",
+    de: "# Ranking-Offenlegung Freuly",
+    ru: "# Раскрытие информации о ранжировании Freuly",
+    ua: "# Розкриття інформації про ранжування Freuly",
+  },
+  {
+    type: "p",
+    id: "ranking-01-01",
+    de: "Stand: August 2026. Diese Offenlegung beschreibt, wie Freuly Spezialistenprofile in Suchergebnissen und Kategorieübersichten sortiert.",
+    ru: "Дата: август 2026 г. Настоящее раскрытие описывает, как Freuly сортирует профили специалистов в результатах поиска и в обзорах категорий.",
+    ua: "Дата: серпень 2026 р. Це розкриття описує, як Freuly сортує профілі спеціалістів у результатах пошуку та в оглядах категорій.",
+  },
+  {
+    type: "h2",
+    de: "1. Primäres Sortierkriterium: Entfernung",
+    ru: "1. Основной критерий сортировки: расстояние",
+    ua: "1. Основний критерій сортування: відстань",
+  },
+  {
+    type: "p",
+    id: "ranking-02-01",
+    de: "Bei lokalen Suchanfragen mit Standortangabe ist die Entfernung zwischen dem gesuchten Ort und dem Standort des Spezialisten das primäre Sortierkriterium. Profile mit geringerer Entfernung erscheinen vor Profile mit größerer Entfernung, sofern beide innerhalb des für die Suche relevanten Radius liegen.",
+    ru: "При локальных поисковых запросах с указанием местоположения основным критерием сортировки является расстояние между искомым местом и местоположением специалиста. Профили с меньшим расстоянием отображаются выше профилей с большим расстоянием, если оба находятся в пределах радиуса, релевантного для поиска.",
+    ua: "За локальних пошукових запитів із зазначенням місцезнаходження основним критерієм сортування є відстань між шуканим місцем і місцем спеціаліста. Профілі з меншою відстанню відображаються вище профілів з більшою відстанню, якщо обидва перебувають у межах радіуса, релевантного для пошуку.",
+  },
+  {
+    type: "h2",
+    de: "2. Internes profilspezifisches Prioritätsmerkmal",
+    ru: "2. Внутренний профильно-специфический признак приоритета",
+    ua: "2. Внутрішня профільно-специфічна ознака пріоритету",
+  },
+  {
+    type: "p",
+    id: "ranking-03-01",
+    de: "Bei gleicher oder vergleichbarer Entfernung kann ein internes profilspezifisches Prioritätsmerkmal die Reihenfolge beeinflussen. Dieses Merkmal ist an den einzelnen Spezialisten gebunden und spiegelt keinen öffentlichen Tarifnamen wider. Es dient der technischen Unterscheidung von Profilen mit erweiterter Plattformnutzung gegenüber Basisprofilen.",
+    ru: "При одинаковом или сопоставимом расстоянии внутренний профильно-специфический признак приоритета может влиять на порядок отображения. Этот признак привязан к конкретному специалисту и не отражает публичное название тарифа. Он служит для технического различения профилей с расширенным использованием платформы и базовых профилей.",
+    ua: "За однакової або порівнянної відстані внутрішня профільно-специфічна ознака пріоритету може впливати на порядок відображення. Ця ознака прив’язана до конкретного спеціаліста і не відображає публічну назву тарифу. Вона слугує для технічного розмежування профілів з розширеним використанням платформи та базових профілів.",
+  },
+  {
+    type: "h2",
+    de: "3. Bewertung",
+    ru: "3. Рейтинг",
+    ua: "3. Рейтинг",
+  },
+  {
+    type: "p",
+    id: "ranking-04-01",
+    de: "Sofern Bewertungen für ein Profil vorliegen und in der jeweiligen Sortierlogik berücksichtigt werden, kann eine höhere Bewertung bei sonst gleichen Bedingungen zu einer höheren Position führen. Fehlende Bewertungen werden nicht bestraft; sie werden in der Sortierung als nicht vorhanden behandelt.",
+    ru: "Если для профиля имеются оценки и они учитываются в соответствующей логике сортировки, более высокая оценка при прочих равных условиях может привести к более высокой позиции. Отсутствие оценок не наказывается; при сортировке они рассматриваются как отсутствующие.",
+    ua: "Якщо для профілю є оцінки і вони враховуються у відповідній логіці сортування, вища оцінка за інших рівних умов може призвести до вищої позиції. Відсутність оцінок не карається; при сортуванні вони розглядаються як відсутні.",
+  },
+  {
+    type: "h2",
+    de: "4. Keine Garantie auf Sichtbarkeit oder Platzierung",
+    ru: "4. Отсутствие гарантии видимости или позиции",
+    ua: "4. Відсутність гарантії видимості або позиції",
+  },
+  {
+    type: "p",
+    id: "ranking-05-01",
+    de: "Freuly garantiert keine bestimmte Position, Reichweite, Anzahl von Aufrufen, Anfragen oder Aufträgen. Die Sortierung dient der technischen Darstellung relevanter Profile und kann sich bei Produktänderungen, technischen Anpassungen oder rechtlichen Anforderungen weiterentwickeln.",
+    ru: "Freuly не гарантирует определённую позицию, охват, количество просмотров, запросов или заказов. Сортировка служит для технического отображения релевантных профилей и может развиваться при изменениях продукта, технических настройках или правовых требованиях.",
+    ua: "Freuly не гарантує певну позицію, охоплення, кількість переглядів, запитів або замовлень. Сортування слугує для технічного відображення релевантних профілів і може змінюватися при змінах продукту, технічних налаштуваннях або правових вимогах.",
+  },
+  {
+    type: "h2",
+    de: "5. P2B-Transparenz",
+    ru: "5. Прозрачность P2B",
+    ua: "5. Прозорість P2B",
+  },
+  {
+    type: "p",
+    id: "ranking-06-01",
+    de: "Diese Offenlegung erfüllt die Informationspflichten nach der Verordnung (EU) 2019/1150 (P2B-Verordnung) hinsichtlich der wesentlichen Parameter, die das Ranking von Spezialisten beeinflussen. Freuly stellt keine aggregierte Dashboard-Ansicht über die individuelle Ranking-Position bereit; die Parameter sind in dieser Offenlegung und in den AGB beschrieben.",
+    ru: "Настоящее раскрытие выполняет информационные обязательства согласно Регламенту (ЕС) 2019/1150 (P2B) в отношении основных параметров, влияющих на ранжирование специалистов. Freuly не предоставляет агрегированный вид панели управления по индивидуальной позиции в рейтинге; параметры описаны в этом раскрытии и в AGB.",
+    ua: "Це розкриття виконує інформаційні зобов’язання згідно з Регламентом (ЄС) 2019/1150 (P2B) щодо основних параметрів, що впливають на ранжування спеціалістів. Freuly не надає агрегований вигляд панелі керування щодо індивідуальної позиції в рейтингу; параметри описані в цьому розкритті та в AGB.",
+  },
+];

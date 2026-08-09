@@ -19,10 +19,8 @@ export type CookieConsentCopy = {
   necessaryAlwaysOn: string;
   analyticsTitle: string;
   analyticsDescription: string;
-  marketingTitle: string;
-  marketingDescription: string;
-  externalMediaTitle: string;
-  externalMediaDescription: string;
+  referralTitle: string;
+  referralDescription: string;
   settingsAria: string;
 };
 
@@ -32,6 +30,8 @@ function asCopy(raw: unknown): CookieConsentCopy {
     const v = o[key];
     return typeof v === "string" && v.trim() ? v : "";
   };
+  const legacyMarketingTitle = req("marketingTitle" as keyof CookieConsentCopy);
+  const legacyMarketingDescription = req("marketingDescription" as keyof CookieConsentCopy);
   return {
     title: req("title"),
     body: req("body"),
@@ -47,10 +47,8 @@ function asCopy(raw: unknown): CookieConsentCopy {
     necessaryAlwaysOn: req("necessaryAlwaysOn"),
     analyticsTitle: req("analyticsTitle"),
     analyticsDescription: req("analyticsDescription"),
-    marketingTitle: req("marketingTitle"),
-    marketingDescription: req("marketingDescription"),
-    externalMediaTitle: req("externalMediaTitle"),
-    externalMediaDescription: req("externalMediaDescription"),
+    referralTitle: req("referralTitle") || legacyMarketingTitle,
+    referralDescription: req("referralDescription") || legacyMarketingDescription,
     settingsAria: req("settingsAria"),
   };
 }

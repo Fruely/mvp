@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import {
   COOKIE_CONSENT_CHANGE_EVENT,
   COOKIE_CONSENT_STORAGE_KEY,
+  normalizeCookieConsent,
 } from "@/lib/consent/cookieConsent";
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 type ConsentState = {
   analytics: boolean;
-  marketing: boolean;
 };
 
 let googleTagInitialized = false;
@@ -20,20 +20,12 @@ function readConsentState(): ConsentState {
   try {
     const raw = window.localStorage.getItem(COOKIE_CONSENT_STORAGE_KEY);
     if (!raw) {
-      return { analytics: false, marketing: false };
+      return { analytics: false };
     }
-
-    const parsed = JSON.parse(raw) as {
-      analytics?: boolean;
-      marketing?: boolean;
-    };
-
-    return {
-      analytics: parsed.analytics === true,
-      marketing: parsed.marketing === true,
-    };
+    const parsed = normalizeCookieConsent(JSON.parse(raw));
+    return { analytics: parsed?.analytics === true };
   } catch {
-    return { analytics: false, marketing: false };
+    return { analytics: false };
   }
 }
 
@@ -81,9 +73,9 @@ function updateGoogleConsent(consent: ConsentState) {
 
   window.gtag("consent", "update", {
     analytics_storage: consent.analytics ? "granted" : "denied",
-    ad_storage: consent.marketing ? "granted" : "denied",
-    ad_user_data: consent.marketing ? "granted" : "denied",
-    ad_personalization: consent.marketing ? "granted" : "denied",
+    ad_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
   });
 
   if (consent.analytics && !pageViewSent) {
@@ -107,7 +99,6 @@ declare global {
 export default function ConsentScripts() {
   const [consent, setConsent] = useState<ConsentState>({
     analytics: false,
-    marketing: false,
   });
 
   useEffect(() => {

@@ -1082,7 +1082,7 @@
         "Ausgangsdaten und Vorschau können vor der Veröffentlichung vorbereitet werden.",
         "Nach der ersten öffentlichen Veröffentlichung gilt eine 7-tägige Testphase.",
         "Danach ist Freuly Professional oder Freuly Growth erforderlich.",
-        "Das Abo verlängert sich automatisch bis zur Kündigung; Kündigung jederzeit möglich.",
+        "Jeder bezahlte Zeitraum endet automatisch; für einen weiteren Monat ist eine manuelle Verlängerung im Checkout erforderlich.",
         "Bezahlter Zugang gilt bis zum Ende des bezahlten Zeitraums."
       ]
     },
@@ -1223,7 +1223,7 @@
       },
       {
         "q": "Verlängert sich das Abo automatisch?",
-        "a": "Ja, bis zur Kündigung. Bezahlter Zugang gilt bis zum Ende des bezahlten Zeitraums."
+        "a": "Nein. Jeder bezahlte Zeitraum endet automatisch. Für einen weiteren Monat ist eine manuelle Verlängerung im Checkout erforderlich."
       },
       {
         "q": "Wie kann ich kündigen?",
@@ -1262,7 +1262,7 @@
         "a": "Ja. Danach sind wieder bis zu 15 Bilder sichtbar — ohne erneuten Upload."
       }
     ],
-    "disclaimer": "Das Abo bezahlt den Zugang zu Plattformfunktionen und öffentlicher Präsenz. Freuly garantiert keine Views, Anfragen, Aufträge oder Umsatz. Growth umfasst begrenzte Erstaufbereitung; zusätzliche Marketingleistungen werden separat vereinbart. Das Abo verlängert sich automatisch bis zur Kündigung.",
+    "disclaimer": "Das Abo bezahlt den Zugang zu Plattformfunktionen und öffentlicher Präsenz. Freuly garantiert keine Views, Anfragen, Aufträge oder Umsatz. Growth umfasst begrenzte Erstaufbereitung; zusätzliche Marketingleistungen werden separat vereinbart. Es erfolgt keine automatische wiederkehrende Abbuchung; der nächste Zeitraum wird manuell erworben.",
     "cta": {
       "choosePlan": "Tarif wählen",
       "loginToChoose": "Anmelden, um Tarif zu wählen",
@@ -1492,7 +1492,7 @@
   },
   "cookieConsent": {
     "title": "Cookie-Einstellungen",
-    "body": "Wir verwenden Cookies und ähnliche Technologien, um den Betrieb der Website zu gewährleisten und, mit Ihrer Einwilligung, zusätzliche Funktionen zu nutzen. Notwendige Cookies werden immer verwendet. Optionale Cookies (Analyse, Marketing und externe Medien) werden nur nach Ihrer Einwilligung eingesetzt. Sie können alle akzeptieren, optionale Cookies ablehnen oder Ihre Einstellungen anpassen.",
+    "body": "Wir verwenden Cookies und ähnliche Technologien, um den Betrieb der Website zu gewährleisten und, mit Ihrer Einwilligung, Analysefunktionen sowie Referral-Attribution zu nutzen. Notwendige Cookies werden immer verwendet. Optionale Kategorien werden nur nach Ihrer Einwilligung eingesetzt. Sie können alle akzeptieren, optionale ablehnen oder Ihre Einstellungen anpassen.",
     "privacyLink": "Datenschutzerklärung",
     "privacyHref": "/de/datenschutzerklaerung",
     "acceptAll": "Alle akzeptieren",
@@ -1501,14 +1501,12 @@
     "saveSelection": "Auswahl speichern",
     "close": "Schließen",
     "necessaryTitle": "Notwendig",
-    "necessaryDescription": "Erforderlich für den Grundbetrieb der Website. Immer aktiv.",
+    "necessaryDescription": "Erforderlich für den Grundbetrieb der Website, Sicherheit, Sitzungsfunktionen und die Speicherung Ihrer Cookie-Auswahl. Diese Kategorie ist stets aktiv und kann nicht deaktiviert werden.",
     "necessaryAlwaysOn": "Immer aktiv",
     "analyticsTitle": "Analyse",
-    "analyticsDescription": "Helfen zu verstehen, wie die Website genutzt wird (z. B. Google Analytics).",
-    "marketingTitle": "Marketing",
-    "marketingDescription": "Werden für Werbe- und Marketingmessungen bei vorliegender Einwilligung verwendet.",
-    "externalMediaTitle": "Externe Medien",
-    "externalMediaDescription": "Ermöglichen das Laden externer Inhalte (z. B. eingebettete Medien) erst nach Einwilligung.",
+    "analyticsDescription": "Helfen zu verstehen, wie die Website genutzt wird, zum Beispiel über Google Analytics 4. Diese Kategorie wird nur nach Ihrer Einwilligung geladen.",
+    "referralTitle": "Referral-Attribution",
+    "referralDescription": "Ermöglicht die Zuordnung von Registrierungen zu Partner-Referral-Links (Cookie freuly_partner_ref, 90 Tage) nur nach Ihrer Einwilligung in diese Kategorie.",
     "settingsAria": "Einstellungen der Cookie-Kategorien"
   },
   "dashboard.onboarding.basicForm.locationSectionTitle": "Standort (erforderlich)",

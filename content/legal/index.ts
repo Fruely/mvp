@@ -12,6 +12,14 @@ export {
 } from "./types";
 export { getDatenschutzDocument, DATENSCHUTZ_BY_LANG } from "./datenschutz";
 export { getImpressumDocument, IMPRESSUM_BY_LANG } from "./impressum";
+export {
+  getAgbDocument,
+  getSpecialistRulesDocument,
+  getDatenschutzReviewDocument,
+  getRankingDisclosureDocument,
+  getCheckoutLegalCopy,
+  getCookieCopyDocument,
+} from "./reviewDocuments";
 
 export type LegalDocumentKind = "impressum" | "datenschutz";
 

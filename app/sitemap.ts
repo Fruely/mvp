@@ -62,6 +62,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
 
     entries.push({
+      url: `${SITE_DOMAIN}/${lang}/agb`,
+      lastModified,
+      changeFrequency: "yearly",
+      priority: 0.35,
+    });
+
+    entries.push({
       url: `${SITE_DOMAIN}/${lang}/impressum`,
       lastModified,
       changeFrequency: "yearly",

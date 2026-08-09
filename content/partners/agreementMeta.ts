@@ -2,10 +2,13 @@
  * Single source of truth for Partnerprogramm-Bedingungen versioning.
  * Do not scatter version strings across the app.
  */
-export const PARTNER_AGREEMENT_VERSION = "1.1";
+export const PARTNER_AGREEMENT_VERSION = "1.2";
 
-/** Effective date of Partnerprogramm-Bedingungen v1.1 (legal identity update). */
-export const PARTNER_AGREEMENT_EFFECTIVE_DATE = "2026-08-05";
+/** Effective date of Partnerprogramm-Bedingungen v1.2. */
+export const PARTNER_AGREEMENT_EFFECTIVE_DATE = "2026-08-09";
+
+/** Immutable version accepted before v1.2 update. */
+export const PARTNER_AGREEMENT_INTERMEDIATE_VERSION = "1.1";
 
 /** Immutable version accepted before v1.1 legal identity update. */
 export const PARTNER_AGREEMENT_LEGACY_VERSION = "1.0";

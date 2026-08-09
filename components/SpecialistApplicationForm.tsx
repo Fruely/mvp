@@ -7,6 +7,7 @@ import { t } from "@/lib/i18n";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import type { Dictionary } from "@/lib/i18n";
+import SpecialistLegalAcceptanceFields from "@/components/legal/SpecialistLegalAcceptanceFields";
 
 type SpecialistApplicationFormProps = {
   lang: string;
@@ -28,7 +29,6 @@ type FormData = {
   phone: string;
   category_id: string;
   about_short: string;
-  specialist_rules_accepted: boolean;
 };
 
 export default function SpecialistApplicationForm({
@@ -49,8 +49,12 @@ export default function SpecialistApplicationForm({
     phone: "",
     category_id: "",
     about_short: "",
-    specialist_rules_accepted: false,
   });
+  const [b2bAccepted, setB2bAccepted] = useState(false);
+  const [agbAccepted, setAgbAccepted] = useState(false);
+  const [rulesAccepted, setRulesAccepted] = useState(false);
+  const [privacyAcknowledged, setPrivacyAcknowledged] = useState(false);
+  const [legalError, setLegalError] = useState<string | null>(null);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -125,14 +129,22 @@ export default function SpecialistApplicationForm({
     if (!proofFile) {
       errors.proof = t(dict, "application.errors.proofRequired", { defaultValue: "Завантажте документ (PDF або зображення)" });
     }
-    if (!formData.specialist_rules_accepted) {
-      errors.specialist_rules_accepted = t(dict, "application.errors.specialistRulesRequired", {
-        defaultValue: "Потрібно прийняти правила розміщення спеціалістів",
-      });
+
+    const legalValid = b2bAccepted && agbAccepted && rulesAccepted && privacyAcknowledged;
+    if (!legalValid) {
+      setLegalError(
+        lang === "de"
+          ? "Bitte bestätigen Sie alle erforderlichen rechtlichen Angaben."
+          : lang === "ru"
+            ? "Пожалуйста, подтвердите все обязательные юридические пункты."
+            : "Будь ласка, підтвердьте всі обов’язкові юридичні пункти."
+      );
+    } else {
+      setLegalError(null);
     }
 
     setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
+    return Object.keys(errors).length === 0 && legalValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -169,7 +181,10 @@ export default function SpecialistApplicationForm({
         phone: formData.phone.trim(),
         category_id: formData.category_id.trim(),
         about_short: formData.about_short.trim() || null,
-        specialist_rules_accepted: formData.specialist_rules_accepted,
+        b2b_declaration_accepted: true,
+        agb_accepted: true,
+        privacy_acknowledged: true,
+        specialist_rules_accepted: true,
         photo_base64: photo_base64 || null,
         proof_link,
       };
@@ -192,8 +207,12 @@ export default function SpecialistApplicationForm({
         phone: "",
         category_id: "",
         about_short: "",
-        specialist_rules_accepted: false,
       });
+      setB2bAccepted(false);
+      setAgbAccepted(false);
+      setRulesAccepted(false);
+      setPrivacyAcknowledged(false);
+      setLegalError(null);
       setPhotoFile(null);
       setProofFile(null);
       if (photoInputRef.current) photoInputRef.current.value = "";
@@ -383,45 +402,34 @@ export default function SpecialistApplicationForm({
             )}
           </div>
 
-          <div>
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                name="specialist_rules_accepted"
-                checked={formData.specialist_rules_accepted}
-                onChange={handleChange}
-                className="w-5 h-5 shrink-0 text-blue-600 rounded mt-0.5"
-              />
-              <span className="text-sm text-gray-800 leading-snug">
-                {t(dict, "application.specialistRulesCheckbox.before")}{" "}
-                <Link
-                  href={`/${lang}/specialist-rules`}
-                  className="font-semibold text-blue-600 underline hover:text-blue-700"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {t(dict, "application.specialistRulesCheckbox.link")}
-                </Link>{" "}
-                {t(dict, "application.specialistRulesCheckbox.after")}
-                <span className="text-red-500"> *</span>
-              </span>
-            </label>
-            <p className="mt-2 ml-8 text-sm text-gray-500">
-              {t(dict, "application.pricingNote", {
-                defaultValue:
-                  "Безкоштовне розміщення на перші місяці, далі підписка за тарифом.",
-              })}
-            </p>
-            {fieldErrors.specialist_rules_accepted && (
-              <p className="mt-1 text-sm text-red-600">
-                {fieldErrors.specialist_rules_accepted}
-              </p>
-            )}
-          </div>
+          <SpecialistLegalAcceptanceFields
+            lang={(lang === "de" || lang === "ru" || lang === "ua" ? lang : "ua") as "de" | "ru" | "ua"}
+            b2bAccepted={b2bAccepted}
+            agbAccepted={agbAccepted}
+            rulesAccepted={rulesAccepted}
+            privacyAcknowledged={privacyAcknowledged}
+            onB2bChange={setB2bAccepted}
+            onAgbChange={setAgbAccepted}
+            onRulesChange={setRulesAccepted}
+            onPrivacyChange={setPrivacyAcknowledged}
+            error={legalError}
+          />
+          <p className="text-sm text-gray-500">
+            {t(dict, "application.pricingNote", {
+              defaultValue:
+                "Безкоштовне розміщення на перші місяці, далі підписка за тарифом.",
+            })}
+          </p>
 
           <button
             type="submit"
-            disabled={loading || !formData.specialist_rules_accepted}
+            disabled={
+              loading ||
+              !b2bAccepted ||
+              !agbAccepted ||
+              !rulesAccepted ||
+              !privacyAcknowledged
+            }
             className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (

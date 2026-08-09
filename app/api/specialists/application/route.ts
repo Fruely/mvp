@@ -7,6 +7,10 @@ import {
   hashEmailForRateLimit,
   RATE_LIMIT_PUBLIC_MESSAGE,
 } from "@/lib/rate-limit/shared";
+import {
+  SPECIALIST_AGB_VERSION,
+  getSpecialistRulesVersion,
+} from "@/lib/legal/specialistLegalMeta";
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,6 +25,9 @@ export async function POST(req: NextRequest) {
       photo_base64,
       proof_link,
       specialist_rules_accepted,
+      b2b_declaration_accepted,
+      agb_accepted,
+      privacy_acknowledged,
     } = body;
 
     // -----------------------------
@@ -56,11 +63,20 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    if (b2b_declaration_accepted !== true) {
+      return NextResponse.json({ error: "b2b_declaration_required" }, { status: 400 });
+    }
+    if (agb_accepted !== true) {
+      return NextResponse.json({ error: "agb_acceptance_required" }, { status: 400 });
+    }
     if (specialist_rules_accepted !== true) {
       return NextResponse.json(
-        { error: "Specialist placement rules must be accepted" },
+        { error: "specialist_rules_required" },
         { status: 400 }
       );
+    }
+    if (privacy_acknowledged !== true) {
+      return NextResponse.json({ error: "privacy_acknowledgement_required" }, { status: 400 });
     }
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -121,9 +137,9 @@ export async function POST(req: NextRequest) {
       email_confirmation_sent_at: shouldRequireEmailVerification ? now : null,
       email_confirmed_at: shouldRequireEmailVerification ? null : now,
       terms_accepted_at: now,
-      terms_version: process.env.TERMS_VERSION || "1.0",
+      terms_version: SPECIALIST_AGB_VERSION,
       specialist_rules_accepted_at: now,
-      specialist_rules_version: process.env.SPECIALIST_RULES_VERSION || "1",
+      specialist_rules_version: getSpecialistRulesVersion(),
     };
 
     const supabase = createSupabaseServerClient();

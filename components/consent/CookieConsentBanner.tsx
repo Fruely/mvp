@@ -7,6 +7,7 @@ import {
   COOKIE_CONSENT_CHANGE_EVENT,
   COOKIE_CONSENT_OPEN_EVENT,
   createCookieConsent,
+  normalizeCookieConsent,
   type CookieConsent,
 } from "@/lib/consent/cookieConsent";
 import { getCookieConsentCopy } from "@/lib/consent/cookieConsentCopy";
@@ -14,18 +15,13 @@ import {
   readFreulyLangCookie,
   resolveConsentLang,
 } from "@/lib/consent/cookieConsentLang";
+import { persistClientConsent } from "@/lib/consent/persistClientConsent";
 
 function readSavedConsent(): CookieConsent | null {
   try {
     const raw = window.localStorage.getItem(COOKIE_CONSENT_STORAGE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<CookieConsent>;
-    return {
-      analytics: parsed.analytics === true,
-      marketing: parsed.marketing === true,
-      externalMedia: parsed.externalMedia === true,
-      updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : "",
-    };
+    return normalizeCookieConsent(JSON.parse(raw));
   } catch {
     return null;
   }
@@ -36,8 +32,7 @@ export default function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [analytics, setAnalytics] = useState(false);
-  const [marketing, setMarketing] = useState(false);
-  const [externalMedia, setExternalMedia] = useState(false);
+  const [referral, setReferral] = useState(false);
   const [freulyLangCookie, setFreulyLangCookie] = useState<string | null>(null);
 
   const consentLang = useMemo(
@@ -54,16 +49,14 @@ export default function CookieConsentBanner() {
       setVisible(true);
     } else {
       setAnalytics(saved.analytics);
-      setMarketing(saved.marketing);
-      setExternalMedia(saved.externalMedia);
+      setReferral(saved.referral);
     }
 
     const openCookieSettings = () => {
       const current = readSavedConsent();
       if (current) {
         setAnalytics(current.analytics);
-        setMarketing(current.marketing);
-        setExternalMedia(current.externalMedia);
+        setReferral(current.referral);
       }
       setSettingsOpen(true);
       setVisible(true);
@@ -82,25 +75,17 @@ export default function CookieConsentBanner() {
     };
   }, []);
 
-  // Keep freuly_lang in sync when LanguageBar rewrites the cookie on same tab.
   useEffect(() => {
     setFreulyLangCookie(readFreulyLangCookie());
   }, [pathname]);
 
-  function saveConsent(values: {
-    analytics: boolean;
-    marketing: boolean;
-    externalMedia: boolean;
-  }) {
+  async function saveConsent(values: { analytics: boolean; referral: boolean }) {
     const consent = createCookieConsent(values);
-    window.localStorage.setItem(
-      COOKIE_CONSENT_STORAGE_KEY,
-      JSON.stringify(consent)
-    );
+    window.localStorage.setItem(COOKIE_CONSENT_STORAGE_KEY, JSON.stringify(consent));
+    await persistClientConsent(consent);
     window.dispatchEvent(new Event(COOKIE_CONSENT_CHANGE_EVENT));
     setAnalytics(values.analytics);
-    setMarketing(values.marketing);
-    setExternalMedia(values.externalMedia);
+    setReferral(values.referral);
     setSettingsOpen(false);
     setVisible(false);
   }
@@ -181,28 +166,13 @@ export default function CookieConsentBanner() {
               <input
                 type="checkbox"
                 className="mt-1"
-                checked={marketing}
-                onChange={(event) => setMarketing(event.target.checked)}
+                checked={referral}
+                onChange={(event) => setReferral(event.target.checked)}
               />
               <span>
-                <span className="font-semibold">{copy.marketingTitle}</span>
+                <span className="font-semibold">{copy.referralTitle}</span>
                 <span className="mt-0.5 block text-xs text-slate-500">
-                  {copy.marketingDescription}
-                </span>
-              </span>
-            </label>
-
-            <label className="flex items-start gap-2 rounded-xl border border-slate-200 px-3 py-2">
-              <input
-                type="checkbox"
-                className="mt-1"
-                checked={externalMedia}
-                onChange={(event) => setExternalMedia(event.target.checked)}
-              />
-              <span>
-                <span className="font-semibold">{copy.externalMediaTitle}</span>
-                <span className="mt-0.5 block text-xs text-slate-500">
-                  {copy.externalMediaDescription}
+                  {copy.referralDescription}
                 </span>
               </span>
             </label>
@@ -213,13 +183,7 @@ export default function CookieConsentBanner() {
           <button
             type="button"
             className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold leading-snug"
-            onClick={() =>
-              saveConsent({
-                analytics: false,
-                marketing: false,
-                externalMedia: false,
-              })
-            }
+            onClick={() => void saveConsent({ analytics: false, referral: false })}
           >
             {copy.rejectOptional}
           </button>
@@ -239,15 +203,11 @@ export default function CookieConsentBanner() {
             className="rounded-full bg-[#4B50E6] px-4 py-2 text-sm font-semibold leading-snug text-white"
             onClick={() => {
               if (settingsOpen) {
-                saveConsent({ analytics, marketing, externalMedia });
+                void saveConsent({ analytics, referral });
                 return;
               }
 
-              saveConsent({
-                analytics: true,
-                marketing: true,
-                externalMedia: true,
-              });
+              void saveConsent({ analytics: true, referral: true });
             }}
           >
             {settingsOpen ? copy.saveSelection : copy.acceptAll}

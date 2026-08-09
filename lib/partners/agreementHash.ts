@@ -1,7 +1,9 @@
 import { createHash } from "node:crypto";
 import { getGermanAgreementPlainText } from "@/content/partners/agreementContent";
 import { getGermanAgreementPlainTextV10 } from "@/content/partners/agreementContentV10";
+import { getGermanAgreementPlainTextV11 } from "@/content/partners/agreementContentV11";
 import {
+  PARTNER_AGREEMENT_INTERMEDIATE_VERSION,
   PARTNER_AGREEMENT_LEGACY_VERSION,
   PARTNER_AGREEMENT_VERSION,
 } from "@/content/partners/agreementMeta";
@@ -9,12 +11,19 @@ import {
 export function resolveAgreementVersion(version?: string | null): string {
   const v = (version || PARTNER_AGREEMENT_VERSION).trim();
   if (v === PARTNER_AGREEMENT_LEGACY_VERSION) return PARTNER_AGREEMENT_LEGACY_VERSION;
+  if (v === PARTNER_AGREEMENT_INTERMEDIATE_VERSION) {
+    return PARTNER_AGREEMENT_INTERMEDIATE_VERSION;
+  }
   return PARTNER_AGREEMENT_VERSION;
 }
 
 export function getGermanAgreementPlainTextForVersion(version?: string | null): string {
-  if (resolveAgreementVersion(version) === PARTNER_AGREEMENT_LEGACY_VERSION) {
+  const resolved = resolveAgreementVersion(version);
+  if (resolved === PARTNER_AGREEMENT_LEGACY_VERSION) {
     return getGermanAgreementPlainTextV10();
+  }
+  if (resolved === PARTNER_AGREEMENT_INTERMEDIATE_VERSION) {
+    return getGermanAgreementPlainTextV11();
   }
   return getGermanAgreementPlainText();
 }
