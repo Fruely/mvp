@@ -170,21 +170,129 @@ SELECT
   'B2_credit_applications_required_columns' AS section,
   COUNT(*) FILTER (WHERE column_name IN (
     'id', 'partner_id', 'commission_id', 'specialist_id', 'amount_cents', 'currency',
-    'status', 'created_at', 'applied_at', 'rejected_at', 'rejection_reason',
-    'created_by_user_id', 'idempotency_key'
+    'status', 'note', 'created_at', 'updated_at', 'applied_at', 'rejected_at',
+    'rejection_reason', 'created_by_user_id', 'idempotency_key'
   )) AS required_column_count,
   CASE
     WHEN COUNT(*) FILTER (WHERE column_name IN (
       'id', 'partner_id', 'commission_id', 'specialist_id', 'amount_cents', 'currency',
-      'status', 'created_at', 'applied_at', 'rejected_at', 'rejection_reason',
-      'created_by_user_id', 'idempotency_key'
-    )) < 13 THEN 'FAIL: missing required columns'
+      'status', 'note', 'created_at', 'updated_at', 'applied_at', 'rejected_at',
+      'rejection_reason', 'created_by_user_id', 'idempotency_key'
+    )) < 15 THEN 'FAIL: missing required columns'
     ELSE 'PASS'
   END AS section_status,
   array_agg(column_name ORDER BY column_name) AS present_columns
 FROM information_schema.columns
 WHERE table_schema = 'public'
   AND table_name = 'partner_credit_applications';
+
+
+SELECT
+  'B2a_legacy_note_column_preserved' AS section,
+  c.column_name IS NOT NULL AS note_exists,
+  c.is_nullable = 'YES' AS note_nullable,
+  CASE
+    WHEN c.column_name IS NULL THEN 'FAIL: legacy note column missing'
+    ELSE 'PASS'
+  END AS section_status
+FROM (
+  SELECT column_name, is_nullable
+  FROM information_schema.columns
+  WHERE table_schema = 'public'
+    AND table_name = 'partner_credit_applications'
+    AND column_name = 'note'
+) c
+RIGHT JOIN (SELECT 1) x ON true;
+
+
+SELECT
+  'B2b_commission_id_not_null' AS section,
+  c.column_name IS NOT NULL AS column_exists,
+  c.is_nullable = 'NO' AS is_not_null,
+  CASE
+    WHEN c.column_name IS NULL THEN 'FAIL: commission_id missing'
+    WHEN c.is_nullable <> 'NO' THEN 'FAIL: commission_id must be NOT NULL'
+    ELSE 'PASS'
+  END AS section_status
+FROM (
+  SELECT column_name, is_nullable
+  FROM information_schema.columns
+  WHERE table_schema = 'public'
+    AND table_name = 'partner_credit_applications'
+    AND column_name = 'commission_id'
+) c
+RIGHT JOIN (SELECT 1) x ON true;
+
+
+SELECT
+  'B2c_idempotency_key_not_null' AS section,
+  c.column_name IS NOT NULL AS column_exists,
+  c.is_nullable = 'NO' AS is_not_null,
+  CASE
+    WHEN c.column_name IS NULL THEN 'FAIL: idempotency_key missing'
+    WHEN c.is_nullable <> 'NO' THEN 'FAIL: idempotency_key must be NOT NULL'
+    ELSE 'PASS'
+  END AS section_status
+FROM (
+  SELECT column_name, is_nullable
+  FROM information_schema.columns
+  WHERE table_schema = 'public'
+    AND table_name = 'partner_credit_applications'
+    AND column_name = 'idempotency_key'
+) c
+RIGHT JOIN (SELECT 1) x ON true;
+
+
+SELECT
+  'B2d_status_default_pending' AS section,
+  c.column_default IS NOT NULL AS has_default,
+  c.column_default ILIKE '%pending%' AS default_is_pending,
+  CASE
+    WHEN c.column_default IS NULL THEN 'FAIL: status default missing'
+    WHEN c.column_default NOT ILIKE '%pending%' THEN 'FAIL: status default is not pending'
+    ELSE 'PASS'
+  END AS section_status,
+  c.column_default
+FROM (
+  SELECT column_name, column_default
+  FROM information_schema.columns
+  WHERE table_schema = 'public'
+    AND table_name = 'partner_credit_applications'
+    AND column_name = 'status'
+) c
+RIGHT JOIN (SELECT 1) x ON true;
+
+
+SELECT
+  'B2e_legacy_status_values_not_allowed' AS section,
+  pg_get_constraintdef(oid) AS status_check_def,
+  pg_get_constraintdef(oid) ILIKE '%pending%'
+    AND pg_get_constraintdef(oid) ILIKE '%applied%'
+    AND pg_get_constraintdef(oid) ILIKE '%rejected%'
+    AND pg_get_constraintdef(oid) ILIKE '%cancelled%' AS target_statuses_present,
+  pg_get_constraintdef(oid) NOT ILIKE '%reserved%'
+    AND pg_get_constraintdef(oid) NOT ILIKE '%consumed%' AS legacy_statuses_absent,
+  CASE
+    WHEN pg_get_constraintdef(oid) IS NULL THEN 'FAIL: status CHECK missing'
+    WHEN pg_get_constraintdef(oid) ILIKE '%reserved%'
+      OR pg_get_constraintdef(oid) ILIKE '%consumed%' THEN 'FAIL: legacy status values still allowed'
+    WHEN pg_get_constraintdef(oid) NOT ILIKE '%pending%' THEN 'FAIL: pending status missing from CHECK'
+    ELSE 'PASS'
+  END AS section_status
+FROM pg_constraint
+WHERE conname = 'partner_credit_applications_status_check';
+
+
+SELECT
+  'B2f_empty_table_no_synthetic_rows' AS section,
+  COUNT(*) AS row_count,
+  COUNT(*) FILTER (WHERE status IN ('reserved', 'consumed')) AS legacy_status_rows,
+  CASE
+    WHEN COUNT(*) FILTER (WHERE status IN ('reserved', 'consumed')) > 0
+      THEN 'FAIL: legacy status rows present after conversion'
+    ELSE 'PASS'
+  END AS section_status
+FROM public.partner_credit_applications;
 
 
 SELECT
@@ -238,7 +346,17 @@ SELECT
       AND con.conrelid = 'public.partner_credit_applications'::regclass
       AND att.attname = 'commission_id'
       AND con.confrelid = 'public.partner_commissions'::regclass
-  ) AS commission_fk_exists,
+      AND con.confdeltype = 'r'
+  ) AS commission_fk_restrict_exists,
+  EXISTS (
+    SELECT 1 FROM pg_constraint con
+    JOIN pg_attribute att ON att.attrelid = con.conrelid AND att.attnum = ANY (con.conkey)
+    WHERE con.contype = 'f'
+      AND con.conrelid = 'public.partner_credit_applications'::regclass
+      AND att.attname = 'specialist_id'
+      AND con.confrelid = 'public.specialists'::regclass
+      AND con.confdeltype = 'n'
+  ) AS specialist_fk_set_null_exists,
   CASE
     WHEN NOT EXISTS (
       SELECT 1 FROM pg_constraint con
@@ -254,6 +372,14 @@ SELECT
         AND con.conrelid = 'public.partner_credit_applications'::regclass
         AND att.attname = 'commission_id'
     ) THEN 'FAIL: commission_id FK missing'
+    WHEN NOT EXISTS (
+      SELECT 1 FROM pg_constraint con
+      JOIN pg_attribute att ON att.attrelid = con.conrelid AND att.attnum = ANY (con.conkey)
+      WHERE con.contype = 'f'
+        AND con.conrelid = 'public.partner_credit_applications'::regclass
+        AND att.attname = 'commission_id'
+        AND con.confdeltype = 'r'
+    ) THEN 'FAIL: commission_id FK must be ON DELETE RESTRICT'
     ELSE 'PASS'
   END AS section_status;
 
@@ -524,6 +650,25 @@ WITH checks AS (
     SELECT 1 FROM pg_indexes WHERE schemaname = 'public'
       AND tablename = 'partner_credit_applications'
       AND indexname = 'uq_partner_credit_applications_idempotency_key'
+  ) THEN 'PASS' ELSE 'FAIL' END
+  UNION ALL
+  SELECT CASE WHEN EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'partner_credit_applications'
+      AND column_name = 'commission_id' AND is_nullable = 'NO'
+  ) THEN 'PASS' ELSE 'FAIL' END
+  UNION ALL
+  SELECT CASE WHEN EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'partner_credit_applications'
+      AND column_name = 'idempotency_key' AND is_nullable = 'NO'
+  ) THEN 'PASS' ELSE 'FAIL' END
+  UNION ALL
+  SELECT CASE WHEN EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'partner_credit_applications_status_check'
+      AND pg_get_constraintdef(oid) ILIKE '%pending%'
+      AND pg_get_constraintdef(oid) NOT ILIKE '%reserved%'
   ) THEN 'PASS' ELSE 'FAIL' END
   UNION ALL
   SELECT CASE WHEN EXISTS (

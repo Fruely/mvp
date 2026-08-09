@@ -4,6 +4,8 @@
 -- Supersedes draft 2026-07-25_partner_program_phase4_credit_ledger.sql for environments
 -- where that draft was never applied. Do not apply both without manual schema review.
 --
+-- Legacy compatibility: production may already have an empty partner_credit_applications
+-- table (reserved/consumed/cancelled). This migration converts it in-place when row count = 0.
 -- Invariants:
 -- - Does NOT change referral attribution, commission calculation, Stripe eligibility,
 --   14-day approval, refund/dispute reversal, or partner onboarding.
@@ -59,26 +61,167 @@ COMMENT ON TABLE public.partner_commissions IS
 -- ---------------------------------------------------------------------------
 -- partner_credit_applications — immutable credit application ledger
 -- ---------------------------------------------------------------------------
+-- Case 1 (fresh DB): CREATE TABLE below with full R1-A target schema.
+-- Case 2 (legacy empty table): CREATE TABLE IF NOT EXISTS is a no-op; DO block converts.
+-- Case 3 (rerun after success): ADD COLUMN / IF NOT EXISTS paths are no-ops.
 CREATE TABLE IF NOT EXISTS public.partner_credit_applications (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   partner_id uuid NOT NULL REFERENCES public.partners (id) ON DELETE RESTRICT,
   commission_id uuid NOT NULL REFERENCES public.partner_commissions (id) ON DELETE RESTRICT,
-  specialist_id uuid NULL REFERENCES public.specialists (id) ON DELETE RESTRICT,
+  specialist_id uuid NULL REFERENCES public.specialists (id) ON DELETE SET NULL,
   amount_cents integer NOT NULL,
   currency text NOT NULL DEFAULT 'EUR',
   status text NOT NULL DEFAULT 'pending',
-  created_at timestamptz NOT NULL DEFAULT now(),
+  note text NULL,
+  idempotency_key text NOT NULL,
   applied_at timestamptz NULL,
   rejected_at timestamptz NULL,
   rejection_reason text NULL,
   created_by_user_id uuid NULL,
-  idempotency_key text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT partner_credit_applications_amount_positive CHECK (amount_cents > 0),
   CONSTRAINT partner_credit_applications_currency_check CHECK (char_length(currency) = 3),
   CONSTRAINT partner_credit_applications_status_check CHECK (
     status IN ('pending', 'applied', 'rejected', 'cancelled')
   )
 );
+
+DO $$
+DECLARE
+  v_row_count bigint;
+  v_had_commission_id boolean;
+  v_had_idempotency_key boolean;
+  v_legacy_status_check boolean;
+BEGIN
+  IF to_regclass('public.partner_credit_applications') IS NULL THEN
+    RAISE EXCEPTION 'partner_credit_applications missing after CREATE TABLE IF NOT EXISTS';
+  END IF;
+
+  SELECT COUNT(*) INTO v_row_count FROM public.partner_credit_applications;
+
+  SELECT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'partner_credit_applications'
+      AND column_name = 'commission_id'
+  ) INTO v_had_commission_id;
+
+  SELECT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'partner_credit_applications'
+      AND column_name = 'idempotency_key'
+  ) INTO v_had_idempotency_key;
+
+  SELECT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'partner_credit_applications_status_check'
+      AND pg_get_constraintdef(oid) ILIKE '%reserved%'
+  ) INTO v_legacy_status_check;
+
+  IF (NOT v_had_commission_id OR NOT v_had_idempotency_key OR v_legacy_status_check)
+     AND v_row_count > 0 THEN
+    RAISE EXCEPTION
+      'partner_credit_applications legacy schema conversion requires empty table (found % rows). '
+      'Aborting to prevent data loss; migrate rows manually first.',
+      v_row_count;
+  END IF;
+
+  ALTER TABLE public.partner_credit_applications
+    ADD COLUMN IF NOT EXISTS commission_id uuid;
+  ALTER TABLE public.partner_credit_applications
+    ADD COLUMN IF NOT EXISTS idempotency_key text;
+  ALTER TABLE public.partner_credit_applications
+    ADD COLUMN IF NOT EXISTS applied_at timestamptz;
+  ALTER TABLE public.partner_credit_applications
+    ADD COLUMN IF NOT EXISTS rejected_at timestamptz;
+  ALTER TABLE public.partner_credit_applications
+    ADD COLUMN IF NOT EXISTS rejection_reason text;
+  ALTER TABLE public.partner_credit_applications
+    ADD COLUMN IF NOT EXISTS created_by_user_id uuid;
+  ALTER TABLE public.partner_credit_applications
+    ADD COLUMN IF NOT EXISTS note text;
+  ALTER TABLE public.partner_credit_applications
+    ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
+
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'partner_credit_applications_status_check'
+  ) THEN
+    ALTER TABLE public.partner_credit_applications
+      DROP CONSTRAINT partner_credit_applications_status_check;
+  END IF;
+
+  ALTER TABLE public.partner_credit_applications
+    ALTER COLUMN status SET DEFAULT 'pending';
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'partner_credit_applications_amount_positive'
+  ) THEN
+    ALTER TABLE public.partner_credit_applications
+      ADD CONSTRAINT partner_credit_applications_amount_positive
+      CHECK (amount_cents > 0);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'partner_credit_applications_currency_check'
+  ) THEN
+    ALTER TABLE public.partner_credit_applications
+      ADD CONSTRAINT partner_credit_applications_currency_check
+      CHECK (char_length(currency) = 3);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'partner_credit_applications_status_check'
+  ) THEN
+    ALTER TABLE public.partner_credit_applications
+      ADD CONSTRAINT partner_credit_applications_status_check
+      CHECK (status IN ('pending', 'applied', 'rejected', 'cancelled'));
+  END IF;
+
+  IF v_row_count = 0 THEN
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'partner_credit_applications'
+        AND column_name = 'commission_id'
+        AND is_nullable = 'YES'
+    ) THEN
+      ALTER TABLE public.partner_credit_applications
+        ALTER COLUMN commission_id SET NOT NULL;
+    END IF;
+
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'partner_credit_applications'
+        AND column_name = 'idempotency_key'
+        AND is_nullable = 'YES'
+    ) THEN
+      ALTER TABLE public.partner_credit_applications
+        ALTER COLUMN idempotency_key SET NOT NULL;
+    END IF;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint con
+    JOIN pg_attribute att
+      ON att.attrelid = con.conrelid AND att.attnum = ANY (con.conkey)
+    WHERE con.contype = 'f'
+      AND con.conrelid = 'public.partner_credit_applications'::regclass
+      AND att.attname = 'commission_id'
+      AND con.confrelid = 'public.partner_commissions'::regclass
+  ) THEN
+    ALTER TABLE public.partner_credit_applications
+      ADD CONSTRAINT partner_credit_applications_commission_id_fkey
+      FOREIGN KEY (commission_id) REFERENCES public.partner_commissions (id) ON DELETE RESTRICT;
+  END IF;
+END $$;
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_partner_credit_applications_idempotency_key
   ON public.partner_credit_applications (idempotency_key);
@@ -100,6 +243,8 @@ COMMENT ON COLUMN public.partner_credit_applications.commission_id IS
   'Commission row being consumed (partial applications allowed; totals enforced on partner_commissions).';
 COMMENT ON COLUMN public.partner_credit_applications.specialist_id IS
   'Optional specialist ownership context when credit applies to a partner-owned specialist account.';
+COMMENT ON COLUMN public.partner_credit_applications.note IS
+  'Optional partner/admin note preserved from legacy schema; not a bank credential field.';
 COMMENT ON COLUMN public.partner_credit_applications.idempotency_key IS
   'Server-generated idempotency key; UNIQUE prevents duplicate credit applications.';
 
