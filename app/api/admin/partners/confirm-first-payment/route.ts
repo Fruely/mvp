@@ -10,9 +10,14 @@ import {
 const NO_STORE = { "Cache-Control": "no-store" } as const;
 
 /**
- * Interim commission source while Stripe webhooks are not live.
- * Requires Agreement v1.0 payment financial facts (gross / VAT / fee) + monthly interval.
- * Does NOT accept a precomputed reward amount and does NOT use partners.commission_amount_cents.
+ * LEGACY / emergency admin fallback — not the canonical commission source.
+ *
+ * Canonical production path: Stripe invoice.paid → createCommissionFromStripeInvoice.
+ * This route remains for manual recovery/backfill when webhook data must be replayed
+ * without duplicating Stripe-side commission creation.
+ *
+ * Requires admin auth + idempotency by source_event_id. Does NOT accept precomputed reward
+ * amounts and does NOT use partners.commission_amount_cents.
  */
 export async function POST(request: NextRequest) {
   const auth = requireAdminToken(request);

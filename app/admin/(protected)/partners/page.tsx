@@ -39,15 +39,6 @@ export default function AdminPartnersPage() {
     referral_code: "",
     commission_amount_cents: 2900,
   });
-  const [confirmForm, setConfirmForm] = useState({
-    specialist_id: "",
-    external_payment_reference: "",
-    paid_at: "",
-    gross_amount_cents: "",
-    vat_amount_cents: "0",
-    provider_fee_cents: "",
-    billing_interval: "month",
-  });
   const [message, setMessage] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -94,38 +85,6 @@ export default function AdminPartnersPage() {
     await load();
   }
 
-  async function confirmPayment(e: React.FormEvent) {
-    e.preventDefault();
-    setMessage(null);
-    const paidAt = new Date(confirmForm.paid_at);
-    if (Number.isNaN(paidAt.getTime())) {
-      setMessage("Confirm failed: invalid paid_at");
-      return;
-    }
-    const res = await fetch("/api/admin/partners/confirm-first-payment", {
-      method: "POST",
-      headers: adminHeaders(),
-      body: JSON.stringify({
-        specialistId: confirmForm.specialist_id,
-        externalPaymentReference: confirmForm.external_payment_reference,
-        paidAt: paidAt.toISOString(),
-        grossAmountCents: Number(confirmForm.gross_amount_cents),
-        vatAmountCents: Number(confirmForm.vat_amount_cents),
-        providerFeeCents: Number(confirmForm.provider_fee_cents),
-        billingInterval: confirmForm.billing_interval,
-      }),
-    });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      setMessage(`Confirm failed: ${json.error || res.status}`);
-      return;
-    }
-    setMessage(
-      `${json.created ? "Created" : "Idempotent"} commission ${json.commission?.amount_cents} ${json.commission?.currency} (${json.commission?.status})`
-    );
-    await load();
-  }
-
   async function setStatus(id: string, status: string) {
     setMessage(null);
     const res = await fetch(`/api/admin/partners/${id}`, {
@@ -146,7 +105,9 @@ export default function AdminPartnersPage() {
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Partners</h1>
         <p className="mt-1 text-sm text-gray-600">
-          Phase 1 read/manage API UI. Commissions require explicit admin-confirm — not specialist_plan.
+          Referral program admin: partner lifecycle, manual payout queue, commission reversals.
+          Commissions are created automatically from the first eligible Stripe invoice.paid event;
+          rewards use actual payment economics (gross − VAT − fee), not catalog list prices.
         </p>
       </div>
 
@@ -157,6 +118,10 @@ export default function AdminPartnersPage() {
 
       <section className="rounded-xl border border-gray-200 bg-white p-4">
         <h2 className="text-sm font-semibold text-gray-900">Create partner</h2>
+        <p className="mt-1 text-xs text-gray-500">
+          Legacy rate field is stored for admin reference only; live commission amounts come from
+          Stripe invoice facts at first payment.
+        </p>
         <form onSubmit={createPartner} className="mt-3 grid gap-3 sm:grid-cols-2">
           <input
             className="rounded-lg border px-3 py-2 text-sm"
@@ -184,7 +149,7 @@ export default function AdminPartnersPage() {
             className="rounded-lg border px-3 py-2 text-sm"
             type="number"
             min={1}
-            placeholder="Commission cents"
+            placeholder="Legacy rate cents (admin metadata)"
             value={form.commission_amount_cents}
             onChange={(e) =>
               setForm((f) => ({ ...f, commission_amount_cents: Number(e.target.value) }))
@@ -200,80 +165,6 @@ export default function AdminPartnersPage() {
         </form>
       </section>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-4">
-        <h2 className="text-sm font-semibold text-gray-900">
-          Confirm first monthly payment (Agreement v1.0)
-        </h2>
-        <p className="mt-1 text-xs text-gray-500">
-          Reward = gross − VAT − provider fee. Creates pending; approval after 14 days. Annual
-          rejected.
-        </p>
-        <form onSubmit={confirmPayment} className="mt-3 grid gap-3 sm:grid-cols-2">
-          <input
-            className="rounded-lg border px-3 py-2 text-sm"
-            placeholder="Specialist ID"
-            value={confirmForm.specialist_id}
-            onChange={(e) => setConfirmForm((f) => ({ ...f, specialist_id: e.target.value }))}
-            required
-          />
-          <input
-            className="rounded-lg border px-3 py-2 text-sm"
-            placeholder="External payment reference"
-            value={confirmForm.external_payment_reference}
-            onChange={(e) =>
-              setConfirmForm((f) => ({ ...f, external_payment_reference: e.target.value }))
-            }
-            required
-          />
-          <input
-            className="rounded-lg border px-3 py-2 text-sm"
-            type="datetime-local"
-            title="First successful payment time"
-            value={confirmForm.paid_at}
-            onChange={(e) => setConfirmForm((f) => ({ ...f, paid_at: e.target.value }))}
-            required
-          />
-          <select
-            className="rounded-lg border px-3 py-2 text-sm"
-            value={confirmForm.billing_interval}
-            onChange={(e) => setConfirmForm((f) => ({ ...f, billing_interval: e.target.value }))}
-          >
-            <option value="month">Monthly</option>
-            <option value="year">Annual (rejected)</option>
-          </select>
-          <input
-            className="rounded-lg border px-3 py-2 text-sm"
-            placeholder="Gross cents (e.g. 2900)"
-            inputMode="numeric"
-            value={confirmForm.gross_amount_cents}
-            onChange={(e) => setConfirmForm((f) => ({ ...f, gross_amount_cents: e.target.value }))}
-            required
-          />
-          <input
-            className="rounded-lg border px-3 py-2 text-sm"
-            placeholder="VAT cents (0 if Kleinunternehmer)"
-            inputMode="numeric"
-            value={confirmForm.vat_amount_cents}
-            onChange={(e) => setConfirmForm((f) => ({ ...f, vat_amount_cents: e.target.value }))}
-            required
-          />
-          <input
-            className="rounded-lg border px-3 py-2 text-sm"
-            placeholder="Provider fee cents (actual)"
-            inputMode="numeric"
-            value={confirmForm.provider_fee_cents}
-            onChange={(e) => setConfirmForm((f) => ({ ...f, provider_fee_cents: e.target.value }))}
-            required
-          />
-          <button
-            type="submit"
-            className="sm:col-span-2 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white"
-          >
-            Confirm first payment (idempotent → pending)
-          </button>
-        </form>
-      </section>
-
       <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
         <table className="min-w-full text-left text-sm">
           <thead className="border-b bg-gray-50 text-xs uppercase text-gray-500">
@@ -281,7 +172,6 @@ export default function AdminPartnersPage() {
               <th className="px-3 py-2">Partner</th>
               <th className="px-3 py-2">Code</th>
               <th className="px-3 py-2">Status</th>
-              <th className="px-3 py-2">Rate</th>
               <th className="px-3 py-2">Clicks</th>
               <th className="px-3 py-2">Regs</th>
               <th className="px-3 py-2">Approved €</th>
@@ -291,13 +181,13 @@ export default function AdminPartnersPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td className="px-3 py-4 text-gray-500" colSpan={8}>
+                <td className="px-3 py-4 text-gray-500" colSpan={7}>
                   Loading…
                 </td>
               </tr>
             ) : partners.length === 0 ? (
               <tr>
-                <td className="px-3 py-4 text-gray-500" colSpan={8}>
+                <td className="px-3 py-4 text-gray-500" colSpan={7}>
                   No partners yet.
                 </td>
               </tr>
@@ -312,9 +202,6 @@ export default function AdminPartnersPage() {
                     /r/{p.referral_code}
                   </td>
                   <td className="px-3 py-2">{p.status}</td>
-                  <td className="px-3 py-2">
-                    {(p.commission_amount_cents / 100).toFixed(2)} {p.currency}
-                  </td>
                   <td className="px-3 py-2">{p.summary.clicks}</td>
                   <td className="px-3 py-2">{p.summary.registrations}</td>
                   <td className="px-3 py-2">
