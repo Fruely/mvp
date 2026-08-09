@@ -7,6 +7,7 @@ import {
 } from "@/lib/partners/dashboardAmounts";
 import { partnerPayoutsEnabled } from "@/lib/partners/featureFlags";
 import { getBerlinMonthBoundsUtc } from "@/lib/partners/monthlyBounds";
+import { spendableCommissionCents } from "@/lib/partners/partnerFinancialAvailability";
 import { publicCommissionRef } from "@/lib/partners/publicRef";
 import type { PartnerRow, PartnerStatus } from "@/lib/partners/types";
 
@@ -42,21 +43,24 @@ export type PartnerDashboardDto = {
     referral_path: string;
   }>;
   commissions: Array<{
-    id: string;
     public_ref: string;
     amount_cents: number;
     currency: string;
     status: string;
     earned_at: string;
+    credited_cents: number;
+    paid_out_cents: number;
+    available_cents: number;
+    payout_reserved: boolean;
   }>;
   payouts: Array<{
-    id: string;
     amount_cents: number;
     currency: string;
     status: string;
+    requested_at: string | null;
     paid_at: string | null;
-    period_start: string | null;
-    period_end: string | null;
+    cancelled_at: string | null;
+    payment_reference: string | null;
   }>;
   notifications: Array<{
     id: string;
@@ -136,13 +140,17 @@ export async function getPartnerDashboard(
       .order("created_at", { ascending: false }),
     supabase
       .from("partner_commissions")
-      .select("id, amount_cents, currency, status, earned_at, credited_cents, paid_out_cents")
+      .select(
+        "id, amount_cents, currency, status, earned_at, credited_cents, paid_out_cents, payout_id"
+      )
       .eq("partner_id", partnerId)
       .order("earned_at", { ascending: false })
       .limit(50),
     supabase
       .from("partner_payouts")
-      .select("id, amount_cents, currency, status, paid_at, period_start, period_end")
+      .select(
+        "amount_cents, currency, status, requested_at, paid_at, cancelled_at, payment_reference"
+      )
       .eq("partner_id", partnerId)
       .order("created_at", { ascending: false })
       .limit(20),
@@ -200,7 +208,24 @@ export async function getPartnerDashboard(
   const notifications = (notificationsRes.data ?? []) as PartnerDashboardDto["notifications"];
   const unread = notifications.filter((n) => !n.read_at).length;
 
-  const payouts = (payoutsRes.data ?? []) as PartnerDashboardDto["payouts"];
+  const payoutsRaw = (payoutsRes.data ?? []) as Array<{
+    amount_cents: number;
+    currency: string;
+    status: string;
+    requested_at?: string | null;
+    paid_at?: string | null;
+    cancelled_at?: string | null;
+    payment_reference?: string | null;
+  }>;
+  const payouts: PartnerDashboardDto["payouts"] = payoutsRaw.map((p) => ({
+    amount_cents: p.amount_cents,
+    currency: p.currency,
+    status: p.status,
+    requested_at: p.requested_at ?? null,
+    paid_at: p.paid_at ?? null,
+    cancelled_at: p.cancelled_at ?? null,
+    payment_reference: p.payment_reference ?? null,
+  }));
   const lastPaid = payouts.find((x) => x.paid_at)?.paid_at ?? null;
 
   return {
@@ -239,15 +264,32 @@ export async function getPartnerDashboard(
         currency: string;
         status: string;
         earned_at: string;
+        credited_cents?: number | null;
+        paid_out_cents?: number | null;
+        payout_id?: string | null;
       }>
-    ).map((c) => ({
-      id: c.id,
-      public_ref: publicCommissionRef(c.id),
-      amount_cents: c.amount_cents,
-      currency: c.currency,
-      status: c.status,
-      earned_at: c.earned_at,
-    })),
+    ).map((c) => {
+      const credited = Number.isInteger(c.credited_cents) ? (c.credited_cents as number) : 0;
+      const paidOut = Number.isInteger(c.paid_out_cents) ? (c.paid_out_cents as number) : 0;
+      const payoutReserved = c.payout_id != null && String(c.payout_id).trim() !== "";
+      return {
+        public_ref: publicCommissionRef(c.id),
+        amount_cents: c.amount_cents,
+        currency: c.currency,
+        status: c.status,
+        earned_at: c.earned_at,
+        credited_cents: credited,
+        paid_out_cents: paidOut,
+        available_cents: spendableCommissionCents({
+          amount_cents: c.amount_cents,
+          credited_cents: credited,
+          paid_out_cents: paidOut,
+          status: c.status,
+          payout_id: c.payout_id,
+        }),
+        payout_reserved: payoutReserved,
+      };
+    }),
     payouts,
     notifications,
     unread_notifications: unread,

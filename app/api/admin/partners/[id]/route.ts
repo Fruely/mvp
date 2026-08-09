@@ -8,6 +8,8 @@ import {
   setPartnerStatus,
   updatePartnerCommissionRate,
 } from "@/lib/partners/service";
+import { spendableCommissionCents } from "@/lib/partners/partnerFinancialAvailability";
+import { publicCommissionRef } from "@/lib/partners/publicRef";
 import type { PartnerStatus } from "@/lib/partners/types";
 
 const NO_STORE = { "Cache-Control": "no-store" } as const;
@@ -47,7 +49,7 @@ export async function GET(
         supabase
           .from("partner_commissions")
           .select(
-            "id, specialist_id, source_type, source_event_id, amount_cents, currency, status, earned_at, created_at"
+            "id, specialist_id, source_type, source_event_id, amount_cents, currency, status, earned_at, created_at, credited_cents, paid_out_cents, payout_id"
           )
           .eq("partner_id", id)
           .order("created_at", { ascending: false })
@@ -55,13 +57,54 @@ export async function GET(
         getPartnerSummary(supabase, id),
       ]);
 
+    const commissionRows = (commissions ?? []).map((c) => {
+      const row = c as {
+        id: string;
+        amount_cents: number;
+        credited_cents?: number | null;
+        paid_out_cents?: number | null;
+        payout_id?: string | null;
+        status: string;
+        currency: string;
+        earned_at: string;
+        created_at: string;
+        specialist_id: string;
+        source_type: string;
+        source_event_id: string;
+      };
+      const credited = Number.isInteger(row.credited_cents) ? (row.credited_cents as number) : 0;
+      const paidOut = Number.isInteger(row.paid_out_cents) ? (row.paid_out_cents as number) : 0;
+      return {
+        id: row.id,
+        public_ref: publicCommissionRef(row.id),
+        specialist_id: row.specialist_id,
+        source_type: row.source_type,
+        source_event_id: row.source_event_id,
+        amount_cents: row.amount_cents,
+        currency: row.currency,
+        status: row.status,
+        earned_at: row.earned_at,
+        created_at: row.created_at,
+        credited_cents: credited,
+        paid_out_cents: paidOut,
+        available_cents: spendableCommissionCents({
+          amount_cents: row.amount_cents,
+          credited_cents: credited,
+          paid_out_cents: paidOut,
+          status: row.status,
+          payout_id: row.payout_id,
+        }),
+        payout_id: row.payout_id,
+      };
+    });
+
     // Attribution/commission lists expose specialist_id (admin-only), never email/name.
     return NextResponse.json(
       {
         partner,
         links: links ?? [],
         attributions: attributions ?? [],
-        commissions: commissions ?? [],
+        commissions: commissionRows,
         summary,
       },
       { headers: NO_STORE }

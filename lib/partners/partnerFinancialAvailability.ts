@@ -1,4 +1,4 @@
-import { publicCommissionRef } from "@/lib/partners/publicRef";
+import { publicCommissionRef } from "./publicRef";
 
 export type CommissionFinancialRow = {
   amount_cents: number;

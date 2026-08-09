@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import AdminPartnerPayoutQueue from "@/components/admin/AdminPartnerPayoutQueue";
 
 type PartnerListItem = {
   id: string;
@@ -151,6 +152,8 @@ export default function AdminPartnersPage() {
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
       {message ? <p className="text-sm text-emerald-700">{message}</p> : null}
+
+      <AdminPartnerPayoutQueue onMessage={setMessage} />
 
       <section className="rounded-xl border border-gray-200 bg-white p-4">
         <h2 className="text-sm font-semibold text-gray-900">Create partner</h2>
