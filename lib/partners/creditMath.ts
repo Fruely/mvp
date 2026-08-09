@@ -3,6 +3,13 @@
  * Kept free of path aliases so Node unit tests can import directly.
  */
 
+import {
+  availableCommissionCents as spendableCommissionCents,
+  type CommissionFinancialRow,
+} from "./partnerFinancialAvailability";
+
+export type { CommissionFinancialRow };
+
 /**
  * How much confirmed balance to apply toward a Freuly subscription invoice.
  * Remaining available stays cash/credit-eligible; credited cents cannot be paid out.
@@ -29,26 +36,13 @@ export function planSubscriptionCreditApplication(
   };
 }
 
-/** Available cash-or-credit cents on an approved commission. */
-export function availableCommissionCents(row: {
-  amount_cents: number;
-  credited_cents?: number | null;
-  paid_out_cents?: number | null;
-  status: string;
-}): number {
-  if (row.status !== "approved") return 0;
-  const credited = Number.isInteger(row.credited_cents) ? (row.credited_cents as number) : 0;
-  const paidOut = Number.isInteger(row.paid_out_cents) ? (row.paid_out_cents as number) : 0;
-  return Math.max(0, row.amount_cents - credited - paidOut);
+/** Available cash-or-credit cents on an approved commission (excludes payout-reserved). */
+export function availableCommissionCents(row: CommissionFinancialRow): number {
+  return spendableCommissionCents(row);
 }
 
 export function computeAvailableBalance(
-  commissions: Array<{
-    amount_cents: number;
-    credited_cents?: number | null;
-    paid_out_cents?: number | null;
-    status: string;
-  }>
+  commissions: CommissionFinancialRow[]
 ): {
   available_cents: number;
   credited_cents: number;

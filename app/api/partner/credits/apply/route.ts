@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
-import { applyPartnerSubscriptionCredit } from "@/lib/partners/credit";
+import { applyPartnerCommissionCredit } from "@/lib/partners/credit";
 import { PartnerDomainError } from "@/lib/partners/errors";
 import { getPartnerForUser } from "@/lib/partners/session";
 
@@ -10,8 +10,7 @@ export const dynamic = "force-dynamic";
 const NO_STORE = { "Cache-Control": "no-store" } as const;
 
 /**
- * Allocate confirmed partner reward balance to Freuly subscription credit.
- * Independent of PARTNER_PAYOUTS_ENABLED / Stripe Connect cash payouts.
+ * Apply approved partner commission as Freuly credit (partial allowed, idempotent).
  */
 export async function POST(request: NextRequest) {
   try {
@@ -29,19 +28,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "invalid_json" }, { status: 400, headers: NO_STORE });
     }
 
-    const amountRaw =
+    const commissionRef =
+      typeof (body as { commission_ref?: unknown }).commission_ref === "string"
+        ? (body as { commission_ref: string }).commission_ref.trim()
+        : typeof (body as { commissionRef?: unknown }).commissionRef === "string"
+          ? (body as { commissionRef: string }).commissionRef.trim()
+          : "";
+
+    const amountCents =
       typeof (body as { amount_cents?: unknown }).amount_cents === "number"
         ? (body as { amount_cents: number }).amount_cents
         : typeof (body as { amountCents?: unknown }).amountCents === "number"
           ? (body as { amountCents: number }).amountCents
-          : null;
+          : NaN;
 
-    const subscriptionDueCents =
-      typeof (body as { subscription_due_cents?: unknown }).subscription_due_cents === "number"
-        ? (body as { subscription_due_cents: number }).subscription_due_cents
-        : typeof (body as { subscriptionDueCents?: unknown }).subscriptionDueCents === "number"
-          ? (body as { subscriptionDueCents: number }).subscriptionDueCents
-          : null;
+    const idempotencyKey =
+      typeof (body as { idempotency_key?: unknown }).idempotency_key === "string"
+        ? (body as { idempotency_key: string }).idempotency_key.trim()
+        : typeof (body as { idempotencyKey?: unknown }).idempotencyKey === "string"
+          ? (body as { idempotencyKey: string }).idempotencyKey.trim()
+          : "";
+
+    if (!commissionRef) {
+      return NextResponse.json({ error: "commission_ref_required" }, { status: 400, headers: NO_STORE });
+    }
+    if (!idempotencyKey) {
+      return NextResponse.json(
+        { error: "idempotency_key_required" },
+        { status: 400, headers: NO_STORE }
+      );
+    }
 
     const service = createServiceClient();
     const partner = await getPartnerForUser(user.id, service);
@@ -49,15 +65,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "partner_not_bound" }, { status: 403, headers: NO_STORE });
     }
 
-    const result = await applyPartnerSubscriptionCredit(service, {
+    const result = await applyPartnerCommissionCredit(service, {
       partnerId: partner.id,
       userId: user.id,
-      amountCents: amountRaw,
-      subscriptionDueCents,
-      note:
-        typeof (body as { note?: unknown }).note === "string"
-          ? (body as { note: string }).note
-          : null,
+      commissionRef,
+      amountCents,
+      idempotencyKey,
     });
 
     return NextResponse.json({ ok: true, ...result }, { headers: NO_STORE });

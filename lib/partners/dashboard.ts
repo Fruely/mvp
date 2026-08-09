@@ -101,7 +101,7 @@ export async function getPartnerDashboard(
     .eq("partner_id", partnerId);
   let periodCommissionsQuery = supabase
     .from("partner_commissions")
-    .select("amount_cents, status, credited_cents, paid_out_cents")
+    .select("amount_cents, status, credited_cents, paid_out_cents, payout_id")
     .eq("partner_id", partnerId);
 
   if (startIso && endIso) {
@@ -127,7 +127,7 @@ export async function getPartnerDashboard(
     periodCommissionsQuery,
     supabase
       .from("partner_commissions")
-      .select("amount_cents, status, credited_cents, paid_out_cents")
+      .select("amount_cents, status, credited_cents, paid_out_cents, payout_id")
       .eq("partner_id", partnerId),
     supabase
       .from("partner_links")
@@ -160,12 +160,14 @@ export async function getPartnerDashboard(
     status: string;
     credited_cents?: number | null;
     paid_out_cents?: number | null;
+    payout_id?: string | null;
   }>;
   let allCommissions = (allCommissionsRes.data ?? []) as Array<{
     amount_cents: number;
     status: string;
     credited_cents?: number | null;
     paid_out_cents?: number | null;
+    payout_id?: string | null;
   }>;
 
   if (

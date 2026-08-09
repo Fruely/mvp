@@ -1,3 +1,5 @@
+import { spendableCommissionCents } from "@/lib/partners/partnerFinancialAvailability";
+
 export type DashboardAmountTotals = {
   pending_cents: number;
   approved_unpaid_cents: number;
@@ -7,18 +9,6 @@ export type DashboardAmountTotals = {
   available_for_payout_cents: number;
 };
 
-function availableOnApproved(row: {
-  amount_cents: number;
-  credited_cents?: number | null;
-  paid_out_cents?: number | null;
-  status: string;
-}): number {
-  if (row.status !== "approved") return 0;
-  const credited = Number.isInteger(row.credited_cents) ? (row.credited_cents as number) : 0;
-  const paidOut = Number.isInteger(row.paid_out_cents) ? (row.paid_out_cents as number) : 0;
-  return Math.max(0, row.amount_cents - credited - paidOut);
-}
-
 /** Integer-cents balance math from commission rows (no floats). */
 export function computeDashboardAmounts(
   commissions: Array<{
@@ -26,6 +16,7 @@ export function computeDashboardAmounts(
     status: string;
     credited_cents?: number | null;
     paid_out_cents?: number | null;
+    payout_id?: string | null;
   }>
 ): DashboardAmountTotals {
   let pending = 0;
@@ -42,7 +33,7 @@ export function computeDashboardAmounts(
 
     if (c.status === "pending") pending += amount;
     if (c.status === "approved") {
-      approvedUnpaid += availableOnApproved(c);
+      approvedUnpaid += spendableCommissionCents(c);
       totalEarned += amount;
       paid += paidOutRow;
     }
