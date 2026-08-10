@@ -4,6 +4,7 @@ import { Fragment, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import ServiceForm from "@/components/dashboard/ServiceForm";
 import { t, type Dictionary } from "@/lib/i18n";
+import { hasValidServiceForPublish } from "@/lib/dashboard/publicationValidator";
 import type { SpecialistService, PricingType } from "@/lib/dashboard/services";
 import {
   createService,
@@ -99,8 +100,7 @@ export default function ServicesTable({
   function maybeReturnToOnboarding(service: SpecialistService) {
     if (
       onboardingReturnHref &&
-      service.is_active &&
-      hasValidPrice(service) &&
+      hasValidServiceForPublish([service]) &&
       isCurrentCategoryService(service)
     ) {
       router.push(onboardingReturnHref);

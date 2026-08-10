@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import ServicesTable from "@/components/dashboard/ServicesTable";
+import { hasValidServiceForPublish } from "@/lib/dashboard/publicationValidator";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import type { SpecialistService } from "@/lib/dashboard/services";
@@ -76,9 +77,7 @@ export default async function SpecialistDashboardServicesPage({
   const hasServicesOutsideSelectedCategory = services.some(
     (item) => item.category_id !== specialistCategoryId,
   );
-  const hasOnboardingPublishableService = servicesInSelectedCategory.some(
-    (item) => item.is_active && Number.isFinite(item.price_from) && item.price_from > 0,
-  );
+  const hasOnboardingPublishableService = hasValidServiceForPublish(servicesInSelectedCategory);
 
   const onboardingPhotosStepHref = `/${lang}/specialist/dashboard/onboarding?step=photos`;
 

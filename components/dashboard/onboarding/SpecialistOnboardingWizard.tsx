@@ -89,33 +89,8 @@ export default function SpecialistOnboardingWizard({
     href: stepHref(baseHref, step),
   }));
 
-  const activeIndex = ONBOARDING_STEP_ORDER.indexOf(activeStep);
-  const prevKey = activeIndex > 0 ? ONBOARDING_STEP_ORDER[activeIndex - 1] : null;
-  const nextKey =
-    activeIndex >= 0 && activeIndex < ONBOARDING_STEP_ORDER.length - 1
-      ? ONBOARDING_STEP_ORDER[activeIndex + 1]
-      : null;
-
-  const secondaryLinkClass =
-    "inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50";
   const primaryLinkClass =
     "inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700";
-
-  const stepNavFooter =
-    activeStep !== "welcome" ? (
-      <div className="flex flex-wrap items-center gap-3">
-        {prevKey ? (
-          <Link href={stepHref(baseHref, prevKey)} className={secondaryLinkClass}>
-            {t(dict, "dashboard.onboarding.nav.back")}
-          </Link>
-        ) : null}
-        {nextKey ? (
-          <Link href={stepHref(baseHref, nextKey)} className={primaryLinkClass}>
-            {t(dict, "dashboard.onboarding.nav.next")}
-          </Link>
-        ) : null}
-      </div>
-    ) : null;
 
   const welcomeFooter = (
     <div className="flex flex-wrap items-center gap-3">
@@ -235,6 +210,7 @@ export default function SpecialistOnboardingWizard({
           <OnboardingServicesStep
             dict={dict}
             lang={lang}
+            summary={servicesSummary}
           />
           <OnboardingChecklist
             title={t(dict, "dashboard.onboarding.checklist.title")}

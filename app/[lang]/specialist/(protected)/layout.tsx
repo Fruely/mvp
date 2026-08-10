@@ -42,7 +42,7 @@ export default async function SpecialistProtectedLayout({
   const gate = await getSpecialistOnboardingGateState(specialist, service);
 
   if (gate.state !== "published" && !isOnboardingAllowedPath(pathname, lang)) {
-    const step = gate.state === "ready" ? "review" : "welcome";
+    const step = gate.firstIncompleteStep ?? "basic";
     redirect(`/${lang}/specialist/dashboard/onboarding?step=${step}&reason=incomplete_profile`);
   }
 

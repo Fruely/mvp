@@ -5,8 +5,9 @@ import SpecialistOnboardingWizard from "@/components/dashboard/onboarding/Specia
 import type { OnboardingChecklistItem } from "@/components/dashboard/onboarding/OnboardingChecklist";
 import { ONBOARDING_STEP_ORDER, type OnboardingStepKey } from "@/components/dashboard/onboarding/OnboardingProgress";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
-import { hasValidServiceForPublish } from "@/lib/dashboard/publicationReadiness";
+import { getFirstIncompleteOnboardingStep } from "@/lib/dashboard/onboardingStep";
 import {
+  hasValidServiceForPublish,
   needsServiceRadius,
   validatePublication,
 } from "@/lib/dashboard/publicationValidator";
@@ -26,10 +27,11 @@ import {
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { getSpecialistUrl } from "@/lib/urls";
 
-function normalizeStep(value: string | string[] | undefined): OnboardingStepKey {
+function normalizeStep(value: string | string[] | undefined): OnboardingStepKey | null {
   const raw = Array.isArray(value) ? value[0] : value;
+  if (!raw) return null;
   if (raw === "photos") return "photo";
-  return ONBOARDING_STEP_ORDER.includes(raw as OnboardingStepKey) ? (raw as OnboardingStepKey) : "welcome";
+  return ONBOARDING_STEP_ORDER.includes(raw as OnboardingStepKey) ? (raw as OnboardingStepKey) : null;
 }
 
 function hasReason(value: string | string[] | undefined, reason: string): boolean {
@@ -48,7 +50,7 @@ export default async function SpecialistDashboardOnboardingPage({
   const resolvedParams = await Promise.resolve(params);
   const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
   const lang = isSupportedLang(resolvedParams.lang) ? resolvedParams.lang : "ru";
-  const activeStep = normalizeStep(resolvedSearchParams.step);
+  const requestedStep = normalizeStep(resolvedSearchParams.step);
   const showIncompleteProfileGateNotice = hasReason(
     resolvedSearchParams.reason,
     "incomplete_profile",
@@ -90,7 +92,7 @@ export default async function SpecialistDashboardOnboardingPage({
       : "";
   const hasSavedCategory = categoryId.trim().length > 0;
   const requiresSavedCategoryForStep =
-    activeStep === "services" || activeStep === "photo" || activeStep === "review";
+    requestedStep === "services" || requestedStep === "photo" || requestedStep === "review";
 
   if (!hasSavedCategory && requiresSavedCategoryForStep) {
     redirect(`/${lang}/specialist/dashboard/onboarding?step=basic`);
@@ -120,7 +122,7 @@ export default async function SpecialistDashboardOnboardingPage({
       <SpecialistOnboardingWizard
         dict={dict}
         lang={lang}
-        activeStep={activeStep}
+        activeStep={requestedStep ?? "basic"}
         profileStarted={false}
         publishReady={false}
         isUncategorizedCategory={false}
@@ -251,6 +253,7 @@ export default async function SpecialistDashboardOnboardingPage({
     hasGallery,
   });
   const publishReady = validation.ready;
+  const activeStep = requestedStep ?? getFirstIncompleteOnboardingStep(validation);
 
   const servicesMismatch = hasActiveServicesAnyCategory && !hasValidService;
   const profileStarted = Boolean(

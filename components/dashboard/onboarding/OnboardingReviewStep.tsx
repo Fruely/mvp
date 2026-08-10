@@ -321,6 +321,27 @@ export default function OnboardingReviewStep({
         ) : null}
       </div>
 
+      {publishReady ? (
+        <div className="mt-5">
+          <button
+            type="button"
+            onClick={handlePublish}
+            disabled={publishing}
+            className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+          >
+            {publishing
+              ? t(dict, "dashboard.onboarding.reviewStep.publishing")
+              : t(dict, "dashboard.onboarding.reviewStep.publish")}
+          </button>
+        </div>
+      ) : null}
+
+      {error ? (
+        <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+          {error}
+        </div>
+      ) : null}
+
       <div className="mt-5 space-y-6">
         <div>
           <h3 className="text-base font-semibold text-gray-900">
@@ -354,23 +375,7 @@ export default function OnboardingReviewStep({
         >
           {t(dict, "dashboard.onboarding.reviewStep.backToPhoto")}
         </Link>
-        <button
-          type="button"
-          onClick={handlePublish}
-          disabled={publishing || !publishReady}
-          className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {publishing
-            ? t(dict, "dashboard.onboarding.reviewStep.publishing")
-            : t(dict, "dashboard.onboarding.reviewStep.publish")}
-        </button>
       </div>
-
-      {error ? (
-        <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-          {error}
-        </div>
-      ) : null}
     </section>
   );
 }

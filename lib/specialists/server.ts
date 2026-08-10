@@ -1,6 +1,10 @@
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect";
-import { isPublicationReadyForDashboard } from "@/lib/dashboard/publicationReadiness";
+import {
+  getFirstIncompleteOnboardingStep,
+  type RequiredOnboardingStep,
+} from "@/lib/dashboard/onboardingStep";
+import { validatePublication } from "@/lib/dashboard/publicationValidator";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { specialistLangBecomePath } from "@/lib/specialists/navigation";
@@ -56,9 +60,10 @@ export async function getSpecialistOnboardingGateState(
 ): Promise<{
   state: SpecialistOnboardingGateState;
   publicationReady: boolean;
+  firstIncompleteStep: RequiredOnboardingStep | null;
 }> {
   if (isPublishedSpecialistStatus(specialist.status)) {
-    return { state: "published", publicationReady: true };
+    return { state: "published", publicationReady: true, firstIncompleteStep: null };
   }
 
   const { data: specExtra } = await service
@@ -121,7 +126,7 @@ export async function getSpecialistOnboardingGateState(
     (row) => row.is_active === true && typeof row.category_id === "string" && row.category_id === categoryId,
   );
 
-  const publicationReady = isPublicationReadyForDashboard({
+  const validation = validatePublication({
     name,
     categoryId,
     categoryParentId,
@@ -137,8 +142,13 @@ export async function getSpecialistOnboardingGateState(
     serviceRadiusKm,
     servicesInSelectedCategory,
   });
+  const publicationReady = validation.ready;
 
-  return { state: publicationReady ? "ready" : "incomplete", publicationReady };
+  return {
+    state: publicationReady ? "ready" : "incomplete",
+    publicationReady,
+    firstIncompleteStep: getFirstIncompleteOnboardingStep(validation),
+  };
 }
 
 export async function getCurrentUserAndSpecialist() {

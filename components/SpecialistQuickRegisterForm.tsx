@@ -119,8 +119,8 @@ export default function SpecialistQuickRegisterForm({ dict, lang }: Props) {
       }
 
       const onboardingHref = lang
-        ? `/${lang}/specialist/dashboard/onboarding?step=welcome&reason=incomplete_profile`
-        : "/ru/specialist/dashboard/onboarding?step=welcome&reason=incomplete_profile";
+        ? `/${lang}/specialist/dashboard/onboarding?reason=incomplete_profile`
+        : "/ru/specialist/dashboard/onboarding?reason=incomplete_profile";
       router.replace(onboardingHref);
     } catch {
       setError("Не вдалося створити акаунт. Спробуйте пізніше.");
