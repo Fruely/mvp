@@ -9,6 +9,7 @@ import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { searchSpecialists, type SpecialistResult } from "@/lib/search/specialistSearch";
 import { getSearchSuggestions } from "@/lib/search/searchSuggestions";
 import ServiceRequestCtaBlock from "@/components/serviceRequests/ServiceRequestCtaBlock";
+import { requestServiceHref } from "@/lib/serviceRequests/requestServiceHref";
 
 export const dynamic = "force-dynamic";
 
@@ -266,23 +267,43 @@ export default async function SpecialistsPage({
     }
 
     const suggestions = q ? getSearchSuggestions({ q, lang: uiLang }) : [];
+    const zeroResultsSourcePath = `/specialists?${new URLSearchParams(
+      Object.entries({
+        lang,
+        ...(category ? { category } : {}),
+        ...(q ? { q } : {}),
+        ...(place ? { place } : {}),
+      }).filter(([, v]) => v != null && v !== "") as [string, string][],
+    ).toString()}`;
+    const findSpecialistHref = requestServiceHref(uiLang, {
+      source_path: zeroResultsSourcePath,
+    });
 
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-        <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
-          <div className="text-5xl mb-4" aria-hidden>
-            🔍
+        <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sm:p-10 text-center">
+          <div className="rounded-xl border border-blue-100 bg-blue-50/50 px-5 py-6 sm:px-6 sm:py-7">
+            <div className="text-2xl mb-3 opacity-40" aria-hidden>
+              🔍
+            </div>
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-2">
+              {t(dict, "search.noResults.title")}
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 mb-5">
+              {q
+                ? t(dict, "search.noResults.serviceSubtitle")
+                : t(dict, "search.noResults.subtitle")}
+            </p>
+            <Link
+              href={findSpecialistHref}
+              className="inline-block w-full sm:w-auto px-6 py-3 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition"
+            >
+              {t(dict, "search.noResults.primaryCta")}
+            </Link>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            {t(dict, "search.noResults.title")}
-          </h1>
-          <p className="text-gray-600 mb-8">
-            {q
-              ? t(dict, "search.noResults.serviceSubtitle")
-              : t(dict, "search.noResults.subtitle")}
-          </p>
+
           {suggestions.length > 0 && (
-            <div className="mb-8">
+            <div className="mt-6 mb-2">
               <p className="text-sm font-medium text-gray-700 mb-3">
                 {t(dict, "search.noResults.suggestionsTitle")}
               </p>
@@ -303,33 +324,26 @@ export default async function SpecialistsPage({
               </div>
             </div>
           )}
-          <div className="flex flex-wrap justify-center gap-3">
-            <Link
-              href={serviceSearchHref(uiLang)}
-              className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
-            >
-              {t(dict, "search.noResults.changeFilters")}
-            </Link>
-            <Link
-              href={serviceSearchHref(uiLang)}
-              className="inline-block px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
-            >
-              {t(dict, "search.noResults.backToSearch")}
-            </Link>
+
+          <div className="mt-6 pt-6 border-t border-gray-100">
+            <p className="text-sm text-gray-600 mb-4">
+              {t(dict, "search.noResults.adjustFiltersTitle")}
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <Link
+                href={serviceSearchHref(uiLang)}
+                className="inline-block px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
+              >
+                {t(dict, "search.noResults.changeFilters")}
+              </Link>
+              <Link
+                href={serviceSearchHref(uiLang)}
+                className="inline-block px-5 py-2.5 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 hover:text-gray-800 transition"
+              >
+                {t(dict, "search.noResults.backToSearch")}
+              </Link>
+            </div>
           </div>
-          <ServiceRequestCtaBlock
-            lang={uiLang}
-            dict={dict}
-            variant="empty"
-            sourcePath={`/specialists?${new URLSearchParams(
-              Object.entries({
-                lang,
-                ...(category ? { category } : {}),
-                ...(q ? { q } : {}),
-                ...(place ? { place } : {}),
-              }).filter(([, v]) => v != null && v !== "") as [string, string][],
-            ).toString()}`}
-          />
         </div>
       </div>
     );

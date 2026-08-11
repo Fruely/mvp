@@ -6,9 +6,11 @@
   },
   "search": {
     "noResults": {
-      "title": "Keine Spezialisten gefunden",
-      "subtitle": "Versuchen Sie, Kategorie, Stadt oder Sprache zu ändern.",
-      "serviceSubtitle": "Für diese Dienstleistung haben wir derzeit noch keine passenden Spezialisten. Versuchen Sie bitte eine andere oder ähnliche Anfrage.",
+      "title": "Derzeit gibt es keinen passenden Spezialisten",
+      "subtitle": "Verschwenden Sie keine Zeit mit weiterer Suche — beschreiben Sie Ihre Aufgabe, und Freuly hilft Ihnen, die passende Fachkraft zu finden.",
+      "serviceSubtitle": "Für Ihre Anfrage gibt es derzeit keine passenden Profile. Beschreiben Sie Ihre Aufgabe — Freuly hilft Ihnen, die passende Fachkraft zu finden.",
+      "primaryCta": "Spezialist finden",
+      "adjustFiltersTitle": "Möchten Sie die Suchkriterien ändern?",
       "suggestionsTitle": "Vielleicht passen diese ähnlichen Bereiche:",
       "changeFilters": "Filter ändern",
       "backToSearch": "Zurück zur Suche"
