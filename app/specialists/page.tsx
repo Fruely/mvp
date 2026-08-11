@@ -8,6 +8,7 @@ import { getDictionary, t, type Dictionary } from "@/lib/i18n";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { searchSpecialists, type SpecialistResult } from "@/lib/search/specialistSearch";
 import { getSearchSuggestions } from "@/lib/search/searchSuggestions";
+import { shouldOfferOnlineFallbackForNoLocalResults } from "@/lib/search/noLocalResultsFallback";
 import ServiceRequestCtaBlock from "@/components/serviceRequests/ServiceRequestCtaBlock";
 import { requestServiceHref } from "@/lib/serviceRequests/requestServiceHref";
 
@@ -243,6 +244,57 @@ export default async function SpecialistsPage({
     });
 
     if (result.fallback === "no_local_results" && place) {
+      const noLocalSourcePath = `/specialists?${new URLSearchParams(
+        Object.entries({
+          lang,
+          ...(category ? { category } : {}),
+          ...(q ? { q } : {}),
+          place,
+          ...(radiusParam ? { radius: radiusParam } : {}),
+        }).filter(([, v]) => v != null && v !== "") as [string, string][],
+      ).toString()}`;
+      const offerOnlineFallback = shouldOfferOnlineFallbackForNoLocalResults({
+        place,
+        radius: radiusParam,
+      });
+
+      if (!offerOnlineFallback) {
+        const findSpecialistHref = requestServiceHref(uiLang, {
+          source_path: noLocalSourcePath,
+        });
+        return (
+          <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
+            <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sm:p-10 text-center">
+              <div className="rounded-xl border border-blue-100 bg-blue-50/50 px-5 py-6 sm:px-6 sm:py-7">
+                <h1 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-2">
+                  {t(dict, "search.noLocalResults.titleOffline")}
+                </h1>
+                <p className="text-sm sm:text-base text-gray-600 mb-5">
+                  {t(dict, "search.noLocalResults.subtitleOffline")}
+                </p>
+                <Link
+                  href={findSpecialistHref}
+                  className="inline-block w-full sm:w-auto px-6 py-3 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition"
+                >
+                  {t(dict, "search.noLocalResults.primaryCta")}
+                </Link>
+              </div>
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                <p className="text-sm text-gray-600 mb-4">
+                  {t(dict, "search.noLocalResults.adjustFiltersTitle")}
+                </p>
+                <Link
+                  href={serviceSearchHref(uiLang)}
+                  className="inline-block px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
+                >
+                  {t(dict, "search.noResults.changeFilters")}
+                </Link>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
       const onlineParams = new URLSearchParams();
       onlineParams.set("mode", "online");
       onlineParams.set("lang", lang);
@@ -251,15 +303,15 @@ export default async function SpecialistsPage({
       const onlineHref = `/specialists?${onlineParams.toString()}`;
       return (
         <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-          <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">
-              В вашем регионе пока нет специалистов
+          <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sm:p-10 text-center">
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-6">
+              {t(dict, "search.noLocalResults.titleOnline")}
             </h1>
             <Link
               href={onlineHref}
-              className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
+              className="inline-block px-6 py-3 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition"
             >
-              Показать онлайн-специалистов
+              {t(dict, "search.noLocalResults.showOnlineCta")}
             </Link>
           </div>
         </div>

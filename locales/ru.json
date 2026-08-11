@@ -15,6 +15,14 @@
       "changeFilters": "Изменить параметры",
       "backToSearch": "Вернуться к поиску"
     },
+    "noLocalResults": {
+      "titleOnline": "Рядом нет подходящего специалиста",
+      "showOnlineCta": "Показать онлайн-специалистов",
+      "titleOffline": "Рядом пока нет подходящего специалиста",
+      "subtitleOffline": "Опишите задачу — Freuly поможет найти специалиста для работы на месте.",
+      "primaryCta": "Найти специалиста",
+      "adjustFiltersTitle": "Хотите изменить условия поиска?"
+    },
     "results": {
       "backToSearch": "Вернуться к поиску",
       "title": "Специалисты",

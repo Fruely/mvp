@@ -15,6 +15,14 @@
       "changeFilters": "Filter ändern",
       "backToSearch": "Zurück zur Suche"
     },
+    "noLocalResults": {
+      "titleOnline": "In Ihrer Nähe gibt es keinen passenden Spezialisten",
+      "showOnlineCta": "Online-Spezialisten anzeigen",
+      "titleOffline": "In Ihrer Nähe gibt es derzeit keinen passenden Spezialisten",
+      "subtitleOffline": "Beschreiben Sie Ihre Aufgabe — Freuly hilft Ihnen, eine Fachkraft für Vor-Ort-Arbeit zu finden.",
+      "primaryCta": "Spezialist finden",
+      "adjustFiltersTitle": "Möchten Sie die Suchkriterien ändern?"
+    },
     "results": {
       "backToSearch": "Zurück zur Suche",
       "title": "Spezialisten",
