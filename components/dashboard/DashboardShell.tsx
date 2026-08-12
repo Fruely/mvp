@@ -31,7 +31,7 @@ export default function DashboardShell({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-freuly-page">
       <Sidebar
         dict={dict}
         lang={lang}
@@ -39,14 +39,14 @@ export default function DashboardShell({
         onClose={() => setSidebarOpen(false)}
         isPublished={isPublished}
       />
-      <div className="flex min-h-screen min-w-0 flex-1 flex-col bg-[#f5f7fa]">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col bg-freuly-dashboard">
         <TopBar
           dict={dict}
           specialist={specialist}
           planStatusForBadge={planStatusForBadge}
           onMenuClick={() => setSidebarOpen((prev) => !prev)}
         />
-        <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">{children}</main>
+        <main className="mx-auto w-full max-w-7xl px-freuly-4 py-freuly-6 sm:px-freuly-6">{children}</main>
       </div>
     </div>
   );

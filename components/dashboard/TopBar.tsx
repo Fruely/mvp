@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge, type BadgeVariant } from "@/components/ui";
 import { t, type Dictionary } from "@/lib/i18n";
 import TopBarLogoutButton from "./TopBarLogoutButton";
 
@@ -20,13 +21,13 @@ function getInitials(name: string): string {
   return parts.map((part) => part.charAt(0).toUpperCase()).join("");
 }
 
-function getStatusBadgeClass(status: string): string {
+function getStatusBadgeVariant(status: string): BadgeVariant {
   if (status === "active" || status === "early_access" || status === "trialing") {
-    return "bg-emerald-50 text-emerald-700";
+    return "success";
   }
-  if (status === "grace" || status === "grace_period") return "bg-amber-50 text-amber-700";
-  if (status === "expired") return "bg-rose-50 text-rose-700";
-  return "bg-gray-100 text-gray-700";
+  if (status === "grace" || status === "grace_period") return "warning";
+  if (status === "expired") return "error";
+  return "neutral";
 }
 
 export default function TopBar({
@@ -48,39 +49,42 @@ export default function TopBar({
       : "—";
 
   return (
-    <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6">
-        <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-30 border-b border-freuly-border-default bg-freuly-surface/95 backdrop-blur-sm">
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-freuly-3 px-freuly-4 sm:px-freuly-6">
+        <div className="flex min-w-0 items-center gap-freuly-3">
           <button
             type="button"
             onClick={onMenuClick}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 md:hidden"
+            className="freuly-focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-freuly-md text-freuly-text-secondary transition hover:bg-freuly-border-subtle hover:text-freuly-text-primary md:hidden"
             aria-label={t(dict, "dashboard.topBar.toggleMenu")}
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
               <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
-          <div>
-            <p className="text-sm text-gray-500">{t(dict, "header.cabinet")}</p>
-            <p className="text-sm font-semibold text-gray-900">{name}</p>
+          <div className="min-w-0">
+            <p className="truncate text-freuly-helper text-freuly-text-muted">{t(dict, "header.cabinet")}</p>
+            <p className="truncate text-freuly-label text-freuly-text-primary">{name}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-freuly-2 sm:gap-freuly-3">
           <TopBarLogoutButton dict={dict} />
-          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getStatusBadgeClass(subscriptionStatus)}`}>
+          <Badge
+            variant={getStatusBadgeVariant(subscriptionStatus)}
+            className="max-w-[5.5rem] truncate sm:max-w-none"
+          >
             {subscriptionStatus}
-          </span>
+          </Badge>
           {avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={avatarUrl}
               alt={name}
-              className="h-9 w-9 rounded-full border border-gray-200 object-cover"
+              className="h-9 w-9 shrink-0 rounded-full border border-freuly-border-default object-cover"
             />
           ) : (
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-xs font-semibold text-gray-700">
+            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-freuly-border-default bg-freuly-border-subtle text-freuly-helper font-semibold text-freuly-text-secondary">
               {getInitials(name)}
             </span>
           )}
