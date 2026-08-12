@@ -31,7 +31,7 @@ function navItemClasses(isActive: boolean, disabled?: boolean) {
     "flex w-full min-h-[40px] items-center gap-2.5 rounded-freuly-md px-3 py-2 text-freuly-body font-medium transition-colors";
 
   const stateClass = isActive
-    ? "bg-freuly-primary-light text-freuly-primary"
+    ? "bg-freuly-primary text-freuly-text-on-primary"
     : disabled
       ? "cursor-not-allowed text-freuly-text-muted"
       : "text-freuly-text-secondary hover:bg-freuly-border-subtle hover:text-freuly-text-primary";
@@ -169,7 +169,7 @@ function renderNavItem(
         className={itemClass}
         title={item.lockedUntilPublished ? lockedBadge : undefined}
       >
-        <span className="text-current">{item.icon}</span>
+        <span className={cn("text-current", isActive && "[&_svg]:!opacity-100")}>{item.icon}</span>
         <span className="min-w-0 flex-1 truncate">{item.label}</span>
         {lockedBadgeNode}
       </span>
@@ -184,7 +184,7 @@ function renderNavItem(
       className={itemClass}
       aria-current={isActive ? "page" : undefined}
     >
-      <span className="text-current">{item.icon}</span>
+      <span className={cn("text-current", isActive && "[&_svg]:!opacity-100")}>{item.icon}</span>
       <span className="min-w-0 flex-1 truncate">{item.label}</span>
     </Link>
   );

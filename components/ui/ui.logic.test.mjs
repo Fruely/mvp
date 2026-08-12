@@ -24,6 +24,14 @@ test("UI primitive barrel exports core components", () => {
   }
 });
 
+test("Button primitive includes strong and outlinePrimary variants", () => {
+  const src = readFileSync(new URL("../../components/ui/Button.tsx", import.meta.url), "utf8");
+  assert.match(src, /strong:/);
+  assert.match(src, /outlinePrimary:/);
+  assert.match(src, /bg-freuly-text-primary text-freuly-text-on-primary/);
+  assert.match(src, /border-freuly-primary bg-freuly-surface text-freuly-primary/);
+});
+
 test("UI primitives contain no routing or fetch usage", () => {
   const files = [
     "Button.tsx",

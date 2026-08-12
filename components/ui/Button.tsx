@@ -1,7 +1,7 @@
 import { forwardRef, type ButtonHTMLAttributes } from "react";
 import { cn } from "./utils";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive";
+export type ButtonVariant = "primary" | "secondary" | "outlinePrimary" | "strong" | "ghost" | "destructive";
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
@@ -12,6 +12,10 @@ const variantClasses: Record<ButtonVariant, string> = {
     "bg-freuly-primary text-freuly-text-on-primary hover:bg-freuly-primary-hover disabled:hover:bg-freuly-primary",
   secondary:
     "border border-freuly-border-default bg-freuly-surface text-freuly-text-primary hover:bg-freuly-border-subtle disabled:hover:bg-freuly-surface",
+  outlinePrimary:
+    "border border-freuly-primary bg-freuly-surface text-freuly-primary hover:bg-freuly-primary-light disabled:hover:bg-freuly-surface",
+  strong:
+    "bg-freuly-text-primary text-freuly-text-on-primary hover:bg-freuly-text-primary/90 disabled:hover:bg-freuly-text-primary",
   ghost:
     "bg-transparent text-freuly-text-secondary hover:bg-freuly-border-subtle hover:text-freuly-text-primary disabled:hover:bg-transparent",
   destructive:

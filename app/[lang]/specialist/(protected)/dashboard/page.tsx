@@ -66,6 +66,12 @@ const linkPrimaryClass =
 const linkSecondaryClass =
   "inline-flex min-h-[40px] w-full items-center justify-center rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-freuly-4 py-freuly-2 text-freuly-button text-freuly-text-primary transition-colors hover:bg-freuly-border-subtle freuly-focus-ring sm:w-auto";
 
+const linkOutlinePrimaryClass =
+  "inline-flex min-h-[40px] w-full items-center justify-center rounded-freuly-md border border-freuly-primary bg-freuly-surface px-freuly-4 py-freuly-2 text-freuly-button text-freuly-primary transition-colors hover:bg-freuly-primary-light freuly-focus-ring sm:w-auto";
+
+const linkStrongClass =
+  "inline-flex min-h-[40px] w-full shrink-0 items-center justify-center rounded-freuly-md bg-freuly-text-primary px-freuly-4 py-freuly-2 text-freuly-button text-freuly-text-on-primary transition-colors hover:bg-freuly-text-primary/90 freuly-focus-ring sm:w-auto";
+
 const linkUrgentClass =
   "inline-flex min-h-[40px] w-full items-center justify-center rounded-freuly-md bg-freuly-warning px-freuly-4 py-freuly-2 text-freuly-button text-freuly-text-on-primary transition-colors hover:bg-freuly-warning/90 freuly-focus-ring sm:w-auto";
 
@@ -88,6 +94,22 @@ function subscriptionStatusLabel(dict: Dictionary, planStatus: string): string {
 function specialistStatusLabel(dict: Dictionary, raw: string | null | undefined): string {
   const key = raw && String(raw).trim() ? String(raw).trim() : "draft";
   return t(dict, `dashboard.home.specialistStatus.${key}`, { defaultValue: key });
+}
+
+function specialistStatusBadgeVariant(raw: string | null | undefined): BadgeVariant {
+  const key = raw && String(raw).trim() ? String(raw).trim() : "draft";
+  if (key === "published_unverified" || key === "pending") return "warning";
+  if (key === "approved" || key === "featured_verified") return "success";
+  if (key === "paused") return "neutral";
+  return "neutral";
+}
+
+function publishReadinessBadgeVariant(ready: boolean): BadgeVariant {
+  return ready ? "success" : "warning";
+}
+
+function publishReadinessLabel(dict: Dictionary): string {
+  return t(dict, "dashboard.home.publishReadiness.line").replace(/\s*:?\s*\{\{value\}\}\s*$/, "").trim();
 }
 
 export default async function SpecialistDashboardHomePage({
@@ -327,10 +349,7 @@ export default async function SpecialistDashboardHomePage({
   const publishReadyWord = profileReadyForPublish
     ? t(dict, "dashboard.home.publishReadiness.ready")
     : t(dict, "dashboard.home.publishReadiness.notReady");
-  const publishReadinessLine = t(dict, "dashboard.home.publishReadiness.line").replace(
-    "{{value}}",
-    publishReadyWord,
-  );
+  const publishReadinessPrefix = publishReadinessLabel(dict);
 
   let statusHint: string | null = null;
   const st = status ?? "";
@@ -413,14 +432,19 @@ export default async function SpecialistDashboardHomePage({
         <CardHeader className="mb-freuly-3">
           <CardTitle>{t(dict, "dashboard.home.blocks.profileTitle")}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-freuly-2 text-freuly-body-sm text-freuly-text-primary">
-          <p>
+        <CardContent className="space-y-freuly-3 text-freuly-body-sm text-freuly-text-primary">
+          <div className="flex flex-wrap items-center gap-x-freuly-2 gap-y-freuly-1">
             <span className="font-medium text-freuly-text-secondary">
-              {t(dict, "dashboard.home.profileStatusLabel")}
-            </span>{" "}
-            <span>{statusLabel}</span>
-          </p>
-          <p className="text-freuly-text-secondary">{publishReadinessLine}</p>
+              {t(dict, "dashboard.home.profileStatusLabel")}:
+            </span>
+            <Badge variant={specialistStatusBadgeVariant(st)}>{statusLabel}</Badge>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-freuly-2 gap-y-freuly-1">
+            <span className="font-medium text-freuly-text-secondary">{publishReadinessPrefix}:</span>
+            <Badge variant={publishReadinessBadgeVariant(profileReadyForPublish)}>
+              {publishReadyWord}
+            </Badge>
+          </div>
           {statusHint ? <p className="text-freuly-text-muted">{statusHint}</p> : null}
           <p className="text-freuly-text-secondary">
             {profileReadyForPublish
@@ -437,44 +461,44 @@ export default async function SpecialistDashboardHomePage({
         ) : null}
       </Card>
 
-      <div className="grid gap-freuly-4 md:grid-cols-2">
-        <Card>
+      <div className="grid gap-freuly-4 md:grid-cols-5">
+        <Card className="md:col-span-3">
           <CardHeader className="mb-freuly-3">
             <CardTitle>{t(dict, "dashboard.home.blocks.subscriptionTitle")}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-freuly-3 text-freuly-body-sm">
-            <div>
+          <CardContent className="space-y-freuly-4 text-freuly-body-sm">
+            <div className="space-y-freuly-1">
               <p className="text-freuly-helper font-medium uppercase tracking-wide text-freuly-text-muted">
                 {t(dict, "dashboard.home.subscription.plan")}
               </p>
-              <p className="mt-freuly-1 font-medium text-freuly-text-primary">
+              <p className="font-medium text-freuly-text-primary">
                 {planDisplayLabel(dict, planCode)}
               </p>
             </div>
-            <div>
+            <div className="space-y-freuly-1">
               <p className="text-freuly-helper font-medium uppercase tracking-wide text-freuly-text-muted">
                 {t(dict, "dashboard.home.subscription.status")}
               </p>
-              <div className="mt-freuly-1">
+              <div>
                 <Badge variant={subscriptionStatusBadgeVariant(planStatus)}>
                   {subscriptionStatusLabel(dict, planStatus)}
                 </Badge>
               </div>
             </div>
-            <div>
+            <div className="space-y-freuly-1">
               <p className="text-freuly-helper font-medium uppercase tracking-wide text-freuly-text-muted">
                 {t(dict, "dashboard.home.subscription.expires")}
               </p>
-              <p className="mt-freuly-1 text-freuly-text-primary">
+              <p className="text-freuly-text-primary">
                 {formatDashboardDate(subscriptionUntil, lang)}
               </p>
             </div>
             {graceUntil ? (
-              <div>
+              <div className="space-y-freuly-1">
                 <p className="text-freuly-helper font-medium uppercase tracking-wide text-freuly-text-muted">
                   {t(dict, "dashboard.home.subscription.grace")}
                 </p>
-                <p className="mt-freuly-1 text-freuly-text-primary">
+                <p className="text-freuly-text-primary">
                   {formatDashboardDate(graceUntil, lang)}
                 </p>
               </div>
@@ -504,17 +528,17 @@ export default async function SpecialistDashboardHomePage({
           </CardFooter>
         </Card>
 
-        <Card>
+        <Card className="md:col-span-2">
           <CardHeader className="mb-freuly-3">
             <CardTitle>{t(dict, "dashboard.home.blocks.leadsTitle")}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-freuly-2 text-freuly-body-sm text-freuly-text-primary">
+          <CardContent className="space-y-freuly-3 text-freuly-body-sm text-freuly-text-primary">
             <p>
               <span className="font-medium text-freuly-text-secondary">
                 {t(dict, "dashboard.home.leads.total")}
               </span>{" "}
               {leadsTotalSafe !== null ? (
-                <span className="tabular-nums">{leadsTotalSafe}</span>
+                <span className="tabular-nums font-medium">{leadsTotalSafe}</span>
               ) : (
                 <span className="text-freuly-text-muted">{t(dict, "dashboard.home.leads.unavailable")}</span>
               )}
@@ -524,7 +548,7 @@ export default async function SpecialistDashboardHomePage({
                 {t(dict, "dashboard.home.leads.new")}
               </span>{" "}
               {leadsNewSafe !== null ? (
-                <span className="tabular-nums">{leadsNewSafe}</span>
+                <span className="tabular-nums font-medium">{leadsNewSafe}</span>
               ) : (
                 <span className="text-freuly-text-muted">{t(dict, "dashboard.home.leads.unavailable")}</span>
               )}
@@ -534,7 +558,7 @@ export default async function SpecialistDashboardHomePage({
             </p>
           </CardContent>
           <CardFooter>
-            <Link href={leadsHref} className={linkPrimaryClass}>
+            <Link href={leadsHref} className={linkStrongClass}>
               {t(dict, "dashboard.home.leads.cta")}
             </Link>
           </CardFooter>
@@ -547,14 +571,14 @@ export default async function SpecialistDashboardHomePage({
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-freuly-1 sm:flex-row sm:items-baseline sm:gap-freuly-3">
-            <p className="text-[1.75rem] font-semibold tabular-nums leading-none text-freuly-text-primary">
+            <p className="text-[2rem] font-semibold tabular-nums leading-none tracking-tight text-freuly-text-primary">
               {profileViewsTotalSafe !== null ? profileViewsTotalSafe : "—"}
             </p>
-            <p className="text-freuly-body-sm text-freuly-text-secondary">
+            <p className="text-freuly-body-sm font-medium text-freuly-text-secondary">
               {t(dict, "dashboard.home.profileViews.totalLabel")}
             </p>
           </div>
-          <p className="mt-freuly-2 text-freuly-helper text-freuly-text-muted">
+          <p className="mt-freuly-3 text-freuly-helper leading-relaxed text-freuly-text-muted">
             {t(dict, "dashboard.home.profileViews.hint")}
           </p>
         </CardContent>
@@ -572,36 +596,40 @@ export default async function SpecialistDashboardHomePage({
           </Alert>
         ) : (
           <>
-            <CardContent>
-              <ul className="space-y-freuly-2">
+            <CardContent className="pt-0">
+              <ul className="divide-y divide-freuly-border-default border-y border-freuly-border-default">
                 {visibleImprovements.map((item) => {
                   const isMissing = item.severity === "missing";
+                  const severityLabel = isMissing
+                    ? t(dict, "dashboard.home.improve.severity.missing")
+                    : t(dict, "dashboard.home.improve.severity.improve");
                   return (
                     <li
                       key={item.key}
-                      className="flex items-start gap-freuly-3 rounded-freuly-md border border-freuly-border-subtle bg-freuly-border-subtle/40 px-freuly-3 py-freuly-2 text-freuly-body-sm"
+                      className="flex items-center gap-freuly-3 py-freuly-3 text-freuly-body-sm"
                     >
-                      <Badge
-                        variant={isMissing ? "warning" : "info"}
-                        className="mt-0.5 shrink-0 px-1.5 py-0 text-[10px] font-semibold leading-none"
-                        aria-hidden
+                      <span
+                        aria-hidden="true"
+                        className={`inline-flex h-5 w-5 shrink-0 items-center justify-center text-sm font-semibold leading-none ${
+                          isMissing ? "text-freuly-warning" : "text-freuly-primary"
+                        }`}
                       >
                         {isMissing ? "!" : "+"}
-                      </Badge>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-freuly-text-primary">{item.label}</p>
-                        <p className="mt-freuly-1 text-freuly-helper text-freuly-text-muted">
-                          {isMissing
-                            ? t(dict, "dashboard.home.improve.severity.missing")
-                            : t(dict, "dashboard.home.improve.severity.improve")}
-                        </p>
-                      </div>
+                      </span>
+                      <span className="min-w-0 flex-1 text-freuly-text-primary">{item.label}</span>
+                      <span
+                        className={`shrink-0 text-freuly-helper font-medium ${
+                          isMissing ? "text-freuly-warning" : "text-freuly-primary"
+                        }`}
+                      >
+                        {severityLabel}
+                      </span>
                     </li>
                   );
                 })}
               </ul>
               {hiddenImprovementsCount > 0 ? (
-                <p className="mt-freuly-2 text-freuly-helper text-freuly-text-muted">
+                <p className="mt-freuly-3 text-freuly-helper text-freuly-text-muted">
                   {t(dict, "dashboard.home.improve.more").replace(
                     "{{count}}",
                     String(hiddenImprovementsCount),
@@ -610,7 +638,7 @@ export default async function SpecialistDashboardHomePage({
               ) : null}
             </CardContent>
             <CardFooter>
-              <Link href={profileHref} className={linkPrimaryClass}>
+              <Link href={profileHref} className={linkOutlinePrimaryClass}>
                 {t(dict, "dashboard.home.improve.cta")}
               </Link>
             </CardFooter>
