@@ -274,7 +274,7 @@ export default function InstallFreuly({
       : isCompact
         ? "rounded-xl border border-orange-200 bg-orange-50/90 p-2.5"
         : variant === "dashboard"
-          ? "rounded-2xl border border-orange-200 bg-gradient-to-br from-[#FFF7ED] to-[#FFF0E4] p-4"
+          ? "rounded-freuly-lg border border-freuly-border-default bg-freuly-surface p-freuly-4 shadow-sm"
           : variant === "landing"
             ? "rounded-2xl border border-orange-200 bg-white p-4"
             : "rounded-2xl border border-orange-200 bg-white p-4";
@@ -317,8 +317,10 @@ export default function InstallFreuly({
             id={titleId}
             className={
               isCompact
-                ? "text-sm font-semibold leading-snug text-gray-900"
-                : "text-sm font-semibold text-gray-900 sm:text-base"
+                ? "text-sm font-semibold leading-snug text-freuly-text-primary"
+                : variant === "dashboard"
+                  ? "text-freuly-card-title text-freuly-text-primary"
+                  : "text-sm font-semibold text-gray-900 sm:text-base"
             }
           >
             {message.title}
@@ -327,7 +329,9 @@ export default function InstallFreuly({
             className={
               isCompact
                 ? "mt-0.5 text-xs leading-snug text-gray-600 break-words"
-                : "mt-1 text-sm leading-relaxed text-gray-600 break-words"
+                : variant === "dashboard"
+                  ? "mt-freuly-1 text-freuly-body-sm leading-relaxed text-freuly-text-secondary break-words"
+                  : "mt-1 text-sm leading-relaxed text-gray-600 break-words"
             }
           >
             {message.body}

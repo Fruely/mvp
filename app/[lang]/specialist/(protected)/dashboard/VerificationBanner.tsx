@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
+import { Alert, Button } from "@/components/ui";
 import { t, type Dictionary } from "@/lib/i18n";
 
 type Props = {
@@ -61,54 +62,64 @@ export default function VerificationBanner({ status, dict }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-      <p className="text-sm font-medium text-amber-900">
-        {t(dict, "dashboard.verification.published")}
-      </p>
-      <p className="mt-1 text-sm text-amber-800">
-        {t(dict, "dashboard.verification.recommendedHint")}
-      </p>
+    <Alert variant="warning" title={t(dict, "dashboard.verification.published")}>
+      <p>{t(dict, "dashboard.verification.recommendedHint")}</p>
 
-      <div className="mt-3">
-        <button
+      <div className="mt-freuly-3">
+        <Button
           type="button"
+          variant="primary"
+          className="min-h-[36px] h-9 px-freuly-4 py-1.5 text-freuly-body-sm"
           onClick={() => {
             setOpen((prev) => !prev);
             setError(null);
             setSuccess(null);
           }}
-          className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700"
         >
           {t(dict, "dashboard.verification.uploadDocuments")}
-        </button>
+        </Button>
       </div>
 
-      <div className="mt-3 space-y-1">
-        <p className="text-xs text-amber-800">{t(dict, "dashboard.helpers.verification.line1")}</p>
-        <ul className="text-xs text-amber-800 list-disc list-inside">
+      <div className="mt-freuly-3 space-y-freuly-1">
+        <p>{t(dict, "dashboard.helpers.verification.line1")}</p>
+        <ul className="list-inside list-disc">
           <li>{t(dict, "dashboard.helpers.verification.bullet1")}</li>
           <li>{t(dict, "dashboard.helpers.verification.bullet2")}</li>
         </ul>
-        <p className="text-xs text-amber-700 mt-1">{t(dict, "dashboard.helpers.verification.footer")}</p>
+        <p className="mt-freuly-1">{t(dict, "dashboard.helpers.verification.footer")}</p>
       </div>
 
-      {open && (
-        <form onSubmit={handleSubmit} className="mt-3 space-y-3">
-          <input type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png,.pdf,application/pdf" onChange={handleFileChange} />
+      {open ? (
+        <form onSubmit={handleSubmit} className="mt-freuly-3 space-y-freuly-3">
+          <input
+            type="file"
+            accept="image/jpeg,image/png,.jpg,.jpeg,.png,.pdf,application/pdf"
+            onChange={handleFileChange}
+            className="block w-full max-w-full text-freuly-body-sm text-freuly-text-primary file:mr-freuly-3 file:rounded-freuly-md file:border file:border-freuly-border-default file:bg-freuly-surface file:px-freuly-3 file:py-freuly-2 file:text-freuly-body-sm file:font-medium file:text-freuly-text-primary"
+          />
           <div>
-            <button
+            <Button
               type="submit"
+              variant="secondary"
               disabled={!file || uploading}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+              className="min-h-[36px] h-9 px-freuly-4 py-1.5 text-freuly-body-sm"
             >
               {uploading ? t(dict, "dashboard.buttons.uploading") : t(dict, "dashboard.buttons.submitDocument")}
-            </button>
+            </Button>
           </div>
         </form>
-      )}
+      ) : null}
 
-      {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
-      {success ? <p className="mt-2 text-sm text-green-700">{success}</p> : null}
-    </div>
+      {error ? (
+        <Alert variant="error" className="mt-freuly-3">
+          {error}
+        </Alert>
+      ) : null}
+      {success ? (
+        <Alert variant="success" className="mt-freuly-3">
+          {success}
+        </Alert>
+      ) : null}
+    </Alert>
   );
 }

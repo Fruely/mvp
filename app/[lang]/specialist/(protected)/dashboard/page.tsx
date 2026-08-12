@@ -18,8 +18,20 @@ import {
   dashboardNoticeTitleBody,
   getSubscriptionDisplayState,
   pickDashboardSubscriptionNotice,
-  subscriptionNoticePanelClass,
+  type SubscriptionSeverity,
 } from "@/lib/specialists/subscriptionDisplay";
+import {
+  Alert,
+  Badge,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  type AlertVariant,
+  type BadgeVariant,
+} from "@/components/ui";
 import SpecialistLaunchVideoGuide from "@/components/specialist/SpecialistLaunchVideoGuide";
 import InstallFreuly from "@/components/pwa/InstallFreuly";
 import VerificationBanner from "./VerificationBanner";
@@ -32,13 +44,30 @@ function formatDashboardDate(value: string | null, lang: string): string {
   return date.toLocaleDateString(locale);
 }
 
-function subscriptionStatusBadgeClass(planStatus: string): string {
-  if (planStatus === "early_access" || planStatus === "trialing") return "bg-emerald-50 text-emerald-700";
-  if (planStatus === "active") return "bg-blue-50 text-blue-700";
-  if (planStatus === "grace" || planStatus === "grace_period") return "bg-amber-50 text-amber-700";
-  if (planStatus === "expired") return "bg-rose-50 text-rose-700";
-  return "bg-gray-100 text-gray-700";
+function subscriptionStatusBadgeVariant(planStatus: string): BadgeVariant {
+  if (planStatus === "early_access" || planStatus === "trialing") return "success";
+  if (planStatus === "active") return "info";
+  if (planStatus === "grace" || planStatus === "grace_period") return "warning";
+  if (planStatus === "expired") return "error";
+  return "neutral";
 }
+
+function subscriptionSeverityToAlertVariant(severity: SubscriptionSeverity): AlertVariant {
+  if (severity === "danger") return "error";
+  if (severity === "warning") return "warning";
+  if (severity === "success") return "success";
+  if (severity === "info") return "info";
+  return "info";
+}
+
+const linkPrimaryClass =
+  "inline-flex min-h-[40px] w-full shrink-0 items-center justify-center rounded-freuly-md bg-freuly-primary px-freuly-4 py-freuly-2 text-freuly-button text-freuly-text-on-primary transition-colors hover:bg-freuly-primary-hover freuly-focus-ring sm:w-auto";
+
+const linkSecondaryClass =
+  "inline-flex min-h-[40px] w-full items-center justify-center rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-freuly-4 py-freuly-2 text-freuly-button text-freuly-text-primary transition-colors hover:bg-freuly-border-subtle freuly-focus-ring sm:w-auto";
+
+const linkUrgentClass =
+  "inline-flex min-h-[40px] w-full items-center justify-center rounded-freuly-md bg-freuly-warning px-freuly-4 py-freuly-2 text-freuly-button text-freuly-text-on-primary transition-colors hover:bg-freuly-warning/90 freuly-focus-ring sm:w-auto";
 
 function planDisplayLabel(dict: Dictionary, planCode: string): string {
   const code = planCode.trim().toLowerCase();
@@ -346,7 +375,7 @@ export default async function SpecialistDashboardHomePage({
     !status || !VIDEO_GUIDE_AUTO_HIDE_STATUSES.has(String(status));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-freuly-6">
       <VerificationBanner status={status} dict={dict} />
       <InstallFreuly
         lang={lang}
@@ -355,234 +384,239 @@ export default async function SpecialistDashboardHomePage({
         variant="dashboard"
       />
 
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">{t(dict, "dashboard.home.title")}</h1>
-        <p className="mt-1 text-sm text-gray-600">{t(dict, "dashboard.home.subtitle")}</p>
-      </div>
+      <header>
+        <h1 className="text-freuly-page-title text-freuly-text-primary">
+          {t(dict, "dashboard.home.title")}
+        </h1>
+        <p className="mt-freuly-1 text-freuly-body-sm text-freuly-text-secondary">
+          {t(dict, "dashboard.home.subtitle")}
+        </p>
+      </header>
 
       {showOnboardingCta ? (
-        <section className="rounded-xl border border-blue-100 bg-blue-50 p-5 shadow-sm">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-base font-semibold text-blue-950">
-                {onboardingCtaTitle}
-              </h2>
-              <p className="mt-1 max-w-3xl text-sm text-blue-900">
+        <Card className="border-freuly-primary/15 bg-freuly-primary-light shadow-none">
+          <div className="flex flex-col gap-freuly-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <h2 className="text-freuly-card-title text-freuly-text-primary">{onboardingCtaTitle}</h2>
+              <p className="mt-freuly-1 max-w-3xl text-freuly-body-sm text-freuly-text-secondary">
                 {onboardingCtaBody}
               </p>
             </div>
-            <Link
-              href={onboardingCtaHref}
-              className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
-            >
+            <Link href={onboardingCtaHref} className={linkPrimaryClass}>
               {onboardingCtaButton}
             </Link>
           </div>
-        </section>
+        </Card>
       ) : null}
 
-      <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h2 className="text-base font-semibold text-gray-900">{t(dict, "dashboard.home.blocks.profileTitle")}</h2>
-        <div className="mt-3 space-y-2 text-sm text-gray-800">
+      <Card>
+        <CardHeader className="mb-freuly-3">
+          <CardTitle>{t(dict, "dashboard.home.blocks.profileTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-freuly-2 text-freuly-body-sm text-freuly-text-primary">
           <p>
-            <span className="font-medium text-gray-700">{t(dict, "dashboard.home.profileStatusLabel")}</span>{" "}
-            <span className="text-gray-900">{statusLabel}</span>
+            <span className="font-medium text-freuly-text-secondary">
+              {t(dict, "dashboard.home.profileStatusLabel")}
+            </span>{" "}
+            <span>{statusLabel}</span>
           </p>
-          <p className="text-gray-700">{publishReadinessLine}</p>
-          {statusHint ? <p className="text-gray-600">{statusHint}</p> : null}
-          <p className="text-gray-700">
-            {profileReadyForPublish ? t(dict, "dashboard.home.readyBody") : t(dict, "dashboard.home.incompleteBody")}
+          <p className="text-freuly-text-secondary">{publishReadinessLine}</p>
+          {statusHint ? <p className="text-freuly-text-muted">{statusHint}</p> : null}
+          <p className="text-freuly-text-secondary">
+            {profileReadyForPublish
+              ? t(dict, "dashboard.home.readyBody")
+              : t(dict, "dashboard.home.incompleteBody")}
           </p>
-        </div>
+        </CardContent>
         {profileAlreadyPublished ? (
-          <Link
-            href={profileHref}
-            className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-teal-600 px-5 text-sm font-semibold text-white transition hover:bg-teal-700"
-          >
-            {t(dict, "dashboard.home.editProfile")}
-          </Link>
+          <CardFooter>
+            <Link href={profileHref} className={linkPrimaryClass}>
+              {t(dict, "dashboard.home.editProfile")}
+            </Link>
+          </CardFooter>
         ) : null}
-      </section>
+      </Card>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="text-base font-semibold text-gray-900">{t(dict, "dashboard.home.blocks.subscriptionTitle")}</h2>
-          <div className="mt-3 space-y-3 text-sm">
+      <div className="grid gap-freuly-4 md:grid-cols-2">
+        <Card>
+          <CardHeader className="mb-freuly-3">
+            <CardTitle>{t(dict, "dashboard.home.blocks.subscriptionTitle")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-freuly-3 text-freuly-body-sm">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+              <p className="text-freuly-helper font-medium uppercase tracking-wide text-freuly-text-muted">
                 {t(dict, "dashboard.home.subscription.plan")}
               </p>
-              <p className="mt-1 font-medium text-gray-900">{planDisplayLabel(dict, planCode)}</p>
+              <p className="mt-freuly-1 font-medium text-freuly-text-primary">
+                {planDisplayLabel(dict, planCode)}
+              </p>
             </div>
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+              <p className="text-freuly-helper font-medium uppercase tracking-wide text-freuly-text-muted">
                 {t(dict, "dashboard.home.subscription.status")}
               </p>
-              <div className="mt-1">
-                <span
-                  className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${subscriptionStatusBadgeClass(planStatus)}`}
-                >
+              <div className="mt-freuly-1">
+                <Badge variant={subscriptionStatusBadgeVariant(planStatus)}>
                   {subscriptionStatusLabel(dict, planStatus)}
-                </span>
+                </Badge>
               </div>
             </div>
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+              <p className="text-freuly-helper font-medium uppercase tracking-wide text-freuly-text-muted">
                 {t(dict, "dashboard.home.subscription.expires")}
               </p>
-              <p className="mt-1 text-gray-800">{formatDashboardDate(subscriptionUntil, lang)}</p>
+              <p className="mt-freuly-1 text-freuly-text-primary">
+                {formatDashboardDate(subscriptionUntil, lang)}
+              </p>
             </div>
             {graceUntil ? (
               <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                <p className="text-freuly-helper font-medium uppercase tracking-wide text-freuly-text-muted">
                   {t(dict, "dashboard.home.subscription.grace")}
                 </p>
-                <p className="mt-1 text-gray-800">{formatDashboardDate(graceUntil, lang)}</p>
+                <p className="mt-freuly-1 text-freuly-text-primary">
+                  {formatDashboardDate(graceUntil, lang)}
+                </p>
               </div>
             ) : null}
-          </div>
+          </CardContent>
           {subscriptionNoticeCopy ? (
-            <div
-              className={`mt-4 ${subscriptionNoticePanelClass(subscriptionNoticeCopy.severity)}`}
+            <Alert
+              variant={subscriptionSeverityToAlertVariant(subscriptionNoticeCopy.severity)}
+              title={subscriptionNoticeCopy.title}
+              className="mx-freuly-5 mb-freuly-4 mt-freuly-1"
             >
-              <p className="font-semibold leading-snug">{subscriptionNoticeCopy.title}</p>
-              <p className="mt-1.5 text-xs leading-relaxed opacity-[0.92]">
-                {subscriptionNoticeCopy.body}
-              </p>
-            </div>
+              {subscriptionNoticeCopy.body}
+            </Alert>
           ) : null}
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-            <Link
-              href={pricingHref}
-              className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 sm:w-auto"
-            >
+          <CardFooter className="flex-col gap-freuly-2 sm:flex-row sm:flex-wrap">
+            <Link href={pricingHref} className={linkPrimaryClass}>
               {t(dict, "dashboard.home.subscription.ctaChoosePlan")}
             </Link>
             <Link
               href={billingHref}
-              className={`inline-flex h-10 w-full items-center justify-center rounded-lg px-4 text-sm font-semibold transition sm:w-auto ${
-                subscriptionNeedsAttention
-                  ? "bg-amber-600 text-white hover:bg-amber-700"
-                  : "border border-gray-200 bg-white text-gray-800 hover:bg-gray-50"
-              }`}
+              className={subscriptionNeedsAttention ? linkUrgentClass : linkSecondaryClass}
             >
               {subscriptionNeedsAttention
                 ? t(dict, "dashboard.home.subscription.ctaUrgent")
                 : t(dict, "dashboard.home.subscription.ctaPay")}
             </Link>
-          </div>
-        </section>
+          </CardFooter>
+        </Card>
 
-        <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="text-base font-semibold text-gray-900">{t(dict, "dashboard.home.blocks.leadsTitle")}</h2>
-          <div className="mt-3 space-y-2 text-sm text-gray-800">
+        <Card>
+          <CardHeader className="mb-freuly-3">
+            <CardTitle>{t(dict, "dashboard.home.blocks.leadsTitle")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-freuly-2 text-freuly-body-sm text-freuly-text-primary">
             <p>
-              <span className="font-medium text-gray-700">{t(dict, "dashboard.home.leads.total")}</span>{" "}
+              <span className="font-medium text-freuly-text-secondary">
+                {t(dict, "dashboard.home.leads.total")}
+              </span>{" "}
               {leadsTotalSafe !== null ? (
                 <span className="tabular-nums">{leadsTotalSafe}</span>
               ) : (
-                <span className="text-gray-500">{t(dict, "dashboard.home.leads.unavailable")}</span>
+                <span className="text-freuly-text-muted">{t(dict, "dashboard.home.leads.unavailable")}</span>
               )}
             </p>
             <p>
-              <span className="font-medium text-gray-700">{t(dict, "dashboard.home.leads.new")}</span>{" "}
+              <span className="font-medium text-freuly-text-secondary">
+                {t(dict, "dashboard.home.leads.new")}
+              </span>{" "}
               {leadsNewSafe !== null ? (
                 <span className="tabular-nums">{leadsNewSafe}</span>
               ) : (
-                <span className="text-gray-500">{t(dict, "dashboard.home.leads.unavailable")}</span>
+                <span className="text-freuly-text-muted">{t(dict, "dashboard.home.leads.unavailable")}</span>
               )}
             </p>
-            <p className="text-xs text-gray-500">{t(dict, "dashboard.home.leads.newHint")}</p>
-          </div>
-          <Link
-            href={leadsHref}
-            className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-lg bg-teal-600 px-4 text-sm font-semibold text-white transition hover:bg-teal-700 sm:w-auto"
-          >
-            {t(dict, "dashboard.home.leads.cta")}
-          </Link>
-        </section>
+            <p className="text-freuly-helper text-freuly-text-muted">
+              {t(dict, "dashboard.home.leads.newHint")}
+            </p>
+          </CardContent>
+          <CardFooter>
+            <Link href={leadsHref} className={linkPrimaryClass}>
+              {t(dict, "dashboard.home.leads.cta")}
+            </Link>
+          </CardFooter>
+        </Card>
       </div>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h2 className="text-base font-semibold text-gray-900">
-          {t(dict, "dashboard.home.profileViews.title")}
-        </h2>
-        <div className="mt-3 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-3">
-          <p className="text-3xl font-semibold tabular-nums text-gray-900">
-            {profileViewsTotalSafe !== null ? profileViewsTotalSafe : "—"}
+      <Card>
+        <CardHeader className="mb-freuly-3">
+          <CardTitle>{t(dict, "dashboard.home.profileViews.title")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-freuly-1 sm:flex-row sm:items-baseline sm:gap-freuly-3">
+            <p className="text-[1.75rem] font-semibold tabular-nums leading-none text-freuly-text-primary">
+              {profileViewsTotalSafe !== null ? profileViewsTotalSafe : "—"}
+            </p>
+            <p className="text-freuly-body-sm text-freuly-text-secondary">
+              {t(dict, "dashboard.home.profileViews.totalLabel")}
+            </p>
+          </div>
+          <p className="mt-freuly-2 text-freuly-helper text-freuly-text-muted">
+            {t(dict, "dashboard.home.profileViews.hint")}
           </p>
-          <p className="text-sm text-gray-600">
-            {t(dict, "dashboard.home.profileViews.totalLabel")}
-          </p>
-        </div>
-        <p className="mt-2 text-xs text-gray-500">
-          {t(dict, "dashboard.home.profileViews.hint")}
-        </p>
-      </section>
+        </CardContent>
+      </Card>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h2 className="text-base font-semibold text-gray-900">
-          {t(dict, "dashboard.home.improve.title")}
-        </h2>
-        <p className="mt-1 text-sm text-gray-600">{t(dict, "dashboard.home.improve.subtitle")}</p>
+      <Card>
+        <CardHeader className="mb-freuly-3">
+          <CardTitle>{t(dict, "dashboard.home.improve.title")}</CardTitle>
+          <CardDescription>{t(dict, "dashboard.home.improve.subtitle")}</CardDescription>
+        </CardHeader>
 
         {visibleImprovements.length === 0 ? (
-          <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-900">
+          <Alert variant="success" className="mx-freuly-5 mb-freuly-5">
             {t(dict, "dashboard.home.improve.allGood")}
-          </div>
+          </Alert>
         ) : (
           <>
-            <ul className="mt-4 space-y-2">
-              {visibleImprovements.map((item) => {
-                const isMissing = item.severity === "missing";
-                return (
-                  <li
-                    key={item.key}
-                    className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50/60 px-3 py-2 text-sm"
-                  >
-                    <span
-                      aria-hidden="true"
-                      className={`mt-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-semibold leading-none ${
-                        isMissing
-                          ? "border border-amber-300 bg-white text-amber-700"
-                          : "border border-sky-300 bg-white text-sky-700"
-                      }`}
+            <CardContent>
+              <ul className="space-y-freuly-2">
+                {visibleImprovements.map((item) => {
+                  const isMissing = item.severity === "missing";
+                  return (
+                    <li
+                      key={item.key}
+                      className="flex items-start gap-freuly-3 rounded-freuly-md border border-freuly-border-subtle bg-freuly-border-subtle/40 px-freuly-3 py-freuly-2 text-freuly-body-sm"
                     >
-                      {isMissing ? "!" : "+"}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-gray-900">{item.label}</p>
-                      <p
-                        className={`mt-0.5 text-xs ${
-                          isMissing ? "text-amber-700" : "text-sky-700"
-                        }`}
+                      <Badge
+                        variant={isMissing ? "warning" : "info"}
+                        className="mt-0.5 shrink-0 px-1.5 py-0 text-[10px] font-semibold leading-none"
+                        aria-hidden
                       >
-                        {isMissing
-                          ? t(dict, "dashboard.home.improve.severity.missing")
-                          : t(dict, "dashboard.home.improve.severity.improve")}
-                      </p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-            {hiddenImprovementsCount > 0 ? (
-              <p className="mt-2 text-xs text-gray-500">
-                {t(dict, "dashboard.home.improve.more").replace(
-                  "{{count}}",
-                  String(hiddenImprovementsCount),
-                )}
-              </p>
-            ) : null}
-            <Link
-              href={profileHref}
-              className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-orange-500 px-5 text-sm font-semibold text-white transition hover:bg-orange-600"
-            >
-              {t(dict, "dashboard.home.improve.cta")}
-            </Link>
+                        {isMissing ? "!" : "+"}
+                      </Badge>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-freuly-text-primary">{item.label}</p>
+                        <p className="mt-freuly-1 text-freuly-helper text-freuly-text-muted">
+                          {isMissing
+                            ? t(dict, "dashboard.home.improve.severity.missing")
+                            : t(dict, "dashboard.home.improve.severity.improve")}
+                        </p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+              {hiddenImprovementsCount > 0 ? (
+                <p className="mt-freuly-2 text-freuly-helper text-freuly-text-muted">
+                  {t(dict, "dashboard.home.improve.more").replace(
+                    "{{count}}",
+                    String(hiddenImprovementsCount),
+                  )}
+                </p>
+              ) : null}
+            </CardContent>
+            <CardFooter>
+              <Link href={profileHref} className={linkPrimaryClass}>
+                {t(dict, "dashboard.home.improve.cta")}
+              </Link>
+            </CardFooter>
           </>
         )}
-      </section>
+      </Card>
 
       {canUseVideoGuide ? (
         <SpecialistLaunchVideoGuide lang={lang} initialAutoShow={shouldAutoShowVideoGuide} />

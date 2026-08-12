@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Card } from "@/components/ui";
 
 const COLLAPSED_STORAGE_KEY = "freuly_specialist_launch_video_guide_collapsed";
 const VIDEO_EMBED_URL = "https://www.youtube.com/embed/2eEnzEFqMEg";
@@ -114,12 +115,14 @@ export default function SpecialistLaunchVideoGuide({
     <>
       {showCard ? (
         <div className="fixed inset-x-3 bottom-3 z-40 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:w-[360px]">
-          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.14)]">
-            <p className="text-sm font-semibold text-gray-900">{copy.title}</p>
-            <p className="mt-2 text-sm leading-relaxed text-gray-600">{copy.description}</p>
+          <Card padding="sm" className="shadow-md">
+            <p className="text-freuly-label text-freuly-text-primary">{copy.title}</p>
+            <p className="mt-freuly-2 text-freuly-body-sm leading-relaxed text-freuly-text-secondary">
+              {copy.description}
+            </p>
 
             {opened ? (
-              <div className="mt-3 overflow-hidden rounded-xl border border-gray-200 bg-black">
+              <div className="mt-freuly-3 overflow-hidden rounded-freuly-md border border-freuly-border-default bg-black">
                 <iframe
                   src={VIDEO_EMBED_URL}
                   title={copy.videoGuide}
@@ -131,50 +134,54 @@ export default function SpecialistLaunchVideoGuide({
               </div>
             ) : null}
 
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-freuly-4 flex flex-wrap gap-freuly-2">
               {!opened ? (
-                <button
+                <Button
                   type="button"
+                  variant="primary"
                   onClick={openGuide}
-                  className="inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+                  className="min-h-[36px] h-9 px-freuly-3 py-1.5 text-freuly-body-sm"
                 >
                   {copy.watch}
-                </button>
+                </Button>
               ) : null}
-              <button
+              <Button
                 type="button"
+                variant="secondary"
                 onClick={handleCollapse}
-                className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                className="min-h-[36px] h-9 px-freuly-3 py-1.5 text-freuly-body-sm"
               >
                 {copy.collapse}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={handleSnooze}
-                className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                className="min-h-[36px] h-9 px-freuly-3 py-1.5 text-freuly-body-sm"
               >
                 {copy.snooze}
-              </button>
+              </Button>
             </div>
             <Link
               href={`/${lang}/specialist/dashboard/video-guide`}
-              className="mt-3 inline-flex text-sm font-medium text-blue-700 transition hover:text-blue-800"
+              className="mt-freuly-3 inline-flex text-freuly-body-sm font-medium text-freuly-primary transition hover:text-freuly-primary-hover"
             >
               {copy.openFullGuide}
             </Link>
-          </div>
+          </Card>
         </div>
       ) : null}
 
       {showFloatingButton ? (
-        <button
+        <Button
           type="button"
+          variant="secondary"
           onClick={openGuide}
-          className="fixed bottom-4 right-4 z-40 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-800 shadow-[0_10px_28px_rgba(15,23,42,0.14)] transition hover:bg-gray-50 sm:bottom-6 sm:right-6"
+          className="fixed bottom-4 right-4 z-40 min-h-[40px] rounded-full px-freuly-4 py-freuly-2 shadow-md sm:bottom-6 sm:right-6"
         >
           <span aria-hidden="true">🎥</span>
           <span>{copy.videoGuide}</span>
-        </button>
+        </Button>
       ) : null}
     </>
   );
