@@ -1,15 +1,8 @@
+@import "./tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root {
-  --primary: #1E40AF;
-  --accent: #DC2626;
-  /* CTA semantics */
-  --color-platform: #4B50E6;
-  --color-specialist: #059669;
-  --color-install: #EA580C;
-}
 
 html {
   max-width: 100%;
@@ -26,6 +19,7 @@ body {
   @apply font-sans;
   max-width: 100%;
   overflow-x: clip;
+  /* Legacy defaults — unmigrated screens keep current appearance */
   color: #111827;
   background: #ffffff;
 }
@@ -34,8 +28,52 @@ p {
   line-height: 1.6;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   letter-spacing: -0.02em;
+}
+
+/* Freuly typography utilities (opt-in; not applied globally yet) */
+.freuly-page-title {
+  @apply text-freuly-page-title text-freuly-text-primary;
+}
+
+.freuly-section-title {
+  @apply text-freuly-section-title text-freuly-text-primary;
+}
+
+.freuly-card-title {
+  @apply text-freuly-card-title text-freuly-text-primary;
+}
+
+.freuly-subtitle {
+  @apply text-freuly-subtitle text-freuly-text-secondary;
+}
+
+.freuly-body {
+  @apply text-freuly-body text-freuly-text-primary;
+}
+
+.freuly-body-sm {
+  @apply text-freuly-body-sm text-freuly-text-secondary;
+}
+
+.freuly-helper {
+  @apply text-freuly-helper text-freuly-text-muted;
+}
+
+.freuly-label {
+  @apply text-freuly-label text-freuly-text-primary;
+}
+
+/* Shared focus treatment for new UI primitives */
+.freuly-focus-ring {
+  outline: none;
+}
+
+.freuly-focus-ring:focus-visible {
+  box-shadow: var(--freuly-focus-ring);
 }
 
 .btn-primary {
@@ -48,11 +86,11 @@ h1, h2, h3 {
 
 /* card hover */
 .card-hover {
-  transition: transform .18s ease, box-shadow .18s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 .card-hover:hover {
   transform: translateY(-6px);
-  box-shadow: 0 10px 20px rgba(30,64,175,0.12);
+  box-shadow: 0 10px 20px rgba(30, 64, 175, 0.12);
 }
 
 /* fadeIn animation */
