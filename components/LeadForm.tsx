@@ -121,7 +121,7 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
         value={client_name}
         onChange={(e) => setName(e.target.value)}
         required
-        className="h-11 rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-3 text-sm outline-none transition focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
+        className="h-11 rounded-freuly-md border border-freuly-border-default bg-freuly-page px-3 text-sm text-freuly-text-primary outline-none transition placeholder:text-freuly-text-muted focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
       />
 
       <input
@@ -130,7 +130,7 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
         value={client_email}
         onChange={(e) => setEmail(e.target.value)}
         required
-        className="h-11 rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-3 text-sm outline-none transition focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
+        className="h-11 rounded-freuly-md border border-freuly-border-default bg-freuly-page px-3 text-sm text-freuly-text-primary outline-none transition placeholder:text-freuly-text-muted focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
       />
       <p className="-mt-1 text-xs text-freuly-text-muted">{t(dict, "lead.emailHint")}</p>
 
@@ -140,7 +140,7 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
         value={client_phone}
         onChange={(e) => setPhone(e.target.value)}
         required
-        className="h-11 rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-3 text-sm outline-none transition focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
+        className="h-11 rounded-freuly-md border border-freuly-border-default bg-freuly-page px-3 text-sm text-freuly-text-primary outline-none transition placeholder:text-freuly-text-muted focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
       />
       <p className="-mt-1 text-xs text-freuly-text-muted">{t(dict, "lead.phoneHint")}</p>
 
@@ -149,7 +149,7 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         rows={4}
-        className="rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-3 py-2.5 text-sm outline-none transition focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
+        className="min-h-[80px] rounded-freuly-md border border-freuly-border-default bg-freuly-page px-3 py-2.5 text-sm text-freuly-text-primary outline-none transition placeholder:text-freuly-text-muted focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
       />
 
       <input
@@ -165,7 +165,7 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
       <button
         disabled={loading}
         type="submit"
-        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-freuly-md bg-gradient-to-r from-freuly-primary to-freuly-primary-hover px-4 text-sm font-semibold text-white shadow-md transition hover:from-freuly-primary-hover hover:to-freuly-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
+        className="inline-flex h-[46px] w-full items-center justify-center gap-2 rounded-freuly-md bg-freuly-primary px-4 text-[15px] font-semibold text-freuly-text-on-primary transition hover:bg-freuly-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
       >
         {loading ? t(dict, "lead.sending") : t(dict, "lead.submit")}
       </button>

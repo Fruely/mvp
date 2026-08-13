@@ -1,7 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
 import SpecialistHeroContent from "@/components/specialist/SpecialistHeroContent";
+import Button from "@/components/ui/Button";
 
 export default function SpecialistHero({
   avatarUrl,
@@ -16,11 +16,11 @@ export default function SpecialistHero({
   showFounderBadge,
   successMessage,
   aboutPreview,
-  aboutHref,
-  readMoreLabel,
-  showForm,
-  formTitle,
-  formNode,
+  requestLabel,
+  servicesLabel,
+  onRequestClick,
+  onServicesClick,
+  showServicesCta,
 }: {
   avatarUrl?: string | null;
   avatarAlt: string;
@@ -34,15 +34,15 @@ export default function SpecialistHero({
   showFounderBadge?: boolean;
   successMessage?: string | null;
   aboutPreview?: string | null;
-  aboutHref: string;
-  readMoreLabel: string;
-  showForm: boolean;
-  formTitle: string;
-  formNode: ReactNode;
+  requestLabel: string;
+  servicesLabel: string;
+  onRequestClick: () => void;
+  onServicesClick: () => void;
+  showServicesCta: boolean;
 }) {
   return (
-    <aside className="rounded-xl border border-black/5 bg-white p-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)] sm:p-6">
-      <div className="space-y-4">
+    <section className="border-b border-freuly-border-default bg-freuly-surface">
+      <div className="mx-auto w-full max-w-[1280px] px-5 py-5 md:px-20 md:py-14">
         <SpecialistHeroContent
           avatarUrl={avatarUrl}
           avatarAlt={avatarAlt}
@@ -56,17 +56,29 @@ export default function SpecialistHero({
           showFounderBadge={showFounderBadge}
           successMessage={successMessage}
           aboutPreview={aboutPreview}
-          aboutHref={aboutHref}
-          readMoreLabel={readMoreLabel}
+          actions={
+            <div className="flex w-full flex-col gap-2.5 md:w-auto md:flex-row md:items-start">
+              <Button
+                type="button"
+                variant="primary"
+                onClick={onRequestClick}
+                className="h-[42px] w-full rounded-freuly-md px-7 text-[15px] font-semibold md:h-[46px] md:w-auto"
+              >
+                {requestLabel}
+              </Button>
+              {showServicesCta ? (
+                <button
+                  type="button"
+                  onClick={onServicesClick}
+                  className="inline-flex h-[42px] w-full items-center justify-center rounded-freuly-md border border-freuly-text-primary bg-freuly-surface px-6 text-[15px] font-semibold text-freuly-text-primary transition-colors freuly-focus-ring hover:bg-freuly-page md:h-[46px] md:w-auto"
+                >
+                  {servicesLabel}
+                </button>
+              ) : null}
+            </div>
+          }
         />
-
-        {showForm ? (
-          <div id="lead-form" className="rounded-xl border border-black/5 bg-white p-3 sm:p-4">
-            <h2 className="mb-4 text-lg font-semibold text-freuly-text-primary">{formTitle}</h2>
-            {formNode}
-          </div>
-        ) : null}
       </div>
-    </aside>
+    </section>
   );
 }

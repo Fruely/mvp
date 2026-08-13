@@ -39,7 +39,7 @@ export default function MobileStickyCTA({
             shadow-md
             active:scale-[0.98]
             transition
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+            focus:outline-none freuly-focus-ring
           "
           aria-label={label}
         >

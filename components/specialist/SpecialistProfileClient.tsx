@@ -125,8 +125,9 @@ export default function SpecialistProfileClient({
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(true);
   const [leadSuccessMessage, setLeadSuccessMessage] = useState<string | null>(null);
-  const [activePortfolioIndex, setActivePortfolioIndex] = useState(0);
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [aboutExpanded, setAboutExpanded] = useState(false);
+  const [formInView, setFormInView] = useState(false);
+  const [galleryLightboxIndex, setGalleryLightboxIndex] = useState<number | null>(null);
   const [mapCoords, setMapCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [reviews, setReviews] = useState<Array<{ id: string; author_name: string; rating: number; comment: string; created_at: string }>>([]);
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -272,6 +273,18 @@ export default function SpecialistProfileClient({
 
   useEffect(() => {
     if (!specialist?.id) return;
+    const el = document.getElementById("lead-form");
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setFormInView(entry.isIntersecting),
+      { rootMargin: "0px 0px -15% 0px", threshold: 0.2 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [specialist?.id, showForm, hideHero, leadSuccessMessage]);
+
+  useEffect(() => {
+    if (!specialist?.id) return;
     const routeId = id.trim();
     if (!routeId) return;
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(routeId);
@@ -292,7 +305,7 @@ export default function SpecialistProfileClient({
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-freuly-primary"></div>
           <p className="text-freuly-text-secondary">{t(dict, "specialist.loading")}</p>
         </div>
       </div>
@@ -314,7 +327,7 @@ export default function SpecialistProfileClient({
           </p>
           <Link
             href={langPrefix}
-            className="inline-block px-6 py-3 bg-primary text-white rounded-full hover:shadow-lg transition"
+            className="inline-block rounded-freuly-md bg-freuly-primary px-6 py-3 text-freuly-text-on-primary transition hover:bg-freuly-primary-hover"
           >
             {t(dict, "common.toHome")}
           </Link>
@@ -372,43 +385,22 @@ export default function SpecialistProfileClient({
   const portfolioImages = parseImageList(specialist.gallery_urls);
   const certificateUrls = parseImageList(specialist.certificate_urls).slice(0, 10);
   const hasPortfolio = portfolioImages.length > 0;
-  const portfolioCount = portfolioImages.length;
-  const normalizedActivePortfolioIndex = portfolioCount > 0 ? Math.min(activePortfolioIndex, portfolioCount - 1) : 0;
-  const activePortfolioImage = portfolioCount > 0 ? portfolioImages[normalizedActivePortfolioIndex] : null;
+  const hasPricedServices = Array.isArray(specialist.specialist_services) && specialist.specialist_services.length > 0;
   const hasRating = specialist.rating != null && Number.isFinite(specialist.rating);
-  const reviewsCount = specialist.reviews_count ?? 0;
   const normalizedRating = hasRating ? Math.max(0, Math.min(5, specialist.rating ?? 0)) : 0;
   const sectionText = getSpecialistPageTranslations(lang);
 
-  const goToPrevPortfolio = () => {
-    if (portfolioCount <= 1) return;
-    setActivePortfolioIndex((prev) => (prev - 1 + portfolioCount) % portfolioCount);
-  };
-
-  const goToNextPortfolio = () => {
-    if (portfolioCount <= 1) return;
-    setActivePortfolioIndex((prev) => (prev + 1) % portfolioCount);
-  };
-
-  const onTouchStartPortfolio = (event: React.TouchEvent<HTMLDivElement>) => {
-    setTouchStartX(event.touches[0]?.clientX ?? null);
-  };
-
-  const onTouchEndPortfolio = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (touchStartX == null || portfolioCount <= 1) return;
-    const endX = event.changedTouches[0]?.clientX ?? touchStartX;
-    const delta = endX - touchStartX;
-    const threshold = 40;
-    if (Math.abs(delta) >= threshold) {
-      if (delta < 0) goToNextPortfolio();
-      if (delta > 0) goToPrevPortfolio();
-    }
-    setTouchStartX(null);
-  };
   const scrollToLeadForm = () => {
     const el = document.getElementById("lead-form");
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+
+  const scrollToServices = () => {
+    const el = document.getElementById("services");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const aboutNeedsCollapse = aboutText.length > 220;
 
   const parseVideoEmbedUrl = (url: string | null | undefined): string | null => {
     if (!url || typeof url !== "string") return null;
@@ -507,55 +499,120 @@ export default function SpecialistProfileClient({
     );
   };
 
-  return (
-    <div className="min-h-screen bg-slate-50 px-4 py-6 sm:py-8 pb-24 md:pb-0">
-      <div className="mx-auto max-w-6xl flex flex-col md:grid md:grid-cols-[minmax(0,1.45fr)_minmax(320px,1fr)] md:gap-6 md:items-start">
-        <aside className="order-1 mt-6 md:order-none md:col-start-2 md:row-start-1 md:mt-0 md:self-start md:sticky md:top-6">
-          {!hideHero ? (
-            <SpecialistHero
-              avatarUrl={specialist.avatar_url}
-              avatarAlt={displayName}
-              name={displayName}
-              specialization={specializationText}
-              city={publicLocationLabel}
-              languages={Array.isArray(specialist.languages) ? specialist.languages : []}
-              workModeText={workMode !== "online" ? workModeLabel : null}
-              isNew={isNewActive}
-              newBadgeLabel={sectionText.newBadge}
-              showFounderBadge={specialist.founder_badge === true}
-              successMessage={leadSuccessMessage}
-              aboutPreview={aboutText || null}
-              aboutHref="#about"
-              readMoreLabel={sectionText.readMore}
-              showForm={showForm}
-              formTitle={sectionText.leadFormTitle}
-              formNode={
-                <LeadForm
-                  specialistId={specialist.id}
-                  onSuccess={(message) => {
-                    setShowForm(false);
-                    setLeadSuccessMessage(message);
-                  }}
-                />
-              }
-            />
-          ) : null}
-          <InstallFreuly
-            key={leadSuccessMessage ? "lead_success" : "specialist_profile"}
-            lang={lang}
-            audience="client"
-            placement={leadSuccessMessage ? "lead_success" : "specialist_profile"}
-            variant="compact"
-            className="mt-4"
+  const requestFormCard = (
+    <div
+      id="lead-form"
+      className="scroll-mt-24 rounded-2xl border border-freuly-border-default bg-freuly-surface p-6 sm:p-8"
+    >
+      <h2 className="text-freuly-card-title text-freuly-text-primary">{sectionText.leadFormTitle}</h2>
+      {leadSuccessMessage && !showForm ? (
+        <p className="mt-4 rounded-freuly-md border border-freuly-success-border bg-freuly-success-light px-3 py-2 text-sm font-medium text-freuly-success">
+          {leadSuccessMessage}
+        </p>
+      ) : (
+        <div className="mt-6">
+          <LeadForm
+            specialistId={specialist.id}
+            onSuccess={(message) => {
+              setShowForm(false);
+              setLeadSuccessMessage(message);
+            }}
           />
-        </aside>
+        </div>
+      )}
+    </div>
+  );
 
-        <main className="order-2 mt-6 space-y-6 md:order-none md:col-start-1 md:row-start-1 md:mt-0">
-          {aboutText ? (
-            <SectionCard title={t(dict, "specialist.about")} subtitle={lang === "ru" ? "Опыт, подход и ключевые компетенции" : lang === "de" ? "Erfahrung, Ansatz und Schlüsselkompetenzen" : "Досвід, підхід та ключові компетенції"}>
-              <div id="about" className="scroll-mt-24">
-                <p className="whitespace-pre-wrap leading-relaxed text-freuly-text-secondary">{aboutText}</p>
+  const showLocationSection =
+    workMode !== "online" && Boolean(publicLocationLabel || specialist.address?.trim());
+  const destination = [specialist.address, specialist.city].filter(Boolean).join(", ");
+
+  return (
+    <div className="min-h-screen bg-freuly-page pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0">
+      {!hideHero ? (
+        <SpecialistHero
+          avatarUrl={specialist.avatar_url}
+          avatarAlt={displayName}
+          name={displayName}
+          specialization={specializationText}
+          city={publicLocationLabel}
+          languages={Array.isArray(specialist.languages) ? specialist.languages : []}
+          workModeText={workModeLabel}
+          isNew={isNewActive}
+          newBadgeLabel={sectionText.newBadge}
+          showFounderBadge={specialist.founder_badge === true}
+          successMessage={null}
+          aboutPreview={aboutText || null}
+          requestLabel={t(dict, "specialist.sendRequest")}
+          servicesLabel={sectionText.servicesTitle}
+          onRequestClick={() => {
+            setLeadSuccessMessage(null);
+            setShowForm(true);
+            scrollToLeadForm();
+          }}
+          onServicesClick={scrollToServices}
+          showServicesCta={hasPricedServices || servicesList.length > 0}
+        />
+      ) : null}
+
+      <div className="mx-auto w-full max-w-[1280px] px-5 py-5 md:px-20 md:py-14">
+        <div className="flex flex-col gap-10 md:grid md:grid-cols-[minmax(0,832px)_400px] md:items-start md:gap-12">
+          <main className="order-1 space-y-10 md:space-y-14">
+          {hasPricedServices || servicesList.length > 0 ? (
+            <SectionCard id="services" title={sectionText.servicesTitle}>
+              <div>
+                {hasPricedServices
+                  ? (specialist.specialist_services ?? []).map((service, index) => {
+                      const { main, commentBelow } = getSpecialistServicePriceDisplay(
+                        service,
+                        sectionText.servicePriceOnRequest
+                      );
+                      return (
+                        <div
+                          key={service.id}
+                          className={`flex items-center justify-between gap-3 py-4 ${index > 0 ? "border-t border-freuly-border-default" : ""}`}
+                        >
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <p className="text-[15px] font-semibold text-freuly-text-primary">{service.title}</p>
+                            {commentBelow ? (
+                              <p className="text-[13px] text-freuly-text-secondary">{commentBelow}</p>
+                            ) : null}
+                          </div>
+                          <p className="shrink-0 text-base font-bold text-freuly-primary">{main}</p>
+                        </div>
+                      );
+                    })
+                  : servicesList.map((service, index) => (
+                      <div
+                        key={service}
+                        className={`flex items-center justify-between gap-3 py-4 ${index > 0 ? "border-t border-freuly-border-default" : ""}`}
+                      >
+                        <p className="min-w-0 text-[15px] font-semibold text-freuly-text-primary">{service}</p>
+                      </div>
+                    ))}
               </div>
+            </SectionCard>
+          ) : null}
+
+          {aboutText ? (
+            <SectionCard id="about" title={t(dict, "specialist.about")}>
+              <p
+                className={`whitespace-pre-wrap text-[15px] leading-[1.7] text-freuly-text-primary ${
+                  aboutNeedsCollapse && !aboutExpanded ? "line-clamp-5" : ""
+                }`}
+              >
+                {aboutText}
+              </p>
+              {aboutNeedsCollapse && !aboutExpanded ? (
+                <button
+                  type="button"
+                  onClick={() => setAboutExpanded(true)}
+                  className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-freuly-primary"
+                >
+                  {sectionText.readMore}
+                  <span aria-hidden>›</span>
+                </button>
+              ) : null}
             </SectionCard>
           ) : null}
 
@@ -567,7 +624,7 @@ export default function SpecialistProfileClient({
                     key={`${src}-${idx}`}
                     type="button"
                     onClick={() => setDocumentLightboxIndex(idx)}
-                    className="group relative overflow-hidden rounded-xl border border-slate-200/80 bg-neutral-100 shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                    className="group relative overflow-hidden rounded-freuly-lg border border-freuly-border-default bg-freuly-page transition hover:border-freuly-primary/40 focus:outline-none freuly-focus-ring"
                   >
                     <div className="relative aspect-[3/4] w-full">
                       <Image
@@ -586,50 +643,38 @@ export default function SpecialistProfileClient({
           ) : null}
 
           {hasPortfolio ? (
-            <section>
-              <SectionCard title={sectionText.topGalleryTitle} subtitle={sectionText.topGallerySubtitle}>
-                <div className="relative group overflow-hidden rounded-xl bg-slate-100 aspect-[16/10]">
-                  {activePortfolioImage ? (
-                    <div onTouchStart={onTouchStartPortfolio} onTouchEnd={onTouchEndPortfolio} className="h-full w-full">
-                      <Image
-                        src={activePortfolioImage}
-                        alt={`${displayName} work ${normalizedActivePortfolioIndex + 1}`}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  ) : null}
-                  {portfolioCount > 1 ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={goToPrevPortfolio}
-                        aria-label="Previous image"
-                        className="absolute left-3 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition md:opacity-0 md:group-hover:opacity-100"
-                      >
-                        ←
-                      </button>
-                      <button
-                        type="button"
-                        onClick={goToNextPortfolio}
-                        aria-label="Next image"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition md:opacity-0 md:group-hover:opacity-100"
-                      >
-                        →
-                      </button>
-                      <div className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white">
-                        {normalizedActivePortfolioIndex + 1} / {portfolioCount}
-                      </div>
-                    </>
-                  ) : null}
-                </div>
-              </SectionCard>
+            <section className="space-y-4 sm:space-y-6">
+              <header>
+                <h2 className="text-freuly-section-title text-freuly-text-primary">{sectionText.topGalleryTitle}</h2>
+                {sectionText.topGallerySubtitle ? (
+                  <p className="mt-1 text-sm text-freuly-text-secondary">{sectionText.topGallerySubtitle}</p>
+                ) : null}
+              </header>
+              <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
+                {portfolioImages.map((src, idx) => (
+                  <button
+                    key={`${src}-${idx}`}
+                    type="button"
+                    onClick={() => setGalleryLightboxIndex(idx)}
+                    className="relative h-[140px] w-[140px] shrink-0 overflow-hidden rounded-freuly-lg bg-freuly-page md:h-[220px] md:w-auto"
+                  >
+                    <Image
+                      src={src}
+                      alt={`${displayName} ${idx + 1}`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 140px, 267px"
+                      unoptimized
+                    />
+                  </button>
+                ))}
+              </div>
             </section>
           ) : null}
 
           {videoEmbedUrl ? (
             <SectionCard title={sectionText.videoTitle} subtitle="">
-              <div className="relative w-full overflow-hidden rounded-xl bg-slate-100 aspect-video">
+              <div className="relative aspect-video w-full overflow-hidden rounded-freuly-lg bg-freuly-page">
                 <iframe
                   src={videoEmbedUrl}
                   className="absolute inset-0 h-full w-full rounded-xl"
@@ -641,62 +686,64 @@ export default function SpecialistProfileClient({
             </SectionCard>
           ) : null}
 
-          <SectionCard title={sectionText.reviewsTitle} subtitle={sectionText.reviewsSubtitle}>
-            <div className="flex flex-wrap items-center gap-3 text-freuly-text-primary">
-              <div className="flex items-center gap-1" aria-label={`rating ${normalizedRating.toFixed(1)} out of 5`}>
-                {Array.from({ length: 5 }, (_, idx) => renderStar(normalizedRating - idx, idx))}
-              </div>
-              {hasRating ? <p className="text-2xl font-bold">{specialist.rating?.toFixed(1)}</p> : null}
-              {(reviewsCount > 0 || reviews.length > 0) ? (
-                <p className="text-sm text-freuly-text-secondary">
-                  ({reviews.length || reviewsCount} {sectionText.reviewsWord})
-                </p>
-              ) : null}
-            </div>
+          <SectionCard title={sectionText.reviewsTitle}>
             {reviews.length > 0 ? (
-              <div className="mt-4 space-y-4">
-                {reviews.map((review) => (
-                  <div key={review.id} className="rounded-xl border border-freuly-border-default bg-slate-50 p-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-freuly-text-primary">{review.author_name}</p>
-                      <time className="text-xs text-freuly-text-muted" dateTime={review.created_at}>
-                        {new Date(review.created_at).toLocaleDateString(lang === "de" ? "de-DE" : lang === "ru" ? "ru-RU" : "uk-UA", { day: "numeric", month: "short", year: "numeric" })}
-                      </time>
-                    </div>
-                    <div className="mt-1 flex items-center gap-0.5">
-                      {Array.from({ length: 5 }, (_, idx) => (
-                        <span key={idx} className={idx < review.rating ? "text-yellow-400" : "text-gray-300"}>★</span>
-                      ))}
-                    </div>
-                    <p className="mt-2 text-sm leading-relaxed text-freuly-text-secondary">{review.comment}</p>
+              <>
+                <div className="flex flex-wrap items-center justify-between gap-3 text-freuly-text-primary">
+                  <div className="flex items-center gap-1" aria-label={`rating ${normalizedRating.toFixed(1)} out of 5`}>
+                    {Array.from({ length: 5 }, (_, idx) => renderStar(normalizedRating - idx, idx))}
                   </div>
-                ))}
-              </div>
+                  {hasRating ? <p className="text-sm font-semibold text-freuly-text-primary">{specialist.rating?.toFixed(1)} / 5.0</p> : null}
+                </div>
+                <div className="mt-4 space-y-4">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="rounded-freuly-lg border border-freuly-border-default bg-freuly-page p-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-semibold text-freuly-text-primary">{review.author_name}</p>
+                        <time className="text-xs text-freuly-text-muted" dateTime={review.created_at}>
+                          {new Date(review.created_at).toLocaleDateString(lang === "de" ? "de-DE" : lang === "ru" ? "ru-RU" : "uk-UA", { day: "numeric", month: "short", year: "numeric" })}
+                        </time>
+                      </div>
+                      <div className="mt-1 flex items-center gap-0.5">
+                        {Array.from({ length: 5 }, (_, idx) => (
+                          <span key={idx} className={idx < review.rating ? "text-freuly-primary" : "text-freuly-border-default"}>★</span>
+                        ))}
+                      </div>
+                      <p className="mt-2 text-sm leading-relaxed text-freuly-text-secondary">{review.comment}</p>
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : (
-              <p className="text-sm text-freuly-text-secondary">{sectionText.noReviews}</p>
+              <div className="flex flex-col items-center py-2 text-center">
+                <div className="flex items-center gap-1" aria-label={`rating ${normalizedRating.toFixed(1)} out of 5`}>
+                  {Array.from({ length: 5 }, (_, idx) => renderStar(normalizedRating - idx, idx))}
+                </div>
+                <p className="mt-3 text-sm text-freuly-text-secondary">{sectionText.noReviews}</p>
+              </div>
             )}
 
             <div className="mt-4">
               {reviewMsg ? (
-                <p className={`mb-3 text-sm ${reviewMsg.type === "ok" ? "text-emerald-600" : "text-red-600"}`}>{reviewMsg.text}</p>
+                <p className={`mb-3 text-sm ${reviewMsg.type === "ok" ? "text-freuly-success" : "text-freuly-error"}`}>{reviewMsg.text}</p>
               ) : null}
 
               {!showReviewForm ? (
                 <button
                   type="button"
                   onClick={() => { setShowReviewForm(true); setReviewMsg(null); }}
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-freuly-text-secondary hover:bg-freuly-border-subtle transition"
+                  className="mx-auto flex min-h-[37px] items-center justify-center rounded-freuly-md border border-freuly-border-default px-5 py-2 text-sm font-semibold text-freuly-text-primary transition hover:bg-freuly-page"
                 >
                   {sectionText.leaveReview}
                 </button>
               ) : (
-                <div className="rounded-xl border border-freuly-border-default bg-slate-50 p-4 space-y-3">
+                <div className="space-y-3 rounded-freuly-lg border border-freuly-border-default bg-freuly-page p-4">
                   <label className="block space-y-1 text-sm">
                     <span className="font-medium text-freuly-text-secondary">{sectionText.reviewName}</span>
                     <input
                       value={reviewForm.author_name}
                       onChange={(e) => setReviewForm((prev) => ({ ...prev, author_name: e.target.value.slice(0, 100) }))}
-                      className="w-full rounded-lg border border-freuly-border-default px-3 py-2"
+                      className="w-full rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-3 py-2"
                     />
                   </label>
                   <div className="space-y-1 text-sm">
@@ -707,7 +754,7 @@ export default function SpecialistProfileClient({
                           key={idx}
                           type="button"
                           onClick={() => setReviewForm((prev) => ({ ...prev, rating: idx + 1 }))}
-                          className={`text-2xl transition ${idx < reviewForm.rating ? "text-yellow-400" : "text-gray-300"} hover:text-yellow-400`}
+                          className={`text-2xl transition ${idx < reviewForm.rating ? "text-freuly-primary" : "text-freuly-border-default"} hover:text-freuly-primary`}
                         >
                           ★
                         </button>
@@ -720,7 +767,7 @@ export default function SpecialistProfileClient({
                       value={reviewForm.comment}
                       onChange={(e) => setReviewForm((prev) => ({ ...prev, comment: e.target.value.slice(0, 1000) }))}
                       rows={3}
-                      className="w-full rounded-lg border border-freuly-border-default px-3 py-2"
+                      className="w-full rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-3 py-2"
                     />
                   </label>
                   <div className="flex items-center gap-3">
@@ -761,7 +808,7 @@ export default function SpecialistProfileClient({
                           setReviewSubmitting(false);
                         }
                       }}
-                      className="inline-flex h-9 items-center justify-center rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+                      className="inline-flex h-9 items-center justify-center rounded-freuly-md bg-freuly-primary px-4 text-sm font-semibold text-freuly-text-on-primary transition hover:bg-freuly-primary-hover disabled:opacity-60"
                     >
                       {reviewSubmitting ? "..." : sectionText.reviewSubmit}
                     </button>
@@ -778,135 +825,96 @@ export default function SpecialistProfileClient({
             </div>
           </SectionCard>
 
-          {servicesList.length > 0 ? (
-            <SectionCard title={sectionText.servicesTitle} subtitle={sectionText.servicesSubtitle}>
-              <div className="flex flex-wrap gap-2">
-                {servicesList.map((service) => (
-                  <span key={service} className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">
-                    {service}
-                  </span>
-                ))}
+          {showLocationSection ? (
+            <SectionCard title={sectionText.contactsLineLocation}>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-1">
+                  {publicLocationLabel ? (
+                    <p className="text-base font-bold text-freuly-text-primary">{publicLocationLabel}</p>
+                  ) : null}
+                  {showPhysicalAddress ? (
+                    <p className="text-sm text-freuly-text-secondary">{specialist.address}</p>
+                  ) : null}
+                </div>
+                {destination ? (
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-8 items-center justify-center rounded-freuly-md border border-freuly-border-default px-4 text-[13px] font-semibold text-freuly-text-primary transition hover:bg-freuly-page"
+                  >
+                    {t(dict, "specialistPage.buildRoute")}
+                  </a>
+                ) : null}
               </div>
+              {mapCoords ? (
+                <div className="mt-6 overflow-hidden rounded-freuly-lg">
+                  <iframe
+                    title={t(dict, "specialistPage.mapEmbedTitle")}
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapCoords.lon - 0.01},${mapCoords.lat - 0.007},${mapCoords.lon + 0.01},${mapCoords.lat + 0.007}&layer=mapnik&marker=${mapCoords.lat},${mapCoords.lon}`}
+                    width="100%"
+                    height="280"
+                    className="h-40 w-full border-0 md:h-[280px]"
+                    loading="lazy"
+                  />
+                </div>
+              ) : null}
             </SectionCard>
           ) : null}
 
-          {(Array.isArray(specialist?.specialist_services) && specialist.specialist_services.length > 0) && (
-            <SectionCard title={sectionText.servicesTitle} subtitle={sectionText.servicesSubtitle}>
-              <div className="space-y-3">
-                {(specialist.specialist_services ?? []).map((service) => {
-                  const { main, commentBelow } = getSpecialistServicePriceDisplay(
-                    service,
-                    sectionText.servicePriceOnRequest
-                  );
-                  return (
-                    <div key={service.id} className="flex justify-between gap-3 border-b pb-2">
-                      <span className="min-w-0">{service.title}</span>
-                      <div className="shrink-0 max-w-[min(100%,18rem)] text-right">
-                        <span className="font-medium text-textPrimary">{main}</span>
-                        {commentBelow ? (
-                          <p className="mt-0.5 text-xs font-normal text-freuly-text-muted">{commentBelow}</p>
-                        ) : null}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </SectionCard>
-          )}
-
-          {(publicLocationLabel || (specialist.languages && specialist.languages.length > 0) || (workMode !== "online" && workModeLabel)) ? (
-            <SectionCard title={sectionText.contactsTitle} subtitle={sectionText.contactsSubtitle}>
-              <div className="space-y-2 text-sm text-freuly-text-secondary">
-                {publicLocationLabel ? (
-                  <p>
-                    <span className="font-medium">{sectionText.contactsLineLocation}: </span>
-                    {publicLocationLabel}
-                  </p>
-                ) : null}
-                {showPhysicalAddress ? (
-                  <p>
-                    <span className="font-medium">{t(dict, "specialistPage.contactsLineAddress")}: </span>
-                    {specialist.address}
-                  </p>
-                ) : null}
-                {workMode !== "online" && (showPhysicalAddress || specialist.city) ? (() => {
-                  const destination = [specialist.address, specialist.city].filter(Boolean).join(", ");
-                  return (
-                    <>
-                      <a
-                        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-freuly-text-secondary hover:bg-freuly-border-subtle transition"
-                      >
-                        {t(dict, "specialistPage.buildRoute")}
-                      </a>
-                      {mapCoords ? (
-                        <div className="mt-3 overflow-hidden rounded-xl border border-freuly-border-default">
-                          <iframe
-                            title={t(dict, "specialistPage.mapEmbedTitle")}
-                            src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapCoords.lon - 0.01},${mapCoords.lat - 0.007},${mapCoords.lon + 0.01},${mapCoords.lat + 0.007}&layer=mapnik&marker=${mapCoords.lat},${mapCoords.lon}`}
-                            width="100%"
-                            height="200"
-                            style={{ border: 0 }}
-                            loading="lazy"
-                          />
-                        </div>
-                      ) : null}
-                    </>
-                  );
-                })() : null}
+          {(specialist.languages?.length || workModeLabel) ? (
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-freuly-border-default py-4 text-sm text-freuly-text-secondary">
+              <div className="flex flex-wrap gap-x-6 gap-y-1">
                 {specialist.languages && specialist.languages.length > 0 ? (
                   <p>
-                    <span className="font-medium">{sectionText.contactsLineLanguages}: </span>
-                    {specialist.languages.join(", ")}
+                    {sectionText.contactsLineLanguages}: {specialist.languages.join(" • ")}
                   </p>
                 ) : null}
                 {workModeLabel ? (
                   <p>
-                    <span className="font-medium">{sectionText.contactsLineFormat}: </span>
-                    {workModeLabel}
+                    {sectionText.contactsLineFormat}: {workModeLabel}
                   </p>
                 ) : null}
               </div>
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 <button
                   type="button"
                   onClick={() => void handleShare("copy")}
-                  className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-freuly-text-secondary hover:bg-freuly-border-subtle"
+                  className="text-sm font-medium text-freuly-primary"
                 >
                   {t(dict, "specialistPage.copyLink")}
                 </button>
                 {isProPlan ? (
                   <>
-                    <button
-                      type="button"
-                      onClick={() => void handleShare("whatsapp")}
-                      className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-freuly-text-secondary hover:bg-freuly-border-subtle"
-                    >
+                    <button type="button" onClick={() => void handleShare("whatsapp")} className="text-sm font-medium text-freuly-primary">
                       WhatsApp
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => void handleShare("telegram")}
-                      className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-freuly-text-secondary hover:bg-freuly-border-subtle"
-                    >
+                    <button type="button" onClick={() => void handleShare("telegram")} className="text-sm font-medium text-freuly-primary">
                       Telegram
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => void handleShare("instagram")}
-                      className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-freuly-text-secondary hover:bg-freuly-border-subtle"
-                    >
+                    <button type="button" onClick={() => void handleShare("instagram")} className="text-sm font-medium text-freuly-primary">
                       Instagram
                     </button>
                   </>
                 ) : null}
               </div>
-            </SectionCard>
+            </div>
           ) : null}
 
-        </main>
+          </main>
+
+          <aside className="order-2 md:sticky md:top-6 md:self-start">
+            {requestFormCard}
+            <InstallFreuly
+              key={leadSuccessMessage ? "lead_success" : "specialist_profile"}
+              lang={lang}
+              audience="client"
+              placement={leadSuccessMessage ? "lead_success" : "specialist_profile"}
+              variant="compact"
+              className="mt-4"
+            />
+          </aside>
+        </div>
       </div>
 
       <SpecialistDocumentsLightbox
@@ -918,6 +926,27 @@ export default function SpecialistProfileClient({
         ariaLabel={sectionText.certificatesTitle}
       />
 
+      <SpecialistDocumentsLightbox
+        urls={portfolioImages}
+        activeIndex={galleryLightboxIndex}
+        onClose={() => setGalleryLightboxIndex(null)}
+        onGoPrev={() => {
+          if (portfolioImages.length === 0) return;
+          setGalleryLightboxIndex((prev) => {
+            if (prev === null) return null;
+            return (prev - 1 + portfolioImages.length) % portfolioImages.length;
+          });
+        }}
+        onGoNext={() => {
+          if (portfolioImages.length === 0) return;
+          setGalleryLightboxIndex((prev) => {
+            if (prev === null) return null;
+            return (prev + 1) % portfolioImages.length;
+          });
+        }}
+        ariaLabel={sectionText.topGalleryTitle}
+      />
+
       <MobileStickyCTA
         onClick={() => {
           setLeadSuccessMessage(null);
@@ -925,7 +954,7 @@ export default function SpecialistProfileClient({
           scrollToLeadForm();
         }}
         label={t(dict, "specialist.sendRequest")}
-        isHidden={showForm}
+        isHidden={formInView || !showForm}
       />
     </div>
   );
