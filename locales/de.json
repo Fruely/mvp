@@ -26,8 +26,14 @@
     "results": {
       "backToSearch": "Zurück zur Suche",
       "title": "Spezialisten",
-      "count": "{{count}} Ergebnisse für Sprache \"{{language}}\".",
-      "countOnline": "{{count}} Ergebnisse für Sprache \"{{language}}\" online.",
+      "count": {
+        "one": "{{count}} Ergebnis für Sprache \"{{language}}\".",
+        "many": "{{count}} Ergebnisse für Sprache \"{{language}}\"."
+      },
+      "countOnline": {
+        "one": "{{count}} Ergebnis für Sprache \"{{language}}\" online.",
+        "many": "{{count}} Ergebnisse für Sprache \"{{language}}\" online."
+      },
       "onlineSectionTitle": "Online verfügbar",
       "nearbySectionTitle": "In Ihrer Nähe",
       "radiusHint": "Spezialisten im Umkreis von {{radius}} km gefunden.",
@@ -35,6 +41,28 @@
       "sendRequest": "Anfrage senden",
       "viewProfile": "Profil ansehen"
     }
+  },
+  "login": {
+    "title": "Anmeldung",
+    "subtitle": "Geben Sie die E-Mail-Adresse und das Passwort ein, die Sie beim ersten Login festgelegt haben.",
+    "subtitlePartner": "Melden Sie sich an oder erstellen Sie ein Konto, um das Partner-Onboarding fortzusetzen.",
+    "signIn": "Anmelden",
+    "signUp": "Registrieren",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "submit": "Anmelden",
+    "submitting": "Anmeldung…",
+    "createAccount": "Konto erstellen",
+    "creatingAccount": "Registrierung…",
+    "forgotPassword": "Passwort vergessen?",
+    "noPassword": "Kein Passwort? Öffnen Sie den Link aus der E-Mail oder fordern Sie einen neuen an unter",
+    "errorRequired": "Bitte E-Mail und Passwort eingeben",
+    "errorSignUp": "Registrierung fehlgeschlagen",
+    "signUpCheckEmail": "Registrierung abgeschlossen. Bitte bestätigen Sie Ihre E-Mail und melden Sie sich danach erneut an.",
+    "errorInvalid": "Ungültige E-Mail oder Passwort",
+    "errorSignIn": "Anmeldung fehlgeschlagen",
+    "errorNoSession": "Anmeldung erfolgreich, aber keine Sitzung erstellt. Bitte E-Mail-Bestätigung prüfen oder erneut versuchen.",
+    "errorNetwork": "Netzwerkfehler"
   },
   "serviceRequest": {
     "title": "Beschreiben Sie Ihre Aufgabe – Freuly findet die passende Fachkraft",
@@ -169,6 +197,7 @@
   "home.variantC.recommended.viewAll": "Alle Spezialisten",
   "home.variantC.recommended.speaks": "Spricht",
   "home.variantC.story.eyebrow": "Geschichten aus der Community",
+  "home.variantC.story.quote": "Finden Sie in 2 Minuten eine Fachkraft in Ihrer Sprache.",
   "home.variantC.story.cta": "Suche starten",
   "home.variantC.promo.invite.title": "Freundin oder Freund einladen",
   "home.variantC.promo.invite.body": "Kennen Sie jemanden, der eine Fachkraft in der Muttersprache sucht? Erzählen Sie von Freuly.",
@@ -240,14 +269,22 @@
     "loadingMore": "Wird geladen...",
     "loadMore": "Mehr anzeigen",
     "notFound": "Kategorie nicht gefunden",
-    "found": "{{count}} Spezialisten gefunden",
+    "metaTitle": "{{name}} — Fachkräfte | Freuly",
+    "metaDescription": "Finden Sie Fachkräfte der Kategorie {{name}} auf Freuly.",
+    "found": {
+      "one": "{{count}} Spezialist gefunden",
+      "many": "{{count}} Spezialisten gefunden"
+    },
     "comingSoon": {
       "title": "Diese Kategorie ist bald verfügbar",
       "subtitle": "Wir schalten diese Kategorie frei, sobald genug verifizierte Fachkräfte verfügbar sind."
     },
     "parent": {
       "subtitle": "Wählen Sie den passenden Bereich innerhalb dieser Kategorie",
-      "found": "{{count}} Fachkräfte",
+      "found": {
+        "one": "{{count}} Fachkraft",
+        "many": "{{count}} Fachkräfte"
+      },
       "empty": {
         "title": "Unterkategorien folgen bald",
         "subtitle": "Wir fügen laufend neue Bereiche hinzu. Schauen Sie bald wieder vorbei."

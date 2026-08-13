@@ -3,16 +3,29 @@
 import { useState } from "react";
 import { getSupabase } from "@/lib/supabaseClient";
 import { specialistDashboardHrefClient } from "@/lib/specialists/dashboardHref";
+import { t, type Dictionary, type Lang } from "@/lib/i18n";
+import ruDict from "@/locales/ru.json";
+import uaDict from "@/locales/ua.json";
+import deDict from "@/locales/de.json";
+
+const LOGIN_DICTS: Record<Lang, Dictionary> = {
+  ru: ruDict as unknown as Dictionary,
+  ua: uaDict as unknown as Dictionary,
+  de: deDict as unknown as Dictionary,
+};
 
 type Props = {
+  lang?: Lang;
   nextPath?: string | null;
   allowPartnerSignUp?: boolean;
 };
 
 export default function SpecialistPasswordSignIn({
+  lang = "ru",
   nextPath = null,
   allowPartnerSignUp = false,
 }: Props) {
+  const dict = LOGIN_DICTS[lang] ?? LOGIN_DICTS.ru;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -32,7 +45,7 @@ export default function SpecialistPasswordSignIn({
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
     if (!trimmedEmail || !trimmedPassword) {
-      setError("Введите email и пароль");
+      setError(t(dict, "login.errorRequired"));
       return;
     }
     setLoading(true);
@@ -46,13 +59,11 @@ export default function SpecialistPasswordSignIn({
           password: trimmedPassword,
         });
         if (signUpError) {
-          setError(signUpError.message || "Ошибка регистрации");
+          setError(signUpError.message || t(dict, "login.errorSignUp"));
           return;
         }
         if (!data.session) {
-          setMessage(
-            "Регистрация выполнена. Проверьте email для подтверждения, затем войдите снова."
-          );
+          setMessage(t(dict, "login.signUpCheckEmail"));
           setMode("signin");
           return;
         }
@@ -66,9 +77,9 @@ export default function SpecialistPasswordSignIn({
       });
       if (signInError) {
         if (signInError.message?.toLowerCase().includes("invalid login")) {
-          setError("Неверный email или пароль");
+          setError(t(dict, "login.errorInvalid"));
         } else {
-          setError(signInError.message || "Ошибка входа");
+          setError(signInError.message || t(dict, "login.errorSignIn"));
         }
         return;
       }
@@ -77,11 +88,9 @@ export default function SpecialistPasswordSignIn({
         window.location.assign(`${window.location.origin}${targetHref}`);
         return;
       }
-      setError(
-        "Вход выполнен, но сессия не создана. Проверьте подтверждение email в письме или попробуйте ещё раз."
-      );
+      setError(t(dict, "login.errorNoSession"));
     } catch {
-      setError("Ошибка сети");
+      setError(t(dict, "login.errorNetwork"));
     } finally {
       setLoading(false);
     }
@@ -89,11 +98,9 @@ export default function SpecialistPasswordSignIn({
 
   return (
     <section className="mx-auto max-w-sm rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-gray-900">Вход в кабинет</h2>
+      <h2 className="text-lg font-semibold text-gray-900">{t(dict, "login.title")}</h2>
       <p className="mt-1 text-sm text-gray-600">
-        {allowPartnerSignUp
-          ? "Войдите или создайте аккаунт, чтобы продолжить партнёрский onboarding."
-          : "Введите email и пароль, которые вы задали при первом входе."}
+        {allowPartnerSignUp ? t(dict, "login.subtitlePartner") : t(dict, "login.subtitle")}
       </p>
       {allowPartnerSignUp ? (
         <div className="mt-3 flex rounded-lg border border-gray-200 p-1 text-sm">
@@ -104,7 +111,7 @@ export default function SpecialistPasswordSignIn({
             }`}
             onClick={() => setMode("signin")}
           >
-            Войти
+            {t(dict, "login.signIn")}
           </button>
           <button
             type="button"
@@ -113,14 +120,14 @@ export default function SpecialistPasswordSignIn({
             }`}
             onClick={() => setMode("signup")}
           >
-            Регистрация
+            {t(dict, "login.signUp")}
           </button>
         </div>
       ) : null}
       <form onSubmit={handleSubmit} className="mt-4 space-y-3">
         <div>
           <label htmlFor="claim-email" className="block text-sm font-medium text-gray-700">
-            Email
+            {t(dict, "login.email")}
           </label>
           <input
             id="claim-email"
@@ -134,7 +141,7 @@ export default function SpecialistPasswordSignIn({
         </div>
         <div>
           <label htmlFor="claim-password" className="block text-sm font-medium text-gray-700">
-            Пароль
+            {t(dict, "login.password")}
           </label>
           <input
             id="claim-password"
@@ -163,21 +170,21 @@ export default function SpecialistPasswordSignIn({
         >
           {loading
             ? mode === "signup" && allowPartnerSignUp
-              ? "Регистрация…"
-              : "Вход…"
+              ? t(dict, "login.creatingAccount")
+              : t(dict, "login.submitting")
             : mode === "signup" && allowPartnerSignUp
-              ? "Создать аккаунт"
-              : "Войти"}
+              ? t(dict, "login.createAccount")
+              : t(dict, "login.submit")}
         </button>
         <a
-          href="/ua/reset-password"
+          href={`/${lang}/reset-password`}
           className="mt-1 block text-center text-sm text-blue-600 hover:underline"
         >
-          Забули пароль?
+          {t(dict, "login.forgotPassword")}
         </a>
       </form>
       <p className="mt-4 text-xs text-gray-500">
-        Нет пароля? Откройте ссылку из письма или запросите новую на{" "}
+        {t(dict, "login.noPassword")}{" "}
         <a href="mailto:freuly.de@gmail.com" className="text-blue-600 underline">
           freuly.de@gmail.com
         </a>

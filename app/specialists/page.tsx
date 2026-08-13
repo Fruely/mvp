@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
-import { getDictionary, t, type Dictionary } from "@/lib/i18n";
+import { getDictionary, t, tCount, type Dictionary, type Lang } from "@/lib/i18n";
 import { searchSpecialists, type SpecialistResult } from "@/lib/search/specialistSearch";
 import { getSearchSuggestions } from "@/lib/search/searchSuggestions";
 import { shouldOfferOnlineFallbackForNoLocalResults } from "@/lib/search/noLocalResultsFallback";
@@ -82,14 +82,13 @@ function formatResultsCount(
   dict: Dictionary,
   count: number,
   language: string,
+  uiLang: Lang,
   isOnlineList: boolean
 ): string {
   const key = isOnlineList
     ? "search.results.countOnline"
     : "search.results.count";
-  return t(dict, key)
-    .replace("{{count}}", String(count))
-    .replace("{{language}}", language);
+  return tCount(dict, uiLang, key, count, { language });
 }
 
 function getInternalBaseUrl(): string {
@@ -369,7 +368,7 @@ export default async function SpecialistsPage({
   );
 
   const resultsCountLine = [
-    formatResultsCount(dict, specialists.length, lang, isOnlineList),
+    formatResultsCount(dict, specialists.length, lang, uiLang, isOnlineList),
     typeof searchRadius === "number" &&
     Number.isFinite(searchRadius) &&
     localSpecialists.length > 0

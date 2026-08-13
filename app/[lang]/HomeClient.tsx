@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { Dictionary, Lang } from "@/lib/i18n";
-import { t } from "@/lib/i18n";
+import { t, tCount } from "@/lib/i18n";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import InstallFreuly from "@/components/pwa/InstallFreuly";
@@ -17,33 +17,6 @@ import {
   publicPageContainerClass,
 } from "@/components/public/publicStyles";
 import { ArrowRight, ShieldCheck, Users } from "lucide-react";
-
-type MosaicImage = { url: string; alt?: string; category_id?: string };
-
-type ImageBlockContent = {
-  url?: string;
-  title?: string;
-  subtitle?: string;
-  alt?: string;
-};
-
-type MosaicBlockContent = {
-  title?: string;
-  subtitle?: string;
-  images?: MosaicImage[];
-};
-
-type TextImageBlockContent = {
-  title?: string;
-  text?: string;
-  url?: string;
-};
-
-type Block = {
-  key: string;
-  type: "image" | "mosaic";
-  content: ImageBlockContent | MosaicBlockContent | TextImageBlockContent;
-};
 
 type CategoryStat = {
   id: string;
@@ -117,12 +90,10 @@ const BOOSTED_CHILD_CATEGORY_SLUGS = ["it-support"] as const;
 const TRUST_AVATAR_FALLBACKS = ["#1a8a7d", "#d35a3b", "#6366f1"] as const;
 
 export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Dictionary; place?: string }) {
-  const [blocks, setBlocks] = useState<Block[]>([]);
   const [categories, setCategories] = useState<CategoryStat[]>([]);
   const [popularCategories, setPopularCategories] = useState<PopularCategory[]>([]);
   const [recommendedSpecialists, setRecommendedSpecialists] = useState<RecommendedSpecialist[]>([]);
   const [homepageParentSlotSlugs, setHomepageParentSlotSlugs] = useState<string[]>([]);
-  const [isBlocksLoading, setIsBlocksLoading] = useState(true);
   const [isPopularLoading, setIsPopularLoading] = useState(true);
   const [isRecommendedLoading, setIsRecommendedLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -171,19 +142,6 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                 }))
             : undefined,
         }));
-    }
-
-    async function loadBlocks() {
-      try {
-        const res = await fetch("/api/site-blocks");
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error || "Ошибка загрузки блоков");
-        setBlocks(json.blocks || []);
-      } catch (e: any) {
-        setError(e.message || "Ошибка загрузки блоков");
-      } finally {
-        setIsBlocksLoading(false);
-      }
     }
 
     async function loadCategories() {
@@ -331,24 +289,11 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
       }
     }
 
-    loadBlocks();
     loadCategories();
     loadHomepageParentSlots();
     loadPopularCategories();
     loadRecommendedSpecialists();
-
-    // Быстрая реакция на публикацию из админки
-    const handler = () => loadBlocks();
-    window.addEventListener("storage", handler);
-    return () => window.removeEventListener("storage", handler);
   }, [lang]);
-
-  const textImage = useMemo(
-    () => blocks.find((b) => b.key === "homepage_text_image"),
-    [blocks]
-  );
-
-  const textImageContent = (textImage?.content as TextImageBlockContent) || {};
 
   const trustAvatars = useMemo(() => {
     return recommendedSpecialists
@@ -357,10 +302,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
       .slice(0, 3);
   }, [recommendedSpecialists]);
 
-  const storyQuote =
-    textImageContent.text?.trim() ||
-    textImageContent.title?.trim() ||
-    t(dict, "transitional.final");
+  const storyQuote = t(dict, "home.variantC.story.quote");
 
   const orderedCategorySections = useMemo(() => {
     const preparedParents: CategoryStat[] = [];
@@ -539,9 +481,11 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {categoryTiles.map((child, index) => {
                 const label = getCategoryTitle(child, toCategoryTitleLang(lang));
-                const description = t(dict, "category.parent.found").replace(
-                  /\{\{\s*count\s*\}\}/g,
-                  String(child.specialists_count),
+                const description = tCount(
+                  dict,
+                  lang,
+                  "category.parent.found",
+                  child.specialists_count,
                 );
                 const cardInner = (
                   <>

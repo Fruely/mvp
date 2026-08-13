@@ -26,8 +26,16 @@
     "results": {
       "backToSearch": "Вернуться к поиску",
       "title": "Специалисты",
-      "count": "{{count}} результатов для языка \"{{language}}\".",
-      "countOnline": "{{count}} результатов для языка \"{{language}}\" онлайн.",
+      "count": {
+        "one": "{{count}} результат для языка \"{{language}}\".",
+        "few": "{{count}} результата для языка \"{{language}}\".",
+        "many": "{{count}} результатов для языка \"{{language}}\"."
+      },
+      "countOnline": {
+        "one": "{{count}} результат для языка \"{{language}}\" онлайн.",
+        "few": "{{count}} результата для языка \"{{language}}\" онлайн.",
+        "many": "{{count}} результатов для языка \"{{language}}\" онлайн."
+      },
       "onlineSectionTitle": "Работают онлайн",
       "nearbySectionTitle": "Рядом с вами",
       "radiusHint": "Найдено специалистов в радиусе {{radius}} км.",
@@ -35,6 +43,28 @@
       "sendRequest": "Оставить заявку",
       "viewProfile": "Смотреть профиль"
     }
+  },
+  "login": {
+    "title": "Вход в кабинет",
+    "subtitle": "Введите email и пароль, которые вы задали при первом входе.",
+    "subtitlePartner": "Войдите или создайте аккаунт, чтобы продолжить партнёрский onboarding.",
+    "signIn": "Войти",
+    "signUp": "Регистрация",
+    "email": "Email",
+    "password": "Пароль",
+    "submit": "Войти",
+    "submitting": "Вход…",
+    "createAccount": "Создать аккаунт",
+    "creatingAccount": "Регистрация…",
+    "forgotPassword": "Забыли пароль?",
+    "noPassword": "Нет пароля? Откройте ссылку из письма или запросите новую на",
+    "errorRequired": "Введите email и пароль",
+    "errorSignUp": "Ошибка регистрации",
+    "signUpCheckEmail": "Регистрация выполнена. Проверьте email для подтверждения, затем войдите снова.",
+    "errorInvalid": "Неверный email или пароль",
+    "errorSignIn": "Ошибка входа",
+    "errorNoSession": "Вход выполнен, но сессия не создана. Проверьте подтверждение email в письме или попробуйте ещё раз.",
+    "errorNetwork": "Ошибка сети"
   },
   "serviceRequest": {
     "title": "Опишите задачу — Freuly найдёт вам исполнителя",
@@ -202,6 +232,7 @@
   "home.variantC.recommended.viewAll": "Все специалисты",
   "home.variantC.recommended.speaks": "Говорит",
   "home.variantC.story.eyebrow": "Истории сообщества",
+  "home.variantC.story.quote": "Найдите специалиста на своём языке за 2 минуты.",
   "home.variantC.story.cta": "Начать поиск",
   "home.variantC.promo.invite.title": "Пригласите знакомого",
   "home.variantC.promo.invite.body": "Знаете кого-то, кому нужен специалист на родном языке? Расскажите о Freuly.",
@@ -295,14 +326,24 @@
     "loadingMore": "Загрузка...",
     "loadMore": "Показать еще",
     "notFound": "Категория не найдена",
-    "found": "Найдено {{count}} специалистов",
+    "metaTitle": "{{name}} — специалисты | Freuly",
+    "metaDescription": "Найдите специалистов категории {{name}} на платформе Freuly.",
+    "found": {
+      "one": "Найден {{count}} специалист",
+      "few": "Найдено {{count}} специалиста",
+      "many": "Найдено {{count}} специалистов"
+    },
     "comingSoon": {
       "title": "Категория скоро станет доступной",
       "subtitle": "Мы откроем эту категорию, как только появится достаточно подтверждённых специалистов."
     },
     "parent": {
       "subtitle": "Выберите подходящее направление внутри категории",
-      "found": "{{count}} специалистов",
+      "found": {
+        "one": "{{count}} специалист",
+        "few": "{{count}} специалиста",
+        "many": "{{count}} специалистов"
+      },
       "empty": {
         "title": "Подкатегории скоро появятся",
         "subtitle": "Мы добавляем новые направления. Возвращайтесь чуть позже."

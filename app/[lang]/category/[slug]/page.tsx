@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
+import { getDictionary, t, tCount, type Dictionary, type Lang } from "@/lib/i18n";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
@@ -401,12 +401,8 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
   }, [category?.id, selectedLanguage, selectedCity, sort, parentCategory]);
 
   const foundText = useMemo(() => {
-    const visibleCount = totalSpecialists;
-    const template = (t as any)(dict, "category.found", {
-      count: visibleCount,
-    }) as string;
-    return String(template).replace(/\{\{\s*count\s*\}\}/g, String(visibleCount));
-  }, [dict, totalSpecialists, category]);
+    return tCount(dict, lang, "category.found", totalSpecialists);
+  }, [dict, lang, totalSpecialists]);
 
   const categoryLabel = category ? getCategoryTitle(category, toCategoryTitleLang(lang)) : "";
 
@@ -487,9 +483,11 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                         ) : null}
                       </div>
                       <p className="mb-freuly-4 text-freuly-body-sm text-freuly-text-secondary">
-                        {t(dict, "category.parent.found").replace(
-                          /\{\{\s*count\s*\}\}/g,
-                          String(child.specialists_count),
+                        {tCount(
+                          dict,
+                          lang,
+                          "category.parent.found",
+                          child.specialists_count,
                         )}
                       </p>
                       {child.is_clickable ? (

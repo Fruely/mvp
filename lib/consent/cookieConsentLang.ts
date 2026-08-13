@@ -26,10 +26,20 @@ export function readFreulyLangCookie(
   }
 }
 
+function cookieUiLang(
+  freulyLangCookie: string | null | undefined,
+  fallback: "ua" | "ru" | "de"
+): "ua" | "ru" | "de" {
+  if (freulyLangCookie === "ua" || freulyLangCookie === "ru" || freulyLangCookie === "de") {
+    return freulyLangCookie;
+  }
+  return fallback;
+}
+
 /**
  * Active page locale for consent copy.
- * Prefer URL segment; `/app` uses freuly_lang cookie (middleware default ua);
- * unsupported paths fall back to English (never empty i18n keys).
+ * Prefer URL segment; unprefixed public chrome (`/app`, `/login`, `/specialists`)
+ * uses freuly_lang cookie; unsupported paths fall back to English.
  */
 export function resolveConsentLang(
   pathname: string | null | undefined,
@@ -47,10 +57,16 @@ export function resolveConsentLang(
   }
 
   if (path === "/app" || path.startsWith("/app/")) {
-    if (freulyLangCookie === "ua" || freulyLangCookie === "ru" || freulyLangCookie === "de") {
-      return freulyLangCookie;
-    }
-    return "ua";
+    return cookieUiLang(freulyLangCookie, "ua");
+  }
+
+  if (
+    path === "/login" ||
+    path.startsWith("/login/") ||
+    path === "/specialists" ||
+    path.startsWith("/specialists/")
+  ) {
+    return cookieUiLang(freulyLangCookie, "ru");
   }
 
   return "en";

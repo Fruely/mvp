@@ -49,3 +49,43 @@ export function t(
 
   return options?.defaultValue ?? key;
 }
+
+export type PluralForm = "one" | "few" | "many";
+
+/** Slavic (ru/ua): 1/21… one; 2–4/22–24… few; else many. */
+export function slavicPluralForm(n: number): PluralForm {
+  const abs = Math.abs(Math.trunc(n));
+  const mod10 = abs % 10;
+  const mod100 = abs % 100;
+  if (mod10 === 1 && mod100 !== 11) return "one";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "few";
+  return "many";
+}
+
+export function pluralForm(lang: Lang, n: number): PluralForm {
+  if (lang === "de") return Math.abs(Math.trunc(n)) === 1 ? "one" : "many";
+  return slavicPluralForm(n);
+}
+
+/**
+ * Resolve `key.one` / `key.few` / `key.many`, then a string `key` fallback.
+ * Replaces `{{count}}` and any extra `{{name}}` placeholders.
+ */
+export function tCount(
+  dict: Dictionary,
+  lang: Lang,
+  key: string,
+  count: number,
+  replacements?: Record<string, string>
+): string {
+  const form = pluralForm(lang, count);
+  const nested = getDictValue(dict, `${key}.${form}`);
+  const template = typeof nested === "string" ? nested : t(dict, key);
+  let out = template.replace(/\{\{\s*count\s*\}\}/g, String(count));
+  if (replacements) {
+    for (const [name, value] of Object.entries(replacements)) {
+      out = out.replace(new RegExp(`\\{\\{\\s*${name}\\s*\\}\\}`, "g"), value);
+    }
+  }
+  return out;
+}

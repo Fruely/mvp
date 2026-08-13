@@ -1,7 +1,9 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServerComponentClient as createAuthServerClient } from "@/lib/supabase/auth-server";
 import { specialistDashboardPath } from "@/lib/specialists/navigation";
+import { isSupportedLang, type Lang } from "@/lib/i18n";
 import ClaimNoTokenHandler from "./ClaimNoTokenHandler";
 import ClaimInitButton from "./ClaimInitButton";
 import SpecialistPasswordSignIn from "./SpecialistPasswordSignIn";
@@ -23,9 +25,11 @@ export default async function SpecialistClaimPage({ searchParams }: Props) {
     if (user) {
       redirect(specialistDashboardPath());
     }
+    const cookieLang = cookies().get("freuly_lang")?.value ?? "";
+    const lang: Lang = isSupportedLang(cookieLang) ? cookieLang : "ru";
     return (
       <div className="min-h-[40vh] px-4 py-10">
-        <SpecialistPasswordSignIn />
+        <SpecialistPasswordSignIn lang={lang} />
         <ClaimNoTokenHandler />
       </div>
     );

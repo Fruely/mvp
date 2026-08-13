@@ -152,6 +152,16 @@ export function middleware(request: NextRequest) {
     return res;
   }
 
+  // Unprefixed /login: html lang follows freuly_lang (default ru), same as specialists.
+  if (pathname === "/login" || pathname.startsWith("/login/")) {
+    const cookieLang = request.cookies.get(LANG_COOKIE)?.value;
+    const loginLang: Lang = isLang(cookieLang || "") ? (cookieLang as Lang) : "ru";
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set(HTML_LANG_HEADER, loginLang === "ua" ? "uk" : loginLang);
+    requestHeaders.set(PATHNAME_HEADER, pathname);
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
+
   // Never apply i18n to admin/api/specialist/client/login/static assets
   if (
     pathname.startsWith("/api") ||

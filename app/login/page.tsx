@@ -1,9 +1,11 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { resolveSafeNextPath } from "@/lib/auth/safeNextPath";
 import SpecialistPasswordSignIn from "@/app/specialist/claim/SpecialistPasswordSignIn";
 import { specialistDashboardPath } from "@/lib/specialists/navigation";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
+import { isSupportedLang, type Lang } from "@/lib/i18n";
 
 /**
  * Stable login route:
@@ -50,10 +52,16 @@ export default async function LoginPage({ searchParams }: Props) {
   }
 
   const allowPartnerSignUp = Boolean(safeNext?.includes("/partners/"));
+  const cookieLang = cookies().get("freuly_lang")?.value ?? "";
+  const lang: Lang = isSupportedLang(cookieLang) ? cookieLang : "ru";
 
   return (
     <div className="min-h-[40vh] px-4 py-10">
-      <SpecialistPasswordSignIn nextPath={safeNext} allowPartnerSignUp={allowPartnerSignUp} />
+      <SpecialistPasswordSignIn
+        lang={lang}
+        nextPath={safeNext}
+        allowPartnerSignUp={allowPartnerSignUp}
+      />
     </div>
   );
 }

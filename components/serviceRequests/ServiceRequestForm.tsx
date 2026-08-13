@@ -180,11 +180,6 @@ export default function ServiceRequestForm({
       onSubmit={handleSubmit}
       className={`mx-auto max-w-xl space-y-5 p-6 sm:p-8 ${publicCardClass}`}
     >
-      <div>
-        <h1 className="text-2xl font-bold text-freuly-text-primary">{t(dict, "serviceRequest.title")}</h1>
-        <p className="mt-2 text-sm text-freuly-text-secondary">{t(dict, "serviceRequest.subtitle")}</p>
-      </div>
-
       <input
         type="text"
         name="hp"
