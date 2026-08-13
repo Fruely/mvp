@@ -1,0 +1,367 @@
+{
+  "meta": {
+    "figmaFileKey": "xWsx2qKg5VWquqwsrmwyMT",
+    "figmaFileUrl": "https://www.figma.com/design/xWsx2qKg5VWquqwsrmwyMT/Untitled",
+    "snapshotDate": "2026-08-13",
+    "branch": "ui/freuly-redesign",
+    "baseCommit": "c9069f1d37d1750cd8377364303c7dfb0024d0dc",
+    "snapshotStatus": "PARTIAL",
+    "inventoryComplete": false,
+    "mcpServerAtSnapshot": "user-figma",
+    "mcpConnectionNote": "Figma MCP server in error state during snapshot; mcp_auth timed out. File-level get_metadata (no nodeId) not executed. Data below is from prior live session on project-0-freuly-mvp-Figma for node 102:1623 and children.",
+    "mcpToolsUsed": [
+      "get_design_context",
+      "get_metadata",
+      "get_screenshot",
+      "get_variable_defs",
+      "get_code_connect_map"
+    ],
+    "figmaVariablesOnInspectedNodes": {},
+    "codeConnectAvailable": false,
+    "classificationTotals": {
+      "meaningfulFramesInspected": 3,
+      "APPROVED_TARGET": 3,
+      "DESIGN_SYSTEM": 1,
+      "REFERENCE_SCREENSHOT": 0,
+      "DUPLICATE": 0,
+      "OBSOLETE_OR_INTERMEDIATE": 0,
+      "NEEDS_REVIEW": 18,
+      "expectedScreensWithoutApprovedFrame": 17
+    }
+  },
+  "frames": [
+    {
+      "nodeId": "102:1623",
+      "name": "dashboard-restyled",
+      "dimensions": { "width": 1440, "height": 1900 },
+      "viewport": "desktop",
+      "domain": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard",
+      "freulyComponents": [
+        "app/[lang]/specialist/(protected)/dashboard/page.tsx",
+        "components/dashboard/DashboardShell.tsx",
+        "components/dashboard/Sidebar.tsx",
+        "components/dashboard/TopBar.tsx"
+      ],
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "implementationStatus": "PARTIAL",
+      "implementedAtCommit": "bb37524",
+      "relatedFrameIds": {
+        "desktop": ["102:1623"],
+        "mobile": [],
+        "variantA": [],
+        "variantB": []
+      },
+      "childRegionIds": [
+        "102:1624",
+        "102:1636",
+        "102:1780"
+      ],
+      "notes": "Canonical desktop specialist dashboard overview. Contains global header/footer as embedded regions. Main content cards: profile-status, subscription, requests, profile-views, improvements. Canvas position x=8940 y=-988.",
+      "mcpSource": "get_design_context,get_metadata,get_screenshot"
+    },
+    {
+      "nodeId": "102:1624",
+      "name": "global-header",
+      "dimensions": { "width": 1440, "height": 80 },
+      "viewport": "desktop",
+      "domain": "SHARED_DESIGN",
+      "freulyRoute": "global — all pages using components/Header.tsx via app/[lang]/layout.tsx",
+      "freulyComponents": ["components/Header.tsx", "app/[lang]/layout.tsx"],
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "implementationStatus": "NOT_STARTED",
+      "relatedFrameIds": {
+        "desktop": ["102:1624"],
+        "mobile": [],
+        "parentFrame": "102:1623"
+      },
+      "notes": "Embedded in dashboard-restyled; intended site-wide marketing header. Logo mark 32x32 #107B80, wordmark Inter Bold 20px, nav 15px, CTA Join Freuly. Current Header.tsx still uses legacy blue/emerald styling.",
+      "mcpSource": "get_design_context"
+    },
+    {
+      "nodeId": "102:1780",
+      "name": "global-footer",
+      "dimensions": { "width": 1440, "height": 298 },
+      "viewport": "desktop",
+      "domain": "SHARED_DESIGN",
+      "freulyRoute": "global — components/Footer.jsx",
+      "freulyComponents": [
+        "components/Footer.jsx",
+        "components/FooterLanguageSwitcher.tsx",
+        "app/[lang]/layout.tsx"
+      ],
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "implementationStatus": "IMPLEMENTED",
+      "implementedAtCommit": "c9069f1",
+      "relatedFrameIds": {
+        "desktop": ["102:1780"],
+        "mobile": [],
+        "parentFrame": "102:1623"
+      },
+      "notes": "Dark footer #1E1E1E, 3 link columns, copyright row with language selector. Implementation maps Figma layout to real Freuly routes + i18n; legal links preserved beyond Figma mock.",
+      "mcpSource": "get_design_context,get_metadata"
+    },
+    {
+      "nodeId": "102:1637",
+      "name": "sidebar",
+      "dimensions": { "width": 240, "height": "fill" },
+      "viewport": "desktop",
+      "domain": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/*",
+      "freulyComponents": ["components/dashboard/Sidebar.tsx"],
+      "classification": "DESIGN_SYSTEM",
+      "confidence": "HIGH",
+      "implementationStatus": "PARTIAL",
+      "implementedAtCommit": "bb37524",
+      "relatedFrameIds": { "parentFrame": "102:1623" },
+      "notes": "Reusable dashboard nav pattern: 8 items, 16px icons, active item #107B80 bg radius 8px, item gap 6px, px 16 py 32. Figma label 'Requests' maps to route /dashboard/leads in product.",
+      "mcpSource": "get_design_context"
+    },
+    {
+      "nodeId": "EXPECTED:homepage",
+      "name": "(not inventoried) Homepage redesign",
+      "dimensions": null,
+      "viewport": "unknown",
+      "domain": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]",
+      "freulyComponents": ["app/[lang]/page.tsx", "app/[lang]/HomeClient.tsx"],
+      "classification": "NEEDS_REVIEW",
+      "confidence": "NONE",
+      "relatedFrameIds": { "desktop": [], "mobile": [], "variantA": [], "variantB": [] },
+      "notes": "Expected in Figma canvas per redesign scope. No top-level frame ID captured — pending file-level MCP inventory. Do not implement from dashboard frame."
+    },
+    {
+      "nodeId": "EXPECTED:search-wizard",
+      "name": "(not inventoried) Search Wizard",
+      "dimensions": null,
+      "viewport": "unknown",
+      "domain": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/service-search",
+      "freulyComponents": ["components/search-flow/ServiceSearchFlow.tsx"],
+      "classification": "NEEDS_REVIEW",
+      "confidence": "NONE",
+      "notes": "Service search wizard flow exists in product. No approved Figma frame ID in this snapshot."
+    },
+    {
+      "nodeId": "EXPECTED:search-results",
+      "name": "(not inventoried) Search Results",
+      "dimensions": null,
+      "viewport": "unknown",
+      "domain": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/search",
+      "freulyComponents": ["app/[lang]/search/page.tsx"],
+      "classification": "NEEDS_REVIEW",
+      "confidence": "NONE",
+      "notes": "Pending MCP file scan."
+    },
+    {
+      "nodeId": "EXPECTED:specialist-profile",
+      "name": "(not inventoried) Specialist Profile",
+      "dimensions": null,
+      "viewport": "unknown",
+      "domain": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/specialist/[id]",
+      "freulyComponents": ["components/specialist/SpecialistProfileClient.tsx"],
+      "classification": "NEEDS_REVIEW",
+      "confidence": "NONE",
+      "notes": "Pending MCP file scan."
+    },
+    {
+      "nodeId": "EXPECTED:request-service",
+      "name": "(not inventoried) Request Service / request states",
+      "dimensions": null,
+      "viewport": "unknown",
+      "domain": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/request-service, /[lang]/request/[public_token]",
+      "freulyComponents": [
+        "app/[lang]/request-service/page.tsx",
+        "app/[lang]/request/[public_token]/page.tsx"
+      ],
+      "classification": "NEEDS_REVIEW",
+      "confidence": "NONE",
+      "notes": "Pending MCP file scan."
+    },
+    {
+      "nodeId": "EXPECTED:become-specialist",
+      "name": "(not inventoried) Specialist registration",
+      "dimensions": null,
+      "viewport": "unknown",
+      "domain": "SPECIALIST_ACQUISITION",
+      "freulyRoute": "/[lang]/become-specialist",
+      "freulyComponents": [
+        "components/SpecialistApplicationForm.tsx",
+        "components/SpecialistQuickRegisterForm.tsx"
+      ],
+      "classification": "NEEDS_REVIEW",
+      "confidence": "NONE",
+      "notes": "Pending MCP file scan."
+    },
+    {
+      "nodeId": "EXPECTED:onboarding",
+      "name": "(not inventoried) Specialist onboarding",
+      "dimensions": null,
+      "viewport": "unknown",
+      "domain": "SPECIALIST_ACQUISITION",
+      "freulyRoute": "/[lang]/specialist/dashboard/onboarding",
+      "freulyComponents": [
+        "components/dashboard/onboarding/SpecialistOnboardingWizard.tsx"
+      ],
+      "classification": "NEEDS_REVIEW",
+      "confidence": "NONE",
+      "notes": "Pending MCP file scan."
+    },
+    {
+      "nodeId": "EXPECTED:dashboard-profile",
+      "name": "(not inventoried) Dashboard Profile",
+      "dimensions": null,
+      "viewport": "unknown",
+      "domain": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/profile",
+      "freulyComponents": ["app/[lang]/specialist/(protected)/dashboard/profile/page.tsx"],
+      "classification": "NEEDS_REVIEW",
+      "confidence": "LOW",
+      "notes": "Sidebar item exists in 102:1623 but no dedicated full-page Figma frame inventoried."
+    },
+    {
+      "nodeId": "EXPECTED:dashboard-services",
+      "name": "(not inventoried) Dashboard Services",
+      "dimensions": null,
+      "viewport": "unknown",
+      "domain": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/services",
+      "freulyComponents": [
+        "app/[lang]/specialist/(protected)/dashboard/services/page.tsx",
+        "components/dashboard/ServicesTable.tsx"
+      ],
+      "classification": "NEEDS_REVIEW",
+      "confidence": "LOW",
+      "notes": "Pending MCP file scan."
+    },
+    {
+      "nodeId": "EXPECTED:dashboard-requests",
+      "name": "(not inventoried) Dashboard Requests/Leads",
+      "dimensions": null,
+      "viewport": "unknown",
+      "domain": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/leads",
+      "freulyComponents": [
+        "app/[lang]/specialist/(protected)/dashboard/leads/page.tsx",
+        "components/dashboard/LeadsTable.tsx"
+      ],
+      "classification": "NEEDS_REVIEW",
+      "confidence": "LOW",
+      "notes": "Overview card in 102:1623 only; full leads list page not inventoried."
+    },
+    {
+      "nodeId": "EXPECTED:dashboard-subscription",
+      "name": "(not inventoried) Dashboard Subscription",
+      "dimensions": null,
+      "viewport": "unknown",
+      "domain": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/subscription",
+      "freulyComponents": ["app/[lang]/specialist/(protected)/dashboard/subscription/page.tsx"],
+      "classification": "NEEDS_REVIEW",
+      "confidence": "LOW",
+      "notes": "Subscription card in overview captured; dedicated page not inventoried."
+    },
+    {
+      "nodeId": "EXPECTED:dashboard-payment",
+      "name": "(not inventoried) Dashboard Payment/Billing",
+      "dimensions": null,
+      "viewport": "unknown",
+      "domain": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/billing",
+      "freulyComponents": ["app/[lang]/specialist/(protected)/dashboard/billing/page.tsx"],
+      "classification": "NEEDS_REVIEW",
+      "confidence": "LOW",
+      "notes": "Figma sidebar label 'Payment'; product route is billing."
+    },
+    {
+      "nodeId": "EXPECTED:dashboard-settings",
+      "name": "(not inventoried) Dashboard Settings",
+      "dimensions": null,
+      "viewport": "unknown",
+      "domain": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/settings",
+      "freulyComponents": ["app/[lang]/specialist/(protected)/dashboard/settings/page.tsx"],
+      "classification": "NEEDS_REVIEW",
+      "confidence": "LOW",
+      "notes": "Pending MCP file scan."
+    },
+    {
+      "nodeId": "EXPECTED:dashboard-video-guide",
+      "name": "(not inventoried) Dashboard Video Guide",
+      "dimensions": null,
+      "viewport": "unknown",
+      "domain": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/video-guide",
+      "freulyComponents": ["app/[lang]/specialist/(protected)/dashboard/video-guide/page.tsx"],
+      "classification": "NEEDS_REVIEW",
+      "confidence": "LOW",
+      "notes": "Pending MCP file scan."
+    },
+    {
+      "nodeId": "EXPECTED:design-system-board",
+      "name": "(not inventoried) Design system / component library",
+      "dimensions": null,
+      "viewport": "unknown",
+      "domain": "SHARED_DESIGN",
+      "freulyRoute": "n/a",
+      "freulyComponents": [
+        "styles/tokens.css",
+        "components/ui/Button.tsx",
+        "components/ui/Card.tsx",
+        "components/ui/Badge.tsx",
+        "components/ui/Alert.tsx"
+      ],
+      "classification": "NEEDS_REVIEW",
+      "confidence": "NONE",
+      "notes": "User reports design-system boards on canvas. Not found in partial scan. Runtime tokens partially derived from 102:1623."
+    },
+    {
+      "nodeId": "EXPECTED:reference-screenshots",
+      "name": "(not inventoried) Reference screenshot frames",
+      "dimensions": null,
+      "viewport": "unknown",
+      "domain": "REFERENCE",
+      "freulyRoute": "n/a",
+      "freulyComponents": [],
+      "classification": "NEEDS_REVIEW",
+      "confidence": "NONE",
+      "notes": "User reports 'Current Dashboard / Real Screenshot' style frames on canvas. Must be classified REFERENCE_SCREENSHOT when found — not implementation targets."
+    },
+    {
+      "nodeId": "EXPECTED:duplicates-variants",
+      "name": "(not inventoried) Duplicate / Variant A / Variant B frames",
+      "dimensions": null,
+      "viewport": "unknown",
+      "domain": "REFERENCE",
+      "freulyRoute": "n/a",
+      "freulyComponents": [],
+      "classification": "NEEDS_REVIEW",
+      "confidence": "NONE",
+      "notes": "Pending file-level MCP scan to classify DUPLICATE vs APPROVED_TARGET."
+    }
+  ],
+  "dashboardRestyledNodeTree": {
+    "source": "get_design_context node 102:1623",
+    "root": "102:1623 dashboard-restyled 1440x1900",
+    "regions": [
+      { "nodeId": "102:1624", "name": "global-header", "size": "1440x80" },
+      { "nodeId": "102:1636", "name": "layout-body", "size": "1440x1460" },
+      { "nodeId": "102:1637", "name": "sidebar", "size": "240x fill", "parent": "102:1636" },
+      { "nodeId": "102:1678", "name": "main-content", "padding": "48px", "gap": "32px", "parent": "102:1636" },
+      { "nodeId": "102:1679", "name": "page-header", "parent": "102:1678" },
+      { "nodeId": "102:1682", "name": "profile-status-card", "parent": "102:1678" },
+      { "nodeId": "102:1699", "name": "split-cards-row", "gap": "24px", "parent": "102:1678" },
+      { "nodeId": "102:1700", "name": "subscription-card", "parent": "102:1699" },
+      { "nodeId": "102:1721", "name": "requests-card", "width": 420, "parent": "102:1699" },
+      { "nodeId": "102:1734", "name": "profile-views-card", "parent": "102:1678" },
+      { "nodeId": "102:1740", "name": "improvements-card", "parent": "102:1678" },
+      { "nodeId": "102:1780", "name": "global-footer", "size": "1440x298" }
+    ]
+  }
+}
