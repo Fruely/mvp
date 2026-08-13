@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { t, type Dictionary } from "@/lib/i18n";
@@ -36,10 +36,10 @@ type SpecialistPreview = {
   founder_badge?: boolean;
 };
 
-function workFormatLabel(workFormat: SpecialistPreview["work_format"]): string {
-  if (workFormat === "offline") return "Офлайн";
-  if (workFormat === "hybrid") return "Гібрид";
-  return "Онлайн";
+function workFormatLabel(workFormat: SpecialistPreview["work_format"], dict: Dictionary): string {
+  if (workFormat === "offline") return t(dict, "dashboard.workFormat.offline");
+  if (workFormat === "hybrid") return t(dict, "dashboard.workFormat.hybrid");
+  return t(dict, "specialist.workFormat.online");
 }
 
 function fromLabel(lang: string): string {
@@ -59,7 +59,6 @@ export default function SpecialistPreviewCard({
   dict: Dictionary;
   categoryLabel?: string | null;
 }) {
-  const [saved, setSaved] = useState(false);
   const languageList = Array.isArray(specialist.languages) ? specialist.languages : [];
   const chips = languageList.slice(0, 3);
   const extraLangCount = Math.max(languageList.length - chips.length, 0);
@@ -70,20 +69,9 @@ export default function SpecialistPreviewCard({
     const untilTs = Date.parse(specialist.new_until);
     return Number.isFinite(untilTs) && Date.now() < untilTs;
   }, [specialist.is_new, specialist.new_until]);
-  const socialProofVisible =
-    specialist.rating != null
-    && specialist.reviews_count != null
-    && specialist.reviews_count >= 3;
-  const starsFilled = specialist.rating == null ? 0 : Math.max(0, Math.min(5, Math.round(specialist.rating)));
-  const starsText = "★".repeat(starsFilled) + "☆".repeat(5 - starsFilled);
-  const experienceText =
-    specialist.years_of_experience != null && specialist.years_of_experience > 0
-      ? `${specialist.years_of_experience} ${t(dict, "specialist.yearsExperience")}`
-      : null;
   const specializationText =
     specialist.specialization_line
     || specialist.about_line
-    || experienceText
     || null;
   const minPrice = specialist.min_price_from;
   const minPriceTo = specialist.min_price_to;
@@ -118,168 +106,108 @@ export default function SpecialistPreviewCard({
     return null;
   })();
 
-  const showPriceCommentSecondary = Boolean(minPrice != null && Number.isFinite(minPrice) && minPrice > 0 && priceCommentTrimmed);
+  const location = getPublicSpecialistLocation({
+    workFormat: specialist.work_format,
+    city: specialist.city,
+    postalCode: specialist.postal_code,
+    onlineLabel: t(dict, "specialist.workFormat.online"),
+  });
 
   return (
-    <article className="group overflow-hidden rounded-md border border-freuly-border-default bg-freuly-surface shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-all duration-200 ease-out [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:scale-[1.02] [@media(hover:hover)]:hover:shadow-lg">
-      <div className="relative aspect-square overflow-hidden">
+    <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-freuly-border-default bg-freuly-surface">
+      <div className="relative h-[200px] overflow-hidden bg-freuly-page">
         {specialist.avatar_url ? (
           <Image
             src={specialist.avatar_url}
             alt={specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
             fill
-            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            sizes="(min-width: 1024px) 304px, (min-width: 640px) 50vw, 100vw"
+            className="object-cover"
             unoptimized
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-freuly-primary-light via-freuly-border-subtle to-freuly-primary-light">
+          <div className="absolute inset-0 flex items-center justify-center bg-freuly-primary-light">
             <span className="text-4xl" aria-hidden>
               👤
             </span>
           </div>
         )}
-
-        <button
-          type="button"
-          onClick={() => setSaved((value) => !value)}
-          className="group absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-freuly-surface/90 text-freuly-text-secondary shadow-[0_4px_12px_rgba(0,0,0,0.05)] ring-1 ring-black/10 transition hover:bg-freuly-surface"
-          aria-label={saved ? "Unsave specialist" : "Save specialist"}
-          title={saved ? t(dict, "specialist.unsaveTooltip") : t(dict, "specialist.saveTooltip")}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            className={`h-5 w-5 ${saved ? "fill-rose-500 text-rose-500" : "fill-transparent text-freuly-text-secondary"}`}
-            stroke="currentColor"
-            strokeWidth="1.8"
-          >
-            <path d="M12 21s-6.5-3.9-9.2-8a5.7 5.7 0 0 1 .7-7.1A5.6 5.6 0 0 1 12 6a5.6 5.6 0 0 1 8.5-.1 5.7 5.7 0 0 1 .7 7.1C18.5 17.1 12 21 12 21Z" />
-          </svg>
-          <span className="pointer-events-none absolute -bottom-9 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-[10px] font-medium text-white opacity-0 transition [@media(hover:hover)]:block [@media(hover:hover)]:group-hover:opacity-100">
-            {saved ? t(dict, "specialist.unsave") : t(dict, "specialist.save")}
-          </span>
-        </button>
-
-        <div className="absolute left-3 top-3 flex flex-col gap-2">
-          {specialist.founder_badge === true ? <FounderBadge /> : null}
-          {specialist.is_verified ? (
-            <span className="rounded-full bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white shadow">
-              {t(dict, "specialist.verified")}
-            </span>
-          ) : null}
-          {isNewActive ? (
-            <span className="rounded-full bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white shadow">
-              {t(dict, "specialist.new")}
-            </span>
-          ) : null}
-        </div>
       </div>
 
-      <div className="space-y-4 p-5">
+      <div className="flex flex-1 flex-col gap-4 p-5">
         <div>
-          <div className="flex items-start justify-between gap-3">
-            <h3 className="text-lg font-semibold text-freuly-text-primary">{specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}</h3>
-            {socialProofVisible ? (
-              <div className="shrink-0 text-right">
-                <div className="text-xs font-semibold text-amber-600">{starsText}</div>
-                <div className="text-[11px] font-medium text-freuly-text-secondary">
-                  {specialist.rating?.toFixed(1)} ({specialist.reviews_count})
-                </div>
-              </div>
-            ) : null}
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="text-base font-bold leading-tight text-freuly-text-primary">
+              {specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
+            </h3>
+            {specialist.founder_badge === true ? <FounderBadge /> : null}
           </div>
           {categoryLabel ? (
-            <p className="mt-1 text-xs font-medium uppercase tracking-wide text-slate-500 line-clamp-1">
-              {categoryLabel}
-            </p>
+            <p className="mt-1 text-[13px] font-medium text-freuly-text-secondary">{categoryLabel}</p>
           ) : null}
-          {specializationText ? (
-            <p className="mt-1 line-clamp-1 text-sm font-normal text-freuly-text-secondary">{specializationText}</p>
-          ) : null}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 text-xs font-normal text-freuly-text-secondary">
-          {(() => {
-            const loc = getPublicSpecialistLocation({
-              workFormat: specialist.work_format,
-              city: specialist.city,
-              postalCode: specialist.postal_code,
-              onlineLabel: t(dict, "specialist.workFormat.online"),
-            });
-            if (!loc.label) return null;
-            return (
-              <span className="inline-flex items-center gap-1">
-                <span aria-hidden>{loc.kind === "online" ? "💻" : "📍"}</span>
-                {loc.label}
-              </span>
-            );
-          })()}
-          {specialist.work_format !== "online" ? (
-            <span className="inline-flex items-center gap-1">
-              <span aria-hidden>🏢</span>
-              {workFormatLabel(specialist.work_format)}
-            </span>
-          ) : null}
-          {experienceText ? (
-            <span className="inline-flex items-center gap-1">
-              <span aria-hidden>🧭</span>
-              {experienceText}
-            </span>
-          ) : null}
-          {specialist.work_format !== "online" &&
-          specialist.service_radius_km != null &&
-          specialist.service_radius_km > 0 ? (
-            <span className="inline-flex items-center gap-1">
-              <span aria-hidden>🚗</span>
-              {t(dict, "specialist.radiusLabel").replace("{{km}}", String(specialist.service_radius_km))}
-            </span>
+          {specialist.is_verified || isNewActive ? (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {specialist.is_verified ? (
+                <span className="rounded bg-freuly-primary-light px-2 py-0.5 text-[11px] font-semibold text-freuly-primary">
+                  {t(dict, "specialist.verified")}
+                </span>
+              ) : null}
+              {isNewActive ? (
+                <span className="rounded bg-freuly-page px-2 py-0.5 text-[11px] font-semibold text-freuly-text-secondary">
+                  {t(dict, "specialist.new")}
+                </span>
+              ) : null}
+            </div>
           ) : null}
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        {specializationText ? (
+          <p className="line-clamp-3 text-sm leading-[1.5] text-freuly-text-secondary">
+            {specializationText}
+          </p>
+        ) : null}
+
+        <div className="mt-auto flex flex-wrap items-center gap-2">
+          {location.label ? (
+            <span className="rounded bg-freuly-page px-2 py-0.5 text-[12px] font-medium text-freuly-text-secondary">
+              {location.kind === "online" ? workFormatLabel(specialist.work_format, dict) : location.label}
+            </span>
+          ) : (
+            <span className="rounded bg-freuly-page px-2 py-0.5 text-[12px] font-medium text-freuly-text-secondary">
+              {workFormatLabel(specialist.work_format, dict)}
+            </span>
+          )}
+          {priceText ? (
+            <span className="text-[13px] text-freuly-text-secondary">{priceText}</span>
+          ) : null}
           {chips.map((language) => (
             <span
               key={`${specialist.id}-${language}`}
-              className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700"
+              className="rounded bg-freuly-primary-light px-1.5 py-0.5 text-[11px] font-semibold uppercase text-freuly-primary"
             >
               {language}
             </span>
           ))}
           {extraLangCount > 0 ? (
-            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+            <span className="rounded bg-freuly-primary-light px-1.5 py-0.5 text-[11px] font-semibold text-freuly-primary">
               +{extraLangCount}
             </span>
           ) : null}
         </div>
 
-        <div className="flex items-start justify-between gap-3 pt-1">
-          <div className="min-w-0 flex-1">
-            {priceText ? (
-              <div className="rounded-lg bg-blue-50 px-2.5 py-1 text-sm font-semibold text-blue-700">
-                {priceText}
-              </div>
-            ) : (
-              <span />
-            )}
-            {showPriceCommentSecondary ? (
-              <p className="mt-1 text-xs text-freuly-text-muted">{priceCommentTrimmed}</p>
-            ) : null}
-          </div>
-          <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
-            <Link
-              href={leadHref}
-              className="inline-flex items-center justify-center gap-1 rounded-freuly-md bg-gradient-to-r from-freuly-primary to-freuly-primary-hover px-4 py-2 text-sm font-medium text-white shadow-soft transition hover:from-freuly-primary-hover hover:to-freuly-primary-hover hover:shadow-floating"
-            >
-              <span aria-hidden>⚡</span>
-              {t(dict, "lead.submit")}
-            </Link>
-            <Link
-              href={detailsHref}
-              className="text-sm font-medium text-blue-600 transition hover:text-blue-700"
-            >
-              {t(dict, "common.more")} →
-            </Link>
-          </div>
+        <div className="flex flex-col items-center gap-3">
+          <Link
+            href={leadHref}
+            className="inline-flex min-h-9 w-full items-center justify-center rounded-freuly-md bg-freuly-primary px-4 py-2.5 text-sm font-semibold text-freuly-text-on-primary transition-colors freuly-focus-ring hover:bg-freuly-primary-hover"
+          >
+            {t(dict, "lead.submit")}
+          </Link>
+          <Link
+            href={detailsHref}
+            className="text-sm font-semibold text-freuly-primary hover:text-freuly-primary-hover"
+          >
+            {t(dict, "search.results.viewProfile")} →
+          </Link>
         </div>
       </div>
     </article>

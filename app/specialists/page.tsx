@@ -7,13 +7,8 @@ import { searchSpecialists, type SpecialistResult } from "@/lib/search/specialis
 import { getSearchSuggestions } from "@/lib/search/searchSuggestions";
 import { shouldOfferOnlineFallbackForNoLocalResults } from "@/lib/search/noLocalResultsFallback";
 import ServiceRequestCtaBlock from "@/components/serviceRequests/ServiceRequestCtaBlock";
+import SearchResultsEmptyState from "@/components/public/SearchResultsEmptyState";
 import SpecialistResultCard from "@/components/public/SpecialistResultCard";
-import {
-  publicLinkPrimaryClass,
-  publicLinkSecondaryClass,
-  publicPageContainerClass,
-  publicSectionTitleClass,
-} from "@/components/public/publicStyles";
 import { requestServiceHref } from "@/lib/serviceRequests/requestServiceHref";
 
 export const dynamic = "force-dynamic";
@@ -177,41 +172,28 @@ export default async function SpecialistsPage({
 
   if (!category && !q) {
     return (
-      <div className="bg-freuly-page py-freuly-10 flex flex-col items-center justify-center px-4">
-        <div className="max-w-lg w-full rounded-freuly-card border border-freuly-border-default bg-freuly-surface shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-10 text-center">
-          <h1 className="text-2xl font-bold text-freuly-text-primary mb-4">
-            Выберите, какого специалиста вы ищете
-          </h1>
-          <Link
-            href={serviceSearchHref(uiLang)}
-            className={publicLinkPrimaryClass}
-          >
-            Назад к поиску
-          </Link>
-        </div>
-      </div>
+      <SearchResultsEmptyState
+        backHref={serviceSearchHref(uiLang)}
+        backLabel={t(dict, "search.results.backToSearch")}
+        pageTitle={t(dict, "search.results.title")}
+        title="Выберите, какого специалиста вы ищете"
+        primaryHref={serviceSearchHref(uiLang)}
+        primaryLabel={t(dict, "search.results.backToSearch")}
+      />
     );
   }
 
   if (!isOnlineList && !place && !q) {
     return (
-      <div className="bg-freuly-page py-freuly-10 flex flex-col items-center justify-center px-4">
-        <div className="max-w-md w-full rounded-freuly-card border border-freuly-border-default bg-freuly-surface shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-8 text-center">
-          <h1 className="text-xl font-bold text-freuly-text-primary mb-2">
-            Missing search parameters
-          </h1>
-          <p className="text-freuly-text-secondary mb-6">
-            Language and location are required. Please start your search from the
-            homepage.
-          </p>
-          <Link
-            href={serviceSearchHref(uiLang)}
-            className={publicLinkPrimaryClass}
-          >
-            Back to search
-          </Link>
-        </div>
-      </div>
+      <SearchResultsEmptyState
+        backHref={serviceSearchHref(uiLang)}
+        backLabel={t(dict, "search.results.backToSearch")}
+        pageTitle={t(dict, "search.results.title")}
+        title="Missing search parameters"
+        subtitle="Language and location are required. Please start your search from the homepage."
+        primaryHref={serviceSearchHref(uiLang)}
+        primaryLabel={t(dict, "search.results.backToSearch")}
+      />
     );
   }
 
@@ -233,7 +215,6 @@ export default async function SpecialistsPage({
   }
 
   const specialists: SpecialistResult[] = Array.isArray(result.data) ? result.data : [];
-  const searchMode = result.mode;
   const searchRadius = result.radius;
 
   const empty = specialists.length === 0;
@@ -267,35 +248,18 @@ export default async function SpecialistsPage({
           source_path: noLocalSourcePath,
         });
         return (
-          <div className="bg-freuly-page py-freuly-10 flex flex-col items-center justify-center px-4">
-            <div className="max-w-lg w-full rounded-freuly-card border border-freuly-border-default bg-freuly-surface shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-8 sm:p-10 text-center">
-              <div className="rounded-xl border border-freuly-primary/20 bg-freuly-primary-light/50 px-5 py-6 sm:px-6 sm:py-7">
-                <h1 className="text-xl sm:text-2xl font-semibold text-freuly-text-secondary mb-2">
-                  {t(dict, "search.noLocalResults.titleOffline")}
-                </h1>
-                <p className="text-sm sm:text-base text-freuly-text-secondary mb-5">
-                  {t(dict, "search.noLocalResults.subtitleOffline")}
-                </p>
-                <Link
-                  href={findSpecialistHref}
-                  className={`${publicLinkPrimaryClass} w-full sm:w-auto rounded-full`}
-                >
-                  {t(dict, "search.noLocalResults.primaryCta")}
-                </Link>
-              </div>
-              <div className="mt-6 pt-6 border-t border-freuly-border-subtle">
-                <p className="text-sm text-freuly-text-secondary mb-4">
-                  {t(dict, "search.noLocalResults.adjustFiltersTitle")}
-                </p>
-                <Link
-                  href={serviceSearchHref(uiLang)}
-                  className="inline-block px-5 py-2.5 border border-freuly-border-default text-freuly-text-secondary text-sm font-medium rounded-lg hover:bg-freuly-border-subtle transition"
-                >
-                  {t(dict, "search.noResults.changeFilters")}
-                </Link>
-              </div>
-            </div>
-          </div>
+          <SearchResultsEmptyState
+            backHref={serviceSearchHref(uiLang)}
+            backLabel={t(dict, "search.results.backToSearch")}
+            pageTitle={t(dict, "search.results.title")}
+            title={t(dict, "search.noLocalResults.titleOffline")}
+            subtitle={t(dict, "search.noLocalResults.subtitleOffline")}
+            primaryHref={findSpecialistHref}
+            primaryLabel={t(dict, "search.noLocalResults.primaryCta")}
+            adjustTitle={t(dict, "search.noLocalResults.adjustFiltersTitle")}
+            changeHref={serviceSearchHref(uiLang)}
+            changeLabel={t(dict, "search.noResults.changeFilters")}
+          />
         );
       }
 
@@ -306,19 +270,17 @@ export default async function SpecialistsPage({
       if (q) onlineParams.set("q", q);
       const onlineHref = `/specialists?${onlineParams.toString()}`;
       return (
-        <div className="bg-freuly-page py-freuly-10 flex flex-col items-center justify-center px-4">
-          <div className="max-w-lg w-full rounded-freuly-card border border-freuly-border-default bg-freuly-surface shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-8 sm:p-10 text-center">
-            <h1 className="text-xl sm:text-2xl font-semibold text-freuly-text-secondary mb-6">
-              {t(dict, "search.noLocalResults.titleOnline")}
-            </h1>
-            <Link
-              href={onlineHref}
-              className={`${publicLinkPrimaryClass} rounded-full`}
-            >
-              {t(dict, "search.noLocalResults.showOnlineCta")}
-            </Link>
-          </div>
-        </div>
+        <SearchResultsEmptyState
+          backHref={serviceSearchHref(uiLang)}
+          backLabel={t(dict, "search.results.backToSearch")}
+          pageTitle={t(dict, "search.results.title")}
+          title={t(dict, "search.noLocalResults.titleOnline")}
+          primaryHref={onlineHref}
+          primaryLabel={t(dict, "search.noLocalResults.showOnlineCta")}
+          adjustTitle={t(dict, "search.noLocalResults.adjustFiltersTitle")}
+          changeHref={serviceSearchHref(uiLang)}
+          changeLabel={t(dict, "search.noResults.changeFilters")}
+        />
       );
     }
 
@@ -336,31 +298,25 @@ export default async function SpecialistsPage({
     });
 
     return (
-      <div className="bg-freuly-page py-freuly-10 flex flex-col items-center justify-center px-4">
-        <div className="max-w-lg w-full rounded-freuly-card border border-freuly-border-default bg-freuly-surface shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-8 sm:p-10 text-center">
-          <div className="rounded-xl border border-freuly-primary/20 bg-freuly-primary-light/50 px-5 py-6 sm:px-6 sm:py-7">
-            <div className="text-2xl mb-3 opacity-40" aria-hidden>
-              🔍
-            </div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-freuly-text-secondary mb-2">
-              {t(dict, "search.noResults.title")}
-            </h1>
-            <p className="text-sm sm:text-base text-freuly-text-secondary mb-5">
-              {q
-                ? t(dict, "search.noResults.serviceSubtitle")
-                : t(dict, "search.noResults.subtitle")}
-            </p>
-            <Link
-              href={findSpecialistHref}
-              className={`${publicLinkPrimaryClass} w-full sm:w-auto rounded-full`}
-            >
-              {t(dict, "search.noResults.primaryCta")}
-            </Link>
-          </div>
-
-          {suggestions.length > 0 && (
-            <div className="mt-6 mb-2">
-              <p className="text-sm font-medium text-freuly-text-secondary mb-3">
+      <SearchResultsEmptyState
+        backHref={serviceSearchHref(uiLang)}
+        backLabel={t(dict, "search.results.backToSearch")}
+        pageTitle={t(dict, "search.results.title")}
+        title={t(dict, "search.noResults.title")}
+        subtitle={
+          q
+            ? t(dict, "search.noResults.serviceSubtitle")
+            : t(dict, "search.noResults.subtitle")
+        }
+        primaryHref={findSpecialistHref}
+        primaryLabel={t(dict, "search.noResults.primaryCta")}
+        adjustTitle={t(dict, "search.noResults.adjustFiltersTitle")}
+        changeHref={serviceSearchHref(uiLang)}
+        changeLabel={t(dict, "search.noResults.changeFilters")}
+        extra={
+          suggestions.length > 0 ? (
+            <div className="mt-6 text-center">
+              <p className="mb-3 text-sm font-medium text-freuly-text-secondary">
                 {t(dict, "search.noResults.suggestionsTitle")}
               </p>
               <div className="flex flex-wrap justify-center gap-2">
@@ -372,36 +328,16 @@ export default async function SpecialistsPage({
                       place,
                       radius: radiusParam,
                     })}
-                    className="inline-block px-4 py-2 rounded-full border border-freuly-border-default text-freuly-text-secondary text-sm font-medium hover:bg-freuly-border-subtle hover:border-gray-400 transition"
+                    className="inline-block rounded-full border border-freuly-border-default px-4 py-2 text-sm font-medium text-freuly-text-secondary transition hover:border-freuly-primary/40 hover:bg-freuly-primary-light"
                   >
                     {s.label}
                   </Link>
                 ))}
               </div>
             </div>
-          )}
-
-          <div className="mt-6 pt-6 border-t border-freuly-border-subtle">
-            <p className="text-sm text-freuly-text-secondary mb-4">
-              {t(dict, "search.noResults.adjustFiltersTitle")}
-            </p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <Link
-                href={serviceSearchHref(uiLang)}
-                className="inline-block px-5 py-2.5 border border-freuly-border-default text-freuly-text-secondary text-sm font-medium rounded-lg hover:bg-freuly-border-subtle transition"
-              >
-                {t(dict, "search.noResults.changeFilters")}
-              </Link>
-              <Link
-                href={serviceSearchHref(uiLang)}
-                className="inline-block px-5 py-2.5 text-freuly-text-secondary text-sm font-medium rounded-lg hover:bg-freuly-border-subtle hover:text-gray-800 transition"
-              >
-                {t(dict, "search.noResults.backToSearch")}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
+          ) : null
+        }
+      />
     );
   }
 
@@ -431,37 +367,51 @@ export default async function SpecialistsPage({
     </li>
   );
 
+  const resultsCountLine = [
+    formatResultsCount(dict, specialists.length, lang, isOnlineList),
+    typeof searchRadius === "number" &&
+    Number.isFinite(searchRadius) &&
+    localSpecialists.length > 0
+      ? t(dict, "search.results.radiusHint").replace("{{radius}}", String(searchRadius))
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className="bg-freuly-page py-freuly-10">
-      <div className={`${publicPageContainerClass} max-w-4xl`}>
-        <div className="mb-freuly-8">
+    <div className="bg-freuly-page py-6 sm:py-12">
+      <div className="mx-auto w-full max-w-[960px] px-4 sm:px-6">
+        <div className="mb-8 flex flex-col gap-4">
           <Link
             href={serviceSearchHref(uiLang)}
-            className="mb-freuly-4 inline-flex items-center gap-1 text-sm font-medium text-freuly-text-secondary transition hover:text-freuly-text-primary"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-freuly-primary hover:text-freuly-primary-hover"
           >
-            ← {t(dict, "search.results.backToSearch")}
+            <svg viewBox="0 0 12 12" className="h-3 w-3 shrink-0" aria-hidden>
+              <path
+                d="M7.5 2.5 3.5 6l4 3.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {t(dict, "search.results.backToSearch")}
           </Link>
-          <h1 className={publicSectionTitleClass}>{t(dict, "search.results.title")}</h1>
-          <p className="mt-1 text-freuly-body text-freuly-text-secondary">
-            {formatResultsCount(dict, specialists.length, lang, isOnlineList)}
-          </p>
+          <div className="flex flex-col gap-1.5">
+            <h1 className="text-[24px] font-bold leading-tight text-freuly-text-primary sm:text-[28px]">
+              {t(dict, "search.results.title")}
+            </h1>
+            <p className="text-sm text-freuly-text-secondary">{resultsCountLine}</p>
+          </div>
         </div>
-
-        {/* Radius label depends on the returned radius + local results, not on
-            searchMode, so it also shows when a query search ran locally
-            (mode="query"). */}
-        {typeof searchRadius === "number" &&
-          Number.isFinite(searchRadius) &&
-          localSpecialists.length > 0 && (
-            <p className="mb-freuly-6 text-sm text-freuly-text-secondary">
-              Найдено специалистов в радиусе {searchRadius} км
-            </p>
-          )}
 
         {localSpecialists.length > 0 && (
           <>
-            <h2 className="mb-freuly-3 text-lg font-semibold text-freuly-text-primary">Рядом с вами</h2>
-            <ul className="mb-freuly-8 space-y-freuly-4">
+            <h2 className="mb-4 text-sm font-semibold text-freuly-text-primary">
+              {t(dict, "search.results.nearbySectionTitle")}
+            </h2>
+            <ul className="mb-8 space-y-4">
               {localSpecialists.map(renderCard)}
             </ul>
           </>
@@ -469,17 +419,17 @@ export default async function SpecialistsPage({
 
         {onlineSpecialists.length > 0 && (
           <>
-            <h2 className="mb-freuly-3 text-lg font-semibold text-freuly-text-primary">
+            <h2 className="mb-4 text-sm font-semibold text-freuly-text-primary">
               {t(dict, "search.results.onlineSectionTitle")}
             </h2>
-            <ul className="mb-freuly-8 space-y-freuly-4">
+            <ul className="mb-8 space-y-4">
               {onlineSpecialists.map(renderCard)}
             </ul>
           </>
         )}
 
         {otherSpecialists.length > 0 && (
-          <ul className="space-y-freuly-4">
+          <ul className="mb-8 space-y-4">
             {otherSpecialists.map(renderCard)}
           </ul>
         )}
@@ -488,6 +438,7 @@ export default async function SpecialistsPage({
           lang={uiLang}
           dict={dict}
           variant="fallback"
+          returnHref={serviceSearchHref(uiLang)}
           sourcePath={`/specialists?${new URLSearchParams(
             Object.entries({
               lang,

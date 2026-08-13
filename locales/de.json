@@ -29,6 +29,8 @@
       "count": "{{count}} Ergebnisse für Sprache \"{{language}}\".",
       "countOnline": "{{count}} Ergebnisse für Sprache \"{{language}}\" online.",
       "onlineSectionTitle": "Online verfügbar",
+      "nearbySectionTitle": "In Ihrer Nähe",
+      "radiusHint": "Spezialisten im Umkreis von {{radius}} km gefunden.",
       "specialistFallbackBio": "Spezialistenprofil.",
       "sendRequest": "Anfrage senden",
       "viewProfile": "Profil ansehen"

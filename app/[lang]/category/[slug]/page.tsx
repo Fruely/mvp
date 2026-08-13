@@ -544,7 +544,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
         </div>
 
         <div className="space-y-freuly-6">
-          <Card padding="md" className="sticky top-0 z-20 shadow-none">
+          <Card padding="md" className="shadow-none">
             <CardContent>
               <div className="grid grid-cols-1 items-end gap-freuly-4 md:mx-auto md:flex md:max-w-4xl md:flex-wrap md:items-end md:justify-center md:gap-freuly-3">
                 <label className="text-freuly-body-sm md:flex-none">
@@ -659,7 +659,7 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
             </div>
           ) : null}
 
-          <div className="grid [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))] gap-freuly-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {specialists.map((specialist) => (
               <SpecialistPreviewCard
                 key={specialist.id}

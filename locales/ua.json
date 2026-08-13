@@ -29,6 +29,8 @@
       "count": "{{count}} результатів для мови \"{{language}}\".",
       "countOnline": "{{count}} результатів для мови \"{{language}}\" онлайн.",
       "onlineSectionTitle": "Працюють онлайн",
+      "nearbySectionTitle": "Поруч із вами",
+      "radiusHint": "Знайдено спеціалістів у радіусі {{radius}} км.",
       "specialistFallbackBio": "Профіль спеціаліста.",
       "sendRequest": "Залишити заявку",
       "viewProfile": "Переглянути профіль"
