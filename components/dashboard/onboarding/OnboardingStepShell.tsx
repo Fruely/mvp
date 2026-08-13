@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui";
 
 export default function OnboardingStepShell({
   title,
@@ -13,17 +14,22 @@ export default function OnboardingStepShell({
   footer?: ReactNode;
   titleAs?: "h1" | "h2";
 }) {
-  const TitleTag = titleAs;
+  const titleClass = titleAs === "h1" ? "text-freuly-page-title" : "text-freuly-card-title";
+
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div>
-        <TitleTag className={`font-semibold text-gray-900 ${titleAs === "h1" ? "text-2xl" : "text-xl"}`}>
-          {title}
-        </TitleTag>
-        {body ? <p className="mt-2 max-w-3xl text-sm text-gray-600">{body}</p> : null}
-      </div>
-      {children ? <div className="mt-5">{children}</div> : null}
-      {footer ? <div className="mt-5 flex flex-wrap gap-3">{footer}</div> : null}
-    </section>
+    <Card padding="lg" className="shadow-none">
+      <CardHeader>
+        {titleAs === "h1" ? (
+          <h1 className={titleClass}>{title}</h1>
+        ) : (
+          <CardTitle className={titleClass}>{title}</CardTitle>
+        )}
+        {body ? (
+          <p className="mt-freuly-2 max-w-3xl text-freuly-body-sm text-freuly-text-secondary">{body}</p>
+        ) : null}
+      </CardHeader>
+      {children ? <CardContent>{children}</CardContent> : null}
+      {footer ? <CardFooter>{footer}</CardFooter> : null}
+    </Card>
   );
 }

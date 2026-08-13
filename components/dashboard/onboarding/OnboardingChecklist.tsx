@@ -1,3 +1,5 @@
+import { Badge, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+
 export type OnboardingChecklistItem = {
   key: string;
   label: string;
@@ -18,32 +20,33 @@ export default function OnboardingChecklist({
   items: OnboardingChecklistItem[];
 }) {
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <h2 className="text-base font-semibold text-gray-900">{title}</h2>
-      <div className="mt-4 space-y-3">
-        {items.map((item) => (
-          <div
-            key={item.key}
-            className="flex items-start justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50/60 px-3 py-3"
-          >
-            <div>
-              <p className="text-sm font-medium text-gray-900">{item.label}</p>
-              {item.helper ? <p className="mt-1 text-xs text-gray-500">{item.helper}</p> : null}
-            </div>
-            <span
-              className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
-                item.done
-                  ? "bg-emerald-50 text-emerald-700"
-                  : item.recommendation
-                    ? "bg-amber-50 text-amber-700"
-                    : "bg-gray-100 text-gray-700"
-              }`}
+    <Card padding="lg" className="shadow-none">
+      <CardHeader>
+        <CardTitle className="text-freuly-card-title">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-freuly-3">
+          {items.map((item) => (
+            <div
+              key={item.key}
+              className="flex items-start justify-between gap-freuly-3 rounded-freuly-md border border-freuly-border-subtle bg-freuly-border-subtle/40 px-freuly-3 py-freuly-3"
             >
-              {item.done ? publishReadyLabel : item.recommendation ? recommendationLabel : "—"}
-            </span>
-          </div>
-        ))}
-      </div>
-    </section>
+              <div>
+                <p className="text-freuly-body-sm font-medium text-freuly-text-primary">{item.label}</p>
+                {item.helper ? (
+                  <p className="mt-freuly-1 text-freuly-helper text-freuly-text-muted">{item.helper}</p>
+                ) : null}
+              </div>
+              <Badge
+                variant={item.done ? "success" : item.recommendation ? "warning" : "neutral"}
+                className="shrink-0"
+              >
+                {item.done ? publishReadyLabel : item.recommendation ? recommendationLabel : "—"}
+              </Badge>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

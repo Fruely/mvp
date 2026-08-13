@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Alert } from "@/components/ui";
+import { dashboardLinkPrimaryClass } from "@/components/dashboard/dashboardStyles";
 import { t, type Dictionary } from "@/lib/i18n";
 import OnboardingAboutForm, { type OnboardingAboutData } from "./OnboardingAboutForm";
 import OnboardingBasicForm, {
@@ -89,12 +91,12 @@ export default function SpecialistOnboardingWizard({
     href: stepHref(baseHref, step),
   }));
 
-  const primaryLinkClass =
-    "inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700";
-
   const welcomeFooter = (
-    <div className="flex flex-wrap items-center gap-3">
-      <Link href={publishReady ? stepHref(baseHref, "review") : stepHref(baseHref, "basic")} className={primaryLinkClass}>
+    <div className="flex flex-wrap items-center gap-freuly-3">
+      <Link
+        href={publishReady ? stepHref(baseHref, "review") : stepHref(baseHref, "basic")}
+        className={dashboardLinkPrimaryClass}
+      >
         {publishReady
           ? t(dict, "dashboard.onboarding.ctaCard.readyButton")
           : profileStarted
@@ -105,18 +107,16 @@ export default function SpecialistOnboardingWizard({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-freuly-6">
       {categoriesLoadError ? (
-        <div className="rounded-xl border border-red-300 bg-red-50 px-5 py-4 text-red-950 shadow-sm">
-          <p className="text-sm font-semibold">Ошибка загрузки</p>
-          <p className="mt-1 text-sm leading-6">{categoriesLoadError}</p>
-        </div>
+        <Alert variant="error" title="Ошибка загрузки">
+          {categoriesLoadError}
+        </Alert>
       ) : null}
       {showIncompleteProfileGateNotice ? (
-        <div className="rounded-xl border border-amber-300 bg-amber-50 px-5 py-4 text-amber-950 shadow-sm">
-          <p className="text-sm font-semibold">{gateMessage.title}</p>
-          <p className="mt-1 text-sm leading-6">{gateMessage.body}</p>
-        </div>
+        <Alert variant="warning" title={gateMessage.title}>
+          {gateMessage.body}
+        </Alert>
       ) : null}
 
       <OnboardingProgress steps={steps} activeStep={activeStep} />
@@ -128,27 +128,21 @@ export default function SpecialistOnboardingWizard({
           footer={welcomeFooter}
           titleAs="h1"
         >
-          <div
-            className={`rounded-lg border px-4 py-3 text-sm ${
-              publishReady
-                ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                : "border-amber-200 bg-amber-50 text-amber-900"
-            }`}
-          >
+          <Alert variant={publishReady ? "success" : "warning"}>
             {publishReady
               ? t(dict, "dashboard.onboarding.publishReady")
               : t(dict, "dashboard.onboarding.publishNotReady")}
-          </div>
+          </Alert>
           {isUncategorizedCategory ? (
-            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <Alert variant="warning" className="mt-freuly-3">
               {t(dict, "dashboard.onboarding.uncategorizedWarning")}
-            </div>
+            </Alert>
           ) : null}
         </OnboardingStepShell>
       ) : null}
 
       {activeStep === "basic" ? (
-        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+        <div className="grid gap-freuly-6 lg:grid-cols-[1fr_360px]">
           <OnboardingBasicForm
             dict={dict}
             lang={lang}
@@ -168,7 +162,7 @@ export default function SpecialistOnboardingWizard({
       ) : null}
 
       {activeStep === "about" ? (
-        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+        <div className="grid gap-freuly-6 lg:grid-cols-[1fr_360px]">
           <OnboardingAboutForm
             dict={dict}
             lang={lang}
@@ -206,12 +200,8 @@ export default function SpecialistOnboardingWizard({
       ) : null}
 
       {activeStep === "services" ? (
-        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          <OnboardingServicesStep
-            dict={dict}
-            lang={lang}
-            summary={servicesSummary}
-          />
+        <div className="grid gap-freuly-6 lg:grid-cols-[1fr_360px]">
+          <OnboardingServicesStep dict={dict} lang={lang} summary={servicesSummary} />
           <OnboardingChecklist
             title={t(dict, "dashboard.onboarding.checklist.title")}
             publishReadyLabel={t(dict, "dashboard.onboarding.checklist.done")}
@@ -222,7 +212,7 @@ export default function SpecialistOnboardingWizard({
       ) : null}
 
       {activeStep === "photo" ? (
-        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+        <div className="grid gap-freuly-6 lg:grid-cols-[1fr_360px]">
           <OnboardingPhotoStep
             dict={dict}
             lang={lang}
@@ -240,7 +230,7 @@ export default function SpecialistOnboardingWizard({
       ) : null}
 
       {activeStep === "review" ? (
-        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+        <div className="grid gap-freuly-6 lg:grid-cols-[1fr_360px]">
           <OnboardingReviewStep
             dict={dict}
             lang={lang}

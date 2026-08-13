@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { onboardingProgressNavClass } from "./onboardingStyles";
 
 export type OnboardingStepKey = "welcome" | "basic" | "about" | "services" | "photo" | "review";
 
@@ -27,8 +28,8 @@ export default function OnboardingProgress({
   const activeIndex = ONBOARDING_STEP_ORDER.indexOf(activeStep);
 
   return (
-    <nav className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm" aria-label="Onboarding progress">
-      <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
+    <nav className={onboardingProgressNavClass} aria-label="Onboarding progress">
+      <ol className="grid gap-freuly-2 sm:grid-cols-2 lg:grid-cols-6">
         {steps.map((step, index) => {
           const isActive = step.key === activeStep;
           const isPast = activeIndex >= 0 && index < activeIndex;
@@ -36,21 +37,21 @@ export default function OnboardingProgress({
             <li key={step.key}>
               <Link
                 href={step.href}
-                className={`flex h-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                className={`flex h-full min-h-[2.75rem] items-center gap-freuly-2 rounded-freuly-md px-freuly-3 py-freuly-2 text-freuly-body-sm font-medium transition ${
                   isActive
-                    ? "bg-blue-50 text-blue-700 ring-1 ring-blue-100"
+                    ? "bg-freuly-primary-light text-freuly-primary ring-1 ring-freuly-primary/20"
                     : isPast
-                      ? "text-emerald-800 hover:bg-emerald-50/80"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      ? "text-freuly-primary hover:bg-freuly-primary-light/60"
+                      : "text-freuly-text-secondary hover:bg-freuly-border-subtle hover:text-freuly-text-primary"
                 }`}
               >
                 <span
                   className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
                     isActive
-                      ? "bg-blue-600 text-white"
+                      ? "bg-freuly-primary text-freuly-text-on-primary"
                       : isPast
-                        ? "bg-emerald-100 text-emerald-800"
-                        : "bg-gray-100 text-gray-600"
+                        ? "bg-freuly-primary-light text-freuly-primary"
+                        : "bg-freuly-border-subtle text-freuly-text-muted"
                   }`}
                 >
                   {index + 1}

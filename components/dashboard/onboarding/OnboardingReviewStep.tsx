@@ -8,6 +8,9 @@ import type {
   PublicationIssue,
   PublicationRecommendation,
 } from "@/lib/dashboard/publicationValidator";
+import { Alert, Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { dashboardLinkSecondaryClass } from "@/components/dashboard/dashboardStyles";
+import { onboardingChecklistItemClass } from "./onboardingStyles";
 
 export type OnboardingReviewSummary = {
   publishReady: boolean;
@@ -43,10 +46,10 @@ type ReviewItem = {
   neutralPending?: boolean;
 };
 
-function itemStatusClass(done: boolean, neutralPending?: boolean): string {
-  if (done) return "bg-emerald-50 text-emerald-700";
-  if (neutralPending) return "bg-gray-100 text-gray-600";
-  return "bg-amber-50 text-amber-800";
+function itemBadgeVariant(done: boolean, neutralPending?: boolean): "success" | "warning" | "neutral" {
+  if (done) return "success";
+  if (neutralPending) return "neutral";
+  return "warning";
 }
 
 function ReviewList({
@@ -57,26 +60,21 @@ function ReviewList({
   doneLabel: string;
 }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-freuly-3">
       {items.map((item) => (
-        <div
-          key={item.key}
-          className="flex flex-col gap-3 rounded-lg border border-gray-100 bg-gray-50/60 px-3 py-3 sm:flex-row sm:items-start sm:justify-between"
-        >
+        <div key={item.key} className={onboardingChecklistItemClass}>
           <div className="min-w-0">
             {!item.done && item.href ? (
-              <Link href={item.href} className="text-sm font-medium text-blue-700 hover:underline">
+              <Link href={item.href} className="text-freuly-body-sm font-medium text-freuly-primary hover:underline">
                 {item.label}
               </Link>
             ) : (
-              <p className="text-sm font-medium text-gray-900">{item.label}</p>
+              <p className="text-freuly-body-sm font-medium text-freuly-text-primary">{item.label}</p>
             )}
           </div>
-          <span
-            className={`w-fit shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${itemStatusClass(item.done, item.neutralPending)}`}
-          >
+          <Badge variant={itemBadgeVariant(item.done, item.neutralPending)} className="w-fit shrink-0">
             {item.done ? doneLabel : item.pendingLabel ?? "!"}
-          </span>
+          </Badge>
         </div>
       ))}
     </div>
@@ -278,104 +276,86 @@ export default function OnboardingReviewStep({
   const visibleIssues = serverIssues.length > 0 ? serverIssues : summary.blocking;
 
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900">
+    <Card padding="lg" className="shadow-none">
+      <CardHeader>
+        <CardTitle className="text-freuly-card-title">
           {t(dict, "dashboard.onboarding.reviewStep.title")}
-        </h2>
-        <p className="mt-2 max-w-3xl text-sm text-gray-600">
+        </CardTitle>
+        <p className="mt-freuly-2 max-w-3xl text-freuly-body-sm text-freuly-text-secondary">
           {t(dict, "dashboard.onboarding.reviewStep.body")}
         </p>
-      </div>
+      </CardHeader>
 
-      <div
-        className={`mt-5 rounded-lg border px-4 py-3 text-sm ${
-          publishReady
-            ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-            : "border-amber-200 bg-amber-50 text-amber-900"
-        }`}
-      >
-        <p className="font-semibold">
-          {publishReady
-            ? t(dict, "dashboard.onboarding.reviewStep.readyTitle")
-            : t(dict, "dashboard.onboarding.reviewStep.notReadyTitle")}
-        </p>
-        <p className="mt-1">
-          {publishReady
-            ? t(dict, "dashboard.onboarding.reviewStep.readyBody")
-            : t(dict, "dashboard.onboarding.reviewStep.notReadyBody")}
-        </p>
-        {!publishReady && visibleIssues.length > 0 ? (
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-xs font-medium">
-            {visibleIssues.map((issue) => (
-              <li key={`${issue.code}-${issue.field}`}>
-                <Link
-                  href={`${baseHref}?step=${issue.step === "services" ? "services" : "basic"}`}
-                  className="underline"
-                >
-                  {issueLabel(dict, issue.code, issue.field)}
-                </Link>
-              </li>
-            ))}
-          </ul>
+      <CardContent>
+        <Alert variant={publishReady ? "success" : "warning"}>
+          <p className="font-semibold text-freuly-text-primary">
+            {publishReady
+              ? t(dict, "dashboard.onboarding.reviewStep.readyTitle")
+              : t(dict, "dashboard.onboarding.reviewStep.notReadyTitle")}
+          </p>
+          <p className="mt-freuly-1">
+            {publishReady
+              ? t(dict, "dashboard.onboarding.reviewStep.readyBody")
+              : t(dict, "dashboard.onboarding.reviewStep.notReadyBody")}
+          </p>
+          {!publishReady && visibleIssues.length > 0 ? (
+            <ul className="mt-freuly-2 list-disc space-y-freuly-1 pl-5 text-freuly-helper font-medium">
+              {visibleIssues.map((issue) => (
+                <li key={`${issue.code}-${issue.field}`}>
+                  <Link
+                    href={`${baseHref}?step=${issue.step === "services" ? "services" : "basic"}`}
+                    className="text-freuly-primary underline"
+                  >
+                    {issueLabel(dict, issue.code, issue.field)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </Alert>
+
+        {publishReady ? (
+          <div className="mt-freuly-5">
+            <Button type="button" onClick={handlePublish} disabled={publishing} className="w-full sm:w-auto">
+              {publishing
+                ? t(dict, "dashboard.onboarding.reviewStep.publishing")
+                : t(dict, "dashboard.onboarding.reviewStep.publish")}
+            </Button>
+          </div>
         ) : null}
-      </div>
 
-      {publishReady ? (
-        <div className="mt-5">
-          <button
-            type="button"
-            onClick={handlePublish}
-            disabled={publishing}
-            className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
-          >
-            {publishing
-              ? t(dict, "dashboard.onboarding.reviewStep.publishing")
-              : t(dict, "dashboard.onboarding.reviewStep.publish")}
-          </button>
-        </div>
-      ) : null}
+        {error ? (
+          <Alert variant="error" className="mt-freuly-5">
+            {error}
+          </Alert>
+        ) : null}
 
-      {error ? (
-        <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-          {error}
-        </div>
-      ) : null}
+        <div className="mt-freuly-5 space-y-freuly-6">
+          <div>
+            <h3 className="text-freuly-body font-semibold text-freuly-text-primary">
+              {t(dict, "dashboard.onboarding.reviewStep.hardRequirementsTitle")}
+            </h3>
+            <div className="mt-freuly-3">
+              <ReviewList items={hardItems} doneLabel={t(dict, "dashboard.onboarding.checklist.done")} />
+            </div>
+          </div>
 
-      <div className="mt-5 space-y-6">
-        <div>
-          <h3 className="text-base font-semibold text-gray-900">
-            {t(dict, "dashboard.onboarding.reviewStep.hardRequirementsTitle")}
-          </h3>
-          <div className="mt-3">
-            <ReviewList
-              items={hardItems}
-              doneLabel={t(dict, "dashboard.onboarding.checklist.done")}
-            />
+          <div>
+            <h3 className="text-freuly-body font-semibold text-freuly-text-primary">
+              {t(dict, "dashboard.onboarding.reviewStep.recommendationsTitle")}
+            </h3>
+            <div className="mt-freuly-3">
+              <ReviewList items={recommendations} doneLabel={t(dict, "dashboard.onboarding.checklist.done")} />
+            </div>
           </div>
         </div>
 
-        <div>
-          <h3 className="text-base font-semibold text-gray-900">
-            {t(dict, "dashboard.onboarding.reviewStep.recommendationsTitle")}
-          </h3>
-          <div className="mt-3">
-            <ReviewList
-              items={recommendations}
-              doneLabel={t(dict, "dashboard.onboarding.checklist.done")}
-            />
-          </div>
+        <div className="mt-freuly-5 flex flex-wrap items-center gap-freuly-3">
+          <Link href={`${baseHref}?step=photos`} className={dashboardLinkSecondaryClass}>
+            {t(dict, "dashboard.onboarding.reviewStep.backToPhoto")}
+          </Link>
         </div>
-      </div>
-
-      <div className="mt-5 flex flex-wrap items-center gap-3">
-        <Link
-          href={`${baseHref}?step=photos`}
-          className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-        >
-          {t(dict, "dashboard.onboarding.reviewStep.backToPhoto")}
-        </Link>
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }

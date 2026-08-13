@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import SpecialistAvatarImage from "@/components/specialist/SpecialistAvatarImage";
+import { Alert, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { dashboardLinkSecondaryClass, dashboardUploadButtonClass } from "@/components/dashboard/dashboardStyles";
 import { t, type Dictionary } from "@/lib/i18n";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -104,85 +106,73 @@ export default function OnboardingPhotoStep({
     }
   }
 
-  const secondaryLinkClass =
-    "inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50";
   const reviewHref = `/${lang}/specialist/dashboard/onboarding?step=review`;
 
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900">
+    <Card padding="lg" className="shadow-none">
+      <CardHeader>
+        <CardTitle className="text-freuly-card-title">
           {t(dict, "dashboard.onboarding.photoStep.title")}
-        </h2>
-        <p className="mt-2 max-w-3xl text-sm text-gray-600">
+        </CardTitle>
+        <p className="mt-freuly-2 max-w-3xl text-freuly-body-sm text-freuly-text-secondary">
           {t(dict, "dashboard.onboarding.photoStep.helper")}
         </p>
-      </div>
+      </CardHeader>
 
-      <form className="mt-5 space-y-5" onSubmit={handleSubmit}>
-        <div className="space-y-3">
-          <p className="text-sm font-medium text-gray-700">
-            {t(dict, "dashboard.onboarding.photoStep.currentPhoto")}
-          </p>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-            <div className="w-full max-w-xs shrink-0">
-              <SpecialistAvatarImage
-                src={previewUrl}
-                alt={t(dict, "dashboard.onboarding.photoStep.currentPhoto")}
-                loading={uploading}
-              />
-            </div>
-            <p className="max-w-xs text-xs leading-relaxed text-gray-500">
-              {t(dict, "dashboard.onboarding.photoStep.previewHint")}
+      <CardContent>
+        <form className="space-y-freuly-5" onSubmit={handleSubmit}>
+          <div className="space-y-freuly-3">
+            <p className="text-freuly-body-sm font-medium text-freuly-text-primary">
+              {t(dict, "dashboard.onboarding.photoStep.currentPhoto")}
             </p>
+            <div className="flex flex-col gap-freuly-4 sm:flex-row sm:items-start">
+              <div className="w-full max-w-xs shrink-0">
+                <SpecialistAvatarImage
+                  src={previewUrl}
+                  alt={t(dict, "dashboard.onboarding.photoStep.currentPhoto")}
+                  loading={uploading}
+                />
+              </div>
+              <p className="max-w-xs text-freuly-helper leading-relaxed text-freuly-text-muted">
+                {t(dict, "dashboard.onboarding.photoStep.previewHint")}
+              </p>
+            </div>
           </div>
-        </div>
 
-        <label className="block space-y-2 text-sm">
-          <span className="font-medium text-gray-700">
-            {t(dict, "dashboard.onboarding.photoStep.chooseFile")}
-          </span>
-          <input
-            type="file"
-            accept="image/jpeg,image/jpg,image/png,image/webp"
-            onChange={handleFileChange}
-            className="block w-full text-sm text-gray-700 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100"
-            disabled={uploading}
-          />
-          <span className="block text-xs text-gray-500">
-            {t(dict, "dashboard.onboarding.photoStep.fileHint")}
-          </span>
-        </label>
+          <label className="block space-y-freuly-2 text-freuly-body-sm">
+            <span className="font-medium text-freuly-text-primary">
+              {t(dict, "dashboard.onboarding.photoStep.chooseFile")}
+            </span>
+            <input
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              onChange={handleFileChange}
+              className={`block w-full text-freuly-body-sm text-freuly-text-secondary file:mr-freuly-4 file:rounded-freuly-md file:border-0 file:bg-freuly-primary-light file:px-freuly-4 file:py-freuly-2 file:text-freuly-body-sm file:font-semibold file:text-freuly-primary hover:file:bg-freuly-primary-light/80 ${dashboardUploadButtonClass}`}
+              disabled={uploading}
+            />
+            <span className="block text-freuly-helper text-freuly-text-muted">
+              {t(dict, "dashboard.onboarding.photoStep.fileHint")}
+            </span>
+          </label>
 
-        {error ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-            {error}
+          {error ? <Alert variant="error">{error}</Alert> : null}
+
+          {uploaded ? <Alert variant="success">{t(dict, "dashboard.onboarding.photoStep.uploaded")}</Alert> : null}
+
+          <div className="flex flex-wrap items-center gap-freuly-3">
+            <Link href={`${baseHref}?step=services`} className={dashboardLinkSecondaryClass}>
+              {t(dict, "dashboard.onboarding.nav.back")}
+            </Link>
+            <Button type="submit" disabled={uploading} className="w-full sm:w-auto">
+              {uploading
+                ? t(dict, "dashboard.onboarding.photoStep.uploading")
+                : file
+                  ? t(dict, "dashboard.onboarding.photoStep.uploadAndContinue")
+                  : t(dict, "dashboard.onboarding.photoStep.next")}
+            </Button>
           </div>
-        ) : null}
-
-        {uploaded ? (
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
-            {t(dict, "dashboard.onboarding.photoStep.uploaded")}
-          </div>
-        ) : null}
-
-        <div className="flex flex-wrap items-center gap-3">
-          <Link href={`${baseHref}?step=services`} className={secondaryLinkClass}>
-            {t(dict, "dashboard.onboarding.nav.back")}
-          </Link>
-          <button
-            type="submit"
-            disabled={uploading}
-            className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
-          >
-            {uploading
-              ? t(dict, "dashboard.onboarding.photoStep.uploading")
-              : file
-                ? t(dict, "dashboard.onboarding.photoStep.uploadAndContinue")
-                : t(dict, "dashboard.onboarding.photoStep.next")}
-          </button>
-        </div>
-      </form>
-    </section>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

@@ -13,6 +13,12 @@ import {
   normalizePostalCode,
 } from "@/lib/specialists/geography";
 import { needsServiceRadius } from "@/lib/dashboard/publicationValidator";
+import { Alert, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import {
+  dashboardCheckboxClass,
+  dashboardFieldClass,
+  dashboardLinkSecondaryClass,
+} from "@/components/dashboard/dashboardStyles";
 
 export type OnboardingBasicData = {
   name: string;
@@ -332,25 +338,25 @@ export default function OnboardingBasicForm({
     setResolveState({ ...resolveState, selectedIndex: index });
   }
 
-  const inputClass = "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm";
-  const errorClass = "text-xs font-medium text-red-600";
-  const secondaryLinkClass =
-    "inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50";
+  const inputClass = dashboardFieldClass;
+  const errorClass = "text-freuly-helper font-medium text-freuly-error";
+  const secondaryLinkClass = dashboardLinkSecondaryClass;
 
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900">
+    <Card padding="lg" className="shadow-none">
+      <CardHeader>
+        <CardTitle className="text-freuly-card-title">
           {t(dict, "dashboard.onboarding.stepContent.basic.title")}
-        </h2>
-        <p className="mt-2 max-w-3xl text-sm text-gray-600">
+        </CardTitle>
+        <p className="mt-freuly-2 max-w-3xl text-freuly-body-sm text-freuly-text-secondary">
           {t(dict, "dashboard.onboarding.stepContent.basic.body")}
         </p>
-      </div>
+      </CardHeader>
 
-      <form className="mt-5 space-y-5" onSubmit={handleSubmit}>
+      <CardContent>
+      <form className="space-y-freuly-5" onSubmit={handleSubmit}>
         <label className="block space-y-1 text-sm">
-          <span className="font-medium text-gray-700">
+          <span className="font-medium text-freuly-text-primary">
             {t(dict, "dashboard.onboarding.basicForm.nameLabel")}
           </span>
           <input
@@ -362,7 +368,7 @@ export default function OnboardingBasicForm({
         </label>
 
         <label className="block space-y-1 text-sm">
-          <span className="font-medium text-gray-700">
+          <span className="font-medium text-freuly-text-primary">
             {t(dict, "dashboard.onboarding.basicForm.categoryLabel")}
           </span>
           <select
@@ -379,14 +385,14 @@ export default function OnboardingBasicForm({
           </select>
           {errors.category_id ? <p className={errorClass}>{errors.category_id}</p> : null}
           {isUncategorizedCategory ? (
-            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium leading-relaxed text-amber-900">
+            <p className="rounded-lg border border-freuly-warning-border bg-freuly-warning-light px-freuly-3 py-freuly-2 text-freuly-helper font-medium leading-relaxed text-freuly-warning">
               {t(dict, "dashboard.onboarding.uncategorizedWarning")}
             </p>
           ) : null}
         </label>
 
         <label className="block space-y-1 text-sm">
-          <span className="font-medium text-gray-700">
+          <span className="font-medium text-freuly-text-primary">
             {t(dict, "dashboard.onboarding.basicForm.workFormatLabel")}
           </span>
           <select
@@ -408,7 +414,7 @@ export default function OnboardingBasicForm({
           {errors.work_format ? <p className={errorClass}>{errors.work_format}</p> : null}
         </label>
 
-        <div className="space-y-3 rounded-xl border border-indigo-100 bg-indigo-50/40 p-4">
+        <div className="space-y-3 rounded-xl border border-freuly-primary/15 bg-freuly-primary-light/40 p-4">
           <p className="text-sm font-semibold text-gray-900">
             {t(dict, "dashboard.onboarding.basicForm.locationSectionTitle")}
           </p>
@@ -417,20 +423,20 @@ export default function OnboardingBasicForm({
           </p>
 
           <label className="block space-y-1 text-sm">
-            <span className="font-medium text-gray-700">
+            <span className="font-medium text-freuly-text-primary">
               {t(dict, "dashboard.fields.country")} <span className="text-red-500">*</span>
             </span>
-            <select value={GERMANY_COUNTRY_CODE} disabled className={`${inputClass} bg-gray-50`}>
+            <select value={GERMANY_COUNTRY_CODE} disabled className={`${inputClass} bg-freuly-border-subtle`}>
               <option value={GERMANY_COUNTRY_CODE}>{t(dict, "dashboard.country.DE")}</option>
             </select>
-            <p className="text-xs text-gray-500">
+            <p className="text-freuly-helper text-freuly-text-muted">
               {t(dict, "dashboard.onboarding.basicForm.germanyOnlyHint")}
             </p>
             {errors.country_code ? <p className={errorClass}>{errors.country_code}</p> : null}
           </label>
 
           <label className="block space-y-1 text-sm">
-            <span className="font-medium text-gray-700">
+            <span className="font-medium text-freuly-text-primary">
               {t(dict, "dashboard.onboarding.basicForm.postalCodeLabel")}{" "}
               <span className="text-red-500">*</span>
             </span>
@@ -457,19 +463,19 @@ export default function OnboardingBasicForm({
           </label>
 
           {resolveState.status === "loading" ? (
-            <p className="text-xs font-medium text-indigo-700">
+            <p className="text-xs font-medium text-freuly-primary">
               {t(dict, "dashboard.onboarding.basicForm.locationResolving")}
             </p>
           ) : null}
 
           {resolveState.status === "error" ? (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
+            <div className="rounded-lg border border-freuly-warning-border bg-freuly-warning-light px-freuly-3 py-freuly-2 text-freuly-helper text-freuly-text-primary">
               <p className="font-medium">
                 {t(dict, "dashboard.onboarding.basicForm.locationResolveFailed")}
               </p>
               <button
                 type="button"
-                className="mt-2 font-semibold text-indigo-700 underline"
+                className="mt-2 font-semibold text-freuly-primary underline"
                 onClick={() => {
                   const plz = normalizePostalCode(form.postal_code);
                   if (plz) void resolvePostal(plz);
@@ -484,7 +490,7 @@ export default function OnboardingBasicForm({
             <div className="space-y-2">
               {resolveState.candidates.length > 1 ? (
                 <label className="block space-y-1 text-sm">
-                  <span className="font-medium text-gray-700">
+                  <span className="font-medium text-freuly-text-primary">
                     {t(dict, "dashboard.onboarding.basicForm.citySelectLabel")}
                   </span>
                   <select
@@ -515,7 +521,7 @@ export default function OnboardingBasicForm({
 
         {showRadius ? (
           <label className="block space-y-1 text-sm">
-            <span className="font-medium text-gray-700">
+            <span className="font-medium text-freuly-text-primary">
               {t(dict, "dashboard.fields.serviceRadius")} <span className="text-red-500">*</span>
             </span>
             <select
@@ -538,7 +544,7 @@ export default function OnboardingBasicForm({
                 </option>
               ))}
             </select>
-            <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.serviceRadiusHint")}</p>
+            <p className="text-freuly-helper text-freuly-text-muted">{t(dict, "dashboard.fields.serviceRadiusHint")}</p>
             {errors.service_radius_km ? (
               <p className={errorClass}>{errors.service_radius_km}</p>
             ) : null}
@@ -546,7 +552,7 @@ export default function OnboardingBasicForm({
         ) : null}
 
         <fieldset className="space-y-2 text-sm">
-          <legend className="font-medium text-gray-700">
+          <legend className="font-medium text-freuly-text-primary">
             {t(dict, "dashboard.onboarding.basicForm.languagesLabel")}
           </legend>
           <div className="flex flex-wrap gap-x-5 gap-y-2">
@@ -556,9 +562,9 @@ export default function OnboardingBasicForm({
                   type="checkbox"
                   checked={form.languages.includes(code)}
                   onChange={(event) => toggleLanguage(code, event.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className={dashboardCheckboxClass}
                 />
-                <span className="text-gray-800">{t(dict, `dashboard.lang.${code}`)}</span>
+                <span className="text-freuly-text-primary">{t(dict, `dashboard.lang.${code}`)}</span>
               </label>
             ))}
           </div>
@@ -566,26 +572,21 @@ export default function OnboardingBasicForm({
         </fieldset>
 
         {errors.submit ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-            {errors.submit}
-          </div>
+          <Alert variant="error">{errors.submit}</Alert>
         ) : null}
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-freuly-3">
           <Link href={`${baseHref}?step=welcome`} className={secondaryLinkClass}>
             {t(dict, "dashboard.onboarding.nav.back")}
           </Link>
-          <button
-            type="submit"
-            disabled={saving || resolveState.status === "loading"}
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
-          >
+          <Button type="submit" disabled={saving || resolveState.status === "loading"}>
             {saving
               ? t(dict, "dashboard.onboarding.basicForm.saving")
               : t(dict, "dashboard.onboarding.basicForm.save")}
-          </button>
+          </Button>
         </div>
       </form>
-    </section>
+      </CardContent>
+    </Card>
   );
 }

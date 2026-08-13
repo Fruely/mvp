@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Alert, Button, Card, CardContent, CardHeader, CardTitle, Textarea } from "@/components/ui";
+import { dashboardLinkSecondaryClass } from "@/components/dashboard/dashboardStyles";
 import { t, type Dictionary } from "@/lib/i18n";
 import type { OnboardingBasicData, OnboardingPreserveProfileData } from "./OnboardingBasicForm";
 
@@ -66,59 +68,46 @@ export default function OnboardingAboutForm({
     }
   }
 
-  const secondaryLinkClass =
-    "inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50";
-
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900">
+    <Card padding="lg" className="shadow-none">
+      <CardHeader>
+        <CardTitle className="text-freuly-card-title">
           {t(dict, "dashboard.onboarding.stepContent.about.title")}
-        </h2>
-        <p className="mt-2 max-w-3xl text-sm text-gray-600">
+        </CardTitle>
+        <p className="mt-freuly-2 max-w-3xl text-freuly-body-sm text-freuly-text-secondary">
           {t(dict, "dashboard.onboarding.stepContent.about.body")}
         </p>
-      </div>
+      </CardHeader>
 
-      <form className="mt-5 space-y-5" onSubmit={handleSubmit}>
-        <label className="block space-y-1 text-sm">
-          <span className="font-medium text-gray-700">{t(dict, "dashboard.onboarding.aboutForm.label")}</span>
-          <textarea
+      <CardContent>
+        <form className="space-y-freuly-5" onSubmit={handleSubmit}>
+          <Textarea
+            id="onboarding-about"
+            label={t(dict, "dashboard.onboarding.aboutForm.label")}
             value={aboutMe}
             onChange={(event) => setAboutMe(event.target.value)}
             rows={8}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+            helperText={t(dict, "dashboard.onboarding.aboutForm.helper")}
           />
-          <span className="block text-xs text-gray-500">{t(dict, "dashboard.onboarding.aboutForm.helper")}</span>
-        </label>
 
-        {!aboutMe.trim() ? (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            {t(dict, "dashboard.onboarding.aboutForm.emptyWarning")}
+          {!aboutMe.trim() ? (
+            <Alert variant="warning">{t(dict, "dashboard.onboarding.aboutForm.emptyWarning")}</Alert>
+          ) : null}
+
+          {error ? <Alert variant="error">{error}</Alert> : null}
+
+          <div className="flex flex-wrap items-center gap-freuly-3">
+            <Link href={`${baseHref}?step=basic`} className={dashboardLinkSecondaryClass}>
+              {t(dict, "dashboard.onboarding.nav.back")}
+            </Link>
+            <Button type="submit" disabled={saving}>
+              {saving
+                ? t(dict, "dashboard.onboarding.aboutForm.saving")
+                : t(dict, "dashboard.onboarding.aboutForm.save")}
+            </Button>
           </div>
-        ) : null}
-
-        {error ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-            {error}
-          </div>
-        ) : null}
-
-        <div className="flex flex-wrap items-center gap-3">
-          <Link href={`${baseHref}?step=basic`} className={secondaryLinkClass}>
-            {t(dict, "dashboard.onboarding.nav.back")}
-          </Link>
-          <button
-            type="submit"
-            disabled={saving}
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {saving
-              ? t(dict, "dashboard.onboarding.aboutForm.saving")
-              : t(dict, "dashboard.onboarding.aboutForm.save")}
-          </button>
-        </div>
-      </form>
-    </section>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
