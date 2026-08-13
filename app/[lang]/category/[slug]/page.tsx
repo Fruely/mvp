@@ -9,6 +9,14 @@ import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import uaDict from "@/locales/ua.json";
 import SpecialistPreviewCard from "@/components/specialist/SpecialistPreviewCard";
 import ServiceRequestCtaBlock from "@/components/serviceRequests/ServiceRequestCtaBlock";
+import { Alert, Badge, Button, Card, CardContent } from "@/components/ui";
+import {
+  publicFieldClass,
+  publicLinkPrimaryClass,
+  publicPageContainerClass,
+  publicSectionSubtitleClass,
+  publicSectionTitleClass,
+} from "@/components/public/publicStyles";
 
 interface SpecialistPreview {
   id: string;
@@ -417,10 +425,10 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+      <div className="flex min-h-[50vh] items-center justify-center bg-freuly-page">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t(dict, "category.loading")}</p>
+          <div className="mx-auto mb-freuly-4 h-12 w-12 animate-spin rounded-full border-b-2 border-freuly-primary" />
+          <p className="text-freuly-body text-freuly-text-secondary">{t(dict, "category.loading")}</p>
         </div>
       </div>
     );
@@ -429,74 +437,75 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
   if (!category) {
     if (parentCategory) {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-12 px-4">
-          <div className="max-w-7xl mx-auto">
-            <div className="mb-12">
-              <Link href={langPrefix} className="text-blue-600 hover:text-blue-700 font-medium mb-4 inline-block">
+        <div className="min-h-screen bg-freuly-page py-freuly-10">
+          <div className={publicPageContainerClass}>
+            <div className="mb-freuly-12">
+              <Link
+                href={langPrefix}
+                className="mb-freuly-4 inline-block font-medium text-freuly-primary hover:text-freuly-primary-hover"
+              >
                 {t(dict, "common.backToHome")}
               </Link>
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
+              <h1 className={publicSectionTitleClass}>
                 {getCategoryTitle(parentCategory, toCategoryTitleLang(lang))}
               </h1>
-              <p className="text-lg text-gray-600 mt-2">
+              <p className={`mt-freuly-2 ${publicSectionSubtitleClass}`}>
                 {t(dict, "category.parent.subtitle")}
               </p>
             </div>
 
             {parentCategory.children.length === 0 ? (
-              <div className="bg-white rounded-md shadow-lg p-12 text-center max-w-2xl mx-auto">
-                <div className="text-6xl mb-4">⏳</div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                  {t(dict, "category.parent.empty.title")}
-                </h2>
-                <p className="text-gray-600 mb-6">
-                  {t(dict, "category.parent.empty.subtitle")}
-                </p>
-                <Link
-                  href={langPrefix}
-                  className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
-                >
-                  {t(dict, "common.toHome")}
-                </Link>
-              </div>
+              <Card padding="lg" className="mx-auto max-w-2xl text-center shadow-none">
+                <CardContent>
+                  <div className="mb-freuly-4 text-6xl">⏳</div>
+                  <h2 className="mb-freuly-2 text-freuly-card-title text-freuly-text-primary">
+                    {t(dict, "category.parent.empty.title")}
+                  </h2>
+                  <p className="mb-freuly-6 text-freuly-body text-freuly-text-secondary">
+                    {t(dict, "category.parent.empty.subtitle")}
+                  </p>
+                  <Link href={langPrefix} className={publicLinkPrimaryClass}>
+                    {t(dict, "common.toHome")}
+                  </Link>
+                </CardContent>
+              </Card>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 gap-freuly-6 sm:grid-cols-2 lg:grid-cols-3">
                 {parentCategory.children.map((child) => (
-                  <div
+                  <Card
                     key={child.id}
-                    className={`bg-white rounded-md border border-gray-100 shadow-sm p-6 ${
-                      child.is_clickable ? "hover:shadow-md transition" : "opacity-80"
-                    }`}
+                    padding="lg"
+                    className={`shadow-none ${child.is_clickable ? "transition hover:border-freuly-primary/30" : "opacity-80"}`}
                   >
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                      <h3 className="text-xl font-semibold text-gray-900">
-                        {getCategoryTitle(child, toCategoryTitleLang(lang))}
-                      </h3>
-                      {!child.is_clickable ? (
-                        <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] font-semibold text-gray-600">
-                          {t(dict, "common.soon")}
+                    <CardContent>
+                      <div className="mb-freuly-3 flex items-center justify-between gap-freuly-2">
+                        <h3 className="text-freuly-card-title text-freuly-text-primary">
+                          {getCategoryTitle(child, toCategoryTitleLang(lang))}
+                        </h3>
+                        {!child.is_clickable ? (
+                          <Badge variant="neutral">{t(dict, "common.soon")}</Badge>
+                        ) : null}
+                      </div>
+                      <p className="mb-freuly-4 text-freuly-body-sm text-freuly-text-secondary">
+                        {t(dict, "category.parent.found").replace(
+                          /\{\{\s*count\s*\}\}/g,
+                          String(child.specialists_count),
+                        )}
+                      </p>
+                      {child.is_clickable ? (
+                        <Link
+                          href={`/${lang}/category/${child.slug}`}
+                          className="inline-flex items-center font-medium text-freuly-primary hover:text-freuly-primary-hover"
+                        >
+                          {t(dict, "common.more")}
+                        </Link>
+                      ) : (
+                        <span className="inline-flex items-center font-medium text-freuly-text-muted">
+                          {t(dict, "category.comingSoon.title")}
                         </span>
-                      ) : null}
-                    </div>
-                    <p className="text-sm text-gray-600 mb-4">
-                      {t(dict, "category.parent.found").replace(
-                        /\{\{\s*count\s*\}\}/g,
-                        String(child.specialists_count)
                       )}
-                    </p>
-                    {child.is_clickable ? (
-                      <Link
-                        href={`/${lang}/category/${child.slug}`}
-                        className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
-                      >
-                        {t(dict, "common.more")}
-                      </Link>
-                    ) : (
-                      <span className="inline-flex items-center text-textSecondary font-medium">
-                        {t(dict, "category.comingSoon.title")}
-                      </span>
-                    )}
-                  </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             )}
@@ -506,13 +515,12 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
     }
 
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-        <div className="text-center max-w-md mx-auto px-4">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">{t(dict, "category.notFound")}</h1>
-          <Link
-            href={langPrefix}
-            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
-          >
+      <div className="flex min-h-[50vh] items-center justify-center bg-freuly-page px-freuly-4">
+        <div className="max-w-md text-center">
+          <h1 className="mb-freuly-2 text-freuly-card-title text-freuly-text-primary">
+            {t(dict, "category.notFound")}
+          </h1>
+          <Link href={langPrefix} className={publicLinkPrimaryClass}>
             {t(dict, "common.toHome")}
           </Link>
         </div>
@@ -521,31 +529,33 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-12 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-12">
-          <Link href={langPrefix} className="text-blue-600 hover:text-blue-700 font-medium mb-4 inline-block">
+    <div className="min-h-screen bg-freuly-page py-freuly-10">
+      <div className={publicPageContainerClass}>
+        <div className="mb-freuly-12">
+          <Link
+            href={langPrefix}
+            className="mb-freuly-4 inline-block font-medium text-freuly-primary hover:text-freuly-primary-hover"
+          >
             {t(dict, "common.backToHome")}
           </Link>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-            {uspHeading}
-          </h1>
-          <p className="mt-2 text-sm text-gray-600">{uspSubtext}</p>
-          <p className="text-lg text-gray-600 mt-2">{foundText}</p>
+          <h1 className={publicSectionTitleClass}>{uspHeading}</h1>
+          <p className={`mt-freuly-2 text-freuly-body-sm ${publicSectionSubtitleClass}`}>{uspSubtext}</p>
+          <p className={`mt-freuly-2 ${publicSectionSubtitleClass}`}>{foundText}</p>
         </div>
 
-        <div className="space-y-6">
-            <div className="sticky top-0 z-20 rounded-md border border-gray-100 bg-white p-4 shadow-sm">
-              <div className="grid grid-cols-1 gap-4 items-end md:mx-auto md:flex md:max-w-4xl md:flex-wrap md:items-end md:justify-center md:gap-3">
-                <label className="text-sm md:flex-none">
-                  <span className="mb-2 block text-xs font-medium text-gray-600 md:sr-only">
+        <div className="space-y-freuly-6">
+          <Card padding="md" className="sticky top-0 z-20 shadow-none">
+            <CardContent>
+              <div className="grid grid-cols-1 items-end gap-freuly-4 md:mx-auto md:flex md:max-w-4xl md:flex-wrap md:items-end md:justify-center md:gap-freuly-3">
+                <label className="text-freuly-body-sm md:flex-none">
+                  <span className="mb-freuly-2 block text-freuly-label text-freuly-text-muted md:sr-only">
                     {t(dict, "filters.language.label")}
                   </span>
                   <div className="relative md:w-56">
                     <select
                       value={selectedLanguage}
                       onChange={(event) => setSelectedLanguage(event.target.value)}
-                      className="h-11 w-full appearance-none rounded-xl border border-gray-200 bg-white px-3 pr-10 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                      className={`${publicFieldClass} h-11 appearance-none pr-10`}
                     >
                       <option value="">{t(dict, "filters.language.all")}</option>
                       {languageOptions.map((value) => (
@@ -557,22 +567,29 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                     <svg
                       viewBox="0 0 20 20"
                       aria-hidden
-                      className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500"
+                      className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-freuly-text-muted"
                     >
-                      <path d="M5.5 7.5L10 12l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                      <path
+                        d="M5.5 7.5L10 12l4.5-4.5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </div>
                 </label>
 
-                <label className="text-sm md:flex-none">
-                  <span className="mb-2 block text-xs font-medium text-gray-600 md:sr-only">
+                <label className="text-freuly-body-sm md:flex-none">
+                  <span className="mb-freuly-2 block text-freuly-label text-freuly-text-muted md:sr-only">
                     {t(dict, "filters.city.label")}
                   </span>
                   <div className="relative md:w-56">
                     <select
                       value={selectedCity}
                       onChange={(event) => setSelectedCity(event.target.value)}
-                      className="h-11 w-full appearance-none rounded-xl border border-gray-200 bg-white px-3 pr-10 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                      className={`${publicFieldClass} h-11 appearance-none pr-10`}
                     >
                       <option value="">{t(dict, "filters.city.all")}</option>
                       {cityOptions.map((value) => (
@@ -584,22 +601,29 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                     <svg
                       viewBox="0 0 20 20"
                       aria-hidden
-                      className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500"
+                      className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-freuly-text-muted"
                     >
-                      <path d="M5.5 7.5L10 12l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                      <path
+                        d="M5.5 7.5L10 12l4.5-4.5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </div>
                 </label>
 
-                <label className="text-sm md:flex-none">
-                  <span className="mb-2 block text-xs font-medium text-gray-600 md:sr-only">
+                <label className="text-freuly-body-sm md:flex-none">
+                  <span className="mb-freuly-2 block text-freuly-label text-freuly-text-muted md:sr-only">
                     {t(dict, "filters.sort.label")}
                   </span>
                   <div className="relative md:w-56">
                     <select
                       value={sort}
                       onChange={(event) => setSort(event.target.value as SortKey)}
-                      className="h-11 w-full appearance-none rounded-xl border border-gray-200 bg-white px-3 pr-10 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                      className={`${publicFieldClass} h-11 appearance-none pr-10`}
                     >
                       <option value="best_match">{t(dict, "filters.sort.best_match")}</option>
                       <option value="newest">{t(dict, "filters.sort.newest")}</option>
@@ -610,42 +634,47 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                     <svg
                       viewBox="0 0 20 20"
                       aria-hidden
-                      className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500"
+                      className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-freuly-text-muted"
                     >
-                      <path d="M5.5 7.5L10 12l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                      <path
+                        d="M5.5 7.5L10 12l4.5-4.5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </div>
                 </label>
               </div>
+            </CardContent>
+          </Card>
+
+          {loadError ? <Alert variant="error">{loadError}</Alert> : null}
+
+          {specialists.length === 0 && loadingSpecialists ? (
+            <div className="py-freuly-10 text-center text-freuly-body text-freuly-text-muted">
+              {t(dict, "category.loadingSpecialists", { defaultValue: "Loading specialists..." })}
             </div>
+          ) : null}
 
-            {loadError ? (
-              <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                {loadError}
-              </div>
-            ) : null}
+          <div className="grid [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))] gap-freuly-6">
+            {specialists.map((specialist) => (
+              <SpecialistPreviewCard
+                key={specialist.id}
+                specialist={specialist}
+                lang={lang}
+                dict={dict}
+                categoryLabel={categoryLabel}
+              />
+            ))}
+          </div>
 
-            {specialists.length === 0 && loadingSpecialists ? (
-              <div className="py-10 text-center text-gray-500">
-                {t(dict, "category.loadingSpecialists", { defaultValue: "Loading specialists..." })}
-              </div>
-            ) : null}
-
-            <div className="grid [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))] gap-6">
-              {specialists.map((specialist) => (
-                <SpecialistPreviewCard
-                  key={specialist.id}
-                  specialist={specialist}
-                  lang={lang}
-                  dict={dict}
-                  categoryLabel={categoryLabel}
-                />
-              ))}
-            </div>
-
-            {!loadingSpecialists && specialists.length === 0 ? (
-              <div className="rounded-md border border-gray-200 bg-white px-6 py-10 text-center text-gray-600">
-                {t(dict, "category.empty.subtitle")}
+          {!loadingSpecialists && specialists.length === 0 ? (
+            <Card padding="lg" className="text-center shadow-none">
+              <CardContent>
+                <p className="text-freuly-body text-freuly-text-secondary">{t(dict, "category.empty.subtitle")}</p>
                 <ServiceRequestCtaBlock
                   lang={lang}
                   dict={dict}
@@ -654,35 +683,36 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                   categoryText={categoryLabel}
                   sourcePath={`${langPrefix}/category/${slug}`}
                 />
-              </div>
-            ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
 
-            {hasMore ? (
-              <div className="pt-2 text-center">
-                <button
-                  type="button"
-                  onClick={() => loadSpecialists(false)}
-                  disabled={loadingSpecialists}
-                  className="inline-flex items-center justify-center rounded-lg border border-blue-200 bg-white px-5 py-2.5 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {loadingSpecialists
-                    ? t(dict, "category.loadingMore", { defaultValue: "Loading..." })
-                    : t(dict, "category.loadMore", { defaultValue: "Show more" })}
-                </button>
-              </div>
-            ) : null}
+          {hasMore ? (
+            <div className="pt-freuly-2 text-center">
+              <Button
+                type="button"
+                variant="outlinePrimary"
+                onClick={() => loadSpecialists(false)}
+                disabled={loadingSpecialists}
+              >
+                {loadingSpecialists
+                  ? t(dict, "category.loadingMore", { defaultValue: "Loading..." })
+                  : t(dict, "category.loadMore", { defaultValue: "Show more" })}
+              </Button>
+            </div>
+          ) : null}
 
-            {!loadingSpecialists && specialists.length > 0 ? (
-              <ServiceRequestCtaBlock
-                lang={lang}
-                dict={dict}
-                variant="fallback"
-                categoryId={category?.id}
-                categoryText={categoryLabel}
-                sourcePath={`${langPrefix}/category/${slug}`}
-              />
-            ) : null}
-          </div>
+          {!loadingSpecialists && specialists.length > 0 ? (
+            <ServiceRequestCtaBlock
+              lang={lang}
+              dict={dict}
+              variant="fallback"
+              categoryId={category?.id}
+              categoryText={categoryLabel}
+              sourcePath={`${langPrefix}/category/${slug}`}
+            />
+          ) : null}
+        </div>
       </div>
     </div>
   );
