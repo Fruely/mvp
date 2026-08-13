@@ -149,24 +149,24 @@ export default function ServiceRequestForm({
 
   if (successPublicId) {
     return (
-      <div className="max-w-xl mx-auto bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-3">
+      <div className="max-w-xl mx-auto bg-freuly-surface rounded-freuly-card border border-freuly-border-subtle shadow-sm p-8 text-center">
+        <h2 className="text-2xl font-bold text-freuly-text-primary mb-3">
           {t(dict, "serviceRequest.success.title")}
         </h2>
-        <p className="text-gray-600 mb-6">{t(dict, "serviceRequest.success.body")}</p>
-        <p className="text-sm font-medium text-gray-800 mb-8">
+        <p className="text-freuly-text-secondary mb-6">{t(dict, "serviceRequest.success.body")}</p>
+        <p className="text-sm font-medium text-freuly-text-primary mb-8">
           {t(dict, "serviceRequest.success.publicIdLabel")}: {successPublicId}
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <Link
             href={`/${lang}/service-search`}
-            className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
+            className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-freuly-md hover:bg-gray-800 transition"
           >
             {t(dict, "serviceRequest.success.backToSearch")}
           </Link>
           <Link
             href={`/${lang}`}
-            className="inline-block px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
+            className="inline-block px-5 py-2.5 border border-freuly-border-default text-freuly-text-secondary text-sm font-medium rounded-freuly-md hover:bg-freuly-border-subtle transition"
           >
             {t(dict, "serviceRequest.success.backHome")}
           </Link>
@@ -176,10 +176,10 @@ export default function ServiceRequestForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-xl mx-auto bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8 space-y-5">
+    <form onSubmit={handleSubmit} className="max-w-xl mx-auto bg-freuly-surface rounded-freuly-card border border-freuly-border-subtle shadow-sm p-6 sm:p-8 space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">{t(dict, "serviceRequest.title")}</h1>
-        <p className="text-gray-600 mt-2 text-sm">{t(dict, "serviceRequest.subtitle")}</p>
+        <h1 className="text-2xl font-bold text-freuly-text-primary">{t(dict, "serviceRequest.title")}</h1>
+        <p className="text-freuly-text-secondary mt-2 text-sm">{t(dict, "serviceRequest.subtitle")}</p>
       </div>
 
       <input
@@ -194,45 +194,45 @@ export default function ServiceRequestForm({
       />
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-freuly-text-secondary mb-1">
           {t(dict, "serviceRequest.fields.name")}
         </label>
         <input
           required
           value={client_name}
           onChange={(e) => setClientName(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          className="w-full rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm"
         />
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-freuly-text-secondary mb-1">
             {t(dict, "serviceRequest.fields.email")}
           </label>
           <input
             type="email"
             value={client_email}
             onChange={(e) => setClientEmail(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            className="w-full rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-freuly-text-secondary mb-1">
             {t(dict, "serviceRequest.fields.phone")}
           </label>
           <input
             type="tel"
             value={client_phone}
             onChange={(e) => setClientPhone(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            className="w-full rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm"
           />
         </div>
       </div>
-      <p className="text-xs text-gray-500">{t(dict, "serviceRequest.fields.contactHint")}</p>
+      <p className="text-xs text-freuly-text-muted">{t(dict, "serviceRequest.fields.contactHint")}</p>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-freuly-text-secondary mb-1">
           {t(dict, "serviceRequest.fields.description")}
         </label>
         <textarea
@@ -240,32 +240,32 @@ export default function ServiceRequestForm({
           rows={5}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          className="w-full rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm"
         />
       </div>
 
       {initialCategoryText ? (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-freuly-text-secondary mb-1">
             {t(dict, "serviceRequest.fields.category")}
           </label>
           <input
             value={category_text}
             onChange={(e) => setCategoryText(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-gray-50"
+            className="w-full rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm bg-freuly-border-subtle"
           />
         </div>
       ) : null}
 
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-freuly-text-secondary mb-1">
             {t(dict, "serviceRequest.fields.language")}
           </label>
           <select
             value={preferred_language}
             onChange={(e) => setPreferredLanguage(e.target.value as Lang)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            className="w-full rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm"
           >
             <option value="ru">RU</option>
             <option value="ua">UA</option>
@@ -273,13 +273,13 @@ export default function ServiceRequestForm({
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-freuly-text-secondary mb-1">
             {t(dict, "serviceRequest.fields.workFormat")}
           </label>
           <select
             value={work_format}
             onChange={(e) => setWorkFormat(e.target.value as (typeof WORK_FORMATS)[number])}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            className="w-full rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm"
           >
             {WORK_FORMATS.map((wf) => (
               <option key={wf} value={wf}>
@@ -293,27 +293,27 @@ export default function ServiceRequestForm({
       {needsLocation ? (
         <div className="grid sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-freuly-text-secondary mb-1">
               {t(dict, "serviceRequest.fields.city")}
             </label>
             <input
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-freuly-text-secondary mb-1">
               {t(dict, "serviceRequest.fields.postalCode")}
             </label>
             <input
               value={postal_code}
               onChange={(e) => setPostalCode(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-freuly-text-secondary mb-1">
               {t(dict, "serviceRequest.fields.radius")}
             </label>
             <input
@@ -321,7 +321,7 @@ export default function ServiceRequestForm({
               min={0}
               value={radius_km}
               onChange={(e) => setRadiusKm(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm"
             />
           </div>
         </div>
@@ -329,13 +329,13 @@ export default function ServiceRequestForm({
 
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-freuly-text-secondary mb-1">
             {t(dict, "serviceRequest.fields.urgency")}
           </label>
           <select
             value={urgency}
             onChange={(e) => setUrgency(e.target.value as (typeof URGENCY_VALUES)[number])}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            className="w-full rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm"
           >
             {urgencyOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -346,14 +346,14 @@ export default function ServiceRequestForm({
         </div>
         {needsDate ? (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-freuly-text-secondary mb-1">
               {t(dict, "serviceRequest.fields.desiredDate")}
             </label>
             <input
               type="date"
               value={desired_date}
               onChange={(e) => setDesiredDate(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm"
             />
           </div>
         ) : null}
@@ -361,9 +361,9 @@ export default function ServiceRequestForm({
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
-      <p className="text-xs text-gray-500 leading-relaxed">
+      <p className="text-xs text-freuly-text-muted leading-relaxed">
         {t(dict, "serviceRequest.privacyNotice.before")}
-        <Link href={privacyPath(lang)} className="underline hover:text-gray-700">
+        <Link href={privacyPath(lang)} className="underline hover:text-freuly-text-secondary">
           {t(dict, "serviceRequest.privacyNotice.link")}
         </Link>
         {t(dict, "serviceRequest.privacyNotice.after")}
@@ -372,7 +372,7 @@ export default function ServiceRequestForm({
       <button
         type="submit"
         disabled={loading}
-        className="w-full sm:w-auto px-6 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-60 transition"
+        className="w-full sm:w-auto px-6 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-freuly-md hover:bg-gray-800 disabled:opacity-60 transition"
       >
         {loading ? t(dict, "serviceRequest.submitting") : t(dict, "serviceRequest.submit")}
       </button>

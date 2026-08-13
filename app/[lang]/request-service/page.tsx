@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
+import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
+import { publicPageContainerClass, publicPageStackClass } from "@/components/public/publicStyles";
 import ServiceRequestForm from "@/components/serviceRequests/ServiceRequestForm";
+import { getDictionary, isSupportedLang, t, type Lang } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +29,7 @@ export async function generateMetadata({
   };
 }
 
-export default function RequestServicePage({
+export default async function RequestServicePage({
   params,
   searchParams,
 }: {
@@ -45,14 +47,23 @@ export default function RequestServicePage({
   const source_path =
     typeof searchParams.source_path === "string" ? searchParams.source_path : null;
 
+  const dict = await getDictionary(lang);
+
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
-      <ServiceRequestForm
-        lang={lang}
-        initialCategoryId={category_id}
-        initialCategoryText={category_text}
-        sourcePath={source_path}
-      />
+    <div className={`${publicPageStackClass} py-freuly-10`}>
+      <div className={publicPageContainerClass}>
+        <DashboardPageHeader
+          title={t(dict, "serviceRequest.title")}
+          subtitle={t(dict, "serviceRequest.subtitle")}
+          className="mb-freuly-8 max-w-3xl"
+        />
+        <ServiceRequestForm
+          lang={lang}
+          initialCategoryId={category_id}
+          initialCategoryText={category_text}
+          sourcePath={source_path}
+        />
+      </div>
     </div>
   );
 }

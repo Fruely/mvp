@@ -121,7 +121,7 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
         value={client_name}
         onChange={(e) => setName(e.target.value)}
         required
-        className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+        className="h-11 rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-3 text-sm outline-none transition focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
       />
 
       <input
@@ -130,9 +130,9 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
         value={client_email}
         onChange={(e) => setEmail(e.target.value)}
         required
-        className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+        className="h-11 rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-3 text-sm outline-none transition focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
       />
-      <p className="-mt-1 text-xs text-gray-400">{t(dict, "lead.emailHint")}</p>
+      <p className="-mt-1 text-xs text-freuly-text-muted">{t(dict, "lead.emailHint")}</p>
 
       <input
         type="tel"
@@ -140,16 +140,16 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
         value={client_phone}
         onChange={(e) => setPhone(e.target.value)}
         required
-        className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+        className="h-11 rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-3 text-sm outline-none transition focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
       />
-      <p className="-mt-1 text-xs text-gray-400">{t(dict, "lead.phoneHint")}</p>
+      <p className="-mt-1 text-xs text-freuly-text-muted">{t(dict, "lead.phoneHint")}</p>
 
       <textarea
         placeholder={t(dict, "lead.message")}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         rows={4}
-        className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+        className="rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-3 py-2.5 text-sm outline-none transition focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
       />
 
       <input
@@ -165,13 +165,13 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
       <button
         disabled={loading}
         type="submit"
-        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 text-sm font-semibold text-white shadow-md transition hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
+        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-freuly-md bg-gradient-to-r from-freuly-primary to-freuly-primary-hover px-4 text-sm font-semibold text-white shadow-md transition hover:from-freuly-primary-hover hover:to-freuly-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
       >
         {loading ? t(dict, "lead.sending") : t(dict, "lead.submit")}
       </button>
 
-      {isSuccess && <div className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{statusMessage}</div>}
-      {isError && <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{statusMessage}</div>}
+      {isSuccess && <div className="rounded-lg bg-freuly-success-light px-3 py-2 text-sm text-freuly-success">{statusMessage}</div>}
+      {isError && <div className="rounded-lg bg-freuly-error-light px-3 py-2 text-sm text-freuly-error">{statusMessage}</div>}
     </form>
   );
 }

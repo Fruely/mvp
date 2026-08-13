@@ -35,15 +35,15 @@ export default function ServiceRequestCtaBlock({
     <div
       className={
         variant === "empty"
-          ? "mt-8 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-6 py-5 text-center"
-          : "mt-10 rounded-xl border border-gray-100 bg-white px-6 py-5 text-center shadow-sm"
+          ? "mt-8 rounded-xl border border-dashed border-freuly-border-default bg-freuly-border-subtle px-6 py-5 text-center"
+          : "mt-10 rounded-xl border border-freuly-border-subtle bg-white px-6 py-5 text-center shadow-sm"
       }
     >
-      <p className="text-sm font-medium text-gray-800">{t(dict, titleKey)}</p>
-      <p className="text-sm text-gray-600 mt-1 mb-4">{t(dict, subtitleKey)}</p>
+      <p className="text-sm font-medium text-freuly-text-primary">{t(dict, titleKey)}</p>
+      <p className="text-sm text-freuly-text-secondary mt-1 mb-4">{t(dict, subtitleKey)}</p>
       <Link
         href={href}
-        className="inline-block px-4 py-2 border border-gray-300 text-gray-800 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
+        className="inline-block px-4 py-2 border border-gray-300 text-freuly-text-primary text-sm font-medium rounded-lg hover:bg-freuly-border-subtle transition"
       >
         {t(dict, "serviceRequest.cta.button")}
       </Link>
