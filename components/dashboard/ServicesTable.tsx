@@ -3,6 +3,13 @@
 import { Fragment, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import ServiceForm from "@/components/dashboard/ServiceForm";
+import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
+import {
+  dashboardEmptyStateClass,
+  dashboardTableHeadClass,
+  dashboardTableRowClass,
+} from "@/components/dashboard/dashboardStyles";
+import { Alert, Badge, Button, Card, type BadgeVariant } from "@/components/ui";
 import { t, type Dictionary } from "@/lib/i18n";
 import { hasValidServiceForPublish } from "@/lib/dashboard/publicationValidator";
 import type { SpecialistService, PricingType } from "@/lib/dashboard/services";
@@ -13,10 +20,10 @@ import {
   updateService,
 } from "@/lib/dashboard/services";
 
-function pricingBadgeClass(type: PricingType): string {
-  if (type === "fixed") return "bg-blue-50 text-blue-700";
-  if (type === "range") return "bg-violet-50 text-violet-700";
-  return "bg-emerald-50 text-emerald-700";
+function pricingBadgeVariant(type: PricingType): BadgeVariant {
+  if (type === "fixed") return "info";
+  if (type === "range") return "warning";
+  return "success";
 }
 
 function formatPrice(service: SpecialistService): string {
@@ -239,46 +246,36 @@ export default function ServicesTable({
   }
 
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900">
-            {t(dict, "dashboard.servicesSection.title")}
-          </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            {t(dict, "dashboard.servicesEditor.subtitle")}
-          </p>
-        </div>
-        {!isOnboardingMode ? (
-          <button
-            type="button"
-            onClick={() => {
-              setShowCreate((prev) => !prev);
-              setEditingId(null);
-            }}
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
-          >
-            + {t(dict, "dashboard.servicesEditor.add")}
-          </button>
-        ) : null}
-      </div>
+    <Card padding="lg" className="shadow-none">
+      <DashboardPageHeader
+        title={t(dict, "dashboard.servicesSection.title")}
+        subtitle={t(dict, "dashboard.servicesEditor.subtitle")}
+        actions={
+          !isOnboardingMode ? (
+            <Button
+              type="button"
+              onClick={() => {
+                setShowCreate((prev) => !prev);
+                setEditingId(null);
+              }}
+            >
+              + {t(dict, "dashboard.servicesEditor.add")}
+            </Button>
+          ) : null
+        }
+        className="mb-freuly-5"
+      />
 
       {isOnboardingMode && hasServicesOutsideSelectedCategory ? (
-        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-relaxed text-amber-900">
+        <Alert variant="warning" className="mb-freuly-4">
           {categoryMismatchMessage(lang)}
-        </div>
+        </Alert>
       ) : null}
 
       {toast ? (
-        <div
-          className={`mb-4 rounded-lg px-3 py-2 text-sm ${
-            toast.kind === "success"
-              ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
-              : "border border-red-200 bg-red-50 text-red-700"
-          }`}
-        >
+        <Alert variant={toast.kind === "success" ? "success" : "error"} className="mb-freuly-4">
           {toast.text}
-        </div>
+        </Alert>
       ) : null}
 
       {showCreate ? (
@@ -296,19 +293,17 @@ export default function ServicesTable({
       ) : null}
 
       {services.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
-          <p className="font-medium text-gray-800">
+        <div className={dashboardEmptyStateClass}>
+          <p className="font-medium text-freuly-text-primary">
             {t(dict, "dashboard.servicesEditor.emptyTitle")}
           </p>
-          <p className="mt-1">
-            {t(dict, "dashboard.servicesEditor.emptyBody")}
-          </p>
+          <p className="mt-1">{t(dict, "dashboard.servicesEditor.emptyBody")}</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
+          <table className="min-w-full text-freuly-body-sm">
             <thead>
-              <tr className="border-b border-gray-100 text-left text-xs uppercase tracking-wide text-gray-500">
+              <tr className={dashboardTableHeadClass}>
                 <th className="px-2 py-2 font-medium">{t(dict, "dashboard.servicesEditor.field.title")}</th>
                 <th className="px-2 py-2 font-medium">{t(dict, "dashboard.servicesEditor.field.pricingType")}</th>
                 <th className="px-2 py-2 font-medium">{t(dict, "dashboard.servicesEditor.field.price")}</th>
@@ -329,53 +324,51 @@ export default function ServicesTable({
                     service.price_from <= 0);
                 return (
                   <Fragment key={service.id}>
-                    <tr className="border-b border-gray-50 last:border-b-0">
+                    <tr className={dashboardTableRowClass}>
                       <td className="px-2 py-3">
-                        <div className="font-medium text-gray-900">{service.title}</div>
+                        <div className="font-medium text-freuly-text-primary">{service.title}</div>
                         {service.description ? (
-                          <div className="mt-1 max-w-[420px] text-xs text-gray-500">{service.description}</div>
+                          <div className="mt-1 max-w-[420px] text-xs text-freuly-text-muted">{service.description}</div>
                         ) : null}
                         {!matchesCurrentCategory ? (
-                          <div className="mt-1 max-w-[360px] text-xs font-medium text-amber-700">
+                          <div className="mt-1 max-w-[360px] text-xs font-medium text-freuly-warning">
                             {mismatchHint}
                           </div>
                         ) : null}
                       </td>
                       <td className="px-2 py-3">
-                        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${pricingBadgeClass(service.pricing_type)}`}>
+                        <Badge variant={pricingBadgeVariant(service.pricing_type)}>
                           {pricingTypeLabel(service.pricing_type)}
-                        </span>
+                        </Badge>
                       </td>
                       <td className="px-2 py-3">
-                        <div className="text-gray-800">{formatPrice(service)}</div>
+                        <div className="text-freuly-text-primary">{formatPrice(service)}</div>
                         {service.price_comment ? (
                           <div className="mt-1 max-w-[280px] text-xs text-gray-500">
                             {service.price_comment}
                           </div>
                         ) : null}
                         {shouldShowPublishPriceHint ? (
-                          <div className="mt-1 max-w-[280px] text-xs text-amber-700">
+                          <div className="mt-1 max-w-[280px] text-xs text-freuly-warning">
                             {t(dict, "dashboard.servicesEditor.notPublishValidWithoutPrice")}
                           </div>
                         ) : null}
                       </td>
-                      <td className="px-2 py-3 text-gray-600">{service.duration_minutes ? `${service.duration_minutes}` : "—"}</td>
+                      <td className="px-2 py-3 text-freuly-text-secondary">
+                        {service.duration_minutes ? `${service.duration_minutes}` : "—"}
+                      </td>
                       <td className="px-2 py-3">
                         <div className="flex flex-col items-start gap-2">
-                          <span
-                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                              service.is_active ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-700"
-                            }`}
-                          >
+                          <Badge variant={service.is_active ? "success" : "neutral"}>
                             {service.is_active
                               ? t(dict, "dashboard.servicesEditor.active")
                               : t(dict, "dashboard.servicesEditor.inactive")}
-                          </span>
+                          </Badge>
                           <button
                             type="button"
                             disabled={busy}
                             onClick={() => void handleToggle(service)}
-                            className="text-xs font-medium text-blue-600 transition hover:text-blue-700 disabled:opacity-60"
+                            className="text-xs font-medium text-freuly-primary transition hover:text-freuly-primary-hover disabled:opacity-60"
                           >
                             {service.is_active
                               ? t(dict, "dashboard.servicesEditor.deactivate")
@@ -385,29 +378,31 @@ export default function ServicesTable({
                       </td>
                       <td className="px-2 py-3">
                         <div className="flex flex-wrap gap-2">
-                          <button
+                          <Button
                             type="button"
+                            variant="secondary"
+                            className="min-h-8 h-8 px-3 py-1 text-xs"
                             onClick={() => {
                               setEditingId((prev) => (prev === service.id ? null : service.id));
                               setShowCreate(false);
                             }}
-                            className="inline-flex h-8 items-center rounded-md border border-gray-300 px-3 text-xs font-medium text-gray-700 transition hover:bg-gray-50"
                           >
                             {t(dict, "dashboard.servicesEditor.edit")}
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             type="button"
+                            variant="destructive"
+                            className="min-h-8 h-8 px-3 py-1 text-xs"
                             disabled={busy}
                             onClick={() => void handleDelete(service.id)}
-                            className="inline-flex h-8 items-center rounded-md border border-red-200 px-3 text-xs font-medium text-red-700 transition hover:bg-red-50 disabled:opacity-60"
                           >
                             {t(dict, "dashboard.servicesEditor.delete")}
-                          </button>
+                          </Button>
                         </div>
                       </td>
                     </tr>
                     {isEditing ? (
-                      <tr className="border-b border-gray-50">
+                      <tr className="border-b border-freuly-border-subtle">
                         <td colSpan={6} className="px-2 pb-4">
                           <ServiceForm
                             dict={dict}
@@ -438,6 +433,6 @@ export default function ServicesTable({
           </table>
         </div>
       )}
-    </section>
+    </Card>
   );
 }

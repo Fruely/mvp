@@ -2,17 +2,26 @@
 
 import { useMemo, useState } from "react";
 import type { DashboardLead } from "@/lib/dashboard/getDashboardData";
+import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
+import {
+  dashboardEmptyStateClass,
+  dashboardFieldClass,
+  dashboardLinkSecondaryClass,
+  dashboardTableHeadClass,
+  dashboardTableRowClass,
+} from "@/components/dashboard/dashboardStyles";
+import { Alert, Badge, Button, Card, Select, type BadgeVariant } from "@/components/ui";
 import { t, type Dictionary, type Lang } from "@/lib/i18n";
 
 const ALLOWED_STATUSES = ["new", "accepted", "contacted", "closed"] as const;
 type LeadStatus = (typeof ALLOWED_STATUSES)[number];
 
-function statusStyles(status: string | null): string {
-  if (status === "new") return "bg-blue-50 text-blue-700";
-  if (status === "accepted") return "bg-amber-50 text-amber-700";
-  if (status === "contacted") return "bg-violet-50 text-violet-700";
-  if (status === "closed") return "bg-emerald-50 text-emerald-700";
-  return "bg-gray-100 text-gray-700";
+function leadStatusBadgeVariant(status: string | null): BadgeVariant {
+  if (status === "new") return "info";
+  if (status === "accepted") return "warning";
+  if (status === "contacted") return "neutral";
+  if (status === "closed") return "success";
+  return "neutral";
 }
 
 function localeTag(lang: Lang): string {
@@ -140,54 +149,45 @@ export default function LeadsTable({
   }
 
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900">{t(dict, "dashboard.leads.title")}</h1>
-          <p className="mt-1 text-sm text-gray-500">{t(dict, "dashboard.leads.subtitle")}</p>
-        </div>
-        <label className="text-sm">
-          <span className="mb-1 block text-xs font-medium text-gray-600">
-            {t(dict, "dashboard.leads.filterLabel")}
-          </span>
-          <select
+    <Card padding="lg" className="shadow-none">
+      <DashboardPageHeader
+        title={t(dict, "dashboard.leads.title")}
+        subtitle={t(dict, "dashboard.leads.subtitle")}
+        actions={
+          <Select
+            id="leads-status-filter"
+            label={t(dict, "dashboard.leads.filterLabel")}
             value={statusFilter}
             onChange={(event) => {
               setStatusFilter(event.target.value as LeadStatus | "all");
               setVisibleCount(20);
             }}
-            className="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">{t(dict, "dashboard.leads.filterAll")}</option>
-            <option value="new">new</option>
-            <option value="accepted">accepted</option>
-            <option value="contacted">contacted</option>
-            <option value="closed">closed</option>
-          </select>
-        </label>
-      </div>
+            options={[
+              { value: "all", label: t(dict, "dashboard.leads.filterAll") },
+              { value: "new", label: "new" },
+              { value: "accepted", label: "accepted" },
+              { value: "contacted", label: "contacted" },
+              { value: "closed", label: "closed" },
+            ]}
+            containerClassName="min-w-[10rem]"
+          />
+        }
+        className="mb-freuly-5"
+      />
 
       {toast ? (
-        <div
-          className={`mb-4 rounded-lg px-3 py-2 text-sm ${
-            toast.kind === "success"
-              ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
-              : "border border-red-200 bg-red-50 text-red-700"
-          }`}
-        >
+        <Alert variant={toast.kind === "success" ? "success" : "error"} className="mb-freuly-4">
           {toast.text}
-        </div>
+        </Alert>
       ) : null}
 
       {visibleLeads.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
-          {t(dict, "dashboard.leads.empty")}
-        </div>
+        <div className={dashboardEmptyStateClass}>{t(dict, "dashboard.leads.empty")}</div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
+          <table className="min-w-full text-freuly-body-sm">
             <thead>
-              <tr className="border-b border-gray-100 text-left text-xs uppercase tracking-wide text-gray-500">
+              <tr className={dashboardTableHeadClass}>
                 <th className="px-2 py-2 font-medium">{t(dict, "dashboard.leads.colLead")}</th>
                 <th className="px-2 py-2 font-medium">{t(dict, "dashboard.leads.colDate")}</th>
                 <th className="px-2 py-2 font-medium">{t(dict, "dashboard.leads.colPreview")}</th>
@@ -206,56 +206,52 @@ export default function LeadsTable({
                 const sourceLabel = lead.source?.trim() || null;
 
                 return (
-                  <tr key={lead.id} className="border-b border-gray-50 last:border-b-0 align-top">
-                    <td className="px-2 py-3 text-gray-800">
+                  <tr key={lead.id} className={dashboardTableRowClass}>
+                    <td className="px-2 py-3 text-freuly-text-primary">
                       <div className="font-medium">
                         {lead.contacts_unlocked
                           ? lead.client_name?.trim() || t(dict, "dashboard.leads.newLeadLabel")
                           : t(dict, "dashboard.leads.newLeadLabel")}
                       </div>
-                      <div className="text-xs text-gray-500">{lead.public_id}</div>
+                      <div className="text-xs text-freuly-text-muted">{lead.public_id}</div>
                       {sourceLabel ? (
-                        <div className="mt-1 text-xs text-gray-400">
+                        <div className="mt-1 text-xs text-freuly-text-muted">
                           {t(dict, "dashboard.leads.source")}: {sourceLabel}
                         </div>
                       ) : null}
                     </td>
-                    <td className="px-2 py-3 whitespace-nowrap text-gray-600">{dateLabel}</td>
-                    <td className="max-w-[360px] px-2 py-3 text-gray-700">
+                    <td className="whitespace-nowrap px-2 py-3 text-freuly-text-secondary">{dateLabel}</td>
+                    <td className="max-w-[360px] px-2 py-3 text-freuly-text-secondary">
                       {lead.contacts_unlocked
                         ? lead.message?.trim() || "—"
                         : lead.message_preview?.trim() || "—"}
                     </td>
-                    <td className="px-2 py-3 text-gray-700">
+                    <td className="px-2 py-3 text-freuly-text-secondary">
                       {lead.contacts_unlocked ? (
-                        <div className="space-y-1 text-sm">
+                        <div className="space-y-1 text-freuly-body-sm">
                           {lead.client_phone?.trim() ? <div>{lead.client_phone}</div> : null}
                           {lead.client_email?.trim() ? <div>{lead.client_email}</div> : null}
                           {!lead.client_phone?.trim() && !lead.client_email?.trim() ? "—" : null}
                         </div>
                       ) : (
                         <div className="space-y-2">
-                          <p className="text-xs leading-relaxed text-gray-500">
+                          <p className="text-xs leading-relaxed text-freuly-text-muted">
                             {t(dict, "dashboard.leads.contactsProtectedHint")}
                           </p>
-                          <button
+                          <Button
                             type="button"
+                            className="min-h-9 h-9 px-3 text-xs"
                             disabled={Boolean(updatingById[lead.id])}
                             onClick={() => void unlockContacts(lead.id)}
-                            className="inline-flex h-9 items-center rounded-md bg-indigo-600 px-3 text-xs font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
                           >
                             {t(dict, "dashboard.leads.unlockCta")}
-                          </button>
+                          </Button>
                         </div>
                       )}
                     </td>
                     <td className="px-2 py-3">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <span
-                          className={`inline-flex w-fit rounded-full px-2.5 py-1 text-xs font-medium ${statusStyles(currentStatus)}`}
-                        >
-                          {currentStatus}
-                        </span>
+                        <Badge variant={leadStatusBadgeVariant(currentStatus)}>{currentStatus}</Badge>
                         {lead.contacts_unlocked ? (
                           <select
                             value={currentStatus}
@@ -265,7 +261,7 @@ export default function LeadsTable({
                               if (!ALLOWED_STATUSES.includes(nextStatus)) return;
                               void changeLeadStatus(lead.id, nextStatus);
                             }}
-                            className="h-8 rounded-md border border-gray-300 bg-white px-2 text-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
+                            className={`${dashboardFieldClass} !min-h-8 h-8 !py-1 text-xs disabled:opacity-60`}
                           >
                             <option value="new">new</option>
                             <option value="accepted">accepted</option>
@@ -284,16 +280,12 @@ export default function LeadsTable({
       )}
 
       {hasMore ? (
-        <div className="mt-4 text-center">
-          <button
-            type="button"
-            onClick={() => setVisibleCount((prev) => prev + 20)}
-            className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-          >
+        <div className="mt-freuly-4 text-center">
+          <button type="button" onClick={() => setVisibleCount((prev) => prev + 20)} className={dashboardLinkSecondaryClass}>
             {t(dict, "dashboard.leads.loadMore")}
           </button>
         </div>
       ) : null}
-    </section>
+    </Card>
   );
 }

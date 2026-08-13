@@ -2,13 +2,14 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import LeadsTable from "@/components/dashboard/LeadsTable";
+import { Alert } from "@/components/ui";
+import { dashboardPageStackClass } from "@/components/dashboard/dashboardStyles";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
 import {
   getSubscriptionDisplayState,
   leadsBannerSeverity,
   leadsSubscriptionBannerText,
-  subscriptionNoticePanelClass,
 } from "@/lib/specialists/subscriptionDisplay";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import {
@@ -51,14 +52,11 @@ export default async function SpecialistDashboardLeadsPage({
   const leadsBanner = leadsSubscriptionBannerText(dict, display);
 
   return (
-    <div className="space-y-4">
+    <div className={dashboardPageStackClass}>
       {leadsBanner ? (
-        <div
-          className={`${subscriptionNoticePanelClass(leadsBannerSeverity(display))} text-sm leading-relaxed`}
-          role="status"
-        >
+        <Alert variant={leadsBannerSeverity(display) === "danger" ? "error" : leadsBannerSeverity(display) === "warning" ? "warning" : "info"}>
           {leadsBanner}
-        </div>
+        </Alert>
       ) : null}
       <LeadsTable initialLeads={leads} lang={lang} dict={dict} />
     </div>

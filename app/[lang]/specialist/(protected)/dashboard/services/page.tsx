@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import ServicesTable from "@/components/dashboard/ServicesTable";
+import { Alert } from "@/components/ui";
 import { hasValidServiceForPublish } from "@/lib/dashboard/publicationValidator";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
@@ -86,18 +87,11 @@ export default async function SpecialistDashboardServicesPage({
   }
 
   return (
-    <>
+    <div className="space-y-freuly-8">
       {showOnboardingReturn ? (
-        <section className="mb-6 rounded-xl border border-blue-100 bg-blue-50/90 p-4 shadow-sm">
-          <div className="min-w-0">
-            <h2 className="text-sm font-semibold text-blue-950">
-              {t(dict, "dashboard.onboarding.servicesContextBanner.title")}
-            </h2>
-            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-blue-900/90">
-              {t(dict, "dashboard.onboarding.servicesContextBanner.body")}
-            </p>
-          </div>
-        </section>
+        <Alert variant="info" title={t(dict, "dashboard.onboarding.servicesContextBanner.title")}>
+          {t(dict, "dashboard.onboarding.servicesContextBanner.body")}
+        </Alert>
       ) : null}
       <ServicesTable
         initialServices={services}
@@ -108,6 +102,6 @@ export default async function SpecialistDashboardServicesPage({
         currentCategoryId={specialistCategoryId || null}
         hasServicesOutsideSelectedCategory={hasServicesOutsideSelectedCategory}
       />
-    </>
+    </div>
   );
 }
