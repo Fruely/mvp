@@ -11,6 +11,10 @@ import {
 import {
   publicChoiceButtonClass,
   publicFieldClass,
+  publicHomeSearchBarClass,
+  publicHomeSearchCtaClass,
+  publicHomeSearchInputClass,
+  publicHomeStepPanelClass,
   publicLinkPrimaryClass,
   publicWizardCardClass,
 } from "@/components/public/publicStyles";
@@ -262,7 +266,7 @@ function FlowCard({
   return (
     <section
       className={[
-        publicWizardCardClass,
+        compact ? publicHomeStepPanelClass : publicWizardCardClass,
         "text-left",
         centered ? "text-center" : "",
       ].join(" ")}
@@ -371,16 +375,26 @@ function TextField({
 function StepTitle({
   children,
   titleRef,
+  compact = false,
 }: {
   children: ReactNode;
   titleRef?: RefObject<HTMLHeadingElement | null>;
+  compact?: boolean;
 }) {
+  const titleClass = compact
+    ? "mb-4 text-xl font-semibold leading-[1.3] tracking-tight text-freuly-text-primary outline-none freuly-focus-ring"
+    : "mb-7 text-[1.65rem] font-bold leading-[1.2] tracking-tight text-freuly-text-primary outline-none sm:text-[2rem] freuly-focus-ring";
+
+  if (compact) {
+    return (
+      <h2 ref={titleRef} tabIndex={-1} className={titleClass}>
+        {children}
+      </h2>
+    );
+  }
+
   return (
-    <h1
-      ref={titleRef}
-      tabIndex={-1}
-      className="mb-7 text-[1.65rem] font-bold leading-[1.2] tracking-tight text-freuly-text-primary outline-none sm:text-[2rem] freuly-focus-ring"
-    >
+    <h1 ref={titleRef} tabIndex={-1} className={titleClass}>
       {children}
     </h1>
   );
@@ -535,14 +549,18 @@ export default function ServiceSearchFlow({
   }
 
   const rootClassName = isHomeVariant
-    ? ["w-full max-w-lg mx-auto text-left", className].filter(Boolean).join(" ")
+    ? ["w-full text-left", className].filter(Boolean).join(" ")
     : "flex min-h-[calc(100dvh-5rem)] items-center justify-center bg-freuly-page px-freuly-4 py-freuly-8 sm:py-freuly-12";
 
   const content = (
     <div
       key={step}
       className={
-        isHomeVariant ? "w-full animate-fadeIn" : "mx-auto w-full max-w-lg animate-fadeIn"
+        isHomeVariant
+          ? step === "service"
+            ? "w-full animate-fadeIn"
+            : "mx-auto w-full max-w-xl animate-fadeIn"
+          : "mx-auto w-full max-w-lg animate-fadeIn"
       }
     >
       {!isHomeVariant && step === "start" ? (
@@ -554,14 +572,59 @@ export default function ServiceSearchFlow({
         </FlowCard>
       ) : null}
 
-      {step === "service" ? (
-        <FlowCard progressStep={progressStep} compact={isHomeVariant}>
+      {step === "service" && isHomeVariant ? (
+        <form onSubmit={handleStepSubmit} className="w-full">
+          <div className={publicHomeSearchBarClass}>
+            <div className="flex min-w-0 flex-1 items-center gap-2.5 px-2 sm:px-0">
+              <svg
+                viewBox="0 0 16 16"
+                className="h-4 w-4 shrink-0 text-freuly-text-muted"
+                aria-hidden
+              >
+                <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M11 11l3 3" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              <label htmlFor="service-query" className="sr-only">
+                {text.serviceInputLabel}
+              </label>
+              <input
+                ref={serviceInputRef}
+                id="service-query"
+                value={service}
+                onChange={(event) => {
+                  setService(event.target.value);
+                  if (error) setError(null);
+                }}
+                placeholder={text.serviceInputPlaceholder}
+                autoComplete="off"
+                aria-invalid={Boolean(error)}
+                className={publicHomeSearchInputClass}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={!canAdvance || isSubmitting}
+              aria-disabled={!canAdvance || isSubmitting}
+              aria-busy={isSubmitting}
+              className={publicHomeSearchCtaClass}
+            >
+              {isSubmitting ? text.submittingCta : text.startCta}
+            </button>
+          </div>
+          {error ? (
+            <p className="mt-2 text-left text-sm font-medium text-freuly-error" role="alert">
+              {error}
+            </p>
+          ) : null}
+        </form>
+      ) : null}
+
+      {step === "service" && !isHomeVariant ? (
+        <FlowCard progressStep={progressStep}>
           {shouldShowBackButton(step, isHomeVariant) ? (
             <BackButton label={text.backCta} onClick={goBack} />
           ) : null}
-          <StepTitle titleRef={stepTitleRef}>
-            {isHomeVariant ? text.headline : text.serviceQuestion}
-          </StepTitle>
+          <StepTitle titleRef={stepTitleRef}>{text.serviceQuestion}</StepTitle>
 
           <form onSubmit={handleStepSubmit} className="space-y-1">
             <TextField
@@ -592,7 +655,9 @@ export default function ServiceSearchFlow({
           {shouldShowBackButton(step, isHomeVariant) ? (
             <BackButton label={text.backCta} onClick={goBack} />
           ) : null}
-          <StepTitle titleRef={stepTitleRef}>{text.languageQuestion}</StepTitle>
+          <StepTitle titleRef={stepTitleRef} compact={isHomeVariant}>
+            {text.languageQuestion}
+          </StepTitle>
 
           <form onSubmit={handleStepSubmit}>
             <div className="grid gap-3">
@@ -627,7 +692,9 @@ export default function ServiceSearchFlow({
           {shouldShowBackButton(step, isHomeVariant) ? (
             <BackButton label={text.backCta} onClick={goBack} />
           ) : null}
-          <StepTitle titleRef={stepTitleRef}>{text.formatQuestion}</StepTitle>
+          <StepTitle titleRef={stepTitleRef} compact={isHomeVariant}>
+            {text.formatQuestion}
+          </StepTitle>
 
           <form onSubmit={handleStepSubmit}>
             <div className="grid gap-3">
@@ -668,7 +735,9 @@ export default function ServiceSearchFlow({
           {shouldShowBackButton(step, isHomeVariant) ? (
             <BackButton label={text.backCta} onClick={goBack} />
           ) : null}
-          <StepTitle titleRef={stepTitleRef}>{text.locationQuestion}</StepTitle>
+          <StepTitle titleRef={stepTitleRef} compact={isHomeVariant}>
+            {text.locationQuestion}
+          </StepTitle>
 
           <form onSubmit={handleStepSubmit} className="space-y-1">
             <TextField
@@ -699,7 +768,9 @@ export default function ServiceSearchFlow({
           {shouldShowBackButton(step, isHomeVariant) ? (
             <BackButton label={text.backCta} onClick={goBack} />
           ) : null}
-          <StepTitle titleRef={stepTitleRef}>{text.radiusLabel}</StepTitle>
+          <StepTitle titleRef={stepTitleRef} compact={isHomeVariant}>
+            {text.radiusLabel}
+          </StepTitle>
 
           <form onSubmit={handleStepSubmit}>
             <fieldset>

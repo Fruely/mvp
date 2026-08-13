@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 import { getSpecialistUrl } from "@/lib/urls";
@@ -14,6 +13,11 @@ import ServiceSearchFlow, {
 } from "@/components/search-flow/ServiceSearchFlow";
 import FounderBadge from "@/components/specialist/FounderBadge";
 import InstallFreuly from "@/components/pwa/InstallFreuly";
+import {
+  publicCardClass,
+  publicLinkPrimaryClass,
+  publicPageContainerClass,
+} from "@/components/public/publicStyles";
 
 type MosaicImage = { url: string; alt?: string; category_id?: string };
 
@@ -109,47 +113,34 @@ type RecommendedSpecialist = {
   badges?: RecommendationBadge[];
 };
 
-const CATEGORY_ICON_HINTS = [
-  { id: "psychologists", icon: "🧠" },
-  { id: "masseurs", icon: "💆" },
-  { id: "tutors", icon: "📚" },
-];
-
-const FALLBACK_PLACEHOLDERS = [
-  { id: "placeholder-1", icon: "🧩" },
-  { id: "placeholder-2", icon: "✨" },
-  { id: "placeholder-3", icon: "🫶" },
-];
-
 const BOOSTED_CHILD_CATEGORY_SLUGS = ["it-support"] as const;
 
 const HERO_COPY: Record<
   Lang,
   {
-    titleLines: [string, string, string];
+    title: string;
     subtitle: string;
     popularLabel: string;
   }
 > = {
   ru: {
-    titleLines: ["Найдите специалиста", "на вашем языке", "в Германии"],
+    title: "Найдите специалиста на вашем языке в Германии",
     subtitle: "Рядом с вами и онлайн. Выберите того, с кем вам удобно.",
     popularLabel: "Популярные категории:",
   },
   ua: {
-    titleLines: ["Знайдіть спеціаліста", "вашою мовою", "в Німеччині"],
+    title: "Знайдіть спеціаліста вашою мовою в Німеччині",
     subtitle: "Поруч із вами та онлайн. Оберіть того, з ким вам зручно.",
     popularLabel: "Популярні категорії:",
   },
   de: {
-    titleLines: ["Finden Sie einen Spezialisten", "in Ihrer Sprache", "in\u00a0Deutschland"],
+    title: "Finden Sie einen Spezialisten in Ihrer Sprache in Deutschland",
     subtitle: "In Ihrer Nähe und online. Wählen Sie jemanden, mit dem Sie sich wohlfühlen.",
     popularLabel: "Beliebte Kategorien:",
   },
 };
 
 export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Dictionary; place?: string }) {
-  const router = useRouter();
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [categories, setCategories] = useState<CategoryStat[]>([]);
   const [popularCategories, setPopularCategories] = useState<PopularCategory[]>([]);
@@ -400,94 +391,98 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
     if (!data || data.length === 0) return null;
 
     return (
-      <div className="mt-10">
-        <div className="mb-4 md:mb-6 text-center">
-          <h2 className="text-2xl md:text-3xl font-semibold text-freuly-text-primary">{t(dict, "home.recommended.title")}</h2>
+      <section className="pt-12 pb-10 md:pt-14 md:pb-12">
+        <div className="mb-6 flex items-end justify-between gap-4 md:mb-8">
+          <h2 className="text-freuly-section-title text-freuly-text-primary">
+            {t(dict, "home.recommended.title")}
+          </h2>
         </div>
-        <div className="grid gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {data.map((specialist) => (
-            <Link
-              key={specialist.id}
-              href={getSpecialistUrl(lang, specialist)}
-              className="group flex h-full flex-col overflow-hidden rounded-freuly-md border bg-white shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-all duration-200 ease-out [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:scale-[1.02] [@media(hover:hover)]:hover:shadow-lg"
-            >
-              <div className="relative aspect-square w-full overflow-hidden bg-freuly-border-subtle">
-                {specialist.founder_badge ? (
-                  <div className="absolute left-3 top-3 z-10">
-                    <FounderBadge />
-                  </div>
-                ) : null}
-                {(specialist.badges?.includes("premium_placement") ||
-                  specialist.placement_group === "premium") ? (
-                  <div className="absolute right-3 top-3 z-10 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900 shadow-sm">
-                    Премиум-показ
-                  </div>
-                ) : null}
-                {specialist.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={specialist.avatar_url}
-                    alt={specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="h-full w-full bg-freuly-border-subtle" />
-                )}
-              </div>
-              <div className="p-4 flex flex-col gap-1">
-                <p className="font-semibold line-clamp-1 text-freuly-text-primary">
-                  {specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
-                </p>
-                <div className="flex items-center gap-1 text-sm">
-                  <span className="flex gap-0.5">
-                    {Array.from({ length: 5 }, (_, idx) => (
-                      <span key={idx} style={{ color: idx < Math.round(specialist.rating_avg ?? 0) ? "#f5b301" : "#d1d5db" }}>★</span>
-                    ))}
-                  </span>
-                  {specialist.reviews_count > 0 ? (
-                    <>
-                      <span className="font-medium text-freuly-text-primary">{specialist.rating_avg?.toFixed(1)}</span>
-                      <span className="text-freuly-text-secondary">({specialist.reviews_count})</span>
-                    </>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {data.map((specialist) => {
+            const categoryLabel =
+              getCategoryTitle(
+                {
+                  title: specialist.category_title,
+                  title_ru: specialist.category_title_ru,
+                  title_de: specialist.category_title_de,
+                  title_ua: specialist.category_title_ua,
+                },
+                toCategoryTitleLang(lang),
+              ) || t(dict, "home.recommended.defaultCategory");
+            const profileHref = getSpecialistUrl(lang, specialist);
+
+            return (
+              <article
+                key={specialist.id}
+                className={`${publicCardClass} flex h-full flex-col overflow-hidden`}
+              >
+                <div className="relative h-[200px] w-full overflow-hidden bg-freuly-border-subtle">
+                  {specialist.founder_badge ? (
+                    <div className="absolute left-4 top-4 z-10">
+                      <FounderBadge />
+                    </div>
+                  ) : null}
+                  {specialist.badges?.includes("premium_placement") ||
+                  specialist.placement_group === "premium" ? (
+                    <div className="absolute right-4 top-4 z-10 rounded-freuly-pill border border-freuly-warning-border bg-freuly-warning-light px-2.5 py-1 text-freuly-badge font-semibold text-freuly-warning">
+                      Премиум-показ
+                    </div>
+                  ) : null}
+                  {specialist.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={specialist.avatar_url}
+                      alt={specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
                   ) : (
-                    <span className="text-freuly-text-secondary">{t(dict, "home.recommended.newSpecialist")}</span>
+                    <div className="h-full w-full bg-freuly-border-subtle" />
                   )}
                 </div>
-                <p className="text-sm font-normal text-freuly-text-secondary line-clamp-1">
-                  {getCategoryTitle(
-                    {
-                      title: specialist.category_title,
-                      title_ru: specialist.category_title_ru,
-                      title_de: specialist.category_title_de,
-                      title_ua: specialist.category_title_ua,
-                    },
-                    toCategoryTitleLang(lang)
-                  ) || t(dict, "home.recommended.defaultCategory")}
-                </p>
-                <p className="text-sm font-normal text-freuly-text-secondary line-clamp-1">
-                  {[specialist.city, specialist.languages[0]].filter(Boolean).join(" • ")}
-                </p>
-                {specialist.about_line ? (
-                  <p className="mt-1 text-sm font-normal text-freuly-text-secondary line-clamp-2">
-                    {specialist.about_line}
+                <div className="flex flex-1 flex-col px-5 py-5">
+                  <p className="text-freuly-card-title text-freuly-text-primary line-clamp-1">
+                    {specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
                   </p>
-                ) : null}
-              </div>
-            </Link>
-          ))}
+                  <p className="mt-1 text-[15px] text-freuly-text-secondary line-clamp-1">
+                    {categoryLabel}
+                  </p>
+                  {specialist.languages.length > 0 ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {specialist.languages.slice(0, 3).map((code) => (
+                        <span
+                          key={code}
+                          className="rounded-freuly-pill border border-freuly-border-default bg-freuly-border-subtle px-2.5 py-1 text-xs text-freuly-text-secondary"
+                        >
+                          {code}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                  {specialist.about_line ? (
+                    <p className="mt-3 text-sm italic leading-relaxed text-freuly-text-secondary line-clamp-2">
+                      {specialist.about_line}
+                    </p>
+                  ) : null}
+                  <div className="mt-auto flex items-center justify-between gap-3 pt-4">
+                    <p className="text-xs text-freuly-text-muted line-clamp-1">
+                      {specialist.city || t(dict, "home.recommended.newSpecialist")}
+                    </p>
+                    <Link
+                      href={profileHref}
+                      className="shrink-0 text-sm font-medium text-freuly-primary hover:text-freuly-primary-hover"
+                    >
+                      {t(dict, "search.results.viewProfile")}
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
-      </div>
+      </section>
     );
   };
-
-  const placeholderIconByCategoryId = useMemo(
-    () =>
-      new Map(
-        CATEGORY_ICON_HINTS.map((category) => [category.id, category.icon] as const)
-      ),
-    []
-  );
 
   const orderedCategorySections = useMemo(() => {
     const preparedParents: CategoryStat[] = [];
@@ -558,23 +553,34 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
     return orderedParents.slice(0, 4);
   }, [categories, homepageParentSlotSlugs]);
 
+  const categoryTiles = useMemo(() => {
+    const fromParents = orderedCategorySections.flatMap((parent) => parent.children ?? []);
+    if (fromParents.length > 0) return fromParents;
+    return popularCategories.map((item) => ({
+      id: item.id,
+      slug: item.slug,
+      title: item.title,
+      title_ru: item.title_ru,
+      title_de: item.title_de,
+      title_ua: item.title_ua,
+      specialists_count: item.specialists_count,
+      is_clickable: true,
+    }));
+  }, [orderedCategorySections, popularCategories]);
+
   const copy = HERO_COPY[lang] ?? HERO_COPY.ru;
 
   return (
-    <div className="flex min-h-[100dvh] flex-col">
-      <>
-      <section className="bg-freuly-page px-freuly-4 pb-freuly-8 pt-freuly-5 sm:py-freuly-16 md:py-freuly-24">
-        <div className="mx-auto max-w-7xl text-center md:px-freuly-4">
-          <h1 className="text-[2rem] font-semibold leading-tight tracking-tight text-freuly-text-primary sm:text-4xl md:text-[2.25rem]">
-            <span className="block">{copy.titleLines[0]}</span>
-            <span className="block">{copy.titleLines[1]}</span>
-            <span className="block">{copy.titleLines[2]}</span>
+    <div className="flex min-h-[100dvh] flex-col bg-freuly-page">
+      <section className="px-freuly-4 pb-10 pt-10 sm:px-freuly-6 sm:pb-12 sm:pt-12 lg:px-16">
+        <div className={`${publicPageContainerClass} px-0 text-center`}>
+          <h1 className="mx-auto max-w-4xl text-[1.75rem] font-semibold leading-[1.2] tracking-tight text-freuly-text-primary sm:text-[2.25rem]">
+            {copy.title}
           </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-base font-normal text-freuly-text-secondary sm:mt-freuly-6 sm:text-lg">
+          <p className="mx-auto mt-3 max-w-2xl text-[15px] font-normal leading-[1.6] text-freuly-text-secondary">
             {copy.subtitle}
           </p>
 
-          {/* Compact install in first mobile viewport — before search flow */}
           <div className="mx-auto mt-4 w-full max-w-xl text-left md:hidden">
             <InstallFreuly
               lang={lang}
@@ -589,173 +595,165 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             text={SERVICE_SEARCH_FLOW_TEXT[lang]}
             defaultLanguage={lang}
             initialLocation={placeFromUrl}
-            className="mt-4 sm:mt-8"
+            className="mx-auto mt-6 max-w-5xl sm:mt-6"
           />
 
-          <div className="mt-4 hidden flex-wrap justify-center gap-3 text-sm font-normal text-freuly-text-secondary sm:mt-6 sm:flex">
-            <span>{copy.popularLabel}</span>
-            <span>{t(dict, "home.hero.popularTags")}</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="pt-12 pb-10 md:pt-16 md:pb-12">
-        <div className="max-w-5xl mx-auto px-3 md:px-4 text-center">
-          <p className="max-w-3xl mx-auto text-2xl md:text-3xl font-medium text-gray-900 leading-snug">
-            {t(dict, "transitional.line1")}
+          <p className="mt-4 text-[13px] text-freuly-text-muted sm:mt-5">
+            {t(dict, "home.cta.socialProof")}
           </p>
-
-          <p className="mt-4 max-w-3xl mx-auto text-lg md:text-xl font-normal text-freuly-text-secondary leading-relaxed">
-            {t(dict, "transitional.line2")}<br />
-            {t(dict, "transitional.line3")}
-          </p>
-
-          <p className="mt-8 max-w-4xl mx-auto text-xl md:text-2xl text-gray-900 font-semibold">
-            {t(dict, "transitional.final")}
+          <p className="mt-2 hidden text-[13px] text-freuly-text-secondary sm:block">
+            <span>{copy.popularLabel}</span> {t(dict, "home.hero.popularTags")}
           </p>
         </div>
       </section>
 
-      <section className="pt-14 pb-10 md:pt-16 md:pb-12">
-        <div className="max-w-[1280px] mx-auto px-3 md:px-6">
-          <div className="rounded-xl bg-[#EEF1FF] px-3 py-6 sm:px-6 sm:py-8 md:px-12 md:py-10">
-            {true && (
-              <div className="mt-7 md:mt-8">
-                <div className="relative min-h-[320px] overflow-hidden rounded-freuly-md sm:min-h-[420px] md:min-h-[520px]">
-                  {textImageContent?.url ? (
-                    <>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={textImageContent.url}
-                        alt={textImageContent.title || ""}
-                        className="absolute inset-0 z-0 h-full w-full rounded-freuly-md object-cover object-right"
-                      />
-                    </>
-                  ) : null}
+      <section className="px-freuly-4 pb-10 sm:px-freuly-6 lg:px-16">
+        <div className={`${publicPageContainerClass} px-0`}>
+          <h2 className="text-freuly-section-title text-freuly-text-primary">
+            {t(dict, "home.categories.title")}
+          </h2>
+          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-freuly-text-secondary">
+            {t(dict, "home.categories.subtitle")}
+          </p>
 
-                  <div className="absolute inset-x-3 top-3 z-10 min-w-0 max-w-[22.4rem] rounded-freuly-md bg-white/90 p-4 shadow-sm backdrop-blur-sm sm:inset-x-auto sm:left-6 sm:top-6 sm:p-5 md:left-8 md:top-8 md:p-[1.6rem]">
-                    <h2 className="mb-5 text-xl font-bold text-gray-900 sm:mb-8 sm:text-3xl">
-                      {t(dict, "home.howItWorks.title")}
-                    </h2>
-
-                    <div className="min-w-0 space-y-4 text-gray-700 sm:space-y-6">
-                      <div className="flex min-w-0 items-start gap-3 sm:gap-4">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600 sm:h-10 sm:w-10 sm:text-base">
-                          1
-                        </div>
-                        <p className="min-w-0 break-words">{t(dict, "home.howItWorks.step1")}</p>
-                      </div>
-
-                      <div className="flex min-w-0 items-start gap-3 sm:gap-4">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600 sm:h-10 sm:w-10 sm:text-base">
-                          2
-                        </div>
-                        <p className="min-w-0 break-words">{t(dict, "home.howItWorks.step2")}</p>
-                      </div>
-
-                      <div className="flex min-w-0 items-start gap-3 sm:gap-4">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600 sm:h-10 sm:w-10 sm:text-base">
-                          3
-                        </div>
-                        <p className="min-w-0 break-words">{t(dict, "home.howItWorks.step3")}</p>
-                      </div>
-                    </div>
-                  </div>
+          {isPopularLoading && categoryTiles.length === 0 ? (
+            <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-hidden>
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <div
+                  key={`popular-skeleton-${idx}`}
+                  className={`${publicCardClass} h-[101px] animate-pulse p-4`}
+                >
+                  <div className="h-4 w-2/3 rounded bg-freuly-border-subtle" />
+                  <div className="mt-3 h-3 w-1/2 rounded bg-freuly-border-subtle" />
                 </div>
-              </div>
-            )}
-
-            {isPopularLoading ? (
-              <div className="mt-8 md:mt-10" aria-hidden>
-                <div className="mb-6 h-8 w-64 rounded-lg bg-gray-200/80 animate-pulse" />
-                <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-5 md:gap-6">
-                  {Array.from({ length: 6 }).map((_, idx) => (
-                    <div
-                      key={`popular-skeleton-${idx}`}
-                      className="rounded-freuly-md bg-white shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden"
-                    >
-                      <div className="w-full aspect-[3/2] bg-gray-200/80 animate-pulse" />
-                      <div className="px-4 py-3 space-y-2">
-                        <div className="h-4 w-3/4 rounded bg-gray-200/80 animate-pulse" />
-                        <div className="h-3 w-1/2 rounded bg-gray-200/80 animate-pulse" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {orderedCategorySections.map((parent) => (
-                <section key={parent.id} className="mt-12">
-                  <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 pl-1 pb-2">
-                    {getCategoryTitle(parent, toCategoryTitleLang(lang))}
-                  </h2>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 pb-12">
-                    {(parent.children ?? []).map((child) => (
-                      <div key={child.id}>
-                        <Link
-                          href={`/${lang}/category/${child.slug}`}
-                          className="group block transition-shadow duration-300 ease-out hover:shadow-lg"
-                        >
-                          <div className="w-full aspect-[3/2] overflow-hidden rounded-[4px] bg-freuly-border-subtle">
-                            {child.image_url ? (
-                              <img
-                                src={child.image_url}
-                                alt={getCategoryTitle(child, toCategoryTitleLang(lang))}
-                                className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
-                                loading="lazy"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <span className="text-sm text-gray-400 px-3 text-center line-clamp-2">
-                                  {getCategoryTitle(child, toCategoryTitleLang(lang))}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-
-                          <p className="mt-2 px-1 text-base font-medium text-gray-900 line-clamp-1">
-                            {getCategoryTitle(child, toCategoryTitleLang(lang))}
-                          </p>
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
-                </section>
               ))}
-
-            {isRecommendedLoading ? (
-              <div className="mt-10">
-                <div className="mb-4 h-8 w-80 rounded-lg bg-gray-200/80 animate-pulse" />
-                <div className="grid gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                  {Array.from({ length: 4 }).map((_, idx) => (
-                    <div
-                      key={`recommended-skeleton-${idx}`}
-                      className="rounded-freuly-md border bg-white aspect-[4/3] p-4"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="h-14 w-14 rounded-full bg-gray-200/80 animate-pulse shrink-0" />
-                        <div className="min-w-0 flex-1">
-                          <div className="h-4 w-2/3 rounded bg-gray-200/80 animate-pulse" />
-                          <div className="mt-2 h-3 w-1/2 rounded bg-gray-200/80 animate-pulse" />
-                          <div className="mt-2 h-3 w-3/4 rounded bg-gray-200/80 animate-pulse" />
-                        </div>
-                      </div>
+            </div>
+          ) : (
+            <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {categoryTiles.map((child) => {
+                const label = getCategoryTitle(child, toCategoryTitleLang(lang));
+                const inner = (
+                  <>
+                    <div className="flex items-center gap-2.5">
+                      <span
+                        className="inline-flex h-[18px] w-[18px] shrink-0 rounded-[4px] bg-freuly-primary/15"
+                        aria-hidden
+                      />
+                      <span className="text-[16px] font-semibold leading-[1.2] text-freuly-text-primary line-clamp-1">
+                        {label}
+                      </span>
                     </div>
-                  ))}
-                </div>
+                    <p className="mt-2 text-sm leading-relaxed text-freuly-text-secondary line-clamp-2">
+                      {t(dict, "category.parent.found").replace(
+                        /\{\{\s*count\s*\}\}/g,
+                        String(child.specialists_count),
+                      )}
+                    </p>
+                  </>
+                );
+
+                if (!child.is_clickable) {
+                  return (
+                    <div key={child.id} className={`${publicCardClass} p-4 opacity-80`}>
+                      {inner}
+                    </div>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={child.id}
+                    href={`/${lang}/category/${child.slug}`}
+                    className={`${publicCardClass} p-4 transition-colors hover:border-freuly-primary/30`}
+                  >
+                    {inner}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="px-freuly-4 sm:px-freuly-6 lg:px-16">
+        <div className={`${publicPageContainerClass} px-0`}>
+          {isRecommendedLoading ? (
+            <div className="pt-12 pb-10 md:pt-14 md:pb-12" aria-hidden>
+              <div className="mb-6 h-8 w-72 rounded bg-freuly-border-subtle" />
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, idx) => (
+                  <div key={`recommended-skeleton-${idx}`} className={`${publicCardClass} overflow-hidden`}>
+                    <div className="h-[200px] animate-pulse bg-freuly-border-subtle" />
+                    <div className="space-y-2 p-5">
+                      <div className="h-4 w-2/3 rounded bg-freuly-border-subtle" />
+                      <div className="h-3 w-1/2 rounded bg-freuly-border-subtle" />
+                    </div>
+                  </div>
+                ))}
               </div>
-            ) : (
-              renderRecommendedSpecialists(recommendedSpecialists)
-            )}
+            </div>
+          ) : (
+            renderRecommendedSpecialists(recommendedSpecialists)
+          )}
+        </div>
+      </section>
+
+      <section className="bg-freuly-primary-light/60 px-freuly-4 py-12 sm:px-freuly-6 md:py-14 lg:px-16">
+        <div className={`${publicPageContainerClass} px-0`}>
+          <div className="mx-auto max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-wide text-freuly-primary">
+              {t(dict, "home.howItWorks.title")}
+            </p>
+            <p className="mt-3 text-freuly-section-title font-semibold leading-[1.3] text-freuly-text-primary">
+              {t(dict, "transitional.final")}
+            </p>
+            <ol className="mt-6 space-y-3 text-[15px] leading-relaxed text-freuly-text-secondary">
+              <li>{t(dict, "home.howItWorks.step1")}</li>
+              <li>{t(dict, "home.howItWorks.step2")}</li>
+              <li>{t(dict, "home.howItWorks.step3")}</li>
+            </ol>
+            {textImageContent.title || textImageContent.text ? (
+              <p className="mt-6 text-sm leading-relaxed text-freuly-text-secondary">
+                {textImageContent.title || textImageContent.text}
+              </p>
+            ) : null}
           </div>
         </div>
       </section>
 
-      </>
+      <section className="px-freuly-4 py-12 sm:px-freuly-6 md:py-14 lg:px-16">
+        <div className={`${publicPageContainerClass} grid gap-6 px-0 md:grid-cols-2`}>
+          <div className={`${publicCardClass} bg-[#FFF7ED] p-6 sm:p-8`}>
+            <h2 className="text-freuly-card-title text-freuly-text-primary">
+              {t(dict, "header.nav.partners")}
+            </h2>
+            <p className="mt-2 text-[15px] leading-relaxed text-freuly-text-secondary">
+              {t(dict, "transitional.line2")}
+            </p>
+            <Link
+              href={`/${lang}/partners`}
+              className="mt-4 inline-flex text-sm font-semibold text-freuly-primary hover:text-freuly-primary-hover"
+            >
+              {t(dict, "header.nav.partners")} →
+            </Link>
+          </div>
+          <div className={`${publicCardClass} bg-freuly-primary-light p-6 sm:p-8`}>
+            <h2 className="text-freuly-card-title text-freuly-text-primary">
+              {t(dict, "home.howItWorks.specialistCta")}
+            </h2>
+            <p className="mt-2 text-[15px] leading-relaxed text-freuly-text-secondary">
+              {t(dict, "home.mapCta.body")}
+            </p>
+            <Link
+              href={`/${lang}/for-specialists`}
+              className="mt-4 inline-flex text-sm font-semibold text-freuly-primary hover:text-freuly-primary-hover"
+            >
+              {t(dict, "home.mapCta.button")} →
+            </Link>
+          </div>
+        </div>
+      </section>
 
-      {/* Map CTA */}
       <GermanyMapCTA
         title={t(dict, "home.mapCta.title")}
         subtitle={t(dict, "home.mapCta.subtitle")}
@@ -765,32 +763,32 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
         lang={lang}
       />
 
-      {/* Desktop-only — mobile already has EarlyAccess (green) + Map CTA (green) */}
-      <section className="hidden bg-gray-50 px-3 py-16 text-center md:block md:px-4">
-        <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">{t(dict, "home.cta.title")}</h2>
-        <p className="mx-auto mt-3 max-w-lg text-gray-600">
-          {t(dict, "home.cta.subtitle")}
-        </p>
-        <Link
-          href={`/${lang}/for-specialists`}
-          className="mt-6 inline-flex h-11 items-center justify-center rounded-freuly-md bg-emerald-600 px-6 text-sm font-semibold text-white transition hover:bg-emerald-700"
-        >
-          {t(dict, "home.cta.button")}
-        </Link>
-        <p className="mt-3 text-xs text-gray-500">{t(dict, "home.cta.socialProof")}</p>
+      <section className="border-t border-freuly-border-default px-freuly-4 py-10 sm:px-freuly-6 lg:px-16">
+        <div className={`${publicPageContainerClass} grid gap-8 px-0 text-center sm:grid-cols-3`}>
+          <p className="text-[15px] leading-relaxed text-freuly-text-secondary">
+            {t(dict, "transitional.line1")}
+          </p>
+          <p className="text-[15px] leading-relaxed text-freuly-text-secondary">
+            {t(dict, "transitional.line2")}
+          </p>
+          <p className="text-[15px] leading-relaxed text-freuly-text-secondary">
+            {t(dict, "transitional.line3")}
+          </p>
+        </div>
       </section>
 
-      <div className="mt-10 text-center">
-        <a
-          href={`/${lang}/psychologists-germany`}
-          className="text-blue-600 underline hover:text-blue-800"
-        >
-          {t(dict, "categories.psychologists")}
-        </a>
-      </div>
+      <section className="px-freuly-4 pb-14 text-center sm:px-freuly-6 lg:px-16">
+        <h2 className="text-freuly-section-title text-freuly-text-primary">{t(dict, "home.cta.title")}</h2>
+        <p className="mx-auto mt-2 max-w-lg text-[15px] text-freuly-text-secondary">
+          {t(dict, "home.cta.subtitle")}
+        </p>
+        <Link href={`/${lang}/for-specialists`} className={`${publicLinkPrimaryClass} mt-5`}>
+          {t(dict, "home.cta.button")}
+        </Link>
+      </section>
 
       {error && (
-        <div className="fixed bottom-4 right-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg shadow">
+        <div className="fixed bottom-4 right-4 rounded-lg border border-freuly-error/20 bg-freuly-error-light px-4 py-3 text-sm text-freuly-error shadow">
           {error}
         </div>
       )}

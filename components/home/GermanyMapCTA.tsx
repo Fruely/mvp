@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { publicLinkPrimaryClass } from "@/components/public/publicStyles";
 
 const CTAGermanyMap = dynamic(() => import("@/components/maps/CTAGermanyMap"), {
   ssr: false,
@@ -32,7 +33,7 @@ export default function GermanyMapCTA({ title, body, spark, button, lang }: Prop
           observer.disconnect();
         }
       },
-      { rootMargin: "300px" }
+      { rootMargin: "300px" },
     );
 
     observer.observe(node);
@@ -41,37 +42,21 @@ export default function GermanyMapCTA({ title, body, spark, button, lang }: Prop
   }, [shouldLoadMap]);
 
   return (
-    <section className="py-16 md:py-24">
-      <div className="max-w-[1280px] mx-auto px-4 md:px-6">
-        <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
-
-          <div ref={mapHostRef} className="relative w-full md:w-[45%] shrink-0">
-            <div className="w-full min-h-[320px] rounded-2xl overflow-hidden bg-[#0F172A]">
-              {shouldLoadMap ? <CTAGermanyMap /> : null}
-            </div>
+    <section className="px-freuly-4 py-12 sm:px-freuly-6 md:py-14 lg:px-16">
+      <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-8 md:flex-row md:gap-12">
+        <div ref={mapHostRef} className="relative w-full shrink-0 md:w-[45%]">
+          <div className="min-h-[240px] w-full overflow-hidden rounded-freuly-card border border-freuly-border-default bg-freuly-border-subtle">
+            {shouldLoadMap ? <CTAGermanyMap /> : null}
           </div>
+        </div>
 
-          {/* CTA Text */}
-          <div className="flex-1 text-center md:text-left">
-            <h2 className="text-2xl md:text-4xl font-bold text-gray-900 leading-tight">
-              {title}
-            </h2>
-
-            <p className="mt-4 text-gray-600 text-base md:text-lg leading-relaxed max-w-md">
-              {body}
-            </p>
-
-            <p className="mt-4 text-emerald-700 text-base font-semibold tracking-tight">
-              {spark}
-            </p>
-
-            <Link
-              href={`/${lang}/for-specialists`}
-              className="mt-8 inline-flex h-12 max-w-full items-center justify-center rounded-lg bg-emerald-600 px-6 text-sm font-semibold text-white transition-all duration-300 hover:bg-emerald-700 hover:shadow-lg sm:px-8"
-            >
-              {button}
-            </Link>
-          </div>
+        <div className="flex-1 text-center md:text-left">
+          <h2 className="text-freuly-section-title text-freuly-text-primary">{title}</h2>
+          <p className="mt-3 max-w-md text-[15px] leading-relaxed text-freuly-text-secondary">{body}</p>
+          <p className="mt-3 text-[15px] font-semibold text-freuly-primary">{spark}</p>
+          <Link href={`/${lang}/for-specialists`} className={`${publicLinkPrimaryClass} mt-6`}>
+            {button}
+          </Link>
         </div>
       </div>
     </section>
