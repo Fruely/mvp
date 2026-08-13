@@ -10,13 +10,14 @@ import {
 } from "@/lib/search/serviceSearchUrl";
 import {
   publicChoiceButtonClass,
-  publicFieldClass,
+  publicFormatChoiceClass,
   publicHomeSearchBarClass,
   publicHomeSearchCtaClass,
   publicHomeSearchInputClass,
   publicHomeStepPanelClass,
-  publicLinkPrimaryClass,
-  publicWizardCardClass,
+  publicRadiusChipClass,
+  publicWizardCtaClass,
+  publicWizardFieldClass,
 } from "@/components/public/publicStyles";
 import {
   canAdvanceFromStep,
@@ -42,6 +43,11 @@ type FormatOption = {
   description: string;
 };
 
+type PopularCategory = {
+  slug: string;
+  label: string;
+};
+
 export type ServiceSearchFlowText = {
   headline: string;
   description: string;
@@ -65,6 +71,9 @@ export type ServiceSearchFlowText = {
   submittingCta: string;
   emptyServiceError: string;
   emptyLocationError: string;
+  stepProgress: string;
+  popularCategoriesLabel: string;
+  popularCategories: PopularCategory[];
 };
 
 type Step = FlowStep;
@@ -123,6 +132,14 @@ export const SERVICE_SEARCH_FLOW_TEXT: Record<"ru" | "ua" | "de", ServiceSearchF
     submittingCta: "Поиск…",
     emptyServiceError: "Введите услугу, чтобы продолжить.",
     emptyLocationError: "Укажите город или индекс, чтобы продолжить.",
+    stepProgress: "Шаг {current} из {total}",
+    popularCategoriesLabel: "Популярные категории:",
+    popularCategories: [
+      { slug: "psychologists", label: "Психологи" },
+      { slug: "lawyers", label: "Адвокаты" },
+      { slug: "tutors", label: "Репетиторы" },
+      { slug: "migration-consultants", label: "Миграционные консультанты" },
+    ],
   },
   ua: {
     headline: "Яку послугу ви шукаєте?",
@@ -167,6 +184,14 @@ export const SERVICE_SEARCH_FLOW_TEXT: Record<"ru" | "ua" | "de", ServiceSearchF
     submittingCta: "Пошук…",
     emptyServiceError: "Введіть послугу, щоб продовжити.",
     emptyLocationError: "Вкажіть місто або індекс, щоб продовжити.",
+    stepProgress: "Крок {current} з {total}",
+    popularCategoriesLabel: "Популярні категорії:",
+    popularCategories: [
+      { slug: "psychologists", label: "Психологи" },
+      { slug: "lawyers", label: "Адвокати" },
+      { slug: "tutors", label: "Репетитори" },
+      { slug: "migration-consultants", label: "Міграційні консультанти" },
+    ],
   },
   de: {
     headline: "Welche Dienstleistung suchen Sie?",
@@ -211,84 +236,177 @@ export const SERVICE_SEARCH_FLOW_TEXT: Record<"ru" | "ua" | "de", ServiceSearchF
     submittingCta: "Suche…",
     emptyServiceError: "Bitte geben Sie eine Dienstleistung ein.",
     emptyLocationError: "Bitte geben Sie Stadt oder PLZ ein.",
+    stepProgress: "Schritt {current} von {total}",
+    popularCategoriesLabel: "Beliebte Kategorien:",
+    popularCategories: [
+      { slug: "psychologists", label: "Psychologen" },
+      { slug: "lawyers", label: "Anwälte" },
+      { slug: "tutors", label: "Nachhilfelehrer" },
+      { slug: "migration-consultants", label: "Migrationsberater" },
+    ],
   },
 };
 
-function choiceButtonClass(isSelected: boolean): string {
-  return publicChoiceButtonClass(isSelected);
+function formatStepProgress(template: string, current: number, total: number): string {
+  return template.replace("{current}", String(current)).replace("{total}", String(total));
 }
 
-function StepProgress({ current, total }: { current: number; total: number }) {
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-4 w-4 shrink-0 text-[#9B9B9B]" aria-hidden>
+      <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M11 11l3 3" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function RadioMark({ selected }: { selected: boolean }) {
+  return (
+    <span
+      className={[
+        "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border sm:h-4 sm:w-4",
+        selected ? "border-freuly-primary bg-freuly-primary" : "border-freuly-border-default bg-freuly-surface",
+      ].join(" ")}
+      aria-hidden
+    >
+      {selected ? <span className="h-1.5 w-1.5 rounded-full bg-white" /> : null}
+    </span>
+  );
+}
+
+function StepProgress({
+  current,
+  total,
+  label,
+  compact = false,
+}: {
+  current: number;
+  total: number;
+  label: string;
+  compact?: boolean;
+}) {
   const steps = Array.from({ length: total }, (_, index) => index + 1);
 
   return (
     <div
-      className="mb-7 flex items-center justify-center gap-1.5"
+      className={compact ? "flex flex-col items-center gap-2" : "flex w-full flex-col items-center gap-4"}
       role="progressbar"
       aria-valuenow={current}
       aria-valuemin={1}
       aria-valuemax={total}
-      aria-label={`Step ${current} of ${total}`}
+      aria-label={label}
     >
-      {steps.map((stepNumber) => {
-        const isComplete = stepNumber < current;
-        const isCurrent = stepNumber === current;
+      <p
+        className={[
+          "font-semibold text-freuly-text-secondary",
+          compact ? "text-[12px]" : "text-[12px] sm:hidden",
+        ].join(" ")}
+      >
+        {label}
+      </p>
+      <div className="flex items-center justify-center gap-2">
+        {steps.map((stepNumber) => {
+          const isActive = stepNumber <= current;
 
-        return (
-          <span
-            key={stepNumber}
-            className={[
-              "rounded-full transition-all duration-300",
-              isComplete
-                ? "h-2 w-2 bg-freuly-primary/70"
-                : isCurrent
-                  ? "h-2 w-8 bg-freuly-primary"
-                  : "h-2 w-2 bg-freuly-border-default",
-            ].join(" ")}
-          />
-        );
-      })}
+          return (
+            <span
+              key={stepNumber}
+              className={[
+                "h-2 w-2 rounded-full",
+                isActive ? "bg-freuly-primary" : "bg-freuly-border-default",
+              ].join(" ")}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function WizardHeader({
+  backLabel,
+  onBack,
+  showBack,
+  progressStep,
+  progressLabel,
+  compact = false,
+}: {
+  backLabel: string;
+  onBack: () => void;
+  showBack: boolean;
+  progressStep: { current: number; total: number } | null;
+  progressLabel: string;
+  compact?: boolean;
+}) {
+  return (
+    <div className={compact ? "mb-4 flex flex-col gap-3" : "mb-6 flex flex-col gap-4"}>
+      <div className="flex min-h-5 items-center justify-between gap-3">
+        {showBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-freuly-primary transition hover:text-freuly-primary-hover freuly-focus-ring sm:min-h-0"
+          >
+            <svg viewBox="0 0 12 12" className="h-3 w-3 shrink-0" aria-hidden>
+              <path
+                d="M7.5 2.5 3.5 6l4 3.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {backLabel}
+          </button>
+        ) : (
+          <span className="flex-1" />
+        )}
+        {progressStep ? (
+          <p className="hidden shrink-0 text-[13px] font-semibold text-freuly-text-secondary sm:block">
+            {progressLabel}
+          </p>
+        ) : null}
+      </div>
+      {progressStep ? (
+        <StepProgress
+          current={progressStep.current}
+          total={progressStep.total}
+          label={progressLabel}
+          compact={compact}
+        />
+      ) : null}
     </div>
   );
 }
 
 function FlowCard({
   children,
+  actions,
   centered = false,
-  progressStep,
   compact = false,
 }: {
   children: ReactNode;
+  actions?: ReactNode;
   centered?: boolean;
-  progressStep?: { current: number; total: number } | null;
   compact?: boolean;
 }) {
   return (
     <section
       className={[
-        compact ? publicHomeStepPanelClass : publicWizardCardClass,
-        "text-left",
-        centered ? "text-center" : "",
+        compact
+          ? publicHomeStepPanelClass
+          : "flex w-full max-w-[560px] flex-1 flex-col text-left sm:flex-none sm:rounded-freuly-xl sm:border sm:border-freuly-border-default sm:bg-freuly-surface sm:p-10 sm:shadow-[0_4px_12px_rgba(0,0,0,0.05)]",
+        centered ? "text-center" : "text-left",
       ].join(" ")}
     >
-      {progressStep ? (
-        <StepProgress current={progressStep.current} total={progressStep.total} />
-      ) : null}
       {children}
+      {actions ? (
+        <div className={compact ? "mt-5" : "mt-auto flex flex-col gap-5 pt-6 sm:mt-6 sm:pt-0"}>
+          {actions}
+        </div>
+      ) : null}
     </section>
-  );
-}
-
-function BackButton({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="mb-5 inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-freuly-text-secondary transition hover:text-freuly-text-primary freuly-focus-ring"
-    >
-      <span aria-hidden>←</span>
-      {label}
-    </button>
   );
 }
 
@@ -304,21 +422,15 @@ function ActionFooter({
   loading?: boolean;
 }) {
   return (
-    <div className="sticky bottom-0 -mx-1 mt-6 border-t border-freuly-border-subtle bg-freuly-surface/95 px-1 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-4 backdrop-blur-sm">
-      <button
-        type="submit"
-        disabled={disabled || loading}
-        aria-disabled={disabled || loading}
-        aria-busy={loading}
-        className={[
-          publicLinkPrimaryClass,
-          "w-full min-h-[48px] px-8 py-4 text-base",
-          disabled || loading ? "cursor-not-allowed opacity-60" : "",
-        ].join(" ")}
-      >
-        {loading ? loadingLabel : label}
-      </button>
-    </div>
+    <button
+      type="submit"
+      disabled={disabled || loading}
+      aria-disabled={disabled || loading}
+      aria-busy={loading}
+      className={publicWizardCtaClass}
+    >
+      {loading ? loadingLabel : label}
+    </button>
   );
 }
 
@@ -331,7 +443,7 @@ function TextField({
   error,
   inputRef,
   autoFocus = false,
-  large = false,
+  withSearchIcon = false,
 }: {
   id: string;
   label: string;
@@ -341,30 +453,39 @@ function TextField({
   error?: string | null;
   inputRef?: RefObject<HTMLInputElement | null>;
   autoFocus?: boolean;
-  large?: boolean;
+  withSearchIcon?: boolean;
 }) {
   return (
-    <div>
+    <div className="flex w-full flex-col gap-2">
       <label className="block" htmlFor={id}>
-        <span className="mb-2 block text-sm font-semibold text-freuly-text-muted">{label}</span>
-        <input
-          ref={inputRef}
-          id={id}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          placeholder={placeholder}
-          autoFocus={autoFocus}
-          autoComplete="off"
-          aria-invalid={Boolean(error)}
-          className={[
-            publicFieldClass,
-            large ? "py-5 text-xl sm:text-2xl" : "py-4 text-lg",
-            error ? "border-freuly-error focus-visible:ring-freuly-error/25" : "",
-          ].join(" ")}
-        />
+        <span className="mb-2 block text-[13px] font-semibold uppercase text-freuly-text-primary sm:text-sm sm:normal-case">
+          {label}
+        </span>
+        <span className="relative block">
+          {withSearchIcon ? (
+            <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center">
+              <SearchIcon />
+            </span>
+          ) : null}
+          <input
+            ref={inputRef}
+            id={id}
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+            placeholder={placeholder}
+            autoFocus={autoFocus}
+            autoComplete="off"
+            aria-invalid={Boolean(error)}
+            className={[
+              publicWizardFieldClass,
+              withSearchIcon ? "pl-10" : "",
+              error ? "border-freuly-error focus-visible:ring-freuly-error/25" : "",
+            ].join(" ")}
+          />
+        </span>
       </label>
       {error ? (
-        <p className="mt-2 text-sm font-medium text-freuly-error" role="alert">
+        <p className="text-sm font-medium text-freuly-error" role="alert">
           {error}
         </p>
       ) : null}
@@ -383,7 +504,7 @@ function StepTitle({
 }) {
   const titleClass = compact
     ? "mb-4 text-xl font-semibold leading-[1.3] tracking-tight text-freuly-text-primary outline-none freuly-focus-ring"
-    : "mb-7 text-[1.65rem] font-bold leading-[1.2] tracking-tight text-freuly-text-primary outline-none sm:text-[2rem] freuly-focus-ring";
+    : "text-[24px] font-bold leading-[1.2] tracking-tight text-freuly-text-primary outline-none sm:text-[28px] freuly-focus-ring";
 
   if (compact) {
     return (
@@ -408,13 +529,39 @@ function PrimaryButton({
   onClick?: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`${publicLinkPrimaryClass} w-full min-h-[48px] px-8 py-4 text-base`}
-    >
+    <button type="button" onClick={onClick} className={publicWizardCtaClass}>
       {children}
     </button>
+  );
+}
+
+function PopularCategories({
+  label,
+  categories,
+  onSelect,
+}: {
+  label: string;
+  categories: PopularCategory[];
+  onSelect: (value: string) => void;
+}) {
+  if (categories.length === 0) return null;
+
+  return (
+    <p className="text-center text-[13px] leading-[1.4] text-freuly-text-secondary sm:text-sm">
+      <span>{label} </span>
+      {categories.map((category, index) => (
+        <span key={category.slug}>
+          {index > 0 ? <span className="text-freuly-text-secondary"> • </span> : null}
+          <button
+            type="button"
+            onClick={() => onSelect(category.label)}
+            className="font-semibold text-freuly-primary hover:text-freuly-primary-hover freuly-focus-ring"
+          >
+            {category.label}
+          </button>
+        </span>
+      ))}
+    </p>
   );
 }
 
@@ -427,7 +574,7 @@ export default function ServiceSearchFlow({
 }: ServiceSearchFlowProps) {
   const router = useRouter();
   const isHomeVariant = variant === "home";
-  const [step, setStep] = useState<Step>(isHomeVariant ? "service" : "start");
+  const [step, setStep] = useState<Step>("service");
   const [service, setService] = useState("");
   const [selectedLanguage, setSelectedLanguage] =
     useState<LanguageOption["value"] | null>(defaultLanguage ?? null);
@@ -458,6 +605,11 @@ export default function ServiceSearchFlow({
     nextCta: text.nextCta,
     submitCta: text.submitCta,
   });
+  const progressLabel = progressStep
+    ? formatStepProgress(text.stepProgress, progressStep.current, progressStep.total)
+    : "";
+  const showBack =
+    shouldShowBackButton(step, isHomeVariant) && !(step === "service" && !isHomeVariant);
 
   useEffect(() => {
     if (step === "service") {
@@ -548,9 +700,20 @@ export default function ServiceSearchFlow({
     setStep(next);
   }
 
+  const wizardHeader = (
+    <WizardHeader
+      backLabel={text.backCta}
+      onBack={goBack}
+      showBack={showBack}
+      progressStep={progressStep}
+      progressLabel={progressLabel}
+      compact={isHomeVariant}
+    />
+  );
+
   const rootClassName = isHomeVariant
     ? ["w-full text-left", className].filter(Boolean).join(" ")
-    : "flex min-h-[calc(100dvh-5rem)] items-center justify-center bg-freuly-page px-freuly-4 py-freuly-8 sm:py-freuly-12";
+    : "flex min-h-[calc(100dvh-10rem)] flex-col items-stretch bg-freuly-page px-6 pb-8 pt-4 sm:items-center sm:justify-center sm:px-8 sm:pb-10 sm:pt-8";
 
   const content = (
     <div
@@ -560,15 +723,17 @@ export default function ServiceSearchFlow({
           ? step === "service"
             ? "w-full animate-fadeIn"
             : "mx-auto w-full max-w-xl animate-fadeIn"
-          : "mx-auto w-full max-w-lg animate-fadeIn"
+          : "mx-auto flex w-full max-w-[560px] flex-1 flex-col animate-fadeIn sm:flex-none"
       }
     >
       {!isHomeVariant && step === "start" ? (
-        <FlowCard centered>
-          <h1 className="mb-10 text-[1.85rem] font-bold leading-[1.15] tracking-tight text-freuly-text-primary sm:text-[2.35rem]">
+        <FlowCard
+          centered
+          actions={<PrimaryButton onClick={goToServiceStep}>{text.startCta}</PrimaryButton>}
+        >
+          <h1 className="mb-6 text-[24px] font-bold leading-[1.2] tracking-tight text-freuly-text-primary sm:text-[28px]">
             {text.startHeadline}
           </h1>
-          <PrimaryButton onClick={goToServiceStep}>{text.startCta}</PrimaryButton>
         </FlowCard>
       ) : null}
 
@@ -576,14 +741,7 @@ export default function ServiceSearchFlow({
         <form onSubmit={handleStepSubmit} className="w-full">
           <div className={publicHomeSearchBarClass}>
             <div className="flex min-w-0 flex-1 items-center gap-2.5 px-2 sm:px-0">
-              <svg
-                viewBox="0 0 16 16"
-                className="h-4 w-4 shrink-0 text-freuly-text-muted"
-                aria-hidden
-              >
-                <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                <path d="M11 11l3 3" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
+              <SearchIcon />
               <label htmlFor="service-query" className="sr-only">
                 {text.serviceInputLabel}
               </label>
@@ -620,47 +778,66 @@ export default function ServiceSearchFlow({
       ) : null}
 
       {step === "service" && !isHomeVariant ? (
-        <FlowCard progressStep={progressStep}>
-          {shouldShowBackButton(step, isHomeVariant) ? (
-            <BackButton label={text.backCta} onClick={goBack} />
-          ) : null}
-          <StepTitle titleRef={stepTitleRef}>{text.serviceQuestion}</StepTitle>
-
-          <form onSubmit={handleStepSubmit} className="space-y-1">
-            <TextField
-              id="service-query"
-              label={text.serviceInputLabel}
-              value={service}
-              placeholder={text.serviceInputPlaceholder}
-              error={error}
-              large
-              inputRef={serviceInputRef}
-              onChange={(value) => {
-                setService(value);
-                if (error) setError(null);
-              }}
-            />
-            <ActionFooter
-              label={actionLabel}
-              loadingLabel={text.submittingCta}
-              disabled={!canAdvance}
-              loading={isSubmitting}
-            />
-          </form>
-        </FlowCard>
+        <form onSubmit={handleStepSubmit} className="flex flex-1 flex-col">
+          <FlowCard
+            actions={
+              <>
+                <ActionFooter
+                  label={actionLabel}
+                  loadingLabel={text.submittingCta}
+                  disabled={!canAdvance}
+                  loading={isSubmitting}
+                />
+                <PopularCategories
+                  label={text.popularCategoriesLabel}
+                  categories={text.popularCategories}
+                  onSelect={(value) => {
+                    setService(value);
+                    if (error) setError(null);
+                  }}
+                />
+              </>
+            }
+          >
+            {wizardHeader}
+            <div className="flex flex-col gap-6">
+              <StepTitle titleRef={stepTitleRef}>{text.serviceQuestion}</StepTitle>
+              <TextField
+                id="service-query"
+                label={text.serviceInputLabel}
+                value={service}
+                placeholder={text.serviceInputPlaceholder}
+                error={error}
+                withSearchIcon
+                inputRef={serviceInputRef}
+                onChange={(value) => {
+                  setService(value);
+                  if (error) setError(null);
+                }}
+              />
+            </div>
+          </FlowCard>
+        </form>
       ) : null}
 
       {step === "language" ? (
-        <FlowCard progressStep={progressStep} compact={isHomeVariant}>
-          {shouldShowBackButton(step, isHomeVariant) ? (
-            <BackButton label={text.backCta} onClick={goBack} />
-          ) : null}
-          <StepTitle titleRef={stepTitleRef} compact={isHomeVariant}>
-            {text.languageQuestion}
-          </StepTitle>
-
-          <form onSubmit={handleStepSubmit}>
-            <div className="grid gap-3">
+        <form onSubmit={handleStepSubmit} className={isHomeVariant ? "" : "flex flex-1 flex-col"}>
+          <FlowCard
+            compact={isHomeVariant}
+            actions={
+              <ActionFooter
+                label={actionLabel}
+                loadingLabel={text.submittingCta}
+                disabled={!canAdvance}
+                loading={isSubmitting}
+              />
+            }
+          >
+            {wizardHeader}
+            <StepTitle titleRef={stepTitleRef} compact={isHomeVariant}>
+              {text.languageQuestion}
+            </StepTitle>
+            <div className={isHomeVariant ? "grid gap-3" : "mt-6 grid gap-3"}>
               {text.languageOptions.map((option) => {
                 const isSelected = selectedLanguage === option.value;
 
@@ -670,34 +847,38 @@ export default function ServiceSearchFlow({
                     type="button"
                     aria-pressed={isSelected}
                     onClick={() => setSelectedLanguage(option.value)}
-                    className={choiceButtonClass(isSelected)}
+                    className={publicChoiceButtonClass(isSelected)}
                   >
-                    <span className="block text-lg font-semibold">{option.label}</span>
+                    <span className={isSelected ? "text-base font-semibold" : "text-base font-medium"}>
+                      {option.label}
+                    </span>
+                    <RadioMark selected={isSelected} />
                   </button>
                 );
               })}
             </div>
-            <ActionFooter
-              label={actionLabel}
-              loadingLabel={text.submittingCta}
-              disabled={!canAdvance}
-              loading={isSubmitting}
-            />
-          </form>
-        </FlowCard>
+          </FlowCard>
+        </form>
       ) : null}
 
       {step === "format" ? (
-        <FlowCard progressStep={progressStep} compact={isHomeVariant}>
-          {shouldShowBackButton(step, isHomeVariant) ? (
-            <BackButton label={text.backCta} onClick={goBack} />
-          ) : null}
-          <StepTitle titleRef={stepTitleRef} compact={isHomeVariant}>
-            {text.formatQuestion}
-          </StepTitle>
-
-          <form onSubmit={handleStepSubmit}>
-            <div className="grid gap-3">
+        <form onSubmit={handleStepSubmit} className={isHomeVariant ? "" : "flex flex-1 flex-col"}>
+          <FlowCard
+            compact={isHomeVariant}
+            actions={
+              <ActionFooter
+                label={actionLabel}
+                loadingLabel={text.submittingCta}
+                disabled={!canAdvance}
+                loading={isSubmitting}
+              />
+            }
+          >
+            {wizardHeader}
+            <StepTitle titleRef={stepTitleRef} compact={isHomeVariant}>
+              {text.formatQuestion}
+            </StepTitle>
+            <div className={isHomeVariant ? "grid gap-3" : "mt-6 grid gap-3"}>
               {text.formatOptions.map((option) => {
                 const isSelected = selectedFormat === option.value;
 
@@ -710,102 +891,108 @@ export default function ServiceSearchFlow({
                       setSelectedFormat(option.value);
                       if (error) setError(null);
                     }}
-                    className={choiceButtonClass(isSelected)}
+                    className={publicFormatChoiceClass(isSelected)}
                   >
-                    <span className="block text-lg font-semibold">{option.label}</span>
-                    <span className="mt-1 block text-sm leading-relaxed text-freuly-text-secondary">
+                    <span
+                      className={[
+                        "block text-base font-semibold",
+                        isSelected ? "text-freuly-primary" : "text-freuly-text-primary",
+                      ].join(" ")}
+                    >
+                      {option.label}
+                    </span>
+                    <span
+                      className={[
+                        "block text-[13px] leading-normal",
+                        isSelected ? "text-freuly-primary/80" : "text-freuly-text-secondary",
+                      ].join(" ")}
+                    >
                       {option.description}
                     </span>
                   </button>
                 );
               })}
             </div>
-            <ActionFooter
-              label={actionLabel}
-              loadingLabel={text.submittingCta}
-              disabled={!canAdvance}
-              loading={isSubmitting}
-            />
-          </form>
-        </FlowCard>
+          </FlowCard>
+        </form>
       ) : null}
 
       {step === "location" ? (
-        <FlowCard progressStep={progressStep} compact={isHomeVariant}>
-          {shouldShowBackButton(step, isHomeVariant) ? (
-            <BackButton label={text.backCta} onClick={goBack} />
-          ) : null}
-          <StepTitle titleRef={stepTitleRef} compact={isHomeVariant}>
-            {text.locationQuestion}
-          </StepTitle>
-
-          <form onSubmit={handleStepSubmit} className="space-y-1">
-            <TextField
-              id="service-location"
-              label={text.locationInputLabel}
-              value={location}
-              placeholder={text.locationInputPlaceholder}
-              error={error}
-              large
-              inputRef={locationInputRef}
-              onChange={(value) => {
-                setLocation(value);
-                if (error) setError(null);
-              }}
-            />
-            <ActionFooter
-              label={actionLabel}
-              loadingLabel={text.submittingCta}
-              disabled={!canAdvance}
-              loading={isSubmitting}
-            />
-          </form>
-        </FlowCard>
+        <form onSubmit={handleStepSubmit} className={isHomeVariant ? "" : "flex flex-1 flex-col"}>
+          <FlowCard
+            compact={isHomeVariant}
+            actions={
+              <ActionFooter
+                label={actionLabel}
+                loadingLabel={text.submittingCta}
+                disabled={!canAdvance}
+                loading={isSubmitting}
+              />
+            }
+          >
+            {wizardHeader}
+            <div className={isHomeVariant ? "space-y-4" : "mt-6 flex flex-col gap-6"}>
+              <StepTitle titleRef={stepTitleRef} compact={isHomeVariant}>
+                {text.locationQuestion}
+              </StepTitle>
+              <TextField
+                id="service-location"
+                label={text.locationInputLabel}
+                value={location}
+                placeholder={text.locationInputPlaceholder}
+                error={error}
+                inputRef={locationInputRef}
+                onChange={(value) => {
+                  setLocation(value);
+                  if (error) setError(null);
+                }}
+              />
+            </div>
+          </FlowCard>
+        </form>
       ) : null}
 
       {step === "radius" ? (
-        <FlowCard progressStep={progressStep} compact={isHomeVariant}>
-          {shouldShowBackButton(step, isHomeVariant) ? (
-            <BackButton label={text.backCta} onClick={goBack} />
-          ) : null}
-          <StepTitle titleRef={stepTitleRef} compact={isHomeVariant}>
-            {text.radiusLabel}
-          </StepTitle>
-
-          <form onSubmit={handleStepSubmit}>
-            <fieldset>
-              <legend className="sr-only">{text.radiusLabel}</legend>
-              <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label={text.radiusLabel}>
-                {SERVICE_SEARCH_UI_RADII_KM.map((km) => {
-                  const isSelected = radiusKm === km;
-                  return (
-                    <button
-                      key={km}
-                      type="button"
-                      role="radio"
-                      aria-checked={isSelected}
-                      onClick={() => setRadiusKm(km)}
-                      className={[
-                        "min-h-[44px] rounded-freuly-md border px-2 py-2 text-sm font-semibold transition freuly-focus-ring",
-                        isSelected
-                          ? "border-freuly-primary bg-freuly-primary-light text-freuly-primary shadow-sm"
-                          : "border-freuly-border-default bg-freuly-surface text-freuly-text-primary hover:border-freuly-primary/30 hover:bg-freuly-primary-light/40",
-                      ].join(" ")}
-                    >
-                      {km} {text.radiusUnit}
-                    </button>
-                  );
-                })}
-              </div>
-            </fieldset>
-            <ActionFooter
-              label={actionLabel}
-              loadingLabel={text.submittingCta}
-              disabled={!canAdvance}
-              loading={isSubmitting}
-            />
-          </form>
-        </FlowCard>
+        <form onSubmit={handleStepSubmit} className={isHomeVariant ? "" : "flex flex-1 flex-col"}>
+          <FlowCard
+            compact={isHomeVariant}
+            actions={
+              <ActionFooter
+                label={actionLabel}
+                loadingLabel={text.submittingCta}
+                disabled={!canAdvance}
+                loading={isSubmitting}
+              />
+            }
+          >
+            {wizardHeader}
+            <div className={isHomeVariant ? "space-y-4" : "mt-6 flex flex-col gap-6"}>
+              <StepTitle titleRef={stepTitleRef} compact={isHomeVariant}>
+                {text.radiusLabel}
+              </StepTitle>
+              <fieldset>
+                <legend className="sr-only">{text.radiusLabel}</legend>
+                <div className="flex gap-2" role="radiogroup" aria-label={text.radiusLabel}>
+                  {SERVICE_SEARCH_UI_RADII_KM.map((km) => {
+                    const isSelected = radiusKm === km;
+                    return (
+                      <button
+                        key={km}
+                        type="button"
+                        role="radio"
+                        aria-checked={isSelected}
+                        onClick={() => setRadiusKm(km)}
+                        className={publicRadiusChipClass(isSelected)}
+                      >
+                        {km} {text.radiusUnit}
+                      </button>
+                    );
+                  })}
+                </div>
+              </fieldset>
+            </div>
+          </FlowCard>
+        </form>
       ) : null}
     </div>
   );
