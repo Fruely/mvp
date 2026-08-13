@@ -1,13 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { Button, Input } from "@/components/ui";
+import { t, type Dictionary } from "@/lib/i18n";
 import { getSupabase } from "@/lib/supabaseClient";
 
 type Props = {
   email: string;
+  dict: Dictionary;
 };
 
-export default function ChangePasswordForm({ email }: Props) {
+export default function ChangePasswordForm({ email, dict }: Props) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -23,11 +26,11 @@ export default function ChangePasswordForm({ email }: Props) {
     setSuccess(null);
 
     if (newPassword.length < 8) {
-      setError("Пароль должен быть не короче 8 символов.");
+      setError(t(dict, "dashboard.settingsPage.passwordTooShort"));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError("Пароли не совпадают.");
+      setError(t(dict, "dashboard.settingsPage.passwordMismatch"));
       return;
     }
 
@@ -40,7 +43,7 @@ export default function ChangePasswordForm({ email }: Props) {
       });
 
       if (signInError) {
-        setError("Неверный текущий пароль.");
+        setError(t(dict, "dashboard.settingsPage.wrongCurrentPassword"));
         return;
       }
 
@@ -49,16 +52,16 @@ export default function ChangePasswordForm({ email }: Props) {
       });
 
       if (updateError) {
-        setError("Не удалось обновить пароль. Попробуйте ещё раз.");
+        setError(t(dict, "dashboard.settingsPage.updateFailed"));
         return;
       }
 
-      setSuccess("Пароль обновлён.");
+      setSuccess(t(dict, "dashboard.settingsPage.updateSuccess"));
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch {
-      setError("Не удалось обновить пароль. Попробуйте ещё раз.");
+      setError(t(dict, "dashboard.settingsPage.updateFailed"));
     } finally {
       setLoading(false);
     }
@@ -73,80 +76,69 @@ export default function ChangePasswordForm({ email }: Props) {
       const redirectTo = `${window.location.origin}/auth/reset-password`;
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
       if (resetError) {
-        setError("Не удалось отправить письмо для сброса. Попробуйте ещё раз.");
+        setError(t(dict, "dashboard.settingsPage.resetFailed"));
         return;
       }
-      setResetMessage("Письмо для сброса пароля отправлено. Проверьте почту.");
+      setResetMessage(t(dict, "dashboard.settingsPage.resetSent"));
     } catch {
-      setError("Не удалось отправить письмо для сброса. Попробуйте ещё раз.");
+      setError(t(dict, "dashboard.settingsPage.resetFailed"));
     } finally {
       setSendingReset(false);
     }
   }
 
   return (
-    <div className="space-y-4">
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Текущий пароль</label>
-          <input
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            className="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-            autoComplete="current-password"
-            required
-          />
-        </div>
+    <div className="space-y-freuly-4">
+      <form onSubmit={handleSubmit} className="space-y-freuly-3">
+        <Input
+          id="settings-current-password"
+          type="password"
+          label={t(dict, "dashboard.settingsPage.currentPassword")}
+          value={currentPassword}
+          onChange={(e) => setCurrentPassword(e.target.value)}
+          autoComplete="current-password"
+          required
+        />
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Новый пароль</label>
-          <input
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-            autoComplete="new-password"
-            required
-          />
-        </div>
+        <Input
+          id="settings-new-password"
+          type="password"
+          label={t(dict, "dashboard.settingsPage.newPassword")}
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          autoComplete="new-password"
+          required
+        />
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Повторите новый пароль</label>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-            autoComplete="new-password"
-            required
-          />
-        </div>
+        <Input
+          id="settings-confirm-password"
+          type="password"
+          label={t(dict, "dashboard.settingsPage.confirmPassword")}
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          autoComplete="new-password"
+          required
+        />
 
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        {success ? <p className="text-sm text-emerald-600">{success}</p> : null}
+        {error ? <p className="text-freuly-body-sm text-freuly-error">{error}</p> : null}
+        {success ? <p className="text-freuly-body-sm text-freuly-success">{success}</p> : null}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
-        >
-          {loading ? "Сохранение..." : "Сменить пароль"}
-        </button>
+        <Button type="submit" disabled={loading}>
+          {loading ? t(dict, "dashboard.settingsPage.saving") : t(dict, "dashboard.settingsPage.changePassword")}
+        </Button>
       </form>
 
-      <div className="border-t border-gray-100 pt-3">
+      <div className="border-t border-freuly-border-subtle pt-freuly-3">
         <button
           type="button"
           onClick={() => void handleForgotPassword()}
           disabled={sendingReset}
-          className="text-sm font-medium text-blue-600 hover:text-blue-700 disabled:opacity-60"
+          className="text-freuly-body-sm font-medium text-freuly-primary transition hover:text-freuly-primary-hover disabled:opacity-60"
         >
-          Забыли пароль? Отправить письмо для сброса
+          {t(dict, "dashboard.settingsPage.forgotPassword")}
         </button>
-        {resetMessage ? <p className="mt-2 text-sm text-emerald-600">{resetMessage}</p> : null}
+        {resetMessage ? <p className="mt-freuly-2 text-freuly-body-sm text-freuly-success">{resetMessage}</p> : null}
       </div>
     </div>
   );
 }
-

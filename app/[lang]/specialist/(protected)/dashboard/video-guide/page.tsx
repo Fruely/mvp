@@ -1,5 +1,8 @@
 export const dynamic = "force-dynamic";
 
+import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
+import { dashboardPageStackClass } from "@/components/dashboard/dashboardStyles";
+import { Badge, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { isSupportedLang } from "@/lib/i18n";
 import {
   VIDEO_GUIDE_EMBED_URL,
@@ -41,10 +44,7 @@ const VIDEO_GUIDE_TOPICS: Record<"ru" | "ua" | "de", string[]> = {
   ],
 };
 
-function pickLocalized(
-  lang: "ru" | "ua" | "de",
-  localized: VideoGuideLocalizedCopy
-): string {
+function pickLocalized(lang: "ru" | "ua" | "de", localized: VideoGuideLocalizedCopy): string {
   return localized[lang];
 }
 
@@ -94,131 +94,124 @@ export default async function SpecialistDashboardVideoGuidePage({
     ua: "Відео скоро буде доступне.",
     de: "Das Video wird bald verfugbar sein.",
   };
+  const allMaterialsTitleByLang: Record<"ru" | "ua" | "de", string> = {
+    ru: "Все материалы",
+    ua: "Усі матеріали",
+    de: "Alle Materialien",
+  };
 
   const mainVideoItem =
-    VIDEO_GUIDE_ITEMS.find((item) => item.id === VIDEO_GUIDE_MAIN_ID) ??
-    VIDEO_GUIDE_ITEMS[0];
+    VIDEO_GUIDE_ITEMS.find((item) => item.id === VIDEO_GUIDE_MAIN_ID) ?? VIDEO_GUIDE_ITEMS[0];
   const hasMainVideo = Boolean(mainVideoItem?.embedUrl);
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h1 className="text-2xl font-semibold text-gray-900">
-          {pageTitleByLang[activeLang]}
-        </h1>
-        <p className="mt-2 max-w-4xl text-sm leading-relaxed text-gray-600">
-          {introByLang[activeLang]}
-        </p>
-      </section>
+    <div className={dashboardPageStackClass}>
+      <DashboardPageHeader title={pageTitleByLang[activeLang]} subtitle={introByLang[activeLang]} />
 
-      <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-          <div className="min-w-0">
-            <div className="mb-3 flex items-center gap-2">
-              <span className="inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
-                {pickLocalized(activeLang, mainVideoItem.badge)}
-              </span>
-              <p className="text-sm font-semibold text-gray-900">
-                {pickLocalized(activeLang, mainVideoItem.title)}
-              </p>
-            </div>
-            {hasMainVideo ? (
-              <div className="overflow-hidden rounded-xl border border-gray-200 bg-black">
-                <iframe
-                  src={mainVideoItem.embedUrl ?? VIDEO_GUIDE_EMBED_URL}
-                  title={pickLocalized(activeLang, mainVideoItem.title)}
-                  className="h-[240px] w-full sm:h-[360px]"
-                  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                  allowFullScreen
-                />
-              </div>
-            ) : (
-              <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-sm text-gray-600">
-                {mainVideoFallbackByLang[activeLang]}
-              </div>
-            )}
-          </div>
-
-          <aside className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-            <h2 className="text-sm font-semibold text-gray-900">
-              {listTitleByLang[activeLang]}
-            </h2>
-            <ul className="mt-3 space-y-2 text-sm text-gray-700">
-              {VIDEO_GUIDE_TOPICS[activeLang].map((topic) => (
-                <li key={topic} className="flex items-start gap-2">
-                  <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-blue-500" />
-                  <span>{topic}</span>
-                </li>
-              ))}
-            </ul>
-          </aside>
-        </div>
-      </section>
-
-      <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h2 className="text-base font-semibold text-gray-900">
-          {updatesTitleByLang[activeLang]}
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-gray-600">
-          {updatesBodyByLang[activeLang]}
-        </p>
-      </section>
-
-      <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h2 className="text-base font-semibold text-gray-900">
-          {activeLang === "de" ? "Alle Materialien" : activeLang === "ua" ? "Усі матеріали" : "Все материалы"}
-        </h2>
-        <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {VIDEO_GUIDE_ITEMS.map((item) => {
-            const hasVideo = Boolean(item.embedUrl);
-            return (
-              <article
-                key={item.id}
-                className={`rounded-xl border p-4 ${
-                  hasVideo
-                    ? "border-gray-200 bg-white shadow-sm"
-                    : "border-amber-200 bg-amber-50/60"
-                }`}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-semibold text-gray-900">
-                    {pickLocalized(activeLang, item.title)}
-                  </h3>
-                  <span
-                    className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
-                      hasVideo
-                        ? "bg-blue-50 text-blue-700"
-                        : "bg-amber-100 text-amber-800"
-                    }`}
-                  >
-                    {pickLocalized(activeLang, item.badge)}
-                  </span>
-                </div>
-                <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                  {pickLocalized(activeLang, item.description)}
+      <Card>
+        <CardContent className="pt-freuly-6">
+          <div className="grid gap-freuly-6 lg:grid-cols-[2fr_1fr]">
+            <div className="min-w-0">
+              <div className="mb-freuly-3 flex flex-wrap items-center gap-2">
+                <Badge variant="info">{pickLocalized(activeLang, mainVideoItem.badge)}</Badge>
+                <p className="text-freuly-body font-semibold text-freuly-text-primary">
+                  {pickLocalized(activeLang, mainVideoItem.title)}
                 </p>
-                {hasVideo ? (
-                  <div className="mt-3 overflow-hidden rounded-lg border border-gray-200 bg-black">
-                    <iframe
-                      src={item.embedUrl ?? ""}
-                      title={pickLocalized(activeLang, item.title)}
-                      className="h-[180px] w-full"
-                      allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      referrerPolicy="strict-origin-when-cross-origin"
-                      allowFullScreen
-                    />
+              </div>
+              {hasMainVideo ? (
+                <div className="overflow-hidden rounded-freuly-md border border-freuly-border-default bg-black">
+                  <iframe
+                    src={mainVideoItem.embedUrl ?? VIDEO_GUIDE_EMBED_URL}
+                    title={pickLocalized(activeLang, mainVideoItem.title)}
+                    className="h-[240px] w-full sm:h-[360px]"
+                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  />
+                </div>
+              ) : (
+                <div className="rounded-freuly-md border border-dashed border-freuly-border-default bg-freuly-border-subtle p-freuly-6 text-freuly-body-sm text-freuly-text-secondary">
+                  {mainVideoFallbackByLang[activeLang]}
+                </div>
+              )}
+            </div>
+
+            <aside className="rounded-freuly-md border border-freuly-border-default bg-freuly-border-subtle/50 p-freuly-4">
+              <h2 className="text-freuly-label text-freuly-text-primary">{listTitleByLang[activeLang]}</h2>
+              <ul className="mt-freuly-3 space-y-2 text-freuly-body-sm text-freuly-text-secondary">
+                {VIDEO_GUIDE_TOPICS[activeLang].map((topic) => (
+                  <li key={topic} className="flex items-start gap-2">
+                    <span aria-hidden className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-freuly-primary" />
+                    <span>{topic}</span>
+                  </li>
+                ))}
+              </ul>
+            </aside>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{updatesTitleByLang[activeLang]}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-freuly-body-sm leading-relaxed text-freuly-text-secondary">
+            {updatesBodyByLang[activeLang]}
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{allMaterialsTitleByLang[activeLang]}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-freuly-4 md:grid-cols-2 xl:grid-cols-3">
+            {VIDEO_GUIDE_ITEMS.map((item) => {
+              const hasVideo = Boolean(item.embedUrl);
+              return (
+                <article
+                  key={item.id}
+                  className={`rounded-freuly-md border p-freuly-4 ${
+                    hasVideo
+                      ? "border-freuly-border-default bg-freuly-surface"
+                      : "border-freuly-warning-border bg-freuly-warning-light/40"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-freuly-body font-semibold text-freuly-text-primary">
+                      {pickLocalized(activeLang, item.title)}
+                    </h3>
+                    <Badge variant={hasVideo ? "info" : "warning"}>
+                      {pickLocalized(activeLang, item.badge)}
+                    </Badge>
                   </div>
-                ) : (
-                  <p className="mt-3 text-xs font-medium text-amber-800">
-                    {comingSoonLineByLang[activeLang]}
+                  <p className="mt-freuly-2 text-freuly-body-sm leading-relaxed text-freuly-text-secondary">
+                    {pickLocalized(activeLang, item.description)}
                   </p>
-                )}
-              </article>
-            );
-          })}
-        </div>
-      </section>
+                  {hasVideo ? (
+                    <div className="mt-freuly-3 overflow-hidden rounded-freuly-md border border-freuly-border-default bg-black">
+                      <iframe
+                        src={item.embedUrl ?? ""}
+                        title={pickLocalized(activeLang, item.title)}
+                        className="h-[180px] w-full"
+                        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerPolicy="strict-origin-when-cross-origin"
+                        allowFullScreen
+                      />
+                    </div>
+                  ) : (
+                    <p className="mt-freuly-3 text-xs font-medium text-freuly-warning">
+                      {comingSoonLineByLang[activeLang]}
+                    </p>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
