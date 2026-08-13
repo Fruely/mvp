@@ -1,15 +1,19 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { headers } from "next/headers";
-import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
 import { getDictionary, t, type Dictionary } from "@/lib/i18n";
-import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { searchSpecialists, type SpecialistResult } from "@/lib/search/specialistSearch";
 import { getSearchSuggestions } from "@/lib/search/searchSuggestions";
 import { shouldOfferOnlineFallbackForNoLocalResults } from "@/lib/search/noLocalResultsFallback";
 import ServiceRequestCtaBlock from "@/components/serviceRequests/ServiceRequestCtaBlock";
+import SpecialistResultCard from "@/components/public/SpecialistResultCard";
+import {
+  publicLinkPrimaryClass,
+  publicLinkSecondaryClass,
+  publicPageContainerClass,
+  publicSectionTitleClass,
+} from "@/components/public/publicStyles";
 import { requestServiceHref } from "@/lib/serviceRequests/requestServiceHref";
 
 export const dynamic = "force-dynamic";
@@ -173,14 +177,14 @@ export default async function SpecialistsPage({
 
   if (!category && !q) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-        <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+      <div className="bg-freuly-page py-freuly-10 flex flex-col items-center justify-center px-4">
+        <div className="max-w-lg w-full rounded-freuly-card border border-freuly-border-default bg-freuly-surface shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-10 text-center">
+          <h1 className="text-2xl font-bold text-freuly-text-primary mb-4">
             Выберите, какого специалиста вы ищете
           </h1>
           <Link
             href={serviceSearchHref(uiLang)}
-            className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
+            className={publicLinkPrimaryClass}
           >
             Назад к поиску
           </Link>
@@ -191,18 +195,18 @@ export default async function SpecialistsPage({
 
   if (!isOnlineList && !place && !q) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
-          <h1 className="text-xl font-bold text-gray-900 mb-2">
+      <div className="bg-freuly-page py-freuly-10 flex flex-col items-center justify-center px-4">
+        <div className="max-w-md w-full rounded-freuly-card border border-freuly-border-default bg-freuly-surface shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-8 text-center">
+          <h1 className="text-xl font-bold text-freuly-text-primary mb-2">
             Missing search parameters
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-freuly-text-secondary mb-6">
             Language and location are required. Please start your search from the
             homepage.
           </p>
           <Link
             href={serviceSearchHref(uiLang)}
-            className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
+            className={publicLinkPrimaryClass}
           >
             Back to search
           </Link>
@@ -263,29 +267,29 @@ export default async function SpecialistsPage({
           source_path: noLocalSourcePath,
         });
         return (
-          <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-            <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sm:p-10 text-center">
-              <div className="rounded-xl border border-blue-100 bg-blue-50/50 px-5 py-6 sm:px-6 sm:py-7">
-                <h1 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-2">
+          <div className="bg-freuly-page py-freuly-10 flex flex-col items-center justify-center px-4">
+            <div className="max-w-lg w-full rounded-freuly-card border border-freuly-border-default bg-freuly-surface shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-8 sm:p-10 text-center">
+              <div className="rounded-xl border border-freuly-primary/20 bg-freuly-primary-light/50 px-5 py-6 sm:px-6 sm:py-7">
+                <h1 className="text-xl sm:text-2xl font-semibold text-freuly-text-secondary mb-2">
                   {t(dict, "search.noLocalResults.titleOffline")}
                 </h1>
-                <p className="text-sm sm:text-base text-gray-600 mb-5">
+                <p className="text-sm sm:text-base text-freuly-text-secondary mb-5">
                   {t(dict, "search.noLocalResults.subtitleOffline")}
                 </p>
                 <Link
                   href={findSpecialistHref}
-                  className="inline-block w-full sm:w-auto px-6 py-3 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition"
+                  className={`${publicLinkPrimaryClass} w-full sm:w-auto rounded-full`}
                 >
                   {t(dict, "search.noLocalResults.primaryCta")}
                 </Link>
               </div>
-              <div className="mt-6 pt-6 border-t border-gray-100">
-                <p className="text-sm text-gray-600 mb-4">
+              <div className="mt-6 pt-6 border-t border-freuly-border-subtle">
+                <p className="text-sm text-freuly-text-secondary mb-4">
                   {t(dict, "search.noLocalResults.adjustFiltersTitle")}
                 </p>
                 <Link
                   href={serviceSearchHref(uiLang)}
-                  className="inline-block px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
+                  className="inline-block px-5 py-2.5 border border-freuly-border-default text-freuly-text-secondary text-sm font-medium rounded-lg hover:bg-freuly-border-subtle transition"
                 >
                   {t(dict, "search.noResults.changeFilters")}
                 </Link>
@@ -302,14 +306,14 @@ export default async function SpecialistsPage({
       if (q) onlineParams.set("q", q);
       const onlineHref = `/specialists?${onlineParams.toString()}`;
       return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-          <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sm:p-10 text-center">
-            <h1 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-6">
+        <div className="bg-freuly-page py-freuly-10 flex flex-col items-center justify-center px-4">
+          <div className="max-w-lg w-full rounded-freuly-card border border-freuly-border-default bg-freuly-surface shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-8 sm:p-10 text-center">
+            <h1 className="text-xl sm:text-2xl font-semibold text-freuly-text-secondary mb-6">
               {t(dict, "search.noLocalResults.titleOnline")}
             </h1>
             <Link
               href={onlineHref}
-              className="inline-block px-6 py-3 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition"
+              className={`${publicLinkPrimaryClass} rounded-full`}
             >
               {t(dict, "search.noLocalResults.showOnlineCta")}
             </Link>
@@ -332,23 +336,23 @@ export default async function SpecialistsPage({
     });
 
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-        <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sm:p-10 text-center">
-          <div className="rounded-xl border border-blue-100 bg-blue-50/50 px-5 py-6 sm:px-6 sm:py-7">
+      <div className="bg-freuly-page py-freuly-10 flex flex-col items-center justify-center px-4">
+        <div className="max-w-lg w-full rounded-freuly-card border border-freuly-border-default bg-freuly-surface shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-8 sm:p-10 text-center">
+          <div className="rounded-xl border border-freuly-primary/20 bg-freuly-primary-light/50 px-5 py-6 sm:px-6 sm:py-7">
             <div className="text-2xl mb-3 opacity-40" aria-hidden>
               🔍
             </div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-2">
+            <h1 className="text-xl sm:text-2xl font-semibold text-freuly-text-secondary mb-2">
               {t(dict, "search.noResults.title")}
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 mb-5">
+            <p className="text-sm sm:text-base text-freuly-text-secondary mb-5">
               {q
                 ? t(dict, "search.noResults.serviceSubtitle")
                 : t(dict, "search.noResults.subtitle")}
             </p>
             <Link
               href={findSpecialistHref}
-              className="inline-block w-full sm:w-auto px-6 py-3 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition"
+              className={`${publicLinkPrimaryClass} w-full sm:w-auto rounded-full`}
             >
               {t(dict, "search.noResults.primaryCta")}
             </Link>
@@ -356,7 +360,7 @@ export default async function SpecialistsPage({
 
           {suggestions.length > 0 && (
             <div className="mt-6 mb-2">
-              <p className="text-sm font-medium text-gray-700 mb-3">
+              <p className="text-sm font-medium text-freuly-text-secondary mb-3">
                 {t(dict, "search.noResults.suggestionsTitle")}
               </p>
               <div className="flex flex-wrap justify-center gap-2">
@@ -368,7 +372,7 @@ export default async function SpecialistsPage({
                       place,
                       radius: radiusParam,
                     })}
-                    className="inline-block px-4 py-2 rounded-full border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 hover:border-gray-400 transition"
+                    className="inline-block px-4 py-2 rounded-full border border-freuly-border-default text-freuly-text-secondary text-sm font-medium hover:bg-freuly-border-subtle hover:border-gray-400 transition"
                   >
                     {s.label}
                   </Link>
@@ -377,20 +381,20 @@ export default async function SpecialistsPage({
             </div>
           )}
 
-          <div className="mt-6 pt-6 border-t border-gray-100">
-            <p className="text-sm text-gray-600 mb-4">
+          <div className="mt-6 pt-6 border-t border-freuly-border-subtle">
+            <p className="text-sm text-freuly-text-secondary mb-4">
               {t(dict, "search.noResults.adjustFiltersTitle")}
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Link
                 href={serviceSearchHref(uiLang)}
-                className="inline-block px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
+                className="inline-block px-5 py-2.5 border border-freuly-border-default text-freuly-text-secondary text-sm font-medium rounded-lg hover:bg-freuly-border-subtle transition"
               >
                 {t(dict, "search.noResults.changeFilters")}
               </Link>
               <Link
                 href={serviceSearchHref(uiLang)}
-                className="inline-block px-5 py-2.5 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 hover:text-gray-800 transition"
+                className="inline-block px-5 py-2.5 text-freuly-text-secondary text-sm font-medium rounded-lg hover:bg-freuly-border-subtle hover:text-gray-800 transition"
               >
                 {t(dict, "search.noResults.backToSearch")}
               </Link>
@@ -415,102 +419,30 @@ export default async function SpecialistsPage({
     (s) => !localSpecialists.includes(s) && !onlineSpecialists.includes(s)
   );
 
-  const renderCard = (s: SpecialistResult) => {
-    const categoryLabel =
-      getCategoryTitle(
-        {
-          title: s.category_title,
-          title_ru: s.category_title_ru,
-          title_de: s.category_title_de,
-          title_ua: s.category_title_ua,
-        },
-        toCategoryTitleLang(uiLang)
-      ) || "Category";
-    const hasCategory = Boolean(categoryLabel && categoryLabel !== "Category");
-
-    return (
-      <li key={s.id}>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-          <div className="flex flex-col sm:flex-row gap-5 p-6">
-            <div className="flex-shrink-0">
-              <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-xl overflow-hidden bg-gray-100">
-                {s.avatar_url ? (
-                  <Image
-                    src={s.avatar_url}
-                    alt={s.name ?? ""}
-                    fill
-                    sizes="128px"
-                    unoptimized
-                    className="object-cover"
-                  />
-                ) : (
-                  <div
-                    className="absolute inset-0 flex items-center justify-center text-4xl"
-                    aria-hidden
-                  >
-                    👤
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-baseline gap-2">
-                <h2 className="text-lg font-bold text-gray-900">{s.name}</h2>
-              </div>
-              {hasCategory && (
-                <p className="text-sm text-gray-500 mt-0.5">{categoryLabel}</p>
-              )}
-              <p className="text-gray-600 text-sm leading-relaxed mt-2 line-clamp-2">
-                {s.bio || t(dict, "search.results.specialistFallbackBio")}
-              </p>
-              {s.postal_code && (
-                <p className="text-xs text-textSecondary mt-2">
-                  {s.postal_code}
-                  {s.work_format && s.work_format !== "online" && (
-                    <span> · {s.work_format}</span>
-                  )}
-                </p>
-              )}
-              {typeof s.distance === "number" && Number.isFinite(s.distance) && (
-                <p className="text-xs text-textSecondary mt-1">
-                  {s.distance} км от вас
-                </p>
-              )}
-              <div className="flex flex-wrap gap-3 mt-4">
-                <Link
-                  href={`${safeSpecialistUrl(uiLang, s)}?open=form`}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-xl shadow-soft hover:bg-gray-800 transition"
-                >
-                  {t(dict, "search.results.sendRequest")}
-                </Link>
-                <Link
-                  href={safeSpecialistUrl(uiLang, s)}
-                  className="inline-flex items-center gap-1 px-4 py-2 text-gray-700 text-sm font-medium hover:text-gray-900 transition"
-                >
-                  {t(dict, "search.results.viewProfile")}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </li>
-    );
-  };
+  const renderCard = (s: SpecialistResult) => (
+    <li key={s.id}>
+      <SpecialistResultCard
+        specialist={s}
+        lang={uiLang}
+        dict={dict}
+        profileHref={safeSpecialistUrl(uiLang, s)}
+        leadHref={`${safeSpecialistUrl(uiLang, s)}?open=form`}
+      />
+    </li>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-8">
+    <div className="bg-freuly-page py-freuly-10">
+      <div className={`${publicPageContainerClass} max-w-4xl`}>
+        <div className="mb-freuly-8">
           <Link
             href={serviceSearchHref(uiLang)}
-            className="text-gray-600 hover:text-gray-900 text-sm font-medium inline-flex items-center gap-1 mb-4"
+            className="mb-freuly-4 inline-flex items-center gap-1 text-sm font-medium text-freuly-text-secondary transition hover:text-freuly-text-primary"
           >
             ← {t(dict, "search.results.backToSearch")}
           </Link>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            {t(dict, "search.results.title")}
-          </h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className={publicSectionTitleClass}>{t(dict, "search.results.title")}</h1>
+          <p className="mt-1 text-freuly-body text-freuly-text-secondary">
             {formatResultsCount(dict, specialists.length, lang, isOnlineList)}
           </p>
         </div>
@@ -521,15 +453,15 @@ export default async function SpecialistsPage({
         {typeof searchRadius === "number" &&
           Number.isFinite(searchRadius) &&
           localSpecialists.length > 0 && (
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="mb-freuly-6 text-sm text-freuly-text-secondary">
               Найдено специалистов в радиусе {searchRadius} км
             </p>
           )}
 
         {localSpecialists.length > 0 && (
           <>
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">Рядом с вами</h2>
-            <ul className="space-y-4 mb-8">
+            <h2 className="mb-freuly-3 text-lg font-semibold text-freuly-text-primary">Рядом с вами</h2>
+            <ul className="mb-freuly-8 space-y-freuly-4">
               {localSpecialists.map(renderCard)}
             </ul>
           </>
@@ -537,17 +469,17 @@ export default async function SpecialistsPage({
 
         {onlineSpecialists.length > 0 && (
           <>
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">
+            <h2 className="mb-freuly-3 text-lg font-semibold text-freuly-text-primary">
               {t(dict, "search.results.onlineSectionTitle")}
             </h2>
-            <ul className="space-y-4 mb-8">
+            <ul className="mb-freuly-8 space-y-freuly-4">
               {onlineSpecialists.map(renderCard)}
             </ul>
           </>
         )}
 
         {otherSpecialists.length > 0 && (
-          <ul className="space-y-4">
+          <ul className="space-y-freuly-4">
             {otherSpecialists.map(renderCard)}
           </ul>
         )}
