@@ -12,10 +12,10 @@ export default function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-black/5 bg-white p-5 shadow-md sm:p-6">
+    <section className="rounded-freuly-card border border-freuly-border-default bg-freuly-surface p-5 shadow-md sm:p-6">
       <header className="mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
-        {subtitle ? <p className="mt-1 text-sm text-gray-600">{subtitle}</p> : null}
+        <h2 className="text-xl font-semibold text-freuly-text-primary">{title}</h2>
+        {subtitle ? <p className="mt-1 text-sm text-freuly-text-secondary">{subtitle}</p> : null}
       </header>
       {children}
     </section>

@@ -293,7 +293,7 @@ export default function SpecialistProfileClient({
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">{t(dict, "specialist.loading")}</p>
+          <p className="text-freuly-text-secondary">{t(dict, "specialist.loading")}</p>
         </div>
       </div>
     );
@@ -304,10 +304,10 @@ export default function SpecialistProfileClient({
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
           <div className="text-6xl mb-4">😔</div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">
+          <h1 className="text-2xl font-bold text-freuly-text-primary mb-2">
             {t(dict, "specialist.notFound")}
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-freuly-text-secondary mb-6">
             {error === SLUG_NOT_FOUND
               ? t(dict, "specialist.slugNotFound")
               : error || t(dict, "common.tryLater")}
@@ -554,7 +554,7 @@ export default function SpecialistProfileClient({
           {aboutText ? (
             <SectionCard title={t(dict, "specialist.about")} subtitle={lang === "ru" ? "Опыт, подход и ключевые компетенции" : lang === "de" ? "Erfahrung, Ansatz und Schlüsselkompetenzen" : "Досвід, підхід та ключові компетенції"}>
               <div id="about" className="scroll-mt-24">
-                <p className="whitespace-pre-wrap leading-relaxed text-gray-700">{aboutText}</p>
+                <p className="whitespace-pre-wrap leading-relaxed text-freuly-text-secondary">{aboutText}</p>
               </div>
             </SectionCard>
           ) : null}
@@ -642,13 +642,13 @@ export default function SpecialistProfileClient({
           ) : null}
 
           <SectionCard title={sectionText.reviewsTitle} subtitle={sectionText.reviewsSubtitle}>
-            <div className="flex flex-wrap items-center gap-3 text-gray-800">
+            <div className="flex flex-wrap items-center gap-3 text-freuly-text-primary">
               <div className="flex items-center gap-1" aria-label={`rating ${normalizedRating.toFixed(1)} out of 5`}>
                 {Array.from({ length: 5 }, (_, idx) => renderStar(normalizedRating - idx, idx))}
               </div>
               {hasRating ? <p className="text-2xl font-bold">{specialist.rating?.toFixed(1)}</p> : null}
               {(reviewsCount > 0 || reviews.length > 0) ? (
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-freuly-text-secondary">
                   ({reviews.length || reviewsCount} {sectionText.reviewsWord})
                 </p>
               ) : null}
@@ -656,10 +656,10 @@ export default function SpecialistProfileClient({
             {reviews.length > 0 ? (
               <div className="mt-4 space-y-4">
                 {reviews.map((review) => (
-                  <div key={review.id} className="rounded-xl border border-gray-200 bg-slate-50 p-4">
+                  <div key={review.id} className="rounded-xl border border-freuly-border-default bg-slate-50 p-4">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-gray-900">{review.author_name}</p>
-                      <time className="text-xs text-gray-500" dateTime={review.created_at}>
+                      <p className="text-sm font-semibold text-freuly-text-primary">{review.author_name}</p>
+                      <time className="text-xs text-freuly-text-muted" dateTime={review.created_at}>
                         {new Date(review.created_at).toLocaleDateString(lang === "de" ? "de-DE" : lang === "ru" ? "ru-RU" : "uk-UA", { day: "numeric", month: "short", year: "numeric" })}
                       </time>
                     </div>
@@ -668,12 +668,12 @@ export default function SpecialistProfileClient({
                         <span key={idx} className={idx < review.rating ? "text-yellow-400" : "text-gray-300"}>★</span>
                       ))}
                     </div>
-                    <p className="mt-2 text-sm leading-relaxed text-gray-700">{review.comment}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-freuly-text-secondary">{review.comment}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-600">{sectionText.noReviews}</p>
+              <p className="text-sm text-freuly-text-secondary">{sectionText.noReviews}</p>
             )}
 
             <div className="mt-4">
@@ -685,22 +685,22 @@ export default function SpecialistProfileClient({
                 <button
                   type="button"
                   onClick={() => { setShowReviewForm(true); setReviewMsg(null); }}
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-freuly-text-secondary hover:bg-freuly-border-subtle transition"
                 >
                   {sectionText.leaveReview}
                 </button>
               ) : (
-                <div className="rounded-xl border border-gray-200 bg-slate-50 p-4 space-y-3">
+                <div className="rounded-xl border border-freuly-border-default bg-slate-50 p-4 space-y-3">
                   <label className="block space-y-1 text-sm">
-                    <span className="font-medium text-gray-700">{sectionText.reviewName}</span>
+                    <span className="font-medium text-freuly-text-secondary">{sectionText.reviewName}</span>
                     <input
                       value={reviewForm.author_name}
                       onChange={(e) => setReviewForm((prev) => ({ ...prev, author_name: e.target.value.slice(0, 100) }))}
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2"
+                      className="w-full rounded-lg border border-freuly-border-default px-3 py-2"
                     />
                   </label>
                   <div className="space-y-1 text-sm">
-                    <span className="font-medium text-gray-700">{sectionText.reviewRating}</span>
+                    <span className="font-medium text-freuly-text-secondary">{sectionText.reviewRating}</span>
                     <div className="flex gap-1">
                       {Array.from({ length: 5 }, (_, idx) => (
                         <button
@@ -715,12 +715,12 @@ export default function SpecialistProfileClient({
                     </div>
                   </div>
                   <label className="block space-y-1 text-sm">
-                    <span className="font-medium text-gray-700">{sectionText.reviewComment}</span>
+                    <span className="font-medium text-freuly-text-secondary">{sectionText.reviewComment}</span>
                     <textarea
                       value={reviewForm.comment}
                       onChange={(e) => setReviewForm((prev) => ({ ...prev, comment: e.target.value.slice(0, 1000) }))}
                       rows={3}
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2"
+                      className="w-full rounded-lg border border-freuly-border-default px-3 py-2"
                     />
                   </label>
                   <div className="flex items-center gap-3">
@@ -768,7 +768,7 @@ export default function SpecialistProfileClient({
                     <button
                       type="button"
                       onClick={() => { setShowReviewForm(false); setReviewMsg(null); }}
-                      className="text-sm text-gray-500 hover:text-gray-700"
+                      className="text-sm text-freuly-text-muted hover:text-freuly-text-secondary"
                     >
                       ✕
                     </button>
@@ -804,7 +804,7 @@ export default function SpecialistProfileClient({
                       <div className="shrink-0 max-w-[min(100%,18rem)] text-right">
                         <span className="font-medium text-textPrimary">{main}</span>
                         {commentBelow ? (
-                          <p className="mt-0.5 text-xs font-normal text-gray-500">{commentBelow}</p>
+                          <p className="mt-0.5 text-xs font-normal text-freuly-text-muted">{commentBelow}</p>
                         ) : null}
                       </div>
                     </div>
@@ -816,7 +816,7 @@ export default function SpecialistProfileClient({
 
           {(publicLocationLabel || (specialist.languages && specialist.languages.length > 0) || (workMode !== "online" && workModeLabel)) ? (
             <SectionCard title={sectionText.contactsTitle} subtitle={sectionText.contactsSubtitle}>
-              <div className="space-y-2 text-sm text-gray-700">
+              <div className="space-y-2 text-sm text-freuly-text-secondary">
                 {publicLocationLabel ? (
                   <p>
                     <span className="font-medium">{sectionText.contactsLineLocation}: </span>
@@ -837,12 +837,12 @@ export default function SpecialistProfileClient({
                         href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 transition"
+                        className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-freuly-text-secondary hover:bg-freuly-border-subtle transition"
                       >
                         {t(dict, "specialistPage.buildRoute")}
                       </a>
                       {mapCoords ? (
-                        <div className="mt-3 overflow-hidden rounded-xl border border-gray-200">
+                        <div className="mt-3 overflow-hidden rounded-xl border border-freuly-border-default">
                           <iframe
                             title={t(dict, "specialistPage.mapEmbedTitle")}
                             src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapCoords.lon - 0.01},${mapCoords.lat - 0.007},${mapCoords.lon + 0.01},${mapCoords.lat + 0.007}&layer=mapnik&marker=${mapCoords.lat},${mapCoords.lon}`}
@@ -873,7 +873,7 @@ export default function SpecialistProfileClient({
                 <button
                   type="button"
                   onClick={() => void handleShare("copy")}
-                  className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                  className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-freuly-text-secondary hover:bg-freuly-border-subtle"
                 >
                   {t(dict, "specialistPage.copyLink")}
                 </button>
@@ -882,21 +882,21 @@ export default function SpecialistProfileClient({
                     <button
                       type="button"
                       onClick={() => void handleShare("whatsapp")}
-                      className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                      className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-freuly-text-secondary hover:bg-freuly-border-subtle"
                     >
                       WhatsApp
                     </button>
                     <button
                       type="button"
                       onClick={() => void handleShare("telegram")}
-                      className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                      className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-freuly-text-secondary hover:bg-freuly-border-subtle"
                     >
                       Telegram
                     </button>
                     <button
                       type="button"
                       onClick={() => void handleShare("instagram")}
-                      className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                      className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-freuly-text-secondary hover:bg-freuly-border-subtle"
                     >
                       Instagram
                     </button>

@@ -41,7 +41,7 @@ export default function SpecialistHero({
   formNode: ReactNode;
 }) {
   return (
-    <aside className="rounded-xl border border-black/5 bg-white p-4 shadow-card sm:p-6">
+    <aside className="rounded-xl border border-black/5 bg-white p-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)] sm:p-6">
       <div className="space-y-4">
         <SpecialistHeroContent
           avatarUrl={avatarUrl}
@@ -62,7 +62,7 @@ export default function SpecialistHero({
 
         {showForm ? (
           <div id="lead-form" className="rounded-xl border border-black/5 bg-white p-3 sm:p-4">
-            <h2 className="mb-4 text-lg font-semibold text-gray-900">{formTitle}</h2>
+            <h2 className="mb-4 text-lg font-semibold text-freuly-text-primary">{formTitle}</h2>
             {formNode}
           </div>
         ) : null}

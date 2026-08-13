@@ -22,7 +22,7 @@ export default function MobileStickyCTA({
         md:hidden
         fixed left-0 right-0 bottom-0
         z-50
-        border-t border-gray-200
+        border-t border-freuly-border-default
         bg-white/95 backdrop-blur
       "
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
@@ -34,7 +34,7 @@ export default function MobileStickyCTA({
           className="
             w-full h-14
             rounded-xl
-            bg-blue-600 hover:bg-blue-700
+            bg-freuly-primary hover:bg-freuly-primary-hover
             text-white font-semibold
             shadow-md
             active:scale-[0.98]
