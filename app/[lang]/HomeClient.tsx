@@ -4,20 +4,20 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
-import { getSpecialistUrl } from "@/lib/urls";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
-import GermanyMapCTA from "@/components/home/GermanyMapCTA";
+import InstallFreuly from "@/components/pwa/InstallFreuly";
 import ServiceSearchFlow, {
   SERVICE_SEARCH_FLOW_TEXT,
 } from "@/components/search-flow/ServiceSearchFlow";
-import FounderBadge from "@/components/specialist/FounderBadge";
-import InstallFreuly from "@/components/pwa/InstallFreuly";
+import VariantBCategoryIcon from "@/components/home/variantB/VariantBCategoryIcon";
+import VariantBSpecialistCard from "@/components/home/variantB/VariantBSpecialistCard";
+import VariantBHowItWorksSteps from "@/components/home/variantB/VariantBHowItWorksSteps";
 import {
   publicCardClass,
-  publicLinkPrimaryClass,
   publicPageContainerClass,
 } from "@/components/public/publicStyles";
+import { ArrowRight, Shield, Users } from "lucide-react";
 
 type MosaicImage = { url: string; alt?: string; category_id?: string };
 
@@ -115,30 +115,7 @@ type RecommendedSpecialist = {
 
 const BOOSTED_CHILD_CATEGORY_SLUGS = ["it-support"] as const;
 
-const HERO_COPY: Record<
-  Lang,
-  {
-    title: string;
-    subtitle: string;
-    popularLabel: string;
-  }
-> = {
-  ru: {
-    title: "Найдите специалиста на вашем языке в Германии",
-    subtitle: "Рядом с вами и онлайн. Выберите того, с кем вам удобно.",
-    popularLabel: "Популярные категории:",
-  },
-  ua: {
-    title: "Знайдіть спеціаліста вашою мовою в Німеччині",
-    subtitle: "Поруч із вами та онлайн. Оберіть того, з ким вам зручно.",
-    popularLabel: "Популярні категорії:",
-  },
-  de: {
-    title: "Finden Sie einen Spezialisten in Ihrer Sprache in Deutschland",
-    subtitle: "In Ihrer Nähe und online. Wählen Sie jemanden, mit dem Sie sich wohlfühlen.",
-    popularLabel: "Beliebte Kategorien:",
-  },
-};
+const TRUST_AVATAR_FALLBACKS = ["#1a8a7d", "#d35a3b", "#6366f1"] as const;
 
 export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Dictionary; place?: string }) {
   const [blocks, setBlocks] = useState<Block[]>([]);
@@ -151,19 +128,6 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
   const [isRecommendedLoading, setIsRecommendedLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const placeFromUrl = place?.trim() ?? "";
-  const specialistLang = lang === "ua" ? "uk" : lang;
-
-  function buildDisplayCategories(all: PopularCategory[]): PopularCategory[] {
-    const MAX = 12;
-    const featured = all.filter((c) => typeof c.sort_order === "number" && c.sort_order <= 3);
-    const rest = all.filter((c) => typeof c.sort_order !== "number" || c.sort_order > 3);
-    const restCopy = [...rest];
-    for (let i = restCopy.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [restCopy[i], restCopy[j]] = [restCopy[j], restCopy[i]];
-    }
-    return [...featured.slice(0, 4), ...restCopy.slice(0, 8)].slice(0, MAX);
-  }
 
   useEffect(() => {
     function normalizeCategories(rawData: any[]): CategoryStat[] {
@@ -387,102 +351,20 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
 
   const textImageContent = (textImage?.content as TextImageBlockContent) || {};
 
-  const renderRecommendedSpecialists = (data: RecommendedSpecialist[] | null | undefined) => {
-    if (!data || data.length === 0) return null;
+  const trustAvatars = useMemo(() => {
+    const fromSpecialists = recommendedSpecialists
+      .map((item) => item.avatar_url)
+      .filter((url): url is string => typeof url === "string" && url.trim().length > 0)
+      .slice(0, 3);
 
-    return (
-      <section className="pt-12 pb-10 md:pt-14 md:pb-12">
-        <div className="mb-6 flex items-end justify-between gap-4 md:mb-8">
-          <h2 className="text-freuly-section-title text-freuly-text-primary">
-            {t(dict, "home.recommended.title")}
-          </h2>
-        </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {data.map((specialist) => {
-            const categoryLabel =
-              getCategoryTitle(
-                {
-                  title: specialist.category_title,
-                  title_ru: specialist.category_title_ru,
-                  title_de: specialist.category_title_de,
-                  title_ua: specialist.category_title_ua,
-                },
-                toCategoryTitleLang(lang),
-              ) || t(dict, "home.recommended.defaultCategory");
-            const profileHref = getSpecialistUrl(lang, specialist);
+    if (fromSpecialists.length >= 3) return fromSpecialists;
+    return fromSpecialists;
+  }, [recommendedSpecialists]);
 
-            return (
-              <article
-                key={specialist.id}
-                className={`${publicCardClass} flex h-full flex-col overflow-hidden`}
-              >
-                <div className="relative h-[200px] w-full overflow-hidden bg-freuly-border-subtle">
-                  {specialist.founder_badge ? (
-                    <div className="absolute left-4 top-4 z-10">
-                      <FounderBadge />
-                    </div>
-                  ) : null}
-                  {specialist.badges?.includes("premium_placement") ||
-                  specialist.placement_group === "premium" ? (
-                    <div className="absolute right-4 top-4 z-10 rounded-freuly-pill border border-freuly-warning-border bg-freuly-warning-light px-2.5 py-1 text-freuly-badge font-semibold text-freuly-warning">
-                      Премиум-показ
-                    </div>
-                  ) : null}
-                  {specialist.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={specialist.avatar_url}
-                      alt={specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
-                      className="h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="h-full w-full bg-freuly-border-subtle" />
-                  )}
-                </div>
-                <div className="flex flex-1 flex-col px-5 py-5">
-                  <p className="text-freuly-card-title text-freuly-text-primary line-clamp-1">
-                    {specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
-                  </p>
-                  <p className="mt-1 text-[15px] text-freuly-text-secondary line-clamp-1">
-                    {categoryLabel}
-                  </p>
-                  {specialist.languages.length > 0 ? (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {specialist.languages.slice(0, 3).map((code) => (
-                        <span
-                          key={code}
-                          className="rounded-freuly-pill border border-freuly-border-default bg-freuly-border-subtle px-2.5 py-1 text-xs text-freuly-text-secondary"
-                        >
-                          {code}
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
-                  {specialist.about_line ? (
-                    <p className="mt-3 text-sm italic leading-relaxed text-freuly-text-secondary line-clamp-2">
-                      {specialist.about_line}
-                    </p>
-                  ) : null}
-                  <div className="mt-auto flex items-center justify-between gap-3 pt-4">
-                    <p className="text-xs text-freuly-text-muted line-clamp-1">
-                      {specialist.city || t(dict, "home.recommended.newSpecialist")}
-                    </p>
-                    <Link
-                      href={profileHref}
-                      className="shrink-0 text-sm font-medium text-freuly-primary hover:text-freuly-primary-hover"
-                    >
-                      {t(dict, "search.results.viewProfile")}
-                    </Link>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-    );
-  };
+  const storyQuote =
+    textImageContent.text?.trim() ||
+    textImageContent.title?.trim() ||
+    t(dict, "transitional.final");
 
   const orderedCategorySections = useMemo(() => {
     const preparedParents: CategoryStat[] = [];
@@ -555,33 +437,37 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
 
   const categoryTiles = useMemo(() => {
     const fromParents = orderedCategorySections.flatMap((parent) => parent.children ?? []);
-    if (fromParents.length > 0) return fromParents;
-    return popularCategories.map((item) => ({
-      id: item.id,
-      slug: item.slug,
-      title: item.title,
-      title_ru: item.title_ru,
-      title_de: item.title_de,
-      title_ua: item.title_ua,
-      specialists_count: item.specialists_count,
-      is_clickable: true,
-    }));
+    const source =
+      fromParents.length > 0
+        ? fromParents
+        : popularCategories.map((item) => ({
+            id: item.id,
+            slug: item.slug,
+            title: item.title,
+            title_ru: item.title_ru,
+            title_de: item.title_de,
+            title_ua: item.title_ua,
+            specialists_count: item.specialists_count,
+            is_clickable: true,
+          }));
+    return source.slice(0, 6);
   }, [orderedCategorySections, popularCategories]);
 
-  const copy = HERO_COPY[lang] ?? HERO_COPY.ru;
-
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-freuly-page">
-      <section className="px-freuly-4 pb-10 pt-10 sm:px-freuly-6 sm:pb-12 sm:pt-12 lg:px-16">
+    <div className="flex min-h-[100dvh] flex-col bg-[#f8f7f5]">
+      {/* Hero */}
+      <section className="bg-[#f8f7f5] px-freuly-4 py-16 sm:px-freuly-6 sm:py-20 lg:px-16 lg:py-[120px]">
         <div className={`${publicPageContainerClass} px-0 text-center`}>
-          <h1 className="mx-auto max-w-4xl text-[1.75rem] font-semibold leading-[1.2] tracking-tight text-freuly-text-primary sm:text-[2.25rem]">
-            {copy.title}
-          </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-[15px] font-normal leading-[1.6] text-freuly-text-secondary">
-            {copy.subtitle}
-          </p>
+          <div className="mx-auto max-w-[840px] space-y-5">
+            <h1 className="text-[2rem] font-bold leading-[1.15] tracking-tight text-freuly-text-primary sm:text-[2.5rem] lg:text-[48px]">
+              {t(dict, "home.variantB.hero.title")}
+            </h1>
+            <p className="mx-auto max-w-[640px] text-base leading-relaxed text-freuly-text-secondary">
+              {t(dict, "home.variantB.hero.subtitle")}
+            </p>
+          </div>
 
-          <div className="mx-auto mt-4 w-full max-w-xl text-left md:hidden">
+          <div className="mx-auto mt-8 w-full max-w-xl text-left md:hidden">
             <InstallFreuly
               lang={lang}
               audience="client"
@@ -595,67 +481,93 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             text={SERVICE_SEARCH_FLOW_TEXT[lang]}
             defaultLanguage={lang}
             initialLocation={placeFromUrl}
-            className="mx-auto mt-6 max-w-5xl sm:mt-6"
+            className="mx-auto mt-10 max-w-[820px]"
           />
 
-          <p className="mt-4 text-[13px] text-freuly-text-muted sm:mt-5">
-            {t(dict, "home.cta.socialProof")}
-          </p>
-          <p className="mt-2 hidden text-[13px] text-freuly-text-secondary sm:block">
-            <span>{copy.popularLabel}</span> {t(dict, "home.hero.popularTags")}
-          </p>
+          <div className="mx-auto mt-10 inline-flex max-w-full flex-wrap items-center justify-center gap-3.5">
+            <div className="flex items-center" aria-hidden>
+              {Array.from({ length: 3 }).map((_, idx) => {
+                const avatarUrl = trustAvatars[idx];
+                const fallbackColor = TRUST_AVATAR_FALLBACKS[idx] ?? TRUST_AVATAR_FALLBACKS[0];
+                return (
+                  <span
+                    key={`trust-avatar-${idx}`}
+                    className={[
+                      "inline-flex h-7 w-7 overflow-hidden rounded-[14px] border-2 border-[#f8f7f5]",
+                      idx < 2 ? "-mr-2.5" : "",
+                    ].join(" ")}
+                  >
+                    {avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="block h-full w-full" style={{ backgroundColor: fallbackColor }} />
+                    )}
+                  </span>
+                );
+              })}
+            </div>
+            <p className="text-[13px] font-medium text-freuly-text-secondary">
+              {t(dict, "home.variantB.hero.trustLine")}
+            </p>
+          </div>
         </div>
       </section>
 
-      <section className="px-freuly-4 pb-10 sm:px-freuly-6 lg:px-16">
-        <div className={`${publicPageContainerClass} px-0`}>
-          <h2 className="text-freuly-section-title text-freuly-text-primary">
-            {t(dict, "home.categories.title")}
-          </h2>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-freuly-text-secondary">
-            {t(dict, "home.categories.subtitle")}
-          </p>
+      {/* Categories */}
+      <section className="bg-white px-freuly-4 py-16 sm:px-freuly-6 sm:py-20 lg:px-16 lg:py-24">
+        <div className={`${publicPageContainerClass} space-y-12 px-0`}>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-[1.75rem] font-bold leading-tight text-freuly-text-primary sm:text-[32px]">
+              {t(dict, "home.variantB.categories.title")}
+            </h2>
+            <Link
+              href={`/${lang}/service-search`}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-freuly-primary hover:text-freuly-primary-hover"
+            >
+              {t(dict, "home.variantB.categories.viewAll")}
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+            </Link>
+          </div>
 
           {isPopularLoading && categoryTiles.length === 0 ? (
-            <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-hidden>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-hidden>
               {Array.from({ length: 6 }).map((_, idx) => (
                 <div
-                  key={`popular-skeleton-${idx}`}
-                  className={`${publicCardClass} h-[101px] animate-pulse p-4`}
-                >
-                  <div className="h-4 w-2/3 rounded bg-freuly-border-subtle" />
-                  <div className="mt-3 h-3 w-1/2 rounded bg-freuly-border-subtle" />
-                </div>
+                  key={`category-skeleton-${idx}`}
+                  className={`${publicCardClass} h-[148px] animate-pulse p-7 shadow-[0_4px_6px_rgba(0,0,0,0.02)]`}
+                />
               ))}
             </div>
           ) : (
-            <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {categoryTiles.map((child) => {
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {categoryTiles.map((child, index) => {
                 const label = getCategoryTitle(child, toCategoryTitleLang(lang));
-                const inner = (
+                const description = t(dict, "category.parent.found").replace(
+                  /\{\{\s*count\s*\}\}/g,
+                  String(child.specialists_count),
+                );
+                const cardInner = (
                   <>
-                    <div className="flex items-center gap-2.5">
-                      <span
-                        className="inline-flex h-[18px] w-[18px] shrink-0 rounded-[4px] bg-freuly-primary/15"
-                        aria-hidden
-                      />
-                      <span className="text-[16px] font-semibold leading-[1.2] text-freuly-text-primary line-clamp-1">
+                    <div className="flex items-center gap-3.5">
+                      <VariantBCategoryIcon slug={child.slug} index={index} />
+                      <span className="text-lg font-semibold leading-tight text-freuly-text-primary line-clamp-1">
                         {label}
                       </span>
                     </div>
-                    <p className="mt-2 text-sm leading-relaxed text-freuly-text-secondary line-clamp-2">
-                      {t(dict, "category.parent.found").replace(
-                        /\{\{\s*count\s*\}\}/g,
-                        String(child.specialists_count),
-                      )}
+                    <p className="text-sm leading-relaxed text-freuly-text-secondary line-clamp-2">
+                      {description}
                     </p>
                   </>
                 );
 
                 if (!child.is_clickable) {
                   return (
-                    <div key={child.id} className={`${publicCardClass} p-4 opacity-80`}>
-                      {inner}
+                    <div
+                      key={child.id}
+                      className={`${publicCardClass} flex flex-col gap-4 p-7 opacity-80 shadow-[0_4px_6px_rgba(0,0,0,0.02)]`}
+                    >
+                      {cardInner}
                     </div>
                   );
                 }
@@ -664,9 +576,9 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                   <Link
                     key={child.id}
                     href={`/${lang}/category/${child.slug}`}
-                    className={`${publicCardClass} p-4 transition-colors hover:border-freuly-primary/30`}
+                    className={`${publicCardClass} flex flex-col gap-4 p-7 transition-colors shadow-[0_4px_6px_rgba(0,0,0,0.02)] hover:border-freuly-primary/30`}
                   >
-                    {inner}
+                    {cardInner}
                   </Link>
                 );
               })}
@@ -675,116 +587,170 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
         </div>
       </section>
 
-      <section className="px-freuly-4 sm:px-freuly-6 lg:px-16">
-        <div className={`${publicPageContainerClass} px-0`}>
-          {isRecommendedLoading ? (
-            <div className="pt-12 pb-10 md:pt-14 md:pb-12" aria-hidden>
-              <div className="mb-6 h-8 w-72 rounded bg-freuly-border-subtle" />
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Recommended specialists */}
+      {(isRecommendedLoading || recommendedSpecialists.length > 0) && (
+        <section className="bg-[#f8f7f5] px-freuly-4 pb-20 pt-16 sm:px-freuly-6 sm:pb-24 sm:pt-20 lg:px-16 lg:pb-[120px] lg:pt-[110px]">
+          <div className={`${publicPageContainerClass} space-y-14 px-0`}>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="space-y-2">
+                <p className="text-[13px] font-bold uppercase tracking-wide text-freuly-primary">
+                  {t(dict, "home.variantB.recommended.eyebrow")}
+                </p>
+                <h2 className="text-[1.75rem] font-bold leading-tight text-freuly-text-primary sm:text-[32px]">
+                  {t(dict, "home.variantB.recommended.title")}
+                </h2>
+              </div>
+              <Link
+                href={`/${lang}/service-search`}
+                className="inline-flex items-center gap-1 text-sm font-semibold text-freuly-primary hover:text-freuly-primary-hover"
+              >
+                {t(dict, "home.variantB.recommended.viewAll")}
+                <span aria-hidden>→</span>
+              </Link>
+            </div>
+
+            {isRecommendedLoading ? (
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4" aria-hidden>
                 {Array.from({ length: 4 }).map((_, idx) => (
                   <div key={`recommended-skeleton-${idx}`} className={`${publicCardClass} overflow-hidden`}>
-                    <div className="h-[200px] animate-pulse bg-freuly-border-subtle" />
-                    <div className="space-y-2 p-5">
-                      <div className="h-4 w-2/3 rounded bg-freuly-border-subtle" />
-                      <div className="h-3 w-1/2 rounded bg-freuly-border-subtle" />
+                    <div className="h-[240px] animate-pulse bg-freuly-border-subtle" />
+                    <div className="space-y-2 p-6">
+                      <div className="h-5 w-2/3 rounded bg-freuly-border-subtle" />
+                      <div className="h-4 w-1/2 rounded bg-freuly-border-subtle" />
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
-          ) : (
-            renderRecommendedSpecialists(recommendedSpecialists)
-          )}
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                {recommendedSpecialists.slice(0, 4).map((specialist) => (
+                  <VariantBSpecialistCard
+                    key={specialist.id}
+                    specialist={specialist}
+                    lang={lang}
+                    dict={dict}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* How it works */}
+      <section className="bg-freuly-primary-light px-freuly-4 py-16 sm:px-freuly-6 sm:py-20 lg:px-16 lg:py-[100px]">
+        <div className={`${publicPageContainerClass} space-y-12 px-0`}>
+          <div className="space-y-3">
+            <p className="text-[13px] font-bold uppercase tracking-wide text-freuly-primary">
+              {t(dict, "home.variantB.howItWorks.eyebrow")}
+            </p>
+            <h2 className="max-w-3xl text-[1.75rem] font-bold leading-[1.2] text-freuly-text-primary sm:text-4xl">
+              {t(dict, "home.variantB.howItWorks.headline")}
+            </h2>
+          </div>
+          <VariantBHowItWorksSteps dict={dict} />
         </div>
       </section>
 
-      <section className="bg-freuly-primary-light/60 px-freuly-4 py-12 sm:px-freuly-6 md:py-14 lg:px-16">
+      {/* Story */}
+      <section className="bg-white px-freuly-4 py-16 sm:px-freuly-6 sm:py-20 lg:px-16 lg:py-[120px]">
         <div className={`${publicPageContainerClass} px-0`}>
-          <div className="mx-auto max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-wide text-freuly-primary">
-              {t(dict, "home.howItWorks.title")}
-            </p>
-            <p className="mt-3 text-freuly-section-title font-semibold leading-[1.3] text-freuly-text-primary">
-              {t(dict, "transitional.final")}
-            </p>
-            <ol className="mt-6 space-y-3 text-[15px] leading-relaxed text-freuly-text-secondary">
-              <li>{t(dict, "home.howItWorks.step1")}</li>
-              <li>{t(dict, "home.howItWorks.step2")}</li>
-              <li>{t(dict, "home.howItWorks.step3")}</li>
-            </ol>
-            {textImageContent.title || textImageContent.text ? (
-              <p className="mt-6 text-sm leading-relaxed text-freuly-text-secondary">
-                {textImageContent.title || textImageContent.text}
-              </p>
-            ) : null}
+          <div className="mx-auto max-w-[920px] rounded-3xl bg-freuly-primary-light p-8 sm:p-12">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+              <div className="space-y-5">
+                <p className="text-[13px] font-bold uppercase tracking-wide text-freuly-primary">
+                  {t(dict, "home.variantB.story.eyebrow")}
+                </p>
+                <p className="text-[1.375rem] font-semibold leading-[1.4] text-freuly-text-primary sm:text-[26px]">
+                  {storyQuote}
+                </p>
+              </div>
+              <Link
+                href={`/${lang}/service-search`}
+                className="inline-flex shrink-0 items-center gap-1 self-start text-sm font-semibold text-freuly-primary hover:text-freuly-primary-hover lg:self-end"
+              >
+                {t(dict, "home.variantB.story.cta")}
+                <span aria-hidden>→</span>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="px-freuly-4 py-12 sm:px-freuly-6 md:py-14 lg:px-16">
-        <div className={`${publicPageContainerClass} grid gap-6 px-0 md:grid-cols-2`}>
-          <div className={`${publicCardClass} bg-[#FFF7ED] p-6 sm:p-8`}>
-            <h2 className="text-freuly-card-title text-freuly-text-primary">
-              {t(dict, "header.nav.partners")}
-            </h2>
-            <p className="mt-2 text-[15px] leading-relaxed text-freuly-text-secondary">
-              {t(dict, "transitional.line2")}
-            </p>
+      {/* Promos */}
+      <section className="bg-white px-freuly-4 py-16 sm:px-freuly-6 sm:py-20 lg:px-16 lg:py-24">
+        <div className={`${publicPageContainerClass} px-0`}>
+          <div className="grid gap-6 lg:grid-cols-2">
             <Link
               href={`/${lang}/partners`}
-              className="mt-4 inline-flex text-sm font-semibold text-freuly-primary hover:text-freuly-primary-hover"
+              className={`${publicCardClass} flex gap-6 bg-[#fff1ec] p-8 transition-colors hover:border-freuly-primary/30`}
             >
-              {t(dict, "header.nav.partners")} →
+              <span className="inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-white">
+                <Users className="h-6 w-6 text-[#d35a3b]" aria-hidden />
+              </span>
+              <span className="space-y-2">
+                <span className="block text-xl font-bold text-freuly-text-primary">
+                  {t(dict, "home.variantB.promo.invite.title")}
+                </span>
+                <span className="block text-sm leading-relaxed text-freuly-text-secondary">
+                  {t(dict, "home.variantB.promo.invite.body")}
+                </span>
+                <span className="inline-flex items-center gap-1 text-sm font-semibold text-[#d35a3b]">
+                  {t(dict, "home.variantB.promo.invite.cta")}
+                  <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                </span>
+              </span>
             </Link>
-          </div>
-          <div className={`${publicCardClass} bg-freuly-primary-light p-6 sm:p-8`}>
-            <h2 className="text-freuly-card-title text-freuly-text-primary">
-              {t(dict, "home.howItWorks.specialistCta")}
-            </h2>
-            <p className="mt-2 text-[15px] leading-relaxed text-freuly-text-secondary">
-              {t(dict, "home.mapCta.body")}
-            </p>
+
             <Link
               href={`/${lang}/for-specialists`}
-              className="mt-4 inline-flex text-sm font-semibold text-freuly-primary hover:text-freuly-primary-hover"
+              className={`${publicCardClass} flex gap-6 bg-freuly-primary-light p-8 transition-colors hover:border-freuly-primary/30`}
             >
-              {t(dict, "home.mapCta.button")} →
+              <span className="inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-white">
+                <Shield className="h-6 w-6 text-freuly-primary" aria-hidden />
+              </span>
+              <span className="space-y-2">
+                <span className="block text-xl font-bold text-freuly-text-primary">
+                  {t(dict, "home.variantB.promo.specialist.title")}
+                </span>
+                <span className="block text-sm leading-relaxed text-freuly-text-secondary">
+                  {t(dict, "home.mapCta.body")}
+                </span>
+                <span className="inline-flex items-center gap-1 text-sm font-semibold text-freuly-primary">
+                  {t(dict, "home.variantB.promo.specialist.cta")}
+                  <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                </span>
+              </span>
             </Link>
           </div>
         </div>
       </section>
 
-      <GermanyMapCTA
-        title={t(dict, "home.mapCta.title")}
-        subtitle={t(dict, "home.mapCta.subtitle")}
-        body={t(dict, "home.mapCta.body")}
-        spark={t(dict, "home.mapCta.spark")}
-        button={t(dict, "home.mapCta.button")}
-        lang={lang}
-      />
-
-      <section className="border-t border-freuly-border-default px-freuly-4 py-10 sm:px-freuly-6 lg:px-16">
-        <div className={`${publicPageContainerClass} grid gap-8 px-0 text-center sm:grid-cols-3`}>
-          <p className="text-[15px] leading-relaxed text-freuly-text-secondary">
-            {t(dict, "transitional.line1")}
-          </p>
-          <p className="text-[15px] leading-relaxed text-freuly-text-secondary">
-            {t(dict, "transitional.line2")}
-          </p>
-          <p className="text-[15px] leading-relaxed text-freuly-text-secondary">
-            {t(dict, "transitional.line3")}
-          </p>
+      {/* Trust strip */}
+      <section className="bg-[#f8f7f5] px-freuly-4 py-12 sm:px-freuly-6 lg:px-16 lg:py-14">
+        <div className={`${publicPageContainerClass} px-0`}>
+          <div className="mx-auto grid max-w-[860px] gap-8 text-center sm:grid-cols-3 sm:gap-6">
+            {[
+              {
+                titleKey: "home.variantB.trust.reviewed.title",
+                bodyKey: "home.variantB.trust.reviewed.body",
+              },
+              {
+                titleKey: "home.variantB.trust.format.title",
+                bodyKey: "home.variantB.trust.format.body",
+              },
+              {
+                titleKey: "home.variantB.trust.multilingual.title",
+                bodyKey: "home.variantB.trust.multilingual.body",
+              },
+            ].map(({ titleKey, bodyKey }) => (
+              <div key={titleKey} className="space-y-1">
+                <p className="text-[15px] font-bold text-freuly-text-primary">{t(dict, titleKey)}</p>
+                <p className="text-[13px] leading-relaxed text-freuly-text-secondary">{t(dict, bodyKey)}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </section>
-
-      <section className="px-freuly-4 pb-14 text-center sm:px-freuly-6 lg:px-16">
-        <h2 className="text-freuly-section-title text-freuly-text-primary">{t(dict, "home.cta.title")}</h2>
-        <p className="mx-auto mt-2 max-w-lg text-[15px] text-freuly-text-secondary">
-          {t(dict, "home.cta.subtitle")}
-        </p>
-        <Link href={`/${lang}/for-specialists`} className={`${publicLinkPrimaryClass} mt-5`}>
-          {t(dict, "home.cta.button")}
-        </Link>
       </section>
 
       {error && (
