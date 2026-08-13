@@ -1,4 +1,5 @@
 import { MessageCircle, Send } from "lucide-react";
+import { dashboardLinkSecondaryClass } from "@/components/dashboard/dashboardStyles";
 
 export default function SupportBlock() {
   const waHref =
@@ -6,30 +7,32 @@ export default function SupportBlock() {
   const tgHref =
     "https://t.me/SheshenyaNataliya?text=Здравствуйте,%20я%20специалист%20Freuly,%20нужна%20помощь%20с%20кабинетом";
 
+  const channelLinkClass = `${dashboardLinkSecondaryClass} min-h-[44px] gap-2 px-4`;
+
   return (
-    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-      <h3 className="text-base font-semibold text-gray-900">Не получается опубликоваться?</h3>
-      <p className="mt-1 text-sm text-gray-600">
+    <div className="rounded-freuly-card border border-freuly-border-default bg-freuly-border-subtle p-freuly-4">
+      <h3 className="text-base font-semibold text-freuly-text-primary">Не получается опубликоваться?</h3>
+      <p className="mt-1 text-sm text-freuly-text-secondary">
         Мы поможем разобраться и довести профиль до публикации.
       </p>
-      <div className="mt-4 flex flex-row flex-wrap gap-4 overflow-hidden pb-1">
+      <div className="mt-4 flex flex-row flex-wrap gap-3">
         <a
           href={waHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="relative flex h-28 w-28 shrink-0 flex-col items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-green-400 via-green-500 to-green-600 text-white shadow-[0_10px_22px_rgba(0,0,0,0.14)] transition [@media(hover:hover)]:hover:scale-[1.03] active:scale-95 before:pointer-events-none before:absolute before:inset-0 before:rounded-3xl before:bg-white/15 before:opacity-40"
+          className={channelLinkClass}
         >
-          <MessageCircle className="relative z-10" size={34} strokeWidth={2.2} aria-hidden />
-          <span className="relative z-10 mt-2 text-center text-xs font-medium">WhatsApp</span>
+          <MessageCircle size={18} strokeWidth={2.2} aria-hidden />
+          WhatsApp
         </a>
         <a
           href={tgHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="relative flex h-28 w-28 shrink-0 flex-col items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-sky-400 via-blue-500 to-blue-600 text-white shadow-[0_10px_22px_rgba(0,0,0,0.14)] transition [@media(hover:hover)]:hover:scale-[1.03] active:scale-95 before:pointer-events-none before:absolute before:inset-0 before:rounded-3xl before:bg-white/15 before:opacity-40"
+          className={channelLinkClass}
         >
-          <Send className="relative z-10" size={34} strokeWidth={2.2} aria-hidden />
-          <span className="relative z-10 mt-2 text-center text-xs font-medium">Telegram</span>
+          <Send size={18} strokeWidth={2.2} aria-hidden />
+          Telegram
         </a>
       </div>
     </div>

@@ -3,6 +3,11 @@
 import { useMemo, useState } from "react";
 import { t, type Dictionary } from "@/lib/i18n";
 import type { PricingType } from "@/lib/dashboard/services";
+import { Button } from "@/components/ui";
+import {
+  dashboardCheckboxClass,
+  dashboardFieldClass,
+} from "@/components/dashboard/dashboardStyles";
 
 type ServiceFormValues = {
   title: string;
@@ -139,11 +144,10 @@ export default function ServiceForm({
     });
   }
 
-  const amountInputClass =
-    "h-10 w-full rounded-freuly-md border border-freuly-border-default pl-3 pr-10 text-sm outline-none focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25";
+  const amountInputClass = `${dashboardFieldClass} h-10 pr-10`;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-freuly-md border border-freuly-border-default bg-white p-4">
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-freuly-md border border-freuly-border-default bg-freuly-surface p-4">
       <div>
         <label className="mb-1 block text-xs font-medium text-freuly-text-secondary">
           {t(dict, "dashboard.servicesEditor.field.title")}
@@ -151,7 +155,7 @@ export default function ServiceForm({
         <input
           value={values.title}
           onChange={(e) => updateValue("title", e.target.value)}
-          className="h-10 w-full rounded-freuly-md border border-freuly-border-default px-3 text-sm outline-none focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
+          className={`${dashboardFieldClass} h-10`}
           placeholder={t(dict, "dashboard.servicesEditor.placeholder.title")}
           required
         />
@@ -165,7 +169,7 @@ export default function ServiceForm({
           value={values.description}
           onChange={(e) => updateValue("description", e.target.value)}
           rows={3}
-          className="w-full rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm outline-none focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
+          className={dashboardFieldClass}
           placeholder={t(dict, "dashboard.servicesEditor.placeholder.description")}
         />
       </div>
@@ -178,7 +182,7 @@ export default function ServiceForm({
           value={values.price_comment}
           onChange={(e) => updateValue("price_comment", e.target.value)}
           rows={2}
-          className="w-full rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm outline-none focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
+          className={dashboardFieldClass}
         />
         <p className="mt-1 text-xs text-freuly-text-muted">
           {t(dict, "dashboard.servicesEditor.helper.priceComment")}
@@ -193,7 +197,7 @@ export default function ServiceForm({
           <select
             value={values.pricing_type}
             onChange={(e) => updateValue("pricing_type", e.target.value as PricingType)}
-            className="h-10 w-full rounded-freuly-md border border-freuly-border-default px-3 text-sm outline-none focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
+            className={`${dashboardFieldClass} h-10`}
           >
             <option value="fixed">{pricingTypeLabel("fixed")}</option>
             <option value="hourly">{pricingTypeLabel("hourly")}</option>
@@ -236,7 +240,7 @@ export default function ServiceForm({
               min="0"
               step="0.01"
               disabled={values.pricing_type !== "range"}
-              className={`${amountInputClass} disabled:bg-gray-100`}
+              className={`${amountInputClass} disabled:bg-freuly-border-subtle`}
             />
             {values.pricing_type === "range" ? euroSuffix() : null}
           </div>
@@ -252,7 +256,7 @@ export default function ServiceForm({
           onChange={(e) => updateValue("duration_minutes", e.target.value)}
           type="number"
           min="0"
-          className="h-10 w-full rounded-freuly-md border border-freuly-border-default px-3 text-sm outline-none focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
+          className={`${dashboardFieldClass} h-10`}
           placeholder="60"
         />
       </div>
@@ -263,7 +267,7 @@ export default function ServiceForm({
             type="checkbox"
             checked={requestedActive}
             onChange={(e) => setRequestedActive(e.target.checked)}
-            className="h-4 w-4 rounded border-freuly-border-default text-blue-600 focus:ring-freuly-primary/25"
+            className={dashboardCheckboxClass}
           />
           {t(dict, "dashboard.servicesEditor.field.showInProfile")}
         </label>
@@ -272,21 +276,13 @@ export default function ServiceForm({
       {error ? <p className="text-sm text-freuly-error">{error}</p> : null}
 
       <div className="flex flex-wrap gap-2 pt-1">
-        <button
-          type="submit"
-          disabled={loading}
-          className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-freuly-primary px-4 text-sm font-semibold text-white transition hover:bg-freuly-primary-hover disabled:opacity-60 sm:w-auto"
-        >
+        <Button type="submit" disabled={loading} className="h-10 w-full sm:w-auto">
           {loading ? t(dict, "dashboard.buttons.saving") : submitLabel}
-        </button>
+        </Button>
         {onCancel ? (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="inline-flex h-10 items-center justify-center rounded-freuly-md border border-freuly-border-default bg-white px-4 text-sm font-medium text-freuly-text-primary transition hover:bg-freuly-border-subtle"
-          >
+          <Button type="button" variant="secondary" onClick={onCancel} className="h-10">
             {t(dict, "dashboard.servicesEditor.cancel")}
-          </button>
+          </Button>
         ) : null}
       </div>
     </form>

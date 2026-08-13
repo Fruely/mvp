@@ -34,6 +34,10 @@ import {
 } from "@/components/ui";
 import SpecialistLaunchVideoGuide from "@/components/specialist/SpecialistLaunchVideoGuide";
 import InstallFreuly from "@/components/pwa/InstallFreuly";
+import {
+  dashboardLinkPrimaryClass,
+  dashboardLinkSecondaryClass,
+} from "@/components/dashboard/dashboardStyles";
 import VerificationBanner from "./VerificationBanner";
 
 function formatDashboardDate(value: string | null, lang: string): string {
@@ -63,9 +67,9 @@ function subscriptionSeverityToAlertVariant(severity: SubscriptionSeverity): Ale
 const linkButtonGeometry =
   "inline-flex min-h-[37px] w-full shrink-0 items-center justify-center rounded-freuly-button px-freuly-4 py-[10px] text-freuly-button transition-colors freuly-focus-ring sm:w-auto";
 
-const linkPrimaryClass = `${linkButtonGeometry} bg-freuly-primary text-freuly-text-on-primary hover:bg-freuly-primary-hover`;
+const linkPrimaryClass = dashboardLinkPrimaryClass;
 
-const linkSecondaryClass = `${linkButtonGeometry} border border-freuly-border-default bg-freuly-surface text-freuly-text-secondary hover:bg-freuly-border-subtle`;
+const linkSecondaryClass = dashboardLinkSecondaryClass;
 
 const linkOutlinePrimaryClass = `${linkButtonGeometry} border-[1.5px] border-freuly-primary bg-freuly-surface text-freuly-primary hover:bg-freuly-primary-light`;
 
@@ -502,7 +506,7 @@ export default async function SpecialistDashboardHomePage({
           </CardContent>
           {subscriptionNoticeCopy ? (
             planStatus === "early_access" || planStatus === "trialing" ? (
-              <div className="mt-freuly-5 rounded-freuly-md border border-[#f1ece4] bg-[#fdfbf7] p-freuly-4">
+              <div className="mt-freuly-5 rounded-freuly-md border border-freuly-warning-border bg-freuly-warning-light p-freuly-4">
                 <p className="text-[13px] font-semibold text-freuly-text-primary">
                   {subscriptionNoticeCopy.title}
                 </p>
@@ -621,7 +625,7 @@ export default async function SpecialistDashboardHomePage({
                       <span className="flex min-w-0 items-center gap-3">
                         <span
                           aria-hidden="true"
-                          className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-[#f4f3ef] text-[14px] font-semibold leading-none text-freuly-primary"
+                          className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-freuly-primary-light text-[14px] font-semibold leading-none text-freuly-primary"
                         >
                           {isMissing ? "!" : "+"}
                         </span>

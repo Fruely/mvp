@@ -22,7 +22,7 @@ export default function CheckoutLegalDisclosure({ lang, planCode }: Props) {
         : "Правові документи:";
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs leading-relaxed text-gray-700">
+    <div className="rounded-freuly-md border border-freuly-border-default bg-freuly-border-subtle px-freuly-3 py-freuly-2 text-xs leading-relaxed text-freuly-text-secondary">
       <p className="whitespace-pre-line">{text}</p>
       <p className="mt-2">
         {linksLabel}{" "}

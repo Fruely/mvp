@@ -28,7 +28,7 @@ export default async function LangLayout({
 
   return (
     <div className="min-h-[100dvh] bg-freuly-page">
-      <Suspense fallback={<div className="h-9 border-b border-gray-100 bg-white/40" />}>
+      <Suspense fallback={<div className="h-9 border-b border-freuly-border-subtle bg-freuly-surface/80" />}>
         <LanguageBar />
       </Suspense>
       <Header lang={lang} dict={dict} />

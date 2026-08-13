@@ -344,7 +344,7 @@ export default function ServicesTable({
                       <td className="px-2 py-3">
                         <div className="text-freuly-text-primary">{formatPrice(service)}</div>
                         {service.price_comment ? (
-                          <div className="mt-1 max-w-[280px] text-xs text-gray-500">
+                          <div className="mt-1 max-w-[280px] text-xs text-freuly-text-muted">
                             {service.price_comment}
                           </div>
                         ) : null}

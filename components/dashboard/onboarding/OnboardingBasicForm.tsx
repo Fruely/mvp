@@ -414,17 +414,17 @@ export default function OnboardingBasicForm({
           {errors.work_format ? <p className={errorClass}>{errors.work_format}</p> : null}
         </label>
 
-        <div className="space-y-3 rounded-xl border border-freuly-primary/15 bg-freuly-primary-light/40 p-4">
-          <p className="text-sm font-semibold text-gray-900">
+        <div className="space-y-3 rounded-freuly-md border border-freuly-primary/15 bg-freuly-primary-light/40 p-freuly-4">
+          <p className="text-sm font-semibold text-freuly-text-primary">
             {t(dict, "dashboard.onboarding.basicForm.locationSectionTitle")}
           </p>
-          <p className="text-xs leading-relaxed text-gray-600">
+          <p className="text-xs leading-relaxed text-freuly-text-secondary">
             {t(dict, "dashboard.onboarding.basicForm.locationSectionHint")}
           </p>
 
           <label className="block space-y-1 text-sm">
             <span className="font-medium text-freuly-text-primary">
-              {t(dict, "dashboard.fields.country")} <span className="text-red-500">*</span>
+              {t(dict, "dashboard.fields.country")} <span className="text-freuly-error">*</span>
             </span>
             <select value={GERMANY_COUNTRY_CODE} disabled className={`${inputClass} bg-freuly-border-subtle`}>
               <option value={GERMANY_COUNTRY_CODE}>{t(dict, "dashboard.country.DE")}</option>
@@ -438,7 +438,7 @@ export default function OnboardingBasicForm({
           <label className="block space-y-1 text-sm">
             <span className="font-medium text-freuly-text-primary">
               {t(dict, "dashboard.onboarding.basicForm.postalCodeLabel")}{" "}
-              <span className="text-red-500">*</span>
+              <span className="text-freuly-error">*</span>
             </span>
             <input
               value={form.postal_code}
@@ -506,7 +506,7 @@ export default function OnboardingBasicForm({
                   </select>
                 </label>
               ) : (
-                <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+                <p className="rounded-freuly-md border border-freuly-success-border bg-freuly-success-light px-freuly-3 py-freuly-2 text-sm text-freuly-success">
                   <span className="font-semibold">
                     {t(dict, "dashboard.onboarding.basicForm.locationFound")}
                   </span>{" "}
@@ -522,7 +522,7 @@ export default function OnboardingBasicForm({
         {showRadius ? (
           <label className="block space-y-1 text-sm">
             <span className="font-medium text-freuly-text-primary">
-              {t(dict, "dashboard.fields.serviceRadius")} <span className="text-red-500">*</span>
+              {t(dict, "dashboard.fields.serviceRadius")} <span className="text-freuly-error">*</span>
             </span>
             <select
               value={

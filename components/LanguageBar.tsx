@@ -61,9 +61,9 @@ export default function LanguageBar({ serverLang }: LanguageBarProps) {
   };
 
   return (
-    <div className="bg-gray-50 border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-9 flex items-center justify-center sm:justify-end">
-        <div className="flex items-center gap-0.5 border border-gray-200 rounded-full overflow-hidden bg-white">
+    <div className="border-b border-freuly-border-subtle bg-freuly-page">
+      <div className="mx-auto flex h-9 max-w-7xl items-center justify-center px-freuly-4 sm:justify-end sm:px-freuly-6 lg:px-freuly-16">
+        <div className="flex items-center gap-0.5 overflow-hidden rounded-full border border-freuly-border-default bg-freuly-surface">
           {LANGS.map((l) => (
             <Link
               key={l.code}
@@ -71,8 +71,8 @@ export default function LanguageBar({ serverLang }: LanguageBarProps) {
               onClick={() => rememberLang(l.code)}
               className={`px-3 py-1 text-sm font-medium transition ${
                 activeLang === l.code
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-600 hover:text-blue-600"
+                  ? "bg-freuly-primary text-freuly-text-on-primary"
+                  : "text-freuly-text-secondary hover:text-freuly-primary"
               }`}
               aria-current={activeLang === l.code ? "true" : undefined}
             >

@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
-import SpecialistApplicationForm from "@/components/SpecialistApplicationForm";
 import SpecialistQuickRegisterForm from "@/components/SpecialistQuickRegisterForm";
-import { featureFlags } from "@/lib/featureFlags";
 import { SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 
 // Force dynamic rendering to prevent caching issues
@@ -57,10 +55,5 @@ export default async function BecomeSpecialistPage({
   const lang = params.lang as Lang;
   const dict = await getDictionary(lang);
 
-  if (featureFlags.newSpecialistFunnel) {
-    return <SpecialistQuickRegisterForm lang={lang} dict={dict} />;
-  }
-
-  return <SpecialistApplicationForm lang={lang} dict={dict} />;
+  return <SpecialistQuickRegisterForm lang={lang} dict={dict} />;
 }
-

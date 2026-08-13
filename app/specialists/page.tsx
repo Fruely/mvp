@@ -9,6 +9,7 @@ import { shouldOfferOnlineFallbackForNoLocalResults } from "@/lib/search/noLocal
 import ServiceRequestCtaBlock from "@/components/serviceRequests/ServiceRequestCtaBlock";
 import SearchResultsEmptyState from "@/components/public/SearchResultsEmptyState";
 import SpecialistResultCard from "@/components/public/SpecialistResultCard";
+import { publicPageContainerClass } from "@/components/public/publicStyles";
 import { requestServiceHref } from "@/lib/serviceRequests/requestServiceHref";
 
 export const dynamic = "force-dynamic";
@@ -380,7 +381,7 @@ export default async function SpecialistsPage({
 
   return (
     <div className="bg-freuly-page py-6 sm:py-12">
-      <div className="mx-auto w-full max-w-[960px] px-4 sm:px-6">
+      <div className={publicPageContainerClass}>
         <div className="mb-8 flex flex-col gap-4">
           <Link
             href={serviceSearchHref(uiLang)}

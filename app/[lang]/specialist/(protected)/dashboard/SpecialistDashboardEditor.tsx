@@ -853,7 +853,7 @@ export default function SpecialistDashboardEditor({
                 ))}
               </select>
               {isUncategorizedCategory ? (
-                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium leading-relaxed text-amber-900">
+                <p className="rounded-freuly-md border border-freuly-warning-border bg-freuly-warning-light px-freuly-3 py-freuly-2 text-xs font-medium leading-relaxed text-freuly-warning">
                   {t(dict, "dashboard.readiness.uncategorizedHint")}
                 </p>
               ) : null}
@@ -873,7 +873,7 @@ export default function SpecialistDashboardEditor({
           >
             <label className="space-y-1 text-sm">
               <span className="font-medium text-freuly-text-primary">
-                {t(dict, "dashboard.fields.plzLabel")} {needsLocationGeo && <span className="text-red-500">*</span>}
+                {t(dict, "dashboard.fields.plzLabel")} {needsLocationGeo && <span className="text-freuly-error">*</span>}
               </span>
               <input
                 value={form.postal_code}
@@ -904,7 +904,7 @@ export default function SpecialistDashboardEditor({
           </div>
           <label className="space-y-1 text-sm">
             <span className="font-medium text-freuly-text-primary">
-              {t(dict, "dashboard.fields.city")} {needsLocationGeo && <span className="text-red-500">*</span>}
+              {t(dict, "dashboard.fields.city")} {needsLocationGeo && <span className="text-freuly-error">*</span>}
             </span>
             <input
               value={form.city}
@@ -967,7 +967,7 @@ export default function SpecialistDashboardEditor({
               >
                 <label className="block space-y-1">
                   <span className="font-medium text-freuly-text-primary">
-                    {t(dict, "dashboard.fields.serviceRadius")} <span className="text-red-500">*</span>
+                    {t(dict, "dashboard.fields.serviceRadius")} <span className="text-freuly-error">*</span>
                   </span>
                   <select
                     value={
@@ -1057,10 +1057,10 @@ export default function SpecialistDashboardEditor({
                 />
               </label>
               {avatarError ? (
-                <p className="text-sm font-medium text-red-600">{avatarError}</p>
+                <p className="text-sm font-medium text-freuly-error">{avatarError}</p>
               ) : null}
               {avatarSuccess ? (
-                <p className="text-sm font-medium text-green-700">{avatarSuccess}</p>
+                <p className="text-sm font-medium text-freuly-success">{avatarSuccess}</p>
               ) : null}
             </div>
           </div>
@@ -1104,7 +1104,7 @@ export default function SpecialistDashboardEditor({
             </p>
           </div>
           {form.gallery_urls.length > galleryLimit ? (
-            <p className="text-xs leading-relaxed text-amber-800">
+            <p className="text-xs leading-relaxed text-freuly-warning">
               {t(dict, "dashboard.gallery.hiddenByPlan")
                 .replace("{{stored}}", String(form.gallery_urls.length))
                 .replace("{{visible}}", String(galleryLimit))}
@@ -1159,10 +1159,10 @@ export default function SpecialistDashboardEditor({
           </div>
         </div>
 
-        <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+        <div className="space-y-2 rounded-freuly-md border border-freuly-border-default bg-freuly-border-subtle p-freuly-4">
           <div className="flex items-center justify-between gap-2">
             <p className="text-sm font-medium text-freuly-text-primary">{t(dict, "dashboard.fields.documents")}</p>
-            <label className="inline-flex cursor-pointer items-center rounded-freuly-md border border-freuly-border-default bg-white px-3 py-2 text-sm font-medium text-freuly-text-primary hover:bg-freuly-border-subtle">
+            <label className={dashboardUploadButtonClass}>
               {documentsUploading ? t(dict, "dashboard.buttons.uploading") : t(dict, "dashboard.buttons.addDocument")}
               <input
                 type="file"
@@ -1208,11 +1208,11 @@ export default function SpecialistDashboardEditor({
 
         <div
           id={READINESS_SECTION_ID.service}
-          className={`scroll-mt-6 rounded-lg border p-4 transition-all duration-300 ${
+          className={`scroll-mt-6 rounded-freuly-md border p-freuly-4 transition-all duration-300 ${
             highlightedSectionId === READINESS_SECTION_ID.service
-              ? "border-sky-300/90 bg-sky-50/70 ring-2 ring-sky-400/85 shadow-sm"
+              ? `${READINESS_JUMP_HIGHLIGHT_CLASS} border-freuly-primary/30`
               : !hasValidServiceFlag
-                ? "border-amber-400 bg-amber-50/60 ring-2 ring-amber-300/80 shadow-[0_0_0_1px_rgba(251,191,36,0.35)]"
+                ? "border-freuly-warning-border bg-freuly-warning-light ring-2 ring-freuly-warning/35"
                 : "border-freuly-border-default"
           }`}
         >
@@ -1228,7 +1228,7 @@ export default function SpecialistDashboardEditor({
                   : t(dict, "dashboard.servicesSection.emptySummary")}
               </p>
               {!hasValidServiceFlag && activeServicesCount > 0 ? (
-                <p className="mt-1 text-sm font-medium text-amber-900">
+                <p className="mt-1 text-sm font-medium text-freuly-warning">
                   {t(dict, "dashboard.servicesSection.visibilityWarning")}
                 </p>
               ) : null}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { t, type Dictionary } from "@/lib/i18n";
 import type { PaidPlanCode } from "@/lib/billing/plans";
 import CheckoutLegalDisclosure from "@/components/billing/CheckoutLegalDisclosure";
+import { Button } from "@/components/ui";
 import type { LegalPublicLang } from "@/content/legal/types";
 
 type Props = {
@@ -27,7 +28,7 @@ export default function PlanCheckoutButton({
 
   if (!checkoutEnabled) {
     return (
-      <p className="text-xs leading-relaxed text-gray-600" role="status">
+      <p className="text-xs leading-relaxed text-freuly-text-muted" role="status">
         {t(dict, "dashboard.billingPage.checkout.unavailable")}
       </p>
     );
@@ -98,19 +99,16 @@ export default function PlanCheckoutButton({
   return (
     <div className="space-y-2">
       <CheckoutLegalDisclosure lang={lang as LegalPublicLang} planCode={planCode} />
-      <button
+      <Button
         type="button"
         onClick={() => void handleClick()}
         disabled={loading || redirecting}
-        className={
-          className ??
-          "inline-flex h-11 w-full items-center justify-center rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-        }
+        className={className ?? "h-11 w-full px-6"}
       >
         {buttonLabel}
-      </button>
+      </Button>
       {message ? (
-        <p className="text-sm leading-relaxed text-gray-600" role="status">
+        <p className="text-sm leading-relaxed text-freuly-text-muted" role="status">
           {message}
         </p>
       ) : null}

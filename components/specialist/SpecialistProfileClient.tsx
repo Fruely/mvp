@@ -18,6 +18,7 @@ import SpecialistDocumentsLightbox from "@/components/specialist/SpecialistDocum
 import MobileStickyCTA from "@/components/MobileStickyCTA";
 import InstallFreuly from "@/components/pwa/InstallFreuly";
 import { getPublicSpecialistLocation } from "@/lib/specialists/geography";
+import { publicFieldClass } from "@/components/public/publicStyles";
 
 const LEGACY_SLUGS: Record<string, string> = {
   "zkeiy-lbztieh": "cosmetologists-kassel-irina-melnik",
@@ -487,11 +488,11 @@ export default function SpecialistProfileClient({
     const clamped = Math.max(0, Math.min(1, fillRatio));
     return (
       <span key={idx} className="relative inline-block h-5 w-5">
-        <svg viewBox="0 0 20 20" className="h-5 w-5 text-gray-300" fill="currentColor" aria-hidden="true">
+        <svg viewBox="0 0 20 20" className="h-5 w-5 text-freuly-border-default" fill="currentColor" aria-hidden="true">
           <path d="M10 1.5l2.5 5.07 5.6.81-4.05 3.95.96 5.58L10 14.27 5 16.91l.96-5.58L1.9 7.38l5.6-.81L10 1.5z" />
         </svg>
         <span className="absolute inset-0 overflow-hidden" style={{ width: `${clamped * 100}%` }}>
-          <svg viewBox="0 0 20 20" className="h-5 w-5 text-amber-400" fill="currentColor" aria-hidden="true">
+          <svg viewBox="0 0 20 20" className="h-5 w-5 text-freuly-warning" fill="currentColor" aria-hidden="true">
             <path d="M10 1.5l2.5 5.07 5.6.81-4.05 3.95.96 5.58L10 14.27 5 16.91l.96-5.58L1.9 7.38l5.6-.81L10 1.5z" />
           </svg>
         </span>
@@ -502,7 +503,7 @@ export default function SpecialistProfileClient({
   const requestFormCard = (
     <div
       id="lead-form"
-      className="scroll-mt-24 rounded-2xl border border-freuly-border-default bg-freuly-surface p-6 sm:p-8"
+      className="scroll-mt-24 rounded-freuly-card border border-freuly-border-default bg-freuly-surface p-6 sm:p-8"
     >
       <h2 className="text-freuly-card-title text-freuly-text-primary">{sectionText.leadFormTitle}</h2>
       {leadSuccessMessage && !showForm ? (
@@ -787,7 +788,7 @@ export default function SpecialistProfileClient({
                     <input
                       value={reviewForm.author_name}
                       onChange={(e) => setReviewForm((prev) => ({ ...prev, author_name: e.target.value.slice(0, 100) }))}
-                      className="w-full rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-3 py-2"
+                      className={publicFieldClass}
                     />
                   </label>
                   <div className="space-y-1 text-sm">
@@ -811,7 +812,7 @@ export default function SpecialistProfileClient({
                       value={reviewForm.comment}
                       onChange={(e) => setReviewForm((prev) => ({ ...prev, comment: e.target.value.slice(0, 1000) }))}
                       rows={3}
-                      className="w-full rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-3 py-2"
+                      className={publicFieldClass}
                     />
                   </label>
                   <div className="flex items-center gap-3">
