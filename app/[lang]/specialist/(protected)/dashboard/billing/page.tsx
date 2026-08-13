@@ -1,5 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import PlanCheckoutButton from "@/components/billing/PlanCheckoutButton";
+import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
+import {
+  dashboardLinkPrimaryClass,
+  dashboardLinkSecondaryClass,
+  dashboardPageStackClass,
+} from "@/components/dashboard/dashboardStyles";
+import { Alert, Badge, Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui";
 import { getDictionary, isSupportedLang, t, type Dictionary, type Lang } from "@/lib/i18n";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
@@ -11,7 +19,6 @@ import {
   parsePlanCode,
   type PlanCode,
 } from "@/lib/billing/plans";
-import PlanCheckoutButton from "@/components/billing/PlanCheckoutButton";
 import {
   isBillingPageCheckoutDisabledBannerVisible,
   isBillingPagePlanCheckoutEnabled,
@@ -101,157 +108,141 @@ export default async function SpecialistDashboardBillingPage({
         : null;
 
   const promotedRequestHref = `/${lang}/specialist/dashboard/requests/promoted`;
-
   const mailtoHref = `mailto:freuly.de@gmail.com?subject=${encodeURIComponent(
     t(dict, "dashboard.billingPage.mailtoSubject"),
   )}`;
-
   const subscriptionHref = `/${lang}/specialist/dashboard/subscription`;
   const pricingHref = `/${lang}/pricing`;
 
   return (
-    <div className="space-y-8">
-      <section className="rounded-2xl border border-gray-200/90 bg-white p-6 shadow-sm sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-600/90">
-          {t(dict, "dashboard.billingPage.kicker")}
-        </p>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
-          {t(dict, "dashboard.billingPage.title")}
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-gray-600 sm:text-base">
-          {t(dict, "dashboard.billingPage.subtitle")}
-        </p>
-        <p className="mt-4 text-sm text-gray-600">
+    <div className={dashboardPageStackClass}>
+      <DashboardPageHeader
+        kicker={t(dict, "dashboard.billingPage.kicker")}
+        title={t(dict, "dashboard.billingPage.title")}
+        subtitle={t(dict, "dashboard.billingPage.subtitle")}
+      />
+
+      <Card>
+        <CardContent className="pt-freuly-6 text-freuly-body text-freuly-text-secondary">
           {(isGrace || isInactive)
             ? t(dict, "dashboard.billingPage.lastPlanLabel")
             : t(dict, "dashboard.billingPage.currentPlanLabel")}{" "}
-          <span className="font-semibold text-gray-900">{planLabel(dict, currentPlanCode)}</span>
+          <span className="font-semibold text-freuly-text-primary">{planLabel(dict, currentPlanCode)}</span>
           {" · "}
-          <span className="text-gray-700">{statusLabel(dict, plan.plan_status)}</span>
-        </p>
-      </section>
+          <span>{statusLabel(dict, plan.plan_status)}</span>
+        </CardContent>
+      </Card>
 
       {isGrace ? (
-        <section className="rounded-2xl border border-amber-200/90 bg-amber-50/55 px-5 py-4 text-sm leading-relaxed text-amber-950">
+        <Alert variant="warning">
           {graceUntilFormatted
             ? t(dict, "dashboard.billingPage.graceNotice").replace("{{graceUntil}}", graceUntilFormatted)
             : t(dict, "dashboard.billingPage.graceNoticeNoDays")}
-        </section>
+        </Alert>
       ) : null}
 
       {isInactive ? (
-        <section className="rounded-2xl border border-rose-200/90 bg-rose-50/70 px-5 py-4 text-sm leading-relaxed text-rose-950">
-          {t(dict, "dashboard.billingPage.inactiveNotice")}
-        </section>
+        <Alert variant="error">{t(dict, "dashboard.billingPage.inactiveNotice")}</Alert>
       ) : null}
 
-      {checkoutNotice ? (
-        <section className="rounded-2xl border border-indigo-100/90 bg-indigo-50/40 px-5 py-4 text-sm text-gray-700">
-          {checkoutNotice}
-        </section>
-      ) : null}
+      {checkoutNotice ? <Alert variant="info">{checkoutNotice}</Alert> : null}
 
       {promotedCheckoutNotice ? (
-        <section className="rounded-2xl border border-indigo-100/90 bg-indigo-50/40 px-5 py-4 text-sm text-gray-700">
+        <Alert variant="info">
           <p>{promotedCheckoutNotice}</p>
-          <p className="mt-3">
-            <Link
-              href={promotedRequestHref}
-              className="font-medium text-indigo-700 underline-offset-4 hover:underline"
-            >
+          <p className="mt-freuly-3">
+            <Link href={promotedRequestHref} className="font-medium text-freuly-primary underline-offset-4 hover:underline">
               {t(dict, "dashboard.billingPage.promotedCheckout.backToRequest")}
             </Link>
           </p>
-        </section>
+        </Alert>
       ) : null}
 
       {checkoutDisabledBannerVisible ? (
-        <section className="rounded-2xl border border-amber-100/90 bg-gradient-to-b from-amber-50/50 to-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-base font-semibold text-gray-900">
-            {t(dict, "dashboard.billingPage.disabledTitle")}
-          </h2>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-gray-700 sm:text-base">
-            {t(dict, "dashboard.billingPage.disabledBody")}
-          </p>
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t(dict, "dashboard.billingPage.disabledTitle")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="max-w-2xl text-freuly-body leading-relaxed text-freuly-text-secondary">
+              {t(dict, "dashboard.billingPage.disabledBody")}
+            </p>
+          </CardContent>
+        </Card>
       ) : null}
 
-      <section className="rounded-2xl border border-gray-200/90 bg-white p-6 shadow-sm sm:p-8">
-        <h2 className="text-base font-semibold text-gray-900">
-          {t(dict, "dashboard.billingPage.planPicker.title")}
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600">
-          {t(dict, "dashboard.billingPage.planPicker.subtitle")}
-        </p>
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          {PUBLIC_COMMERCIAL_PLAN_CATALOG.map((entry) => {
-            const isCurrent = isPlanCardCurrent(entry.code, currentPlanCode, planStatus);
-            const isSelected = selectedPaidPlan === entry.code;
-            const pricingKey =
-              entry.code === "basic" ? "pricing.professional.name" : "pricing.growth.name";
-            const pricingName = t(dict, pricingKey);
-            const priceKey =
-              entry.code === "basic" ? "pricing.professional.price" : "pricing.growth.price";
-            const priceLabel = t(dict, priceKey);
+      <Card>
+        <CardHeader>
+          <CardTitle>{t(dict, "dashboard.billingPage.planPicker.title")}</CardTitle>
+          <p className="mt-freuly-2 max-w-2xl text-freuly-body text-freuly-text-secondary">
+            {t(dict, "dashboard.billingPage.planPicker.subtitle")}
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-freuly-4 md:grid-cols-2">
+            {PUBLIC_COMMERCIAL_PLAN_CATALOG.map((entry) => {
+              const isCurrent = isPlanCardCurrent(entry.code, currentPlanCode, planStatus);
+              const isSelected = selectedPaidPlan === entry.code;
+              const pricingKey =
+                entry.code === "basic" ? "pricing.professional.name" : "pricing.growth.name";
+              const pricingName = t(dict, pricingKey);
+              const priceKey =
+                entry.code === "basic" ? "pricing.professional.price" : "pricing.growth.price";
+              const priceLabel = t(dict, priceKey);
 
-            return (
-              <div
-                key={entry.code}
-                className={`flex flex-col rounded-xl border p-5 ${
-                  isCurrent || isSelected
-                    ? "border-indigo-200 bg-indigo-50/30 ring-1 ring-indigo-500/10"
-                    : "border-gray-200 bg-gray-50/50"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="text-sm font-semibold text-gray-900">
-                    {pricingName !== pricingKey ? pricingName : planLabel(dict, entry.code)}
-                  </h3>
-                  {isCurrent ? (
-                    <span className="shrink-0 rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-700">
-                      {t(dict, "dashboard.billingPage.planPicker.currentBadge")}
-                    </span>
-                  ) : null}
+              return (
+                <div
+                  key={entry.code}
+                  className={`flex flex-col rounded-freuly-card border p-freuly-5 ${
+                    isCurrent || isSelected
+                      ? "border-freuly-primary/30 bg-freuly-primary-light/25 ring-1 ring-freuly-primary/10"
+                      : "border-freuly-border-default bg-freuly-border-subtle/30"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-freuly-card-title text-freuly-text-primary">
+                      {pricingName !== pricingKey ? pricingName : planLabel(dict, entry.code)}
+                    </h3>
+                    {isCurrent ? (
+                      <Badge variant="info">{t(dict, "dashboard.billingPage.planPicker.currentBadge")}</Badge>
+                    ) : null}
+                  </div>
+                  <p className="mt-freuly-2 text-freuly-body font-semibold text-freuly-text-primary">{priceLabel}</p>
+                  <p className="mt-freuly-2 flex-1 text-freuly-body-sm leading-relaxed text-freuly-text-secondary">
+                    {entry.code === "basic"
+                      ? t(dict, "dashboard.billingPage.planPicker.professionalHint")
+                      : t(dict, "dashboard.billingPage.planPicker.growthHint")}
+                  </p>
+                  <div className="mt-freuly-4">
+                    <PlanCheckoutButton
+                      planCode={entry.code}
+                      lang={lang}
+                      dict={dict}
+                      checkoutEnabled={isBillingPagePlanCheckoutEnabled(entry.code)}
+                    />
+                  </div>
                 </div>
-                <p className="mt-2 text-sm font-semibold text-gray-900">{priceLabel}</p>
-                <p className="mt-2 flex-1 text-xs leading-relaxed text-gray-600">
-                  {entry.code === "basic"
-                    ? t(dict, "dashboard.billingPage.planPicker.professionalHint")
-                    : t(dict, "dashboard.billingPage.planPicker.growthHint")}
-                </p>
-                <div className="mt-4">
-                  <PlanCheckoutButton
-                    planCode={entry.code}
-                    lang={lang}
-                    dict={dict}
-                    checkoutEnabled={isBillingPagePlanCheckoutEnabled(entry.code)}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <p className="mt-5 text-sm">
-          <Link href={pricingHref} className="font-medium text-indigo-700 underline-offset-4 hover:underline">
-            {t(dict, "dashboard.billingPage.planPicker.viewAllPlans")}
+              );
+            })}
+          </div>
+          <p className="mt-freuly-5 text-freuly-body-sm">
+            <Link href={pricingHref} className="font-medium text-freuly-primary underline-offset-4 hover:underline">
+              {t(dict, "dashboard.billingPage.planPicker.viewAllPlans")}
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardFooter className="mt-0 flex-col gap-freuly-4 sm:flex-row sm:items-center sm:justify-between">
+          <Link href={subscriptionHref} className={dashboardLinkSecondaryClass}>
+            {t(dict, "dashboard.billingPage.backToSubscription")}
           </Link>
-        </p>
-      </section>
-
-      <section className="flex flex-col gap-4 rounded-2xl border border-gray-200/90 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-8">
-        <Link
-          href={subscriptionHref}
-          className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 bg-white px-5 text-sm font-semibold text-gray-800 shadow-sm transition hover:border-gray-300 hover:bg-gray-50"
-        >
-          {t(dict, "dashboard.billingPage.backToSubscription")}
-        </Link>
-        <a
-          href={mailtoHref}
-          className="inline-flex h-11 items-center justify-center rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-        >
-          {t(dict, "dashboard.billingPage.contactSupport")}
-        </a>
-      </section>
+          <a href={mailtoHref} className={dashboardLinkPrimaryClass}>
+            {t(dict, "dashboard.billingPage.contactSupport")}
+          </a>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

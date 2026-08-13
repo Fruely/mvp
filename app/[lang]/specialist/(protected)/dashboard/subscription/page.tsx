@@ -1,12 +1,20 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
+import DashboardStatTile from "@/components/dashboard/DashboardStatTile";
+import {
+  dashboardLinkPrimaryClass,
+  dashboardLinkSecondaryClass,
+  dashboardPageStackClass,
+} from "@/components/dashboard/dashboardStyles";
+import { Alert, Badge, Card, CardContent, CardHeader, CardTitle, type BadgeVariant } from "@/components/ui";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
 import {
   dashboardNoticeTitleBody,
   getSubscriptionDisplayState,
   pickDashboardSubscriptionNotice,
-  subscriptionNoticePanelClass,
+  type SubscriptionSeverity,
 } from "@/lib/specialists/subscriptionDisplay";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
@@ -14,14 +22,20 @@ import { getDictionary, isSupportedLang, t, type Dictionary, type Lang } from "@
 
 export const dynamic = "force-dynamic";
 
-function getStatusBadgeClass(planStatus: string): string {
-  if (planStatus === "early_access" || planStatus === "trialing") return "bg-emerald-50 text-emerald-700";
-  if (planStatus === "active") return "bg-blue-50 text-blue-700";
-  if (planStatus === "grace" || planStatus === "grace_period") return "bg-amber-50 text-amber-700";
-  if (planStatus === "inactive") return "bg-rose-50 text-rose-700";
-  if (planStatus === "expired") return "bg-rose-50 text-rose-700";
-  if (planStatus === "cancelled") return "bg-slate-100 text-slate-700";
-  return "bg-gray-100 text-gray-700";
+function subscriptionStatusBadgeVariant(planStatus: string): BadgeVariant {
+  if (planStatus === "early_access" || planStatus === "trialing") return "success";
+  if (planStatus === "active") return "info";
+  if (planStatus === "grace" || planStatus === "grace_period") return "warning";
+  if (planStatus === "expired" || planStatus === "inactive") return "error";
+  if (planStatus === "cancelled") return "neutral";
+  return "neutral";
+}
+
+function subscriptionSeverityToAlertVariant(severity: SubscriptionSeverity): "info" | "success" | "warning" | "error" {
+  if (severity === "danger") return "error";
+  if (severity === "warning") return "warning";
+  if (severity === "success") return "success";
+  return "info";
 }
 
 function formatPlanDate(value: string | null, lang: Lang, dict: Dictionary): string {
@@ -74,128 +88,100 @@ export default async function SpecialistDashboardSubscriptionPage({
   const planStatusRaw = plan.plan_status;
   const statusLabel = statusDisplayLabel(dict, planStatusRaw);
   const planLabel = planDisplayLabel(dict, plan.plan_code);
-  const subscriptionUntil = plan.expires_at;
-  const graceUntil = plan.grace_until;
-  const startedAt = plan.started_at;
 
   const mailSubject = t(dict, "dashboard.subscriptionPage.mailto.subject");
   const mailtoHref = `mailto:freuly.de@gmail.com?subject=${encodeURIComponent(mailSubject)}`;
 
   return (
-    <div className="space-y-8">
-      <section className="rounded-2xl border border-gray-200/90 bg-white p-6 shadow-sm sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-600/90">
-          {t(dict, "dashboard.subscriptionPage.kicker")}
-        </p>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
-          {t(dict, "dashboard.subscriptionPage.title")}
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-gray-600 sm:text-base">
-          {t(dict, "dashboard.subscriptionPage.subtitle")}
-        </p>
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <Link
-            href={`/${lang}/pricing`}
-            className="inline-flex h-10 items-center justify-center rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-          >
-            {t(dict, "dashboard.subscriptionPage.cta.viewPlans")}
-          </Link>
-          <Link
-            href={`/${lang}/specialist/dashboard/billing`}
-            className="inline-flex h-10 items-center justify-center rounded-xl border border-gray-200 bg-white px-5 text-sm font-semibold text-gray-800 shadow-sm transition hover:bg-gray-50"
-          >
-            {t(dict, "dashboard.subscriptionPage.cta.manageBilling")}
-          </Link>
-        </div>
-      </section>
+    <div className={dashboardPageStackClass}>
+      <DashboardPageHeader
+        kicker={t(dict, "dashboard.subscriptionPage.kicker")}
+        title={t(dict, "dashboard.subscriptionPage.title")}
+        subtitle={t(dict, "dashboard.subscriptionPage.subtitle")}
+        actions={
+          <>
+            <Link href={`/${lang}/pricing`} className={dashboardLinkPrimaryClass}>
+              {t(dict, "dashboard.subscriptionPage.cta.viewPlans")}
+            </Link>
+            <Link href={`/${lang}/specialist/dashboard/billing`} className={dashboardLinkSecondaryClass}>
+              {t(dict, "dashboard.subscriptionPage.cta.manageBilling")}
+            </Link>
+          </>
+        }
+      />
 
-      <section className="rounded-2xl border border-gray-200/90 bg-white p-6 shadow-sm sm:p-8">
-        <h2 className="text-base font-semibold text-gray-900">
-          {t(dict, "dashboard.subscriptionPage.planCardTitle")}
-        </h2>
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border border-gray-100 bg-gray-50/80 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-              {t(dict, "dashboard.subscriptionPage.label.status")}
-            </p>
-            <div className="mt-2">
-              <span
-                className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getStatusBadgeClass(planStatusRaw)}`}
-              >
-                {statusLabel}
-              </span>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t(dict, "dashboard.subscriptionPage.planCardTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-freuly-4 sm:grid-cols-2">
+            <DashboardStatTile
+              label={t(dict, "dashboard.subscriptionPage.label.status")}
+              value={<Badge variant={subscriptionStatusBadgeVariant(planStatusRaw)}>{statusLabel}</Badge>}
+            />
+            <DashboardStatTile label={t(dict, "dashboard.subscriptionPage.label.plan")} value={<span className="font-semibold">{planLabel}</span>} />
+            <DashboardStatTile
+              label={t(dict, "dashboard.subscriptionPage.label.startedAt")}
+              value={formatPlanDate(plan.started_at, lang, dict)}
+            />
+            <DashboardStatTile
+              label={t(dict, "dashboard.subscriptionPage.label.expiresAt")}
+              value={formatPlanDate(plan.expires_at, lang, dict)}
+            />
+            <DashboardStatTile
+              className="sm:col-span-2"
+              label={t(dict, "dashboard.subscriptionPage.label.graceUntil")}
+              value={formatPlanDate(plan.grace_until, lang, dict)}
+            />
+          </div>
+          <div className="mt-freuly-6">
+            <a href={mailtoHref} className={dashboardLinkPrimaryClass}>
+              {t(dict, "dashboard.subscriptionPage.cta.support")}
+            </a>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-freuly-primary/15 bg-freuly-primary-light/30">
+        <CardHeader>
+          <CardTitle>{t(dict, "dashboard.subscriptionPage.context.title")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-freuly-4">
+          {subscriptionNoticeCopy ? (
+            <Alert variant={subscriptionSeverityToAlertVariant(subscriptionNoticeCopy.severity)} title={subscriptionNoticeCopy.title}>
+              {subscriptionNoticeCopy.body}
+            </Alert>
+          ) : null}
+          <ul className="space-y-2 text-freuly-body-sm leading-relaxed text-freuly-text-secondary">
+            <li className="flex gap-2">
+              <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-freuly-primary" aria-hidden />
+              <span>{t(dict, "dashboard.subscriptionPage.context.bulletPayment")}</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-freuly-primary" aria-hidden />
+              <span>{t(dict, "dashboard.subscriptionPage.context.bulletNotify")}</span>
+            </li>
+          </ul>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t(dict, "dashboard.subscriptionPage.faq.title")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <dl className="space-y-freuly-4 text-freuly-body-sm text-freuly-text-secondary">
+            <div>
+              <dt className="font-medium text-freuly-text-primary">{t(dict, "dashboard.subscriptionPage.faq.contactsQ")}</dt>
+              <dd className="mt-freuly-2 leading-relaxed">{t(dict, "dashboard.subscriptionPage.faq.contactsA")}</dd>
             </div>
-          </div>
-          <div className="rounded-xl border border-gray-100 bg-gray-50/80 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-              {t(dict, "dashboard.subscriptionPage.label.plan")}
-            </p>
-            <p className="mt-2 text-sm font-semibold text-gray-900">{planLabel}</p>
-          </div>
-          <div className="rounded-xl border border-gray-100 bg-gray-50/80 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-              {t(dict, "dashboard.subscriptionPage.label.startedAt")}
-            </p>
-            <p className="mt-2 text-sm text-gray-800">{formatPlanDate(startedAt, lang, dict)}</p>
-          </div>
-          <div className="rounded-xl border border-gray-100 bg-gray-50/80 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-              {t(dict, "dashboard.subscriptionPage.label.expiresAt")}
-            </p>
-            <p className="mt-2 text-sm text-gray-800">{formatPlanDate(subscriptionUntil, lang, dict)}</p>
-          </div>
-          <div className="rounded-xl border border-gray-100 bg-gray-50/80 p-4 sm:col-span-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-              {t(dict, "dashboard.subscriptionPage.label.graceUntil")}
-            </p>
-            <p className="mt-2 text-sm text-gray-800">{formatPlanDate(graceUntil, lang, dict)}</p>
-          </div>
-        </div>
-
-        <a
-          href={mailtoHref}
-          className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-        >
-          {t(dict, "dashboard.subscriptionPage.cta.support")}
-        </a>
-      </section>
-
-      <section className="rounded-2xl border border-indigo-100/90 bg-gradient-to-b from-indigo-50/40 to-white p-6 shadow-sm sm:p-8">
-        <h2 className="text-base font-semibold text-gray-900">
-          {t(dict, "dashboard.subscriptionPage.context.title")}
-        </h2>
-        {subscriptionNoticeCopy ? (
-          <div
-            className={`mt-4 ${subscriptionNoticePanelClass(subscriptionNoticeCopy.severity)}`}
-          >
-            <p className="font-semibold leading-snug">{subscriptionNoticeCopy.title}</p>
-            <p className="mt-2 text-sm leading-relaxed opacity-[0.95]">{subscriptionNoticeCopy.body}</p>
-          </div>
-        ) : null}
-        <ul className="mt-4 space-y-2 text-sm leading-relaxed text-gray-600">
-          <li className="flex gap-2">
-            <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-indigo-400" aria-hidden />
-            <span>{t(dict, "dashboard.subscriptionPage.context.bulletPayment")}</span>
-          </li>
-          <li className="flex gap-2">
-            <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-indigo-400" aria-hidden />
-            <span>{t(dict, "dashboard.subscriptionPage.context.bulletNotify")}</span>
-          </li>
-        </ul>
-      </section>
-
-      <section className="rounded-2xl border border-gray-200/90 bg-white p-6 shadow-sm sm:p-8">
-        <h2 className="text-base font-semibold text-gray-900">{t(dict, "dashboard.subscriptionPage.faq.title")}</h2>
-        <dl className="mt-4 space-y-4 text-sm text-gray-700">
-          <div>
-            <dt className="font-medium text-gray-900">{t(dict, "dashboard.subscriptionPage.faq.contactsQ")}</dt>
-            <dd className="mt-2 leading-relaxed">{t(dict, "dashboard.subscriptionPage.faq.contactsA")}</dd>
-          </div>
-          <div>
-            <dd className="leading-relaxed">{t(dict, "dashboard.subscriptionPage.faq.leadsA")}</dd>
-          </div>
-        </dl>
-      </section>
+            <div>
+              <dd className="leading-relaxed">{t(dict, "dashboard.subscriptionPage.faq.leadsA")}</dd>
+            </div>
+          </dl>
+        </CardContent>
+      </Card>
     </div>
   );
 }
