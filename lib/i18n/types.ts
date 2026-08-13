@@ -19,11 +19,15 @@ export type Translations = {
   reviewError: string;
   reviewFillAll: string;
   servicesTitle: string;
+  /** Public profile section + hero secondary CTA (Figma: «Услуги и цены»). */
+  servicesAndPricesTitle: string;
   servicesSubtitle: string;
   servicePriceOnRequest: string;
   contactsTitle: string;
   contactsSubtitle: string;
   contactsLineLocation: string;
+  /** Public profile location/map section heading (Figma: «Расположение»). */
+  locationSectionTitle: string;
   contactsLineLanguages: string;
   contactsLineFormat: string;
   work_format: {

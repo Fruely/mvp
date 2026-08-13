@@ -526,6 +526,50 @@ export default function SpecialistProfileClient({
   const showLocationSection =
     workMode !== "online" && Boolean(publicLocationLabel || specialist.address?.trim());
   const destination = [specialist.address, specialist.city].filter(Boolean).join(", ");
+  const isOnlineOnly = workMode === "online";
+  const heroCityLabel = isOnlineOnly ? null : publicLocationLabel;
+  const showHeroServicesCta =
+    !isOnlineOnly && (hasPricedServices || servicesList.length > 0);
+
+  const utilityRow =
+    specialist.languages?.length || workModeLabel ? (
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-freuly-border-default py-4 text-sm text-freuly-text-secondary">
+        <div className="flex flex-wrap gap-x-6 gap-y-1">
+          {specialist.languages && specialist.languages.length > 0 ? (
+            <p>
+              {sectionText.contactsLineLanguages}: {specialist.languages.join(" • ")}
+            </p>
+          ) : null}
+          {workModeLabel ? (
+            <p>
+              {sectionText.contactsLineFormat}: {workModeLabel}
+            </p>
+          ) : null}
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => void handleShare("copy")}
+            className="text-sm font-medium text-freuly-primary"
+          >
+            {t(dict, "specialistPage.copyLink")}
+          </button>
+          {isProPlan ? (
+            <>
+              <button type="button" onClick={() => void handleShare("whatsapp")} className="text-sm font-medium text-freuly-primary">
+                WhatsApp
+              </button>
+              <button type="button" onClick={() => void handleShare("telegram")} className="text-sm font-medium text-freuly-primary">
+                Telegram
+              </button>
+              <button type="button" onClick={() => void handleShare("instagram")} className="text-sm font-medium text-freuly-primary">
+                Instagram
+              </button>
+            </>
+          ) : null}
+        </div>
+      </div>
+    ) : null;
 
   return (
     <div className="min-h-screen bg-freuly-page pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0">
@@ -535,7 +579,7 @@ export default function SpecialistProfileClient({
           avatarAlt={displayName}
           name={displayName}
           specialization={specializationText}
-          city={publicLocationLabel}
+          city={heroCityLabel}
           languages={Array.isArray(specialist.languages) ? specialist.languages : []}
           workModeText={workModeLabel}
           isNew={isNewActive}
@@ -544,14 +588,14 @@ export default function SpecialistProfileClient({
           successMessage={null}
           aboutPreview={aboutText || null}
           requestLabel={t(dict, "specialist.sendRequest")}
-          servicesLabel={sectionText.servicesTitle}
+          servicesLabel={sectionText.servicesAndPricesTitle}
           onRequestClick={() => {
             setLeadSuccessMessage(null);
             setShowForm(true);
             scrollToLeadForm();
           }}
           onServicesClick={scrollToServices}
-          showServicesCta={hasPricedServices || servicesList.length > 0}
+          showServicesCta={showHeroServicesCta}
         />
       ) : null}
 
@@ -559,7 +603,7 @@ export default function SpecialistProfileClient({
         <div className="flex flex-col gap-10 md:grid md:grid-cols-[minmax(0,832px)_400px] md:items-start md:gap-12">
           <main className="order-1 space-y-10 md:space-y-14">
           {hasPricedServices || servicesList.length > 0 ? (
-            <SectionCard id="services" title={sectionText.servicesTitle}>
+            <SectionCard id="services" title={sectionText.servicesAndPricesTitle}>
               <div>
                 {hasPricedServices
                   ? (specialist.specialist_services ?? []).map((service, index) => {
@@ -826,7 +870,7 @@ export default function SpecialistProfileClient({
           </SectionCard>
 
           {showLocationSection ? (
-            <SectionCard title={sectionText.contactsLineLocation}>
+            <SectionCard title={sectionText.locationSectionTitle}>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-1">
                   {publicLocationLabel ? (
@@ -841,7 +885,7 @@ export default function SpecialistProfileClient({
                     href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex h-8 items-center justify-center rounded-freuly-md border border-freuly-border-default px-4 text-[13px] font-semibold text-freuly-text-primary transition hover:bg-freuly-page"
+                    className="inline-flex h-8 w-full items-center justify-center rounded-freuly-md border border-freuly-border-default px-4 text-[13px] font-semibold text-freuly-text-primary transition hover:bg-freuly-page sm:w-auto"
                   >
                     {t(dict, "specialistPage.buildRoute")}
                   </a>
@@ -862,48 +906,9 @@ export default function SpecialistProfileClient({
             </SectionCard>
           ) : null}
 
-          {(specialist.languages?.length || workModeLabel) ? (
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-freuly-border-default py-4 text-sm text-freuly-text-secondary">
-              <div className="flex flex-wrap gap-x-6 gap-y-1">
-                {specialist.languages && specialist.languages.length > 0 ? (
-                  <p>
-                    {sectionText.contactsLineLanguages}: {specialist.languages.join(" • ")}
-                  </p>
-                ) : null}
-                {workModeLabel ? (
-                  <p>
-                    {sectionText.contactsLineFormat}: {workModeLabel}
-                  </p>
-                ) : null}
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={() => void handleShare("copy")}
-                  className="text-sm font-medium text-freuly-primary"
-                >
-                  {t(dict, "specialistPage.copyLink")}
-                </button>
-                {isProPlan ? (
-                  <>
-                    <button type="button" onClick={() => void handleShare("whatsapp")} className="text-sm font-medium text-freuly-primary">
-                      WhatsApp
-                    </button>
-                    <button type="button" onClick={() => void handleShare("telegram")} className="text-sm font-medium text-freuly-primary">
-                      Telegram
-                    </button>
-                    <button type="button" onClick={() => void handleShare("instagram")} className="text-sm font-medium text-freuly-primary">
-                      Instagram
-                    </button>
-                  </>
-                ) : null}
-              </div>
-            </div>
-          ) : null}
-
           </main>
 
-          <aside className="order-2 md:sticky md:top-6 md:self-start">
+          <aside className="order-2 md:sticky md:top-6 md:col-start-2 md:row-start-1 md:self-start">
             {requestFormCard}
             <InstallFreuly
               key={leadSuccessMessage ? "lead_success" : "specialist_profile"}
@@ -914,6 +919,10 @@ export default function SpecialistProfileClient({
               className="mt-4"
             />
           </aside>
+
+          {utilityRow ? (
+            <div className="order-3 md:col-start-1 md:row-start-2">{utilityRow}</div>
+          ) : null}
         </div>
       </div>
 
