@@ -64,7 +64,7 @@ export default async function SpecialistDashboardProfilePage({
   const entitlements = resolveSpecialistEntitlements(plan);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-freuly-8">
       <VerificationBanner status={status} dict={dict} />
       <SpecialistDashboardEditor
         dict={dict}

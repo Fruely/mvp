@@ -17,6 +17,17 @@ import {
 } from "@/lib/specialists/geography";
 import SpecialistAvatarImage from "@/components/specialist/SpecialistAvatarImage";
 import { canAddGalleryImage } from "@/lib/billing/planEntitlements";
+import { Alert, Badge, Button, Card } from "@/components/ui";
+import {
+  dashboardCheckboxClass,
+  dashboardFieldClass,
+  dashboardFieldLabelWrapClass,
+  dashboardHelperClass,
+  dashboardLabelClass,
+  dashboardLinkPrimaryClass,
+  dashboardReadinessHighlightClass,
+  dashboardUploadButtonClass,
+} from "@/components/dashboard/dashboardStyles";
 
 type ServiceInput = {
   id?: string;
@@ -85,8 +96,7 @@ const READINESS_SECTION_ID: Record<string, string> = {
 /** How long the jump-target section stays visually highlighted after scroll. */
 const READINESS_HIGHLIGHT_MS = 2800;
 
-const READINESS_JUMP_HIGHLIGHT_CLASS =
-  "rounded-lg ring-2 ring-sky-400/85 bg-sky-50/65 shadow-sm transition-[box-shadow,background-color] duration-300";
+const READINESS_JUMP_HIGHLIGHT_CLASS = dashboardReadinessHighlightClass;
 
 function focusFirstInteractive(container: HTMLElement) {
   const selector = [
@@ -723,52 +733,51 @@ export default function SpecialistDashboardEditor({
   }
 
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="mb-5 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+    <Card padding="lg" className="shadow-none">
+      <Alert variant="info" className="mb-freuly-5">
         {t(dict, "dashboard.introBanner")}
-      </div>
+      </Alert>
 
-      <div
-        className={`mb-5 rounded-lg border px-4 py-3 text-sm ${
-          publicationReady
-            ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-            : "border-amber-200 bg-amber-50 text-amber-900"
-        }`}
+      <Alert
+        variant={publicationReady ? "success" : "warning"}
+        className="mb-freuly-5"
         aria-label={t(dict, "dashboard.readiness.title")}
       >
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-          <p className="font-medium">
+          <p className="font-medium text-freuly-text-primary">
             {publicationReady
               ? t(dict, "dashboard.readiness.allReady")
               : t(dict, "dashboard.readiness.title")}
           </p>
-          <p className="text-xs opacity-80">{readinessSummary}</p>
+          <p className="text-xs text-freuly-text-muted">{readinessSummary}</p>
         </div>
-        <ul className="mt-2 grid gap-1 sm:grid-cols-2">
+        <ul className="mt-freuly-2 grid gap-1 sm:grid-cols-2">
           {readinessItems.map((item) => (
             <li key={item.key} className="text-sm">
               <button
                 type="button"
                 onClick={() => jumpToReadinessSection(item.key)}
-                className={`flex w-full items-start gap-2 rounded-md px-1 py-0.5 text-left transition ${
+                className={`freuly-focus-ring flex w-full items-start gap-2 rounded-freuly-md px-1 py-0.5 text-left transition ${
                   item.done
-                    ? "text-gray-700 hover:bg-black/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500/80"
-                    : "cursor-pointer text-gray-800 hover:bg-amber-100/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600/80"
+                    ? "text-freuly-text-secondary hover:bg-freuly-border-subtle/80"
+                    : "cursor-pointer text-freuly-text-primary hover:bg-freuly-warning-light/60"
                 }`}
               >
                 <span
                   aria-hidden="true"
                   className={`mt-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-semibold leading-none ${
                     item.done
-                      ? "bg-emerald-600 text-white"
-                      : "border border-amber-400 bg-white text-amber-800"
+                      ? "bg-freuly-success text-freuly-text-on-primary"
+                      : "border border-freuly-warning bg-freuly-surface text-freuly-warning"
                   }`}
                 >
                   {item.done ? "✓" : "•"}
                 </span>
                 <span
                   className={
-                    item.done ? "text-gray-700 line-through decoration-emerald-400" : "font-medium text-gray-900"
+                    item.done
+                      ? "text-freuly-text-secondary line-through decoration-freuly-success/60"
+                      : "font-medium text-freuly-text-primary"
                   }
                 >
                   {item.label}
@@ -777,12 +786,12 @@ export default function SpecialistDashboardEditor({
             </li>
           ))}
         </ul>
-      </div>
+      </Alert>
 
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+      <div className="mb-freuly-5 flex flex-wrap items-start justify-between gap-freuly-4">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">{t(dict, "dashboard.profilePageTitle")}</h1>
-          <p className="mt-1 text-sm text-gray-600">
+          <h1 className="text-freuly-page-title text-freuly-text-primary">{t(dict, "dashboard.profilePageTitle")}</h1>
+          <p className="mt-1 text-freuly-body text-freuly-text-secondary">
             {t(dict, "dashboard.profileStatusIntro")} <span className="font-medium">{status}</span>
             {t(dict, "dashboard.profileStatusOutro")}
           </p>
@@ -790,16 +799,11 @@ export default function SpecialistDashboardEditor({
         {(telegramConnected || telegramConnectHref) && (
           <div className="flex flex-shrink-0 flex-col items-end gap-2 sm:items-end">
             {telegramConnected ? (
-              <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
+              <Badge variant="success" className="px-freuly-3 py-freuly-2 text-freuly-body-sm">
                 {t(dict, "dashboard.telegram.connected")}
-              </span>
+              </Badge>
             ) : telegramConnectHref ? (
-              <a
-                href={telegramConnectHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-10 items-center justify-center rounded-lg bg-teal-600 px-4 text-sm font-semibold text-white transition hover:bg-teal-700"
-              >
+              <a href={telegramConnectHref} target="_blank" rel="noopener noreferrer" className={dashboardLinkPrimaryClass}>
                 {t(dict, "dashboard.telegram.connect")}
               </a>
             ) : null}
@@ -814,20 +818,20 @@ export default function SpecialistDashboardEditor({
             className={`scroll-mt-6 ${highlightedSectionId === READINESS_SECTION_ID.name ? READINESS_JUMP_HIGHLIGHT_CLASS : ""}`}
           >
             <label className="space-y-1 text-sm">
-              <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.name")}</span>
+              <span className="font-medium text-freuly-text-primary">{t(dict, "dashboard.fields.name")}</span>
               <input
                 value={form.name}
                 onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2"
+                className="w-full rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-freuly-3 py-freuly-2 text-freuly-body text-freuly-text-primary freuly-focus-ring"
               />
             </label>
           </div>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.phone")}</span>
+            <span className="font-medium text-freuly-text-primary">{t(dict, "dashboard.fields.phone")}</span>
             <input
               value={form.phone}
               onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2"
+              className="w-full rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-freuly-3 py-freuly-2 text-freuly-body text-freuly-text-primary freuly-focus-ring"
             />
           </label>
           <div
@@ -835,11 +839,11 @@ export default function SpecialistDashboardEditor({
             className={`scroll-mt-6 ${highlightedSectionId === READINESS_SECTION_ID.category ? READINESS_JUMP_HIGHLIGHT_CLASS : ""}`}
           >
             <label className="space-y-1 text-sm">
-              <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.category")}</span>
+              <span className="font-medium text-freuly-text-primary">{t(dict, "dashboard.fields.category")}</span>
               <select
                 value={form.category_id}
                 onChange={(e) => setForm((prev) => ({ ...prev, category_id: e.target.value }))}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2"
+                className="w-full rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-freuly-3 py-freuly-2 text-freuly-body text-freuly-text-primary freuly-focus-ring"
               >
                 <option value="">{t(dict, "dashboard.categoryPlaceholder")}</option>
                 {filteredCategories.map((category) => (
@@ -856,11 +860,11 @@ export default function SpecialistDashboardEditor({
             </label>
           </div>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.email")}</span>
+            <span className="font-medium text-freuly-text-primary">{t(dict, "dashboard.fields.email")}</span>
             <input
               value={form.email}
               readOnly
-              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-600"
+              className="w-full rounded-freuly-md border border-freuly-border-default bg-freuly-border-subtle px-3 py-2 text-freuly-text-secondary"
             />
           </label>
           <div
@@ -868,7 +872,7 @@ export default function SpecialistDashboardEditor({
             className={`scroll-mt-6 ${highlightedSectionId === READINESS_SECTION_ID.plz ? READINESS_JUMP_HIGHLIGHT_CLASS : ""}`}
           >
             <label className="space-y-1 text-sm">
-              <span className="font-medium text-gray-700">
+              <span className="font-medium text-freuly-text-primary">
                 {t(dict, "dashboard.fields.plzLabel")} {needsLocationGeo && <span className="text-red-500">*</span>}
               </span>
               <input
@@ -887,10 +891,10 @@ export default function SpecialistDashboardEditor({
                 pattern="\d{5}"
                 maxLength={5}
                 placeholder={t(dict, "dashboard.fields.plzPlaceholder")}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2"
+                className="w-full rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-freuly-3 py-freuly-2 text-freuly-body text-freuly-text-primary freuly-focus-ring"
               />
               {needsLocationGeo && (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-freuly-text-muted">
                   {form.work_format === "online"
                     ? t(dict, "dashboard.messages.publication_online_geo_required")
                     : t(dict, "dashboard.fields.plzHint")}
@@ -899,7 +903,7 @@ export default function SpecialistDashboardEditor({
             </label>
           </div>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">
+            <span className="font-medium text-freuly-text-primary">
               {t(dict, "dashboard.fields.city")} {needsLocationGeo && <span className="text-red-500">*</span>}
             </span>
             <input
@@ -908,28 +912,28 @@ export default function SpecialistDashboardEditor({
               placeholder={t(dict, "dashboard.fields.cityPlaceholder")}
               disabled={form.postal_code.length === 5}
               readOnly={form.postal_code.length === 5}
-              className={`w-full rounded-lg border border-gray-200 px-3 py-2 ${
-                form.postal_code.length === 5 ? "bg-gray-50 text-gray-600" : ""
+              className={`w-full rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-freuly-3 py-freuly-2 text-freuly-body text-freuly-text-primary freuly-focus-ring ${
+                form.postal_code.length === 5 ? "bg-freuly-border-subtle text-freuly-text-secondary" : ""
               }`}
             />
-            <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.cityFromPlzHint")}</p>
+            <p className="text-xs text-freuly-text-muted">{t(dict, "dashboard.fields.cityFromPlzHint")}</p>
           </label>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.address")}</span>
+            <span className="font-medium text-freuly-text-primary">{t(dict, "dashboard.fields.address")}</span>
             <input
               value={form.address || ""}
               placeholder={t(dict, "dashboard.fields.addressPlaceholder")}
               onChange={(e) => setForm((prev) => ({ ...prev, address: e.target.value }))}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2"
+              className="w-full rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-freuly-3 py-freuly-2 text-freuly-body text-freuly-text-primary freuly-focus-ring"
             />
-            <p className="text-xs text-gray-600 font-medium">{t(dict, "dashboard.fields.addressHint")}</p>
+            <p className="text-xs text-freuly-text-secondary font-medium">{t(dict, "dashboard.fields.addressHint")}</p>
           </label>
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.country")}</span>
+            <span className="font-medium text-freuly-text-primary">{t(dict, "dashboard.fields.country")}</span>
             <select
               value="DE"
               onChange={() => setForm((prev) => ({ ...prev, country_code: "DE" }))}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2"
+              className="w-full rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-freuly-3 py-freuly-2 text-freuly-body text-freuly-text-primary freuly-focus-ring"
             >
               <option value="DE">{t(dict, "dashboard.country.DE")}</option>
             </select>
@@ -939,11 +943,11 @@ export default function SpecialistDashboardEditor({
             className={`scroll-mt-6 ${highlightedSectionId === READINESS_SECTION_ID.work_format ? READINESS_JUMP_HIGHLIGHT_CLASS : ""}`}
           >
             <label className="space-y-1 text-sm">
-              <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.format")}</span>
+              <span className="font-medium text-freuly-text-primary">{t(dict, "dashboard.fields.format")}</span>
               <select
                 value={form.work_format}
                 onChange={(e) => setForm((prev) => ({ ...prev, work_format: e.target.value as Props["initialData"]["work_format"] }))}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2"
+                className="w-full rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-freuly-3 py-freuly-2 text-freuly-body text-freuly-text-primary freuly-focus-ring"
               >
                 <option value="online">{t(dict, "dashboard.workFormat.online")}</option>
                 <option value="offline">{t(dict, "dashboard.workFormat.offline")}</option>
@@ -962,7 +966,7 @@ export default function SpecialistDashboardEditor({
                 }`}
               >
                 <label className="block space-y-1">
-                  <span className="font-medium text-gray-700">
+                  <span className="font-medium text-freuly-text-primary">
                     {t(dict, "dashboard.fields.serviceRadius")} <span className="text-red-500">*</span>
                   </span>
                   <select
@@ -974,7 +978,7 @@ export default function SpecialistDashboardEditor({
                     onChange={(e) =>
                       setForm((prev) => ({ ...prev, service_radius_km: e.target.value }))
                     }
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2"
+                    className="w-full rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-freuly-3 py-freuly-2 text-freuly-body text-freuly-text-primary freuly-focus-ring"
                   >
                     <option value="">{t(dict, "dashboard.fields.serviceRadiusPlaceholder")}</option>
                     {radiusSelectOptions.map((km) => (
@@ -983,7 +987,7 @@ export default function SpecialistDashboardEditor({
                       </option>
                     ))}
                   </select>
-                  <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.serviceRadiusHint")}</p>
+                  <p className="text-xs text-freuly-text-muted">{t(dict, "dashboard.fields.serviceRadiusHint")}</p>
                 </label>
               </div>
               <label className="inline-flex items-center gap-2 cursor-pointer select-none">
@@ -991,13 +995,13 @@ export default function SpecialistDashboardEditor({
                   type="checkbox"
                   checked={form.mobile_service}
                   onChange={(e) => setForm((prev) => ({ ...prev, mobile_service: e.target.checked }))}
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="h-4 w-4 rounded border-freuly-border-default text-freuly-primary focus:ring-freuly-primary/25"
                 />
-                <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.mobileService")}</span>
+                <span className="font-medium text-freuly-text-primary">{t(dict, "dashboard.fields.mobileService")}</span>
               </label>
-              <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.mobileServiceHint")}</p>
+              <p className="text-xs text-freuly-text-muted">{t(dict, "dashboard.fields.mobileServiceHint")}</p>
               {form.mobile_service && (
-                <p className="text-xs text-gray-500">{t(dict, "dashboard.fields.serviceRadiusMobileHint")}</p>
+                <p className="text-xs text-freuly-text-muted">{t(dict, "dashboard.fields.serviceRadiusMobileHint")}</p>
               )}
             </div>
           )}
@@ -1007,7 +1011,7 @@ export default function SpecialistDashboardEditor({
               highlightedSectionId === READINESS_SECTION_ID.languages ? READINESS_JUMP_HIGHLIGHT_CLASS : ""
             }`}
           >
-            <legend className="font-medium text-gray-700">{t(dict, "dashboard.fields.languages")}</legend>
+            <legend className="font-medium text-freuly-text-primary">{t(dict, "dashboard.fields.languages")}</legend>
             <div className="flex flex-wrap gap-x-5 gap-y-2">
               {(["ru", "uk", "de", "en", "pl"] as const).map((code) => (
                 <label key={code} className="inline-flex items-center gap-1.5 cursor-pointer select-none">
@@ -1022,9 +1026,9 @@ export default function SpecialistDashboardEditor({
                           : prev.languages.filter((l) => l !== code),
                       }));
                     }}
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="h-4 w-4 rounded border-freuly-border-default text-freuly-primary focus:ring-freuly-primary/25"
                   />
-                  <span className="text-gray-800">{t(dict, `dashboard.lang.${code}`)}</span>
+                  <span className="text-freuly-text-primary">{t(dict, `dashboard.lang.${code}`)}</span>
                 </label>
               ))}
             </div>
@@ -1032,7 +1036,7 @@ export default function SpecialistDashboardEditor({
         </div>
 
         <div className="space-y-2">
-          <p className="text-sm font-medium text-gray-700">{t(dict, "dashboard.fields.avatar")}</p>
+          <p className="text-sm font-medium text-freuly-text-primary">{t(dict, "dashboard.fields.avatar")}</p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
             <div className="w-full max-w-xs shrink-0">
               <SpecialistAvatarImage
@@ -1042,7 +1046,7 @@ export default function SpecialistDashboardEditor({
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label className="inline-flex cursor-pointer items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+              <label className="inline-flex cursor-pointer items-center rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm font-medium text-freuly-text-primary hover:bg-freuly-border-subtle">
                 {avatarUploading ? t(dict, "dashboard.buttons.uploading") : t(dict, "dashboard.buttons.uploadPhoto")}
                 <input
                   type="file"
@@ -1063,37 +1067,37 @@ export default function SpecialistDashboardEditor({
         </div>
 
         <label className="block space-y-1 text-sm">
-          <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.description")}</span>
+          <span className="font-medium text-freuly-text-primary">{t(dict, "dashboard.fields.description")}</span>
           <textarea
             value={form.about_me}
             onChange={(e) => setForm((prev) => ({ ...prev, about_me: e.target.value }))}
-            className="min-h-[110px] w-full rounded-lg border border-gray-200 px-3 py-2"
+            className="min-h-[110px] w-full rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-freuly-3 py-freuly-2 text-freuly-body text-freuly-text-primary freuly-focus-ring"
           />
         </label>
 
         <label className="block space-y-1 text-sm">
-          <span className="font-medium text-gray-700">{t(dict, "dashboard.fields.video")}</span>
+          <span className="font-medium text-freuly-text-primary">{t(dict, "dashboard.fields.video")}</span>
           <input
             value={form.video_url}
             onChange={(e) => setForm((prev) => ({ ...prev, video_url: e.target.value }))}
             placeholder={t(dict, "dashboard.fields.videoPlaceholder")}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2"
+            className="w-full rounded-freuly-md border border-freuly-border-default bg-freuly-surface px-freuly-3 py-freuly-2 text-freuly-body text-freuly-text-primary freuly-focus-ring"
           />
           <div className="mt-1 space-y-0.5">
-            <p className="text-xs text-gray-500">{t(dict, "dashboard.helpers.video.line1")}</p>
-            <ul className="text-xs text-gray-500 list-disc list-inside">
+            <p className="text-xs text-freuly-text-muted">{t(dict, "dashboard.helpers.video.line1")}</p>
+            <ul className="text-xs text-freuly-text-muted list-disc list-inside">
               <li>{t(dict, "dashboard.helpers.video.bullet1")}</li>
               <li>{t(dict, "dashboard.helpers.video.bullet2")}</li>
               <li>{t(dict, "dashboard.helpers.video.bullet3")}</li>
             </ul>
-            <p className="text-xs text-gray-400">{t(dict, "dashboard.helpers.video.footer")}</p>
+            <p className="text-xs text-freuly-text-muted">{t(dict, "dashboard.helpers.video.footer")}</p>
           </div>
         </label>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-medium text-gray-700">{t(dict, "dashboard.fields.gallery")}</p>
-            <p className="text-xs text-gray-500">
+            <p className="text-sm font-medium text-freuly-text-primary">{t(dict, "dashboard.fields.gallery")}</p>
+            <p className="text-xs text-freuly-text-muted">
               {t(dict, "dashboard.gallery.usageCounter")
                 .replace("{{used}}", String(form.gallery_urls.length))
                 .replace("{{limit}}", String(galleryLimit))}
@@ -1115,7 +1119,7 @@ export default function SpecialistDashboardEditor({
               </Link>
             </p>
           ) : null}
-          <label className="inline-flex cursor-pointer items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+          <label className="inline-flex cursor-pointer items-center rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm font-medium text-freuly-text-primary hover:bg-freuly-border-subtle">
             {galleryUploading ? t(dict, "dashboard.buttons.uploading") : t(dict, "dashboard.buttons.addImage")}
             <input
               type="file"
@@ -1127,11 +1131,11 @@ export default function SpecialistDashboardEditor({
               }
             />
           </label>
-          <p className="text-xs text-gray-500">{t(dict, "dashboard.helpers.gallery.line1")}</p>
-          <p className="text-xs text-gray-400">{t(dict, "dashboard.helpers.gallery.line2")}</p>
+          <p className="text-xs text-freuly-text-muted">{t(dict, "dashboard.helpers.gallery.line1")}</p>
+          <p className="text-xs text-freuly-text-muted">{t(dict, "dashboard.helpers.gallery.line2")}</p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {form.gallery_urls.map((url, index) => (
-              <div key={`${url}-${index}`} className="relative overflow-hidden rounded-lg border border-gray-200">
+              <div key={`${url}-${index}`} className="relative overflow-hidden rounded-freuly-md border border-freuly-border-default">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={url}
@@ -1146,7 +1150,7 @@ export default function SpecialistDashboardEditor({
                       gallery_urls: prev.gallery_urls.filter((_, i) => i !== index),
                     }))
                   }
-                  className="absolute right-2 top-2 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-gray-700"
+                  className="absolute right-2 top-2 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-freuly-text-primary"
                 >
                   {t(dict, "dashboard.buttons.delete")}
                 </button>
@@ -1157,8 +1161,8 @@ export default function SpecialistDashboardEditor({
 
         <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-sm font-medium text-gray-900">{t(dict, "dashboard.fields.documents")}</p>
-            <label className="inline-flex cursor-pointer items-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <p className="text-sm font-medium text-freuly-text-primary">{t(dict, "dashboard.fields.documents")}</p>
+            <label className="inline-flex cursor-pointer items-center rounded-freuly-md border border-freuly-border-default bg-white px-3 py-2 text-sm font-medium text-freuly-text-primary hover:bg-freuly-border-subtle">
               {documentsUploading ? t(dict, "dashboard.buttons.uploading") : t(dict, "dashboard.buttons.addDocument")}
               <input
                 type="file"
@@ -1169,13 +1173,13 @@ export default function SpecialistDashboardEditor({
               />
             </label>
           </div>
-          <p className="text-xs text-gray-600 leading-relaxed">{t(dict, "dashboard.documents.help")}</p>
-          <p className="text-xs text-gray-500">{t(dict, "dashboard.documents.maxNote")}</p>
+          <p className="text-xs text-freuly-text-secondary leading-relaxed">{t(dict, "dashboard.documents.help")}</p>
+          <p className="text-xs text-freuly-text-muted">{t(dict, "dashboard.documents.maxNote")}</p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {form.certificate_urls.map((url, index) => (
               <div
                 key={`${url}-${index}`}
-                className="relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm"
+                className="relative overflow-hidden rounded-freuly-md border border-freuly-border-default bg-white shadow-sm"
               >
                 <div className="relative aspect-[3/4] w-full bg-neutral-100">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1193,7 +1197,7 @@ export default function SpecialistDashboardEditor({
                       certificate_urls: prev.certificate_urls.filter((_, i) => i !== index),
                     }))
                   }
-                  className="absolute right-2 top-2 rounded-md bg-white/95 px-2 py-1 text-xs font-medium text-gray-700 shadow-sm"
+                  className="absolute right-2 top-2 rounded-md bg-white/95 px-2 py-1 text-xs font-medium text-freuly-text-primary shadow-sm"
                 >
                   {t(dict, "dashboard.buttons.delete")}
                 </button>
@@ -1209,13 +1213,13 @@ export default function SpecialistDashboardEditor({
               ? "border-sky-300/90 bg-sky-50/70 ring-2 ring-sky-400/85 shadow-sm"
               : !hasValidServiceFlag
                 ? "border-amber-400 bg-amber-50/60 ring-2 ring-amber-300/80 shadow-[0_0_0_1px_rgba(251,191,36,0.35)]"
-                : "border-gray-200"
+                : "border-freuly-border-default"
           }`}
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h2 className="text-base font-semibold text-gray-900">{t(dict, "dashboard.servicesSection.title")}</h2>
-              <p className="mt-2 text-sm text-gray-700">
+              <h2 className="text-base font-semibold text-freuly-text-primary">{t(dict, "dashboard.servicesSection.title")}</h2>
+              <p className="mt-2 text-sm text-freuly-text-secondary">
                 {activeServicesCount > 0
                   ? t(dict, "dashboard.servicesSection.activeSummary").replace(
                       "{{count}}",
@@ -1229,10 +1233,7 @@ export default function SpecialistDashboardEditor({
                 </p>
               ) : null}
             </div>
-            <Link
-              href={servicesHref}
-              className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
-            >
+            <Link href={servicesHref} className={dashboardLinkPrimaryClass}>
               {activeServicesCount > 0
                 ? t(dict, "dashboard.servicesSection.manageButton")
                 : t(dict, "dashboard.servicesSection.addButton")}
@@ -1240,42 +1241,35 @@ export default function SpecialistDashboardEditor({
           </div>
         </div>
 
-        <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-          <p className="font-semibold">{t(dict, "dashboard.important.title")}</p>
-          <p className="mt-1 font-medium">{t(dict, "dashboard.important.body")}</p>
-        </div>
+        <Alert variant="warning" title={t(dict, "dashboard.important.title")}>
+          {t(dict, "dashboard.important.body")}
+        </Alert>
 
-        <div className="space-y-3">
-          <div className="text-sm">
-            {error ? <p className="text-red-600">{error}</p> : null}
+        <div className="space-y-freuly-3">
+          <div className="text-freuly-body-sm">
+            {error ? <p className="text-freuly-error">{error}</p> : null}
             {isDirty ? (
-              <p className="font-medium text-amber-600">{t(dict, "dashboard.messages.unsavedChanges")}</p>
+              <p className="font-medium text-freuly-warning">{t(dict, "dashboard.messages.unsavedChanges")}</p>
             ) : success ? (
-              <p className="text-emerald-600">{success}</p>
+              <p className="text-freuly-success">{success}</p>
             ) : null}
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-end sm:items-start">
-            <button
-              type="button"
-              onClick={save}
-              disabled={!isDirty || saving}
-              className="inline-flex h-10 items-center justify-center rounded-lg bg-orange-500 px-5 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60"
-            >
+          <div className="flex flex-col gap-freuly-3 sm:flex-row sm:items-start sm:justify-end">
+            <Button type="button" onClick={save} disabled={!isDirty || saving} variant="strong">
               {saving ? t(dict, "dashboard.buttons.saving") : t(dict, "dashboard.buttons.save")}
-            </button>
+            </Button>
             <div className="flex w-full min-w-0 flex-col items-stretch gap-2 sm:w-auto sm:items-end">
-              <button
+              <Button
                 type="button"
                 onClick={publish}
                 disabled={publishDisabled}
                 title={publishDisabledHint ?? undefined}
                 aria-describedby={publishDisabledHint ? "publish-disabled-hint" : undefined}
-                className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
               >
                 {publishing ? t(dict, "dashboard.buttons.publishing") : t(dict, "dashboard.buttons.publish")}
-              </button>
+              </Button>
               {publishDisabledHint ? (
-                <p id="publish-disabled-hint" className="max-w-md text-right text-sm font-medium text-gray-700">
+                <p id="publish-disabled-hint" className="max-w-md text-right text-freuly-body-sm font-medium text-freuly-text-secondary">
                   {publishDisabledHint}
                 </p>
               ) : null}
@@ -1285,6 +1279,6 @@ export default function SpecialistDashboardEditor({
 
         <SupportBlock />
       </div>
-    </section>
+    </Card>
   );
 }
