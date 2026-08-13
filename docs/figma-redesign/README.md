@@ -1,95 +1,81 @@
-# Freuly redesign — local Figma handoff snapshot
+# Freuly redesign — local Figma handoff library
 
-This directory is a **durable, MCP-derived design handoff** for the Freuly UI redesign on branch `ui/freuly-redesign`. It exists so future implementation work can proceed when the Figma MCP connection is temporarily unavailable.
+Durable, **live-MCP-derived** design handoff for the Freuly UI redesign on branch `ui/freuly-redesign`. Future implementation can continue from this directory if Figma MCP disconnects.
 
-**Figma file:** [Untitled (`xWsx2qKg5VWquqwsrmwyMT`)](https://www.figma.com/design/xWsx2qKg5VWquqwsrmwyMT/Untitled)
+**Figma file:** [Untitled (`xWsx2qKg5VWquqwsrmwyMT`)](https://www.figma.com/design/xWsx2qKg5VWquqwsrmwyMT/Untitled)  
+**Page:** `0:1` Page 1 (only page in the file)
 
 ## Snapshot status
 
 | Field | Value |
 |---|---|
 | Branch | `ui/freuly-redesign` |
-| Base commit | `c9069f1d37d1750cd8377364303c7dfb0024d0dc` |
-| Snapshot date | 2026-08-13 |
-| Status | **PARTIAL** — see limitations below |
+| Extends | `cfff0fd` (partial snapshot: only `102:1623`) |
+| Inventory date | 2026-08-13 |
+| MCP server | `project-0-freuly-mvp-Figma` (live this run) |
+| Status | **COMPLETE canvas inventory** + persisted screenshots + page specs |
 
-### What is captured
+### Live MCP proof (this run)
 
-Live Figma MCP data (2026-08-13 session) for:
-
-- **`dashboard-restyled`** (`102:1623`) — full desktop frame tree, typography, colors, spacing
-- **`global-header`** (`102:1624`) — embedded in dashboard frame; specs captured
-- **`global-footer`** (`102:1780`) — embedded in dashboard frame; specs captured; **implemented** in `components/Footer.jsx` at commit `c9069f1`
-- Shared visual tokens aligned in `styles/tokens.css` from the same MCP session
-
-### What is NOT captured (requires live MCP)
-
-- **File-level canvas inventory** — top-level pages, duplicate frames, Variant A/B boards, reference screenshots, obsolete variants, mobile breakpoints, and standalone public/marketplace frames were **not enumerated** because the Figma MCP server (`user-figma`) was in error state during snapshot creation (`mcp_auth` timed out; tool discovery failed).
-- Figma **variables** (`get_variable_defs` returned `{}` on inspected nodes)
-- **Code Connect** mappings (plan limitation)
-- **Standalone** design-system boards (if they exist outside `102:1623`)
-- **Mobile** variants for any screen
-- MCP **screenshot asset URLs** (7-day expiry; not stored here)
-
-Re-run inventory when MCP is healthy:
-
-```text
-get_metadata(fileKey: xWsx2qKg5VWquqwsrmwyMT)          # no nodeId — list all pages
-get_metadata(fileKey: ..., nodeId: <page-id>)           # per-page frame list
-get_design_context(fileKey: ..., nodeId: <frame-id>)    # APPROVED_TARGET + DESIGN_SYSTEM
-get_variable_defs(fileKey: ..., nodeId: <frame-id>)
-get_screenshot(fileKey: ..., nodeId: <frame-id>)
-```
-
-Update `frame-manifest.json` and re-commit.
-
-## Files in this snapshot
-
-| File | Purpose |
+| Call | Result |
 |---|---|
-| [`frame-manifest.json`](./frame-manifest.json) | Machine-readable frame inventory + classifications |
-| [`implementation-map.md`](./implementation-map.md) | Approved targets → Freuly routes/components + risk |
-| [`design-spec.md`](./design-spec.md) | Shared colors, type, spacing, component geometry from MCP |
+| `get_metadata` file `xWsx2qKg5VWquqwsrmwyMT` (no nodeId) | SUCCESS — page `0:1` Page 1 |
+| `get_design_context` `102:1623` | SUCCESS — `dashboard-restyled` 1440×1900 |
+| `get_metadata` `0:1` | SUCCESS — 153 top-level nodes |
+| `get_variable_defs` `102:1623` and `102:5864` | `{}` — no Figma variables |
+| `get_design_context` DS sections 1–9 | SUCCESS |
+| `get_screenshot` approved targets | SUCCESS — 27 PNGs saved under `screenshots/` |
 
-## How Cursor sessions should use this
+Do **not** treat this snapshot as cached-from-cfff0fd. Canvas inventory and design-system values were re-queried live.
 
-1. **Start here** before opening Figma MCP for redesign work on `ui/freuly-redesign`.
-2. Read `implementation-map.md` to find the canonical route/component for a screen.
-3. Read `design-spec.md` for tokens and recurring patterns (buttons, cards, badges, header/footer).
-4. Use `frame-manifest.json` to resolve node IDs and classifications programmatically.
-5. **Do not treat** `REFERENCE_SCREENSHOT`, `DUPLICATE`, or `OBSOLETE_OR_INTERMEDIATE` entries as implementation targets (none inventoried yet — pending full file scan).
-6. **Prefer live MCP** when available to validate geometry before large visual patches.
-7. **Functional source of truth** remains the codebase (routes, i18n keys, billing/onboarding logic). Figma English strings are mock copy only.
-8. Label any value not directly from MCP as **inference** in PR descriptions.
+## How to use
 
-## Classification legend
+1. Read [`approved-targets.md`](./approved-targets.md) for the implementation target set.
+2. Read [`implementation-map.md`](./implementation-map.md) for route/file mapping and what must be preserved.
+3. Read [`design-spec.md`](./design-spec.md) for tokens. **Two competing palettes exist — do not silently normalize.**
+4. Open the matching file in [`page-specs/`](./page-specs/) before implementing a screen.
+5. Use [`frame-manifest.json`](./frame-manifest.json) for node IDs and classifications.
+6. Compare against `screenshots/*.png` (local, no MCP required).
+7. **Functional source of truth = codebase.** Figma is visual only. English/Russian mock copy is not i18n.
 
-| Classification | Meaning |
+## Files
+
+| Path | Purpose |
 |---|---|
-| `APPROVED_TARGET` | Intended production redesign frame |
-| `DESIGN_SYSTEM` | Tokens, primitives, or reusable chrome |
-| `REFERENCE_SCREENSHOT` | Production screenshot for comparison only |
-| `DUPLICATE` | Generated/copy frame; not canonical |
-| `OBSOLETE_OR_INTERMEDIATE` | Superseded exploration |
-| `NEEDS_REVIEW` | Exists in product scope but no confirmed Figma target yet |
+| `frame-manifest.json` | Machine-readable inventory + classifications + conflicts |
+| `approved-targets.md` | Human list of APPROVED_TARGET + DESIGN_SYSTEM |
+| `implementation-map.md` | Figma → route → files → preserve / ignore / risk |
+| `design-spec.md` | Shared language + recorded conflicts |
+| `page-specs/*.md` | Per-family implementation specs |
+| `screenshots/*.png` | Live MCP screenshots persisted this run |
 
-## Related implementation (already on branch)
+## Classification totals
 
-| Area | Commit | Notes |
-|---|---|---|
-| Design tokens + UI primitives | `bfe195d`, `a040b97` | `styles/tokens.css`, `components/ui/*` |
-| Dashboard shell + sidebar | `a72479e` | `DashboardShell`, `Sidebar` |
-| Dashboard overview fidelity | `bb37524`, `f151de8` | Node `102:1623` main content |
-| Global footer | `c9069f1` | Node `102:1780` |
+| Class | Count |
+|---|---|
+| Meaningful frames inspected | 137 (153 top-level nodes minus 16 text/rect labels) |
+| APPROVED_TARGET | 46 |
+| DESIGN_SYSTEM | 7 |
+| REFERENCE_SCREENSHOT | 16 |
+| DUPLICATE | 68 |
+| OBSOLETE_OR_INTERMEDIATE | 4 |
+| NEEDS_REVIEW | 5 |
 
-## Data provenance
+Canonical ID series is **`102:*`**. The whole canvas was copied; non-102 frames share the same x,y and name. Prior accepted work used `102:1623`.
 
-All **exact** hex, px, and node IDs in this snapshot come from Figma MCP tools used in-session:
+## Critical conflicts (human choice required)
 
-- `get_design_context`
-- `get_metadata`
-- `get_variable_defs`
-- `get_screenshot`
-- `get_code_connect_map` (unavailable on current plan)
+Recorded in `design-spec.md` and `frame-manifest.json` `meta.conflicts`:
 
-No authentication tokens or secrets are stored in this directory.
+1. **Palette:** `#107B80` / `#F8F7F5` / `#1E1E1E` (homepage, wizard, dashboard-restyled, current `tokens.css`) vs `#0D9488` / `#FAF9F6` / `#1E293B` (foundations board + later CRM dashboards).
+2. **Header:** dark homepage header vs white dashboard-restyled header vs DS public-header with UA/RU/DE.
+3. **Dashboard shell:** warm sidebar + site header/footer vs later `crm-sidebar` + breadcrumb strip + “FREULY CRM” label.
+4. **Radius:** cards 10 vs 12; buttons 6 vs 8.
+
+## Rules that stay true
+
+- Do not invent chat, client dashboard, appointments, or payment-method vaults.
+- Do not invent routes. Figma “Requests” → product `/dashboard/leads`. Figma “Payment” → `/dashboard/billing`.
+- Preserve auth, Supabase, subscription/billing lifecycle, onboarding publish gates, i18n (`ua`/`ru`/`de`), real counts, conditional banners.
+- Client dashboard at `app/client/(protected)/dashboard` is a stub — no Figma target, do not build.
+- Figma variables: **absent**. Code Connect: **unavailable**.

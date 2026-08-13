@@ -1,160 +1,163 @@
 # Figma → Freuly implementation map
 
-Maps **approved** (or partially approved) Figma targets to production routes. Functional behavior and i18n remain codebase-owned.
+Functional behavior and i18n remain **codebase-owned**. Figma is visual only.
 
-**Snapshot:** partial — only `102:1623` subtree fully MCP-inspected. See [`frame-manifest.json`](./frame-manifest.json).
-
-Legend: **Risk** = implementation complexity given current code + available specs.
+Risk = visual implementation complexity given current code + available specs.
 
 ---
 
-## APPROVED targets (MCP-confirmed)
+## PUBLIC / MARKETPLACE
 
-### Specialist Dashboard — Overview
+### Homepage — `102:9`
 
-| Figma | Route | Primary files | Status | Risk |
-|---|---|---|---|---|
-| `102:1623` dashboard-restyled | `/[lang]/specialist/dashboard` | `app/[lang]/specialist/(protected)/dashboard/page.tsx`, `DashboardShell.tsx`, `Sidebar.tsx`, `TopBar.tsx` | Partial (`bb37524`) | **LOW** |
+| | |
+|---|---|
+| Route | `/[lang]` (`app/[lang]/page.tsx` → `HomeClient.tsx`; `/` uses default `ru`) |
+| Shared | `Header.tsx`, `Footer.jsx`, `LanguageBar.tsx`, `EarlyAccessPromoBanner.tsx` |
+| Key components | `GermanyMapCTA`, `ServiceSearchFlow`, `FounderBadge`, `SpecialistPreviewCard`, `InstallFreuly` |
+| Risk | **HIGH** |
+| Screenshot | `screenshots/homepage-desktop.png` |
 
-**Preserve (functional):**
+**Preserve:** i18n; `/api/site-blocks`; `/api/homepage/parent-category-slots`; `/api/homepage/popular-categories`; `/api/recommended-specialists`; `/api/specialists/categories`; PWA install.
 
-- Publication gating / locked sidebar items (`isPublished`)
-- Real profile status, subscription plan, leads counts from API
-- Onboarding banners, verification flows, install PWA prompts if present
-- i18n via `locales/*.json` — not Figma English strings
+**Mock-only:** English nav (Home / How it Works); “Trusted by professionals across Europe”; invented category blurbs; EN language chip; static specialist names.
 
-**Mock-only in Figma (do NOT hardcode):**
+**No mobile Figma.** Use existing responsive Header/HomeClient. **INFERENCE:** stack sections, keep 390 patterns from DS mobile header.
 
-- Static badge text "Published (awaiting review)", "Early free access", "Starter"
-- Static counts `0` for requests/profile views
-- English nav labels (Pricing, Partners, Specialist cabinet, Join Freuly)
-- Recommendation row copy (Telegram, gallery, certificates, video)
+### Search wizard — `102:2312` family
 
-**Gaps vs Figma (post-`bb37524`):**
+| | |
+|---|---|
+| Route | `/[lang]/service-search` |
+| Files | `app/[lang]/service-search/page.tsx`, `components/search-flow/ServiceSearchFlow.tsx` |
+| Risk | **MEDIUM** |
+| Screenshot | `screenshots/search-wizard-desktop.png`, `search-wizard-mobile.png` |
 
-- Dashboard uses `TopBar` not embedded `global-header` from frame
-- `main` uses responsive `max-w-7xl` + breakpoint padding vs fixed 48px
-- Requests card fixed 420px may need explicit width on large screens
+**Preserve:** step machine service → language → format → location/radius; redirect to `/specialists` or category; do not invent a 6th step.
 
----
+**Mock-only:** English “Step 1 of 5”; popular-category chips if they are not wired to real slugs.
 
-### Shared — Global header
+### Search results — `102:2729` family
 
-| Figma | Route | Primary files | Status | Risk |
-|---|---|---|---|---|
-| `102:1624` global-header (in `102:1623`) | All public pages via `app/[lang]/layout.tsx` | `components/Header.tsx` | Not started | **MEDIUM** |
+| | |
+|---|---|
+| Route | **`/specialists`** — `app/[lang]/search/page.tsx` is redirect-only |
+| Files | `app/specialists/page.tsx`, `lib/search/specialistSearch.ts`, `ServiceRequestCtaBlock` |
+| Risk | **HIGH** |
+| Screenshot | `screenshots/search-results-desktop.png`, `search-results-mobile.png` |
 
-**Preserve:**
+**Preserve:** query params `lang, place, q, category, mode, radius`; zero-results analytics; nearby/online fallback; noindex rules as in code.
 
-- Existing nav targets: pricing, partners, specialist cabinet, become-specialist
-- i18n keys: `header.nav.*`, `header.cabinet`, `header.joinButton`
-- Mobile nav behavior (current collapsible row)
+**Note:** `102:3035` results-category-grid likely maps to `/[lang]/category/[slug]` (**INFERENCE**). `102:280` earlier search-results is NEEDS_REVIEW.
 
-**Blast radius:** Every page using `[lang]/layout.tsx`, root `app/page.tsx`, legal layouts that include Header.
+### Specialist public profile — `102:3483` / `102:3697`
 
-**Figma specs:** 80px height, px 64, logo mark 32×32 `#107B80`, wordmark 20px Bold, nav 15px, active link `#107B80`, primary CTA 14px Semibold px 16 py 10 radius 6.
+| | |
+|---|---|
+| Route | `/[lang]/specialist/[id]` |
+| Files | `app/[lang]/specialist/[id]/page.tsx`, `SpecialistProfileClient.tsx`, `LeadForm`, `MobileStickyCTA` |
+| Risk | **HIGH** |
+| Screenshot | `screenshots/specialist-profile-desktop.png`, `specialist-profile-online-desktop.png`, `specialist-profile-mobile.png` |
 
----
+**Preserve:** Supabase public fetch; slug/id; JSON-LD; lead create API; work format / geography; documents lightbox.
 
-### Shared — Global footer
+**Mock-only:** reviews/stars; “FREULY FIRST 50” unless the specialist actually has that flag; static Kassel/cosmetologist copy. `102:507` earlier profile is NEEDS_REVIEW.
 
-| Figma | Route | Primary files | Status | Risk |
-|---|---|---|---|---|
-| `102:1780` global-footer | Global | `components/Footer.jsx`, `FooterLanguageSwitcher.tsx` | Implemented (`c9069f1`) | **LOW** |
+### Request service — `102:3883`
 
-**Preserve beyond Figma mock:**
+| | |
+|---|---|
+| Route | `/[lang]/request-service` and in-profile `LeadForm` (two real surfaces, one Figma board) |
+| Files | `ServiceRequestForm.tsx`, `LeadForm.tsx` |
+| Risk | **MEDIUM** |
+| Screenshot | `screenshots/request-service-desktop.png`, `request-success-mobile.png` |
 
-- Legal routes: datenschutz, AGB, impressum
-- Cookie settings link / consent integration
-- Real column links mapped to Freuly routes (not Figma "Careers", "Success Stories" unless routes exist)
-- UA/RU/DE language switching (not "English (Europe)" only)
-
----
-
-### Design system — Sidebar pattern
-
-| Figma | Route | Primary files | Status | Risk |
-|---|---|---|---|---|
-| `102:1637` sidebar | `/[lang]/specialist/dashboard/*` | `components/dashboard/Sidebar.tsx` | Partial | **LOW** |
-
-**Naming mismatch:** Figma "Requests" → product route `/dashboard/leads`.
-
-**Preserve:** Lock-until-published logic, exact nav order from product (includes onboarding-specific items if any).
+**Preserve:** `category_id` / `source_path`; lead vs service-request pipelines; noindex; attribution cookie on `/request/[public_token]` (no dedicated Figma for token page).
 
 ---
 
-## UI primitives (code + MCP-derived tokens)
+## SPECIALIST ACQUISITION
 
-| Pattern | Figma evidence | Code | Status | Risk |
-|---|---|---|---|---|
-| Button primary/secondary/strong/outline | `102:1623` buttons | `components/ui/Button.tsx` | Aligned | **LOW** |
-| Card | card radius 10, p 24 | `components/ui/Card.tsx` | Aligned | **LOW** |
-| Badge success/warning | badge nodes in overview | `components/ui/Badge.tsx` | Aligned | **LOW** |
-| Tokens | MCP hex from `102:1623` | `styles/tokens.css`, `tailwind.config.js` | Aligned | **LOW** |
+### Registration — `102:2199`
+
+| | |
+|---|---|
+| Route | `/[lang]/become-specialist` |
+| Files | `SpecialistQuickRegisterForm.tsx` (flag `newSpecialistFunnel`) or `SpecialistApplicationForm.tsx` |
+| Risk | **MEDIUM** |
+| Screenshot | `screenshots/specialist-registration-desktop.png` |
+
+**Preserve:** feature flag; legal checkboxes (AGB, rules, privacy, independent-activity); no Gewerbeschein requirement copy if present in product; redirect to dashboard.
+
+**Mock-only:** “startup-offer-banner” static English unless it maps to the real first-50 offer. No mobile frame.
+
+### Onboarding — `102:1817` / `1921` / `1986` / `2088` / `2165`
+
+| | |
+|---|---|
+| Route | `/[lang]/specialist/dashboard/onboarding` |
+| Files | `SpecialistOnboardingWizard.tsx`, step forms, `getSpecialistOnboardingGateState`, `validatePublication` |
+| Risk | **HIGH** |
+| Screenshot | `screenshots/specialist-onboarding-basic-desktop.png` |
+
+**Preserve:** publish gate; `?step=` / `?reason=`; geography validation; allowed pre-publish paths; photo upload; hasValidServiceForPublish.
+
+Figma shows 3 progress steps (Basic / Services / Review). Product also has About / Photo steps — **do not drop them** because Figma omitted standalone frames. Those fields exist on dashboard profile `102:4333`.
+
+No onboarding mobile frames.
 
 ---
 
-## NEEDS_REVIEW — expected product screens without inventoried Figma frame
+## SPECIALIST DASHBOARD
 
-These screens exist in Freuly but **no approved standalone Figma frame ID** is in this snapshot. Do not implement visual redesign until MCP file inventory confirms target node.
+All under `app/[lang]/specialist/(protected)/` + `DashboardShell` (`Sidebar`, `TopBar`). Still nested in public `[lang]` layout (Header/Footer remain unless a later change removes them).
 
-### PUBLIC / MARKETPLACE
+| Screen | Figma | Route | Files | Risk | Screenshot |
+|---|---|---|---|---|---|
+| Overview | `102:1623` | `/dashboard` | `dashboard/page.tsx` | **LOW** (partial `bb37524`) | `dashboard-overview-desktop.png` |
+| Profile | `102:4333` / `102:4650` | `/dashboard/profile` | `SpecialistDashboardEditor.tsx` | **HIGH** | `dashboard-profile-*.png` |
+| Services | `102:4832` / `102:4966` | `/dashboard/services` | `ServicesTable`, `ServiceForm` | **MEDIUM** | `dashboard-services-*.png` |
+| Leads | `102:5070` / `102:5187` | `/dashboard/leads` | `LeadsTable` | **MEDIUM** | `dashboard-requests-*.png` |
+| Subscription | `102:5248` / `102:5513` | `/dashboard/subscription` | subscription page | **HIGH** | `dashboard-subscription-*.png` |
+| Billing | `102:5410` / `102:5630` | `/dashboard/billing` | `PlanCheckoutButton` | **HIGH** | `dashboard-payment-*.png` |
+| Video guide | `102:5692` / `102:5804` | `/dashboard/video-guide` | `videoGuideItems.ts` | **LOW** | `dashboard-video-guide-*.png` |
+| Settings | **none** | `/dashboard/settings` | `ChangePasswordForm` | — | — |
+| Promoted request | **none** | `/dashboard/requests/promoted` | `PromotedRequestPageView` | — | — |
 
-| Screen | Route | Primary files | Risk (if frame found) |
+**Preserve on all dashboard pages:** auth (`getCurrentUserAndSpecialist`); unpublished lock; real plan/leads/views; i18n; Stripe lifecycle; contact redaction (`contactUnlock.ts`); verification banners; PWA prompts.
+
+**Mock-only:** static “Starter” / “Early free access” / counts `0`; “FREULY CRM”; English/Russian chrome instead of locale keys; reviews widgets.
+
+**Shell conflict:** overview uses warm sidebar + marketing header/footer. Later pages use CRM sidebar + breadcrumb. Product currently uses `TopBar` + `Sidebar` inside public Header/Footer. Do not invent a second app shell without a human decision.
+
+---
+
+## SHARED
+
+| Figma | Code | Status | Risk |
 |---|---|---|---|
-| Homepage | `/[lang]` | `HomeClient.tsx`, homepage sections | **HIGH** — many dynamic blocks, site-blocks API |
-| Search Wizard | `/[lang]/service-search` | `ServiceSearchFlow.tsx` | **MEDIUM** — multi-step state machine |
-| Search Results | `/[lang]/search` | `app/[lang]/search/page.tsx` | **HIGH** — geo/radius logic, filters |
-| Specialist Profile | `/[lang]/specialist/[id]` | `SpecialistProfileClient.tsx` | **HIGH** — rich profile data, request CTA |
-| Request Service | `/[lang]/request-service` | request flow pages | **MEDIUM** |
-| Request token states | `/[lang]/request/[public_token]` | token page | **MEDIUM** |
-
-### SPECIALIST ACQUISITION
-
-| Screen | Route | Primary files | Risk |
-|---|---|---|---|
-| Specialist registration | `/[lang]/become-specialist` | `SpecialistApplicationForm`, `SpecialistQuickRegisterForm` | **MEDIUM** |
-| Specialist onboarding | `/[lang]/specialist/dashboard/onboarding` | `SpecialistOnboardingWizard.tsx` | **HIGH** — multi-step wizard, photo upload |
-
-### SPECIALIST DASHBOARD (sub-pages)
-
-| Screen | Route | Primary files | Risk |
-|---|---|---|---|
-| Profile editor | `/dashboard/profile` | profile page + forms | **HIGH** |
-| Services | `/dashboard/services` | `ServicesTable`, `ServiceForm` | **MEDIUM** |
-| Requests/Leads | `/dashboard/leads` | `LeadsTable`, `LeadsChart` | **MEDIUM** |
-| Subscription | `/dashboard/subscription` | subscription page + Stripe lifecycle | **HIGH** |
-| Payment/Billing | `/dashboard/billing` | billing page | **HIGH** |
-| Settings | `/dashboard/settings` | settings page | **LOW** |
-| Video Guide | `/dashboard/video-guide` | video-guide page | **LOW** |
-
-### SHARED DESIGN (not inventoried)
-
-| Screen | Notes | Risk |
-|---|---|---|
-| Design system board | May exist on Figma canvas | **LOW** once tokens confirmed |
-| Mobile variants | None captured | **HIGH** — responsive work unknown |
+| `102:1624` / `102:10` / `102:6267` headers | `Header.tsx` | Competing variants | **HIGH** until header choice |
+| `102:1780` footer | `Footer.jsx` | Implemented `c9069f1` (Language A) | **LOW** |
+| `102:1637` / `102:6292` sidebars | `Sidebar.tsx` | Partial Language A | **MEDIUM** |
+| DS buttons/inputs/cards/badges/alerts | `components/ui/*` | Aligned to Language A | **MEDIUM** if B is chosen |
+| Tokens | `styles/tokens.css` | Language A | **HIGH** if migrating to B |
 
 ---
 
-## Intentional functional differences (keep)
+## Real screens with no approved Figma target
 
-| Area | Figma shows | Product requires |
-|---|---|---|
-| Footer links | Marketing labels (Careers, Success Stories) | Map to existing routes only |
-| Language | English (Europe) selector | UA/RU/DE + cookie `freuly_lang` |
-| Dashboard header | Marketing global-header inside frame | Specialist area uses `TopBar` + separate public Header on marketing pages |
-| Requests label | "Requests" | Route and copy may use "Leads" / localized equivalent |
-| Payment nav | "Payment" | Billing route `/dashboard/billing` |
-| Subscription mock | "Starter", "Early free access" | Live plan status from `specialist_plan` |
+Pricing, About, For Specialists, Support, legal, login, partners (+ dashboard/claim/onboarding), admin, specialist claim, PWA `/app` + install, SEO category landings, `/services/...` programmatic SEO, reset/update password, client dashboard stub, dashboard settings, promoted request, request token page.
+
+Do not invent redesigns for these from this file.
 
 ---
 
-## Suggested implementation order (after full inventory)
+## Suggested order (after human palette/header decision)
 
-1. Complete MCP file scan → update manifest classifications
-2. Global header (`102:1624`) — high visibility, contained component
-3. Remaining dashboard sub-pages (once frames confirmed)
-4. Public homepage + search (largest blast radius)
-5. Specialist profile + request flows
-6. Mobile variants per screen
+1. Resolve Language A vs B + header variant.
+2. Finish global header.
+3. Remaining dashboard pages using the chosen shell.
+4. Homepage + wizard + results.
+5. Public profile + request states.
+6. Registration + onboarding.
+7. Mobile pass for frames that have 390 counterparts; infer the rest from DS models.

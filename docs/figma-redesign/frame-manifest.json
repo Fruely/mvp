@@ -2,366 +2,3171 @@
   "meta": {
     "figmaFileKey": "xWsx2qKg5VWquqwsrmwyMT",
     "figmaFileUrl": "https://www.figma.com/design/xWsx2qKg5VWquqwsrmwyMT/Untitled",
+    "figmaPageId": "0:1",
+    "figmaPageName": "Page 1",
     "snapshotDate": "2026-08-13",
     "branch": "ui/freuly-redesign",
-    "baseCommit": "c9069f1d37d1750cd8377364303c7dfb0024d0dc",
-    "snapshotStatus": "PARTIAL",
-    "inventoryComplete": false,
-    "mcpServerAtSnapshot": "user-figma",
-    "mcpConnectionNote": "Figma MCP server in error state during snapshot; mcp_auth timed out. File-level get_metadata (no nodeId) not executed. Data below is from prior live session on project-0-freuly-mvp-Figma for node 102:1623 and children.",
-    "mcpToolsUsed": [
-      "get_design_context",
-      "get_metadata",
-      "get_screenshot",
-      "get_variable_defs",
-      "get_code_connect_map"
-    ],
+    "extendsCommit": "cfff0fd720f50db7e3fe1e7ae944643cb8f549a2",
+    "snapshotStatus": "COMPLETE_CANVAS_INVENTORY",
+    "inventoryComplete": true,
+    "mcpServerAtSnapshot": "project-0-freuly-mvp-Figma",
+    "liveMcpProof": {
+      "get_metadata_file": "SUCCESS — page 0:1 Page 1",
+      "get_design_context_102_1623": "SUCCESS — dashboard-restyled 1440x1900",
+      "get_metadata_page": "SUCCESS — 153 top-level nodes, XML 18675 lines",
+      "get_variable_defs_102_1623": {},
+      "get_variable_defs_102_5864": {},
+      "codeConnectAvailable": false
+    },
+    "canonicalIdSeries": "102:*",
+    "canonicalIdReason": "EXACT_MCP_DATA: every meaningful frame exists twice at the same x,y. 102:* IDs are later. Prior accepted snapshot used 102:1623.",
     "figmaVariablesOnInspectedNodes": {},
     "codeConnectAvailable": false,
     "classificationTotals": {
-      "meaningfulFramesInspected": 3,
-      "APPROVED_TARGET": 3,
-      "DESIGN_SYSTEM": 1,
-      "REFERENCE_SCREENSHOT": 0,
-      "DUPLICATE": 0,
-      "OBSOLETE_OR_INTERMEDIATE": 0,
-      "NEEDS_REVIEW": 18,
-      "expectedScreensWithoutApprovedFrame": 17
-    }
+      "meaningfulFramesInspected": 137,
+      "topLevelNodesOnPage": 153,
+      "excludedNonFrames": 16,
+      "APPROVED_TARGET": 46,
+      "DESIGN_SYSTEM": 7,
+      "REFERENCE_SCREENSHOT": 16,
+      "DUPLICATE": 68,
+      "OBSOLETE_OR_INTERMEDIATE": 4,
+      "NEEDS_REVIEW": 5
+    },
+    "conflicts": [
+      {
+        "id": "PALETTE_TEAL",
+        "severity": "NEEDS_REVIEW",
+        "a": {
+          "source": "102:1623 dashboard-restyled + homepage/wizard",
+          "primary": "#107B80",
+          "pageBg": "#F8F7F5",
+          "text": "#1E1E1E",
+          "border": "#E6E4DF"
+        },
+        "b": {
+          "source": "102:5864 foundations + later CRM dashboards",
+          "primary": "#0D9488",
+          "pageBg": "#FAF9F6",
+          "text": "#1E293B",
+          "border": "#E2E8F0"
+        },
+        "codeToday": "styles/tokens.css uses #107B80 from 102:1623",
+        "note": "Do not silently normalize. Human must choose which language is canonical going forward."
+      },
+      {
+        "id": "HEADER_VARIANTS",
+        "severity": "NEEDS_REVIEW",
+        "variants": [
+          {
+            "node": "102:10",
+            "frame": "homepage",
+            "bg": "#1E1E1E",
+            "nav": "Home / Find a Specialist / How it Works / For Specialists",
+            "cta": "Get Started"
+          },
+          {
+            "node": "102:1624",
+            "frame": "dashboard-restyled",
+            "bg": "#FFFFFF",
+            "nav": "Pricing / Partners / Specialist cabinet",
+            "cta": "Join Freuly"
+          },
+          {
+            "node": "102:6267",
+            "frame": "DS public-header",
+            "bg": "#FFFFFF",
+            "nav": "Тарифы / Партнёрам / Кабинет специалиста",
+            "cta": "Присоединиться к Freuly",
+            "lang": "UA RU DE"
+          }
+        ]
+      },
+      {
+        "id": "DASHBOARD_SHELL",
+        "severity": "NEEDS_REVIEW",
+        "a": {
+          "node": "102:1623",
+          "sidebar": "white 240, active #107B80 fill, English labels, includes global header+footer"
+        },
+        "b": {
+          "nodes": "102:4333 / 102:4832 / later dashboards",
+          "sidebar": "crm-sidebar #F8FAFB, FREULY CRM label, breadcrumb-strip, no footer in some frames"
+        }
+      },
+      {
+        "id": "FOOTER_HEIGHT",
+        "severity": "NEEDS_REVIEW",
+        "values": {
+          "102:1780": 298,
+          "102:245 / 102:472": 347,
+          "102:3657 / 102:3947": 383
+        }
+      },
+      {
+        "id": "BUTTON_RADIUS",
+        "severity": "NEEDS_REVIEW",
+        "a": {
+          "102:1623": "radius 6, px 16 py 10, #107B80"
+        },
+        "b": {
+          "102:6096": "radius 8, px 24 py 11, #0D9488; small 36px height radius 6"
+        }
+      },
+      {
+        "id": "CARD_RADIUS",
+        "severity": "NEEDS_REVIEW",
+        "a": {
+          "102:1623": 10
+        },
+        "b": {
+          "102:6041 / 102:6363": 12,
+          "XL containers": 16
+        }
+      }
+    ],
+    "mcpToolsUsedThisRun": [
+      "get_metadata",
+      "get_design_context",
+      "get_screenshot",
+      "get_variable_defs"
+    ],
+    "screenshotsPersisted": 27,
+    "screenshotsDir": "docs/figma-redesign/screenshots/"
   },
   "frames": [
     {
+      "nodeId": "102:9",
+      "name": "homepage",
+      "dimensions": {
+        "width": 1440,
+        "height": 2549
+      },
+      "canvasPosition": {
+        "x": 1480,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]",
+      "freulyComponents": [
+        "app/[lang]/page.tsx",
+        "app/[lang]/HomeClient.tsx"
+      ],
+      "family": "homepage",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named homepage redesign, complete page (header/hero/categories/specialists/stories/promos/trust/footer). Live get_design_context 2026-08-13.",
+      "childRegionIds": [
+        "102:10",
+        "102:32",
+        "102:49",
+        "102:95",
+        "102:202",
+        "102:214",
+        "102:232",
+        "102:245"
+      ],
+      "localScreenshot": "screenshots/homepage-desktop.png",
+      "mcpSource": "get_metadata,get_design_context,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:2312",
+      "name": "wizard-service",
+      "dimensions": {
+        "width": 1440,
+        "height": 800
+      },
+      "canvasPosition": {
+        "x": 25800,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/service-search",
+      "freulyComponents": [
+        "app/[lang]/service-search/page.tsx",
+        "components/search-flow/ServiceSearchFlow.tsx"
+      ],
+      "family": "search-wizard",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:2507",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named wizard step 1 of 5; matches real ServiceSearchFlow first step.",
+      "childRegionIds": [
+        "102:2313",
+        "102:2324",
+        "102:2325"
+      ],
+      "localScreenshot": "screenshots/search-wizard-desktop.png",
+      "mcpSource": "get_metadata,get_design_context,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:2348",
+      "name": "wizard-language",
+      "dimensions": {
+        "width": 1440,
+        "height": 800
+      },
+      "canvasPosition": {
+        "x": 27280,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/service-search",
+      "freulyComponents": [
+        "components/search-flow/ServiceSearchFlow.tsx"
+      ],
+      "family": "search-wizard",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:2548",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named wizard language step; same strip as wizard-service.",
+      "childRegionIds": [],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:2390",
+      "name": "wizard-format",
+      "dimensions": {
+        "width": 1440,
+        "height": 800
+      },
+      "canvasPosition": {
+        "x": 28760,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/service-search",
+      "freulyComponents": [
+        "components/search-flow/ServiceSearchFlow.tsx"
+      ],
+      "family": "search-wizard",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:2595",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named wizard format step.",
+      "childRegionIds": [],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:2431",
+      "name": "wizard-location",
+      "dimensions": {
+        "width": 1440,
+        "height": 800
+      },
+      "canvasPosition": {
+        "x": 30240,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/service-search",
+      "freulyComponents": [
+        "components/search-flow/ServiceSearchFlow.tsx"
+      ],
+      "family": "search-wizard",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:2641",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named wizard location step.",
+      "childRegionIds": [],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:2467",
+      "name": "wizard-radius",
+      "dimensions": {
+        "width": 1440,
+        "height": 800
+      },
+      "canvasPosition": {
+        "x": 31720,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/service-search",
+      "freulyComponents": [
+        "components/search-flow/ServiceSearchFlow.tsx"
+      ],
+      "family": "search-wizard",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:2682",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named wizard radius step.",
+      "childRegionIds": [],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:2507",
+      "name": "wizard-service-mobile",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "canvasPosition": {
+        "x": 33200,
+        "y": -988
+      },
+      "viewport": "mobile",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/service-search",
+      "freulyComponents": [
+        "components/search-flow/ServiceSearchFlow.tsx"
+      ],
+      "family": "search-wizard",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:2312",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "390px mobile counterpart of wizard-service.",
+      "childRegionIds": [],
+      "localScreenshot": "screenshots/search-wizard-mobile.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:2548",
+      "name": "wizard-language-mobile",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "canvasPosition": {
+        "x": 33630,
+        "y": -988
+      },
+      "viewport": "mobile",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/service-search",
+      "freulyComponents": [
+        "components/search-flow/ServiceSearchFlow.tsx"
+      ],
+      "family": "search-wizard",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:2348",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "390px mobile counterpart of wizard-language.",
+      "childRegionIds": [],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:2595",
+      "name": "wizard-format-mobile",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "canvasPosition": {
+        "x": 34060,
+        "y": -988
+      },
+      "viewport": "mobile",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/service-search",
+      "freulyComponents": [
+        "components/search-flow/ServiceSearchFlow.tsx"
+      ],
+      "family": "search-wizard",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:2390",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "390px mobile counterpart of wizard-format.",
+      "childRegionIds": [],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:2641",
+      "name": "wizard-location-mobile",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "canvasPosition": {
+        "x": 34490,
+        "y": -988
+      },
+      "viewport": "mobile",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/service-search",
+      "freulyComponents": [
+        "components/search-flow/ServiceSearchFlow.tsx"
+      ],
+      "family": "search-wizard",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:2431",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "390px mobile counterpart of wizard-location.",
+      "childRegionIds": [],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:2682",
+      "name": "wizard-radius-mobile",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "canvasPosition": {
+        "x": 34920,
+        "y": -988
+      },
+      "viewport": "mobile",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/service-search",
+      "freulyComponents": [
+        "components/search-flow/ServiceSearchFlow.tsx"
+      ],
+      "family": "search-wizard",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:2467",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "390px mobile counterpart of wizard-radius.",
+      "childRegionIds": [],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:2729",
+      "name": "results-online",
+      "dimensions": {
+        "width": 1440,
+        "height": 1400
+      },
+      "canvasPosition": {
+        "x": 35350,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/specialists?mode=online (via /[lang]/search redirect)",
+      "freulyComponents": [
+        "app/specialists/page.tsx",
+        "lib/search/specialistSearch.ts"
+      ],
+      "family": "search-results",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:3258",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Later named results-online redesign; live screenshot + metadata. Canonical over earlier search-results 102:280.",
+      "childRegionIds": [
+        "102:2730",
+        "102:2752",
+        "102:2846"
+      ],
+      "localScreenshot": "screenshots/search-results-desktop.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:2881",
+      "name": "results-nearby",
+      "dimensions": {
+        "width": 1440,
+        "height": 1400
+      },
+      "canvasPosition": {
+        "x": 36830,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/specialists?mode=nearby",
+      "freulyComponents": [
+        "app/specialists/page.tsx"
+      ],
+      "family": "search-results",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:3355",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named nearby results state matching real geo/radius search.",
+      "childRegionIds": [
+        "102:2882",
+        "102:2904",
+        "102:2954"
+      ],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:2989",
+      "name": "results-empty",
+      "dimensions": {
+        "width": 1440,
+        "height": 800
+      },
+      "canvasPosition": {
+        "x": 38310,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/specialists (zero results)",
+      "freulyComponents": [
+        "app/specialists/page.tsx"
+      ],
+      "family": "search-results",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:3429",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named empty results state; product has zero-results UX.",
+      "childRegionIds": [
+        "102:2990",
+        "102:3012"
+      ],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:3035",
+      "name": "results-category-grid",
+      "dimensions": {
+        "width": 1440,
+        "height": 1902
+      },
+      "canvasPosition": {
+        "x": 39790,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/category/[slug] (INFERENCE: category browse, not /specialists list)",
+      "freulyComponents": [
+        "app/[lang]/category/[slug]/page.tsx"
+      ],
+      "family": "search-results",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "MEDIUM",
+      "classificationReason": "Named category-grid after results family. Likely category browse. No mobile pair found.",
+      "childRegionIds": [
+        "102:3036",
+        "102:3058",
+        "102:3223"
+      ],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:3258",
+      "name": "results-online-mobile",
+      "dimensions": {
+        "width": 390,
+        "height": 985
+      },
+      "canvasPosition": {
+        "x": 41270,
+        "y": -988
+      },
+      "viewport": "mobile",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/specialists",
+      "freulyComponents": [
+        "app/specialists/page.tsx"
+      ],
+      "family": "search-results",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:2729",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "390px mobile counterpart of results-online.",
+      "childRegionIds": [],
+      "localScreenshot": "screenshots/search-results-mobile.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:3355",
+      "name": "results-nearby-mobile",
+      "dimensions": {
+        "width": 390,
+        "height": 750
+      },
+      "canvasPosition": {
+        "x": 41700,
+        "y": -988
+      },
+      "viewport": "mobile",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/specialists",
+      "freulyComponents": [
+        "app/specialists/page.tsx"
+      ],
+      "family": "search-results",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:2881",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "390px mobile counterpart of results-nearby.",
+      "childRegionIds": [],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:3429",
+      "name": "results-empty-mobile",
+      "dimensions": {
+        "width": 390,
+        "height": 700
+      },
+      "canvasPosition": {
+        "x": 42130,
+        "y": -988
+      },
+      "viewport": "mobile",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/specialists",
+      "freulyComponents": [
+        "app/specialists/page.tsx"
+      ],
+      "family": "search-results",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:2989",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "390px mobile counterpart of results-empty.",
+      "childRegionIds": [],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:3483",
+      "name": "desktop-local-specialist-profile",
+      "dimensions": {
+        "width": 1440,
+        "height": 3200
+      },
+      "canvasPosition": {
+        "x": 44320,
+        "y": -1028
+      },
+      "viewport": "desktop",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/specialist/[id]",
+      "freulyComponents": [
+        "app/[lang]/specialist/[id]/page.tsx",
+        "components/specialist/SpecialistProfileClient.tsx"
+      ],
+      "family": "specialist-profile",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:3987",
+        "variant": "local"
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Later named local profile; supersedes earlier specialist-profile 102:507. Live screenshot.",
+      "childRegionIds": [
+        "102:3484",
+        "102:3501",
+        "102:3529",
+        "102:3657"
+      ],
+      "localScreenshot": "screenshots/specialist-profile-desktop.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:3697",
+      "name": "desktop-online-specialist-profile",
+      "dimensions": {
+        "width": 1440,
+        "height": 2168
+      },
+      "canvasPosition": {
+        "x": 45800,
+        "y": -1028
+      },
+      "viewport": "desktop",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/specialist/[id]",
+      "freulyComponents": [
+        "components/specialist/SpecialistProfileClient.tsx"
+      ],
+      "family": "specialist-profile",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:4166",
+        "variant": "online"
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Online-format public profile variant of the same product page.",
+      "childRegionIds": [
+        "102:3698",
+        "102:3715",
+        "102:3737",
+        "102:3843"
+      ],
+      "localScreenshot": "screenshots/specialist-profile-online-desktop.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:3987",
+      "name": "mobile-local-specialist-profile",
+      "dimensions": {
+        "width": 390,
+        "height": 3267
+      },
+      "canvasPosition": {
+        "x": 48760,
+        "y": -1028
+      },
+      "viewport": "mobile",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/specialist/[id]",
+      "freulyComponents": [
+        "components/specialist/SpecialistProfileClient.tsx",
+        "components/specialist/MobileStickyCTA.tsx"
+      ],
+      "family": "specialist-profile",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:3483",
+        "variant": "local"
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "390px local profile mobile.",
+      "childRegionIds": [],
+      "localScreenshot": "screenshots/specialist-profile-mobile.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:4166",
+      "name": "mobile-online-specialist-profile",
+      "dimensions": {
+        "width": 390,
+        "height": 2349
+      },
+      "canvasPosition": {
+        "x": 49190,
+        "y": -1028
+      },
+      "viewport": "mobile",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/specialist/[id]",
+      "freulyComponents": [
+        "components/specialist/SpecialistProfileClient.tsx"
+      ],
+      "family": "specialist-profile",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:3697",
+        "variant": "online"
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "390px online profile mobile.",
+      "childRegionIds": [],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:3883",
+      "name": "desktop-request-states",
+      "dimensions": {
+        "width": 1440,
+        "height": 1285
+      },
+      "canvasPosition": {
+        "x": 47280,
+        "y": -1028
+      },
+      "viewport": "desktop",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/request-service + lead form on profile",
+      "freulyComponents": [
+        "app/[lang]/request-service/page.tsx",
+        "components/LeadForm.tsx",
+        "components/serviceRequests/ServiceRequestForm.tsx"
+      ],
+      "family": "request-service",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:4300",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Contains state-expanded (form) and state-success. Maps to real lead/request forms, not a new route.",
+      "childRegionIds": [
+        "102:3884",
+        "102:3899",
+        "102:3900",
+        "102:3927",
+        "102:3947"
+      ],
+      "localScreenshot": "screenshots/request-service-desktop.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:4300",
+      "name": "mobile-success-state",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "canvasPosition": {
+        "x": 49620,
+        "y": -1028
+      },
+      "viewport": "mobile",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "lead/request success state (no dedicated route)",
+      "freulyComponents": [
+        "components/LeadForm.tsx"
+      ],
+      "family": "request-service",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:3883",
+        "variant": "success"
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Mobile success confirmation after request submit.",
+      "childRegionIds": [
+        "102:4301",
+        "102:4309"
+      ],
+      "localScreenshot": "screenshots/request-success-mobile.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:2199",
+      "name": "registration-restyled",
+      "dimensions": {
+        "width": 1440,
+        "height": 1800
+      },
+      "canvasPosition": {
+        "x": 22200,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "SPECIALIST_ACQUISITION",
+      "productArea": "SPECIALIST_ACQUISITION",
+      "freulyRoute": "/[lang]/become-specialist",
+      "freulyComponents": [
+        "app/[lang]/become-specialist/page.tsx",
+        "components/SpecialistQuickRegisterForm.tsx",
+        "components/SpecialistApplicationForm.tsx"
+      ],
+      "family": "specialist-registration",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": "B"
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Labeled on canvas 'Variant B — Restyled Registration (Freuly Design System)'. Canonical over 102:951.",
+      "childRegionIds": [
+        "102:2200",
+        "102:2212",
+        "102:2223",
+        "102:2270"
+      ],
+      "localScreenshot": "screenshots/specialist-registration-desktop.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:1817",
+      "name": "onboarding-basic",
+      "dimensions": {
+        "width": 1440,
+        "height": 1417
+      },
+      "canvasPosition": {
+        "x": 13320,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "SPECIALIST_ACQUISITION",
+      "productArea": "SPECIALIST_ACQUISITION",
+      "freulyRoute": "/[lang]/specialist/dashboard/onboarding?step=basic",
+      "freulyComponents": [
+        "components/dashboard/onboarding/SpecialistOnboardingWizard.tsx",
+        "OnboardingBasicForm"
+      ],
+      "family": "specialist-onboarding",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named onboarding-basic; matches real wizard Basic step.",
+      "childRegionIds": [
+        "102:1818",
+        "102:1825",
+        "102:1844"
+      ],
+      "localScreenshot": "screenshots/specialist-onboarding-basic-desktop.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:1921",
+      "name": "onboarding-services",
+      "dimensions": {
+        "width": 1440,
+        "height": 1024
+      },
+      "canvasPosition": {
+        "x": 14800,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "SPECIALIST_ACQUISITION",
+      "productArea": "SPECIALIST_ACQUISITION",
+      "freulyRoute": "/[lang]/specialist/dashboard/onboarding?step=services",
+      "freulyComponents": [
+        "OnboardingServicesStep"
+      ],
+      "family": "specialist-onboarding",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named onboarding-services; matches real Services step.",
+      "childRegionIds": [
+        "102:1922",
+        "102:1929",
+        "102:1949"
+      ],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:1986",
+      "name": "onboarding-review",
+      "dimensions": {
+        "width": 1440,
+        "height": 1277
+      },
+      "canvasPosition": {
+        "x": 16280,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "SPECIALIST_ACQUISITION",
+      "productArea": "SPECIALIST_ACQUISITION",
+      "freulyRoute": "/[lang]/specialist/dashboard/onboarding?step=review",
+      "freulyComponents": [
+        "OnboardingReviewStep"
+      ],
+      "family": "specialist-onboarding",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named onboarding-review; matches real Review step.",
+      "childRegionIds": [
+        "102:1987",
+        "102:1994",
+        "102:2015"
+      ],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:2088",
+      "name": "onboarding-review-recommendations",
+      "dimensions": {
+        "width": 1440,
+        "height": 1300
+      },
+      "canvasPosition": {
+        "x": 17760,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "SPECIALIST_ACQUISITION",
+      "productArea": "SPECIALIST_ACQUISITION",
+      "freulyRoute": "/[lang]/specialist/dashboard/onboarding (review/checklist)",
+      "freulyComponents": [
+        "OnboardingChecklist",
+        "OnboardingReviewStep"
+      ],
+      "family": "specialist-onboarding",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "MEDIUM",
+      "classificationReason": "Named review-recommendations. Product has checklist/recommendations; not a separate route.",
+      "childRegionIds": [
+        "102:2089",
+        "102:2096",
+        "102:2117"
+      ],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:2165",
+      "name": "onboarding-publish-states",
+      "dimensions": {
+        "width": 1440,
+        "height": 1200
+      },
+      "canvasPosition": {
+        "x": 19240,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "SPECIALIST_ACQUISITION",
+      "productArea": "SPECIALIST_ACQUISITION",
+      "freulyRoute": "/[lang]/specialist/dashboard/onboarding (publish gate)",
+      "freulyComponents": [
+        "getSpecialistOnboardingGateState",
+        "validatePublication"
+      ],
+      "family": "specialist-onboarding",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named publish-states; product has real publish gating.",
+      "childRegionIds": [
+        "102:2166",
+        "102:2173"
+      ],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
       "nodeId": "102:1623",
       "name": "dashboard-restyled",
-      "dimensions": { "width": 1440, "height": 1900 },
+      "dimensions": {
+        "width": 1440,
+        "height": 1900
+      },
+      "canvasPosition": {
+        "x": 8940,
+        "y": -988
+      },
       "viewport": "desktop",
       "domain": "SPECIALIST_DASHBOARD",
+      "productArea": "SPECIALIST_DASHBOARD",
       "freulyRoute": "/[lang]/specialist/dashboard",
       "freulyComponents": [
         "app/[lang]/specialist/(protected)/dashboard/page.tsx",
-        "components/dashboard/DashboardShell.tsx",
-        "components/dashboard/Sidebar.tsx",
-        "components/dashboard/TopBar.tsx"
+        "DashboardShell.tsx",
+        "Sidebar.tsx"
       ],
+      "family": "dashboard-overview",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": "B"
+      },
       "classification": "APPROVED_TARGET",
       "confidence": "HIGH",
-      "implementationStatus": "PARTIAL",
-      "implementedAtCommit": "bb37524",
-      "relatedFrameIds": {
-        "desktop": ["102:1623"],
-        "mobile": [],
-        "variantA": [],
-        "variantB": []
-      },
+      "classificationReason": "Labeled 'Variant B — Restyled Dashboard'. Prior accepted target. Live get_design_context + screenshot this run.",
       "childRegionIds": [
         "102:1624",
         "102:1636",
+        "102:1637",
+        "102:1678",
         "102:1780"
       ],
-      "notes": "Canonical desktop specialist dashboard overview. Contains global header/footer as embedded regions. Main content cards: profile-status, subscription, requests, profile-views, improvements. Canvas position x=8940 y=-988.",
-      "mcpSource": "get_design_context,get_metadata,get_screenshot"
+      "localScreenshot": "screenshots/dashboard-overview-desktop.png",
+      "mcpSource": "get_metadata,get_design_context,get_screenshot,get_variable_defs",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:4332",
+      "name": "canvas",
+      "dimensions": {
+        "width": 1950,
+        "height": 3667
+      },
+      "canvasPosition": {
+        "x": 51810,
+        "y": -1028
+      },
+      "viewport": "system",
+      "domain": "SPECIALIST_DASHBOARD",
+      "productArea": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/profile",
+      "freulyComponents": [
+        "app/[lang]/specialist/(protected)/dashboard/profile/page.tsx",
+        "SpecialistDashboardEditor.tsx"
+      ],
+      "family": "dashboard-profile",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Parent board named 'canvas' but children are desktop-dashboard + mobile-dashboard profile editor (basic-info, languages, avatar, gallery, documents, save-publish). Not a screenshot.",
+      "childRegionIds": [
+        "102:4333",
+        "102:4650"
+      ],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:4333",
+      "name": "desktop-dashboard",
+      "dimensions": {
+        "width": 1440,
+        "height": 3587
+      },
+      "canvasPosition": {
+        "x": 51850,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "SPECIALIST_DASHBOARD",
+      "productArea": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/profile",
+      "freulyComponents": [
+        "SpecialistDashboardEditor.tsx"
+      ],
+      "family": "dashboard-profile",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:4650",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Child of canvas; form sections prove this is Profile editor, not overview.",
+      "childRegionIds": [
+        "102:4334",
+        "102:4351",
+        "102:4360",
+        "102:4361",
+        "102:4396"
+      ],
+      "localScreenshot": "screenshots/dashboard-profile-desktop.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:4650",
+      "name": "mobile-dashboard",
+      "dimensions": {
+        "width": 390,
+        "height": 2618
+      },
+      "canvasPosition": {
+        "x": 53330,
+        "y": -988
+      },
+      "viewport": "mobile",
+      "domain": "SPECIALIST_DASHBOARD",
+      "productArea": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/profile",
+      "freulyComponents": [
+        "SpecialistDashboardEditor.tsx"
+      ],
+      "family": "dashboard-profile",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:4333",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Mobile profile editor (basic-info-mobile, avatar-mobile, gallery-mobile).",
+      "childRegionIds": [
+        "102:4651",
+        "102:4661",
+        "102:4672"
+      ],
+      "localScreenshot": "screenshots/dashboard-profile-mobile.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:4832",
+      "name": "dashboard-services-desktop",
+      "dimensions": {
+        "width": 1440,
+        "height": 1024
+      },
+      "canvasPosition": {
+        "x": 54240,
+        "y": -1028
+      },
+      "viewport": "desktop",
+      "domain": "SPECIALIST_DASHBOARD",
+      "productArea": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/services",
+      "freulyComponents": [
+        "dashboard/services/page.tsx",
+        "ServicesTable",
+        "ServiceForm"
+      ],
+      "family": "dashboard-services",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:4966",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named dashboard-services-desktop.",
+      "childRegionIds": [
+        "102:4833",
+        "102:4850",
+        "102:4859"
+      ],
+      "localScreenshot": "screenshots/dashboard-services-desktop.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:4966",
+      "name": "dashboard-services-mobile",
+      "dimensions": {
+        "width": 390,
+        "height": 942
+      },
+      "canvasPosition": {
+        "x": 55720,
+        "y": -1028
+      },
+      "viewport": "mobile",
+      "domain": "SPECIALIST_DASHBOARD",
+      "productArea": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/services",
+      "freulyComponents": [
+        "ServicesTable"
+      ],
+      "family": "dashboard-services",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:4832",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named mobile counterpart.",
+      "childRegionIds": [],
+      "localScreenshot": "screenshots/dashboard-services-mobile.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:5070",
+      "name": "dashboard-requests-desktop",
+      "dimensions": {
+        "width": 1520,
+        "height": 1080
+      },
+      "canvasPosition": {
+        "x": 56590,
+        "y": -1028
+      },
+      "viewport": "desktop",
+      "domain": "SPECIALIST_DASHBOARD",
+      "productArea": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/leads",
+      "freulyComponents": [
+        "dashboard/leads/page.tsx",
+        "LeadsTable"
+      ],
+      "family": "dashboard-requests",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:5187",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named requests; product route is /leads. Do not invent /dashboard/requests index.",
+      "childRegionIds": [
+        "102:5071"
+      ],
+      "localScreenshot": "screenshots/dashboard-requests-desktop.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:5187",
+      "name": "dashboard-requests-mobile",
+      "dimensions": {
+        "width": 470,
+        "height": 924
+      },
+      "canvasPosition": {
+        "x": 58070,
+        "y": -1028
+      },
+      "viewport": "mobile",
+      "domain": "SPECIALIST_DASHBOARD",
+      "productArea": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/leads",
+      "freulyComponents": [
+        "LeadsTable"
+      ],
+      "family": "dashboard-requests",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:5070",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Mobile requests/leads.",
+      "childRegionIds": [],
+      "localScreenshot": "screenshots/dashboard-requests-mobile.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:5248",
+      "name": "dashboard-subscription-desktop",
+      "dimensions": {
+        "width": 1440,
+        "height": 1342
+      },
+      "canvasPosition": {
+        "x": 59020,
+        "y": -1028
+      },
+      "viewport": "desktop",
+      "domain": "SPECIALIST_DASHBOARD",
+      "productArea": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/subscription",
+      "freulyComponents": [
+        "dashboard/subscription/page.tsx"
+      ],
+      "family": "dashboard-subscription",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:5513",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named subscription desktop.",
+      "childRegionIds": [
+        "102:5249",
+        "102:5266",
+        "102:5275"
+      ],
+      "localScreenshot": "screenshots/dashboard-subscription-desktop.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:5513",
+      "name": "dashboard-subscription-mobile",
+      "dimensions": {
+        "width": 390,
+        "height": 1600
+      },
+      "canvasPosition": {
+        "x": 61980,
+        "y": -1028
+      },
+      "viewport": "mobile",
+      "domain": "SPECIALIST_DASHBOARD",
+      "productArea": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/subscription",
+      "freulyComponents": [
+        "dashboard/subscription/page.tsx"
+      ],
+      "family": "dashboard-subscription",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:5248",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named subscription mobile.",
+      "childRegionIds": [],
+      "localScreenshot": "screenshots/dashboard-subscription-mobile.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:5410",
+      "name": "dashboard-payment-desktop",
+      "dimensions": {
+        "width": 1440,
+        "height": 1024
+      },
+      "canvasPosition": {
+        "x": 60500,
+        "y": -1028
+      },
+      "viewport": "desktop",
+      "domain": "SPECIALIST_DASHBOARD",
+      "productArea": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/billing",
+      "freulyComponents": [
+        "dashboard/billing/page.tsx",
+        "PlanCheckoutButton.tsx"
+      ],
+      "family": "dashboard-payment",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:5630",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named payment; product route is /billing. No payment-method vault UI in product.",
+      "childRegionIds": [
+        "102:5411",
+        "102:5428",
+        "102:5437"
+      ],
+      "localScreenshot": "screenshots/dashboard-payment-desktop.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:5630",
+      "name": "dashboard-payment-mobile",
+      "dimensions": {
+        "width": 390,
+        "height": 1800
+      },
+      "canvasPosition": {
+        "x": 62410,
+        "y": -1028
+      },
+      "viewport": "mobile",
+      "domain": "SPECIALIST_DASHBOARD",
+      "productArea": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/billing",
+      "freulyComponents": [
+        "dashboard/billing/page.tsx"
+      ],
+      "family": "dashboard-payment",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:5410",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named payment mobile.",
+      "childRegionIds": [],
+      "localScreenshot": "screenshots/dashboard-payment-mobile.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:5692",
+      "name": "dashboard-videoguide-desktop",
+      "dimensions": {
+        "width": 1440,
+        "height": 1417
+      },
+      "canvasPosition": {
+        "x": 62840,
+        "y": -1028
+      },
+      "viewport": "desktop",
+      "domain": "SPECIALIST_DASHBOARD",
+      "productArea": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/video-guide",
+      "freulyComponents": [
+        "dashboard/video-guide/page.tsx",
+        "content/dashboard/videoGuideItems.ts"
+      ],
+      "family": "dashboard-video-guide",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:5804",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named videoguide desktop.",
+      "childRegionIds": [
+        "102:5693",
+        "102:5710",
+        "102:5719"
+      ],
+      "localScreenshot": "screenshots/dashboard-video-guide-desktop.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:5804",
+      "name": "dashboard-videoguide-mobile",
+      "dimensions": {
+        "width": 390,
+        "height": 1005
+      },
+      "canvasPosition": {
+        "x": 64320,
+        "y": -1028
+      },
+      "viewport": "mobile",
+      "domain": "SPECIALIST_DASHBOARD",
+      "productArea": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/video-guide",
+      "freulyComponents": [
+        "dashboard/video-guide/page.tsx"
+      ],
+      "family": "dashboard-video-guide",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:5692",
+        "variant": null
+      },
+      "classification": "APPROVED_TARGET",
+      "confidence": "HIGH",
+      "classificationReason": "Named videoguide mobile.",
+      "childRegionIds": [],
+      "localScreenshot": "screenshots/dashboard-video-guide-mobile.png",
+      "mcpSource": "get_metadata,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
     },
     {
       "nodeId": "102:1624",
       "name": "global-header",
-      "dimensions": { "width": 1440, "height": 80 },
+      "dimensions": {
+        "width": 1440,
+        "height": 80
+      },
+      "canvasPosition": {
+        "x": 8940,
+        "y": -988
+      },
       "viewport": "desktop",
       "domain": "SHARED_DESIGN",
-      "freulyRoute": "global — all pages using components/Header.tsx via app/[lang]/layout.tsx",
-      "freulyComponents": ["components/Header.tsx", "app/[lang]/layout.tsx"],
+      "productArea": "SHARED_DESIGN",
+      "freulyRoute": "global via app/[lang]/layout.tsx",
+      "freulyComponents": [
+        "components/Header.tsx"
+      ],
+      "family": "shared-header",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": "warm-#107B80"
+      },
       "classification": "APPROVED_TARGET",
       "confidence": "HIGH",
-      "implementationStatus": "NOT_STARTED",
-      "relatedFrameIds": {
-        "desktop": ["102:1624"],
-        "mobile": [],
-        "parentFrame": "102:1623"
-      },
-      "notes": "Embedded in dashboard-restyled; intended site-wide marketing header. Logo mark 32x32 #107B80, wordmark Inter Bold 20px, nav 15px, CTA Join Freuly. Current Header.tsx still uses legacy blue/emerald styling.",
-      "mcpSource": "get_design_context"
+      "classificationReason": "Embedded in dashboard-restyled. Competing header exists on homepage (dark) and DS public-header (#0D9488). See conflicts.",
+      "childRegionIds": [
+        "102:1625",
+        "102:1629",
+        "102:1634"
+      ],
+      "localScreenshot": null,
+      "mcpSource": "get_design_context,get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
     },
     {
       "nodeId": "102:1780",
       "name": "global-footer",
-      "dimensions": { "width": 1440, "height": 298 },
+      "dimensions": {
+        "width": 1440,
+        "height": 298
+      },
+      "canvasPosition": {
+        "x": 8940,
+        "y": 552
+      },
       "viewport": "desktop",
       "domain": "SHARED_DESIGN",
-      "freulyRoute": "global — components/Footer.jsx",
+      "productArea": "SHARED_DESIGN",
+      "freulyRoute": "global via app/[lang]/layout.tsx",
       "freulyComponents": [
         "components/Footer.jsx",
-        "components/FooterLanguageSwitcher.tsx",
-        "app/[lang]/layout.tsx"
+        "FooterLanguageSwitcher.tsx"
       ],
+      "family": "shared-footer",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": "warm-#107B80"
+      },
       "classification": "APPROVED_TARGET",
       "confidence": "HIGH",
-      "implementationStatus": "IMPLEMENTED",
-      "implementedAtCommit": "c9069f1",
-      "relatedFrameIds": {
-        "desktop": ["102:1780"],
-        "mobile": [],
-        "parentFrame": "102:1623"
+      "classificationReason": "Embedded in dashboard-restyled; already implemented at c9069f1. Footer heights conflict across frames (298/347/383).",
+      "childRegionIds": [],
+      "localScreenshot": null,
+      "mcpSource": "get_design_context,get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:5864",
+      "name": "freuly-design-system-foundations",
+      "dimensions": {
+        "width": 1800,
+        "height": 3773
       },
-      "notes": "Dark footer #1E1E1E, 3 link columns, copyright row with language selector. Implementation maps Figma layout to real Freuly routes + i18n; legal links preserved beyond Figma mock.",
-      "mcpSource": "get_design_context,get_metadata"
+      "canvasPosition": {
+        "x": 64750,
+        "y": -1028
+      },
+      "viewport": "system",
+      "domain": "SHARED_DESIGN",
+      "productArea": "SHARED_DESIGN",
+      "freulyRoute": null,
+      "freulyComponents": [
+        "styles/tokens.css",
+        "components/ui/*"
+      ],
+      "family": "design-system",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": "slate-#0D9488"
+      },
+      "classification": "DESIGN_SYSTEM",
+      "confidence": "HIGH",
+      "classificationReason": "Named foundations board: Color, Type, Spacing, Buttons, Forms, Badges. Live get_design_context on sections 1-6.",
+      "childRegionIds": [
+        "102:5871",
+        "102:5987",
+        "102:6041",
+        "102:6096",
+        "102:6149",
+        "102:6215"
+      ],
+      "localScreenshot": "screenshots/design-system-foundations.png",
+      "mcpSource": "get_metadata,get_design_context,get_screenshot,get_variable_defs",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:6251",
+      "name": "freuly-design-system-components",
+      "dimensions": {
+        "width": 1800,
+        "height": 3395
+      },
+      "canvasPosition": {
+        "x": 66590,
+        "y": -1028
+      },
+      "viewport": "system",
+      "domain": "SHARED_DESIGN",
+      "productArea": "SHARED_DESIGN",
+      "freulyRoute": null,
+      "freulyComponents": [
+        "components/ui/*",
+        "Header.tsx",
+        "Sidebar.tsx"
+      ],
+      "family": "design-system",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": "slate-#0D9488"
+      },
+      "classification": "DESIGN_SYSTEM",
+      "confidence": "HIGH",
+      "classificationReason": "Named components board: Nav, Cards, Alerts, Specialist, Dashboard patterns, Responsive models. Live get_design_context on 7-9.",
+      "childRegionIds": [
+        "102:6258",
+        "102:6363",
+        "102:6449",
+        "102:6511",
+        "102:6623",
+        "102:6697"
+      ],
+      "localScreenshot": "screenshots/design-system-components.png",
+      "mcpSource": "get_metadata,get_design_context,get_screenshot",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:664",
+      "name": "component-library",
+      "dimensions": {
+        "width": 1440,
+        "height": 3155
+      },
+      "canvasPosition": {
+        "x": 5920,
+        "y": -988
+      },
+      "viewport": "system",
+      "domain": "SHARED_DESIGN",
+      "productArea": "SHARED_DESIGN",
+      "freulyRoute": null,
+      "freulyComponents": [
+        "components/ui/*"
+      ],
+      "family": "design-system",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": "earlier-library"
+      },
+      "classification": "DESIGN_SYSTEM",
+      "confidence": "MEDIUM",
+      "classificationReason": "Earlier component-library board (header + body + footer). Newer foundations/components boards sit further right and are more complete.",
+      "childRegionIds": [
+        "102:665",
+        "102:687",
+        "102:691",
+        "102:916"
+      ],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
     },
     {
       "nodeId": "102:1637",
       "name": "sidebar",
-      "dimensions": { "width": 240, "height": "fill" },
+      "dimensions": {
+        "width": 240,
+        "height": 1460
+      },
+      "canvasPosition": {
+        "x": 8940,
+        "y": -908
+      },
       "viewport": "desktop",
       "domain": "SPECIALIST_DASHBOARD",
+      "productArea": "SPECIALIST_DASHBOARD",
       "freulyRoute": "/[lang]/specialist/dashboard/*",
-      "freulyComponents": ["components/dashboard/Sidebar.tsx"],
+      "freulyComponents": [
+        "components/dashboard/Sidebar.tsx"
+      ],
+      "family": "design-system",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": "warm-#107B80"
+      },
       "classification": "DESIGN_SYSTEM",
       "confidence": "HIGH",
-      "implementationStatus": "PARTIAL",
-      "implementedAtCommit": "bb37524",
-      "relatedFrameIds": { "parentFrame": "102:1623" },
-      "notes": "Reusable dashboard nav pattern: 8 items, 16px icons, active item #107B80 bg radius 8px, item gap 6px, px 16 py 32. Figma label 'Requests' maps to route /dashboard/leads in product.",
-      "mcpSource": "get_design_context"
+      "classificationReason": "Dashboard-restyled sidebar. Conflicts with later crm-sidebar (#0D9488, FREULY CRM label).",
+      "childRegionIds": [],
+      "localScreenshot": null,
+      "mcpSource": "get_design_context",
+      "dataProvenance": "EXACT_MCP_DATA"
     },
     {
-      "nodeId": "EXPECTED:homepage",
-      "name": "(not inventoried) Homepage redesign",
-      "dimensions": null,
-      "viewport": "unknown",
-      "domain": "PUBLIC_MARKETPLACE",
-      "freulyRoute": "/[lang]",
-      "freulyComponents": ["app/[lang]/page.tsx", "app/[lang]/HomeClient.tsx"],
-      "classification": "NEEDS_REVIEW",
-      "confidence": "NONE",
-      "relatedFrameIds": { "desktop": [], "mobile": [], "variantA": [], "variantB": [] },
-      "notes": "Expected in Figma canvas per redesign scope. No top-level frame ID captured — pending file-level MCP inventory. Do not implement from dashboard frame."
-    },
-    {
-      "nodeId": "EXPECTED:search-wizard",
-      "name": "(not inventoried) Search Wizard",
-      "dimensions": null,
-      "viewport": "unknown",
-      "domain": "PUBLIC_MARKETPLACE",
-      "freulyRoute": "/[lang]/service-search",
-      "freulyComponents": ["components/search-flow/ServiceSearchFlow.tsx"],
-      "classification": "NEEDS_REVIEW",
-      "confidence": "NONE",
-      "notes": "Service search wizard flow exists in product. No approved Figma frame ID in this snapshot."
-    },
-    {
-      "nodeId": "EXPECTED:search-results",
-      "name": "(not inventoried) Search Results",
-      "dimensions": null,
-      "viewport": "unknown",
-      "domain": "PUBLIC_MARKETPLACE",
-      "freulyRoute": "/[lang]/search",
-      "freulyComponents": ["app/[lang]/search/page.tsx"],
-      "classification": "NEEDS_REVIEW",
-      "confidence": "NONE",
-      "notes": "Pending MCP file scan."
-    },
-    {
-      "nodeId": "EXPECTED:specialist-profile",
-      "name": "(not inventoried) Specialist Profile",
-      "dimensions": null,
-      "viewport": "unknown",
-      "domain": "PUBLIC_MARKETPLACE",
-      "freulyRoute": "/[lang]/specialist/[id]",
-      "freulyComponents": ["components/specialist/SpecialistProfileClient.tsx"],
-      "classification": "NEEDS_REVIEW",
-      "confidence": "NONE",
-      "notes": "Pending MCP file scan."
-    },
-    {
-      "nodeId": "EXPECTED:request-service",
-      "name": "(not inventoried) Request Service / request states",
-      "dimensions": null,
-      "viewport": "unknown",
-      "domain": "PUBLIC_MARKETPLACE",
-      "freulyRoute": "/[lang]/request-service, /[lang]/request/[public_token]",
+      "nodeId": "102:6292",
+      "name": "crm-sidebar",
+      "dimensions": {
+        "width": 240,
+        "height": 500
+      },
+      "canvasPosition": {
+        "x": null,
+        "y": null
+      },
+      "viewport": "desktop",
+      "domain": "SPECIALIST_DASHBOARD",
+      "productArea": "SPECIALIST_DASHBOARD",
+      "freulyRoute": "/[lang]/specialist/dashboard/*",
       "freulyComponents": [
-        "app/[lang]/request-service/page.tsx",
-        "app/[lang]/request/[public_token]/page.tsx"
+        "components/dashboard/Sidebar.tsx"
       ],
-      "classification": "NEEDS_REVIEW",
-      "confidence": "NONE",
-      "notes": "Pending MCP file scan."
+      "family": "design-system",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": "slate-#0D9488"
+      },
+      "classification": "DESIGN_SYSTEM",
+      "confidence": "HIGH",
+      "classificationReason": "DS Part 2 navigation template. Label 'FREULY CRM' is mock naming — product is specialist cabinet.",
+      "childRegionIds": [],
+      "localScreenshot": null,
+      "mcpSource": "get_design_context",
+      "dataProvenance": "EXACT_MCP_DATA"
     },
     {
-      "nodeId": "EXPECTED:become-specialist",
-      "name": "(not inventoried) Specialist registration",
-      "dimensions": null,
-      "viewport": "unknown",
+      "nodeId": "102:6267",
+      "name": "public-header",
+      "dimensions": {
+        "width": 1200,
+        "height": 80
+      },
+      "canvasPosition": {
+        "x": null,
+        "y": null
+      },
+      "viewport": "desktop",
+      "domain": "SHARED_DESIGN",
+      "productArea": "SHARED_DESIGN",
+      "freulyRoute": "global Header.tsx",
+      "freulyComponents": [
+        "components/Header.tsx"
+      ],
+      "family": "shared-header",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:6351",
+        "variant": "slate-#0D9488"
+      },
+      "classification": "DESIGN_SYSTEM",
+      "confidence": "HIGH",
+      "classificationReason": "DS Part 2 public header (1200 constraint, UA/RU/DE selector, #0D9488). Conflicts with 102:1624 and homepage 102:10.",
+      "childRegionIds": [],
+      "localScreenshot": null,
+      "mcpSource": "get_design_context",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:6351",
+      "name": "mobile-header",
+      "dimensions": {
+        "width": 390,
+        "height": null
+      },
+      "canvasPosition": {
+        "x": null,
+        "y": null
+      },
+      "viewport": "mobile",
+      "domain": "SHARED_DESIGN",
+      "productArea": "SHARED_DESIGN",
+      "freulyRoute": "global Header.tsx",
+      "freulyComponents": [
+        "components/Header.tsx"
+      ],
+      "family": "shared-header",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": "102:6267",
+        "variant": "slate-#0D9488"
+      },
+      "classification": "DESIGN_SYSTEM",
+      "confidence": "HIGH",
+      "classificationReason": "DS compact mobile header (28px logo, DE chip, hamburger).",
+      "childRegionIds": [],
+      "localScreenshot": null,
+      "mcpSource": "get_design_context",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:280",
+      "name": "search-results",
+      "dimensions": {
+        "width": 1440,
+        "height": 1280
+      },
+      "canvasPosition": {
+        "x": 2960,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/specialists",
+      "freulyComponents": [
+        "app/specialists/page.tsx"
+      ],
+      "family": "search-results",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": "earlier-generic"
+      },
+      "classification": "NEEDS_REVIEW",
+      "confidence": "MEDIUM",
+      "classificationReason": "Earlier generic search-results. Later results-online/nearby/empty family is more complete. Human choice: keep as extra state or treat as obsolete.",
+      "childRegionIds": [
+        "102:281",
+        "102:303",
+        "102:328",
+        "102:472"
+      ],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:507",
+      "name": "specialist-profile",
+      "dimensions": {
+        "width": 1440,
+        "height": 1522
+      },
+      "canvasPosition": {
+        "x": 4440,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang]/specialist/[id]",
+      "freulyComponents": [
+        "SpecialistProfileClient.tsx"
+      ],
+      "family": "specialist-profile",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": "earlier-generic"
+      },
+      "classification": "NEEDS_REVIEW",
+      "confidence": "MEDIUM",
+      "classificationReason": "Earlier generic profile. Later local/online pair is more complete. Human choice required.",
+      "childRegionIds": [
+        "102:508",
+        "102:530",
+        "102:555",
+        "102:629"
+      ],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:1078",
+      "name": "Variant A — Current",
+      "dimensions": {
+        "width": 1440,
+        "height": 403
+      },
+      "canvasPosition": {
+        "x": 3120,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang] hero only",
+      "freulyComponents": [
+        "HomeClient.tsx"
+      ],
+      "family": "homepage",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": "A"
+      },
+      "classification": "NEEDS_REVIEW",
+      "confidence": "MEDIUM",
+      "classificationReason": "Hero-only Variant A. Competing with Variant B 102:1118 and full homepage 102:9. Not a screenshot board (no 'Real' in name) but incomplete page.",
+      "childRegionIds": [
+        "102:1079",
+        "102:1101"
+      ],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:1118",
+      "name": "Variant B — Refined",
+      "dimensions": {
+        "width": 1440,
+        "height": 379
+      },
+      "canvasPosition": {
+        "x": 4640,
+        "y": -988
+      },
+      "viewport": "desktop",
+      "domain": "PUBLIC_MARKETPLACE",
+      "productArea": "PUBLIC_MARKETPLACE",
+      "freulyRoute": "/[lang] hero only",
+      "freulyComponents": [
+        "HomeClient.tsx"
+      ],
+      "family": "homepage",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": "B"
+      },
+      "classification": "NEEDS_REVIEW",
+      "confidence": "MEDIUM",
+      "classificationReason": "Hero-only Variant B. Competing homepage hero. Full homepage 102:9 already includes a hero.",
+      "childRegionIds": [
+        "102:1119",
+        "102:1141"
+      ],
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
+    },
+    {
+      "nodeId": "102:951",
+      "name": "registration",
+      "dimensions": {
+        "width": 1440,
+        "height": 1445
+      },
+      "canvasPosition": {
+        "x": 11840,
+        "y": -988
+      },
+      "viewport": "desktop",
       "domain": "SPECIALIST_ACQUISITION",
+      "productArea": "SPECIALIST_ACQUISITION",
       "freulyRoute": "/[lang]/become-specialist",
       "freulyComponents": [
-        "components/SpecialistApplicationForm.tsx",
-        "components/SpecialistQuickRegisterForm.tsx"
+        "SpecialistQuickRegisterForm.tsx"
       ],
+      "family": "specialist-registration",
+      "relatedFrameIds": {
+        "desktopMobileCounterpart": null,
+        "variant": "earlier"
+      },
       "classification": "NEEDS_REVIEW",
-      "confidence": "NONE",
-      "notes": "Pending MCP file scan."
-    },
-    {
-      "nodeId": "EXPECTED:onboarding",
-      "name": "(not inventoried) Specialist onboarding",
-      "dimensions": null,
-      "viewport": "unknown",
-      "domain": "SPECIALIST_ACQUISITION",
-      "freulyRoute": "/[lang]/specialist/dashboard/onboarding",
-      "freulyComponents": [
-        "components/dashboard/onboarding/SpecialistOnboardingWizard.tsx"
+      "confidence": "MEDIUM",
+      "classificationReason": "Earlier registration. Canvas later labels 102:2199 as Variant B restyled. Could be obsolete; left as NEEDS_REVIEW because it is a complete page not a screenshot.",
+      "childRegionIds": [
+        "102:952",
+        "102:974",
+        "102:1043"
       ],
-      "classification": "NEEDS_REVIEW",
-      "confidence": "NONE",
-      "notes": "Pending MCP file scan."
+      "localScreenshot": null,
+      "mcpSource": "get_metadata",
+      "dataProvenance": "EXACT_MCP_DATA"
     },
     {
-      "nodeId": "EXPECTED:dashboard-profile",
-      "name": "(not inventoried) Dashboard Profile",
-      "dimensions": null,
-      "viewport": "unknown",
-      "domain": "SPECIALIST_DASHBOARD",
-      "freulyRoute": "/[lang]/specialist/dashboard/profile",
-      "freulyComponents": ["app/[lang]/specialist/(protected)/dashboard/profile/page.tsx"],
-      "classification": "NEEDS_REVIEW",
-      "confidence": "LOW",
-      "notes": "Sidebar item exists in 102:1623 but no dedicated full-page Figma frame inventoried."
-    },
-    {
-      "nodeId": "EXPECTED:dashboard-services",
-      "name": "(not inventoried) Dashboard Services",
-      "dimensions": null,
-      "viewport": "unknown",
-      "domain": "SPECIALIST_DASHBOARD",
-      "freulyRoute": "/[lang]/specialist/dashboard/services",
-      "freulyComponents": [
-        "app/[lang]/specialist/(protected)/dashboard/services/page.tsx",
-        "components/dashboard/ServicesTable.tsx"
-      ],
-      "classification": "NEEDS_REVIEW",
-      "confidence": "LOW",
-      "notes": "Pending MCP file scan."
-    },
-    {
-      "nodeId": "EXPECTED:dashboard-requests",
-      "name": "(not inventoried) Dashboard Requests/Leads",
-      "dimensions": null,
-      "viewport": "unknown",
-      "domain": "SPECIALIST_DASHBOARD",
-      "freulyRoute": "/[lang]/specialist/dashboard/leads",
-      "freulyComponents": [
-        "app/[lang]/specialist/(protected)/dashboard/leads/page.tsx",
-        "components/dashboard/LeadsTable.tsx"
-      ],
-      "classification": "NEEDS_REVIEW",
-      "confidence": "LOW",
-      "notes": "Overview card in 102:1623 only; full leads list page not inventoried."
-    },
-    {
-      "nodeId": "EXPECTED:dashboard-subscription",
-      "name": "(not inventoried) Dashboard Subscription",
-      "dimensions": null,
-      "viewport": "unknown",
-      "domain": "SPECIALIST_DASHBOARD",
-      "freulyRoute": "/[lang]/specialist/dashboard/subscription",
-      "freulyComponents": ["app/[lang]/specialist/(protected)/dashboard/subscription/page.tsx"],
-      "classification": "NEEDS_REVIEW",
-      "confidence": "LOW",
-      "notes": "Subscription card in overview captured; dedicated page not inventoried."
-    },
-    {
-      "nodeId": "EXPECTED:dashboard-payment",
-      "name": "(not inventoried) Dashboard Payment/Billing",
-      "dimensions": null,
-      "viewport": "unknown",
-      "domain": "SPECIALIST_DASHBOARD",
-      "freulyRoute": "/[lang]/specialist/dashboard/billing",
-      "freulyComponents": ["app/[lang]/specialist/(protected)/dashboard/billing/page.tsx"],
-      "classification": "NEEDS_REVIEW",
-      "confidence": "LOW",
-      "notes": "Figma sidebar label 'Payment'; product route is billing."
-    },
-    {
-      "nodeId": "EXPECTED:dashboard-settings",
-      "name": "(not inventoried) Dashboard Settings",
-      "dimensions": null,
-      "viewport": "unknown",
-      "domain": "SPECIALIST_DASHBOARD",
-      "freulyRoute": "/[lang]/specialist/dashboard/settings",
-      "freulyComponents": ["app/[lang]/specialist/(protected)/dashboard/settings/page.tsx"],
-      "classification": "NEEDS_REVIEW",
-      "confidence": "LOW",
-      "notes": "Pending MCP file scan."
-    },
-    {
-      "nodeId": "EXPECTED:dashboard-video-guide",
-      "name": "(not inventoried) Dashboard Video Guide",
-      "dimensions": null,
-      "viewport": "unknown",
-      "domain": "SPECIALIST_DASHBOARD",
-      "freulyRoute": "/[lang]/specialist/dashboard/video-guide",
-      "freulyComponents": ["app/[lang]/specialist/(protected)/dashboard/video-guide/page.tsx"],
-      "classification": "NEEDS_REVIEW",
-      "confidence": "LOW",
-      "notes": "Pending MCP file scan."
-    },
-    {
-      "nodeId": "EXPECTED:design-system-board",
-      "name": "(not inventoried) Design system / component library",
-      "dimensions": null,
-      "viewport": "unknown",
-      "domain": "SHARED_DESIGN",
-      "freulyRoute": "n/a",
-      "freulyComponents": [
-        "styles/tokens.css",
-        "components/ui/Button.tsx",
-        "components/ui/Card.tsx",
-        "components/ui/Badge.tsx",
-        "components/ui/Alert.tsx"
-      ],
-      "classification": "NEEDS_REVIEW",
-      "confidence": "NONE",
-      "notes": "User reports design-system boards on canvas. Not found in partial scan. Runtime tokens partially derived from 102:1623."
-    },
-    {
-      "nodeId": "EXPECTED:reference-screenshots",
-      "name": "(not inventoried) Reference screenshot frames",
-      "dimensions": null,
-      "viewport": "unknown",
+      "nodeId": "102:1618",
+      "name": "Variant A — Current Dashboard (Real)",
+      "dimensions": {
+        "width": 1440,
+        "height": 2700
+      },
+      "canvasPosition": {
+        "x": 7400,
+        "y": -988
+      },
+      "viewport": "screenshot",
       "domain": "REFERENCE",
-      "freulyRoute": "n/a",
-      "freulyComponents": [],
-      "classification": "NEEDS_REVIEW",
-      "confidence": "NONE",
-      "notes": "User reports 'Current Dashboard / Real Screenshot' style frames on canvas. Must be classified REFERENCE_SCREENSHOT when found — not implementation targets."
+      "classification": "REFERENCE_SCREENSHOT",
+      "confidence": "HIGH",
+      "classificationReason": "Contains three 2026-08-11 production screenshots. Not an implementation target.",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
     },
     {
-      "nodeId": "EXPECTED:duplicates-variants",
-      "name": "(not inventoried) Duplicate / Variant A / Variant B frames",
-      "dimensions": null,
-      "viewport": "unknown",
+      "nodeId": "102:2195",
+      "name": "Variant A — Current Registration (Real Screenshots)",
+      "dimensions": {
+        "width": 1440,
+        "height": 2160
+      },
+      "canvasPosition": {
+        "x": 20720,
+        "y": -988
+      },
+      "viewport": "screenshot",
       "domain": "REFERENCE",
-      "freulyRoute": "n/a",
-      "freulyComponents": [],
-      "classification": "NEEDS_REVIEW",
-      "confidence": "NONE",
-      "notes": "Pending file-level MCP scan to classify DUPLICATE vs APPROVED_TARGET."
+      "classification": "REFERENCE_SCREENSHOT",
+      "confidence": "HIGH",
+      "classificationReason": "Production registration screenshots.",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "102:2306",
+      "name": "Wizard Reference — Current Production Screenshots",
+      "dimensions": {
+        "width": 2080,
+        "height": 300
+      },
+      "canvasPosition": {
+        "x": 23680,
+        "y": -988
+      },
+      "viewport": "screenshot",
+      "domain": "REFERENCE",
+      "classification": "REFERENCE_SCREENSHOT",
+      "confidence": "HIGH",
+      "classificationReason": "Production wizard screenshots strip.",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "102:3479",
+      "name": "______ ________ 2026-08-12 __13.48.51",
+      "dimensions": {
+        "width": 400,
+        "height": 300
+      },
+      "canvasPosition": {
+        "x": 42560,
+        "y": -1028
+      },
+      "viewport": "screenshot",
+      "domain": "REFERENCE",
+      "classification": "REFERENCE_SCREENSHOT",
+      "confidence": "HIGH",
+      "classificationReason": "Browser/OS screenshot capture (garbled name).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "102:3480",
+      "name": "______ ________ 2026-08-12 __13.49.00",
+      "dimensions": {
+        "width": 400,
+        "height": 300
+      },
+      "canvasPosition": {
+        "x": 43000,
+        "y": -1028
+      },
+      "viewport": "screenshot",
+      "domain": "REFERENCE",
+      "classification": "REFERENCE_SCREENSHOT",
+      "confidence": "HIGH",
+      "classificationReason": "Browser/OS screenshot capture.",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "102:3481",
+      "name": "______ ________ 2026-08-12 __13.49.13",
+      "dimensions": {
+        "width": 400,
+        "height": 300
+      },
+      "canvasPosition": {
+        "x": 43440,
+        "y": -1028
+      },
+      "viewport": "screenshot",
+      "domain": "REFERENCE",
+      "classification": "REFERENCE_SCREENSHOT",
+      "confidence": "HIGH",
+      "classificationReason": "Browser/OS screenshot capture.",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "102:3482",
+      "name": "______ ________ 2026-08-12 __13.49.19",
+      "dimensions": {
+        "width": 400,
+        "height": 300
+      },
+      "canvasPosition": {
+        "x": 43880,
+        "y": -1028
+      },
+      "viewport": "screenshot",
+      "domain": "REFERENCE",
+      "classification": "REFERENCE_SCREENSHOT",
+      "confidence": "HIGH",
+      "classificationReason": "Browser/OS screenshot capture.",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "102:4326",
+      "name": "______ ________ 2026-08-12 __15.48.44",
+      "dimensions": {
+        "width": 400,
+        "height": 300
+      },
+      "canvasPosition": {
+        "x": 50050,
+        "y": -1028
+      },
+      "viewport": "screenshot",
+      "domain": "REFERENCE",
+      "classification": "REFERENCE_SCREENSHOT",
+      "confidence": "HIGH",
+      "classificationReason": "Browser/OS screenshot capture.",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "102:4327",
+      "name": "______ ________ 2026-08-12 __15.49.02",
+      "dimensions": {
+        "width": 400,
+        "height": 300
+      },
+      "canvasPosition": {
+        "x": 50050,
+        "y": -1028
+      },
+      "viewport": "screenshot",
+      "domain": "REFERENCE",
+      "classification": "REFERENCE_SCREENSHOT",
+      "confidence": "HIGH",
+      "classificationReason": "Browser/OS screenshot capture.",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "102:4328",
+      "name": "______ ________ 2026-08-12 __15.48.50",
+      "dimensions": {
+        "width": 400,
+        "height": 300
+      },
+      "canvasPosition": {
+        "x": 50050,
+        "y": -1028
+      },
+      "viewport": "screenshot",
+      "domain": "REFERENCE",
+      "classification": "REFERENCE_SCREENSHOT",
+      "confidence": "HIGH",
+      "classificationReason": "Browser/OS screenshot capture.",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "102:4329",
+      "name": "______ ________ 2026-08-12 __15.48.58",
+      "dimensions": {
+        "width": 400,
+        "height": 300
+      },
+      "canvasPosition": {
+        "x": 50490,
+        "y": -1028
+      },
+      "viewport": "screenshot",
+      "domain": "REFERENCE",
+      "classification": "REFERENCE_SCREENSHOT",
+      "confidence": "HIGH",
+      "classificationReason": "Browser/OS screenshot capture.",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "102:4330",
+      "name": "______ ________ 2026-08-12 __15.48.34",
+      "dimensions": {
+        "width": 400,
+        "height": 300
+      },
+      "canvasPosition": {
+        "x": 50930,
+        "y": -1028
+      },
+      "viewport": "screenshot",
+      "domain": "REFERENCE",
+      "classification": "REFERENCE_SCREENSHOT",
+      "confidence": "HIGH",
+      "classificationReason": "Browser/OS screenshot capture.",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "102:4331",
+      "name": "______ ________ 2026-08-12 __15.48.40",
+      "dimensions": {
+        "width": 400,
+        "height": 300
+      },
+      "canvasPosition": {
+        "x": 51370,
+        "y": -1028
+      },
+      "viewport": "screenshot",
+      "domain": "REFERENCE",
+      "classification": "REFERENCE_SCREENSHOT",
+      "confidence": "HIGH",
+      "classificationReason": "Browser/OS screenshot capture.",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "102:4831",
+      "name": "______ ________ 2026-08-12 __16.16.27",
+      "dimensions": {
+        "width": 400,
+        "height": 300
+      },
+      "canvasPosition": {
+        "x": 53800,
+        "y": -1028
+      },
+      "viewport": "screenshot",
+      "domain": "REFERENCE",
+      "classification": "REFERENCE_SCREENSHOT",
+      "confidence": "HIGH",
+      "classificationReason": "Browser/OS screenshot capture.",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "102:5069",
+      "name": "______ ________ 2026-08-12 __16.16.43",
+      "dimensions": {
+        "width": 400,
+        "height": 300
+      },
+      "canvasPosition": {
+        "x": 56150,
+        "y": -1028
+      },
+      "viewport": "screenshot",
+      "domain": "REFERENCE",
+      "classification": "REFERENCE_SCREENSHOT",
+      "confidence": "HIGH",
+      "classificationReason": "Browser/OS screenshot capture.",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "102:5247",
+      "name": "______ ________ 2026-08-12 __17.00.45",
+      "dimensions": {
+        "width": 400,
+        "height": 300
+      },
+      "canvasPosition": {
+        "x": 58580,
+        "y": -1028
+      },
+      "viewport": "screenshot",
+      "domain": "REFERENCE",
+      "classification": "REFERENCE_SCREENSHOT",
+      "confidence": "HIGH",
+      "classificationReason": "Browser/OS screenshot capture.",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "102:3",
+      "name": "Catalog-Decktop",
+      "dimensions": {
+        "width": 1440,
+        "height": 936
+      },
+      "canvasPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "viewport": "desktop",
+      "classification": "OBSOLETE_OR_INTERMEDIATE",
+      "confidence": "HIGH",
+      "classificationReason": "Incomplete early catalog (typo Decktop). Only header fragments. Not a product screen.",
+      "canonicalTargetNodeId": null,
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "102:1160",
+      "name": "specialist-dashboard",
+      "dimensions": {
+        "width": 1440,
+        "height": 1053
+      },
+      "canvasPosition": {
+        "x": 7400,
+        "y": -960
+      },
+      "viewport": "desktop",
+      "classification": "OBSOLETE_OR_INTERMEDIATE",
+      "confidence": "HIGH",
+      "classificationReason": "Earlier dashboard before dashboard-restyled Variant B.",
+      "canonicalTargetNodeId": "102:1623",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "102:1379",
+      "name": "specialist-dashboard-dense",
+      "dimensions": {
+        "width": 1440,
+        "height": 1024
+      },
+      "canvasPosition": {
+        "x": 8880,
+        "y": -960
+      },
+      "viewport": "desktop",
+      "classification": "OBSOLETE_OR_INTERMEDIATE",
+      "confidence": "HIGH",
+      "classificationReason": "Dense dashboard exploration superseded by 102:1623.",
+      "canonicalTargetNodeId": "102:1623",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "33:7",
+      "name": "dashboard-restyled",
+      "dimensions": {
+        "width": 1500,
+        "height": 1940
+      },
+      "canvasPosition": {
+        "x": 8880,
+        "y": -1028
+      },
+      "viewport": "desktop",
+      "classification": "OBSOLETE_OR_INTERMEDIATE",
+      "confidence": "HIGH",
+      "classificationReason": "Older dashboard-restyled at different position/size than canonical 102:1623 (1440x1900).",
+      "canonicalTargetNodeId": "102:1623",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "1:2",
+      "name": "Catalog-Decktop",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:3",
+      "classificationReason": "Same canvas x,y and name as 102:3. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "3:8",
+      "name": "homepage",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:9",
+      "classificationReason": "Same canvas x,y and name as 102:9. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "3:262",
+      "name": "search-results",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:280",
+      "classificationReason": "Same canvas x,y and name as 102:280. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "3:477",
+      "name": "specialist-profile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:507",
+      "classificationReason": "Same canvas x,y and name as 102:507. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "3:629",
+      "name": "component-library",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:664",
+      "classificationReason": "Same canvas x,y and name as 102:664. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "4:1334",
+      "name": "registration",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:951",
+      "classificationReason": "Same canvas x,y and name as 102:951. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "26:2",
+      "name": "Variant A — Current",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:1078",
+      "classificationReason": "Same canvas x,y and name as 102:1078. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "26:42",
+      "name": "Variant B — Refined",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:1118",
+      "classificationReason": "Same canvas x,y and name as 102:1118. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "31:4",
+      "name": "specialist-dashboard",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:1160",
+      "classificationReason": "Same canvas x,y and name as 102:1160. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "31:265",
+      "name": "specialist-dashboard-dense",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:1379",
+      "classificationReason": "Same canvas x,y and name as 102:1379. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "33:2",
+      "name": "Variant A — Current Dashboard (Real)",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:1618",
+      "classificationReason": "Same canvas x,y and name as 102:1618. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "40:8",
+      "name": "onboarding-basic",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:1817",
+      "classificationReason": "Same canvas x,y and name as 102:1817. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "40:108",
+      "name": "onboarding-services",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:1921",
+      "classificationReason": "Same canvas x,y and name as 102:1921. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "40:172",
+      "name": "onboarding-review",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:1986",
+      "classificationReason": "Same canvas x,y and name as 102:1986. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "40:274",
+      "name": "onboarding-review-recommendations",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2088",
+      "classificationReason": "Same canvas x,y and name as 102:2088. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "40:371",
+      "name": "onboarding-publish-states",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2165",
+      "classificationReason": "Same canvas x,y and name as 102:2165. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "45:2",
+      "name": "Variant A — Current Registration (Real Screenshots)",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2195",
+      "classificationReason": "Same canvas x,y and name as 102:2195. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "45:6",
+      "name": "registration-restyled",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2199",
+      "classificationReason": "Same canvas x,y and name as 102:2199. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "51:2",
+      "name": "Wizard Reference — Current Production Screenshots",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2306",
+      "classificationReason": "Same canvas x,y and name as 102:2306. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "51:9",
+      "name": "wizard-service",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2312",
+      "classificationReason": "Same canvas x,y and name as 102:2312. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "51:44",
+      "name": "wizard-language",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2348",
+      "classificationReason": "Same canvas x,y and name as 102:2348. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "51:85",
+      "name": "wizard-format",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2390",
+      "classificationReason": "Same canvas x,y and name as 102:2390. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "51:125",
+      "name": "wizard-location",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2431",
+      "classificationReason": "Same canvas x,y and name as 102:2431. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "51:160",
+      "name": "wizard-radius",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2467",
+      "classificationReason": "Same canvas x,y and name as 102:2467. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "51:234",
+      "name": "wizard-service-mobile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2507",
+      "classificationReason": "Same canvas x,y and name as 102:2507. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "51:271",
+      "name": "wizard-language-mobile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2548",
+      "classificationReason": "Same canvas x,y and name as 102:2548. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "51:314",
+      "name": "wizard-format-mobile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2595",
+      "classificationReason": "Same canvas x,y and name as 102:2595. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "51:356",
+      "name": "wizard-location-mobile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2641",
+      "classificationReason": "Same canvas x,y and name as 102:2641. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "51:393",
+      "name": "wizard-radius-mobile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2682",
+      "classificationReason": "Same canvas x,y and name as 102:2682. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "60:7",
+      "name": "results-online",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2729",
+      "classificationReason": "Same canvas x,y and name as 102:2729. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "60:155",
+      "name": "results-nearby",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2881",
+      "classificationReason": "Same canvas x,y and name as 102:2881. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "60:260",
+      "name": "results-empty",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:2989",
+      "classificationReason": "Same canvas x,y and name as 102:2989. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "60:304",
+      "name": "results-category-grid",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:3035",
+      "classificationReason": "Same canvas x,y and name as 102:3035. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "60:577",
+      "name": "results-online-mobile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:3258",
+      "classificationReason": "Same canvas x,y and name as 102:3258. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "60:671",
+      "name": "results-nearby-mobile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:3355",
+      "classificationReason": "Same canvas x,y and name as 102:3355. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "60:742",
+      "name": "results-empty-mobile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:3429",
+      "classificationReason": "Same canvas x,y and name as 102:3429. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "66:2",
+      "name": "screenshot 13.48.51",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:3479",
+      "classificationReason": "Same canvas x,y and name as 102:3479. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "67:2",
+      "name": "screenshot 13.49.00",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:3480",
+      "classificationReason": "Same canvas x,y and name as 102:3480. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "68:2",
+      "name": "screenshot 13.49.13",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:3481",
+      "classificationReason": "Same canvas x,y and name as 102:3481. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "69:2",
+      "name": "screenshot 13.49.19",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:3482",
+      "classificationReason": "Same canvas x,y and name as 102:3482. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "70:6",
+      "name": "desktop-local-specialist-profile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:3483",
+      "classificationReason": "Same canvas x,y and name as 102:3483. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "70:206",
+      "name": "desktop-online-specialist-profile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:3697",
+      "classificationReason": "Same canvas x,y and name as 102:3697. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "70:371",
+      "name": "desktop-request-states",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:3883",
+      "classificationReason": "Same canvas x,y and name as 102:3883. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "70:602",
+      "name": "mobile-local-specialist-profile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:3987",
+      "classificationReason": "Same canvas x,y and name as 102:3987. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "70:775",
+      "name": "mobile-online-specialist-profile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:4166",
+      "classificationReason": "Same canvas x,y and name as 102:4166. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "70:904",
+      "name": "mobile-success-state",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:4300",
+      "classificationReason": "Same canvas x,y and name as 102:4300. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "75:2",
+      "name": "screenshot 15.48.44",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:4326",
+      "classificationReason": "Same canvas x,y and name as 102:4326. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "76:2",
+      "name": "screenshot 15.49.02",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:4327",
+      "classificationReason": "Same canvas x,y and name as 102:4327. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "74:2",
+      "name": "screenshot 15.48.50",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:4328",
+      "classificationReason": "Same canvas x,y and name as 102:4328. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "77:2",
+      "name": "screenshot 15.48.58",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:4329",
+      "classificationReason": "Same canvas x,y and name as 102:4329. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "78:2",
+      "name": "screenshot 15.48.34",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:4330",
+      "classificationReason": "Same canvas x,y and name as 102:4330. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "79:2",
+      "name": "screenshot 15.48.40",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:4331",
+      "classificationReason": "Same canvas x,y and name as 102:4331. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "80:5",
+      "name": "canvas",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:4332",
+      "classificationReason": "Same canvas x,y and name as 102:4332. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "85:2",
+      "name": "screenshot 16.16.27",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:4831",
+      "classificationReason": "Same canvas x,y and name as 102:4831. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "84:5",
+      "name": "dashboard-services-desktop",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:4832",
+      "classificationReason": "Same canvas x,y and name as 102:4832. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "84:133",
+      "name": "dashboard-services-mobile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:4966",
+      "classificationReason": "Same canvas x,y and name as 102:4966. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "88:2",
+      "name": "screenshot 16.16.43",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:5069",
+      "classificationReason": "Same canvas x,y and name as 102:5069. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "87:7",
+      "name": "dashboard-requests-desktop",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:5070",
+      "classificationReason": "Same canvas x,y and name as 102:5070. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "87:124",
+      "name": "dashboard-requests-mobile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:5187",
+      "classificationReason": "Same canvas x,y and name as 102:5187. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "92:2",
+      "name": "screenshot 17.00.45",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:5247",
+      "classificationReason": "Same canvas x,y and name as 102:5247. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "91:7",
+      "name": "dashboard-subscription-desktop",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:5248",
+      "classificationReason": "Same canvas x,y and name as 102:5248. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "91:161",
+      "name": "dashboard-payment-desktop",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:5410",
+      "classificationReason": "Same canvas x,y and name as 102:5410. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "91:294",
+      "name": "dashboard-subscription-mobile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:5513",
+      "classificationReason": "Same canvas x,y and name as 102:5513. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "91:412",
+      "name": "dashboard-payment-mobile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:5630",
+      "classificationReason": "Same canvas x,y and name as 102:5630. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "95:7",
+      "name": "dashboard-videoguide-desktop",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:5692",
+      "classificationReason": "Same canvas x,y and name as 102:5692. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "95:120",
+      "name": "dashboard-videoguide-mobile",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:5804",
+      "classificationReason": "Same canvas x,y and name as 102:5804. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "100:4",
+      "name": "freuly-design-system-foundations",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:5864",
+      "classificationReason": "Same canvas x,y and name as 102:5864. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
+    },
+    {
+      "nodeId": "100:405",
+      "name": "freuly-design-system-components",
+      "classification": "DUPLICATE",
+      "confidence": "HIGH",
+      "canonicalTargetNodeId": "102:6251",
+      "classificationReason": "Same canvas x,y and name as 102:6251. Entire canvas was copied; 102:* series used as canonical (later IDs; prior snapshot used 102:1623).",
+      "dataProvenance": "EXACT_MCP_DATA",
+      "mcpSource": "get_metadata"
     }
-  ],
-  "dashboardRestyledNodeTree": {
-    "source": "get_design_context node 102:1623",
-    "root": "102:1623 dashboard-restyled 1440x1900",
-    "regions": [
-      { "nodeId": "102:1624", "name": "global-header", "size": "1440x80" },
-      { "nodeId": "102:1636", "name": "layout-body", "size": "1440x1460" },
-      { "nodeId": "102:1637", "name": "sidebar", "size": "240x fill", "parent": "102:1636" },
-      { "nodeId": "102:1678", "name": "main-content", "padding": "48px", "gap": "32px", "parent": "102:1636" },
-      { "nodeId": "102:1679", "name": "page-header", "parent": "102:1678" },
-      { "nodeId": "102:1682", "name": "profile-status-card", "parent": "102:1678" },
-      { "nodeId": "102:1699", "name": "split-cards-row", "gap": "24px", "parent": "102:1678" },
-      { "nodeId": "102:1700", "name": "subscription-card", "parent": "102:1699" },
-      { "nodeId": "102:1721", "name": "requests-card", "width": 420, "parent": "102:1699" },
-      { "nodeId": "102:1734", "name": "profile-views-card", "parent": "102:1678" },
-      { "nodeId": "102:1740", "name": "improvements-card", "parent": "102:1678" },
-      { "nodeId": "102:1780", "name": "global-footer", "size": "1440x298" }
-    ]
-  }
+  ]
 }
