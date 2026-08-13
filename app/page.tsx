@@ -30,7 +30,7 @@ export default async function Page({
   const place = typeof searchParams?.place === "string" ? searchParams.place : undefined;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#F4F6FF] via-[#EEF1FF] to-[#E9ECFF]">
+    <div className="min-h-[100dvh] bg-freuly-page">
       <Suspense fallback={<div className="h-9 border-b border-gray-100 bg-white/40" />}>
         <LanguageBar />
       </Suspense>

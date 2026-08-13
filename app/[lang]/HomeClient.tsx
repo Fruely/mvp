@@ -402,16 +402,16 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
     return (
       <div className="mt-10">
         <div className="mb-4 md:mb-6 text-center">
-          <h2 className="text-2xl md:text-3xl font-semibold text-textPrimary">{t(dict, "home.recommended.title")}</h2>
+          <h2 className="text-2xl md:text-3xl font-semibold text-freuly-text-primary">{t(dict, "home.recommended.title")}</h2>
         </div>
         <div className="grid gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {data.map((specialist) => (
             <Link
               key={specialist.id}
               href={getSpecialistUrl(lang, specialist)}
-              className="group flex h-full flex-col overflow-hidden rounded-md border bg-white shadow-card transition-all duration-200 ease-out [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:scale-[1.02] [@media(hover:hover)]:hover:shadow-lg"
+              className="group flex h-full flex-col overflow-hidden rounded-freuly-md border bg-white shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-all duration-200 ease-out [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:scale-[1.02] [@media(hover:hover)]:hover:shadow-lg"
             >
-              <div className="relative aspect-square w-full overflow-hidden bg-gray-100">
+              <div className="relative aspect-square w-full overflow-hidden bg-freuly-border-subtle">
                 {specialist.founder_badge ? (
                   <div className="absolute left-3 top-3 z-10">
                     <FounderBadge />
@@ -432,11 +432,11 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                     loading="lazy"
                   />
                 ) : (
-                  <div className="h-full w-full bg-gray-100" />
+                  <div className="h-full w-full bg-freuly-border-subtle" />
                 )}
               </div>
               <div className="p-4 flex flex-col gap-1">
-                <p className="font-semibold line-clamp-1 text-textPrimary">
+                <p className="font-semibold line-clamp-1 text-freuly-text-primary">
                   {specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
                 </p>
                 <div className="flex items-center gap-1 text-sm">
@@ -447,14 +447,14 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                   </span>
                   {specialist.reviews_count > 0 ? (
                     <>
-                      <span className="font-medium text-textPrimary">{specialist.rating_avg?.toFixed(1)}</span>
-                      <span className="text-textSecondary">({specialist.reviews_count})</span>
+                      <span className="font-medium text-freuly-text-primary">{specialist.rating_avg?.toFixed(1)}</span>
+                      <span className="text-freuly-text-secondary">({specialist.reviews_count})</span>
                     </>
                   ) : (
-                    <span className="text-textSecondary">{t(dict, "home.recommended.newSpecialist")}</span>
+                    <span className="text-freuly-text-secondary">{t(dict, "home.recommended.newSpecialist")}</span>
                   )}
                 </div>
-                <p className="text-sm font-normal text-textSecondary line-clamp-1">
+                <p className="text-sm font-normal text-freuly-text-secondary line-clamp-1">
                   {getCategoryTitle(
                     {
                       title: specialist.category_title,
@@ -465,11 +465,11 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                     toCategoryTitleLang(lang)
                   ) || t(dict, "home.recommended.defaultCategory")}
                 </p>
-                <p className="text-sm font-normal text-textSecondary line-clamp-1">
+                <p className="text-sm font-normal text-freuly-text-secondary line-clamp-1">
                   {[specialist.city, specialist.languages[0]].filter(Boolean).join(" • ")}
                 </p>
                 {specialist.about_line ? (
-                  <p className="mt-1 text-sm font-normal text-textSecondary line-clamp-2">
+                  <p className="mt-1 text-sm font-normal text-freuly-text-secondary line-clamp-2">
                     {specialist.about_line}
                   </p>
                 ) : null}
@@ -563,14 +563,14 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
   return (
     <div className="flex min-h-[100dvh] flex-col">
       <>
-      <section className="bg-gradient-to-b from-white to-blue-50 pt-5 pb-6 sm:py-16 md:py-24">
-        <div className="mx-auto max-w-7xl px-3 text-center md:px-4">
-          <h1 className="text-3xl font-semibold tracking-tight leading-tight text-textPrimary sm:text-4xl md:text-5xl">
+      <section className="bg-freuly-page px-freuly-4 pb-freuly-8 pt-freuly-5 sm:py-freuly-16 md:py-freuly-24">
+        <div className="mx-auto max-w-7xl text-center md:px-freuly-4">
+          <h1 className="text-[2rem] font-semibold leading-tight tracking-tight text-freuly-text-primary sm:text-4xl md:text-[2.25rem]">
             <span className="block">{copy.titleLines[0]}</span>
             <span className="block">{copy.titleLines[1]}</span>
             <span className="block">{copy.titleLines[2]}</span>
           </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-base font-normal text-textSecondary sm:mt-6 sm:text-lg">
+          <p className="mx-auto mt-3 max-w-2xl text-base font-normal text-freuly-text-secondary sm:mt-freuly-6 sm:text-lg">
             {copy.subtitle}
           </p>
 
@@ -592,7 +592,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             className="mt-4 sm:mt-8"
           />
 
-          <div className="mt-4 hidden flex-wrap justify-center gap-3 text-sm font-normal text-textSecondary sm:mt-6 sm:flex">
+          <div className="mt-4 hidden flex-wrap justify-center gap-3 text-sm font-normal text-freuly-text-secondary sm:mt-6 sm:flex">
             <span>{copy.popularLabel}</span>
             <span>{t(dict, "home.hero.popularTags")}</span>
           </div>
@@ -605,7 +605,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
             {t(dict, "transitional.line1")}
           </p>
 
-          <p className="mt-4 max-w-3xl mx-auto text-lg md:text-xl font-normal text-textSecondary leading-relaxed">
+          <p className="mt-4 max-w-3xl mx-auto text-lg md:text-xl font-normal text-freuly-text-secondary leading-relaxed">
             {t(dict, "transitional.line2")}<br />
             {t(dict, "transitional.line3")}
           </p>
@@ -621,19 +621,19 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
           <div className="rounded-xl bg-[#EEF1FF] px-3 py-6 sm:px-6 sm:py-8 md:px-12 md:py-10">
             {true && (
               <div className="mt-7 md:mt-8">
-                <div className="relative min-h-[320px] overflow-hidden rounded-md sm:min-h-[420px] md:min-h-[520px]">
+                <div className="relative min-h-[320px] overflow-hidden rounded-freuly-md sm:min-h-[420px] md:min-h-[520px]">
                   {textImageContent?.url ? (
                     <>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={textImageContent.url}
                         alt={textImageContent.title || ""}
-                        className="absolute inset-0 z-0 h-full w-full rounded-md object-cover object-right"
+                        className="absolute inset-0 z-0 h-full w-full rounded-freuly-md object-cover object-right"
                       />
                     </>
                   ) : null}
 
-                  <div className="absolute inset-x-3 top-3 z-10 min-w-0 max-w-[22.4rem] rounded-md bg-white/90 p-4 shadow-sm backdrop-blur-sm sm:inset-x-auto sm:left-6 sm:top-6 sm:p-5 md:left-8 md:top-8 md:p-[1.6rem]">
+                  <div className="absolute inset-x-3 top-3 z-10 min-w-0 max-w-[22.4rem] rounded-freuly-md bg-white/90 p-4 shadow-sm backdrop-blur-sm sm:inset-x-auto sm:left-6 sm:top-6 sm:p-5 md:left-8 md:top-8 md:p-[1.6rem]">
                     <h2 className="mb-5 text-xl font-bold text-gray-900 sm:mb-8 sm:text-3xl">
                       {t(dict, "home.howItWorks.title")}
                     </h2>
@@ -672,7 +672,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                   {Array.from({ length: 6 }).map((_, idx) => (
                     <div
                       key={`popular-skeleton-${idx}`}
-                      className="rounded-md bg-white shadow-card overflow-hidden"
+                      className="rounded-freuly-md bg-white shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden"
                     >
                       <div className="w-full aspect-[3/2] bg-gray-200/80 animate-pulse" />
                       <div className="px-4 py-3 space-y-2">
@@ -698,7 +698,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                           href={`/${lang}/category/${child.slug}`}
                           className="group block transition-shadow duration-300 ease-out hover:shadow-lg"
                         >
-                          <div className="w-full aspect-[3/2] overflow-hidden rounded-[4px] bg-gray-100">
+                          <div className="w-full aspect-[3/2] overflow-hidden rounded-[4px] bg-freuly-border-subtle">
                             {child.image_url ? (
                               <img
                                 src={child.image_url}
@@ -732,7 +732,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
                   {Array.from({ length: 4 }).map((_, idx) => (
                     <div
                       key={`recommended-skeleton-${idx}`}
-                      className="rounded-md border bg-white aspect-[4/3] p-4"
+                      className="rounded-freuly-md border bg-white aspect-[4/3] p-4"
                     >
                       <div className="flex items-center gap-3">
                         <div className="h-14 w-14 rounded-full bg-gray-200/80 animate-pulse shrink-0" />
@@ -773,7 +773,7 @@ export default function HomeClient({ lang, dict, place }: { lang: Lang; dict: Di
         </p>
         <Link
           href={`/${lang}/for-specialists`}
-          className="mt-6 inline-flex h-11 items-center justify-center rounded-md bg-emerald-600 px-6 text-sm font-semibold text-white transition hover:bg-emerald-700"
+          className="mt-6 inline-flex h-11 items-center justify-center rounded-freuly-md bg-emerald-600 px-6 text-sm font-semibold text-white transition hover:bg-emerald-700"
         >
           {t(dict, "home.cta.button")}
         </Link>
