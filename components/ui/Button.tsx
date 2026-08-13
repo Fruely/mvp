@@ -11,7 +11,7 @@ const variantClasses: Record<ButtonVariant, string> = {
   primary:
     "bg-freuly-primary text-freuly-text-on-primary hover:bg-freuly-primary-hover disabled:hover:bg-freuly-primary",
   secondary:
-    "border border-freuly-border-default bg-freuly-surface text-freuly-text-primary hover:bg-freuly-border-subtle disabled:hover:bg-freuly-surface",
+    "border border-freuly-border-default bg-freuly-surface text-freuly-text-secondary hover:bg-freuly-border-subtle disabled:hover:bg-freuly-surface",
   outlinePrimary:
     "border border-freuly-primary bg-freuly-surface text-freuly-primary hover:bg-freuly-primary-light disabled:hover:bg-freuly-surface",
   strong:
@@ -32,7 +32,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
       type={type}
       disabled={disabled}
       className={cn(
-        "inline-flex min-h-[40px] items-center justify-center gap-2 rounded-freuly-md px-freuly-4 py-freuly-2 text-freuly-button transition-colors",
+        "inline-flex min-h-[37px] items-center justify-center gap-2 rounded-freuly-button px-freuly-4 py-[10px] text-freuly-button transition-colors",
         "freuly-focus-ring disabled:cursor-not-allowed disabled:opacity-50",
         variantClasses[variant],
         className,

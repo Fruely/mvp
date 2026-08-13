@@ -39,6 +39,10 @@ h3 {
   @apply text-freuly-page-title text-freuly-text-primary;
 }
 
+.freuly-page-subtitle {
+  @apply text-freuly-page-subtitle text-freuly-text-secondary;
+}
+
 .freuly-section-title {
   @apply text-freuly-section-title text-freuly-text-primary;
 }

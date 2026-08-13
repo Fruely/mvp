@@ -9,8 +9,8 @@ export type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
 
 const variantClasses: Record<BadgeVariant, string> = {
   neutral: "border-freuly-border-default bg-freuly-border-subtle text-freuly-text-secondary",
-  success: "border-freuly-success/20 bg-freuly-success-light text-freuly-success",
-  warning: "border-freuly-warning/20 bg-freuly-warning-light text-freuly-warning",
+  success: "border-freuly-success-border bg-freuly-success-light text-freuly-success",
+  warning: "border-freuly-warning-border bg-freuly-warning-light text-freuly-warning",
   error: "border-freuly-error/20 bg-freuly-error-light text-freuly-error",
   info: "border-freuly-info/20 bg-freuly-info-light text-freuly-info",
 };
@@ -24,7 +24,7 @@ export default function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-freuly-sm border px-freuly-2 py-freuly-1 text-freuly-badge",
+        "inline-flex items-center rounded-freuly-pill border px-[10px] py-[4px] text-freuly-badge font-semibold",
         variantClasses[variant],
         className,
       )}

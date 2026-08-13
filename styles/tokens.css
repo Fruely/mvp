@@ -5,34 +5,36 @@
  */
 
 :root {
-  /* Brand */
-  --freuly-primary: #0c918b;
-  --freuly-primary-hover: #0e7e74;
+  /* Brand — live Figma node 102:1623 */
+  --freuly-primary: #107b80;
+  --freuly-primary-hover: #0d686c;
   --freuly-primary-light: #e0f9f8;
   --freuly-text-on-primary: #ffffff;
 
   /* Surfaces */
-  --freuly-bg-page: #faf9f7;
+  --freuly-bg-page: #f8f7f5;
   --freuly-bg-surface: #ffffff;
-  --freuly-bg-dashboard: #f6f8fa;
+  --freuly-bg-dashboard: #f8f7f5;
 
   /* Text */
-  --freuly-text-primary: #1e293b;
-  --freuly-text-secondary: #475569;
-  --freuly-text-muted: #94a3b8;
+  --freuly-text-primary: #1e1e1e;
+  --freuly-text-secondary: #6b6b6b;
+  --freuly-text-muted: #6b6b6b;
 
   /* Semantic */
-  --freuly-success: #16a34a;
-  --freuly-success-light: #dcfce7;
-  --freuly-warning: #f59e0b;
-  --freuly-warning-light: #fffbeb;
+  --freuly-success: #15803d;
+  --freuly-success-light: #f0fdf4;
+  --freuly-success-border: #bbf7d0;
+  --freuly-warning: #b45309;
+  --freuly-warning-light: #fff7ed;
+  --freuly-warning-border: #fed7aa;
   --freuly-error: #ef4444;
   --freuly-error-light: #fef2f2;
-  --freuly-info: #0c918b;
+  --freuly-info: #107b80;
   --freuly-info-light: #e0f9f8;
 
   /* Borders */
-  --freuly-border-default: #e2e8f0;
+  --freuly-border-default: #e6e4df;
   --freuly-border-subtle: #f1f5f9;
   --freuly-divider: #e5e7eb;
 
@@ -49,14 +51,18 @@
 
   /* Radius */
   --freuly-radius-sm: 4px;
+  --freuly-radius-button: 6px;
   --freuly-radius-md: 8px;
+  --freuly-radius-card: 10px;
   --freuly-radius-lg: 12px;
   --freuly-radius-xl: 16px;
+  --freuly-radius-pill: 99px;
 
   /* Typography sizes */
   --freuly-text-page-title: 28px;
+  --freuly-text-page-subtitle: 15px;
   --freuly-text-section-title: 24px;
-  --freuly-text-card-title: 18px;
+  --freuly-text-card-title: 20px;
   --freuly-text-subtitle: 16px;
   --freuly-text-body: 14px;
   --freuly-text-body-sm: 13px;

@@ -15,7 +15,7 @@ const paddingClasses: Record<CardPadding, string> = {
 };
 
 export default function Card({
-  padding = "md",
+  padding = "lg",
   className,
   children,
   ...props
@@ -23,7 +23,7 @@ export default function Card({
   return (
     <div
       className={cn(
-        "rounded-freuly-lg border border-freuly-border-default bg-freuly-surface text-freuly-text-primary shadow-sm",
+        "rounded-freuly-card border border-freuly-border-default bg-freuly-surface text-freuly-text-primary",
         paddingClasses[padding],
         className,
       )}
@@ -40,7 +40,7 @@ export function CardHeader({
   ...props
 }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("mb-freuly-4", className)} {...props}>
+    <div className={cn("mb-freuly-5", className)} {...props}>
       {children}
     </div>
   );
@@ -64,7 +64,7 @@ export function CardDescription({
   ...props
 }: HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn("mt-freuly-1 text-freuly-body-sm text-freuly-text-secondary", className)} {...props}>
+    <p className={cn("mt-1.5 text-freuly-body text-freuly-text-secondary", className)} {...props}>
       {children}
     </p>
   );
@@ -88,7 +88,7 @@ export function CardFooter({
   ...props
 }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("mt-freuly-4 flex flex-wrap items-center gap-freuly-2", className)} {...props}>
+    <div className={cn("mt-freuly-5 flex flex-wrap items-center gap-freuly-3", className)} {...props}>
       {children}
     </div>
   );

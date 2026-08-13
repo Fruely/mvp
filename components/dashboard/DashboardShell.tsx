@@ -46,7 +46,7 @@ export default function DashboardShell({
           planStatusForBadge={planStatusForBadge}
           onMenuClick={() => setSidebarOpen((prev) => !prev)}
         />
-        <main className="mx-auto w-full max-w-7xl px-freuly-4 py-freuly-6 sm:px-freuly-6">{children}</main>
+        <main className="mx-auto w-full max-w-7xl px-freuly-4 py-freuly-6 sm:px-freuly-6 lg:p-freuly-12">{children}</main>
       </div>
     </div>
   );

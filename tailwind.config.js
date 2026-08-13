@@ -32,8 +32,10 @@ module.exports = {
           "text-muted": "var(--freuly-text-muted)",
           success: "var(--freuly-success)",
           "success-light": "var(--freuly-success-light)",
+          "success-border": "var(--freuly-success-border)",
           warning: "var(--freuly-warning)",
           "warning-light": "var(--freuly-warning-light)",
+          "warning-border": "var(--freuly-warning-border)",
           error: "var(--freuly-error)",
           "error-light": "var(--freuly-error-light)",
           info: "var(--freuly-info)",
@@ -60,14 +62,21 @@ module.exports = {
         xl: "16px",
         "2xl": "20px",
         "freuly-sm": "var(--freuly-radius-sm)",
+        "freuly-button": "var(--freuly-radius-button)",
         "freuly-md": "var(--freuly-radius-md)",
+        "freuly-card": "var(--freuly-radius-card)",
         "freuly-lg": "var(--freuly-radius-lg)",
         "freuly-xl": "var(--freuly-radius-xl)",
+        "freuly-pill": "var(--freuly-radius-pill)",
       },
       fontSize: {
         "freuly-page-title": [
           "var(--freuly-text-page-title)",
           { lineHeight: "1.25", fontWeight: "700" },
+        ],
+        "freuly-page-subtitle": [
+          "var(--freuly-text-page-subtitle)",
+          { lineHeight: "1.4", fontWeight: "400" },
         ],
         "freuly-section-title": [
           "var(--freuly-text-section-title)",
@@ -107,7 +116,7 @@ module.exports = {
         ],
         "freuly-badge": [
           "var(--freuly-text-badge)",
-          { lineHeight: "1.25", fontWeight: "500" },
+          { lineHeight: "1.25", fontWeight: "600" },
         ],
       },
       boxShadow: {

@@ -10,8 +10,8 @@ export type AlertProps = HTMLAttributes<HTMLDivElement> & {
 
 const variantClasses: Record<AlertVariant, string> = {
   info: "border-freuly-info/20 bg-freuly-info-light text-freuly-text-primary",
-  success: "border-freuly-success/20 bg-freuly-success-light text-freuly-text-primary",
-  warning: "border-freuly-warning/20 bg-freuly-warning-light text-freuly-text-primary",
+  success: "border-freuly-success-border bg-freuly-success-light text-freuly-text-primary",
+  warning: "border-freuly-warning-border bg-freuly-warning-light text-freuly-text-primary",
   error: "border-freuly-error/20 bg-freuly-error-light text-freuly-text-primary",
 };
 

@@ -28,10 +28,10 @@ function lockedLabel(lang: string): string {
 
 function navItemClasses(isActive: boolean, disabled?: boolean) {
   const baseClass =
-    "flex w-full min-h-[40px] items-center gap-2.5 rounded-freuly-md px-3 py-2 text-freuly-body font-medium transition-colors";
+    "flex w-full min-h-[42px] items-center gap-3 rounded-freuly-md px-4 py-3 text-[15px] font-medium transition-colors";
 
   const stateClass = isActive
-    ? "bg-freuly-primary text-freuly-text-on-primary"
+    ? "bg-freuly-primary font-semibold text-freuly-text-on-primary"
     : disabled
       ? "cursor-not-allowed text-freuly-text-muted"
       : "text-freuly-text-secondary hover:bg-freuly-border-subtle hover:text-freuly-text-primary";
@@ -50,7 +50,7 @@ function buildNavItems(lang: string, dict: Dictionary, isPublished: boolean): Na
     disabled: lock,
     lockedUntilPublished: lock,
     icon: (
-      <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0 opacity-80" aria-hidden>
+      <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 opacity-80" aria-hidden>
         <path d="M4 13h6V4H4v9zm10 7h6v-9h-6v9zM4 20h6v-5H4v5zm10-7h6V4h-6v9z" fill="currentColor" />
       </svg>
     ),
@@ -61,7 +61,7 @@ function buildNavItems(lang: string, dict: Dictionary, isPublished: boolean): Na
     disabled: lock,
     lockedUntilPublished: lock,
     icon: (
-      <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0 opacity-80" aria-hidden>
+      <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 opacity-80" aria-hidden>
         <path
           d="M12 12a4 4 0 100-8 4 4 0 000 8zm-7 9a7 7 0 0114 0H5z"
           fill="currentColor"
@@ -75,7 +75,7 @@ function buildNavItems(lang: string, dict: Dictionary, isPublished: boolean): Na
     disabled: lock,
     lockedUntilPublished: lock,
     icon: (
-      <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0 opacity-80" aria-hidden>
+      <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 opacity-80" aria-hidden>
         <path d="M4 5h16v14H4V5zm2 2v10h12V7H6zm2 2h8v2H8V9zm0 4h5v2H8v-2z" fill="currentColor" />
       </svg>
     ),
@@ -86,7 +86,7 @@ function buildNavItems(lang: string, dict: Dictionary, isPublished: boolean): Na
     disabled: lock,
     lockedUntilPublished: lock,
     icon: (
-      <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0 opacity-80" aria-hidden>
+      <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 opacity-80" aria-hidden>
         <path d="M12 2l2.4 4.9L20 8l-4 3.8.9 5.7-4.9-2.6L7.1 17.5l.9-5.7L4 8l5.6-.8L12 2z" fill="currentColor" />
       </svg>
     ),
@@ -97,7 +97,7 @@ function buildNavItems(lang: string, dict: Dictionary, isPublished: boolean): Na
     disabled: lock,
     lockedUntilPublished: lock,
     icon: (
-      <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0 opacity-80" aria-hidden>
+      <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 opacity-80" aria-hidden>
         <path
           d="M4 6h16v4H4V6zm0 6h10v8H4v-8zm12 0h4v2h-4v-2zm0 4h4v4h-4v-4z"
           fill="currentColor"
@@ -109,7 +109,7 @@ function buildNavItems(lang: string, dict: Dictionary, isPublished: boolean): Na
     label: t(dict, "dashboard.sidebar.nav.services"),
     href: `${base}/services`,
     icon: (
-      <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0 opacity-80" aria-hidden>
+      <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 opacity-80" aria-hidden>
         <path d="M7 3h10l1 4H6l1-4zm-2 6h14v12H5V9zm2 2v8h10v-8H7z" fill="currentColor" />
       </svg>
     ),
@@ -120,7 +120,7 @@ function buildNavItems(lang: string, dict: Dictionary, isPublished: boolean): Na
     disabled: lock,
     lockedUntilPublished: lock,
     icon: (
-      <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0 opacity-80" aria-hidden>
+      <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 opacity-80" aria-hidden>
         <path
           d="M4 7.5A2.5 2.5 0 016.5 5h8A2.5 2.5 0 0117 7.5v9a2.5 2.5 0 01-2.5 2.5h-8A2.5 2.5 0 014 16.5v-9zm15.8 1.1A1 1 0 0021 9.5v5a1 1 0 01-1.2.98L18 15.1V8.9l1.8-.3zM10 10.1l3 1.9-3 1.9v-3.8z"
           fill="currentColor"
@@ -132,7 +132,7 @@ function buildNavItems(lang: string, dict: Dictionary, isPublished: boolean): Na
     label: t(dict, "dashboard.sidebar.nav.settings"),
     href: `${base}/settings`,
     icon: (
-      <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0 opacity-80" aria-hidden>
+      <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 opacity-80" aria-hidden>
         <path d="M19.4 13a7.9 7.9 0 000-2l2-1.5-2-3.5-2.4 1a8 8 0 00-1.7-1L15 2h-6l-.3 3a8 8 0 00-1.7 1l-2.4-1-2 3.5 2 1.5a8 8 0 000 2l-2 1.5 2 3.5 2.4-1a8 8 0 001.7 1L9 22h6l.3-3a8 8 0 001.7-1l2.4 1 2-3.5-2-1.5zM12 15a3 3 0 110-6 3 3 0 010 6z" fill="currentColor" />
       </svg>
     ),
@@ -216,7 +216,7 @@ export default function Sidebar({
             {t(dict, "dashboard.sidebar.brand")}
           </span>
         </div>
-        <nav className="space-y-0.5 p-freuly-3">
+        <nav className="flex flex-col gap-[6px] px-4 py-8">
           {navItems.map((item) => renderNavItem(item, currentPath, lockedBadge))}
         </nav>
       </aside>
@@ -249,7 +249,7 @@ export default function Sidebar({
             </svg>
           </button>
         </div>
-        <nav className="space-y-0.5 p-freuly-3">
+        <nav className="flex flex-col gap-[6px] px-4 py-8">
           {navItems.map((item) => renderNavItem(item, currentPath, lockedBadge, onClose))}
         </nav>
       </aside>
