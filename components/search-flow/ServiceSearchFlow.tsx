@@ -4,10 +4,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode, RefObject } from "react";
 import {
+  buildServiceSearchResultsUrl,
   DEFAULT_SERVICE_SEARCH_RADIUS_KM,
   SERVICE_SEARCH_UI_RADII_KM,
-  buildServiceSearchResultsUrl,
 } from "@/lib/search/serviceSearchUrl";
+import {
+  publicChoiceButtonClass,
+  publicFieldClass,
+  publicLinkPrimaryClass,
+  publicWizardCardClass,
+} from "@/components/public/publicStyles";
 import {
   canAdvanceFromStep,
   getActionLabel,
@@ -205,14 +211,7 @@ export const SERVICE_SEARCH_FLOW_TEXT: Record<"ru" | "ua" | "de", ServiceSearchF
 };
 
 function choiceButtonClass(isSelected: boolean): string {
-  return [
-    "w-full rounded-2xl border px-5 py-4 text-left transition-all duration-200",
-    "min-h-[3.75rem] active:scale-[0.99]",
-    "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100",
-    isSelected
-      ? "border-primary bg-blue-50 text-primary shadow-sm"
-      : "border-gray-200 bg-white text-textPrimary hover:border-blue-200 hover:bg-blue-50/40",
-  ].join(" ");
+  return publicChoiceButtonClass(isSelected);
 }
 
 function StepProgress({ current, total }: { current: number; total: number }) {
@@ -237,10 +236,10 @@ function StepProgress({ current, total }: { current: number; total: number }) {
             className={[
               "rounded-full transition-all duration-300",
               isComplete
-                ? "h-1.5 w-1.5 bg-primary/70"
+                ? "h-2 w-2 bg-freuly-primary/70"
                 : isCurrent
-                  ? "h-1.5 w-8 bg-primary"
-                  : "h-1.5 w-1.5 bg-gray-200",
+                  ? "h-2 w-8 bg-freuly-primary"
+                  : "h-2 w-2 bg-freuly-border-default",
             ].join(" ")}
           />
         );
@@ -263,10 +262,8 @@ function FlowCard({
   return (
     <section
       className={[
-        "rounded-3xl border border-gray-100 bg-white text-left",
-        compact
-          ? "p-4 shadow-soft sm:p-5"
-          : "p-6 shadow-[0_18px_50px_-20px_rgba(30,64,175,0.18)] sm:p-9",
+        publicWizardCardClass,
+        "text-left",
         centered ? "text-center" : "",
       ].join(" ")}
     >
@@ -283,7 +280,7 @@ function BackButton({ label, onClick }: { label: string; onClick: () => void }) 
     <button
       type="button"
       onClick={onClick}
-      className="mb-5 inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-textSecondary transition hover:text-textPrimary"
+      className="mb-5 inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-freuly-text-secondary transition hover:text-freuly-text-primary freuly-focus-ring"
     >
       <span aria-hidden>←</span>
       {label}
@@ -303,14 +300,15 @@ function ActionFooter({
   loading?: boolean;
 }) {
   return (
-    <div className="sticky bottom-0 -mx-1 mt-6 border-t border-gray-100 bg-white/95 px-1 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-4 backdrop-blur-sm">
+    <div className="sticky bottom-0 -mx-1 mt-6 border-t border-freuly-border-subtle bg-freuly-surface/95 px-1 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-4 backdrop-blur-sm">
       <button
         type="submit"
         disabled={disabled || loading}
         aria-disabled={disabled || loading}
         aria-busy={loading}
         className={[
-          "btn-primary w-full min-h-[48px] px-8 py-4 text-base font-semibold",
+          publicLinkPrimaryClass,
+          "w-full min-h-[48px] px-8 py-4 text-base",
           disabled || loading ? "cursor-not-allowed opacity-60" : "",
         ].join(" ")}
       >
@@ -344,7 +342,7 @@ function TextField({
   return (
     <div>
       <label className="block" htmlFor={id}>
-        <span className="mb-2 block text-sm font-medium text-textSecondary">{label}</span>
+        <span className="mb-2 block text-sm font-semibold text-freuly-text-muted">{label}</span>
         <input
           ref={inputRef}
           id={id}
@@ -355,17 +353,14 @@ function TextField({
           autoComplete="off"
           aria-invalid={Boolean(error)}
           className={[
-            "w-full rounded-2xl border bg-white px-5 text-textPrimary outline-none transition",
-            "placeholder:text-slate-400 focus:ring-4",
+            publicFieldClass,
             large ? "py-5 text-xl sm:text-2xl" : "py-4 text-lg",
-            error
-              ? "border-red-300 focus:border-red-400 focus:ring-red-100"
-              : "border-gray-200 focus:border-blue-300 focus:ring-blue-100",
+            error ? "border-freuly-error focus-visible:ring-freuly-error/25" : "",
           ].join(" ")}
         />
       </label>
       {error ? (
-        <p className="mt-2 text-sm font-medium text-red-600" role="alert">
+        <p className="mt-2 text-sm font-medium text-freuly-error" role="alert">
           {error}
         </p>
       ) : null}
@@ -384,7 +379,7 @@ function StepTitle({
     <h1
       ref={titleRef}
       tabIndex={-1}
-      className="mb-7 text-[1.65rem] font-bold leading-[1.2] tracking-tight text-textPrimary outline-none sm:text-[2rem]"
+      className="mb-7 text-[1.65rem] font-bold leading-[1.2] tracking-tight text-freuly-text-primary outline-none sm:text-[2rem] freuly-focus-ring"
     >
       {children}
     </h1>
@@ -402,7 +397,7 @@ function PrimaryButton({
     <button
       type="button"
       onClick={onClick}
-      className="btn-primary w-full min-h-[48px] px-8 py-4 text-base font-semibold"
+      className={`${publicLinkPrimaryClass} w-full min-h-[48px] px-8 py-4 text-base`}
     >
       {children}
     </button>
@@ -541,7 +536,7 @@ export default function ServiceSearchFlow({
 
   const rootClassName = isHomeVariant
     ? ["w-full max-w-lg mx-auto text-left", className].filter(Boolean).join(" ")
-    : "flex min-h-screen items-center justify-center bg-[#f7f9fc] px-4 py-8 sm:py-12";
+    : "flex min-h-[calc(100dvh-5rem)] items-center justify-center bg-freuly-page px-freuly-4 py-freuly-8 sm:py-freuly-12";
 
   const content = (
     <div
@@ -552,7 +547,7 @@ export default function ServiceSearchFlow({
     >
       {!isHomeVariant && step === "start" ? (
         <FlowCard centered>
-          <h1 className="mb-10 text-[1.85rem] font-bold leading-[1.15] tracking-tight text-textPrimary sm:text-[2.35rem]">
+          <h1 className="mb-10 text-[1.85rem] font-bold leading-[1.15] tracking-tight text-freuly-text-primary sm:text-[2.35rem]">
             {text.startHeadline}
           </h1>
           <PrimaryButton onClick={goToServiceStep}>{text.startCta}</PrimaryButton>
@@ -651,7 +646,7 @@ export default function ServiceSearchFlow({
                     className={choiceButtonClass(isSelected)}
                   >
                     <span className="block text-lg font-semibold">{option.label}</span>
-                    <span className="mt-1 block text-sm leading-relaxed text-textSecondary">
+                    <span className="mt-1 block text-sm leading-relaxed text-freuly-text-secondary">
                       {option.description}
                     </span>
                   </button>
@@ -720,11 +715,10 @@ export default function ServiceSearchFlow({
                       aria-checked={isSelected}
                       onClick={() => setRadiusKm(km)}
                       className={[
-                        "min-h-[44px] rounded-xl border px-2 py-2 text-sm font-semibold transition",
-                        "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100",
+                        "min-h-[44px] rounded-freuly-md border px-2 py-2 text-sm font-semibold transition freuly-focus-ring",
                         isSelected
-                          ? "border-primary bg-blue-50 text-primary shadow-sm"
-                          : "border-gray-200 bg-white text-textPrimary hover:border-blue-200 hover:bg-blue-50/40",
+                          ? "border-freuly-primary bg-freuly-primary-light text-freuly-primary shadow-sm"
+                          : "border-freuly-border-default bg-freuly-surface text-freuly-text-primary hover:border-freuly-primary/30 hover:bg-freuly-primary-light/40",
                       ].join(" ")}
                     >
                       {km} {text.radiusUnit}
