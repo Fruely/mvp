@@ -28,7 +28,7 @@ const DEFAULT_VALUES: ServiceFormValues = {
 function euroSuffix() {
   return (
     <span
-      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 select-none text-sm font-medium text-gray-600"
+      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 select-none text-sm font-medium text-freuly-text-secondary"
       style={{
         userSelect: 'none',
         WebkitUserSelect: 'none',
@@ -140,60 +140,60 @@ export default function ServiceForm({
   }
 
   const amountInputClass =
-    "h-10 w-full rounded-lg border border-gray-300 pl-3 pr-10 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500";
+    "h-10 w-full rounded-freuly-md border border-freuly-border-default pl-3 pr-10 text-sm outline-none focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-freuly-md border border-freuly-border-default bg-white p-4">
       <div>
-        <label className="mb-1 block text-xs font-medium text-gray-600">
+        <label className="mb-1 block text-xs font-medium text-freuly-text-secondary">
           {t(dict, "dashboard.servicesEditor.field.title")}
         </label>
         <input
           value={values.title}
           onChange={(e) => updateValue("title", e.target.value)}
-          className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          className="h-10 w-full rounded-freuly-md border border-freuly-border-default px-3 text-sm outline-none focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
           placeholder={t(dict, "dashboard.servicesEditor.placeholder.title")}
           required
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-gray-600">
+        <label className="mb-1 block text-xs font-medium text-freuly-text-secondary">
           {t(dict, "dashboard.servicesEditor.field.description")}
         </label>
         <textarea
           value={values.description}
           onChange={(e) => updateValue("description", e.target.value)}
           rows={3}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm outline-none focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
           placeholder={t(dict, "dashboard.servicesEditor.placeholder.description")}
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-gray-600">
+        <label className="mb-1 block text-xs font-medium text-freuly-text-secondary">
           {t(dict, "dashboard.servicesEditor.field.priceComment")}
         </label>
         <textarea
           value={values.price_comment}
           onChange={(e) => updateValue("price_comment", e.target.value)}
           rows={2}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-freuly-md border border-freuly-border-default px-3 py-2 text-sm outline-none focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
         />
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-freuly-text-muted">
           {t(dict, "dashboard.servicesEditor.helper.priceComment")}
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">
+          <label className="mb-1 block text-xs font-medium text-freuly-text-secondary">
             {t(dict, "dashboard.servicesEditor.field.pricingType")}
           </label>
           <select
             value={values.pricing_type}
             onChange={(e) => updateValue("pricing_type", e.target.value as PricingType)}
-            className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+            className="h-10 w-full rounded-freuly-md border border-freuly-border-default px-3 text-sm outline-none focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
           >
             <option value="fixed">{pricingTypeLabel("fixed")}</option>
             <option value="hourly">{pricingTypeLabel("hourly")}</option>
@@ -201,10 +201,10 @@ export default function ServiceForm({
           </select>
         </div>
         <div>
-          <label className="mb-1 flex items-center gap-1 text-xs font-medium text-gray-600">
+          <label className="mb-1 flex items-center gap-1 text-xs font-medium text-freuly-text-secondary">
             {t(dict, "dashboard.servicesEditor.field.priceFrom")}
             <span
-              className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-gray-300 text-[10px] text-gray-500"
+              className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-freuly-border-default text-[10px] text-freuly-text-muted"
               title={t(dict, "dashboard.servicesEditor.priceInfo")}
               aria-label={t(dict, "dashboard.servicesEditor.priceInfo")}
             >
@@ -225,7 +225,7 @@ export default function ServiceForm({
           </div>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">
+          <label className="mb-1 block text-xs font-medium text-freuly-text-secondary">
             {t(dict, "dashboard.servicesEditor.field.priceTo")}
           </label>
           <div className="relative">
@@ -244,7 +244,7 @@ export default function ServiceForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-gray-600">
+        <label className="mb-1 block text-xs font-medium text-freuly-text-secondary">
           {t(dict, "dashboard.servicesEditor.field.duration")}
         </label>
         <input
@@ -252,30 +252,30 @@ export default function ServiceForm({
           onChange={(e) => updateValue("duration_minutes", e.target.value)}
           type="number"
           min="0"
-          className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          className="h-10 w-full rounded-freuly-md border border-freuly-border-default px-3 text-sm outline-none focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
           placeholder="60"
         />
       </div>
 
       {!hideActiveToggle ? (
-        <label className="flex items-center gap-2 text-sm text-gray-700">
+        <label className="flex items-center gap-2 text-sm text-freuly-text-primary">
           <input
             type="checkbox"
             checked={requestedActive}
             onChange={(e) => setRequestedActive(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            className="h-4 w-4 rounded border-freuly-border-default text-blue-600 focus:ring-freuly-primary/25"
           />
           {t(dict, "dashboard.servicesEditor.field.showInProfile")}
         </label>
       ) : null}
 
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? <p className="text-sm text-freuly-error">{error}</p> : null}
 
       <div className="flex flex-wrap gap-2 pt-1">
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60 sm:w-auto"
+          className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-freuly-primary px-4 text-sm font-semibold text-white transition hover:bg-freuly-primary-hover disabled:opacity-60 sm:w-auto"
         >
           {loading ? t(dict, "dashboard.buttons.saving") : submitLabel}
         </button>
@@ -283,7 +283,7 @@ export default function ServiceForm({
           <button
             type="button"
             onClick={onCancel}
-            className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+            className="inline-flex h-10 items-center justify-center rounded-freuly-md border border-freuly-border-default bg-white px-4 text-sm font-medium text-freuly-text-primary transition hover:bg-freuly-border-subtle"
           >
             {t(dict, "dashboard.servicesEditor.cancel")}
           </button>
