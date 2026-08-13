@@ -120,14 +120,38 @@
     "rights": "Все права защищены",
     "about": "О проекте",
     "contacts": "Контакты",
-    "companyHeading": "О проекте",
+    "companyHeading": "Компания",
+    "platformHeading": "Платформа",
+    "specialistsHeading": "Специалистам",
     "support": "Поддержка",
     "forSpecialists": "Для специалистов",
     "specialistRules": "Правила платформы",
     "tagline": "Freuly — место, где люди находят профессионалов, говорящих на их языке.",
     "socialHeading": "Мы в соцсетях",
     "impressumLink": "Импрессум",
-    "privacyLink": "Политика конфиденциальности"
+    "privacyLink": "Политика конфиденциальности",
+    "termsLink": "Условия использования",
+    "cookieSettings": "Настройки cookies",
+    "platform": {
+      "findSpecialists": "Найти специалиста",
+      "howItWorks": "Как это работает",
+      "trustAndSafety": "Правила платформы"
+    },
+    "specialists": {
+      "join": "Присоединиться как специалист",
+      "stories": "Для специалистов",
+      "resources": "Партнёрам"
+    },
+    "company": {
+      "about": "О проекте",
+      "contact": "Поддержка",
+      "partners": "Партнёрам"
+    },
+    "language": {
+      "ua": "Українська",
+      "ru": "Русский",
+      "de": "Deutsch"
+    }
   },
   "header.nav.categories": "Категории",
   "header.nav.about": "О нас",

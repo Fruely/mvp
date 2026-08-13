@@ -882,14 +882,38 @@
     "rights": "Усі права захищені",
     "about": "Про проєкт",
     "contacts": "Контакти",
-    "companyHeading": "Про проєкт",
+    "companyHeading": "Компанія",
+    "platformHeading": "Платформа",
+    "specialistsHeading": "Спеціалістам",
     "support": "Підтримка",
     "forSpecialists": "Для спеціалістів",
     "specialistRules": "Правила платформи",
     "tagline": "Freuly — місце, де люди знаходять професіоналів, які говорять їхньою мовою.",
     "socialHeading": "Ми в соцмережах",
     "impressumLink": "Імпрессум",
-    "privacyLink": "Політика конфіденційності"
+    "privacyLink": "Політика конфіденційності",
+    "termsLink": "Умови використання",
+    "cookieSettings": "Налаштування cookies",
+    "platform": {
+      "findSpecialists": "Знайти спеціаліста",
+      "howItWorks": "Як це працює",
+      "trustAndSafety": "Правила платформи"
+    },
+    "specialists": {
+      "join": "Приєднатися як спеціаліст",
+      "stories": "Для спеціалістів",
+      "resources": "Партнерам"
+    },
+    "company": {
+      "about": "Про проєкт",
+      "contact": "Підтримка",
+      "partners": "Партнерам"
+    },
+    "language": {
+      "ua": "Українська",
+      "ru": "Русский",
+      "de": "Deutsch"
+    }
   },
   "footer.email": "Email",
   "footer.phone": "Телефон",

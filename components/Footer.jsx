@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { t } from "@/lib/i18n";
 import CookieSettingsLink from "@/components/consent/CookieSettingsLink";
-import FreulySocialIcons from "./FreulySocialIcons";
+import FooterLanguageSwitcher from "@/components/FooterLanguageSwitcher";
 
 /**
  * @typedef {'ua'|'ru'|'de'} Lang
@@ -12,91 +13,169 @@ import FreulySocialIcons from "./FreulySocialIcons";
  * @property {Dictionary} dict
  */
 
+const linkClass =
+  "text-sm text-freuly-text-secondary transition-colors hover:text-white";
+const bottomLinkClass =
+  "text-[13px] text-freuly-text-secondary transition-colors hover:text-white";
+
+/**
+ * @param {{ title: string, links: Array<{ href: string, label: string, external?: boolean }> }} props
+ */
+function FooterLinkColumn({ title, links }) {
+  return (
+    <div className="min-w-[5.5rem] shrink-0">
+      <h4 className="text-xs font-semibold uppercase tracking-wide text-white">{title}</h4>
+      <ul className="mt-4 space-y-4">
+        {links.map((item) => (
+          <li key={item.href + item.label}>
+            {item.external ? (
+              <a href={item.href} className={linkClass}>
+                {item.label}
+              </a>
+            ) : (
+              <Link href={item.href} className={linkClass}>
+                {item.label}
+              </Link>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /** @param {FooterProps} props */
 export default function Footer(props) {
   const { dict, lang } = props;
   const prefix = lang ? `/${lang}` : "";
   const homeHref = lang ? `/${lang}` : "/";
+  const year = new Date().getFullYear();
+
+  const languageLabels = {
+    ua: t(dict, "footer.language.ua"),
+    ru: t(dict, "footer.language.ru"),
+    de: t(dict, "footer.language.de"),
+  };
+
+  const platformLinks = [
+    {
+      href: `${prefix}/service-search`,
+      label: t(dict, "footer.platform.findSpecialists"),
+    },
+    {
+      href: `${prefix}`,
+      label: t(dict, "footer.platform.howItWorks"),
+    },
+    {
+      href: `${prefix}/specialist-rules`,
+      label: t(dict, "footer.platform.trustAndSafety"),
+    },
+  ];
+
+  const specialistLinks = [
+    {
+      href: `${prefix}/become-specialist`,
+      label: t(dict, "footer.specialists.join"),
+    },
+    {
+      href: `${prefix}/for-specialists`,
+      label: t(dict, "footer.specialists.stories"),
+    },
+    {
+      href: `${prefix}/partners`,
+      label: t(dict, "footer.specialists.resources"),
+    },
+  ];
+
+  const companyLinks = [
+    {
+      href: `${prefix}/about`,
+      label: t(dict, "footer.company.about"),
+    },
+    {
+      href: `${prefix}/support`,
+      label: t(dict, "footer.company.contact"),
+    },
+    {
+      href: `${prefix}/partners`,
+      label: t(dict, "footer.company.partners"),
+    },
+  ];
+
+  const bottomLinks = [
+    {
+      key: "privacy",
+      href: `${prefix}/datenschutzerklaerung`,
+      label: t(dict, "footer.privacyLink"),
+    },
+    {
+      key: "terms",
+      href: `${prefix}/agb`,
+      label: t(dict, "footer.termsLink"),
+    },
+    {
+      key: "impressum",
+      href: `${prefix}/impressum`,
+      label: t(dict, "footer.impressumLink"),
+    },
+  ];
 
   return (
-    <footer className="bg-[#2C2F5A] border-t border-white/10">
-      <div className="max-w-7xl mx-auto px-4 py-10 flex flex-col md:flex-row justify-between items-start gap-6">
-        <div>
-          <Link href={homeHref} className="text-2xl font-bold text-white/90">
-            FREULY
-          </Link>
-          <div className="text-sm text-white/50 mt-2 max-w-sm">
-            {t(dict, "footer.tagline")}
+    <footer className="border-t border-freuly-border-default bg-freuly-text-primary">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-10 px-4 pb-10 pt-10 sm:px-6 lg:gap-10 lg:px-16 lg:pb-12 lg:pt-14">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
+          <div className="w-full max-w-[320px] shrink-0">
+            <Link href={homeHref} className="inline-flex items-center gap-2.5">
+              <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-freuly-primary text-base font-bold text-white">
+                f
+              </span>
+              <span className="text-lg font-bold text-white">freuly</span>
+            </Link>
+            <p className="mt-4 text-sm leading-[1.6] text-freuly-text-secondary">
+              {t(dict, "footer.tagline")}
+            </p>
           </div>
-          <div className="mt-8">
-            <h4 className="font-semibold mb-2 text-white/90">{t(dict, "footer.socialHeading")}</h4>
-            <FreulySocialIcons />
+
+          <div className="flex flex-wrap gap-10 sm:gap-12 lg:gap-20">
+            <FooterLinkColumn
+              title={t(dict, "footer.platformHeading")}
+              links={platformLinks}
+            />
+            <FooterLinkColumn
+              title={t(dict, "footer.specialistsHeading")}
+              links={specialistLinks}
+            />
+            <FooterLinkColumn title={t(dict, "footer.companyHeading")} links={companyLinks} />
           </div>
         </div>
 
-        <div className="flex gap-10">
-          <div>
-            <h4 className="font-semibold mb-2 text-white/90">{t(dict, "footer.companyHeading")}</h4>
-            <ul className="text-sm text-white/70 space-y-1">
-              <li>
-                <Link href={`${prefix}/about`} className="hover:text-white">
-                  {t(dict, "footer.about")}
-                </Link>
-              </li>
-              <li>
-                <Link href={`${prefix}/support`} className="hover:text-white">
-                  {t(dict, "footer.support")}
-                </Link>
-              </li>
-              <li>
-                <Link href={`${prefix}/specialist-rules`} className="hover:text-white">
-                  {t(dict, "footer.specialistRules")}
-                </Link>
-              </li>
-              <li>
-                <Link href={`${prefix}/become-specialist`} className="hover:text-white">
-                  {t(dict, "footer.forSpecialists")}
-                </Link>
-              </li>
-              <li>
-                <Link href={`${prefix}/agb`} className="hover:text-white">
-                  {lang === "de" ? "AGB" : lang === "ru" ? "AGB" : "AGB"}
-                </Link>
-              </li>
-              <li>
-                <Link href={`${prefix}/impressum`} className="hover:text-white">
-                  {t(dict, "footer.impressumLink")}
-                </Link>
-              </li>
-              <li>
-                <Link href={`${prefix}/datenschutzerklaerung`} className="hover:text-white">
-                  {t(dict, "footer.privacyLink")}
-                </Link>
-              </li>
-              <li>
+        <div className="flex flex-col gap-6">
+          <div className="h-px w-full bg-freuly-border-default" aria-hidden />
+
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <p className="text-[13px] text-freuly-text-secondary">
+              © {year} Freuly. {t(dict, "footer.rights")}
+            </p>
+
+            <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
+              <div className="flex flex-wrap items-center gap-6">
+                {bottomLinks.map((item) => (
+                  <Link key={item.key} href={item.href} className={bottomLinkClass}>
+                    {item.label}
+                  </Link>
+                ))}
                 <CookieSettingsLink
-                  label={
-                    lang === "de"
-                      ? "Cookie-Einstellungen"
-                      : lang === "ru"
-                        ? "Настройки cookies"
-               : "Налаштування cookies"
-                  }
-                  className="hover:text-white"
+                  label={t(dict, "footer.cookieSettings")}
+                  className={bottomLinkClass}
                 />
-              </li>
-            </ul>
-          </div>
+              </div>
 
-          <div>
-            <h4 className="font-semibold mb-2 text-white/90">{t(dict, "footer.contacts")}</h4>
-            <p className="text-sm text-white/70">freuly.de@gmail.com</p>
+              <Suspense fallback={null}>
+                <FooterLanguageSwitcher lang={lang} labels={languageLabels} />
+              </Suspense>
+            </div>
           </div>
         </div>
-      </div>
-
-      <div className="text-center text-xs text-white/50 py-4 border-t border-white/10">
-        © 2025 Freuly. {t(dict, "footer.rights")}
       </div>
     </footer>
   );

@@ -882,14 +882,38 @@
     "rights": "Alle Rechte vorbehalten",
     "about": "Über das Projekt",
     "contacts": "Kontakte",
-    "companyHeading": "Über das Projekt",
+    "companyHeading": "Unternehmen",
+    "platformHeading": "Plattform",
+    "specialistsHeading": "Spezialisten",
     "support": "Support",
     "forSpecialists": "Für Fachkräfte",
     "specialistRules": "Plattformregeln",
     "tagline": "Freuly — ein Ort, an dem Menschen Fachkräfte finden, die ihre Sprache sprechen.",
     "socialHeading": "In sozialen Netzwerken",
     "impressumLink": "Impressum",
-    "privacyLink": "Datenschutzerklärung"
+    "privacyLink": "Datenschutzerklärung",
+    "termsLink": "Nutzungsbedingungen",
+    "cookieSettings": "Cookie-Einstellungen",
+    "platform": {
+      "findSpecialists": "Fachkraft finden",
+      "howItWorks": "So funktioniert es",
+      "trustAndSafety": "Plattformregeln"
+    },
+    "specialists": {
+      "join": "Als Fachkraft beitreten",
+      "stories": "Für Fachkräfte",
+      "resources": "Partnerprogramm"
+    },
+    "company": {
+      "about": "Über uns",
+      "contact": "Support",
+      "partners": "Partnerprogramm"
+    },
+    "language": {
+      "ua": "Ukrainisch",
+      "ru": "Russisch",
+      "de": "Deutsch"
+    }
   },
   "footer.email": "E-Mail",
   "footer.phone": "Telefon",
