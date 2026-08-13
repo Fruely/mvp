@@ -9,7 +9,6 @@ import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { getSpecialistUrl } from "@/lib/urls";
-import { getSupabase } from "@/lib/supabaseClient";
 import uaDict from "@/locales/ua.json";
 import { getSpecialistPageTranslations, getWorkFormat } from "@/lib/i18n/getTranslations";
 import SectionCard from "@/components/specialist/SectionCard";
@@ -168,29 +167,10 @@ export default function SpecialistProfileClient({
 
   useEffect(() => {
     if (redirected.current) return;
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(id);
-
     const fetchSpecialist = async () => {
       try {
-        let resolvedId = id;
-
-        if (!isUuid) {
-          const { data: row } = await getSupabase()
-            .from("specialists")
-            .select("id")
-            .eq("slug", id)
-            .maybeSingle();
-
-          if (row?.id) {
-            resolvedId = row.id;
-          } else {
-            setError(SLUG_NOT_FOUND);
-            return;
-          }
-        }
-
         const response = await fetch(
-          `/api/specialists/${resolvedId}?lang=${encodeURIComponent(lang)}`,
+          `/api/specialists/${encodeURIComponent(id)}?lang=${encodeURIComponent(lang)}`,
           { cache: "no-store" }
         );
         const result = await response.json();
@@ -235,8 +215,14 @@ export default function SpecialistProfileClient({
   const specialistLng = specialist?.lng;
   const specialistAddress = specialist?.address;
   const specialistCity = specialist?.city;
+  const specialistWorkFormat =
+    getWorkFormat(specialist?.format) ?? getWorkFormat(specialist?.work_format);
 
   useEffect(() => {
+    if (specialistWorkFormat === "online") {
+      setMapCoords(null);
+      return;
+    }
     if (specialistLat != null && specialistLng != null) {
       setMapCoords({ lat: Number(specialistLat), lon: Number(specialistLng) });
       return;
@@ -257,7 +243,7 @@ export default function SpecialistProfileClient({
       .catch(() => {});
 
     return () => { cancelled = true; };
-  }, [specialistLat, specialistLng, specialistAddress, specialistCity]);
+  }, [specialistLat, specialistLng, specialistAddress, specialistCity, specialistWorkFormat]);
 
   useEffect(() => {
     if (!specialist?.id) return;

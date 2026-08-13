@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { SPECIALISTS_UI_LANG_HEADER } from "@/lib/search/specialistsUiLang";
 
 const SUPPORTED_LANGS = ["ua", "ru", "de"] as const;
 type Lang = (typeof SUPPORTED_LANGS)[number];
@@ -130,6 +131,25 @@ export function middleware(request: NextRequest) {
   // Block access if no dev cookie and not whitelisted
   if (!isDev && !isWhitelisted) {
     return NextResponse.redirect(new URL("/__closed", request.url));
+  }
+
+  // `/specialists` is public search (unprefixed). Honor `?lang=` over cookie so
+  // chrome matches results. Must run before `/specialist*` skip below.
+  if (pathname === "/specialists" || pathname.startsWith("/specialists/")) {
+    const qLang = searchParams.get("lang");
+    const cookieLang = request.cookies.get(LANG_COOKIE)?.value;
+    const uiLang: Lang = isLang(qLang || "")
+      ? (qLang as Lang)
+      : isLang(cookieLang || "")
+        ? (cookieLang as Lang)
+        : "ru";
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set(HTML_LANG_HEADER, uiLang === "ua" ? "uk" : uiLang);
+    requestHeaders.set(PATHNAME_HEADER, pathname);
+    requestHeaders.set(SPECIALISTS_UI_LANG_HEADER, uiLang);
+    const res = NextResponse.next({ request: { headers: requestHeaders } });
+    res.cookies.set(LANG_COOKIE, uiLang, { path: "/" });
+    return res;
   }
 
   // Never apply i18n to admin/api/specialist/client/login/static assets

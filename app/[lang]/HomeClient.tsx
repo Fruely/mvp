@@ -7,9 +7,8 @@ import { t } from "@/lib/i18n";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import InstallFreuly from "@/components/pwa/InstallFreuly";
-import ServiceSearchFlow, {
-  SERVICE_SEARCH_FLOW_TEXT,
-} from "@/components/search-flow/ServiceSearchFlow";
+import ServiceSearchFlow from "@/components/search-flow/ServiceSearchFlow";
+import { SERVICE_SEARCH_FLOW_TEXT } from "@/lib/search/serviceSearchFlowText";
 import VariantCCategoryIcon from "@/components/home/variantC/VariantCCategoryIcon";
 import VariantCSpecialistCard from "@/components/home/variantC/VariantCSpecialistCard";
 import VariantCHowItWorksSteps from "@/components/home/variantC/VariantCHowItWorksSteps";

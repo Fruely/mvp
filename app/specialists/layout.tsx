@@ -1,18 +1,23 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { Suspense } from "react";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import LanguageBar from "@/components/LanguageBar";
 import { getDictionary, type Lang } from "@/lib/i18n";
+import {
+  SPECIALISTS_UI_LANG_HEADER,
+  resolveSpecialistsUiLang,
+} from "@/lib/search/specialistsUiLang";
 
 export default async function SpecialistsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const langCookie = cookies().get("freuly_lang")?.value;
-  const lang =
-    langCookie === "ua" || langCookie === "ru" || langCookie === "de" ? langCookie : "ru";
+  const lang = resolveSpecialistsUiLang({
+    headerLang: headers().get(SPECIALISTS_UI_LANG_HEADER),
+    cookieLang: cookies().get("freuly_lang")?.value,
+  }) as Lang;
 
   const dict = await getDictionary(lang as Lang);
 

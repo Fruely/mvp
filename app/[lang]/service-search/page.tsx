@@ -1,7 +1,6 @@
 import { isSupportedLang, type Lang } from "@/lib/i18n";
-import ServiceSearchFlow, {
-  SERVICE_SEARCH_FLOW_TEXT,
-} from "@/components/search-flow/ServiceSearchFlow";
+import ServiceSearchFlow from "@/components/search-flow/ServiceSearchFlow";
+import { SERVICE_SEARCH_FLOW_TEXT } from "@/lib/search/serviceSearchFlowText";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

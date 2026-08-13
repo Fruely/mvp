@@ -126,6 +126,7 @@ function toInitialSpecialist(
     city: profile.city,
     category: profile.categoryTitle ?? undefined,
     languages: profile.languages,
+    work_format: profile.workFormat,
     created_at: profile.createdAt,
     specialist_services: profile.services.map((service) => ({
       id: service.id,

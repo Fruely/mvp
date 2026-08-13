@@ -47,9 +47,22 @@ export default function LanguageBar({ serverLang }: LanguageBarProps) {
 
   const hasPrefix = useMemo(() => pathHasLangPrefix(pathname), [pathname]);
   const { lang: pathLang, rest } = useMemo(() => stripLangPrefix(pathname), [pathname]);
-  const activeLang = hasPrefix ? pathLang : serverLang ?? pathLang;
+  const isSpecialistsSearch =
+    pathname === "/specialists" || pathname.startsWith("/specialists/");
+  const queryLang = searchParams?.get("lang");
+  const specialistsQueryLang =
+    queryLang === "ua" || queryLang === "ru" || queryLang === "de" ? queryLang : null;
+  const activeLang = hasPrefix
+    ? pathLang
+    : specialistsQueryLang ?? serverLang ?? pathLang;
 
   const langHref = (code: Lang) => {
+    if (isSpecialistsSearch) {
+      const params = new URLSearchParams(qs);
+      params.set("lang", code);
+      const query = params.toString();
+      return query ? `${pathname}?${query}` : pathname;
+    }
     if (hasPrefix) {
       return `/${code}${rest === "/" ? "" : rest}${suffix}`;
     }
