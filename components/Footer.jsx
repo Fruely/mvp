@@ -1,3 +1,4 @@
+import FreulyLogo from "@/components/brand/FreulyLogo";
 import FooterPrefetchLink from "@/components/FooterPrefetchLink";
 import { Suspense } from "react";
 import { t } from "@/lib/i18n";
@@ -125,11 +126,8 @@ export default function Footer(props) {
       <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-10 px-4 pb-10 pt-10 sm:px-6 lg:gap-10 lg:px-16 lg:pb-12 lg:pt-14">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
           <div className="w-full max-w-[320px] shrink-0">
-            <FooterPrefetchLink href={homeHref} className="inline-flex items-center gap-2.5">
-              <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-freuly-primary text-base font-bold text-white">
-                f
-              </span>
-              <span className="text-lg font-bold text-white">freuly</span>
+            <FooterPrefetchLink href={homeHref} className="inline-flex items-center">
+              <FreulyLogo className="h-9 w-auto" />
             </FooterPrefetchLink>
             <p className="mt-4 text-sm leading-[1.6] text-freuly-text-secondary">
               {t(dict, "footer.tagline")}

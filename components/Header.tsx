@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { t } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/i18n";
+import FreulyLogo from "@/components/brand/FreulyLogo";
 import { publicLinkPrimaryClass } from "@/components/public/publicStyles";
 import { isPrivateDashboardPath } from "@/lib/dashboard/isPrivateDashboardPath";
 
@@ -43,12 +44,8 @@ export default function Header({ lang, dict = fallbackDict }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-freuly-border-default bg-freuly-surface">
       <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-freuly-4 sm:px-freuly-6 lg:px-freuly-16">
-        <Link href={`/${lang}`} prefetch={disablePrefetch ? false : undefined} className="flex shrink-0 items-center gap-3 transition-opacity hover:opacity-90">
-          <span
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-freuly-md bg-freuly-primary"
-            aria-hidden
-          />
-          <span className="text-[20px] font-bold tracking-tight text-freuly-text-primary">FREULY</span>
+        <Link href={`/${lang}`} prefetch={disablePrefetch ? false : undefined} className="flex shrink-0 items-center transition-opacity hover:opacity-90">
+          <FreulyLogo className="h-10 w-auto" priority />
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
