@@ -83,5 +83,18 @@ export function serializeHomepageInitialData(data: HomepageInitialData): Homepag
     popularCategories: data.popularCategories.map(toPopularCategoryDto),
     homepageParentSlotSlugs: data.homepageParentSlotSlugs,
     recommendedSpecialists: toHomepageRecommendedDto(data.recommendedSpecialists),
+    starMap: {
+      total: data.starMap.total,
+      cities: data.starMap.cities.map((city) => ({
+        city: city.city,
+        lat: city.lat,
+        lng: city.lng,
+        count: city.count,
+        recentCount: city.recentCount,
+      })),
+      eligibleCount: data.starMap.eligibleCount,
+      representedCount: data.starMap.representedCount,
+      missingCoordinatesCount: data.starMap.missingCoordinatesCount,
+    },
   };
 }

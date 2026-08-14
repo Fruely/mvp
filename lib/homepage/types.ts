@@ -67,9 +67,26 @@ export type HomepageRecommendedSpecialist = {
   badges?: RecommendationBadge[];
 };
 
+export type HomepageStarMapCity = {
+  city: string;
+  lat: number;
+  lng: number;
+  count: number;
+  recentCount: number;
+};
+
+export type HomepageStarMapData = {
+  total: number;
+  cities: HomepageStarMapCity[];
+  eligibleCount: number;
+  representedCount: number;
+  missingCoordinatesCount: number;
+};
+
 export type HomepageInitialData = {
   categories: HomepageCategoryStat[];
   popularCategories: HomepagePopularCategory[];
   recommendedSpecialists: HomepageRecommendedSpecialist[];
   homepageParentSlotSlugs: string[];
+  starMap: HomepageStarMapData;
 };

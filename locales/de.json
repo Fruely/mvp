@@ -2,6 +2,26 @@
   "home": {
     "hero": {
       "popularTags": "Psychologen • Anwälte • Nachhilfe • Migration"
+    },
+    "starMap": {
+      "kicker": "FREULY WÄCHST",
+      "title": "Entzünde deinen Stern auf der Freuly-Karte",
+      "titleMobile": "Entzünde deinen Stern",
+      "description": "Jede neue Fachkraft macht die Plattform sichtbarer. Werden Sie Teil von Freuly — vielleicht erscheint auch Ihre Stadt auf der Karte.",
+      "primaryCta": "Spezialist werden",
+      "secondaryCta": "Fachkraft finden →",
+      "counter": {
+        "one": "{{count}} Fachkraft bereits auf der Karte",
+        "many": "{{count}} Fachkräfte bereits auf der Karte"
+      },
+      "specialists": {
+        "one": "{{count}} Fachkraft",
+        "many": "{{count}} Fachkräfte"
+      },
+      "recent": {
+        "one": "{{count}} neu in den letzten 7 Tagen",
+        "many": "{{count}} neu in den letzten 7 Tagen"
+      }
     }
   },
   "search": {

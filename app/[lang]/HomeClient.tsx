@@ -12,6 +12,7 @@ import HomeServiceSearchSection from "@/components/home/HomeServiceSearchSection
 import VariantCCategoryIcon from "@/components/home/variantC/VariantCCategoryIcon";
 import VariantCSpecialistCard from "@/components/home/variantC/VariantCSpecialistCard";
 import VariantCHowItWorksSteps from "@/components/home/variantC/VariantCHowItWorksSteps";
+import StarMapSection from "@/components/starMap/StarMapSection";
 import type { HomepageInitialData } from "@/lib/homepage/types";
 import {
   publicCardClass,
@@ -28,6 +29,13 @@ const EMPTY_HOMEPAGE_DATA: HomepageInitialData = {
   popularCategories: [],
   recommendedSpecialists: [],
   homepageParentSlotSlugs: [],
+  starMap: {
+    total: 0,
+    cities: [],
+    eligibleCount: 0,
+    representedCount: 0,
+    missingCoordinatesCount: 0,
+  },
 };
 
 export default function HomeClient({
@@ -44,6 +52,7 @@ export default function HomeClient({
   const [popularCategories] = useState(data.popularCategories);
   const [recommendedSpecialists] = useState(data.recommendedSpecialists);
   const [homepageParentSlotSlugs] = useState(data.homepageParentSlotSlugs);
+  const [starMap] = useState(data.starMap);
   const [error] = useState<string | null>(null);
   const isPopularLoading = false;
   const isRecommendedLoading = false;
@@ -177,10 +186,12 @@ export default function HomeClient({
               </div>
             }
           >
-            <HomeServiceSearchSection
-              lang={lang}
-              className="mx-auto mt-10 max-w-[820px]"
-            />
+            <div id="home-service-search">
+              <HomeServiceSearchSection
+                lang={lang}
+                className="mx-auto mt-10 max-w-[820px]"
+              />
+            </div>
           </Suspense>
 
           <div className="mx-auto mt-10 inline-flex max-w-full flex-wrap items-center justify-center gap-3.5">
@@ -309,6 +320,8 @@ export default function HomeClient({
           <VariantCHowItWorksSteps dict={dict} />
         </div>
       </section>
+
+      <StarMapSection lang={lang} dict={dict} data={starMap} />
 
       {/* Recommended specialists */}
       {(isRecommendedLoading || recommendedSpecialists.length > 0) && (

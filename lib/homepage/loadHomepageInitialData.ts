@@ -6,9 +6,11 @@ import { fetchHomepageParentCategorySlotSlugs } from "@/lib/homepage/fetchParent
 import {
   fetchRecommendedSpecialistsCached,
 } from "@/lib/homepage/fetchRecommendedSpecialists";
+import { fetchStarMapDataCached } from "@/lib/homepage/fetchStarMapData";
+import { HOMEPAGE_DATA_REVALIDATE_SECONDS } from "@/lib/homepage/constants";
 import type { HomepageInitialData } from "@/lib/homepage/types";
 
-export const HOMEPAGE_DATA_REVALIDATE_SECONDS = 300;
+export { HOMEPAGE_DATA_REVALIDATE_SECONDS };
 
 const cachedParentCategories = unstable_cache(
   fetchHomepageParentCategories,
@@ -29,12 +31,13 @@ const cachedParentCategorySlots = unstable_cache(
 );
 
 async function loadHomepageInitialDataUncached(lang: Lang): Promise<HomepageInitialData> {
-  const [categoriesResult, popularCategoriesResult, slotsResult, recommendedResult] =
+  const [categoriesResult, popularCategoriesResult, slotsResult, recommendedResult, starMapResult] =
     await Promise.allSettled([
       cachedParentCategories(),
       cachedPopularCategories(),
       cachedParentCategorySlots(),
       fetchRecommendedSpecialistsCached(lang),
+      fetchStarMapDataCached(),
     ]);
 
   let categories =
@@ -56,6 +59,16 @@ async function loadHomepageInitialDataUncached(lang: Lang): Promise<HomepageInit
       slotsResult.status === "fulfilled" ? slotsResult.value : [],
     recommendedSpecialists:
       recommendedResult.status === "fulfilled" ? recommendedResult.value : [],
+    starMap:
+      starMapResult.status === "fulfilled"
+        ? starMapResult.value
+        : {
+            total: 0,
+            cities: [],
+            eligibleCount: 0,
+            representedCount: 0,
+            missingCoordinatesCount: 0,
+          },
   };
 }
 
@@ -71,11 +84,13 @@ export function loadHomepageInitialData(lang: Lang): Promise<HomepageInitialData
 export async function loadHomepageCriticalData(
   lang: Lang
 ): Promise<Omit<HomepageInitialData, "recommendedSpecialists">> {
-  const [categoriesResult, popularCategoriesResult, slotsResult] = await Promise.allSettled([
-    cachedParentCategories(),
-    cachedPopularCategories(),
-    cachedParentCategorySlots(),
-  ]);
+  const [categoriesResult, popularCategoriesResult, slotsResult, starMapResult] =
+    await Promise.allSettled([
+      cachedParentCategories(),
+      cachedPopularCategories(),
+      cachedParentCategorySlots(),
+      fetchStarMapDataCached(),
+    ]);
 
   if (categoriesResult.status === "rejected") {
     console.error("[homepage/loadCriticalData] categories failed", categoriesResult.reason);
@@ -87,5 +102,15 @@ export async function loadHomepageCriticalData(
       popularCategoriesResult.status === "fulfilled" ? popularCategoriesResult.value : [],
     homepageParentSlotSlugs:
       slotsResult.status === "fulfilled" ? slotsResult.value : [],
+    starMap:
+      starMapResult.status === "fulfilled"
+        ? starMapResult.value
+        : {
+            total: 0,
+            cities: [],
+            eligibleCount: 0,
+            representedCount: 0,
+            missingCoordinatesCount: 0,
+          },
   };
 }
