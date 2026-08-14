@@ -10,7 +10,10 @@ import StarMapMarker from "@/components/starMap/StarMapMarker";
 import StarMapTooltip from "@/components/starMap/StarMapTooltip";
 import { GERMANY_STAR_MAP_BOUNDS, GERMANY_STAR_MAP_VIEWBOX } from "@/lib/starMap/constants";
 import { projectStarMapCities } from "@/lib/starMap/clusterStarMapPoints";
-import { percentToViewBox } from "@/lib/starMap/projectCoordinates";
+import {
+  containPointInSilhouette,
+  percentToViewBox,
+} from "@/lib/starMap/projectCoordinates";
 import type { StarMapMarkerPoint, StarMapSummary } from "@/lib/starMap/types";
 
 type GermanyStarMapProps = {
@@ -42,7 +45,8 @@ export default function GermanyStarMap({
     () =>
       projectStarMapCities(data.cities, GERMANY_STAR_MAP_BOUNDS).map((point) => {
         const view = percentToViewBox(point.x, point.y, GERMANY_STAR_MAP_VIEWBOX);
-        return { ...point, x: view.x, y: view.y };
+        const safe = containPointInSilhouette(view.x, view.y);
+        return { ...point, x: safe.x, y: safe.y };
       }),
     [data.cities],
   );
@@ -80,7 +84,7 @@ export default function GermanyStarMap({
   return (
     <div
       ref={rootRef}
-      className={`relative mx-auto w-full max-w-[340px] md:max-w-[520px] ${className ?? ""}`}
+      className={`relative mx-auto w-full max-w-[340px] md:max-w-[520px] lg:max-w-[480px] ${className ?? ""}`}
     >
       <div className="relative aspect-square w-full">
         <svg

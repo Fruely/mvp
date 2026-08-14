@@ -16,21 +16,21 @@ export default function StarMapSection({ lang, dict, data }: StarMapSectionProps
   const counterLabel = tCount(dict, lang, "home.starMap.counter", data.total);
 
   return (
-    <section className="bg-[#0D2B2A] px-6 py-12 md:px-8 md:py-20 lg:py-20">
-      <div className="mx-auto flex max-w-[1160px] flex-col items-center gap-8 md:gap-10 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+    <section className="bg-[#0D2B2A] px-6 py-12 md:px-8 md:py-20 lg:box-border lg:flex lg:h-[520px] lg:items-center lg:py-5">
+      <div className="mx-auto flex w-full max-w-[1160px] flex-col items-center gap-8 md:gap-10 lg:h-full lg:flex-row lg:items-center lg:justify-between lg:gap-10">
         <div className="flex w-full flex-col items-center text-center lg:w-[55%] lg:items-start lg:text-left">
           <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#5ECEC3]">
             {t(dict, "home.starMap.kicker")}
           </p>
-          <h2 className="mt-4 max-w-[440px] text-[26px] font-bold leading-8 text-white md:text-[36px] md:leading-[44px]">
+          <h2 className="mt-3 max-w-[440px] text-[26px] font-bold leading-8 text-white md:text-[36px] md:leading-[44px]">
             <span className="md:hidden">{t(dict, "home.starMap.titleMobile")}</span>
             <span className="hidden md:inline">{t(dict, "home.starMap.title")}</span>
           </h2>
-          <p className="mt-4 max-w-[440px] text-sm leading-[22px] text-[#B8D4D2] md:text-base md:leading-[26px]">
+          <p className="mt-3 max-w-[440px] text-sm leading-[22px] text-[#B8D4D2] md:text-base md:leading-[26px]">
             {t(dict, "home.starMap.description")}
           </p>
 
-          <div className="mt-8 hidden flex-col items-start gap-4 lg:flex">
+          <div className="mt-6 hidden flex-col items-start gap-3 lg:flex">
             <div className="flex flex-wrap items-center gap-6">
               <Link
                 href={`/${lang}/become-specialist`}
