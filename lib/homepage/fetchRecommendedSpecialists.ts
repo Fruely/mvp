@@ -3,11 +3,20 @@ import { unstable_cache } from "next/cache";
 import { resolveProfileContent, toContentLocale } from "@/lib/localization";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 import type { HomepageRecommendedSpecialist } from "@/lib/homepage/types";
+import {
+  buildPrioritizedOrderedPool,
+  isPremiumPlacement,
+  premiumSort,
+  selectCategoryDiverseSpecialists,
+  seededShuffle,
+  utcDaySeed,
+  utcHalfDaySeed,
+} from "@/lib/homepage/recommendedSelection";
 
 /**
- * Homepage recommended grid: 3 rows x 4 cards.
+ * Homepage recommended grid: 3 rows x 4 cards (Variant C displays the first row only).
  *
- * Row 1: founder / first-50 rotation.
+ * Row 1: category-diverse homepage quartet (seeded, priority-aware).
  * Row 2: premium placement rotation.
  * Row 3: mostly premium backfill + discovery slots for newer non-premium specialists.
  */
@@ -42,41 +51,6 @@ type SelectedSpecialist = SpecialistRow & {
   placement_group: PlacementGroup;
   badges: RecommendationBadge[];
 };
-
-function mulberry32(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a += 0x6d2b79f5;
-    let t = Math.imul(a ^ (a >>> 15), a | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function seededShuffle<T>(items: T[], seed: number): T[] {
-  const rng = mulberry32(seed);
-  const next = [...items];
-  for (let i = next.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(rng() * (i + 1));
-    [next[i], next[j]] = [next[j], next[i]];
-  }
-  return next;
-}
-
-function utcDaySeed(d: Date): number {
-  const y = d.getUTCFullYear();
-  const m = d.getUTCMonth() + 1;
-  const day = d.getUTCDate();
-  return (y * 10000 + m * 100 + day) >>> 0;
-}
-
-function utcHalfDaySeed(d: Date): number {
-  return Math.floor(d.getTime() / (12 * 60 * 60 * 1000)) >>> 0;
-}
-
-function isPremiumPlacement(row: SpecialistRow): boolean {
-  return row.is_featured === true || row.status === "featured_verified";
-}
 
 function normalizePrice(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -165,13 +139,16 @@ function discoveryBadges(row: SpecialistRow): RecommendationBadge[] {
   return badges;
 }
 
-function premiumSort(a: SpecialistRow, b: SpecialistRow): number {
-  const ap = typeof a.featured_priority === "number" ? a.featured_priority : 0;
-  const bp = typeof b.featured_priority === "number" ? b.featured_priority : 0;
-  if (bp !== ap) return bp - ap;
-  const at = a.published_at ? Date.parse(a.published_at) : 0;
-  const bt = b.published_at ? Date.parse(b.published_at) : 0;
-  return bt - at;
+function homepageQuartetBadges(row: SpecialistRow): RecommendationBadge[] {
+  if (row.founder_badge === true) return founderBadges(row);
+  if (isPremiumPlacement(row)) return premiumBadges(row);
+  return discoveryBadges(row);
+}
+
+function homepageQuartetPlacementGroup(row: SpecialistRow): PlacementGroup {
+  if (row.founder_badge === true) return "founder";
+  if (isPremiumPlacement(row)) return "premium";
+  return "discovery";
 }
 
 function visibleQuery(supabase: ReturnType<typeof createSupabaseServerClient>) {
@@ -209,23 +186,35 @@ function selectRecommendedRows(
   const seedHalfDay = utcHalfDaySeed(now);
   const used = new Set<string>();
 
-  const founderOrdered = seededShuffle(founderPool, seedDay ^ 0x4f4e4445);
-  let founderPick = takeUniqueById(
-    founderOrdered,
-    used,
-    FOUNDER_ROW_SIZE,
-    "founder",
-    founderBadges
+  const prioritizedPool = buildPrioritizedOrderedPool(
+    founderPool,
+    premiumPool,
+    discoveryPool,
+    seedDay,
+    seedHalfDay,
   );
+  const homepageQuartet = selectCategoryDiverseSpecialists(
+    prioritizedPool.length > 0 ? prioritizedPool : base,
+    seedHalfDay ^ 0x484f4d45,
+    FOUNDER_ROW_SIZE,
+  );
+  let founderPick: SelectedSpecialist[] = homepageQuartet.map((row) => {
+    used.add(row.id);
+    return {
+      ...row,
+      placement_group: homepageQuartetPlacementGroup(row),
+      badges: homepageQuartetBadges(row),
+    };
+  });
 
   if (founderPick.length < FOUNDER_ROW_SIZE) {
-    const backfill = base.filter((s) => !used.has(s.id) && s.founder_badge !== true);
+    const backfill = base.filter((s) => !used.has(s.id));
     const extra = takeUniqueById(
       seededShuffle(backfill, seedDay ^ 0x424b46),
       used,
       FOUNDER_ROW_SIZE - founderPick.length,
       "general",
-      discoveryBadges
+      discoveryBadges,
     );
     founderPick = [...founderPick, ...extra];
   }
