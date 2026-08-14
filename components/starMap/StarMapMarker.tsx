@@ -1,10 +1,10 @@
 "use client";
 
-import { dotSizeForCount } from "@/lib/starMap/projectCoordinates";
-import type { StarMapRenderable } from "@/lib/starMap/types";
+import { svgDotRadiusForCount } from "@/lib/starMap/projectCoordinates";
+import type { StarMapMarkerPoint } from "@/lib/starMap/types";
 
 type StarMapMarkerProps = {
-  marker: StarMapRenderable;
+  marker: StarMapMarkerPoint;
   index: number;
   isActive: boolean;
   reduceMotion: boolean;
@@ -22,8 +22,7 @@ export default function StarMapMarker({
   onDeactivate,
   ariaLabel,
 }: StarMapMarkerProps) {
-  const isCluster = marker.kind === "cluster";
-  const radius = isCluster ? 7 : dotSizeForCount(marker.count) / 2;
+  const radius = svgDotRadiusForCount(marker.count);
   const hasPulse = marker.recentCount > 0 && !reduceMotion;
   const delay = reduceMotion ? 0 : index * 0.04;
   const scale = isActive ? 1.4 : 1;
@@ -40,12 +39,12 @@ export default function StarMapMarker({
     >
       {hasPulse ? (
         <circle
-          r={radius * 1.6}
+          r={radius + 4}
           fill="none"
           stroke="#5ECEC3"
-          strokeWidth="0.35"
+          strokeWidth="1.2"
           className="star-map-pulse"
-          opacity="0.8"
+          pointerEvents="none"
         />
       ) : null}
       <circle
@@ -53,10 +52,8 @@ export default function StarMapMarker({
         tabIndex={0}
         r={radius}
         fill="#5ECEC3"
-        className="cursor-pointer transition-[transform] duration-200 ease-out focus:outline-none"
-        style={{
-          filter: "drop-shadow(0 0 12px rgba(94, 206, 195, 0.6))",
-        }}
+        className="cursor-pointer focus:outline-none"
+        style={{ filter: "drop-shadow(0 0 6px rgba(94, 206, 195, 0.65))" }}
         aria-label={ariaLabel}
         aria-expanded={isActive}
         onMouseEnter={() => onActivate(marker.id)}
@@ -74,18 +71,6 @@ export default function StarMapMarker({
         }}
         onClick={() => onActivate(marker.id)}
       />
-      {isCluster ? (
-        <text
-          textAnchor="middle"
-          dominantBaseline="central"
-          fill="#0D2B2A"
-          fontSize="4.5"
-          fontWeight="700"
-          pointerEvents="none"
-        >
-          {marker.count}
-        </text>
-      ) : null}
     </g>
   );
 }

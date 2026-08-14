@@ -3,12 +3,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { tCount } from "@/lib/i18n";
-import GermanySilhouette from "@/components/starMap/GermanySilhouette";
+import GermanySilhouettePath, {
+  GERMANY_SILHOUETTE_VIEWBOX,
+} from "@/components/starMap/GermanySilhouette";
 import StarMapMarker from "@/components/starMap/StarMapMarker";
 import StarMapTooltip from "@/components/starMap/StarMapTooltip";
-import { GERMANY_STAR_MAP_BOUNDS } from "@/lib/starMap/constants";
-import { clusterStarMapPoints } from "@/lib/starMap/clusterStarMapPoints";
-import type { StarMapSummary } from "@/lib/starMap/types";
+import { GERMANY_STAR_MAP_BOUNDS, GERMANY_STAR_MAP_VIEWBOX } from "@/lib/starMap/constants";
+import { projectStarMapCities } from "@/lib/starMap/clusterStarMapPoints";
+import { percentToViewBox } from "@/lib/starMap/projectCoordinates";
+import type { StarMapMarkerPoint, StarMapSummary } from "@/lib/starMap/types";
 
 type GermanyStarMapProps = {
   data: StarMapSummary;
@@ -16,8 +19,6 @@ type GermanyStarMapProps = {
   lang: Lang;
   className?: string;
 };
-
-const MAP_SIZE_PX = 520;
 
 export default function GermanyStarMap({
   data,
@@ -28,7 +29,6 @@ export default function GermanyStarMap({
   const rootRef = useRef<HTMLDivElement>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [reduceMotion, setReduceMotion] = useState(false);
-  const [mapWidth, setMapWidth] = useState(MAP_SIZE_PX);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -38,27 +38,13 @@ export default function GermanyStarMap({
     return () => media.removeEventListener("change", update);
   }, []);
 
-  useEffect(() => {
-    const node = rootRef.current;
-    if (!node) return;
-
-    const observer = new ResizeObserver((entries) => {
-      const width = entries[0]?.contentRect.width;
-      if (width && width > 0) setMapWidth(width);
-    });
-    observer.observe(node);
-    setMapWidth(node.getBoundingClientRect().width || MAP_SIZE_PX);
-    return () => observer.disconnect();
-  }, []);
-
-  const markers = useMemo(
+  const markers: StarMapMarkerPoint[] = useMemo(
     () =>
-      clusterStarMapPoints(data.cities, {
-        bounds: GERMANY_STAR_MAP_BOUNDS,
-        mapWidthPx: mapWidth,
-        mapHeightPx: mapWidth,
+      projectStarMapCities(data.cities, GERMANY_STAR_MAP_BOUNDS).map((point) => {
+        const view = percentToViewBox(point.x, point.y, GERMANY_STAR_MAP_VIEWBOX);
+        return { ...point, x: view.x, y: view.y };
       }),
-    [data.cities, mapWidth],
+    [data.cities],
   );
 
   const activeMarker = markers.find((marker) => marker.id === activeId) ?? null;
@@ -78,28 +64,32 @@ export default function GermanyStarMap({
 
   const tooltipPosition = useMemo(() => {
     if (!activeMarker) return null;
-    const left = `${activeMarker.x}%`;
-    const top = `${activeMarker.y}%`;
-    const flipX = activeMarker.x > 68;
-    const flipY = activeMarker.y > 72;
+    const xPercent = (activeMarker.x / GERMANY_STAR_MAP_VIEWBOX.width) * 100;
+    const yPercent = (activeMarker.y / GERMANY_STAR_MAP_VIEWBOX.height) * 100;
+    const flipX = xPercent > 68;
+    const flipY = yPercent > 72;
     return {
-      left,
-      top,
-      transform: `translate(${flipX ? "-108%" : "8%"}, ${flipY ? "-115%" : "8%"})`,
+      left: `${xPercent}%`,
+      top: `${yPercent}%`,
+      transform: `translate(${flipX ? "-108%" : "12px"}, ${flipY ? "-115%" : "12px"})`,
     };
   }, [activeMarker]);
 
   const tooltipId = activeMarker ? `star-map-tooltip-${activeMarker.id}` : undefined;
 
   return (
-    <div ref={rootRef} className={`relative mx-auto w-full max-w-[520px] ${className ?? ""}`}>
+    <div
+      ref={rootRef}
+      className={`relative mx-auto w-full max-w-[340px] md:max-w-[520px] ${className ?? ""}`}
+    >
       <div className="relative aspect-square w-full">
-        <GermanySilhouette className="absolute inset-[4%] h-[92%] w-[92%]" />
         <svg
-          viewBox="0 0 100 100"
-          className="absolute inset-0 h-full w-full overflow-visible"
-          aria-hidden={markers.length === 0}
+          viewBox={GERMANY_SILHOUETTE_VIEWBOX}
+          className="h-full w-full overflow-visible"
+          role="img"
+          aria-label={tCount(dict, lang, "home.starMap.counter", data.total)}
         >
+          <GermanySilhouettePath />
           {markers.map((marker, index) => (
             <StarMapMarker
               key={marker.id}
