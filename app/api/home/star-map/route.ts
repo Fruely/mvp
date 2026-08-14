@@ -8,6 +8,9 @@ export async function GET() {
       {
         total: data.total,
         cities: data.cities,
+        eligibleCount: data.eligibleCount,
+        representedCount: data.representedCount,
+        missingCoordinatesCount: data.missingCoordinatesCount,
       },
       {
         headers: {
