@@ -23,8 +23,8 @@ const EMPTY_STAR_MAP: StarMapSummary = {
 
 type SpecialistRow = {
   id: string;
-  lat: number | null;
-  lng: number | null;
+  lat: number | string | null;
+  lng: number | string | null;
   postal_code: string | null;
   published_at: string | null;
   created_at: string | null;
@@ -32,6 +32,15 @@ type SpecialistRow = {
 
 function mapTimestamp(row: SpecialistRow): string | null {
   return row.published_at ?? row.created_at ?? null;
+}
+
+function asCoord(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
 }
 
 async function fetchStarMapDataUncached(): Promise<StarMapSummary> {
@@ -80,8 +89,8 @@ async function fetchStarMapDataUncached(): Promise<StarMapSummary> {
   }
 
   const inputs: StarMapSpecialistInput[] = rows.map((row) => ({
-    lat: typeof row.lat === "number" ? row.lat : null,
-    lng: typeof row.lng === "number" ? row.lng : null,
+    lat: asCoord(row.lat),
+    lng: asCoord(row.lng),
     city: profileCityById.get(row.id) ?? null,
     postalCode: normalizePostalCode(row.postal_code),
     mapTimestamp: mapTimestamp(row),
@@ -107,8 +116,8 @@ async function fetchStarMapDataUncached(): Promise<StarMapSummary> {
     } else {
       plzLookups = (plzRows ?? []).map((row) => ({
         postal_code: String(row.postal_code),
-        lat: typeof row.lat === "number" ? row.lat : null,
-        lng: typeof row.lng === "number" ? row.lng : null,
+        lat: asCoord(row.lat),
+        lng: asCoord(row.lng),
         city: null,
       }));
     }
@@ -119,7 +128,7 @@ async function fetchStarMapDataUncached(): Promise<StarMapSummary> {
 
 export const fetchStarMapDataCached = unstable_cache(
   fetchStarMapDataUncached,
-  ["homepage-star-map-summary-v2"],
+  ["homepage-star-map-summary-v3"],
   { revalidate: HOMEPAGE_DATA_REVALIDATE_SECONDS },
 );
 
