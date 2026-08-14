@@ -22,23 +22,13 @@ const EMPTY_STAR_MAP: StarMapSummary = {
 };
 
 type SpecialistRow = {
+  id: string;
   lat: number | null;
   lng: number | null;
   postal_code: string | null;
   published_at: string | null;
   created_at: string | null;
-  specialist_profiles:
-    | { city: string | null }
-    | { city: string | null }[]
-    | null;
 };
-
-function profileCity(row: SpecialistRow): string | null {
-  const raw = row.specialist_profiles;
-  if (!raw) return null;
-  if (Array.isArray(raw)) return raw[0]?.city ?? null;
-  return raw.city ?? null;
-}
 
 function mapTimestamp(row: SpecialistRow): string | null {
   return row.published_at ?? row.created_at ?? null;
@@ -55,9 +45,7 @@ async function fetchStarMapDataUncached(): Promise<StarMapSummary> {
 
   const { data, error } = await supabase
     .from("specialists")
-    .select(
-      "lat, lng, postal_code, published_at, created_at, specialist_profiles(city)",
-    )
+    .select("id, lat, lng, postal_code, published_at, created_at")
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
     .eq("is_active", true)
     .eq("is_visible", true)
@@ -70,10 +58,31 @@ async function fetchStarMapDataUncached(): Promise<StarMapSummary> {
   }
 
   const rows = (data ?? []) as SpecialistRow[];
+  const specialistIds = rows.map((row) => row.id).filter(Boolean);
+
+  const profileCityById = new Map<string, string>();
+  if (specialistIds.length > 0) {
+    const { data: profiles, error: profilesError } = await supabase
+      .from("specialist_profiles")
+      .select("specialist_id, city")
+      .in("specialist_id", specialistIds);
+
+    if (profilesError) {
+      console.error("[homepage/fetchStarMapData] profiles query failed", profilesError.message);
+    } else {
+      for (const profile of profiles ?? []) {
+        if (typeof profile?.specialist_id === "string" && typeof profile.city === "string") {
+          const trimmed = profile.city.trim();
+          if (trimmed) profileCityById.set(profile.specialist_id, trimmed);
+        }
+      }
+    }
+  }
+
   const inputs: StarMapSpecialistInput[] = rows.map((row) => ({
     lat: typeof row.lat === "number" ? row.lat : null,
     lng: typeof row.lng === "number" ? row.lng : null,
-    city: profileCity(row),
+    city: profileCityById.get(row.id) ?? null,
     postalCode: normalizePostalCode(row.postal_code),
     mapTimestamp: mapTimestamp(row),
   }));
@@ -90,13 +99,18 @@ async function fetchStarMapDataUncached(): Promise<StarMapSummary> {
   if (plzCodes.length > 0) {
     const { data: plzRows, error: plzError } = await supabase
       .from("postal_codes")
-      .select("postal_code, lat, lng, city")
+      .select("postal_code, lat, lng")
       .in("postal_code", plzCodes);
 
     if (plzError) {
       console.error("[homepage/fetchStarMapData] postal_codes lookup failed", plzError.message);
     } else {
-      plzLookups = (plzRows ?? []) as PostalCodeLookup[];
+      plzLookups = (plzRows ?? []).map((row) => ({
+        postal_code: String(row.postal_code),
+        lat: typeof row.lat === "number" ? row.lat : null,
+        lng: typeof row.lng === "number" ? row.lng : null,
+        city: null,
+      }));
     }
   }
 
@@ -105,7 +119,7 @@ async function fetchStarMapDataUncached(): Promise<StarMapSummary> {
 
 export const fetchStarMapDataCached = unstable_cache(
   fetchStarMapDataUncached,
-  ["homepage-star-map-summary"],
+  ["homepage-star-map-summary-v2"],
   { revalidate: HOMEPAGE_DATA_REVALIDATE_SECONDS },
 );
 
