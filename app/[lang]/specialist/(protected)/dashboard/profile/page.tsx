@@ -11,8 +11,6 @@ import VerificationBanner from "../VerificationBanner";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
 import { resolveSpecialistEntitlements } from "@/lib/billing/planEntitlements";
 import { getDashboardCategoryOptions } from "@/lib/categories/dashboardCategoryOptions";
-import DashboardPerfProbe from "@/components/dashboard/DashboardPerfProbe";
-import { measureDashboardPerf } from "@/lib/dashboard/requestPerf";
 
 export default async function SpecialistDashboardProfilePage({
   params,
@@ -34,8 +32,7 @@ export default async function SpecialistDashboardProfilePage({
   }
 
   const [specExtraResult, profileResult, servicesResult, categoriesRows, plan] =
-    await measureDashboardPerf("page_data", () =>
-      Promise.all([
+    await Promise.all([
       service
         .from("specialists")
         .select(
@@ -53,10 +50,9 @@ export default async function SpecialistDashboardProfilePage({
         .select("id, title, price_from, is_active, price_comment")
         .eq("specialist_id", specialist.id)
         .order("created_at", { ascending: false }),
-      measureDashboardPerf("category_options", () => getDashboardCategoryOptions()),
+      getDashboardCategoryOptions(),
       getSpecialistPlanForDashboard(service, specialist.id),
-    ]),
-    );
+    ]);
 
   const specExtra = specExtraResult.data;
   const profile = profileResult.data;
@@ -146,7 +142,6 @@ export default async function SpecialistDashboardProfilePage({
         }}
         categories={categoriesRows}
       />
-      <DashboardPerfProbe route="profile" />
     </div>
   );
 }

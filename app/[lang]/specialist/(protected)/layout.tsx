@@ -1,15 +1,8 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import {
-  getCurrentUserAndSpecialist,
-  getSpecialistOnboardingGateState,
-} from "@/lib/specialists/server";
-import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
-import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
+import { getDashboardContext } from "@/lib/dashboard/getDashboardContext";
 import DashboardShell from "@/components/dashboard/DashboardShell";
-import DashboardPerfProbe from "@/components/dashboard/DashboardPerfProbe";
 import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
-import { measureDashboardPerf } from "@/lib/dashboard/requestPerf";
 
 function isOnboardingAllowedPath(pathname: string, lang: Lang): boolean {
   const dashboardBase = `/${lang}/specialist/dashboard`;
@@ -37,16 +30,9 @@ export default async function SpecialistProtectedLayout({
 }) {
   const resolved = await Promise.resolve(params);
   const lang: Lang = isSupportedLang(resolved.lang) ? resolved.lang : "ua";
-  const [{ specialist }, dict] = await Promise.all([
-    getCurrentUserAndSpecialist(),
-    measureDashboardPerf("dict", () => getDictionary(lang)),
-  ]);
-  const service = createServiceClient();
+  const [ctx, dict] = await Promise.all([getDashboardContext(), getDictionary(lang)]);
+  const { specialist, gate, plan } = ctx;
   const pathname = headers().get("x-freuly-pathname") || "";
-  const [gate, plan] = await Promise.all([
-    getSpecialistOnboardingGateState(specialist, service),
-    getSpecialistPlanForDashboard(service, specialist.id),
-  ]);
 
   if (gate.state !== "published" && !isOnboardingAllowedPath(pathname, lang)) {
     const step = gate.firstIncompleteStep ?? "basic";
@@ -62,7 +48,6 @@ export default async function SpecialistProtectedLayout({
       isPublished={gate.state === "published"}
     >
       {children}
-      <DashboardPerfProbe route="layout" />
     </DashboardShell>
   );
 }

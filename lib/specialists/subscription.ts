@@ -1,6 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { cache } from "react";
-import { measureDashboardPerf } from "@/lib/dashboard/requestPerf";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 
 /**
@@ -28,30 +27,28 @@ const FALLBACK: SpecialistPlanForUi = {
 };
 
 async function loadSpecialistPlanForDashboard(specialistId: string): Promise<SpecialistPlanForUi> {
-  return measureDashboardPerf("plan", async () => {
-    const supabase = createServiceClient();
-    const { data, error } = await supabase
-      .from("specialist_plan")
-      .select("plan_code, plan_status, started_at, expires_at, grace_until")
-      .eq("specialist_id", specialistId)
-      .maybeSingle();
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("specialist_plan")
+    .select("plan_code, plan_status, started_at, expires_at, grace_until")
+    .eq("specialist_id", specialistId)
+    .maybeSingle();
 
-    if (error || !data) {
-      return { ...FALLBACK };
-    }
+  if (error || !data) {
+    return { ...FALLBACK };
+  }
 
-    const planCodeRaw = data.plan_code != null ? String(data.plan_code).trim() : "";
-    const planStatusRaw = data.plan_status != null ? String(data.plan_status).trim() : "";
+  const planCodeRaw = data.plan_code != null ? String(data.plan_code).trim() : "";
+  const planStatusRaw = data.plan_status != null ? String(data.plan_status).trim() : "";
 
-    return {
-      plan_code: planCodeRaw || FALLBACK.plan_code,
-      plan_status: planStatusRaw || FALLBACK.plan_status,
-      started_at: data.started_at != null ? String(data.started_at) : null,
-      expires_at: data.expires_at != null ? String(data.expires_at) : null,
-      grace_until: data.grace_until != null ? String(data.grace_until) : null,
-      fromDatabase: true,
-    };
-  });
+  return {
+    plan_code: planCodeRaw || FALLBACK.plan_code,
+    plan_status: planStatusRaw || FALLBACK.plan_status,
+    started_at: data.started_at != null ? String(data.started_at) : null,
+    expires_at: data.expires_at != null ? String(data.expires_at) : null,
+    grace_until: data.grace_until != null ? String(data.grace_until) : null,
+    fromDatabase: true,
+  };
 }
 
 /** Request-scoped plan lookup — dedupes layout + page reads within one navigation. */
