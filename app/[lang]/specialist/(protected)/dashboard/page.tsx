@@ -132,12 +132,64 @@ export default async function SpecialistDashboardHomePage({
     redirect(specialistLangHomePath());
   }
 
-  const { data: visitCheck } = await service
-    .from("specialists")
-    .select("first_dashboard_visit_at")
-    .eq("id", specialist.id)
-    .maybeSingle();
+  const categoryId =
+    typeof (specialist as unknown as Record<string, unknown>).category_id === "string"
+      ? ((specialist as unknown as Record<string, unknown>).category_id as string)
+      : "";
 
+  const [
+    visitCheckResult,
+    specExtraResult,
+    profileResult,
+    categoryResult,
+    servicesResult,
+    plan,
+    leadsTotalResult,
+    leadsNewResult,
+    profileViewsResult,
+  ] = await Promise.all([
+    service
+      .from("specialists")
+      .select("first_dashboard_visit_at")
+      .eq("id", specialist.id)
+      .maybeSingle(),
+    service
+      .from("specialists")
+      .select(
+        "postal_code, country_code, work_format, languages, telegram_chat_id, onboarding_state, service_radius_km, lat, lng"
+      )
+      .eq("id", specialist.id)
+      .maybeSingle(),
+    service
+      .from("specialist_profiles")
+      .select("photo_url, about_me, video_url, gallery_urls, certificate_urls, city")
+      .eq("specialist_id", specialist.id)
+      .maybeSingle(),
+    categoryId
+      ? service.from("categories").select("parent_id, slug").eq("id", categoryId).maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+    service
+      .from("specialist_services")
+      .select("title, price_from, is_active, category_id")
+      .eq("specialist_id", specialist.id)
+      .eq("is_active", true),
+    getSpecialistPlanForDashboard(service, specialist.id),
+    service
+      .from("leads")
+      .select("id", { count: "exact", head: true })
+      .eq("specialist_id", specialist.id),
+    service
+      .from("leads")
+      .select("id", { count: "exact", head: true })
+      .eq("specialist_id", specialist.id)
+      .eq("status", "new"),
+    service
+      .from("profile_view_events")
+      .select("id", { count: "exact", head: true })
+      .eq("specialist_id", specialist.id),
+  ]);
+
+  const visitCheck = visitCheckResult.data;
   if (!visitCheck?.first_dashboard_visit_at) {
     await service
       .from("specialists")
@@ -151,43 +203,20 @@ export default async function SpecialistDashboardHomePage({
     });
   }
 
-  const { data: specExtra } = await service
-    .from("specialists")
-    .select(
-      "postal_code, country_code, work_format, languages, telegram_chat_id, onboarding_state, service_radius_km, lat, lng"
-    )
-    .eq("id", specialist.id)
-    .maybeSingle();
-
-  const { data: profileRow } = await service
-    .from("specialist_profiles")
-    .select("photo_url, about_me, video_url, gallery_urls, certificate_urls, city")
-    .eq("specialist_id", specialist.id)
-    .maybeSingle();
-
-  const categoryId =
-    typeof (specialist as unknown as Record<string, unknown>).category_id === "string"
-      ? ((specialist as unknown as Record<string, unknown>).category_id as string)
-      : "";
-
-  const { data: categoryRow } = await service
-    .from("categories")
-    .select("parent_id, slug")
-    .eq("id", categoryId)
-    .maybeSingle();
-
-  const categoryParentId =
-    categoryRow && typeof categoryRow.parent_id === "string" ? categoryRow.parent_id : null;
-
-  const { data: servicesRows } = await service
-    .from("specialist_services")
-    .select("title, price_from, is_active, category_id")
-    .eq("specialist_id", specialist.id)
-    .eq("is_active", true);
+  const specExtra = specExtraResult.data;
+  const profileRow = profileResult.data;
+  const categoryRow = categoryResult.data;
+  const servicesRows = servicesResult.data;
+  const { count: leadsTotal, error: leadsTotalError } = leadsTotalResult;
+  const { count: leadsNewCount, error: leadsNewError } = leadsNewResult;
+  const { count: profileViewsCount, error: profileViewsError } = profileViewsResult;
 
   const servicesInCategory = (servicesRows ?? []).filter(
     (row) => typeof row.category_id === "string" && row.category_id === categoryId,
   );
+
+  const categoryParentId =
+    categoryRow && typeof categoryRow.parent_id === "string" ? categoryRow.parent_id : null;
 
   const name = specialist.first_name?.trim() || specialist.name?.trim() || "";
   const languages = Array.isArray(specExtra?.languages)
@@ -230,7 +259,6 @@ export default async function SpecialistDashboardHomePage({
   const pricingHref = `/${lang}/pricing`;
   const leadsHref = `/${lang}/specialist/dashboard/leads`;
 
-  const plan = await getSpecialistPlanForDashboard(service, specialist.id);
   const display = getSubscriptionDisplayState(plan);
   const subscriptionNoticePick = pickDashboardSubscriptionNotice(display);
   const subscriptionNoticeCopy = subscriptionNoticePick
@@ -245,25 +273,9 @@ export default async function SpecialistDashboardHomePage({
   const subscriptionNeedsAttention =
     planStatus === "grace" || planStatus === "grace_period" || planStatus === "expired";
 
-  const { count: leadsTotal, error: leadsTotalError } = await service
-    .from("leads")
-    .select("id", { count: "exact", head: true })
-    .eq("specialist_id", specialist.id);
-
-  const { count: leadsNewCount, error: leadsNewError } = await service
-    .from("leads")
-    .select("id", { count: "exact", head: true })
-    .eq("specialist_id", specialist.id)
-    .eq("status", "new");
-
   const leadsTotalSafe =
     !leadsTotalError && typeof leadsTotal === "number" ? leadsTotal : null;
   const leadsNewSafe = !leadsNewError && typeof leadsNewCount === "number" ? leadsNewCount : null;
-
-  const { count: profileViewsCount, error: profileViewsError } = await service
-    .from("profile_view_events")
-    .select("id", { count: "exact", head: true })
-    .eq("specialist_id", specialist.id);
 
   const profileViewsTotalSafe =
     !profileViewsError && typeof profileViewsCount === "number" ? profileViewsCount : null;

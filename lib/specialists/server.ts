@@ -1,3 +1,5 @@
+import { cache } from "react";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect";
 import {
@@ -54,6 +56,14 @@ function toSpecialistRow(row: Record<string, unknown> | null): SpecialistRow | n
 const COLS =
   "id, user_id, name, email, phone, category_id, status, password_set_at";
 
+function redirectToLogin(): never {
+  const pathname = headers().get("x-freuly-pathname");
+  if (pathname && pathname.startsWith("/")) {
+    redirect(`/login?next=${encodeURIComponent(pathname)}`);
+  }
+  redirect("/login");
+}
+
 export async function getSpecialistOnboardingGateState(
   specialist: SpecialistRow,
   service = createServiceClient(),
@@ -66,19 +76,28 @@ export async function getSpecialistOnboardingGateState(
     return { state: "published", publicationReady: true, firstIncompleteStep: null };
   }
 
-  const { data: specExtra } = await service
-    .from("specialists")
-    .select(
-      "name, category_id, postal_code, country_code, work_format, languages, service_radius_km, lat, lng"
-    )
-    .eq("id", specialist.id)
-    .maybeSingle();
+  const [specExtraResult, profileResult, servicesResult] = await Promise.all([
+    service
+      .from("specialists")
+      .select(
+        "name, category_id, postal_code, country_code, work_format, languages, service_radius_km, lat, lng"
+      )
+      .eq("id", specialist.id)
+      .maybeSingle(),
+    service
+      .from("specialist_profiles")
+      .select("city")
+      .eq("specialist_id", specialist.id)
+      .maybeSingle(),
+    service
+      .from("specialist_services")
+      .select("title, price_from, is_active, category_id")
+      .eq("specialist_id", specialist.id),
+  ]);
 
-  const { data: profileRow } = await service
-    .from("specialist_profiles")
-    .select("city")
-    .eq("specialist_id", specialist.id)
-    .maybeSingle();
+  const specExtra = specExtraResult.data;
+  const profileRow = profileResult.data;
+  const servicesRows = servicesResult.data;
 
   const categoryId =
     typeof specExtra?.category_id === "string"
@@ -94,11 +113,6 @@ export async function getSpecialistOnboardingGateState(
         .eq("id", categoryId)
         .maybeSingle()
     : { data: null };
-
-  const { data: servicesRows } = await service
-    .from("specialist_services")
-    .select("title, price_from, is_active, category_id")
-    .eq("specialist_id", specialist.id);
 
   const name =
     typeof specExtra?.name === "string"
@@ -151,7 +165,7 @@ export async function getSpecialistOnboardingGateState(
   };
 }
 
-export async function getCurrentUserAndSpecialist() {
+async function getCurrentUserAndSpecialistUncached() {
   const supabase = createSupabaseServerComponentClient();
   const service = createServiceClient();
 
@@ -160,7 +174,7 @@ export async function getCurrentUserAndSpecialist() {
     const { data, error } = await supabase.auth.getUser();
 
     if (error || !data?.user) {
-      redirect("/login");
+      redirectToLogin();
     }
 
     user = data.user;
@@ -170,11 +184,11 @@ export async function getCurrentUserAndSpecialist() {
     }
 
     console.error("[auth] getUser crash", e);
-    redirect("/login");
+    redirectToLogin();
   }
 
   if (!user) {
-    redirect("/login");
+    redirectToLogin();
   }
 
   const { data: specRow, error: specError } = await service
@@ -220,3 +234,6 @@ export async function getCurrentUserAndSpecialist() {
     specialist,
   };
 }
+
+/** Request-scoped memoization — safe for auth; never crosses users or requests. */
+export const getCurrentUserAndSpecialist = cache(getCurrentUserAndSpecialistUncached);

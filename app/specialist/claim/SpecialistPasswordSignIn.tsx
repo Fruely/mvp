@@ -4,28 +4,20 @@ import { useState } from "react";
 import { getSupabase } from "@/lib/supabaseClient";
 import { specialistDashboardHrefClient } from "@/lib/specialists/dashboardHref";
 import { t, type Dictionary, type Lang } from "@/lib/i18n";
-import ruDict from "@/locales/ru.json";
-import uaDict from "@/locales/ua.json";
-import deDict from "@/locales/de.json";
-
-const LOGIN_DICTS: Record<Lang, Dictionary> = {
-  ru: ruDict as unknown as Dictionary,
-  ua: uaDict as unknown as Dictionary,
-  de: deDict as unknown as Dictionary,
-};
 
 type Props = {
-  lang?: Lang;
+  lang: Lang;
+  dict: Dictionary;
   nextPath?: string | null;
   allowPartnerSignUp?: boolean;
 };
 
 export default function SpecialistPasswordSignIn({
-  lang = "ru",
+  lang,
+  dict,
   nextPath = null,
   allowPartnerSignUp = false,
 }: Props) {
-  const dict = LOGIN_DICTS[lang] ?? LOGIN_DICTS.ru;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"signin" | "signup">("signin");

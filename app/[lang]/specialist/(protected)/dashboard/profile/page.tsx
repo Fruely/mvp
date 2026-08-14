@@ -30,13 +30,37 @@ export default async function SpecialistDashboardProfilePage({
     redirect(specialistLangHomePath());
   }
 
-  const { data: specExtra } = await service
-    .from("specialists")
-    .select(
-      "postal_code, country_code, telegram_chat_id, mobile_service, service_radius_km, work_format, languages, avatar_url, lat, lng",
-    )
-    .eq("id", specialist.id)
-    .maybeSingle();
+  const [specExtraResult, profileResult, servicesResult, categoriesResult, plan] =
+    await Promise.all([
+      service
+        .from("specialists")
+        .select(
+          "postal_code, country_code, telegram_chat_id, mobile_service, service_radius_km, work_format, languages, avatar_url, lat, lng",
+        )
+        .eq("id", specialist.id)
+        .maybeSingle(),
+      service
+        .from("specialist_profiles")
+        .select("photo_url, about_me, city, address, gallery_urls, certificate_urls, video_url")
+        .eq("specialist_id", specialist.id)
+        .maybeSingle(),
+      service
+        .from("specialist_services")
+        .select("id, title, price_from, is_active, price_comment")
+        .eq("specialist_id", specialist.id)
+        .order("created_at", { ascending: false }),
+      service
+        .from("categories")
+        .select("id, title, title_ru, title_de, title_ua, parent_id, slug")
+        .or(`parent_id.not.is.null,slug.eq.${UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG}`)
+        .order("title", { ascending: true }),
+      getSpecialistPlanForDashboard(service, specialist.id),
+    ]);
+
+  const specExtra = specExtraResult.data;
+  const profile = profileResult.data;
+  const servicesRows = servicesResult.data;
+  const categoriesRows = categoriesResult.data;
 
   const botUsername = process.env.TELEGRAM_BOT_USERNAME?.replace(/^@/, "").trim() ?? "";
   const telegramConnectHref =
@@ -44,23 +68,7 @@ export default async function SpecialistDashboardProfilePage({
       ? `https://t.me/${botUsername}?start=${encodeURIComponent(specialist.id)}`
       : null;
   const telegramConnected = Boolean(String(specExtra?.telegram_chat_id ?? "").trim());
-  const { data: profile } = await service
-    .from("specialist_profiles")
-    .select("photo_url, about_me, city, address, gallery_urls, certificate_urls, video_url")
-    .eq("specialist_id", specialist.id)
-    .maybeSingle();
-  const { data: servicesRows } = await service
-    .from("specialist_services")
-    .select("id, title, price_from, is_active, price_comment")
-    .eq("specialist_id", specialist.id)
-    .order("created_at", { ascending: false });
-  const { data: categoriesRows } = await service
-    .from("categories")
-    .select("id, title, title_ru, title_de, title_ua, parent_id, slug")
-    .or(`parent_id.not.is.null,slug.eq.${UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG}`)
-    .order("title", { ascending: true });
 
-  const plan = await getSpecialistPlanForDashboard(service, specialist.id);
   const entitlements = resolveSpecialistEntitlements(plan);
 
   return (

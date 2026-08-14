@@ -30,11 +30,12 @@ function navLinkClass(isActive: boolean): string {
 export default function Header({ lang, dict = fallbackDict }: HeaderProps) {
   const d = dict ?? fallbackDict;
   const pathname = usePathname() ?? "";
+  const cabinetHref = `/login?next=${encodeURIComponent(`/${lang}/specialist/dashboard`)}`;
 
   const navItems = [
     { href: `/${lang}/pricing`, label: t(d, "header.nav.pricing") },
     { href: `/${lang}/partners`, label: t(d, "header.nav.partners") },
-    { href: `/${lang}/specialist/dashboard`, label: t(d, "header.cabinet") },
+    { href: cabinetHref, label: t(d, "header.cabinet"), prefetch: false as const },
   ];
 
   return (
@@ -50,9 +51,17 @@ export default function Header({ lang, dict = fallbackDict }: HeaderProps) {
 
         <div className="hidden items-center gap-8 md:flex">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const isActive =
+              item.href.startsWith("/login")
+                ? pathname.includes("/specialist/dashboard") || pathname === "/login"
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (
-              <Link key={item.href} href={item.href} className={navLinkClass(isActive)}>
+              <Link
+                key={item.label}
+                href={item.href}
+                prefetch={"prefetch" in item ? item.prefetch : undefined}
+                className={navLinkClass(isActive)}
+              >
                 {item.label}
               </Link>
             );
@@ -69,7 +78,16 @@ export default function Header({ lang, dict = fallbackDict }: HeaderProps) {
 
       <div className="flex min-w-0 flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t border-freuly-border-subtle px-freuly-4 py-2.5 md:hidden">
         {navItems.map((item) => (
-          <Link key={item.href} href={item.href} className={navLinkClass(pathname === item.href)}>
+          <Link
+            key={item.label}
+            href={item.href}
+            prefetch={"prefetch" in item ? item.prefetch : undefined}
+            className={navLinkClass(
+              item.href.startsWith("/login")
+                ? pathname.includes("/specialist/dashboard") || pathname === "/login"
+                : pathname === item.href,
+            )}
+          >
             {item.label}
           </Link>
         ))}

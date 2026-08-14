@@ -1,4 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { cache } from "react";
+import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 
 /**
  * Canonical subscription snapshot for dashboard UI — always read from `specialist_plan`.
@@ -24,10 +26,8 @@ const FALLBACK: SpecialistPlanForUi = {
   fromDatabase: false,
 };
 
-export async function getSpecialistPlanForDashboard(
-  supabase: SupabaseClient,
-  specialistId: string
-): Promise<SpecialistPlanForUi> {
+async function loadSpecialistPlanForDashboard(specialistId: string): Promise<SpecialistPlanForUi> {
+  const supabase = createServiceClient();
   const { data, error } = await supabase
     .from("specialist_plan")
     .select("plan_code, plan_status, started_at, expires_at, grace_until")
@@ -49,6 +49,16 @@ export async function getSpecialistPlanForDashboard(
     grace_until: data.grace_until != null ? String(data.grace_until) : null,
     fromDatabase: true,
   };
+}
+
+/** Request-scoped plan lookup — dedupes layout + page reads within one navigation. */
+const getSpecialistPlanForDashboardCached = cache(loadSpecialistPlanForDashboard);
+
+export async function getSpecialistPlanForDashboard(
+  _supabase: SupabaseClient,
+  specialistId: string
+): Promise<SpecialistPlanForUi> {
+  return getSpecialistPlanForDashboardCached(specialistId);
 }
 
 /** Statuses counted as “active subscription” for admin MVP metrics. */

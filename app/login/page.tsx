@@ -68,11 +68,13 @@ export default async function LoginPage({ searchParams }: Props) {
 
   const allowPartnerSignUp = Boolean(safeNext?.includes("/partners/"));
   const lang = loginLangFromCookie();
+  const dict = await getDictionary(lang);
 
   return (
     <div className="min-h-[40vh] px-4 py-10">
       <SpecialistPasswordSignIn
         lang={lang}
+        dict={dict}
         nextPath={safeNext}
         allowPartnerSignUp={allowPartnerSignUp}
       />
