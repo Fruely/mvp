@@ -7,7 +7,9 @@ import {
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import DashboardShell from "@/components/dashboard/DashboardShell";
+import DashboardPerfProbe from "@/components/dashboard/DashboardPerfProbe";
 import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
+import { measureDashboardPerf } from "@/lib/dashboard/requestPerf";
 
 function isOnboardingAllowedPath(pathname: string, lang: Lang): boolean {
   const dashboardBase = `/${lang}/specialist/dashboard`;
@@ -37,7 +39,7 @@ export default async function SpecialistProtectedLayout({
   const lang: Lang = isSupportedLang(resolved.lang) ? resolved.lang : "ua";
   const [{ specialist }, dict] = await Promise.all([
     getCurrentUserAndSpecialist(),
-    getDictionary(lang),
+    measureDashboardPerf("dict", () => getDictionary(lang)),
   ]);
   const service = createServiceClient();
   const pathname = headers().get("x-freuly-pathname") || "";
@@ -60,6 +62,7 @@ export default async function SpecialistProtectedLayout({
       isPublished={gate.state === "published"}
     >
       {children}
+      <DashboardPerfProbe route="layout" />
     </DashboardShell>
   );
 }

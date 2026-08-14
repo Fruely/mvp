@@ -4,6 +4,7 @@ import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import LanguageBar from "@/components/LanguageBar";
+import { measureDashboardPerf } from "@/lib/dashboard/requestPerf";
 
 export default async function LangLayout({
   children,
@@ -20,7 +21,7 @@ export default async function LangLayout({
   const lang = resolved.lang as Lang;
   let dict;
   try {
-    dict = await getDictionary(lang);
+    dict = await measureDashboardPerf("lang_dict", () => getDictionary(lang));
   } catch (e) {
     console.error("[LangLayout] getDictionary failed", e);
     dict = (await import("@/locales/ua.json")).default as Record<string, unknown>;

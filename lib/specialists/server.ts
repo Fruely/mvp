@@ -2,6 +2,7 @@ import { cache } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect";
+import { measureDashboardPerf } from "@/lib/dashboard/requestPerf";
 import {
   getFirstIncompleteOnboardingStep,
   type RequiredOnboardingStep,
@@ -72,11 +73,12 @@ export async function getSpecialistOnboardingGateState(
   publicationReady: boolean;
   firstIncompleteStep: RequiredOnboardingStep | null;
 }> {
-  if (isPublishedSpecialistStatus(specialist.status)) {
-    return { state: "published", publicationReady: true, firstIncompleteStep: null };
-  }
+  return measureDashboardPerf("gate", async () => {
+    if (isPublishedSpecialistStatus(specialist.status)) {
+      return { state: "published", publicationReady: true, firstIncompleteStep: null };
+    }
 
-  const [specExtraResult, profileResult, servicesResult] = await Promise.all([
+    const [specExtraResult, profileResult, servicesResult] = await Promise.all([
     service
       .from("specialists")
       .select(
@@ -163,6 +165,7 @@ export async function getSpecialistOnboardingGateState(
     publicationReady,
     firstIncompleteStep: getFirstIncompleteOnboardingStep(validation),
   };
+  });
 }
 
 async function getCurrentUserAndSpecialistUncached() {
@@ -171,7 +174,7 @@ async function getCurrentUserAndSpecialistUncached() {
 
   let user;
   try {
-    const { data, error } = await supabase.auth.getUser();
+    const { data, error } = await measureDashboardPerf("auth", async () => supabase.auth.getUser());
 
     if (error || !data?.user) {
       redirectToLogin();
@@ -191,12 +194,14 @@ async function getCurrentUserAndSpecialistUncached() {
     redirectToLogin();
   }
 
-  const { data: specRow, error: specError } = await service
-    .from("specialists")
-    .select(COLS)
-    .eq("user_id", user.id)
-    .neq("status", "blocked")
-    .maybeSingle();
+  const { data: specRow, error: specError } = await measureDashboardPerf("specialist", async () =>
+    service
+      .from("specialists")
+      .select(COLS)
+      .eq("user_id", user.id)
+      .neq("status", "blocked")
+      .maybeSingle(),
+  );
 
   if (specError) {
     console.error("[specialists/server] failed to load specialist", specError);

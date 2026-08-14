@@ -18,6 +18,8 @@ import {
 } from "@/lib/leads/contactUnlock";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
+import DashboardPerfProbe from "@/components/dashboard/DashboardPerfProbe";
+import { measureDashboardPerf } from "@/lib/dashboard/requestPerf";
 
 export default async function SpecialistDashboardLeadsPage({
   params,
@@ -36,14 +38,17 @@ export default async function SpecialistDashboardLeadsPage({
     redirect(specialistLangHomePath());
   }
 
-  const [{ data, error }, plan] = await Promise.all([
-    service
-      .from("leads")
-      .select(DASHBOARD_LEAD_REDACTED_SELECT)
-      .eq("specialist_id", specialist.id)
-      .order("created_at", { ascending: false }),
-    getSpecialistPlanForDashboard(service, specialist.id),
-  ]);
+  const pageData = await measureDashboardPerf("page_data", () =>
+    Promise.all([
+      service
+        .from("leads")
+        .select(DASHBOARD_LEAD_REDACTED_SELECT)
+        .eq("specialist_id", specialist.id)
+        .order("created_at", { ascending: false }),
+      getSpecialistPlanForDashboard(service, specialist.id),
+    ]),
+  );
+  const [{ data, error }, plan] = pageData;
 
   if (error) {
     console.error("[dashboard/leads] failed to load leads", error);
@@ -61,6 +66,7 @@ export default async function SpecialistDashboardLeadsPage({
         </Alert>
       ) : null}
       <LeadsTable initialLeads={leads} lang={lang} dict={dict} />
+      <DashboardPerfProbe route="leads" />
     </div>
   );
 }

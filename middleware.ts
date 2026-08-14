@@ -21,6 +21,13 @@ function isLang(value: string): value is Lang {
 /** BCP 47: Ukrainian uses `uk` in <html lang>, URL segment stays `ua`. */
 const HTML_LANG_HEADER = "x-freuly-html-lang";
 const PATHNAME_HEADER = "x-freuly-pathname";
+const DEV_PERF_HEADER = "x-freuly-dev-perf";
+
+function applyDevPerfRequestHeaders(request: NextRequest, requestHeaders: Headers): void {
+  if (request.cookies.get(DEV_COOKIE)?.value === "1") {
+    requestHeaders.set(DEV_PERF_HEADER, "1");
+  }
+}
 
 function pathnameToHtmlLang(pathname: string): string {
   const seg = pathname.split("/").filter(Boolean)[0];
@@ -34,6 +41,7 @@ function nextWithHtmlLang(request: NextRequest, pathname: string) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(HTML_LANG_HEADER, pathnameToHtmlLang(pathname));
   requestHeaders.set(PATHNAME_HEADER, pathname);
+  applyDevPerfRequestHeaders(request, requestHeaders);
   return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
@@ -76,6 +84,7 @@ export function middleware(request: NextRequest) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set(HTML_LANG_HEADER, appLang === "ua" ? "uk" : appLang);
     requestHeaders.set(PATHNAME_HEADER, pathname);
+    applyDevPerfRequestHeaders(request, requestHeaders);
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
@@ -151,6 +160,7 @@ export function middleware(request: NextRequest) {
     requestHeaders.set(HTML_LANG_HEADER, uiLang === "ua" ? "uk" : uiLang);
     requestHeaders.set(PATHNAME_HEADER, pathname);
     requestHeaders.set(SPECIALISTS_UI_LANG_HEADER, uiLang);
+    applyDevPerfRequestHeaders(request, requestHeaders);
     const res = NextResponse.next({ request: { headers: requestHeaders } });
     res.cookies.set(LANG_COOKIE, uiLang, { path: "/" });
     return res;
@@ -163,6 +173,7 @@ export function middleware(request: NextRequest) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set(HTML_LANG_HEADER, loginLang === "ua" ? "uk" : loginLang);
     requestHeaders.set(PATHNAME_HEADER, pathname);
+    applyDevPerfRequestHeaders(request, requestHeaders);
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
@@ -191,6 +202,7 @@ export function middleware(request: NextRequest) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set(HTML_LANG_HEADER, pathnameToHtmlLang(pathname));
     requestHeaders.set(PATHNAME_HEADER, pathname);
+    applyDevPerfRequestHeaders(request, requestHeaders);
     const res = NextResponse.next({ request: { headers: requestHeaders } });
     if (pathname.startsWith("/specialist/claim")) {
       res.headers.set("Cache-Control", "private, no-store, no-cache, must-revalidate, max-age=0");
@@ -233,6 +245,7 @@ export function middleware(request: NextRequest) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set(HTML_LANG_HEADER, pathnameToHtmlLang(pathname));
     requestHeaders.set(PATHNAME_HEADER, pathname);
+    applyDevPerfRequestHeaders(request, requestHeaders);
     const res = NextResponse.next({ request: { headers: requestHeaders } });
     res.cookies.set(LANG_COOKIE, lang, { path: "/" });
     if (isPublicHomepagePath(pathname)) {
@@ -245,6 +258,7 @@ export function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(HTML_LANG_HEADER, pathnameToHtmlLang(pathname));
   requestHeaders.set(PATHNAME_HEADER, pathname);
+  applyDevPerfRequestHeaders(request, requestHeaders);
   const res = NextResponse.next({ request: { headers: requestHeaders } });
   res.cookies.set(LANG_COOKIE, lang, { path: "/" });
   return res;

@@ -39,6 +39,8 @@ import {
   dashboardLinkSecondaryClass,
 } from "@/components/dashboard/dashboardStyles";
 import VerificationBanner from "./VerificationBanner";
+import DashboardPerfProbe from "@/components/dashboard/DashboardPerfProbe";
+import { measureDashboardPerf } from "@/lib/dashboard/requestPerf";
 
 function formatDashboardDate(value: string | null, lang: string): string {
   if (!value) return "—";
@@ -148,7 +150,8 @@ export default async function SpecialistDashboardHomePage({
     leadsTotalResult,
     leadsNewResult,
     profileViewsResult,
-  ] = await Promise.all([
+  ] = await measureDashboardPerf("page_data", () =>
+    Promise.all([
     service
       .from("specialists")
       .select("first_dashboard_visit_at")
@@ -188,7 +191,8 @@ export default async function SpecialistDashboardHomePage({
       .from("profile_view_events")
       .select("id", { count: "exact", head: true })
       .eq("specialist_id", specialist.id),
-  ]);
+  ]),
+  );
 
   const visitCheck = visitCheckResult.data;
   if (!visitCheck?.first_dashboard_visit_at) {
@@ -676,6 +680,7 @@ export default async function SpecialistDashboardHomePage({
       {canUseVideoGuide ? (
         <SpecialistLaunchVideoGuide lang={lang} initialAutoShow={shouldAutoShowVideoGuide} />
       ) : null}
+      <DashboardPerfProbe route="overview" />
     </div>
   );
 }
