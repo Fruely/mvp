@@ -322,8 +322,8 @@ function StepTitle({
   compact?: boolean;
 }) {
   const titleClass = compact
-    ? "mb-4 text-xl font-semibold leading-[1.3] tracking-tight text-freuly-text-primary outline-none freuly-focus-ring"
-    : "text-[24px] font-bold leading-[1.2] tracking-tight text-freuly-text-primary outline-none sm:text-[28px] freuly-focus-ring";
+    ? "mb-4 text-lg font-semibold leading-[1.35] tracking-tight text-freuly-text-primary outline-none freuly-focus-ring"
+    : "text-[21px] font-semibold leading-[1.3] tracking-tight text-freuly-text-primary outline-none sm:text-[24px] freuly-focus-ring";
 
   if (compact) {
     return (
@@ -550,7 +550,7 @@ export default function ServiceSearchFlow({
           centered
           actions={<PrimaryButton onClick={goToServiceStep}>{text.startCta}</PrimaryButton>}
         >
-          <h1 className="mb-6 text-[24px] font-bold leading-[1.2] tracking-tight text-freuly-text-primary sm:text-[28px]">
+          <h1 className="mb-6 text-[21px] font-semibold leading-[1.3] tracking-tight text-freuly-text-primary sm:text-[24px]">
             {text.startHeadline}
           </h1>
         </FlowCard>
