@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { fetchStarMapDataCached } from "@/lib/homepage/fetchStarMapData";
+import { fetchStarMapData } from "@/lib/homepage/fetchStarMapData";
 
 export async function GET() {
   try {
-    const data = await fetchStarMapDataCached();
+    const data = await fetchStarMapData();
     return NextResponse.json(
       {
         total: data.total,

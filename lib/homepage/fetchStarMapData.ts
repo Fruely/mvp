@@ -1,8 +1,6 @@
-import { unstable_cache } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 import { normalizePostalCode } from "@/lib/specialists/geography";
-import { HOMEPAGE_DATA_REVALIDATE_SECONDS } from "@/lib/homepage/constants";
 import {
   buildStarMapSummary,
   toPublicStarMapSummary,
@@ -126,12 +124,6 @@ async function fetchStarMapDataUncached(): Promise<StarMapSummary> {
   return toPublicStarMapSummary(buildStarMapSummary(inputs, plzLookups));
 }
 
-export const fetchStarMapDataCached = unstable_cache(
-  fetchStarMapDataUncached,
-  ["homepage-star-map-summary-v3"],
-  { revalidate: HOMEPAGE_DATA_REVALIDATE_SECONDS },
-);
-
 export async function fetchStarMapData(): Promise<StarMapSummary> {
-  return fetchStarMapDataCached();
+  return fetchStarMapDataUncached();
 }

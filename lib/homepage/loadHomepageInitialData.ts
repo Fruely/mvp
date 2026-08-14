@@ -6,7 +6,7 @@ import { fetchHomepageParentCategorySlotSlugs } from "@/lib/homepage/fetchParent
 import {
   fetchRecommendedSpecialistsCached,
 } from "@/lib/homepage/fetchRecommendedSpecialists";
-import { fetchStarMapDataCached } from "@/lib/homepage/fetchStarMapData";
+import { fetchStarMapData } from "@/lib/homepage/fetchStarMapData";
 import { HOMEPAGE_DATA_REVALIDATE_SECONDS } from "@/lib/homepage/constants";
 import type { HomepageInitialData } from "@/lib/homepage/types";
 
@@ -37,7 +37,7 @@ async function loadHomepageInitialDataUncached(lang: Lang): Promise<HomepageInit
       cachedPopularCategories(),
       cachedParentCategorySlots(),
       fetchRecommendedSpecialistsCached(lang),
-      fetchStarMapDataCached(),
+      fetchStarMapData(),
     ]);
 
   let categories =
@@ -89,7 +89,7 @@ export async function loadHomepageCriticalData(
       cachedParentCategories(),
       cachedPopularCategories(),
       cachedParentCategorySlots(),
-      fetchStarMapDataCached(),
+      fetchStarMapData(),
     ]);
 
   if (categoriesResult.status === "rejected") {
