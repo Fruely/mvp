@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import HomeClient from "./HomeClient";
 import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
 import { HOME_METADATA, HREFLANG_HOME, SITE_DOMAIN } from "@/lib/seo/siteMetadata";
+import { loadHomepageInitialData } from "@/lib/homepage/loadHomepageInitialData";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -34,8 +35,13 @@ export default async function LangHomePage({
   }
 
   const lang = params.lang as Lang;
-  const dict = await getDictionary(lang);
+  const [dict, initialData] = await Promise.all([
+    getDictionary(lang),
+    loadHomepageInitialData(lang),
+  ]);
   const place = typeof searchParams?.place === "string" ? searchParams.place : undefined;
 
-  return <HomeClient lang={lang} dict={dict} place={place} />;
+  return (
+    <HomeClient lang={lang} dict={dict} place={place} initialData={initialData} />
+  );
 }

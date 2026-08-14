@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, MapPin } from "lucide-react";
 import type { Dictionary, Lang } from "@/lib/i18n";
@@ -56,11 +57,12 @@ export default function VariantCSpecialistCard({
           </div>
         ) : null}
         {specialist.avatar_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={specialist.avatar_url}
             alt={name}
-            className="h-full w-full object-cover"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 320px"
+            className="object-cover"
             loading="lazy"
           />
         ) : (

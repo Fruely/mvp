@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import LanguageBar from "@/components/LanguageBar";
 import { getDictionary, type Lang } from "@/lib/i18n";
 import { HOME_METADATA, HREFLANG_HOME, SITE_ROOT_URL } from "@/lib/seo/siteMetadata";
+import { loadHomepageInitialData } from "@/lib/homepage/loadHomepageInitialData";
 import HomeClient from "./[lang]/HomeClient";
 
 const ROOT_LANG: Lang = "ru";
@@ -26,7 +27,10 @@ export default async function Page({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const dict = await getDictionary(ROOT_LANG);
+  const [dict, initialData] = await Promise.all([
+    getDictionary(ROOT_LANG),
+    loadHomepageInitialData(ROOT_LANG),
+  ]);
   const place = typeof searchParams?.place === "string" ? searchParams.place : undefined;
 
   return (
@@ -35,7 +39,7 @@ export default async function Page({
         <LanguageBar />
       </Suspense>
       <Header lang={ROOT_LANG} dict={dict} />
-      <HomeClient lang={ROOT_LANG} dict={dict} place={place} />
+      <HomeClient lang={ROOT_LANG} dict={dict} place={place} initialData={initialData} />
       <Footer dict={dict} lang={ROOT_LANG} />
     </div>
   );
