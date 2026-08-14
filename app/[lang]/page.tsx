@@ -1,11 +1,16 @@
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import HomeClient from "./HomeClient";
 import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
 import { HOME_METADATA, HREFLANG_HOME, SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 import { loadHomepageInitialData } from "@/lib/homepage/loadHomepageInitialData";
+import { serializeHomepageInitialData } from "@/lib/homepage/serializeHomepageInitialData";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 300;
+
+export function generateStaticParams() {
+  return [{ lang: "ua" }, { lang: "ru" }, { lang: "de" }];
+}
 
 export async function generateMetadata({ params }: { params: { lang: string } }) {
   const lang =
@@ -23,13 +28,7 @@ export async function generateMetadata({ params }: { params: { lang: string } })
   };
 }
 
-export default async function LangHomePage({
-  params,
-  searchParams,
-}: {
-  params: { lang: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
+export default async function LangHomePage({ params }: { params: { lang: string } }) {
   if (!isSupportedLang(params.lang)) {
     redirect("/ua");
   }
@@ -39,9 +38,12 @@ export default async function LangHomePage({
     getDictionary(lang),
     loadHomepageInitialData(lang),
   ]);
-  const place = typeof searchParams?.place === "string" ? searchParams.place : undefined;
 
   return (
-    <HomeClient lang={lang} dict={dict} place={place} initialData={initialData} />
+    <HomeClient
+      lang={lang}
+      dict={dict}
+      initialData={serializeHomepageInitialData(initialData)}
+    />
   );
 }

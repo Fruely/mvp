@@ -58,8 +58,8 @@ export type HomepageRecommendedSpecialist = {
   category_title_de: string | null;
   category_title_ua: string | null;
   about_line?: string | null;
-  rating_avg: number | null;
-  reviews_count: number;
+  rating_avg?: number | null;
+  reviews_count?: number;
   founder_badge?: boolean;
   is_featured?: boolean;
   placement_group?: RecommendationPlacementGroup;

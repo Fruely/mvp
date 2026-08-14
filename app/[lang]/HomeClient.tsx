@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Dictionary, Lang } from "@/lib/i18n";
@@ -8,8 +8,7 @@ import { t, tCount } from "@/lib/i18n";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import InstallFreuly from "@/components/pwa/InstallFreuly";
-import ServiceSearchFlow from "@/components/search-flow/ServiceSearchFlow";
-import { SERVICE_SEARCH_FLOW_TEXT } from "@/lib/search/serviceSearchFlowText";
+import HomeServiceSearchSection from "@/components/home/HomeServiceSearchSection";
 import VariantCCategoryIcon from "@/components/home/variantC/VariantCCategoryIcon";
 import VariantCSpecialistCard from "@/components/home/variantC/VariantCSpecialistCard";
 import VariantCHowItWorksSteps from "@/components/home/variantC/VariantCHowItWorksSteps";
@@ -34,12 +33,10 @@ const EMPTY_HOMEPAGE_DATA: HomepageInitialData = {
 export default function HomeClient({
   lang,
   dict,
-  place,
   initialData,
 }: {
   lang: Lang;
   dict: Dictionary;
-  place?: string;
   initialData: HomepageInitialData;
 }) {
   const data = initialData ?? EMPTY_HOMEPAGE_DATA;
@@ -48,7 +45,6 @@ export default function HomeClient({
   const [recommendedSpecialists] = useState(data.recommendedSpecialists);
   const [homepageParentSlotSlugs] = useState(data.homepageParentSlotSlugs);
   const [error] = useState<string | null>(null);
-  const placeFromUrl = place?.trim() ?? "";
   const isPopularLoading = false;
   const isRecommendedLoading = false;
 
@@ -171,13 +167,21 @@ export default function HomeClient({
             />
           </div>
 
-          <ServiceSearchFlow
-            variant="home"
-            text={SERVICE_SEARCH_FLOW_TEXT[lang]}
-            defaultLanguage={lang}
-            initialLocation={placeFromUrl}
-            className="mx-auto mt-10 max-w-[820px]"
-          />
+          <Suspense
+            fallback={
+              <div
+                className="mx-auto mt-10 max-w-[820px] rounded-2xl border border-freuly-border-default bg-white p-6 shadow-sm"
+                aria-hidden
+              >
+                <div className="h-10 animate-pulse rounded-lg bg-freuly-border-subtle" />
+              </div>
+            }
+          >
+            <HomeServiceSearchSection
+              lang={lang}
+              className="mx-auto mt-10 max-w-[820px]"
+            />
+          </Suspense>
 
           <div className="mx-auto mt-10 inline-flex max-w-full flex-wrap items-center justify-center gap-3.5">
             <div className="flex items-center" aria-hidden>

@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { unstable_cache } from "next/cache";
 import { resolveProfileContent, toContentLocale } from "@/lib/localization";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 import type { HomepageRecommendedSpecialist } from "@/lib/homepage/types";
@@ -443,6 +444,17 @@ export async function fetchRecommendedSpecialists(
       badges: row.badges,
     };
   });
+}
+
+export function fetchRecommendedSpecialistsCached(
+  langParam: string | null | undefined
+): Promise<HomepageRecommendedSpecialist[]> {
+  const lang = typeof langParam === "string" && langParam.trim() ? langParam.trim() : "ru";
+  return unstable_cache(
+    () => fetchRecommendedSpecialists(lang),
+    ["homepage-recommended-specialists", lang],
+    { revalidate: 300 }
+  )();
 }
 
 export { POOL_FETCH_LIMIT, TOTAL_SLOTS };

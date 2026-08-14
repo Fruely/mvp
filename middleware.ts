@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  isPublicHomepagePath,
+  PUBLIC_HOMEPAGE_CACHE_CONTROL,
+} from "@/lib/homepage/middlewareCache";
 import { SPECIALISTS_UI_LANG_HEADER } from "@/lib/search/specialistsUiLang";
 
 const SUPPORTED_LANGS = ["ua", "ru", "de"] as const;
@@ -196,7 +200,9 @@ export function middleware(request: NextRequest) {
 
   // Root "/" → serve directly (no redirect, SEO requirement)
   if (pathname === "/") {
-    return nextWithHtmlLang(request, pathname);
+    const res = nextWithHtmlLang(request, pathname);
+    res.headers.set("Cache-Control", PUBLIC_HOMEPAGE_CACHE_CONTROL);
+    return res;
   }
 
   // i18n logic (only for language routes)
@@ -229,10 +235,9 @@ export function middleware(request: NextRequest) {
     requestHeaders.set(PATHNAME_HEADER, pathname);
     const res = NextResponse.next({ request: { headers: requestHeaders } });
     res.cookies.set(LANG_COOKIE, lang, { path: "/" });
-    res.headers.set(
-      "Cache-Control",
-      "private, no-store, no-cache, must-revalidate, max-age=0"
-    );
+    if (isPublicHomepagePath(pathname)) {
+      res.headers.set("Cache-Control", PUBLIC_HOMEPAGE_CACHE_CONTROL);
+    }
     return res;
   }
 

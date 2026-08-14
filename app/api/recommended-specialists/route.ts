@@ -2,16 +2,16 @@ import { NextRequest } from "next/server";
 import { jsonNoStore } from "@/lib/api/response";
 import { CACHE_PUBLIC_RECOMMENDED, jsonWithCache } from "@/lib/http/cache";
 import { toContentLocale } from "@/lib/localization";
-import { fetchRecommendedSpecialists } from "@/lib/homepage/fetchRecommendedSpecialists";
+import { fetchRecommendedSpecialistsCached } from "@/lib/homepage/fetchRecommendedSpecialists";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export async function GET(request: NextRequest) {
   const langParam = request.nextUrl.searchParams.get("lang");
   const contentLocale = toContentLocale(langParam);
 
   try {
-    const data = await fetchRecommendedSpecialists(langParam);
+    const data = await fetchRecommendedSpecialistsCached(langParam);
     return jsonWithCache({ data }, CACHE_PUBLIC_RECOMMENDED, {
       headers: {
         Vary: "Accept-Language",

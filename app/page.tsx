@@ -6,12 +6,12 @@ import LanguageBar from "@/components/LanguageBar";
 import { getDictionary, type Lang } from "@/lib/i18n";
 import { HOME_METADATA, HREFLANG_HOME, SITE_ROOT_URL } from "@/lib/seo/siteMetadata";
 import { loadHomepageInitialData } from "@/lib/homepage/loadHomepageInitialData";
+import { serializeHomepageInitialData } from "@/lib/homepage/serializeHomepageInitialData";
 import HomeClient from "./[lang]/HomeClient";
 
 const ROOT_LANG: Lang = "ru";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: HOME_METADATA[ROOT_LANG].title,
@@ -22,16 +22,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function Page({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
+export default async function Page() {
   const [dict, initialData] = await Promise.all([
     getDictionary(ROOT_LANG),
     loadHomepageInitialData(ROOT_LANG),
   ]);
-  const place = typeof searchParams?.place === "string" ? searchParams.place : undefined;
 
   return (
     <div className="min-h-[100dvh] bg-freuly-page">
@@ -39,7 +34,11 @@ export default async function Page({
         <LanguageBar />
       </Suspense>
       <Header lang={ROOT_LANG} dict={dict} />
-      <HomeClient lang={ROOT_LANG} dict={dict} place={place} initialData={initialData} />
+      <HomeClient
+        lang={ROOT_LANG}
+        dict={dict}
+        initialData={serializeHomepageInitialData(initialData)}
+      />
       <Footer dict={dict} lang={ROOT_LANG} />
     </div>
   );
