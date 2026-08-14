@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, type ReactNode } from "react";
 import { Badge } from "@/components/ui";
+import { isPrivateDashboardPath } from "@/lib/dashboard/isPrivateDashboardPath";
 import { t, type Dictionary } from "@/lib/i18n";
 
 type NavItem = {
@@ -144,6 +145,7 @@ function renderNavItem(
   item: NavItem,
   currentPath: string,
   lockedBadge: string,
+  disablePrefetch: boolean,
   onNavigate?: () => void,
 ) {
   const isActive = Boolean(
@@ -180,6 +182,7 @@ function renderNavItem(
     <Link
       key={item.href}
       href={item.href}
+      prefetch={disablePrefetch ? false : undefined}
       onClick={onNavigate}
       className={itemClass}
       aria-current={isActive ? "page" : undefined}
@@ -207,6 +210,7 @@ export default function Sidebar({
   const currentPath = pathname ?? "";
   const lockedBadge = lockedLabel(lang);
   const navItems = useMemo(() => buildNavItems(lang, dict, isPublished), [lang, dict, isPublished]);
+  const disableSidebarPrefetch = isPrivateDashboardPath(currentPath);
 
   return (
     <>
@@ -217,7 +221,7 @@ export default function Sidebar({
           </span>
         </div>
         <nav className="flex flex-col gap-[6px] px-4 py-8">
-          {navItems.map((item) => renderNavItem(item, currentPath, lockedBadge))}
+          {navItems.map((item) => renderNavItem(item, currentPath, lockedBadge, disableSidebarPrefetch))}
         </nav>
       </aside>
 
@@ -250,7 +254,9 @@ export default function Sidebar({
           </button>
         </div>
         <nav className="flex flex-col gap-[6px] px-4 py-8">
-          {navItems.map((item) => renderNavItem(item, currentPath, lockedBadge, onClose))}
+          {navItems.map((item) =>
+            renderNavItem(item, currentPath, lockedBadge, disableSidebarPrefetch, onClose),
+          )}
         </nav>
       </aside>
     </>

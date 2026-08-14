@@ -35,18 +35,21 @@ export default async function SpecialistProtectedLayout({
 }) {
   const resolved = await Promise.resolve(params);
   const lang: Lang = isSupportedLang(resolved.lang) ? resolved.lang : "ua";
-  const { specialist } = await getCurrentUserAndSpecialist();
-  const dict = await getDictionary(lang);
+  const [{ specialist }, dict] = await Promise.all([
+    getCurrentUserAndSpecialist(),
+    getDictionary(lang),
+  ]);
   const service = createServiceClient();
   const pathname = headers().get("x-freuly-pathname") || "";
-  const gate = await getSpecialistOnboardingGateState(specialist, service);
+  const [gate, plan] = await Promise.all([
+    getSpecialistOnboardingGateState(specialist, service),
+    getSpecialistPlanForDashboard(service, specialist.id),
+  ]);
 
   if (gate.state !== "published" && !isOnboardingAllowedPath(pathname, lang)) {
     const step = gate.firstIncompleteStep ?? "basic";
     redirect(`/${lang}/specialist/dashboard/onboarding?step=${step}&reason=incomplete_profile`);
   }
-
-  const plan = await getSpecialistPlanForDashboard(service, specialist.id);
 
   return (
     <DashboardShell

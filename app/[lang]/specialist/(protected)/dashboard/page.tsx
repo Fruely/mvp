@@ -121,10 +121,11 @@ export default async function SpecialistDashboardHomePage({
 }) {
   const resolved = await Promise.resolve(params);
   const lang = isSupportedLang(resolved.lang) ? resolved.lang : "ru";
-  const { specialist } = await getCurrentUserAndSpecialist();
+  const [{ specialist }, dict] = await Promise.all([
+    getCurrentUserAndSpecialist(),
+    getDictionary(lang),
+  ]);
   const service = createServiceClient();
-
-  const dict: Dictionary = await getDictionary(lang);
 
   const status = specialist.status;
 

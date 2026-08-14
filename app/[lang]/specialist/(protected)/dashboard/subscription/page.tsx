@@ -70,9 +70,11 @@ export default async function SpecialistDashboardSubscriptionPage({
   const resolved = await Promise.resolve(params);
   const lang: Lang = isSupportedLang(resolved.lang) ? resolved.lang : "ua";
 
-  const { specialist } = await getCurrentUserAndSpecialist();
+  const [{ specialist }, dict] = await Promise.all([
+    getCurrentUserAndSpecialist(),
+    getDictionary(lang),
+  ]);
   const service = createServiceClient();
-  const dict = await getDictionary(lang);
 
   if (specialist.status === "blocked") {
     redirect(specialistLangHomePath());

@@ -10,7 +10,7 @@ import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import VerificationBanner from "../VerificationBanner";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
 import { resolveSpecialistEntitlements } from "@/lib/billing/planEntitlements";
-import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
+import { getDashboardCategoryOptions } from "@/lib/categories/dashboardCategoryOptions";
 
 export default async function SpecialistDashboardProfilePage({
   params,
@@ -19,10 +19,11 @@ export default async function SpecialistDashboardProfilePage({
 }) {
   const resolved = await Promise.resolve(params);
   const lang = isSupportedLang(resolved.lang) ? resolved.lang : "ru";
-  const { specialist } = await getCurrentUserAndSpecialist();
+  const [{ specialist }, dict] = await Promise.all([
+    getCurrentUserAndSpecialist(),
+    getDictionary(lang),
+  ]);
   const service = createServiceClient();
-
-  const dict: Dictionary = await getDictionary(lang);
 
   const status = specialist.status;
 
@@ -30,7 +31,7 @@ export default async function SpecialistDashboardProfilePage({
     redirect(specialistLangHomePath());
   }
 
-  const [specExtraResult, profileResult, servicesResult, categoriesResult, plan] =
+  const [specExtraResult, profileResult, servicesResult, categoriesRows, plan] =
     await Promise.all([
       service
         .from("specialists")
@@ -49,18 +50,13 @@ export default async function SpecialistDashboardProfilePage({
         .select("id, title, price_from, is_active, price_comment")
         .eq("specialist_id", specialist.id)
         .order("created_at", { ascending: false }),
-      service
-        .from("categories")
-        .select("id, title, title_ru, title_de, title_ua, parent_id, slug")
-        .or(`parent_id.not.is.null,slug.eq.${UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG}`)
-        .order("title", { ascending: true }),
+      getDashboardCategoryOptions(),
       getSpecialistPlanForDashboard(service, specialist.id),
     ]);
 
   const specExtra = specExtraResult.data;
   const profile = profileResult.data;
   const servicesRows = servicesResult.data;
-  const categoriesRows = categoriesResult.data;
 
   const botUsername = process.env.TELEGRAM_BOT_USERNAME?.replace(/^@/, "").trim() ?? "";
   const telegramConnectHref =
@@ -144,34 +140,7 @@ export default async function SpecialistDashboardProfilePage({
             price_comment: service.price_comment != null ? String(service.price_comment) : "",
           })),
         }}
-        categories={(categoriesRows ?? [])
-          .filter(
-            (category) =>
-              typeof category?.id === "string" &&
-              typeof category?.title === "string" &&
-              (category.parent_id === null || typeof category.parent_id === "string") &&
-              typeof category?.slug === "string",
-          )
-          .map((category) => {
-            const row = category as {
-              id: string;
-              title: string;
-              title_ru?: string | null;
-              title_de?: string | null;
-              title_ua?: string | null;
-              parent_id: string | null;
-              slug: string;
-            };
-            return {
-              id: row.id,
-              title: row.title,
-              title_ru: row.title_ru,
-              title_de: row.title_de,
-              title_ua: row.title_ua,
-              parent_id: row.parent_id,
-              slug: row.slug,
-            };
-          })}
+        categories={categoriesRows}
       />
     </div>
   );

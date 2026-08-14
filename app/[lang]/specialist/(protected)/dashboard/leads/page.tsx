@@ -26,28 +26,30 @@ export default async function SpecialistDashboardLeadsPage({
 }) {
   const resolved = await Promise.resolve(params);
   const lang: Lang = isSupportedLang(resolved.lang) ? resolved.lang : "ua";
-  const dict = await getDictionary(lang);
-
-  const { specialist } = await getCurrentUserAndSpecialist();
+  const [{ specialist }, dict] = await Promise.all([
+    getCurrentUserAndSpecialist(),
+    getDictionary(lang),
+  ]);
   const service = createServiceClient();
 
   if (specialist.status === "blocked") {
     redirect(specialistLangHomePath());
   }
 
-  const { data, error } = await service
-    .from("leads")
-    .select(DASHBOARD_LEAD_REDACTED_SELECT)
-    .eq("specialist_id", specialist.id)
-    .order("created_at", { ascending: false });
+  const [{ data, error }, plan] = await Promise.all([
+    service
+      .from("leads")
+      .select(DASHBOARD_LEAD_REDACTED_SELECT)
+      .eq("specialist_id", specialist.id)
+      .order("created_at", { ascending: false }),
+    getSpecialistPlanForDashboard(service, specialist.id),
+  ]);
 
   if (error) {
     console.error("[dashboard/leads] failed to load leads", error);
   }
 
   const leads = (data ?? []).map((row) => mapRowToDashboardLead(row as Record<string, unknown>));
-
-  const plan = await getSpecialistPlanForDashboard(service, specialist.id);
   const display = getSubscriptionDisplayState(plan);
   const leadsBanner = leadsSubscriptionBannerText(dict, display);
 

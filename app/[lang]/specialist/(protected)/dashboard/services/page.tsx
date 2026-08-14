@@ -23,9 +23,11 @@ export default async function SpecialistDashboardServicesPage({
   const fromRaw = resolvedSearch.from;
   const fromParam = Array.isArray(fromRaw) ? fromRaw[0] : fromRaw;
   const showOnboardingReturn = fromParam === "onboarding";
-  const { specialist } = await getCurrentUserAndSpecialist();
+  const [{ specialist }, dict] = await Promise.all([
+    getCurrentUserAndSpecialist(),
+    getDictionary(lang),
+  ]);
   const service = createServiceClient();
-  const dict = await getDictionary(lang);
   const specialistCategoryId =
     typeof (specialist as unknown as Record<string, unknown>).category_id === "string"
       ? ((specialist as unknown as Record<string, unknown>).category_id as string).trim()

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { t } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/i18n";
 import { publicLinkPrimaryClass } from "@/components/public/publicStyles";
+import { isPrivateDashboardPath } from "@/lib/dashboard/isPrivateDashboardPath";
 
 const fallbackDict: Dictionary = {
   "header.nav.pricing": "Тарифи",
@@ -31,6 +32,7 @@ export default function Header({ lang, dict = fallbackDict }: HeaderProps) {
   const d = dict ?? fallbackDict;
   const pathname = usePathname() ?? "";
   const cabinetHref = `/login?next=${encodeURIComponent(`/${lang}/specialist/dashboard`)}`;
+  const disablePrefetch = isPrivateDashboardPath(pathname);
 
   const navItems = [
     { href: `/${lang}/pricing`, label: t(d, "header.nav.pricing") },
@@ -41,7 +43,7 @@ export default function Header({ lang, dict = fallbackDict }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-freuly-border-default bg-freuly-surface">
       <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-freuly-4 sm:px-freuly-6 lg:px-freuly-16">
-        <Link href={`/${lang}`} className="flex shrink-0 items-center gap-3 transition-opacity hover:opacity-90">
+        <Link href={`/${lang}`} prefetch={disablePrefetch ? false : undefined} className="flex shrink-0 items-center gap-3 transition-opacity hover:opacity-90">
           <span
             className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-freuly-md bg-freuly-primary"
             aria-hidden
@@ -59,19 +61,21 @@ export default function Header({ lang, dict = fallbackDict }: HeaderProps) {
               <Link
                 key={item.label}
                 href={item.href}
-                prefetch={"prefetch" in item ? item.prefetch : undefined}
+                prefetch={
+                  "prefetch" in item ? item.prefetch : disablePrefetch ? false : undefined
+                }
                 className={navLinkClass(isActive)}
               >
                 {item.label}
               </Link>
             );
           })}
-          <Link href={`/${lang}/become-specialist`} className={publicLinkPrimaryClass}>
+          <Link href={`/${lang}/become-specialist`} prefetch={disablePrefetch ? false : undefined} className={publicLinkPrimaryClass}>
             {t(d, "header.joinButton")}
           </Link>
         </div>
 
-        <Link href={`/${lang}/become-specialist`} className={`${publicLinkPrimaryClass} md:hidden`}>
+        <Link href={`/${lang}/become-specialist`} prefetch={disablePrefetch ? false : undefined} className={`${publicLinkPrimaryClass} md:hidden`}>
           {t(d, "header.joinButton")}
         </Link>
       </nav>
@@ -81,7 +85,9 @@ export default function Header({ lang, dict = fallbackDict }: HeaderProps) {
           <Link
             key={item.label}
             href={item.href}
-            prefetch={"prefetch" in item ? item.prefetch : undefined}
+            prefetch={
+              "prefetch" in item ? item.prefetch : disablePrefetch ? false : undefined
+            }
             className={navLinkClass(
               item.href.startsWith("/login")
                 ? pathname.includes("/specialist/dashboard") || pathname === "/login"

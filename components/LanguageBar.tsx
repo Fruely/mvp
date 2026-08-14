@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { SUPPORTED_LANGS, type Lang } from "@/lib/i18n";
+import { isPrivateDashboardPath } from "@/lib/dashboard/isPrivateDashboardPath";
 
 /** Same name as server routes and middleware (`middleware.ts`). */
 const LANG_COOKIE = "freuly_lang";
@@ -55,6 +56,7 @@ export default function LanguageBar({ serverLang }: LanguageBarProps) {
   const activeLang = hasPrefix
     ? pathLang
     : specialistsQueryLang ?? serverLang ?? pathLang;
+  const disablePrefetch = isPrivateDashboardPath(pathname);
 
   const langHref = (code: Lang) => {
     if (isSpecialistsSearch) {
@@ -81,6 +83,7 @@ export default function LanguageBar({ serverLang }: LanguageBarProps) {
             <Link
               key={l.code}
               href={langHref(l.code)}
+              prefetch={disablePrefetch ? false : undefined}
               onClick={() => rememberLang(l.code)}
               className={`px-3 py-1 text-sm font-medium transition ${
                 activeLang === l.code

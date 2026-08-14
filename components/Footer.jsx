@@ -1,4 +1,4 @@
-import Link from "next/link";
+import FooterPrefetchLink from "@/components/FooterPrefetchLink";
 import { Suspense } from "react";
 import { t } from "@/lib/i18n";
 import CookieSettingsLink from "@/components/consent/CookieSettingsLink";
@@ -33,9 +33,9 @@ function FooterLinkColumn({ title, links }) {
                 {item.label}
               </a>
             ) : (
-              <Link href={item.href} className={linkClass}>
+              <FooterPrefetchLink href={item.href} className={linkClass}>
                 {item.label}
-              </Link>
+              </FooterPrefetchLink>
             )}
           </li>
         ))}
@@ -125,12 +125,12 @@ export default function Footer(props) {
       <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-10 px-4 pb-10 pt-10 sm:px-6 lg:gap-10 lg:px-16 lg:pb-12 lg:pt-14">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
           <div className="w-full max-w-[320px] shrink-0">
-            <Link href={homeHref} className="inline-flex items-center gap-2.5">
+            <FooterPrefetchLink href={homeHref} className="inline-flex items-center gap-2.5">
               <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-freuly-primary text-base font-bold text-white">
                 f
               </span>
               <span className="text-lg font-bold text-white">freuly</span>
-            </Link>
+            </FooterPrefetchLink>
             <p className="mt-4 text-sm leading-[1.6] text-freuly-text-secondary">
               {t(dict, "footer.tagline")}
             </p>
@@ -160,9 +160,9 @@ export default function Footer(props) {
             <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
               <div className="flex flex-wrap items-center gap-6">
                 {bottomLinks.map((item) => (
-                  <Link key={item.key} href={item.href} className={bottomLinkClass}>
+                  <FooterPrefetchLink key={item.key} href={item.href} className={bottomLinkClass}>
                     {item.label}
-                  </Link>
+                  </FooterPrefetchLink>
                 ))}
                 <CookieSettingsLink
                   label={t(dict, "footer.cookieSettings")}

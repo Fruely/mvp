@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Globe } from "lucide-react";
 import { SUPPORTED_LANGS, type Lang } from "@/lib/i18n";
+import { isPrivateDashboardPath } from "@/lib/dashboard/isPrivateDashboardPath";
 
 const LANG_COOKIE = "freuly_lang";
 const COOKIE_MAX_AGE_SEC = 60 * 60 * 24 * 365;
@@ -41,6 +42,7 @@ export default function FooterLanguageSwitcher({ lang, labels }: Props) {
   const hasPrefix = useMemo(() => pathHasLangPrefix(pathname), [pathname]);
   const { lang: pathLang, rest } = useMemo(() => stripLangPrefix(pathname), [pathname]);
   const activeLang = hasPrefix ? pathLang : lang;
+  const disablePrefetch = isPrivateDashboardPath(pathname);
 
   const langHref = (code: Lang) => {
     if (hasPrefix) {
@@ -62,6 +64,7 @@ export default function FooterLanguageSwitcher({ lang, labels }: Props) {
           <Link
             key={code}
             href={langHref(code)}
+            prefetch={disablePrefetch ? false : undefined}
             onClick={() => rememberLang(code)}
             className={`text-[13px] font-medium transition-colors ${
               activeLang === code

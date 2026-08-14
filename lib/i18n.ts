@@ -7,7 +7,7 @@ export function isSupportedLang(value: string): value is Lang {
   return (SUPPORTED_LANGS as readonly string[]).includes(value);
 }
 
-export async function getDictionary(lang: Lang): Promise<Dictionary> {
+async function loadDictionary(lang: Lang): Promise<Dictionary> {
   switch (lang) {
     case "ua":
       return (await import("@/locales/ua.json")).default as Dictionary;
@@ -16,6 +16,17 @@ export async function getDictionary(lang: Lang): Promise<Dictionary> {
     case "de":
       return (await import("@/locales/de.json")).default as Dictionary;
   }
+}
+
+const dictionaryPromises = new Map<Lang, Promise<Dictionary>>();
+
+/** Locale JSON is public/static — dedupe concurrent loads within the runtime. */
+export async function getDictionary(lang: Lang): Promise<Dictionary> {
+  const cached = dictionaryPromises.get(lang);
+  if (cached) return cached;
+  const promise = loadDictionary(lang);
+  dictionaryPromises.set(lang, promise);
+  return promise;
 }
 
 function getByPath(obj: unknown, path: string): unknown {
