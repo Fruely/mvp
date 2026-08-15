@@ -73,6 +73,12 @@ export default async function AdminProtectedLayout({
               href="/admin/campaign-links"
               className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition"
             >
+              Campaign Links
+            </Link>
+            <Link
+              href="/admin/campaign-links"
+              className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition"
+            >
               Campaign links
             </Link>
             <Link

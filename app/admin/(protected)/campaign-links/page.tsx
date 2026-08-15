@@ -2,18 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  CLIENT_CAMPAIGN_SOURCE_OPTIONS,
-  CLIENT_CAMPAIGN_UI_LANG_OPTIONS,
-  CLIENT_CAMPAIGN_WORK_FORMAT_OPTIONS,
-} from "@/lib/clientCampaignLinks/validation";
+  CLIENT_CAMPAIGN_SOURCES,
+  CLIENT_CAMPAIGN_UI_LANGS,
+  CLIENT_CAMPAIGN_WORK_FORMATS,
+} from "@/lib/clientCampaignLinks/constants";
+import { summarizeCampaignContext } from "@/lib/clientCampaignLinks/resolve";
 
 type CategoryOption = {
   id: string;
   slug: string;
   title: string;
-  title_ru: string | null;
-  title_ua: string | null;
-  title_de: string | null;
   parent_id: string | null;
 };
 
@@ -33,29 +31,13 @@ type CampaignLinkItem = {
   campaign_code: string | null;
   is_active: boolean;
   created_at: string;
-  public_path: string;
   public_url: string;
-  context_summary: string;
+  public_path: string;
 };
 
-type FormState = {
-  name: string;
-  ui_lang: string;
-  slug: string;
-  category_id: string;
-  service_query: string;
-  place: string;
-  preferred_language: string;
-  work_format: string;
-  radius_km: string;
-  source: string;
-  campaign_code: string;
-};
-
-const EMPTY_FORM: FormState = {
+const EMPTY_FORM = {
   name: "",
   ui_lang: "ru",
-  slug: "",
   category_id: "",
   service_query: "",
   place: "",
@@ -64,6 +46,7 @@ const EMPTY_FORM: FormState = {
   radius_km: "",
   source: "",
   campaign_code: "",
+  slug: "",
 };
 
 function adminHeaders(): HeadersInit {
@@ -75,16 +58,9 @@ function adminHeaders(): HeadersInit {
   };
 }
 
-function categoryLabel(cat: CategoryOption, uiLang: string): string {
-  if (uiLang === "ru" && cat.title_ru) return cat.title_ru;
-  if (uiLang === "ua" && cat.title_ua) return cat.title_ua;
-  if (uiLang === "de" && cat.title_de) return cat.title_de;
-  return cat.title;
-}
-
 function formatDate(iso: string): string {
   try {
-    return new Date(iso).toLocaleString();
+    return new Date(iso).toLocaleString("ru-RU");
   } catch {
     return iso;
   }
@@ -96,34 +72,48 @@ export default function AdminCampaignLinksPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [form, setForm] = useState({ ...EMPTY_FORM });
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const sortedCategories = useMemo(() => {
-    return [...categories].sort((a, b) =>
-      categoryLabel(a, form.ui_lang).localeCompare(categoryLabel(b, form.ui_lang)),
-    );
-  }, [categories, form.ui_lang]);
+  const categoryById = useMemo(() => {
+    const map = new Map<string, CategoryOption>();
+    for (const c of categories) map.set(c.id, c);
+    return map;
+  }, [categories]);
 
-  const load = useCallback(async () => {
+  const loadCategories = useCallback(async () => {
+    try {
+      const res = await fetch("/api/specialists/categories?min_count=0", { cache: "no-store" });
+      const json = await res.json().catch(() => ({}));
+      const rows = (json.data ?? []) as Array<Record<string, unknown>>;
+      setCategories(
+        rows.map((row) => ({
+          id: String(row.id),
+          slug: String(row.slug ?? ""),
+          title: String(row.title_ru || row.title || row.slug || ""),
+          parent_id: row.parent_id ? String(row.parent_id) : null,
+        })),
+      );
+    } catch {
+      setCategories([]);
+    }
+  }, []);
+
+  const loadLinks = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [linksRes, categoriesRes] = await Promise.all([
-        fetch("/api/admin/campaign-links", { headers: adminHeaders(), cache: "no-store" }),
-        fetch("/api/admin/campaign-links/categories", { headers: adminHeaders(), cache: "no-store" }),
-      ]);
-      const linksJson = await linksRes.json().catch(() => ({}));
-      const categoriesJson = await categoriesRes.json().catch(() => ({}));
-      if (!linksRes.ok) {
-        setError(linksJson.error || "Failed to load campaign links");
+      const res = await fetch("/api/admin/campaign-links", {
+        headers: adminHeaders(),
+        cache: "no-store",
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(json.error || "Failed to load campaign links");
         setLinks([]);
-      } else {
-        setLinks(linksJson.links ?? []);
+        return;
       }
-      if (categoriesRes.ok) {
-        setCategories(categoriesJson.categories ?? []);
-      }
+      setLinks(json.links ?? []);
     } catch {
       setError("Failed to load campaign links");
     } finally {
@@ -132,11 +122,12 @@ export default function AdminCampaignLinksPage() {
   }, []);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void loadCategories();
+    void loadLinks();
+  }, [loadCategories, loadLinks]);
 
   function resetForm() {
-    setForm(EMPTY_FORM);
+    setForm({ ...EMPTY_FORM });
     setEditingId(null);
   }
 
@@ -145,7 +136,6 @@ export default function AdminCampaignLinksPage() {
     setForm({
       name: link.name,
       ui_lang: link.ui_lang,
-      slug: link.slug,
       category_id: link.category_id ?? "",
       service_query: link.service_query ?? "",
       place: link.place ?? "",
@@ -154,18 +144,31 @@ export default function AdminCampaignLinksPage() {
       radius_km: link.radius_km != null ? String(link.radius_km) : "",
       source: link.source ?? "",
       campaign_code: link.campaign_code ?? "",
+      slug: link.slug,
     });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setMessage(null);
   }
 
-  async function saveCampaign(e: React.FormEvent) {
+  async function copyUrl(url: string) {
+    try {
+      await navigator.clipboard.writeText(url);
+      setMessage("Ссылка скопирована");
+    } catch {
+      setMessage("Не удалось скопировать ссылку");
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMessage(null);
 
-    const selectedCategory = categories.find((c) => c.id === form.category_id);
+    const selectedCategory = form.category_id ? categoryById.get(form.category_id) : null;
     const payload: Record<string, unknown> = {
       name: form.name.trim(),
       ui_lang: form.ui_lang,
+      category_id: form.category_id || null,
+      category_slug: selectedCategory?.slug ?? null,
+      service_query: form.service_query.trim() || null,
       place: form.place.trim() || null,
       preferred_language: form.preferred_language || null,
       work_format: form.work_format || null,
@@ -174,23 +177,11 @@ export default function AdminCampaignLinksPage() {
       campaign_code: form.campaign_code.trim() || null,
     };
 
-    if (form.slug.trim()) {
+    if (!editingId && form.slug.trim()) {
       payload.slug = form.slug.trim();
     }
 
-    if (selectedCategory) {
-      payload.category_id = selectedCategory.id;
-      payload.category_slug = selectedCategory.slug;
-      payload.service_query = null;
-    } else if (form.service_query.trim()) {
-      payload.service_query = form.service_query.trim();
-      payload.category_id = null;
-      payload.category_slug = null;
-    }
-
-    const url = editingId
-      ? `/api/admin/campaign-links/${editingId}`
-      : "/api/admin/campaign-links";
+    const url = editingId ? `/api/admin/campaign-links/${editingId}` : "/api/admin/campaign-links";
     const method = editingId ? "PATCH" : "POST";
 
     const res = await fetch(url, {
@@ -200,18 +191,17 @@ export default function AdminCampaignLinksPage() {
     });
     const json = await res.json().catch(() => ({}));
     if (!res.ok) {
-      setMessage(`Save failed: ${json.error || res.status}`);
+      setMessage(`Ошибка: ${json.error || res.status}`);
       return;
     }
 
-    const saved = json.link as CampaignLinkItem;
     setMessage(
       editingId
-        ? `Updated ${saved.name} → ${saved.public_url}`
-        : `Created ${saved.name} → ${saved.public_url}`,
+        ? `Обновлено: ${json.link?.public_url}`
+        : `Создано: ${json.link?.public_url}`,
     );
     resetForm();
-    await load();
+    await loadLinks();
   }
 
   async function toggleActive(link: CampaignLinkItem) {
@@ -223,58 +213,53 @@ export default function AdminCampaignLinksPage() {
     });
     const json = await res.json().catch(() => ({}));
     if (!res.ok) {
-      setMessage(`Status change failed: ${json.error || res.status}`);
+      setMessage(`Ошибка: ${json.error || res.status}`);
       return;
     }
-    await load();
-  }
-
-  async function copyLink(url: string) {
-    try {
-      await navigator.clipboard.writeText(url);
-      setMessage(`Copied: ${url}`);
-    } catch {
-      setMessage(`Copy manually: ${url}`);
-    }
+    await loadLinks();
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 p-6">
+    <div className="p-6 lg:p-8 space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Campaign links</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Campaign Links</h1>
         <p className="mt-1 text-sm text-gray-600">
-          Client acquisition short URLs for ads. Each link resolves to a prefilled request-service
-          form. Deactivate old links instead of deleting them.
+          Клиентские рекламные ссылки для Meta / Telegram. Публичный URL: /go/&#123;slug&#125;
         </p>
       </div>
 
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      {message ? <p className="text-sm text-emerald-700">{message}</p> : null}
+      {message ? (
+        <p className="rounded-md bg-emerald-50 px-4 py-2 text-sm text-emerald-800">{message}</p>
+      ) : null}
+      {error ? (
+        <p className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>
+      ) : null}
 
-      <section className="rounded-xl border border-gray-200 bg-white p-4">
-        <h2 className="text-sm font-semibold text-gray-900">
-          {editingId ? "Edit campaign link" : "New campaign link"}
+      <form onSubmit={handleSubmit} className="rounded-lg border bg-white p-6 space-y-4 max-w-3xl">
+        <h2 className="text-lg font-semibold text-gray-900">
+          {editingId ? "Редактировать кампанию" : "Новая кампания"}
         </h2>
-        <form onSubmit={saveCampaign} className="mt-4 grid gap-4 sm:grid-cols-2">
-          <label className="block text-sm sm:col-span-2">
-            <span className="text-gray-700">Campaign name *</span>
-            <input
-              required
-              value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-              placeholder="Электрик München RU — Facebook"
-            />
-          </label>
 
+        <label className="block text-sm">
+          <span className="font-medium text-gray-700">Название *</span>
+          <input
+            required
+            value={form.name}
+            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            placeholder="Электрик München RU — Facebook"
+            className="mt-1 w-full rounded border px-3 py-2"
+          />
+        </label>
+
+        <div className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm">
-            <span className="text-gray-700">UI language *</span>
+            <span className="font-medium text-gray-700">UI язык *</span>
             <select
               value={form.ui_lang}
               onChange={(e) => setForm((f) => ({ ...f, ui_lang: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded border px-3 py-2"
             >
-              {CLIENT_CAMPAIGN_UI_LANG_OPTIONS.map((lang) => (
+              {CLIENT_CAMPAIGN_UI_LANGS.map((lang) => (
                 <option key={lang} value={lang}>
                   {lang.toUpperCase()}
                 </option>
@@ -283,76 +268,84 @@ export default function AdminCampaignLinksPage() {
           </label>
 
           <label className="block text-sm">
-            <span className="text-gray-700">Slug (optional override)</span>
-            <input
-              value={form.slug}
-              onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-              placeholder="auto-generated if empty"
-              disabled={Boolean(editingId)}
-            />
-          </label>
-
-          <label className="block text-sm sm:col-span-2">
-            <span className="text-gray-700">Category (preferred)</span>
+            <span className="font-medium text-gray-700">Канал</span>
             <select
-              value={form.category_id}
-              onChange={(e) => setForm((f) => ({ ...f, category_id: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              value={form.source}
+              onChange={(e) => setForm((f) => ({ ...f, source: e.target.value }))}
+              className="mt-1 w-full rounded border px-3 py-2"
             >
-              <option value="">— none —</option>
-              {sortedCategories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {categoryLabel(cat, form.ui_lang)} ({cat.slug})
+              <option value="">—</option>
+              {CLIENT_CAMPAIGN_SOURCES.map((source) => (
+                <option key={source} value={source}>
+                  {source}
                 </option>
               ))}
             </select>
           </label>
+        </div>
 
-          <label className="block text-sm sm:col-span-2">
-            <span className="text-gray-700">Free service query (if no category)</span>
-            <input
-              value={form.service_query}
-              onChange={(e) => setForm((f) => ({ ...f, service_query: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-              placeholder="electrician"
-              disabled={Boolean(form.category_id)}
-            />
-          </label>
+        <label className="block text-sm">
+          <span className="font-medium text-gray-700">Категория / услуга</span>
+          <select
+            value={form.category_id}
+            onChange={(e) => setForm((f) => ({ ...f, category_id: e.target.value }))}
+            className="mt-1 w-full rounded border px-3 py-2"
+          >
+            <option value="">— выберите категорию —</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.title} ({cat.slug})
+              </option>
+            ))}
+          </select>
+        </label>
 
+        <label className="block text-sm">
+          <span className="font-medium text-gray-700">Свободный запрос (q)</span>
+          <input
+            value={form.service_query}
+            onChange={(e) => setForm((f) => ({ ...f, service_query: e.target.value }))}
+            placeholder="если категории недостаточно"
+            className="mt-1 w-full rounded border px-3 py-2"
+          />
+        </label>
+
+        <div className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm">
-            <span className="text-gray-700">Place</span>
+            <span className="font-medium text-gray-700">Место</span>
             <input
               value={form.place}
               onChange={(e) => setForm((f) => ({ ...f, place: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
               placeholder="München"
+              className="mt-1 w-full rounded border px-3 py-2"
             />
           </label>
 
           <label className="block text-sm">
-            <span className="text-gray-700">Preferred specialist language</span>
+            <span className="font-medium text-gray-700">Язык специалиста</span>
             <select
               value={form.preferred_language}
               onChange={(e) => setForm((f) => ({ ...f, preferred_language: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded border px-3 py-2"
             >
-              <option value="">— none —</option>
-              <option value="ru">RU</option>
-              <option value="ua">UA</option>
-              <option value="de">DE</option>
+              <option value="">—</option>
+              <option value="ru">ru</option>
+              <option value="ua">ua</option>
+              <option value="de">de</option>
             </select>
           </label>
+        </div>
 
+        <div className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm">
-            <span className="text-gray-700">Work format</span>
+            <span className="font-medium text-gray-700">Формат работы</span>
             <select
               value={form.work_format}
               onChange={(e) => setForm((f) => ({ ...f, work_format: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded border px-3 py-2"
             >
-              <option value="">— none —</option>
-              {CLIENT_CAMPAIGN_WORK_FORMAT_OPTIONS.map((wf) => (
+              <option value="">—</option>
+              {CLIENT_CAMPAIGN_WORK_FORMATS.map((wf) => (
                 <option key={wf} value={wf}>
                   {wf}
                 </option>
@@ -361,107 +354,111 @@ export default function AdminCampaignLinksPage() {
           </label>
 
           <label className="block text-sm">
-            <span className="text-gray-700">Radius (km)</span>
+            <span className="font-medium text-gray-700">Радиус (км)</span>
             <input
               type="number"
               min={0}
               value={form.radius_km}
               onChange={(e) => setForm((f) => ({ ...f, radius_km: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded border px-3 py-2"
             />
           </label>
+        </div>
 
+        <label className="block text-sm">
+          <span className="font-medium text-gray-700">Campaign code</span>
+          <input
+            value={form.campaign_code}
+            onChange={(e) => setForm((f) => ({ ...f, campaign_code: e.target.value }))}
+            placeholder="electrician_munich_ru_aug26"
+            className="mt-1 w-full rounded border px-3 py-2"
+          />
+        </label>
+
+        {!editingId ? (
           <label className="block text-sm">
-            <span className="text-gray-700">Source / channel</span>
-            <select
-              value={form.source}
-              onChange={(e) => setForm((f) => ({ ...f, source: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-            >
-              <option value="">— none —</option>
-              {CLIENT_CAMPAIGN_SOURCE_OPTIONS.map((source) => (
-                <option key={source} value={source}>
-                  {source}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="block text-sm sm:col-span-2">
-            <span className="text-gray-700">Campaign code</span>
+            <span className="font-medium text-gray-700">Slug (опционально до сохранения)</span>
             <input
-              value={form.campaign_code}
-              onChange={(e) => setForm((f) => ({ ...f, campaign_code: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-              placeholder="electrician_munich_ru_aug26"
+              value={form.slug}
+              onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+              placeholder="авто: elektrik-muenchen-ru"
+              className="mt-1 w-full rounded border px-3 py-2"
             />
           </label>
-
-          <div className="flex flex-wrap gap-2 sm:col-span-2">
-            <button
-              type="submit"
-              className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
-            >
-              {editingId ? "Save changes" : "Create campaign link"}
-            </button>
-            {editingId ? (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-              >
-                Cancel edit
-              </button>
-            ) : null}
-          </div>
-        </form>
-      </section>
-
-      <section className="rounded-xl border border-gray-200 bg-white p-4">
-        <h2 className="text-sm font-semibold text-gray-900">Stored links</h2>
-        {loading ? (
-          <p className="mt-3 text-sm text-gray-500">Loading…</p>
-        ) : links.length === 0 ? (
-          <p className="mt-3 text-sm text-gray-500">No campaign links yet.</p>
         ) : (
-          <div className="mt-4 overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-gray-200 text-gray-600">
-                  <th className="px-2 py-2 font-medium">Name</th>
-                  <th className="px-2 py-2 font-medium">Context</th>
-                  <th className="px-2 py-2 font-medium">Public URL</th>
-                  <th className="px-2 py-2 font-medium">Status</th>
-                  <th className="px-2 py-2 font-medium">Created</th>
-                  <th className="px-2 py-2 font-medium">Actions</th>
+          <p className="text-sm text-gray-600">
+            Публичный slug: <code className="font-mono">{form.slug}</code> (не меняется при редактировании контекста)
+          </p>
+        )}
+
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="submit"
+            className="rounded bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+          >
+            {editingId ? "Сохранить" : "Создать ссылку"}
+          </button>
+          {editingId ? (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="rounded border px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Отмена
+            </button>
+          ) : null}
+        </div>
+      </form>
+
+      <section className="rounded-lg border bg-white overflow-hidden">
+        <div className="border-b px-6 py-4">
+          <h2 className="text-lg font-semibold text-gray-900">Сохранённые ссылки</h2>
+        </div>
+        {loading ? (
+          <p className="p-6 text-sm text-gray-500">Загрузка…</p>
+        ) : links.length === 0 ? (
+          <p className="p-6 text-sm text-gray-500">Пока нет кампаний.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead className="bg-gray-50 text-left text-gray-600">
+                <tr>
+                  <th className="px-4 py-3">Название</th>
+                  <th className="px-4 py-3">Контекст</th>
+                  <th className="px-4 py-3">URL</th>
+                  <th className="px-4 py-3">Статус</th>
+                  <th className="px-4 py-3">Создано</th>
+                  <th className="px-4 py-3">Действия</th>
                 </tr>
               </thead>
               <tbody>
                 {links.map((link) => (
-                  <tr key={link.id} className="border-b border-gray-100 align-top">
-                    <td className="px-2 py-3 font-medium text-gray-900">{link.name}</td>
-                    <td className="px-2 py-3 text-gray-600">{link.context_summary}</td>
-                    <td className="px-2 py-3">
-                      <code className="text-xs text-gray-800">{link.public_url}</code>
+                  <tr key={link.id} className="border-t align-top">
+                    <td className="px-4 py-3 font-medium text-gray-900">{link.name}</td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {summarizeCampaignContext(link as Parameters<typeof summarizeCampaignContext>[0])}
                     </td>
-                    <td className="px-2 py-3">
+                    <td className="px-4 py-3">
+                      <code className="text-xs break-all">{link.public_url}</code>
+                    </td>
+                    <td className="px-4 py-3">
                       <span
-                        className={
+                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
                           link.is_active
-                            ? "rounded-full bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700"
-                            : "rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
-                        }
+                            ? "bg-emerald-100 text-emerald-800"
+                            : "bg-gray-100 text-gray-600"
+                        }`}
                       >
                         {link.is_active ? "active" : "inactive"}
                       </span>
                     </td>
-                    <td className="px-2 py-3 text-gray-600">{formatDate(link.created_at)}</td>
-                    <td className="px-2 py-3">
+                    <td className="px-4 py-3 text-gray-600">{formatDate(link.created_at)}</td>
+                    <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-2">
                         <button
                           type="button"
-                          onClick={() => copyLink(link.public_url)}
-                          className="text-xs text-blue-700 hover:underline"
+                          onClick={() => void copyUrl(link.public_url)}
+                          className="rounded border px-2 py-1 text-xs hover:bg-gray-50"
                         >
                           Copy
                         </button>
@@ -469,21 +466,21 @@ export default function AdminCampaignLinksPage() {
                           href={link.public_path}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-xs text-blue-700 hover:underline"
+                          className="rounded border px-2 py-1 text-xs hover:bg-gray-50"
                         >
                           Open
                         </a>
                         <button
                           type="button"
                           onClick={() => startEdit(link)}
-                          className="text-xs text-blue-700 hover:underline"
+                          className="rounded border px-2 py-1 text-xs hover:bg-gray-50"
                         >
                           Edit
                         </button>
                         <button
                           type="button"
-                          onClick={() => toggleActive(link)}
-                          className="text-xs text-blue-700 hover:underline"
+                          onClick={() => void toggleActive(link)}
+                          className="rounded border px-2 py-1 text-xs hover:bg-gray-50"
                         >
                           {link.is_active ? "Deactivate" : "Reactivate"}
                         </button>
