@@ -18,4 +18,7 @@ export const PROMOTED_ACCESS_GRANT_WEBHOOK_SELECT =
   "id, source_type, source_payment_id, revoked_at";
 
 export const PROMOTED_SUBSCRIPTION_CREDIT_CENTS = 1000;
-export const PROMOTED_SUBSCRIPTION_CREDIT_DAYS = 7;
+/** Registration + subscription credit window after €10 reservation payment (72 hours). */
+export const PROMOTED_REGISTRATION_DEADLINE_HOURS = 72;
+export const PROMOTED_SUBSCRIPTION_CREDIT_DAYS = PROMOTED_REGISTRATION_DEADLINE_HOURS / 24;
+export const PROMOTED_RESERVATION_PURPOSE = "promoted_request_reservation";

@@ -10,6 +10,10 @@ import {
   type PromotedAccessWebhookResult,
 } from "@/lib/billing/processPromotedAccessWebhook";
 import {
+  processStripeWebhookEventForPromotedReservation,
+  type PromotedReservationWebhookResult,
+} from "@/lib/billing/processPromotedReservationWebhook";
+import {
   processStripeWebhookEventForPlanPayments,
   shouldFinishPlanPaymentDeferredWithoutHttpRetry,
   shouldMarkPlanPaymentBillingEventSkipped,
@@ -28,6 +32,7 @@ export type StripeBillingWebhookProcessResult = {
   partner: StripeWebhookProcessResult;
   planPayment: PlanPaymentWebhookResult;
   promoted: PromotedAccessWebhookResult;
+  promotedReservation: PromotedReservationWebhookResult;
   subscription: SubscriptionWebhookResult;
 };
 
@@ -38,8 +43,19 @@ export async function processStripeBillingWebhook(
   const partner = await processStripeWebhookEventForPartners(supabase, event);
   const planPayment = await processStripeWebhookEventForPlanPayments(supabase, event);
   const promoted = await processStripeWebhookEventForPromotedAccess(supabase, event);
+  const promotedReservation = await processStripeWebhookEventForPromotedReservation(
+    supabase,
+    event,
+  );
   const subscription = await processStripeWebhookEventForSubscriptions(supabase, event);
-  return { eventType: event.type, partner, planPayment, promoted, subscription };
+  return {
+    eventType: event.type,
+    partner,
+    planPayment,
+    promoted,
+    promotedReservation,
+    subscription,
+  };
 }
 
 export function shouldMarkBillingEventSkipped(result: StripeBillingWebhookProcessResult): boolean {
@@ -47,7 +63,17 @@ export function shouldMarkBillingEventSkipped(result: StripeBillingWebhookProces
     shouldMarkPartnerBillingEventSkipped(result.partner) &&
     shouldMarkPlanPaymentBillingEventSkipped(result.planPayment) &&
     shouldMarkPromotedBillingEventSkipped(result.promoted) &&
+    shouldMarkPromotedReservationBillingEventSkipped(result.promotedReservation) &&
     shouldMarkSubscriptionBillingEventSkipped(result.subscription)
+  );
+}
+
+export function shouldMarkPromotedReservationBillingEventSkipped(
+  promotedReservation: PromotedReservationWebhookResult,
+): boolean {
+  return (
+    promotedReservation.outcome === "ignored" ||
+    promotedReservation.outcome === "validation_failed"
   );
 }
 
@@ -65,6 +91,7 @@ export function shouldRetryBillingWebhook(result: StripeBillingWebhookProcessRes
   return (
     shouldRetryPlanPaymentWebhook(result.planPayment) ||
     result.promoted.outcome === "retryable_failure" ||
+    result.promotedReservation.outcome === "retryable_failure" ||
     shouldRetrySubscriptionBillingWebhook(result.subscription)
   );
 }

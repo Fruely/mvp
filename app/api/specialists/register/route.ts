@@ -15,6 +15,10 @@ import {
 } from "@/lib/serviceRequests/attributionCookie";
 import { tryBindPromotionAttributionFromCookie } from "@/lib/serviceRequests/tryBindPromotionAttributionFromCookie";
 import {
+  completePromotedReservationRegistration,
+  PROMOTED_RESERVATION_COOKIE_NAME,
+} from "@/lib/billing/completePromotedReservationRegistration";
+import {
   SPECIALIST_AGB_VERSION,
   getSpecialistRulesVersion,
 } from "@/lib/legal/specialistLegalMeta";
@@ -228,6 +232,16 @@ export async function POST(request: NextRequest) {
       supabase,
     });
 
+    void completePromotedReservationRegistration({
+      supabase,
+      userId: createdUser.user.id,
+      specialistId: specialist.id,
+      email: createdUser.user.email ?? null,
+      reservationCookieId: request.cookies.get(PROMOTED_RESERVATION_COOKIE_NAME)?.value,
+    }).catch((err) => {
+      console.warn("[specialists/register] promoted reservation completion failed", err);
+    });
+
     const response = jsonNoStore({ success: true, specialist }, { status: 201 });
     if (promotionBind.clearCookie) {
       response.cookies.set(
@@ -236,6 +250,13 @@ export async function POST(request: NextRequest) {
         buildAttributionCookieClearOptions(),
       );
     }
+    response.cookies.set(PROMOTED_RESERVATION_COOKIE_NAME, "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 0,
+    });
     return response;
   } catch (error: any) {
     return jsonNoStore(
