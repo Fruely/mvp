@@ -149,7 +149,7 @@ ORDER BY con.conname;
 -- =============================================================================
 -- D) Missing timing columns (should return zero rows)
 -- =============================================================================
-SELECT missing.column_name
+SELECT expected.column_name
 FROM (
   SELECT unnest(ARRAY[
     'service_timing_type',
