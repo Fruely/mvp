@@ -68,7 +68,6 @@ export type ValidatedServiceRequestCreate = {
   category_id: string | null;
   category_text: string | null;
   source_path: string | null;
-  client_campaign_link_id: string | null;
 };
 
 export type ValidationError = { error: string; status: number };
@@ -87,10 +86,6 @@ function parseRadius(value: unknown): number | null {
 const TIMING_LIST_COLUMNS =
   "service_timing_type, service_timing_date, service_timing_time, service_timing_date_end, service_timing_period, service_timing_note";
 
-function isUuid(value: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
-}
-
 export function validateServiceRequestCreate(
   body: ServiceRequestCreateInput,
 ): ValidatedServiceRequestCreate | ValidationError {
@@ -108,6 +103,10 @@ export function validateServiceRequestCreate(
 
   if (body.public_id != null && String(body.public_id).trim()) {
     return { error: "public_id is not allowed", status: 400 };
+  }
+
+  if (body.client_campaign_link_id != null && String(body.client_campaign_link_id).trim()) {
+    return { error: "client_campaign_link_id is not allowed", status: 400 };
   }
 
   if (body.source != null && String(body.source).trim() && String(body.source).trim() !== SERVICE_REQUEST_SOURCE) {
@@ -176,10 +175,6 @@ export function validateServiceRequestCreate(
   const category_id = str(body.category_id);
   const category_text = str(body.category_text);
   const source_path = str(body.source_path);
-  const client_campaign_link_id = str(body.client_campaign_link_id);
-  if (client_campaign_link_id && !isUuid(client_campaign_link_id)) {
-    return { error: "invalid client_campaign_link_id", status: 400 };
-  }
 
   return {
     client_name,
@@ -199,7 +194,6 @@ export function validateServiceRequestCreate(
     category_id,
     category_text,
     source_path,
-    client_campaign_link_id,
   };
 }
 

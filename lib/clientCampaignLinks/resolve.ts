@@ -25,10 +25,31 @@ export function campaignLinkToRequestHref(
     preferred_language: preferred,
     work_format: campaign.work_format,
     radius_km: campaign.radius_km,
-    client_campaign_link_id: campaign.id,
   });
 }
 
 export function buildCampaignPublicUrl(siteOrigin: string, slug: string): string {
   return campaignPublicUrl(slug, siteOrigin);
+}
+
+export function summarizeCampaignContext(
+  campaign: Pick<
+    ClientCampaignLinkRow,
+    | "name"
+    | "category_slug"
+    | "service_query"
+    | "place"
+    | "preferred_language"
+    | "work_format"
+    | "source"
+  >,
+): string {
+  const parts: string[] = [];
+  if (campaign.category_slug) parts.push(campaign.category_slug);
+  else if (campaign.service_query) parts.push(campaign.service_query);
+  if (campaign.place) parts.push(campaign.place);
+  if (campaign.preferred_language) parts.push(campaign.preferred_language);
+  if (campaign.work_format) parts.push(campaign.work_format);
+  if (campaign.source) parts.push(campaign.source);
+  return parts.join(" · ") || campaign.name;
 }
