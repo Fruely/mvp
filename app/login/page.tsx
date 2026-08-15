@@ -6,11 +6,11 @@ import SpecialistPasswordSignIn from "@/app/specialist/claim/SpecialistPasswordS
 import { specialistDashboardPath } from "@/lib/specialists/navigation";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
-import { getDictionary, isSupportedLang, t, type Lang } from "@/lib/i18n";
+import { getDictionary, langFromCookie, t, type Lang } from "@/lib/i18n";
 
 function loginLangFromCookie(): Lang {
   const cookieLang = cookies().get("freuly_lang")?.value ?? "";
-  return isSupportedLang(cookieLang) ? cookieLang : "ru";
+  return langFromCookie(cookieLang);
 }
 
 /**

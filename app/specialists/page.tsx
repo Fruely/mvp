@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
+import { DEFAULT_LANG } from "@/lib/i18n";
 import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
 import { getDictionary, t, tCount, type Dictionary, type Lang } from "@/lib/i18n";
 import { searchSpecialists, type SpecialistResult } from "@/lib/search/specialistSearch";
@@ -15,7 +16,7 @@ import { requestServiceHref } from "@/lib/serviceRequests/requestServiceHref";
 export const dynamic = "force-dynamic";
 
 /** Used when `lang` query param is missing (e.g. `/specialists?mode=online`). */
-const DEFAULT_SPECIALISTS_SEARCH_LANG = "ru";
+const DEFAULT_SPECIALISTS_SEARCH_LANG = DEFAULT_LANG;
 
 const UI_LANGS = ["ua", "ru", "de"] as const;
 type UiLang = (typeof UI_LANGS)[number];
@@ -25,7 +26,7 @@ function toUiLang(lang: string): UiLang {
   if (lower === "de") return "de";
   if (lower === "ru") return "ru";
   if (lower === "uk") return "ua";
-  return "ua";
+  return DEFAULT_LANG;
 }
 
 function serviceSearchHref(uiLang: UiLang): string {

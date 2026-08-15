@@ -1,6 +1,13 @@
 export const SUPPORTED_LANGS = ["ua", "ru", "de"] as const;
 export type Lang = (typeof SUPPORTED_LANGS)[number];
 
+/** Unknown-user / missing-cookie fallback — not an override for explicit URL locales. */
+export const DEFAULT_LANG: Lang = "ru";
+
+export function langFromCookie(cookieValue: string | undefined | null): Lang {
+  return isSupportedLang(cookieValue ?? "") ? (cookieValue as Lang) : DEFAULT_LANG;
+}
+
 export type Dictionary = Record<string, unknown>;
 
 export function isSupportedLang(value: string): value is Lang {

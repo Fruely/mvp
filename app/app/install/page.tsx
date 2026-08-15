@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { isSupportedLang, type Lang } from "@/lib/i18n";
+import { isSupportedLang, langFromCookie, type Lang } from "@/lib/i18n";
 import { installPageHref, parseAudience } from "@/lib/pwa/installLogic";
 
 const LANG_COOKIE = "freuly_lang";
@@ -17,7 +17,7 @@ export const metadata = {
 
 function resolveLang(): Lang {
   const cookieLang = cookies().get(LANG_COOKIE)?.value;
-  return cookieLang && isSupportedLang(cookieLang) ? cookieLang : "ua";
+  return langFromCookie(cookieLang);
 }
 
 function firstString(value: string | string[] | undefined): string | undefined {

@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { Search } from "lucide-react";
-import { getDictionary, isSupportedLang, t, type Lang } from "@/lib/i18n";
+import { getDictionary, isSupportedLang, langFromCookie, t, type Lang } from "@/lib/i18n";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { APP_SHELL_CATEGORY_SLUGS, APP_SHELL_COPY } from "@/lib/app-shell/copy";
@@ -26,7 +26,7 @@ export const metadata = {
 
 function resolveLang(): Lang {
   const cookieLang = cookies().get(LANG_COOKIE)?.value;
-  return cookieLang && isSupportedLang(cookieLang) ? cookieLang : "ua";
+  return langFromCookie(cookieLang);
 }
 
 /**

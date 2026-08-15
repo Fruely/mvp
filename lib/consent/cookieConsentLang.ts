@@ -3,6 +3,9 @@
  * Public site switcher remains ua/ru/de; `en` is prepared for consent fallback.
  */
 
+/** Unknown-user fallback — keep in sync with DEFAULT_LANG in lib/i18n.ts */
+const UNKNOWN_USER_LANG = "ru" as const;
+
 export const CONSENT_LANGS = ["ua", "ru", "de", "en"] as const;
 export type ConsentLang = (typeof CONSENT_LANGS)[number];
 
@@ -57,7 +60,7 @@ export function resolveConsentLang(
   }
 
   if (path === "/app" || path.startsWith("/app/")) {
-    return cookieUiLang(freulyLangCookie, "ua");
+    return cookieUiLang(freulyLangCookie, UNKNOWN_USER_LANG);
   }
 
   if (
@@ -66,7 +69,7 @@ export function resolveConsentLang(
     path === "/specialists" ||
     path.startsWith("/specialists/")
   ) {
-    return cookieUiLang(freulyLangCookie, "ru");
+    return cookieUiLang(freulyLangCookie, UNKNOWN_USER_LANG);
   }
 
   return "en";

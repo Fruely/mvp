@@ -3,10 +3,16 @@ import {
   isPublicHomepagePath,
   PUBLIC_HOMEPAGE_CACHE_CONTROL,
 } from "@/lib/homepage/middlewareCache";
+import { langFromCookie, type Lang } from "@/lib/i18n";
+import {
+  legacySpecialistDashboardPath,
+  resolveAppShellLang,
+  resolveSpecialistsMiddlewareLang,
+  resolveUnprefixedRedirectLang,
+} from "@/lib/middlewareLang";
 import { SPECIALISTS_UI_LANG_HEADER } from "@/lib/search/specialistsUiLang";
 
 const SUPPORTED_LANGS = ["ua", "ru", "de"] as const;
-type Lang = (typeof SUPPORTED_LANGS)[number];
 
 const LANG_COOKIE = "freuly_lang";
 const DEV_COOKIE = "freuly_dev";
@@ -55,10 +61,9 @@ export function middleware(request: NextRequest) {
   // Legacy specialist dashboard URLs → /{lang}/specialist/dashboard
   if (pathname === "/specialist/dashboard" || pathname.startsWith("/specialist/dashboard/")) {
     const cookieLang = request.cookies.get(LANG_COOKIE)?.value;
-    const preferredLang: Lang = isLang(cookieLang || "") ? (cookieLang as Lang) : "ua";
     const rest = pathname.slice("/specialist/dashboard".length);
     const url = request.nextUrl.clone();
-    url.pathname = `/${preferredLang}/specialist/dashboard${rest}`;
+    url.pathname = legacySpecialistDashboardPath(cookieLang, rest);
     return NextResponse.redirect(url);
   }
 
@@ -68,11 +73,11 @@ export function middleware(request: NextRequest) {
 
   // PWA app-shell entry (top-level /app and /app/*): must stay reachable in
   // closed mode and must NOT be i18n-redirected to /{lang}/app. Language is
-  // resolved from the existing `freuly_lang` cookie (default `ua`) so
+  // resolved from the existing `freuly_lang` cookie (default `ru`) so
   // <html lang> matches the shell. Includes /app/install for install landing.
   if (pathname === "/app" || pathname.startsWith("/app/")) {
     const cookieLang = request.cookies.get(LANG_COOKIE)?.value;
-    const appLang: Lang = isLang(cookieLang || "") ? (cookieLang as Lang) : "ua";
+    const appLang: Lang = resolveAppShellLang(cookieLang);
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set(HTML_LANG_HEADER, appLang === "ua" ? "uk" : appLang);
     requestHeaders.set(PATHNAME_HEADER, pathname);
@@ -142,11 +147,7 @@ export function middleware(request: NextRequest) {
   if (pathname === "/specialists" || pathname.startsWith("/specialists/")) {
     const qLang = searchParams.get("lang");
     const cookieLang = request.cookies.get(LANG_COOKIE)?.value;
-    const uiLang: Lang = isLang(qLang || "")
-      ? (qLang as Lang)
-      : isLang(cookieLang || "")
-        ? (cookieLang as Lang)
-        : "ru";
+    const uiLang: Lang = resolveSpecialistsMiddlewareLang({ queryLang: qLang, cookieLang });
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set(HTML_LANG_HEADER, uiLang === "ua" ? "uk" : uiLang);
     requestHeaders.set(PATHNAME_HEADER, pathname);
@@ -159,7 +160,7 @@ export function middleware(request: NextRequest) {
   // Unprefixed /login: html lang follows freuly_lang (default ru), same as specialists.
   if (pathname === "/login" || pathname.startsWith("/login/")) {
     const cookieLang = request.cookies.get(LANG_COOKIE)?.value;
-    const loginLang: Lang = isLang(cookieLang || "") ? (cookieLang as Lang) : "ru";
+    const loginLang: Lang = langFromCookie(cookieLang);
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set(HTML_LANG_HEADER, loginLang === "ua" ? "uk" : loginLang);
     requestHeaders.set(PATHNAME_HEADER, pathname);
@@ -210,7 +211,7 @@ export function middleware(request: NextRequest) {
   const firstI18n = segmentsForI18n[0];
 
   const cookieLang = request.cookies.get(LANG_COOKIE)?.value;
-  const preferredLang: Lang = isLang(cookieLang || "") ? (cookieLang as Lang) : "ua";
+  const preferredLang: Lang = resolveUnprefixedRedirectLang(cookieLang);
 
   // No lang prefix: redirect to preferred lang + same path
   if (!firstI18n || !isLang(firstI18n)) {
