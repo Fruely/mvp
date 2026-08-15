@@ -42,6 +42,7 @@ export type ServiceRequestCreateInput = {
   category_id?: unknown;
   category_text?: unknown;
   source_path?: unknown;
+  client_campaign_link_id?: unknown;
   hp?: unknown;
   status?: unknown;
   source?: unknown;
@@ -67,6 +68,7 @@ export type ValidatedServiceRequestCreate = {
   category_id: string | null;
   category_text: string | null;
   source_path: string | null;
+  client_campaign_link_id: string | null;
 };
 
 export type ValidationError = { error: string; status: number };
@@ -102,6 +104,10 @@ export function validateServiceRequestCreate(
 
   if (body.public_id != null && String(body.public_id).trim()) {
     return { error: "public_id is not allowed", status: 400 };
+  }
+
+  if (body.client_campaign_link_id != null && String(body.client_campaign_link_id).trim()) {
+    return { error: "client_campaign_link_id is not allowed", status: 400 };
   }
 
   if (body.source != null && String(body.source).trim() && String(body.source).trim() !== SERVICE_REQUEST_SOURCE) {
@@ -189,6 +195,7 @@ export function validateServiceRequestCreate(
     category_id,
     category_text,
     source_path,
+    client_campaign_link_id: null,
   };
 }
 
