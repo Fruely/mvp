@@ -16,9 +16,18 @@ export default function StarMapSection({ lang, dict, data }: StarMapSectionProps
   const counterLabel = tCount(dict, lang, "home.starMap.counter", data.total);
 
   return (
-    <section className="bg-[#0D2B2A] px-6 py-12 md:px-8 md:py-20 lg:box-border lg:flex lg:h-[520px] lg:items-center lg:py-5">
-      <div className="mx-auto flex w-full max-w-[1160px] flex-col items-center gap-8 md:gap-10 lg:h-full lg:flex-row lg:items-center lg:justify-between lg:gap-10">
-        <div className="flex w-full flex-col items-center text-center lg:w-[55%] lg:items-start lg:text-left">
+    <section className="relative overflow-hidden bg-[#0D2B2A] px-6 py-12 md:px-8 md:py-20 lg:h-[520px] lg:py-0">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden w-[min(100%,720px)] bg-gradient-to-r from-[#0D2B2A] from-[35%] via-[#0D2B2A]/95 to-transparent lg:block"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 z-10 h-32 bg-gradient-to-b from-[#0D2B2A] to-transparent lg:hidden"
+      />
+
+      <div className="relative mx-auto h-full w-full max-w-[1160px] lg:min-h-[520px]">
+        <div className="relative z-20 flex flex-col items-center text-center lg:h-full lg:max-w-[520px] lg:items-start lg:justify-center lg:py-10 lg:text-left">
           <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#5ECEC3]">
             {t(dict, "home.starMap.kicker")}
           </p>
@@ -49,14 +58,19 @@ export default function StarMapSection({ lang, dict, data }: StarMapSectionProps
           </div>
         </div>
 
-        <div className="w-full lg:w-[45%] lg:shrink-0">
-          <GermanyStarMap data={data} dict={dict} lang={lang} />
+        <div className="relative z-0 mt-8 flex justify-center lg:absolute lg:inset-y-0 lg:right-[-40px] lg:mt-0 lg:w-[min(100%,900px)] lg:justify-end xl:right-[-80px]">
+          <GermanyStarMap
+            data={data}
+            dict={dict}
+            lang={lang}
+            className="lg:-mt-12 lg:w-[850px] lg:max-w-none"
+          />
         </div>
 
-        <div className="flex w-full max-w-[340px] flex-col items-center gap-4 lg:hidden">
+        <div className="relative z-20 mt-8 flex w-full flex-col items-center gap-4 lg:hidden">
           <Link
             href={`/${lang}/become-specialist`}
-            className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-[#1A8A7D] px-6 text-[15px] font-semibold text-white transition-colors hover:bg-[#157a6f]"
+            className="inline-flex h-12 w-full max-w-[340px] items-center justify-center rounded-lg bg-[#1A8A7D] px-6 text-[15px] font-semibold text-white transition-colors hover:bg-[#157a6f]"
           >
             {t(dict, "home.starMap.primaryCta")}
           </Link>
