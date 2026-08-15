@@ -46,6 +46,14 @@
       "primaryCta": "Знайти спеціаліста",
       "adjustFiltersTitle": "Хочете змінити умови пошуку?"
     },
+    "assistedMatching": {
+      "title": "Freuly підбере спеціаліста для вас",
+      "subtitle": "Опишіть завдання — ми зв'яжемося з вами та допоможемо з підбором.",
+      "primaryCta": "Залишити заявку Freuly",
+      "secondaryOnlineCta": "Показати онлайн-спеціалістів",
+      "refineSearch": "Уточнити пошук",
+      "relatedTitle": "Схожі напрямки:"
+    },
     "results": {
       "backToSearch": "Повернутися до пошуку",
       "title": "Спеціалісти",
@@ -132,17 +140,17 @@
       "submitFailed": "Не вдалося надіслати запит. Спробуйте пізніше."
     },
     "success": {
-      "title": "Запит отримано",
-      "body": "Ми отримали ваше завдання і почнемо пошук відповідного спеціаліста. Повідомимо вам, коли з'явиться підходящий варіант.",
+      "title": "Дякуємо!",
+      "body": "Дякуємо! Ми отримали вашу заявку. Наші спеціалісти зв'яжуться з вами.",
       "publicIdLabel": "Номер запиту",
       "backToSearch": "Повернутися до пошуку",
       "backHome": "На головну"
     },
     "cta": {
-      "emptyTitle": "Не знайшли відповідного спеціаліста?",
-      "emptySubtitle": "Опишіть завдання — Freuly знайде вам виконавця",
-      "fallbackTitle": "Ніхто не підійшов? Freuly продовжить пошук.",
-      "fallbackSubtitle": "Розкажіть про завдання — ми підберемо спеціаліста вручну.",
+      "emptyTitle": "Freuly продовжить підбір для вас",
+      "emptySubtitle": "Опишіть завдання — ми зв'яжемося з вами та допоможемо з підбором.",
+      "fallbackTitle": "Freuly може підібрати спеціаліста для вас",
+      "fallbackSubtitle": "Розкажіть про завдання — ми зв'яжемося з вами.",
       "button": "Описати завдання"
     }
   },
@@ -207,6 +215,7 @@
   "home.variantC.hero.trustLine": "Freuly допомагає клієнтам і спеціалістам по всій Німеччині",
   "home.variantC.categories.title": "З чим вам потрібна допомога?",
   "home.variantC.categories.viewAll": "Усі категорії",
+  "home.variantC.categories.tileHint": "Знайти спеціаліста через Freuly",
   "home.variantC.howItWorks.eyebrow": "Як працює Freuly",
   "home.variantC.howItWorks.headline": "Три прості кроки до потрібного спеціаліста",
   "home.variantC.howItWorks.step1.title": "Оберіть категорію та мову",

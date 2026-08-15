@@ -7,6 +7,28 @@ import { getDictionary, isSupportedLang, t, type Lang } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
+const WORK_FORMATS = ["online", "offline", "hybrid"] as const;
+
+function readParam(
+  searchParams: Record<string, string | string[] | undefined>,
+  key: string,
+): string | null {
+  const value = searchParams[key];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function readWorkFormat(value: string | null): (typeof WORK_FORMATS)[number] | null {
+  if (!value) return null;
+  return (WORK_FORMATS as readonly string[]).includes(value)
+    ? (value as (typeof WORK_FORMATS)[number])
+    : null;
+}
+
+function readPreferredLanguage(value: string | null): Lang | null {
+  if (value === "ua" || value === "ru" || value === "de") return value;
+  return null;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -40,12 +62,6 @@ export default async function RequestServicePage({
     notFound();
   }
   const lang = params.lang as Lang;
-  const category_id =
-    typeof searchParams.category_id === "string" ? searchParams.category_id : null;
-  const category_text =
-    typeof searchParams.category_text === "string" ? searchParams.category_text : null;
-  const source_path =
-    typeof searchParams.source_path === "string" ? searchParams.source_path : null;
 
   const dict = await getDictionary(lang);
 
@@ -59,9 +75,14 @@ export default async function RequestServicePage({
         />
         <ServiceRequestForm
           lang={lang}
-          initialCategoryId={category_id}
-          initialCategoryText={category_text}
-          sourcePath={source_path}
+          initialCategoryId={readParam(searchParams, "category_id")}
+          initialCategoryText={readParam(searchParams, "category_text")}
+          sourcePath={readParam(searchParams, "source_path")}
+          initialQuery={readParam(searchParams, "q")}
+          initialPlace={readParam(searchParams, "place")}
+          initialPreferredLanguage={readPreferredLanguage(readParam(searchParams, "preferred_language"))}
+          initialWorkFormat={readWorkFormat(readParam(searchParams, "work_format"))}
+          initialRadiusKm={readParam(searchParams, "radius_km")}
         />
       </div>
     </div>

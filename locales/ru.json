@@ -46,6 +46,14 @@
       "primaryCta": "Найти специалиста",
       "adjustFiltersTitle": "Хотите изменить условия поиска?"
     },
+    "assistedMatching": {
+      "title": "Freuly подберёт специалиста для вас",
+      "subtitle": "Опишите задачу — мы свяжемся с вами и поможем с подбором.",
+      "primaryCta": "Оставить заявку Freuly",
+      "secondaryOnlineCta": "Показать онлайн-специалистов",
+      "refineSearch": "Уточнить поиск",
+      "relatedTitle": "Похожие направления:"
+    },
     "results": {
       "backToSearch": "Вернуться к поиску",
       "title": "Специалисты",
@@ -132,17 +140,17 @@
       "submitFailed": "Не удалось отправить запрос. Попробуйте позже."
     },
     "success": {
-      "title": "Запрос получен",
-      "body": "Мы получили вашу задачу и начнём поиск подходящего специалиста. Сообщим вам, когда появится подходящий вариант.",
+      "title": "Спасибо!",
+      "body": "Спасибо! Мы получили вашу заявку. Наши специалисты свяжутся с вами.",
       "publicIdLabel": "Номер запроса",
       "backToSearch": "Вернуться к поиску",
       "backHome": "На главную"
     },
     "cta": {
-      "emptyTitle": "Не нашли подходящего специалиста?",
-      "emptySubtitle": "Опишите задачу — Freuly найдёт вам исполнителя",
-      "fallbackTitle": "Никто не подошёл? Freuly продолжит поиск.",
-      "fallbackSubtitle": "Расскажите о задаче — мы подберём специалиста вручную.",
+      "emptyTitle": "Freuly продолжит подбор для вас",
+      "emptySubtitle": "Опишите задачу — мы свяжемся с вами и поможем с подбором.",
+      "fallbackTitle": "Freuly может подобрать специалиста для вас",
+      "fallbackSubtitle": "Расскажите о задаче — мы свяжемся с вами.",
       "button": "Описать задачу"
     }
   },
@@ -242,6 +250,7 @@
   "home.variantC.hero.trustLine": "Freuly помогает клиентам и специалистам по всей Германии",
   "home.variantC.categories.title": "С чем вам нужна помощь?",
   "home.variantC.categories.viewAll": "Все категории",
+  "home.variantC.categories.tileHint": "Найти специалиста через Freuly",
   "home.variantC.howItWorks.eyebrow": "Как работает Freuly",
   "home.variantC.howItWorks.headline": "Три простых шага к нужному специалисту",
   "home.variantC.howItWorks.step1.title": "Выберите категорию и язык",

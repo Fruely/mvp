@@ -13,11 +13,18 @@ import {
 } from "@/components/public/publicStyles";
 import uaDict from "@/locales/ua.json";
 
+import { splitPlaceForPrefill } from "@/lib/search/searchContext";
+
 type Props = {
   lang: Lang;
   initialCategoryId?: string | null;
   initialCategoryText?: string | null;
   sourcePath?: string | null;
+  initialQuery?: string | null;
+  initialPlace?: string | null;
+  initialPreferredLanguage?: Lang | null;
+  initialWorkFormat?: (typeof WORK_FORMATS)[number] | null;
+  initialRadiusKm?: string | null;
 };
 
 const URGENCY_VALUES = [
@@ -37,18 +44,28 @@ export default function ServiceRequestForm({
   initialCategoryId,
   initialCategoryText,
   sourcePath,
+  initialQuery,
+  initialPlace,
+  initialPreferredLanguage,
+  initialWorkFormat,
+  initialRadiusKm,
 }: Props) {
+  const initialPlaceParts = splitPlaceForPrefill(initialPlace);
   const [dict, setDict] = useState<Dictionary>(uaDict as unknown as Dictionary);
   const [client_name, setClientName] = useState("");
   const [client_email, setClientEmail] = useState("");
   const [client_phone, setClientPhone] = useState("");
-  const [description, setDescription] = useState("");
-  const [preferred_language, setPreferredLanguage] = useState(lang);
-  const [work_format, setWorkFormat] = useState<(typeof WORK_FORMATS)[number]>("online");
-  const [city, setCity] = useState("");
-  const [postal_code, setPostalCode] = useState("");
+  const [description, setDescription] = useState(initialQuery?.trim() ?? "");
+  const [preferred_language, setPreferredLanguage] = useState<Lang>(
+    initialPreferredLanguage ?? lang,
+  );
+  const [work_format, setWorkFormat] = useState<(typeof WORK_FORMATS)[number]>(
+    initialWorkFormat ?? "online",
+  );
+  const [city, setCity] = useState(initialPlaceParts.city);
+  const [postal_code, setPostalCode] = useState(initialPlaceParts.postal_code);
   const [country_code, setCountryCode] = useState("DE");
-  const [radius_km, setRadiusKm] = useState("");
+  const [radius_km, setRadiusKm] = useState(initialRadiusKm?.trim() ?? "");
   const [urgency, setUrgency] = useState<(typeof URGENCY_VALUES)[number]>("flexible");
   const [desired_date, setDesiredDate] = useState("");
   const [category_text, setCategoryText] = useState(initialCategoryText ?? "");
@@ -242,7 +259,7 @@ export default function ServiceRequestForm({
         />
       </div>
 
-      {initialCategoryText ? (
+      {category_text ? (
         <div>
           <label className="mb-1 block text-sm font-medium text-freuly-text-secondary">
             {t(dict, "serviceRequest.fields.category")}

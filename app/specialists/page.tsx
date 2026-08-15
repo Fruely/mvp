@@ -1,17 +1,19 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { DEFAULT_LANG } from "@/lib/i18n";
 import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
 import { getDictionary, t, tCount, type Dictionary, type Lang } from "@/lib/i18n";
 import { searchSpecialists, type SpecialistResult } from "@/lib/search/specialistSearch";
 import { getSearchSuggestions } from "@/lib/search/searchSuggestions";
 import { shouldOfferOnlineFallbackForNoLocalResults } from "@/lib/search/noLocalResultsFallback";
+import { parseSearchContext, searchContextToAssistedPrefill } from "@/lib/search/searchContext";
+import { assistedPrefillToRequestHref } from "@/lib/serviceRequests/requestServiceHref";
 import ServiceRequestCtaBlock from "@/components/serviceRequests/ServiceRequestCtaBlock";
-import SearchResultsEmptyState from "@/components/public/SearchResultsEmptyState";
+import AssistedMatchingContinuation from "@/components/public/AssistedMatchingContinuation";
 import SpecialistResultCard from "@/components/public/SpecialistResultCard";
 import { publicPageContainerClass } from "@/components/public/publicStyles";
-import { requestServiceHref } from "@/lib/serviceRequests/requestServiceHref";
 
 export const dynamic = "force-dynamic";
 
@@ -55,7 +57,7 @@ function buildSpecialistsRouteTarget(sp: SearchParams): string {
 }
 
 /**
- * Query-based link for a no-result suggestion; keeps mode=online / place when
+ * Query-based link for a related search; keeps mode=online / place when
  * present, and preserves radius when the search was a local (place) search.
  */
 function buildSuggestionHref(
@@ -170,32 +172,16 @@ export default async function SpecialistsPage({
   const isOnlineList = pageMode === "online";
   const uiLang = toUiLang(lang);
   const dict = await getDictionary(uiLang);
+  const searchContext = parseSearchContext(searchParams);
+  const assistedPrefill = searchContextToAssistedPrefill(searchContext);
+  const assistedHref = assistedPrefillToRequestHref(uiLang, assistedPrefill);
 
   if (!category && !q) {
-    return (
-      <SearchResultsEmptyState
-        backHref={serviceSearchHref(uiLang)}
-        backLabel={t(dict, "search.results.backToSearch")}
-        pageTitle={t(dict, "search.results.title")}
-        title="Выберите, какого специалиста вы ищете"
-        primaryHref={serviceSearchHref(uiLang)}
-        primaryLabel={t(dict, "search.results.backToSearch")}
-      />
-    );
+    redirect(serviceSearchHref(uiLang));
   }
 
-  if (!isOnlineList && !place && !q) {
-    return (
-      <SearchResultsEmptyState
-        backHref={serviceSearchHref(uiLang)}
-        backLabel={t(dict, "search.results.backToSearch")}
-        pageTitle={t(dict, "search.results.title")}
-        title="Missing search parameters"
-        subtitle="Language and location are required. Please start your search from the homepage."
-        primaryHref={serviceSearchHref(uiLang)}
-        primaryLabel={t(dict, "search.results.backToSearch")}
-      />
-    );
+  if (!isOnlineList && !place && !q && !category) {
+    redirect(serviceSearchHref(uiLang));
   }
 
   // Direct call — no HTTP roundtrip.
@@ -229,96 +215,44 @@ export default async function SpecialistsPage({
       fallback: result.fallback,
     });
 
+    const suggestions = q ? getSearchSuggestions({ q, lang: uiLang }) : [];
+
+    let secondaryHref: string | null = null;
     if (result.fallback === "no_local_results" && place) {
-      const noLocalSourcePath = `/specialists?${new URLSearchParams(
-        Object.entries({
-          lang,
-          ...(category ? { category } : {}),
-          ...(q ? { q } : {}),
-          place,
-          ...(radiusParam ? { radius: radiusParam } : {}),
-        }).filter(([, v]) => v != null && v !== "") as [string, string][],
-      ).toString()}`;
       const offerOnlineFallback = shouldOfferOnlineFallbackForNoLocalResults({
         place,
         radius: radiusParam,
       });
-
-      if (!offerOnlineFallback) {
-        const findSpecialistHref = requestServiceHref(uiLang, {
-          source_path: noLocalSourcePath,
-        });
-        return (
-          <SearchResultsEmptyState
-            backHref={serviceSearchHref(uiLang)}
-            backLabel={t(dict, "search.results.backToSearch")}
-            pageTitle={t(dict, "search.results.title")}
-            title={t(dict, "search.noLocalResults.titleOffline")}
-            subtitle={t(dict, "search.noLocalResults.subtitleOffline")}
-            primaryHref={findSpecialistHref}
-            primaryLabel={t(dict, "search.noLocalResults.primaryCta")}
-            adjustTitle={t(dict, "search.noLocalResults.adjustFiltersTitle")}
-            changeHref={serviceSearchHref(uiLang)}
-            changeLabel={t(dict, "search.noResults.changeFilters")}
-          />
-        );
+      if (offerOnlineFallback) {
+        const onlineParams = new URLSearchParams();
+        onlineParams.set("mode", "online");
+        onlineParams.set("lang", lang);
+        if (category) onlineParams.set("category", category);
+        if (q) onlineParams.set("q", q);
+        secondaryHref = `/specialists?${onlineParams.toString()}`;
       }
-
-      const onlineParams = new URLSearchParams();
-      onlineParams.set("mode", "online");
-      onlineParams.set("lang", lang);
-      if (category) onlineParams.set("category", category);
-      if (q) onlineParams.set("q", q);
-      const onlineHref = `/specialists?${onlineParams.toString()}`;
-      return (
-        <SearchResultsEmptyState
-          backHref={serviceSearchHref(uiLang)}
-          backLabel={t(dict, "search.results.backToSearch")}
-          pageTitle={t(dict, "search.results.title")}
-          title={t(dict, "search.noLocalResults.titleOnline")}
-          primaryHref={onlineHref}
-          primaryLabel={t(dict, "search.noLocalResults.showOnlineCta")}
-          adjustTitle={t(dict, "search.noLocalResults.adjustFiltersTitle")}
-          changeHref={serviceSearchHref(uiLang)}
-          changeLabel={t(dict, "search.noResults.changeFilters")}
-        />
-      );
     }
 
-    const suggestions = q ? getSearchSuggestions({ q, lang: uiLang }) : [];
-    const zeroResultsSourcePath = `/specialists?${new URLSearchParams(
-      Object.entries({
-        lang,
-        ...(category ? { category } : {}),
-        ...(q ? { q } : {}),
-        ...(place ? { place } : {}),
-      }).filter(([, v]) => v != null && v !== "") as [string, string][],
-    ).toString()}`;
-    const findSpecialistHref = requestServiceHref(uiLang, {
-      source_path: zeroResultsSourcePath,
-    });
-
     return (
-      <SearchResultsEmptyState
+      <AssistedMatchingContinuation
         backHref={serviceSearchHref(uiLang)}
         backLabel={t(dict, "search.results.backToSearch")}
         pageTitle={t(dict, "search.results.title")}
-        title={t(dict, "search.noResults.title")}
-        subtitle={
-          q
-            ? t(dict, "search.noResults.serviceSubtitle")
-            : t(dict, "search.noResults.subtitle")
+        title={t(dict, "search.assistedMatching.title")}
+        subtitle={t(dict, "search.assistedMatching.subtitle")}
+        primaryHref={assistedHref}
+        primaryLabel={t(dict, "search.assistedMatching.primaryCta")}
+        secondaryHref={secondaryHref}
+        secondaryLabel={
+          secondaryHref ? t(dict, "search.assistedMatching.secondaryOnlineCta") : null
         }
-        primaryHref={findSpecialistHref}
-        primaryLabel={t(dict, "search.noResults.primaryCta")}
-        adjustTitle={t(dict, "search.noResults.adjustFiltersTitle")}
-        changeHref={serviceSearchHref(uiLang)}
-        changeLabel={t(dict, "search.noResults.changeFilters")}
+        refineHref={serviceSearchHref(uiLang)}
+        refineLabel={t(dict, "search.assistedMatching.refineSearch")}
         extra={
           suggestions.length > 0 ? (
             <div className="mt-6 text-center">
               <p className="mb-3 text-sm font-medium text-freuly-text-secondary">
-                {t(dict, "search.noResults.suggestionsTitle")}
+                {t(dict, "search.assistedMatching.relatedTitle")}
               </p>
               <div className="flex flex-wrap justify-center gap-2">
                 {suggestions.map((s) => (
@@ -440,14 +374,8 @@ export default async function SpecialistsPage({
           dict={dict}
           variant="fallback"
           returnHref={serviceSearchHref(uiLang)}
-          sourcePath={`/specialists?${new URLSearchParams(
-            Object.entries({
-              lang,
-              ...(category ? { category } : {}),
-              ...(q ? { q } : {}),
-              ...(place ? { place } : {}),
-            }).filter(([, v]) => v != null && v !== "") as [string, string][],
-          ).toString()}`}
+          sourcePath={searchContext.sourcePath}
+          prefill={assistedPrefill}
         />
       </div>
     </div>

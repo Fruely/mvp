@@ -4,7 +4,8 @@ import { Suspense, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Dictionary, Lang } from "@/lib/i18n";
-import { t, tCount } from "@/lib/i18n";
+import { t } from "@/lib/i18n";
+import { buildCategorySearchHref } from "@/lib/search/searchContext";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import InstallFreuly from "@/components/pwa/InstallFreuly";
@@ -72,10 +73,7 @@ export default function HomeClient({
     for (const parent of categories) {
       if (!Array.isArray(parent.children)) continue;
 
-      const hasActiveChild = parent.children.some(
-        (child) => child.specialists_count > 0
-      );
-      if (!hasActiveChild) continue;
+      if (parent.children.length === 0) continue;
 
       const orderedChildren = [...parent.children]
         .sort((a, b) => {
@@ -84,7 +82,9 @@ export default function HomeClient({
 
           if (aBoosted && !bBoosted) return -1;
           if (!aBoosted && bBoosted) return 1;
-          return b.specialists_count - a.specialists_count;
+          return getCategoryTitle(a, toCategoryTitleLang(lang)).localeCompare(
+            getCategoryTitle(b, toCategoryTitleLang(lang)),
+          );
         })
         .slice(0, 3);
 
@@ -99,13 +99,11 @@ export default function HomeClient({
       const fallbackNormal: typeof categories = [];
 
       for (const parent of preparedParents) {
-        const hasActiveBoostedChild = (parent.children ?? []).some(
-          (child) =>
-            BOOSTED_CHILD_CATEGORY_SLUGS.includes(child.slug as typeof BOOSTED_CHILD_CATEGORY_SLUGS[number]) &&
-            child.specialists_count > 0
+        const hasBoostedChild = (parent.children ?? []).some((child) =>
+          BOOSTED_CHILD_CATEGORY_SLUGS.includes(child.slug as typeof BOOSTED_CHILD_CATEGORY_SLUGS[number]),
         );
 
-        if (hasActiveBoostedChild) fallbackBoosted.push(parent);
+        if (hasBoostedChild) fallbackBoosted.push(parent);
         else fallbackNormal.push(parent);
       }
 
@@ -133,7 +131,7 @@ export default function HomeClient({
     }
 
     return orderedParents.slice(0, 4);
-  }, [categories, homepageParentSlotSlugs]);
+  }, [categories, homepageParentSlotSlugs, lang]);
 
   const categoryTiles = useMemo(() => {
     const fromParents = orderedCategorySections.flatMap((parent) => parent.children ?? []);
@@ -260,12 +258,7 @@ export default function HomeClient({
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {categoryTiles.map((child, index) => {
                 const label = getCategoryTitle(child, toCategoryTitleLang(lang));
-                const description = tCount(
-                  dict,
-                  lang,
-                  "category.parent.found",
-                  child.specialists_count,
-                );
+                const description = t(dict, "home.variantC.categories.tileHint");
                 const cardInner = (
                   <>
                     <div className="flex items-center gap-3">
@@ -280,21 +273,10 @@ export default function HomeClient({
                   </>
                 );
 
-                if (!child.is_clickable) {
-                  return (
-                    <div
-                      key={child.id}
-                      className={`${publicCardClass} flex flex-col gap-3.5 border border-freuly-border-default bg-[#f8f7f5] p-6 opacity-80`}
-                    >
-                      {cardInner}
-                    </div>
-                  );
-                }
-
                 return (
                   <Link
                     key={child.id}
-                    href={`/${lang}/category/${child.slug}`}
+                    href={buildCategorySearchHref(lang, child.slug)}
                     className={`${publicCardClass} flex flex-col gap-3.5 border border-freuly-border-default bg-[#f8f7f5] p-6 transition-colors hover:border-freuly-primary/30`}
                   >
                     {cardInner}

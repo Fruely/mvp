@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { t, type Dictionary, type Lang } from "@/lib/i18n";
-import { requestServiceHref } from "@/lib/serviceRequests/requestServiceHref";
+import {
+  assistedPrefillToRequestHref,
+  requestServiceHref,
+} from "@/lib/serviceRequests/requestServiceHref";
+import type { AssistedRequestPrefill } from "@/lib/search/searchContext";
 import { publicLinkOutlineClass } from "@/components/public/publicStyles";
 
 type Props = {
@@ -13,6 +17,7 @@ type Props = {
   categoryText?: string | null;
   sourcePath?: string | null;
   returnHref?: string | null;
+  prefill?: AssistedRequestPrefill | null;
 };
 
 export default function ServiceRequestCtaBlock({
@@ -23,14 +28,19 @@ export default function ServiceRequestCtaBlock({
   categoryText,
   sourcePath,
   returnHref,
+  prefill,
 }: Props) {
-  const href = requestServiceHref(lang, {
-    category_id: categoryId,
-    category_text: categoryText,
-    source_path: sourcePath,
-  });
+  const href = prefill
+    ? assistedPrefillToRequestHref(lang, prefill, { category_id: categoryId })
+    : requestServiceHref(lang, {
+        category_id: categoryId,
+        category_text: categoryText,
+        source_path: sourcePath,
+      });
   const titleKey =
-    variant === "empty" ? "serviceRequest.cta.emptyTitle" : "serviceRequest.cta.fallbackTitle";
+    variant === "empty"
+      ? "serviceRequest.cta.emptyTitle"
+      : "serviceRequest.cta.fallbackTitle";
   const subtitleKey =
     variant === "empty" ? "serviceRequest.cta.emptySubtitle" : "serviceRequest.cta.fallbackSubtitle";
 

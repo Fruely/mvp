@@ -43,6 +43,14 @@
       "primaryCta": "Spezialist finden",
       "adjustFiltersTitle": "Möchten Sie die Suchkriterien ändern?"
     },
+    "assistedMatching": {
+      "title": "Freuly findet die passende Fachkraft für Sie",
+      "subtitle": "Beschreiben Sie Ihre Aufgabe — wir melden uns bei Ihnen und helfen bei der Auswahl.",
+      "primaryCta": "Freuly-Anfrage senden",
+      "secondaryOnlineCta": "Online-Spezialisten anzeigen",
+      "refineSearch": "Suche verfeinern",
+      "relatedTitle": "Ähnliche Bereiche:"
+    },
     "results": {
       "backToSearch": "Zurück zur Suche",
       "title": "Spezialisten",
@@ -127,17 +135,17 @@
       "submitFailed": "Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es später erneut."
     },
     "success": {
-      "title": "Anfrage erhalten",
-      "body": "Wir haben Ihre Aufgabe erhalten und beginnen mit der Suche nach einer passenden Fachkraft. Wir melden uns, sobald eine passende Option verfügbar ist.",
+      "title": "Danke!",
+      "body": "Danke! Wir haben Ihre Anfrage erhalten. Unsere Fachkräfte werden sich bei Ihnen melden.",
       "publicIdLabel": "Anfragenummer",
       "backToSearch": "Zurück zur Suche",
       "backHome": "Zur Startseite"
     },
     "cta": {
-      "emptyTitle": "Keine passende Fachkraft gefunden?",
-      "emptySubtitle": "Beschreiben Sie Ihre Aufgabe – Freuly findet die passende Fachkraft",
-      "fallbackTitle": "Niemand passt? Freuly sucht weiter.",
-      "fallbackSubtitle": "Erzählen Sie uns von Ihrer Aufgabe — wir finden manuell eine Fachkraft.",
+      "emptyTitle": "Freuly übernimmt die Auswahl für Sie",
+      "emptySubtitle": "Beschreiben Sie Ihre Aufgabe — wir melden uns bei Ihnen und helfen bei der Auswahl.",
+      "fallbackTitle": "Freuly kann eine Fachkraft für Sie finden",
+      "fallbackSubtitle": "Erzählen Sie uns von Ihrer Aufgabe — wir melden uns bei Ihnen.",
       "button": "Aufgabe beschreiben"
     }
   },
@@ -204,6 +212,7 @@
   "home.variantC.hero.trustLine": "Freuly verbindet Kundinnen, Kunden und Fachkräfte in ganz Deutschland",
   "home.variantC.categories.title": "Wobei brauchen Sie Hilfe?",
   "home.variantC.categories.viewAll": "Alle Kategorien",
+  "home.variantC.categories.tileHint": "Fachkraft über Freuly finden",
   "home.variantC.howItWorks.eyebrow": "So funktioniert Freuly",
   "home.variantC.howItWorks.headline": "In drei Schritten zum passenden Spezialisten",
   "home.variantC.howItWorks.step1.title": "Kategorie und Sprache wählen",

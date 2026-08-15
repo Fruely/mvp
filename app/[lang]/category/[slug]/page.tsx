@@ -2,14 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { getDictionary, t, tCount, type Dictionary, type Lang } from "@/lib/i18n";
+import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
+import { buildCategorySearchHref } from "@/lib/search/searchContext";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import uaDict from "@/locales/ua.json";
 import SpecialistPreviewCard from "@/components/specialist/SpecialistPreviewCard";
 import ServiceRequestCtaBlock from "@/components/serviceRequests/ServiceRequestCtaBlock";
-import { Alert, Badge, Button, Card, CardContent } from "@/components/ui";
+import { Alert, Button, Card, CardContent } from "@/components/ui";
 import {
   publicFieldClass,
   publicLinkPrimaryClass,
@@ -400,10 +401,6 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category?.id, selectedLanguage, selectedCity, sort, parentCategory]);
 
-  const foundText = useMemo(() => {
-    return tCount(dict, lang, "category.found", totalSpecialists);
-  }, [dict, lang, totalSpecialists]);
-
   const categoryLabel = category ? getCategoryTitle(category, toCategoryTitleLang(lang)) : "";
 
   const uspHeading = useMemo(() => {
@@ -471,37 +468,23 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
                   <Card
                     key={child.id}
                     padding="lg"
-                    className={`shadow-none ${child.is_clickable ? "transition hover:border-freuly-primary/30" : "opacity-80"}`}
+                    className="shadow-none transition hover:border-freuly-primary/30"
                   >
                     <CardContent>
                       <div className="mb-freuly-3 flex items-center justify-between gap-freuly-2">
                         <h3 className="text-freuly-card-title text-freuly-text-primary">
                           {getCategoryTitle(child, toCategoryTitleLang(lang))}
                         </h3>
-                        {!child.is_clickable ? (
-                          <Badge variant="neutral">{t(dict, "common.soon")}</Badge>
-                        ) : null}
                       </div>
                       <p className="mb-freuly-4 text-freuly-body-sm text-freuly-text-secondary">
-                        {tCount(
-                          dict,
-                          lang,
-                          "category.parent.found",
-                          child.specialists_count,
-                        )}
+                        {t(dict, "home.variantC.categories.tileHint")}
                       </p>
-                      {child.is_clickable ? (
-                        <Link
-                          href={`/${lang}/category/${child.slug}`}
-                          className="inline-flex items-center font-medium text-freuly-primary hover:text-freuly-primary-hover"
-                        >
-                          {t(dict, "common.more")}
-                        </Link>
-                      ) : (
-                        <span className="inline-flex items-center font-medium text-freuly-text-muted">
-                          {t(dict, "category.comingSoon.title")}
-                        </span>
-                      )}
+                      <Link
+                        href={buildCategorySearchHref(lang, child.slug)}
+                        className="inline-flex items-center font-medium text-freuly-primary hover:text-freuly-primary-hover"
+                      >
+                        {t(dict, "common.more")}
+                      </Link>
                     </CardContent>
                   </Card>
                 ))}
@@ -538,7 +521,6 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
           </Link>
           <h1 className={publicSectionTitleClass}>{uspHeading}</h1>
           <p className={`mt-freuly-2 text-freuly-body-sm ${publicSectionSubtitleClass}`}>{uspSubtext}</p>
-          <p className={`mt-freuly-2 ${publicSectionSubtitleClass}`}>{foundText}</p>
         </div>
 
         <div className="space-y-freuly-6">
@@ -670,19 +652,19 @@ export default function CategoryPage({ params }: { params: { lang: string; slug:
           </div>
 
           {!loadingSpecialists && specialists.length === 0 ? (
-            <Card padding="lg" className="text-center shadow-none">
-              <CardContent>
-                <p className="text-freuly-body text-freuly-text-secondary">{t(dict, "category.empty.subtitle")}</p>
-                <ServiceRequestCtaBlock
-                  lang={lang}
-                  dict={dict}
-                  variant="empty"
-                  categoryId={category?.id}
-                  categoryText={categoryLabel}
-                  sourcePath={`${langPrefix}/category/${slug}`}
-                />
-              </CardContent>
-            </Card>
+            <ServiceRequestCtaBlock
+              lang={lang}
+              dict={dict}
+              variant="empty"
+              categoryId={category?.id}
+              categoryText={categoryLabel}
+              sourcePath={`${langPrefix}/category/${slug}`}
+              prefill={{
+                category_text: categoryLabel,
+                source_path: `${langPrefix}/category/${slug}`,
+                preferred_language: lang,
+              }}
+            />
           ) : null}
 
           {hasMore ? (
