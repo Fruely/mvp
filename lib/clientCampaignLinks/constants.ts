@@ -1,4 +1,4 @@
-import type { Lang } from "@/lib/i18n";
+import type { Lang } from "../i18n";
 
 export const CLIENT_CAMPAIGN_UI_LANGS = ["ru", "ua", "de"] as const;
 export type ClientCampaignUiLang = (typeof CLIENT_CAMPAIGN_UI_LANGS)[number];

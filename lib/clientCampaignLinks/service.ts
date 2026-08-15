@@ -1,6 +1,8 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
+import { ClientCampaignDomainError, isUniqueViolation } from "./errors";
 import {
   buildCampaignSlugSeed,
   isValidCampaignSlug,
@@ -14,22 +16,16 @@ import type {
 } from "./types";
 import { CLIENT_CAMPAIGN_LINK_SELECT } from "./types";
 
-export class ClientCampaignDomainError extends Error {
-  constructor(
-    public code: string,
-    public status: number,
-  ) {
-    super(code);
-  }
-}
+export { ClientCampaignDomainError } from "./errors";
 
 async function slugExists(supabase: SupabaseClient, slug: string): Promise<boolean> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("client_campaign_links")
     .select("id")
     .eq("slug", slug)
     .maybeSingle();
-  return Boolean(data?.id);
+  if (error) throw error;
+  return Boolean(data);
 }
 
 export async function allocateUniqueCampaignSlug(
@@ -126,6 +122,7 @@ export async function findCampaignByIdForAttribution(
     .from("client_campaign_links")
     .select(CLIENT_CAMPAIGN_LINK_SELECT)
     .eq("id", id)
+    .eq("is_active", true)
     .maybeSingle();
   if (error) throw error;
   return data ? rowToCampaign(data as Record<string, unknown>) : null;
@@ -154,13 +151,17 @@ export async function createClientCampaignLink(
       source: input.source ?? null,
       campaign_code: input.campaign_code ?? null,
       is_active: input.is_active ?? true,
-      created_at: nowIso,
       updated_at: nowIso,
     })
     .select(CLIENT_CAMPAIGN_LINK_SELECT)
     .single();
 
-  if (error) throw error;
+  if (error) {
+    if (isUniqueViolation(error)) {
+      throw new ClientCampaignDomainError("slug_taken", 409);
+    }
+    throw error;
+  }
   return rowToCampaign(data as Record<string, unknown>);
 }
 
@@ -218,7 +219,12 @@ export async function updateClientCampaignLink(
     .select(CLIENT_CAMPAIGN_LINK_SELECT)
     .single();
 
-  if (error) throw error;
+  if (error) {
+    if (isUniqueViolation(error)) {
+      throw new ClientCampaignDomainError("slug_taken", 409);
+    }
+    throw error;
+  }
   return rowToCampaign(data as Record<string, unknown>);
 }
 
@@ -228,4 +234,28 @@ export async function setClientCampaignLinkActive(
   isActive: boolean,
 ): Promise<ClientCampaignLinkRow> {
   return updateClientCampaignLink(supabase, id, { is_active: isActive });
+}
+
+export type AdminCategoryOption = {
+  id: string;
+  slug: string;
+  title: string;
+  title_ru: string | null;
+  title_ua: string | null;
+  title_de: string | null;
+  parent_id: string | null;
+  is_active: boolean;
+};
+
+export async function listCategoriesForCampaignAdmin(
+  supabase: SupabaseClient,
+): Promise<AdminCategoryOption[]> {
+  const { data, error } = await supabase
+    .from("categories")
+    .select("id, slug, title, title_ru, title_ua, title_de, parent_id, is_active")
+    .eq("is_active", true)
+    .order("title", { ascending: true });
+
+  if (error) throw error;
+  return (data ?? []).filter((c) => c.slug !== UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG) as AdminCategoryOption[];
 }

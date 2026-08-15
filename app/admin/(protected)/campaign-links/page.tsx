@@ -6,7 +6,6 @@ import {
   CLIENT_CAMPAIGN_UI_LANGS,
   CLIENT_CAMPAIGN_WORK_FORMATS,
 } from "@/lib/clientCampaignLinks/constants";
-import { summarizeCampaignContext } from "@/lib/clientCampaignLinks/resolve";
 
 type CategoryOption = {
   id: string;
@@ -33,6 +32,7 @@ type CampaignLinkItem = {
   created_at: string;
   public_url: string;
   public_path: string;
+  context_summary: string;
 };
 
 const EMPTY_FORM = {
@@ -435,9 +435,7 @@ export default function AdminCampaignLinksPage() {
                 {links.map((link) => (
                   <tr key={link.id} className="border-t align-top">
                     <td className="px-4 py-3 font-medium text-gray-900">{link.name}</td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {summarizeCampaignContext(link as Parameters<typeof summarizeCampaignContext>[0])}
-                    </td>
+                    <td className="px-4 py-3 text-gray-600">{link.context_summary}</td>
                     <td className="px-4 py-3">
                       <code className="text-xs break-all">{link.public_url}</code>
                     </td>

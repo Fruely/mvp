@@ -110,10 +110,6 @@ export function validateServiceRequestCreate(
     return { error: "public_id is not allowed", status: 400 };
   }
 
-  if (body.client_campaign_link_id != null && String(body.client_campaign_link_id).trim()) {
-    return { error: "client_campaign_link_id is not allowed", status: 400 };
-  }
-
   if (body.source != null && String(body.source).trim() && String(body.source).trim() !== SERVICE_REQUEST_SOURCE) {
     return { error: "invalid source", status: 400 };
   }

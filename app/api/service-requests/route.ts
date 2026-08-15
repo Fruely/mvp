@@ -13,7 +13,6 @@ import { SERVICE_REQUEST_SOURCE } from "@/lib/serviceRequests/constants";
 import { generateServiceRequestPublicId, isUniqueViolation } from "@/lib/serviceRequests/publicId";
 import { buildOwnerTelegramTimingPayload } from "@/lib/serviceRequests/ownerTelegramTiming";
 import { validateServiceRequestCreate } from "@/lib/serviceRequests/validation";
-import { findCampaignLinkByIdForAttribution } from "@/lib/clientCampaignLinks/redirect";
 
 export const dynamic = "force-dynamic";
 
@@ -45,22 +44,6 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createSupabaseServerClient();
-
-    let clientCampaignLinkId: string | null = null;
-    if (validated.client_campaign_link_id) {
-      const campaign = await findCampaignLinkByIdForAttribution(
-        supabase,
-        validated.client_campaign_link_id,
-      );
-      if (!campaign) {
-        return NextResponse.json(
-          { error: "invalid campaign attribution" },
-          { status: 400, headers: NO_STORE },
-        );
-      }
-      clientCampaignLinkId = campaign.id;
-    }
-
     const nowIso = new Date().toISOString();
 
     let clientCampaignLinkId: string | null = null;

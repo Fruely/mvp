@@ -28,7 +28,6 @@ type Props = {
   initialPreferredLanguage?: Lang | null;
   initialWorkFormat?: (typeof WORK_FORMATS)[number] | null;
   initialRadiusKm?: string | null;
-  clientCampaignLinkId?: string | null;
 };
 
 const WORK_FORMATS = ["online", "offline", "hybrid"] as const;
@@ -43,7 +42,6 @@ export default function ServiceRequestForm({
   initialPreferredLanguage,
   initialWorkFormat,
   initialRadiusKm,
-  clientCampaignLinkId,
 }: Props) {
   const initialPlaceParts = splitPlaceForPrefill(initialPlace);
   const [dict, setDict] = useState<Dictionary>(uaDict as unknown as Dictionary);
@@ -135,7 +133,6 @@ export default function ServiceRequestForm({
           category_id: initialCategoryId ?? null,
           category_text: category_text.trim() || null,
           source_path: sourcePath ?? null,
-          client_campaign_link_id: clientCampaignLinkId ?? null,
           hp,
         }),
       });

@@ -6,18 +6,11 @@ import {
   createClientCampaignLink,
   listClientCampaignLinks,
 } from "@/lib/clientCampaignLinks/service";
-import { buildCampaignPublicUrl } from "@/lib/clientCampaignLinks/resolve";
+import { campaignPublicPath, campaignPublicUrl } from "@/lib/clientCampaignLinks/publicUrl";
+import { summarizeCampaignContext } from "@/lib/clientCampaignLinks/resolve";
 import { validateCampaignLinkCreate } from "@/lib/clientCampaignLinks/validation";
 
 const NO_STORE = { "Cache-Control": "no-store" } as const;
-
-function siteOrigin(): string {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
-    process.env.APP_URL?.trim() ||
-    "https://freuly.de"
-  );
-}
 
 function jsonError(err: unknown) {
   if (err instanceof ClientCampaignDomainError) {
@@ -30,8 +23,9 @@ function jsonError(err: unknown) {
 function serializeLink(link: Awaited<ReturnType<typeof listClientCampaignLinks>>[number]) {
   return {
     ...link,
-    public_url: buildCampaignPublicUrl(siteOrigin(), link.slug),
-    public_path: `/go/${link.slug}`,
+    public_path: campaignPublicPath(link.slug),
+    public_url: campaignPublicUrl(link.slug),
+    context_summary: summarizeCampaignContext(link),
   };
 }
 

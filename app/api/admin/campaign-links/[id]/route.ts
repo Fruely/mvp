@@ -3,21 +3,17 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireAdminToken } from "@/lib/adminApiAuth";
 import {
   ClientCampaignDomainError,
+  getClientCampaignLinkById,
   setClientCampaignLinkActive,
   updateClientCampaignLink,
 } from "@/lib/clientCampaignLinks/service";
-import { buildCampaignPublicUrl } from "@/lib/clientCampaignLinks/resolve";
+import { campaignPublicPath, campaignPublicUrl } from "@/lib/clientCampaignLinks/publicUrl";
+import { summarizeCampaignContext } from "@/lib/clientCampaignLinks/resolve";
 import { validateCampaignLinkUpdate } from "@/lib/clientCampaignLinks/validation";
 
-const NO_STORE = { "Cache-Control": "no-store" } as const;
+export const dynamic = "force-dynamic";
 
-function siteOrigin(): string {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
-    process.env.APP_URL?.trim() ||
-    "https://freuly.de"
-  );
-}
+const NO_STORE = { "Cache-Control": "no-store" } as const;
 
 function jsonError(err: unknown) {
   if (err instanceof ClientCampaignDomainError) {
@@ -27,12 +23,33 @@ function jsonError(err: unknown) {
   return NextResponse.json({ error: "internal_error" }, { status: 500, headers: NO_STORE });
 }
 
-function serializeLink(link: Awaited<ReturnType<typeof updateClientCampaignLink>>) {
+function serializeLink(link: NonNullable<Awaited<ReturnType<typeof getClientCampaignLinkById>>>) {
   return {
     ...link,
-    public_url: buildCampaignPublicUrl(siteOrigin(), link.slug),
-    public_path: `/go/${link.slug}`,
+    public_path: campaignPublicPath(link.slug),
+    public_url: campaignPublicUrl(link.slug),
+    context_summary: summarizeCampaignContext(link),
   };
+}
+
+export async function GET(
+  request: NextRequest,
+  context: { params: { id: string } | Promise<{ id: string }> },
+) {
+  const auth = requireAdminToken(request);
+  if (auth) return auth;
+
+  try {
+    const params = await Promise.resolve(context.params);
+    const supabase = createSupabaseServerClient();
+    const link = await getClientCampaignLinkById(supabase, params.id);
+    if (!link) {
+      return NextResponse.json({ error: "not_found" }, { status: 404, headers: NO_STORE });
+    }
+    return NextResponse.json({ link: serializeLink(link) }, { headers: NO_STORE });
+  } catch (err) {
+    return jsonError(err);
+  }
 }
 
 export async function PATCH(
@@ -50,6 +67,20 @@ export async function PATCH(
     }
 
     const body = await request.json().catch(() => null);
+
+    if (body && typeof body === "object" && typeof (body as { is_active?: unknown }).is_active === "boolean") {
+      const keys = Object.keys(body as object);
+      if (keys.length === 1 && keys[0] === "is_active") {
+        const supabase = createSupabaseServerClient();
+        const link = await setClientCampaignLinkActive(
+          supabase,
+          id,
+          (body as { is_active: boolean }).is_active,
+        );
+        return NextResponse.json({ link: serializeLink(link) }, { headers: NO_STORE });
+      }
+    }
+
     const validated = validateCampaignLinkUpdate(body);
     if ("error" in validated) {
       return NextResponse.json(
@@ -59,15 +90,6 @@ export async function PATCH(
     }
 
     const supabase = createSupabaseServerClient();
-
-    if (
-      Object.keys(validated).length === 1 &&
-      typeof validated.is_active === "boolean"
-    ) {
-      const link = await setClientCampaignLinkActive(supabase, id, validated.is_active);
-      return NextResponse.json({ link: serializeLink(link) }, { headers: NO_STORE });
-    }
-
     const link = await updateClientCampaignLink(supabase, id, validated);
     return NextResponse.json({ link: serializeLink(link) }, { headers: NO_STORE });
   } catch (err) {
