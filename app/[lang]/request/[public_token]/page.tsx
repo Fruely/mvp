@@ -4,14 +4,15 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import PromotionAttributionCaptureBeacon from "@/components/serviceRequests/PromotionAttributionCaptureBeacon";
 import { getDictionary, isSupportedLang, t, type Lang } from "@/lib/i18n";
-import {
-  ATTRIBUTION_COOKIE_NAME,
-} from "@/lib/serviceRequests/attributionCookie";
+import { ATTRIBUTION_COOKIE_NAME } from "@/lib/serviceRequests/attributionCookie";
 import { buildCaptureQueryString } from "@/lib/serviceRequests/attributionSanitize";
 import { isAttributionTokenUrlSafe } from "@/lib/serviceRequests/attributionToken";
 import { tryRecordPromotionRepeatVisit } from "@/lib/serviceRequests/capturePromotionAttribution";
 import { getAttributionByToken } from "@/lib/serviceRequests/promotionAttributionData";
-import { getPublishedPromotionForCapture } from "@/lib/serviceRequests/promotionPublicData";
+import {
+  buildPromotedAcceptUrl,
+  getPublishedPromotionPublicView,
+} from "@/lib/serviceRequests/promotionPublicView";
 
 export const dynamic = "force-dynamic";
 
@@ -45,9 +46,9 @@ export default async function PublicPromotionPage({
   }
 
   const lang = params.lang as Lang;
-  const promotion = await getPublishedPromotionForCapture(params.public_token);
+  const view = await getPublishedPromotionPublicView(params.public_token);
 
-  if (!promotion || promotion.locale !== lang) {
+  if (!view || view.locale !== lang) {
     notFound();
   }
 
@@ -58,10 +59,10 @@ export default async function PublicPromotionPage({
   if (existingCookieToken && isAttributionTokenUrlSafe(existingCookieToken)) {
     try {
       const row = await getAttributionByToken(existingCookieToken);
-      if (row && row.promotion_id === promotion.id) {
+      if (row && row.promotion_id === view.id) {
         needsCapture = false;
         await tryRecordPromotionRepeatVisit({
-          promotionId: promotion.id,
+          promotionId: view.id,
           existingCookieToken,
         });
       }
@@ -75,37 +76,61 @@ export default async function PublicPromotionPage({
     : "";
 
   const dict = await getDictionary(lang);
-  const publishedLabel = promotion.published_at
-    ? new Date(promotion.published_at).toLocaleDateString(
+  const publishedLabel = view.published_at
+    ? new Date(view.published_at).toLocaleDateString(
         lang === "de" ? "de-DE" : lang === "ru" ? "ru-RU" : "uk-UA",
       )
     : null;
 
+  const acceptHref = buildPromotedAcceptUrl(lang, params.public_token);
+
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       {needsCapture ? <PromotionAttributionCaptureBeacon captureQuery={captureQuery} /> : null}
-      <article className="max-w-2xl mx-auto bg-white border rounded-lg p-6 shadow-sm">
+      <article className="max-w-2xl mx-auto bg-white border rounded-lg p-6 shadow-sm space-y-6">
         {publishedLabel ? (
-          <p className="text-sm text-gray-500 mb-3">
+          <p className="text-sm text-gray-500">
             {t(dict, "serviceRequestPromotion.publishedAt", { defaultValue: "Опубликовано" })}
             {": "}
             {publishedLabel}
           </p>
         ) : null}
-        <h1 className="text-2xl font-bold mb-4">{promotion.public_title}</h1>
-        <p className="whitespace-pre-wrap text-gray-700 mb-8">{promotion.public_summary}</p>
-        <section className="border-t pt-6 mt-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
-            {t(dict, "serviceRequestPromotion.signupCta.title")}
-          </h2>
-          <p className="text-sm text-gray-600 mb-4">
-            {t(dict, "serviceRequestPromotion.signupCta.body")}
-          </p>
+        <h1 className="text-2xl font-bold text-gray-900">{view.public_title}</h1>
+        <p className="whitespace-pre-wrap text-gray-700">{view.public_summary}</p>
+
+        <dl className="grid gap-2 text-sm text-gray-700 border-t pt-4">
+          {view.when_label ? (
+            <div>
+              <dt className="font-semibold">{t(dict, "serviceRequestPromotion.accept.when")}</dt>
+              <dd>{view.when_label}</dd>
+            </div>
+          ) : null}
+          {view.location_label ? (
+            <div>
+              <dt className="font-semibold">{t(dict, "serviceRequestPromotion.accept.where")}</dt>
+              <dd>{view.location_label}</dd>
+            </div>
+          ) : null}
+          {view.preferred_language ? (
+            <div>
+              <dt className="font-semibold">{t(dict, "serviceRequestPromotion.accept.language")}</dt>
+              <dd>{view.preferred_language}</dd>
+            </div>
+          ) : null}
+          {view.work_format ? (
+            <div>
+              <dt className="font-semibold">{t(dict, "serviceRequestPromotion.accept.format")}</dt>
+              <dd>{view.work_format}</dd>
+            </div>
+          ) : null}
+        </dl>
+
+        <section className="border-t pt-6">
           <Link
-            href={`/${lang}/become-specialist`}
-            className="inline-flex items-center justify-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+            href={acceptHref}
+            className="inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 sm:w-auto"
           >
-            {t(dict, "serviceRequestPromotion.signupCta.button")}
+            {t(dict, "serviceRequestPromotion.accept.cta")}
           </Link>
         </section>
       </article>

@@ -119,7 +119,7 @@ export default function PromotedRequestPageView({ model, lang, dict }: Props) {
               <dt className="font-medium text-gray-900">
                 {t(dict, "dashboard.promotedRequestPage.details.urgency")}
               </dt>
-              <dd>{urgencyLabel(dict, details.urgency)}</dd>
+              <dd>{details.when_label ?? urgencyLabel(dict, details.urgency)}</dd>
             </div>
             {locationParts.length > 0 ? (
               <div>

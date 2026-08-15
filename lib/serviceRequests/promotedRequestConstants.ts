@@ -13,4 +13,4 @@ export const PROMOTED_REQUEST_PAYMENT_PAGE_SELECT =
   "status, created_at, paid_at, failed_at, expired_at, refunded_at, disputed_at";
 
 export const PROMOTED_REQUEST_SERVICE_REQUEST_UNLOCK_SELECT =
-  "description, client_name, client_email, client_phone, category_id, urgency, created_at, city, postal_code, work_format";
+  "description, client_name, client_email, client_phone, category_id, urgency, desired_date, created_at, city, postal_code, work_format, service_timing_type, service_timing_date, service_timing_time, service_timing_date_end, service_timing_period, service_timing_note";

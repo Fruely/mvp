@@ -34,6 +34,7 @@ export default function ServiceRequestPromotionBlock({
   }));
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copiedAccept, setCopiedAccept] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -52,6 +53,7 @@ export default function ServiceRequestPromotionBlock({
   function runAction(action: () => Promise<{ ok: boolean; promotion?: ServiceRequestPromotionAdmin; error?: string }>) {
     setError(null);
     setCopied(false);
+    setCopiedAccept(false);
     startTransition(async () => {
       const result = await action();
       if (!result.ok || !result.promotion) {
@@ -65,6 +67,16 @@ export default function ServiceRequestPromotionBlock({
         public_summary: result.promotion.public_summary,
       });
     });
+  }
+
+  async function handleCopyAcceptLink() {
+    if (!promotion?.accept_url) return;
+    try {
+      await navigator.clipboard.writeText(promotion.accept_url);
+      setCopiedAccept(true);
+    } catch {
+      setError("Не удалось скопировать ссылку.");
+    }
   }
 
   async function handleCopyLink() {
@@ -200,14 +212,32 @@ export default function ServiceRequestPromotionBlock({
                 {copied ? "Ссылка скопирована" : "Скопировать публичную ссылку"}
               </button>
             ) : null}
+            {promotion.accept_url ? (
+              <button
+                type="button"
+                className="px-3 py-1.5 text-sm rounded border border-emerald-300 text-emerald-800 disabled:opacity-50"
+                disabled={isPending}
+                onClick={handleCopyAcceptLink}
+              >
+                {copiedAccept ? "Ссылка «Принять» скопирована" : "Скопировать ссылку «Принять заявку»"}
+              </button>
+            ) : null}
           </>
         ) : null}
       </div>
 
       {isPublished && promotion?.public_url ? (
-        <p className="text-xs text-gray-600 break-all">
-          <strong>Публичная ссылка:</strong> {promotion.public_url}
-        </p>
+        <div className="text-xs text-gray-600 break-all space-y-1">
+          <p>
+            <strong>Публичная ссылка:</strong> {promotion.public_url}
+          </p>
+          {promotion.accept_url ? (
+            <p>
+              <strong>Ссылка «Принять заявку» (для рекламы / Telegram):</strong>{" "}
+              {promotion.accept_url}
+            </p>
+          ) : null}
+        </div>
       ) : null}
     </section>
   );

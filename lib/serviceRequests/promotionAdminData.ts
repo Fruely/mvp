@@ -6,7 +6,7 @@ import {
   PROMOTION_ADMIN_SELECT,
   type PromotionStatus,
 } from "./promotionConstants";
-import { buildPublicPromotionUrl } from "./promotionUrl";
+import { buildPublicPromotionAcceptUrl, buildPublicPromotionUrl } from "./promotionUrl";
 import {
   generatePromotionPublicToken,
   isUniqueViolation,
@@ -29,6 +29,7 @@ export type ServiceRequestPromotionAdmin = {
   published_at: string | null;
   closed_at: string | null;
   public_url: string | null;
+  accept_url: string | null;
 };
 
 const TOKEN_INSERT_MAX_RETRIES = 5;
@@ -95,12 +96,11 @@ async function insertPromotionWithToken(
 }
 
 function mapPromotionAdminRow(row: ServiceRequestPromotionAdmin): ServiceRequestPromotionAdmin {
+  const published = row.status === "published";
   return {
     ...row,
-    public_url:
-      row.status === "published"
-        ? buildPublicPromotionUrl(row.locale, row.public_token)
-        : null,
+    public_url: published ? buildPublicPromotionUrl(row.locale, row.public_token) : null,
+    accept_url: published ? buildPublicPromotionAcceptUrl(row.locale, row.public_token) : null,
   };
 }
 

@@ -185,6 +185,27 @@
       "button": "Als Fachkraft registrieren"
     },
     "notFound": "Anfrage nicht verfügbar",
+    "accept": {
+      "pageTitle": "Anfrage annehmen | Freuly",
+      "cta": "Anfrage annehmen",
+      "backToPreview": "← Zur Anfrage",
+      "when": "Wann",
+      "where": "Wo",
+      "language": "Sprache",
+      "format": "Format",
+      "reservationTitle": "Anfrage-Reservierung",
+      "reservationBody": "Anfrage-Reservierung — 10 €. Nach der Zahlung haben Sie 72 Stunden, um Ihre Freuly-Fachkraft-Registrierung abzuschließen. Wenn Sie die Registrierung innerhalb von 72 Stunden abschließen, werden 10 € vollständig auf Ihr Abonnement angerechnet. Wird die Registrierung nicht innerhalb von 72 Stunden abgeschlossen, verfällt die Reservierung.",
+      "reservationNonRefund": "Die gezahlte Reservierungsgebühr wird nicht erstattet, wenn die Registrierung nicht fristgerecht abgeschlossen wird.",
+      "paymentPendingRegistration": "Zahlung erhalten. Schließen Sie die Fachkraft-Registrierung innerhalb von 72 Stunden ab, um Zugang zur Anfrage und die 10-€-Gutschrift zu erhalten.",
+      "paymentCancelled": "Zahlung abgebrochen. Sie können es erneut versuchen.",
+      "registerHint": "Nach der Zahlung",
+      "checkout": {
+        "loading": "Zahlung wird vorbereitet…",
+        "redirecting": "Weiterleitung zur Zahlung…",
+        "unavailable": "Zahlung vorübergehend nicht verfügbar.",
+        "genericError": "Zahlung konnte nicht gestartet werden. Bitte später erneut versuchen."
+      }
+    },
     "admin": {
       "sectionTitle": "Öffentliche Veröffentlichung",
       "createDraft": "Entwurf erstellen",
@@ -192,7 +213,8 @@
       "save": "Speichern",
       "publish": "Veröffentlichen",
       "close": "Veröffentlichung schließen",
-      "copyLink": "Öffentlichen Link kopieren"
+      "copyLink": "Öffentlichen Link kopieren",
+      "copyAcceptLink": "Link „Anfrage annehmen“ kopieren"
     }
   },
   "site.title": "Freuly",

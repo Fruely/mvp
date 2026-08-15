@@ -16,6 +16,7 @@ import {
   PROMOTED_REQUEST_PROMOTION_UNLOCK_SELECT,
   PROMOTED_REQUEST_SERVICE_REQUEST_UNLOCK_SELECT,
 } from "@/lib/serviceRequests/promotedRequestConstants";
+import { formatServiceTimingDisplay } from "@/lib/serviceRequests/serviceTiming";
 
 export type PromotedRequestUnlockedDetails = {
   description: string;
@@ -24,6 +25,7 @@ export type PromotedRequestUnlockedDetails = {
   client_phone: string | null;
   category_id: string | null;
   urgency: string;
+  when_label: string | null;
   created_at: string;
   city: string | null;
   postal_code: string | null;
@@ -115,6 +117,7 @@ async function loadLatestPayment(
 async function loadUnlockedServiceRequest(
   supabase: SupabaseClient,
   serviceRequestId: string,
+  locale: string,
 ): Promise<PromotedRequestUnlockedDetails | null> {
   const { data, error } = await supabase
     .from("service_requests")
@@ -136,6 +139,10 @@ async function loadUnlockedServiceRequest(
     client_phone: typeof row.client_phone === "string" ? row.client_phone : null,
     category_id: typeof row.category_id === "string" ? row.category_id : null,
     urgency: String(row.urgency ?? ""),
+    when_label: formatServiceTimingDisplay(
+      row,
+      locale === "de" || locale === "ua" || locale === "ru" ? locale : "ru",
+    ),
     created_at: String(row.created_at ?? ""),
     city: typeof row.city === "string" ? row.city : null,
     postal_code: typeof row.postal_code === "string" ? row.postal_code : null,
@@ -248,6 +255,7 @@ export async function loadPromotedRequestPageData(
     details = await loadUnlockedServiceRequest(
       supabase,
       promotionUnlock.service_request_id as string,
+      String(promotionUnlock.locale ?? "ru"),
     );
   } catch {
     console.info("[promoted-request] promoted_request_data_error");
