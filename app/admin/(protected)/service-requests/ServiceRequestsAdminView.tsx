@@ -45,7 +45,7 @@ export default function ServiceRequestsAdminView({
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Service requests</h1>
+        <h1 className="text-2xl font-bold">Заявки клиентов</h1>
         <button
           type="button"
           onClick={() => router.refresh()}

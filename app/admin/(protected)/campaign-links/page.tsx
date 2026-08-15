@@ -222,7 +222,7 @@ export default function AdminCampaignLinksPage() {
   return (
     <div className="p-6 lg:p-8 space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Campaign Links</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Рекламные ссылки</h1>
         <p className="mt-1 text-sm text-gray-600">
           Клиентские рекламные ссылки для Meta / Telegram. Публичный URL: /go/&#123;slug&#125;
         </p>
