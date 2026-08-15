@@ -10,6 +10,8 @@ export type RequestServiceHrefParams = {
   preferred_language?: Lang | string | null;
   work_format?: string | null;
   radius_km?: string | number | null;
+  /** Server-resolved campaign attribution; validated again on submit. */
+  client_campaign_link_id?: string | null;
 };
 
 function appendParam(search: URLSearchParams, key: string, value: string | number | null | undefined) {
@@ -28,6 +30,7 @@ export function requestServiceHref(lang: Lang, params?: RequestServiceHrefParams
   appendParam(search, "preferred_language", params?.preferred_language);
   appendParam(search, "work_format", params?.work_format);
   appendParam(search, "radius_km", params?.radius_km);
+  appendParam(search, "client_campaign_link_id", params?.client_campaign_link_id);
   const qs = search.toString();
   return `/${lang}/request-service${qs ? `?${qs}` : ""}`;
 }
