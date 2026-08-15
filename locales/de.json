@@ -126,6 +126,32 @@
       "flexible": "Zeitrahmen ist flexibel",
       "specific_date": "Konkretes Datum erforderlich"
     },
+    "timing": {
+      "legend": "Wann benötigen Sie die Leistung?",
+      "hint": "Geben Sie einen passenden Zeitraum an — das ist keine Terminbuchung, sondern eine Orientierung für die Vermittlung.",
+      "type": {
+        "asap": "So schnell wie möglich",
+        "exact_datetime": "Konkretes Datum und Uhrzeit",
+        "date_flexible": "Konkretes Datum, Uhrzeit flexibel",
+        "date_range": "Datumsbereich",
+        "flexible_period": "Flexibel / ungefährer Zeitraum"
+      },
+      "period": {
+        "next_week": "Nächste Woche",
+        "next_month": "Nächsten Monat",
+        "flexible": "Zeitrahmen ist flexibel"
+      },
+      "fields": {
+        "date": "Datum",
+        "time": "Uhrzeit",
+        "dateFrom": "Von",
+        "dateTo": "Bis",
+        "period": "Ungefährer Zeitraum",
+        "periodPlaceholder": "Zeitraum wählen",
+        "note": "Zusätzlich (optional)",
+        "notePlaceholder": "Z. B. nur vormittags"
+      }
+    },
     "errors": {
       "nameRequired": "Bitte geben Sie Ihren Namen an",
       "descriptionRequired": "Bitte beschreiben Sie die Aufgabe",

@@ -18,6 +18,13 @@ export type ServiceRequestListItem = {
   city: string | null;
   postal_code: string | null;
   urgency: string | null;
+  desired_date?: string | null;
+  service_timing_type?: string | null;
+  service_timing_date?: string | null;
+  service_timing_time?: string | null;
+  service_timing_date_end?: string | null;
+  service_timing_period?: string | null;
+  service_timing_note?: string | null;
   status: string | null;
 };
 

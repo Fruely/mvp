@@ -5,6 +5,7 @@ export type NewServiceRequestOwnerPayload = {
   work_format: string | null;
   city: string | null;
   postal_code: string | null;
+  when_label: string | null;
   urgency: string | null;
   created_at: string | null;
   locale: string | null;
@@ -26,8 +27,8 @@ export function formatNewServiceRequestOwnerMessage(p: NewServiceRequestOwnerPay
   const city = p.city?.trim();
   const plz = p.postal_code?.trim();
   if (city || plz) lines.push(`Локация: ${[plz, city].filter(Boolean).join(" ")}`);
-  const urgency = p.urgency?.trim();
-  if (urgency) lines.push(`Срок (клиент): ${urgency}`);
+  const when = p.when_label?.trim();
+  if (when) lines.push(`Когда: ${when}`);
   if (p.created_at) lines.push(`Создан: ${p.created_at}`);
   if (p.locale) lines.push(`Locale: ${p.locale}`);
   lines.push("");

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { formatServiceTimingDisplay } from "@/lib/serviceRequests/serviceTiming";
 import { SERVICE_REQUEST_STATUSES } from "@/lib/serviceRequests/constants";
 import type { ServiceRequestDetail, ServiceRequestListItem } from "@/lib/serviceRequests/adminData";
 import type { ServiceRequestPromotionAdmin } from "@/lib/serviceRequests/promotionAdminData";
@@ -97,9 +98,13 @@ export default function ServiceRequestsAdminView({
               <p><strong>Телефон:</strong> {detail.client_phone || "—"}</p>
               <p><strong>Описание:</strong></p>
               <p className="whitespace-pre-wrap text-gray-700">{detail.description}</p>
-              <p><strong>Urgency:</strong> {detail.urgency}</p>
+              <p className="rounded-md bg-amber-50 px-3 py-2">
+                <strong>Когда:</strong>{" "}
+                {formatServiceTimingDisplay(detail, "ru")}
+              </p>
               <p><strong>Work format:</strong> {detail.work_format}</p>
-              <p><strong>Locale:</strong> {detail.locale}</p>
+              <p><strong>Язык:</strong> {detail.preferred_language || "—"}</p>
+              <p><strong>Город / PLZ:</strong> {[detail.postal_code, detail.city].filter(Boolean).join(" ") || "—"}</p>
               <p>
                 <strong>Source:</strong> {detail.source}{" "}
                 {detail.source_path ? `(${detail.source_path})` : ""}

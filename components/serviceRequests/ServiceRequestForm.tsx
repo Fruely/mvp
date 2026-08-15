@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { privacyPath } from "@/lib/legal/paths";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
@@ -12,8 +12,11 @@ import {
   publicLinkSecondaryClass,
 } from "@/components/public/publicStyles";
 import uaDict from "@/locales/ua.json";
-
 import { splitPlaceForPrefill } from "@/lib/search/searchContext";
+import ServiceRequestTimingFields, {
+  createDefaultServiceTimingFormValue,
+  type ServiceTimingFormValue,
+} from "@/components/serviceRequests/ServiceRequestTimingFields";
 
 type Props = {
   lang: Lang;
@@ -26,16 +29,6 @@ type Props = {
   initialWorkFormat?: (typeof WORK_FORMATS)[number] | null;
   initialRadiusKm?: string | null;
 };
-
-const URGENCY_VALUES = [
-  "asap",
-  "within_24h",
-  "within_3_days",
-  "within_week",
-  "within_month",
-  "flexible",
-  "specific_date",
-] as const;
 
 const WORK_FORMATS = ["online", "offline", "hybrid"] as const;
 
@@ -66,8 +59,7 @@ export default function ServiceRequestForm({
   const [postal_code, setPostalCode] = useState(initialPlaceParts.postal_code);
   const [country_code, setCountryCode] = useState("DE");
   const [radius_km, setRadiusKm] = useState(initialRadiusKm?.trim() ?? "");
-  const [urgency, setUrgency] = useState<(typeof URGENCY_VALUES)[number]>("flexible");
-  const [desired_date, setDesiredDate] = useState("");
+  const [timing, setTiming] = useState<ServiceTimingFormValue>(createDefaultServiceTimingFormValue());
   const [category_text, setCategoryText] = useState(initialCategoryText ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -89,16 +81,6 @@ export default function ServiceRequestForm({
   }, [lang]);
 
   const needsLocation = work_format === "offline" || work_format === "hybrid";
-  const needsDate = urgency === "specific_date";
-
-  const urgencyOptions = useMemo(
-    () =>
-      URGENCY_VALUES.map((value) => ({
-        value,
-        label: t(dict, `serviceRequest.urgency.${value}`),
-      })),
-    [dict],
-  );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -125,11 +107,6 @@ export default function ServiceRequestForm({
       setLoading(false);
       return;
     }
-    if (needsDate && !desired_date) {
-      setError(t(dict, "serviceRequest.errors.dateRequired"));
-      setLoading(false);
-      return;
-    }
 
     try {
       const res = await fetch("/api/service-requests", {
@@ -146,8 +123,12 @@ export default function ServiceRequestForm({
           postal_code: postal_code.trim() || null,
           country_code: country_code.trim() || null,
           radius_km: radius_km ? Number(radius_km) : null,
-          urgency,
-          desired_date: needsDate ? desired_date : null,
+          service_timing_type: timing.service_timing_type,
+          service_timing_date: timing.service_timing_date.trim() || null,
+          service_timing_time: timing.service_timing_time.trim() || null,
+          service_timing_date_end: timing.service_timing_date_end.trim() || null,
+          service_timing_period: timing.service_timing_period || null,
+          service_timing_note: timing.service_timing_note.trim() || null,
           locale: lang,
           category_id: initialCategoryId ?? null,
           category_text: category_text.trim() || null,
@@ -342,37 +323,7 @@ export default function ServiceRequestForm({
         </div>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-freuly-text-secondary">
-            {t(dict, "serviceRequest.fields.urgency")}
-          </label>
-          <select
-            value={urgency}
-            onChange={(e) => setUrgency(e.target.value as (typeof URGENCY_VALUES)[number])}
-            className={publicFieldClass}
-          >
-            {urgencyOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        {needsDate ? (
-          <div>
-            <label className="mb-1 block text-sm font-medium text-freuly-text-secondary">
-              {t(dict, "serviceRequest.fields.desiredDate")}
-            </label>
-            <input
-              type="date"
-              value={desired_date}
-              onChange={(e) => setDesiredDate(e.target.value)}
-              className={publicFieldClass}
-            />
-          </div>
-        ) : null}
-      </div>
+      <ServiceRequestTimingFields dict={dict} value={timing} onChange={setTiming} />
 
       {error ? <p className="text-sm text-freuly-error">{error}</p> : null}
 

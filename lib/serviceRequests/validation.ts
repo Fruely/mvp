@@ -2,11 +2,15 @@ import {
   DESCRIPTION_MAX_LEN,
   SERVICE_REQUEST_SOURCE,
   SERVICE_REQUEST_STATUSES,
-  SERVICE_REQUEST_URGENCIES,
   SERVICE_REQUEST_WORK_FORMATS,
   type ServiceRequestUrgency,
   type ServiceRequestWorkFormat,
 } from "./constants";
+import {
+  mapServiceTimingToLegacyUrgency,
+  validateServiceTiming,
+  type ServiceTimingFields,
+} from "./serviceTiming";
 
 const SUPPORTED_LOCALES = ["ua", "ru", "de"] as const;
 type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
@@ -28,6 +32,12 @@ export type ServiceRequestCreateInput = {
   radius_km?: unknown;
   urgency?: unknown;
   desired_date?: unknown;
+  service_timing_type?: unknown;
+  service_timing_date?: unknown;
+  service_timing_time?: unknown;
+  service_timing_date_end?: unknown;
+  service_timing_period?: unknown;
+  service_timing_note?: unknown;
   locale?: unknown;
   category_id?: unknown;
   category_text?: unknown;
@@ -52,6 +62,7 @@ export type ValidatedServiceRequestCreate = {
   radius_km: number | null;
   urgency: ServiceRequestUrgency;
   desired_date: string | null;
+  service_timing: ServiceTimingFields;
   locale: SupportedLocale;
   category_id: string | null;
   category_text: string | null;
@@ -71,12 +82,8 @@ function parseRadius(value: unknown): number | null {
   return Math.round(n);
 }
 
-function parseDesiredDate(value: unknown): string | null {
-  const s = str(value);
-  if (!s) return null;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
-  return s;
-}
+const TIMING_LIST_COLUMNS =
+  "service_timing_type, service_timing_date, service_timing_time, service_timing_date_end, service_timing_period, service_timing_note";
 
 export function validateServiceRequestCreate(
   body: ServiceRequestCreateInput,
@@ -131,16 +138,14 @@ export function validateServiceRequestCreate(
   }
   const work_format = work_formatRaw as ServiceRequestWorkFormat;
 
-  const urgencyRaw = str(body.urgency);
-  if (!urgencyRaw || !SERVICE_REQUEST_URGENCIES.includes(urgencyRaw as ServiceRequestUrgency)) {
-    return { error: "invalid urgency", status: 400 };
+  const timingResult = validateServiceTiming(body);
+  if ("error" in timingResult) {
+    return { error: timingResult.error, status: 400 };
   }
-  const urgency = urgencyRaw as ServiceRequestUrgency;
-
-  const desired_date = parseDesiredDate(body.desired_date);
-  if (urgency === "specific_date" && !desired_date) {
-    return { error: "desired_date is required for specific_date urgency", status: 400 };
-  }
+  const service_timing = timingResult;
+  const legacyTiming = mapServiceTimingToLegacyUrgency(service_timing);
+  const urgency = legacyTiming.urgency;
+  const desiredDateFromTiming = legacyTiming.desired_date;
 
   const localeRaw = str(body.locale);
   if (!localeRaw || !isSupportedLocale(localeRaw)) {
@@ -178,7 +183,8 @@ export function validateServiceRequestCreate(
     country_code,
     radius_km,
     urgency,
-    desired_date,
+    desired_date: desiredDateFromTiming,
+    service_timing,
     locale: localeRaw,
     category_id,
     category_text,
@@ -191,7 +197,7 @@ export function isAllowedAdminStatus(value: unknown): value is (typeof SERVICE_R
 }
 
 export const SERVICE_REQUEST_LIST_SELECT =
-  "id, public_id, created_at, updated_at, category_id, category_text, preferred_language, work_format, city, postal_code, country_code, radius_km, urgency, desired_date, locale, source, source_path, status";
+  `id, public_id, created_at, updated_at, category_id, category_text, preferred_language, work_format, city, postal_code, country_code, radius_km, urgency, desired_date, ${TIMING_LIST_COLUMNS}, locale, source, source_path, status`;
 
 export const SERVICE_REQUEST_ADMIN_DETAIL_SELECT =
   `${SERVICE_REQUEST_LIST_SELECT}, client_name, client_email, client_phone, description`;

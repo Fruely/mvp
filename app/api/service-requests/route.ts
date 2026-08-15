@@ -8,6 +8,7 @@ import {
 import { notify } from "@/lib/notifications/notify";
 import { SERVICE_REQUEST_SOURCE } from "@/lib/serviceRequests/constants";
 import { generateServiceRequestPublicId, isUniqueViolation } from "@/lib/serviceRequests/publicId";
+import { buildOwnerTelegramTimingPayload } from "@/lib/serviceRequests/ownerTelegramTiming";
 import { validateServiceRequestCreate } from "@/lib/serviceRequests/validation";
 
 export const dynamic = "force-dynamic";
@@ -62,6 +63,12 @@ export async function POST(request: NextRequest) {
         radius_km: validated.radius_km,
         urgency: validated.urgency,
         desired_date: validated.desired_date,
+        service_timing_type: validated.service_timing.service_timing_type,
+        service_timing_date: validated.service_timing.service_timing_date,
+        service_timing_time: validated.service_timing.service_timing_time,
+        service_timing_date_end: validated.service_timing.service_timing_date_end,
+        service_timing_period: validated.service_timing.service_timing_period,
+        service_timing_note: validated.service_timing.service_timing_note,
         locale: validated.locale,
         source: SERVICE_REQUEST_SOURCE,
         source_path: validated.source_path,
@@ -92,6 +99,7 @@ export async function POST(request: NextRequest) {
     }
 
     try {
+      const timingPayload = buildOwnerTelegramTimingPayload(validated);
       await notify("NEW_SERVICE_REQUEST", {
         public_id: inserted.public_id,
         category_text: validated.category_text,
@@ -99,7 +107,8 @@ export async function POST(request: NextRequest) {
         work_format: validated.work_format,
         city: validated.city,
         postal_code: validated.postal_code,
-        urgency: validated.urgency,
+        when_label: timingPayload.when_label,
+        urgency: timingPayload.urgency,
         created_at: inserted.created_at,
         locale: validated.locale,
       });
