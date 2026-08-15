@@ -45,7 +45,7 @@ export default function Header({ lang, dict = fallbackDict }: HeaderProps) {
     <header className="sticky top-0 z-40 border-b border-freuly-border-default bg-freuly-surface">
       <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-freuly-4 sm:px-freuly-6 lg:px-freuly-16">
         <Link href={`/${lang}`} prefetch={disablePrefetch ? false : undefined} className="flex shrink-0 items-center transition-opacity hover:opacity-90">
-          <FreulyLogo className="h-10 w-auto" priority />
+          <FreulyLogo className="h-16 w-auto" priority />
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">

@@ -127,7 +127,7 @@ export default function Footer(props) {
         <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
           <div className="w-full max-w-[320px] shrink-0">
             <FooterPrefetchLink href={homeHref} className="inline-flex items-center">
-              <FreulyLogo className="h-9 w-auto" />
+              <FreulyLogo className="h-10 w-auto" />
             </FooterPrefetchLink>
             <p className="mt-4 text-sm leading-[1.6] text-freuly-text-secondary">
               {t(dict, "footer.tagline")}

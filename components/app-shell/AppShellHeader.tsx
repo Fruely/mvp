@@ -26,7 +26,7 @@ export default function AppShellHeader({
 }) {
   return (
     <header className="flex items-center justify-between gap-4 border-b border-black/[0.04] px-4 py-3">
-      <FreulyLogo className="h-8 w-auto" priority />
+      <FreulyLogo className="h-9 w-auto" priority />
       <nav aria-label={languageSwitcherLabel} className="flex items-center gap-1">
         {SUPPORTED_LANGS.map((option) => {
           const active = option === lang;
