@@ -24,6 +24,17 @@ function readWorkFormat(value: string | null): (typeof WORK_FORMATS)[number] | n
     : null;
 }
 
+function readUuid(
+  searchParams: Record<string, string | string[] | undefined>,
+  key: string,
+): string | null {
+  const value = readParam(searchParams, key);
+  if (!value) return null;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+    ? value
+    : null;
+}
+
 function readPreferredLanguage(value: string | null): Lang | null {
   if (value === "ua" || value === "ru" || value === "de") return value;
   return null;
@@ -83,6 +94,7 @@ export default async function RequestServicePage({
           initialPreferredLanguage={readPreferredLanguage(readParam(searchParams, "preferred_language"))}
           initialWorkFormat={readWorkFormat(readParam(searchParams, "work_format"))}
           initialRadiusKm={readParam(searchParams, "radius_km")}
+          clientCampaignLinkId={readUuid(searchParams, "client_campaign_link_id")}
         />
       </div>
     </div>

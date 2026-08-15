@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   checkRateLimit,
@@ -6,10 +7,13 @@ import {
   RATE_LIMIT_PUBLIC_MESSAGE,
 } from "@/lib/rate-limit/shared";
 import { notify } from "@/lib/notifications/notify";
+import { CLIENT_CAMPAIGN_COOKIE_NAME } from "@/lib/clientCampaignLinks/cookie";
+import { findCampaignByIdForAttribution } from "@/lib/clientCampaignLinks/service";
 import { SERVICE_REQUEST_SOURCE } from "@/lib/serviceRequests/constants";
 import { generateServiceRequestPublicId, isUniqueViolation } from "@/lib/serviceRequests/publicId";
 import { buildOwnerTelegramTimingPayload } from "@/lib/serviceRequests/ownerTelegramTiming";
 import { validateServiceRequestCreate } from "@/lib/serviceRequests/validation";
+import { findCampaignLinkByIdForAttribution } from "@/lib/clientCampaignLinks/redirect";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +45,36 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createSupabaseServerClient();
+
+    let clientCampaignLinkId: string | null = null;
+    if (validated.client_campaign_link_id) {
+      const campaign = await findCampaignLinkByIdForAttribution(
+        supabase,
+        validated.client_campaign_link_id,
+      );
+      if (!campaign) {
+        return NextResponse.json(
+          { error: "invalid campaign attribution" },
+          { status: 400, headers: NO_STORE },
+        );
+      }
+      clientCampaignLinkId = campaign.id;
+    }
+
     const nowIso = new Date().toISOString();
+
+    let clientCampaignLinkId: string | null = null;
+    const campaignCookie = cookies().get(CLIENT_CAMPAIGN_COOKIE_NAME)?.value?.trim();
+    if (campaignCookie) {
+      try {
+        const campaign = await findCampaignByIdForAttribution(supabase, campaignCookie);
+        if (campaign) {
+          clientCampaignLinkId = campaign.id;
+        }
+      } catch (campaignErr) {
+        console.error("[service-requests/create] campaign attribution lookup failed", campaignErr);
+      }
+    }
 
     let inserted: { public_id: string; created_at: string } | null = null;
 
@@ -72,6 +105,7 @@ export async function POST(request: NextRequest) {
         locale: validated.locale,
         source: SERVICE_REQUEST_SOURCE,
         source_path: validated.source_path,
+        client_campaign_link_id: clientCampaignLinkId,
         status: "new",
         updated_at: nowIso,
       };
@@ -116,7 +150,7 @@ export async function POST(request: NextRequest) {
       console.error("[service-requests/create] owner notification failed", notifyErr);
     }
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         ok: true,
         public_id: inserted.public_id,
@@ -124,6 +158,15 @@ export async function POST(request: NextRequest) {
       },
       { status: 200, headers: NO_STORE },
     );
+    if (clientCampaignLinkId) {
+      response.cookies.set(CLIENT_CAMPAIGN_COOKIE_NAME, "", {
+        path: "/",
+        httpOnly: true,
+        sameSite: "lax",
+        maxAge: 0,
+      });
+    }
+    return response;
   } catch (err) {
     console.error("[service-requests/create] unexpected error", err);
     try {

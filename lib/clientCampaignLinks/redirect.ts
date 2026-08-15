@@ -4,13 +4,17 @@ import { campaignPreferredLanguageToFormLang } from "./constants";
 import { campaignPublicPath } from "./publicUrl";
 import type { ClientCampaignLinkRow } from "./types";
 
-export function campaignLinkToRequestHref(link: ClientCampaignLinkRow): string {
+export function campaignLinkToRequestHref(
+  link: ClientCampaignLinkRow,
+  opts?: { category_text?: string | null },
+): string {
   const lang = link.ui_lang;
   const preferred = campaignPreferredLanguageToFormLang(link.preferred_language);
+  const categoryText = opts?.category_text ?? link.category_slug ?? null;
 
   return requestServiceHref(lang, {
     category_id: link.category_id,
-    category_text: link.category_slug,
+    category_text: categoryText,
     q: link.service_query,
     place: link.place,
     preferred_language: preferred ?? undefined,

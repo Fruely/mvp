@@ -87,6 +87,10 @@ function parseRadius(value: unknown): number | null {
 const TIMING_LIST_COLUMNS =
   "service_timing_type, service_timing_date, service_timing_time, service_timing_date_end, service_timing_period, service_timing_note";
 
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
 export function validateServiceRequestCreate(
   body: ServiceRequestCreateInput,
 ): ValidatedServiceRequestCreate | ValidationError {
@@ -176,6 +180,10 @@ export function validateServiceRequestCreate(
   const category_id = str(body.category_id);
   const category_text = str(body.category_text);
   const source_path = str(body.source_path);
+  const client_campaign_link_id = str(body.client_campaign_link_id);
+  if (client_campaign_link_id && !isUuid(client_campaign_link_id)) {
+    return { error: "invalid client_campaign_link_id", status: 400 };
+  }
 
   return {
     client_name,
@@ -195,7 +203,7 @@ export function validateServiceRequestCreate(
     category_id,
     category_text,
     source_path,
-    client_campaign_link_id: null,
+    client_campaign_link_id,
   };
 }
 
@@ -204,7 +212,7 @@ export function isAllowedAdminStatus(value: unknown): value is (typeof SERVICE_R
 }
 
 export const SERVICE_REQUEST_LIST_SELECT =
-  `id, public_id, created_at, updated_at, category_id, category_text, preferred_language, work_format, city, postal_code, country_code, radius_km, urgency, desired_date, ${TIMING_LIST_COLUMNS}, locale, source, source_path, status`;
+  `id, public_id, created_at, updated_at, category_id, category_text, preferred_language, work_format, city, postal_code, country_code, radius_km, urgency, desired_date, ${TIMING_LIST_COLUMNS}, locale, source, source_path, client_campaign_link_id, status`;
 
 export const SERVICE_REQUEST_ADMIN_DETAIL_SELECT =
   `${SERVICE_REQUEST_LIST_SELECT}, client_name, client_email, client_phone, description`;
