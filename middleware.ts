@@ -129,6 +129,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/update-password") ||
     pathname.startsWith("/r/") ||
     pathname === "/r" ||
+    pathname.startsWith("/go/") ||
+    pathname === "/go" ||
     pathname === "/partners" ||
     pathname.startsWith("/partners/") ||
     pathname.startsWith("/_next") ||
@@ -181,6 +183,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/update-password") ||
     pathname.startsWith("/r/") ||
     pathname === "/r" ||
+    pathname.startsWith("/go/") ||
+    pathname === "/go" ||
     pathname === "/partners" ||
     pathname.startsWith("/partners/") ||
     pathname.startsWith("/_next") ||
