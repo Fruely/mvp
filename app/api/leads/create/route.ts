@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
+import { isPublicLeadTargetSpecialist } from "@/lib/specialists/status";
 import {
   checkRateLimit,
   getClientIP,
@@ -10,9 +10,63 @@ import { notify } from "@/lib/notifications/notify";
 import { sendTelegramMessage } from "@/lib/telegram/sendMessage";
 import { specialistDashboardPath } from "@/lib/specialists/navigation";
 import { SPECIALIST_LEAD_TELEGRAM_TEXT } from "@/lib/leads/contactUnlock";
+import {
+  buildClientIdempotencyFingerprint,
+  isUniqueViolation,
+  normalizeClientIdempotencyKey,
+} from "@/lib/mutations/clientIdempotency";
+import {
+  IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE,
+  resolveIdempotentReplayWithOwnership,
+  shouldRunCreationSideEffectsWithOwnership,
+} from "@/lib/mutations/idempotencyOwnership";
+import { resolveBearerAuthUser } from "@/lib/auth/resolveBearerAuthUser";
+
+async function lookupLeadIdempotentReplay(
+  supabase: ReturnType<typeof createSupabaseServerClient>,
+  clientIdempotencyKey: string,
+  idempotencyFingerprint: string,
+  clientUserId: string | null,
+) {
+  const { data: existingLead, error: existingError } = await supabase
+    .from("leads")
+    .select("id, created_at, client_idempotency_fingerprint, client_user_id")
+    .eq("client_idempotency_key", clientIdempotencyKey)
+    .maybeSingle();
+
+  if (existingError) {
+    return { kind: "error" as const };
+  }
+
+  return resolveIdempotentReplayWithOwnership(
+    existingLead
+      ? {
+          fingerprint:
+            typeof existingLead.client_idempotency_fingerprint === "string"
+              ? existingLead.client_idempotency_fingerprint
+              : null,
+          client_user_id:
+            typeof existingLead.client_user_id === "string" ? existingLead.client_user_id : null,
+          response: {
+            id: String(existingLead.id),
+            created_at: existingLead.created_at ?? null,
+          },
+        }
+      : null,
+    idempotencyFingerprint,
+    clientUserId,
+  );
+}
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await resolveBearerAuthUser(request);
+    if (auth.kind === "invalid") {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const clientUserId = auth.kind === "authenticated" ? auth.userId : null;
+
     const body = await request.json();
     const {
       specialist_id,
@@ -24,6 +78,7 @@ export async function POST(request: NextRequest) {
       source_path,
       referrer,
       hp,
+      idempotency_key,
     } = body;
 
     if (typeof hp === "string" && hp.trim().length > 0) {
@@ -60,6 +115,59 @@ export async function POST(request: NextRequest) {
 
     if (typeof message === "string" && message.length > 3000) {
       return Response.json({ error: "message is too long" }, { status: 400 });
+    }
+
+    const insertPayload = {
+      specialist_id,
+      client_name: client_name || null,
+      client_email: client_email || null,
+      client_phone: client_phone || null,
+      message: message || null,
+      source:
+        typeof source === "string" && source.trim() ? source.trim() : null,
+      source_path:
+        typeof source_path === "string" && source_path.trim()
+          ? source_path.trim()
+          : null,
+      referrer:
+        typeof referrer === "string" && referrer.trim()
+          ? referrer.trim()
+          : null,
+    };
+
+    const clientIdempotencyKey = normalizeClientIdempotencyKey(idempotency_key);
+    const idempotencyFingerprint = buildClientIdempotencyFingerprint(insertPayload);
+    const supabase = createSupabaseServerClient();
+
+    if (clientIdempotencyKey) {
+      const replay = await lookupLeadIdempotentReplay(
+        supabase,
+        clientIdempotencyKey,
+        idempotencyFingerprint,
+        clientUserId,
+      );
+
+      if (replay.kind === "error") {
+        return Response.json(
+          { error: "Failed to verify idempotency" },
+          { status: 500 }
+        );
+      }
+
+      if (replay.kind === "conflict") {
+        return Response.json(
+          { error: "Idempotency key reused with different payload" },
+          { status: 409 }
+        );
+      }
+
+      if (replay.kind === "ownership_conflict") {
+        return Response.json({ error: IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE }, { status: 409 });
+      }
+
+      if (replay.kind === "replay") {
+        return Response.json({ data: replay.response }, { status: 200 });
+      }
     }
 
     const ip = getClientIP(request);
@@ -100,16 +208,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createSupabaseServerClient();
-
     const { data: specialist, error: specialistError } = await supabase
       .from("specialists")
-      .select("id, telegram_chat_id, name, category_id")
+      .select("id, telegram_chat_id, name, category_id, status, is_active, is_visible, billing_visibility_blocked, is_test")
       .eq("id", specialist_id)
-      .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
-      .eq("is_active", true)
-      .eq("is_visible", true)
-      .eq("billing_visibility_blocked", false)
       .maybeSingle();
 
     if (specialistError) {
@@ -119,7 +221,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!specialist) {
+    if (!specialist || !isPublicLeadTargetSpecialist(specialist)) {
       return Response.json(
         { error: "Specialist not found" },
         { status: 404 }
@@ -146,24 +248,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const insertPayload = {
-      specialist_id,
-      client_name: client_name || null,
-      client_email: client_email || null,
-      client_phone: client_phone || null,
-      message: message || null,
-      source:
-        typeof source === "string" && source.trim() ? source.trim() : null,
-      source_path:
-        typeof source_path === "string" && source_path.trim()
-          ? source_path.trim()
-          : null,
-      referrer:
-        typeof referrer === "string" && referrer.trim()
-          ? referrer.trim()
-          : null,
-    };
-
     if (source || source_path || referrer) {
       console.info("[leads/create] lead source", {
         specialist_id,
@@ -175,11 +259,46 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await supabase
       .from("leads")
-      .insert([insertPayload])
+      .insert([
+        {
+          ...insertPayload,
+          client_user_id: clientUserId,
+          ...(clientIdempotencyKey
+            ? {
+                client_idempotency_key: clientIdempotencyKey,
+                client_idempotency_fingerprint: idempotencyFingerprint,
+              }
+            : {}),
+        },
+      ])
       .select()
       .single();
 
     if (error) {
+      if (clientIdempotencyKey && isUniqueViolation(error)) {
+        const replay = await lookupLeadIdempotentReplay(
+          supabase,
+          clientIdempotencyKey,
+          idempotencyFingerprint,
+          clientUserId,
+        );
+
+        if (replay.kind === "replay") {
+          return Response.json({ data: replay.response }, { status: 200 });
+        }
+
+        if (replay.kind === "conflict") {
+          return Response.json(
+            { error: "Idempotency key reused with different payload" },
+            { status: 409 }
+          );
+        }
+
+        if (replay.kind === "ownership_conflict") {
+          return Response.json({ error: IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE }, { status: 409 });
+        }
+      }
+
       return Response.json(
         { error: error.message },
         { status: 400 }

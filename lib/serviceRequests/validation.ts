@@ -48,6 +48,7 @@ export type ServiceRequestCreateInput = {
   source?: unknown;
   specialist_id?: unknown;
   public_id?: unknown;
+  idempotency_key?: unknown;
 };
 
 export type ValidatedServiceRequestCreate = {
