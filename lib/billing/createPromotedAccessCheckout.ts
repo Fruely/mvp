@@ -177,6 +177,7 @@ export async function createPromotedAccessCheckout(input: {
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
+      invoice_creation: { enabled: true },
       customer: customerId,
       line_items: [
         {

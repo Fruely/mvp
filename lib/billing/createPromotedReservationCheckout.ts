@@ -112,6 +112,7 @@ export async function createPromotedReservationCheckout(input: {
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
+      invoice_creation: { enabled: true },
       customer_creation: "always",
       line_items: [
         {
