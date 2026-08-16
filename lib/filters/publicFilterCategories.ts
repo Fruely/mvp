@@ -1,4 +1,4 @@
-import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "../categories/uncategorizedSpecialistCategory.ts";
+import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "../categories/uncategorizedSpecialistCategory";
 
 export type PublicFilterCategoryRecord = {
   slug: string;

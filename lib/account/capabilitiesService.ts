@@ -82,7 +82,7 @@ export async function resolveAccountCapabilities(
       : null;
 
   const specialist = mapSpecialistOverview({
-    row: specResult.data as Record<string, unknown>,
+    row: specialistRow,
     city: typeof profileResult.data?.city === "string" ? profileResult.data.city.trim() || null : null,
     categoryLabel,
     gate,

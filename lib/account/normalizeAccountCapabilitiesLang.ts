@@ -1,4 +1,4 @@
-import { toCategoryTitleLang } from "../i18n/toCategoryTitleLang.ts";
+import { toCategoryTitleLang } from "../i18n/toCategoryTitleLang";
 
 export type AccountCapabilitiesLang = "ru" | "ua" | "de";
 

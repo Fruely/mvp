@@ -10,7 +10,7 @@ import { notify } from "@/lib/notifications/notify";
 import { CLIENT_CAMPAIGN_COOKIE_NAME } from "@/lib/clientCampaignLinks/cookie";
 import { findCampaignByIdForAttribution } from "@/lib/clientCampaignLinks/service";
 import { SERVICE_REQUEST_SOURCE } from "@/lib/serviceRequests/constants";
-import { generateServiceRequestPublicId, isUniqueViolation } from "@/lib/serviceRequests/publicId";
+import { generateServiceRequestPublicId } from "@/lib/serviceRequests/publicId";
 import { buildOwnerTelegramTimingPayload } from "@/lib/serviceRequests/ownerTelegramTiming";
 import { validateServiceRequestCreate } from "@/lib/serviceRequests/validation";
 import {

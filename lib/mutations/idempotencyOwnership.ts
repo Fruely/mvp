@@ -1,5 +1,5 @@
-import type { IdempotentExistingRow } from "./clientIdempotency.ts";
-import { resolveIdempotentReplay } from "./clientIdempotency.ts";
+import type { IdempotentExistingRow } from "./clientIdempotency";
+import { resolveIdempotentReplay } from "./clientIdempotency";
 
 export type IdempotentExistingOwnedRow = IdempotentExistingRow & {
   client_user_id: string | null;

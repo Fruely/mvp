@@ -2,7 +2,7 @@ import {
   CLIENT_REQUEST_HISTORY_DEFAULT_LIMIT,
   CLIENT_REQUEST_HISTORY_MAX_LIMIT,
   type ClientRequestKind,
-} from "./constants.ts";
+} from "./constants";
 
 const SUMMARY_MAX_LEN = 160;
 

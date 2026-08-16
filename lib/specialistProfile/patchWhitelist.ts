@@ -1,7 +1,7 @@
 import {
   SPECIALIST_PROFILE_EDITABLE_FIELDS,
   type SpecialistProfilePatchBody,
-} from "./types.ts";
+} from "./types";
 
 function hasOwn<T extends object>(obj: T, key: PropertyKey): boolean {
   return Object.prototype.hasOwnProperty.call(obj, key);

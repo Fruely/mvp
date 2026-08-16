@@ -1,5 +1,5 @@
-import type { DashboardLead } from "@/lib/leads/contactUnlock.ts";
-import type { SpecialistLeadApiItem } from "./types.ts";
+import type { DashboardLead } from "@/lib/leads/contactUnlock";
+import type { SpecialistLeadApiItem } from "./types";
 
 export function mapDashboardLeadToApiItem(lead: DashboardLead): SpecialistLeadApiItem {
   return {

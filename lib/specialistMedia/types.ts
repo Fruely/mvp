@@ -1,4 +1,5 @@
 import type { AccountCapabilitiesLang } from "@/lib/account/normalizeAccountCapabilitiesLang";
+import type { SpecialistOnboardingGateState } from "@/lib/specialists/server";
 
 export const SPECIALIST_MEDIA_BUCKET = "specialist-avatars";
 export const SPECIALIST_MEDIA_MAX_BYTES = 5 * 1024 * 1024;
@@ -10,7 +11,7 @@ export const SPECIALIST_MEDIA_ALLOWED_TYPES = [
 ] as const;
 
 export type SpecialistMediaReadiness = {
-  onboarding_gate: "incomplete" | "ready_for_review" | "complete";
+  onboarding_gate: SpecialistOnboardingGateState;
   publication_ready: boolean;
   public_profile_available: boolean;
 };

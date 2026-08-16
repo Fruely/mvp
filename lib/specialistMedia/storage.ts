@@ -176,7 +176,9 @@ export async function deleteManagedStoragePaths(
   supabase: SupabaseClient,
   paths: Array<string | null | undefined>,
 ): Promise<void> {
-  const unique = [...new Set(paths.filter((path): path is string => typeof path === "string" && path.length > 0))];
+  const unique = Array.from(
+    new Set(paths.filter((path): path is string => typeof path === "string" && path.length > 0)),
+  );
   if (unique.length === 0) return;
 
   const { error } = await supabase.storage.from(SPECIALIST_MEDIA_BUCKET).remove(unique);

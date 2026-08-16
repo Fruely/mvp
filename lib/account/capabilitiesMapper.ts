@@ -1,5 +1,5 @@
-import { isPublicLeadTargetSpecialist } from "../specialists/status.ts";
-import type { SpecialistOnboardingGateState } from "../specialists/server.ts";
+import { isPublicLeadTargetSpecialist } from "../specialists/status";
+import type { SpecialistOnboardingGateState } from "../specialists/server";
 
 export type AccountCapabilitiesDto = {
   capabilities: {
