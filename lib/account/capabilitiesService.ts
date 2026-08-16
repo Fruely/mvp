@@ -14,6 +14,7 @@ import {
 } from "@/lib/specialists/server";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
+import type { AccountCapabilitiesLang } from "@/lib/account/normalizeAccountCapabilitiesLang";
 
 const SPECIALIST_COLS =
   "id, user_id, name, category_id, status, is_active, is_visible, billing_visibility_blocked, is_test, work_format, slug, founder_badge";
@@ -27,6 +28,7 @@ function toSpecialistRow(row: Record<string, unknown> | null): SpecialistRow | n
 export async function resolveAccountCapabilities(
   userId: string,
   service: SupabaseClient,
+  lang: AccountCapabilitiesLang,
 ): Promise<AccountCapabilitiesDto> {
   const [specResult, partnerRow] = await Promise.all([
     service
@@ -64,15 +66,19 @@ export async function resolveAccountCapabilities(
       .eq("specialist_id", specialistRow.id)
       .maybeSingle(),
     specialistRow.category_id
-      ? service.from("categories").select("title").eq("id", specialistRow.category_id).maybeSingle()
+      ? service
+          .from("categories")
+          .select("slug, title, title_ru, title_de, title_ua")
+          .eq("id", specialistRow.category_id)
+          .maybeSingle()
       : Promise.resolve({ data: null, error: null }),
     getSpecialistOnboardingGateState(specialistRow, service),
     getSpecialistPlanForDashboard(service, specialistRow.id),
   ]);
 
   const categoryLabel =
-    categoryResult.data && typeof categoryResult.data.title === "object"
-      ? getCategoryTitle(categoryResult.data.title, "ru")
+    categoryResult.data && typeof categoryResult.data === "object"
+      ? getCategoryTitle(categoryResult.data, lang) || null
       : null;
 
   const specialist = mapSpecialistOverview({

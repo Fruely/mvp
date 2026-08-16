@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { resolveAccountCapabilities } from "@/lib/account/capabilitiesService";
+import { normalizeAccountCapabilitiesLang } from "@/lib/account/normalizeAccountCapabilitiesLang";
 import { resolveBearerAuthUser } from "@/lib/auth/resolveBearerAuthUser";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -16,7 +17,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = createSupabaseServerClient();
-    const data = await resolveAccountCapabilities(auth.userId, supabase);
+    const lang = normalizeAccountCapabilitiesLang(request.nextUrl.searchParams.get("lang"));
+    const data = await resolveAccountCapabilities(auth.userId, supabase, lang);
 
     return NextResponse.json(data, { status: 200, headers: NO_STORE });
   } catch (error) {

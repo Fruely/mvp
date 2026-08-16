@@ -16,9 +16,12 @@ test("capabilities route requires bearer auth and does not accept client ownersh
   assert.match(routeSrc, /resolveBearerAuthUser/);
   assert.match(routeSrc, /401/);
   assert.match(routeSrc, /resolveAccountCapabilities\(auth\.userId/);
+  assert.match(routeSrc, /normalizeAccountCapabilitiesLang/);
+  assert.match(routeSrc, /searchParams\.get\("lang"\)/);
   assert.doesNotMatch(routeSrc, /searchParams\.get\(["']specialist/);
   assert.doesNotMatch(routeSrc, /searchParams\.get\(["']user/);
   assert.match(serviceSrc, /\.eq\("user_id", userId\)/);
+  assert.match(serviceSrc, /getCategoryTitle\(categoryResult\.data, lang\)/);
   assert.match(serviceSrc, /maybeSingle\(\)/);
   assert.doesNotMatch(serviceSrc, /auto-create|\.insert\(/);
 });
