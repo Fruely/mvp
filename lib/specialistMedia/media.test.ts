@@ -17,6 +17,11 @@ import { SPECIALIST_MEDIA_BUCKET } from "./types.ts";
 const SPECIALIST_ID = "11111111-1111-1111-1111-111111111111";
 const USER_ID = "22222222-2222-2222-2222-222222222222";
 const SUPABASE_PUBLIC = "https://example.supabase.co";
+const OTHER_SPECIALIST_ID = "99999999-9999-9999-9999-999999999999";
+
+const canonicalOriginOptions = { canonicalOrigin: SUPABASE_PUBLIC };
+
+process.env.NEXT_PUBLIC_SUPABASE_URL = SUPABASE_PUBLIC;
 
 function managedUrl(path: string) {
   return `${SUPABASE_PUBLIC}/storage/v1/object/public/${SPECIALIST_MEDIA_BUCKET}/${path}`;
@@ -159,11 +164,45 @@ const stubMediaPage = async () => ({
 
 const stubDeps = { loadMediaPage: stubMediaPage };
 
-test("extractManagedStoragePath accepts owned paths and rejects external URLs", () => {
+test("extractManagedStoragePath accepts canonical owned paths and rejects untrusted origins", () => {
   const owned = managedUrl(`${SPECIALIST_ID}/gallery/a.jpg`);
-  assert.equal(extractManagedStoragePath(owned, SPECIALIST_ID), `${SPECIALIST_ID}/gallery/a.jpg`);
-  assert.equal(extractManagedStoragePath("https://evil.example/photo.jpg", SPECIALIST_ID), null);
-  assert.equal(extractManagedStoragePath(managedUrl("other/gallery/a.jpg"), SPECIALIST_ID), null);
+  assert.equal(
+    extractManagedStoragePath(owned, SPECIALIST_ID, canonicalOriginOptions),
+    `${SPECIALIST_ID}/gallery/a.jpg`,
+  );
+  assert.equal(extractManagedStoragePath("https://evil.example/photo.jpg", SPECIALIST_ID, canonicalOriginOptions), null);
+  assert.equal(
+    extractManagedStoragePath(managedUrl(`${OTHER_SPECIALIST_ID}/gallery/a.jpg`), SPECIALIST_ID, canonicalOriginOptions),
+    null,
+  );
+
+  const mimickedPath = `/storage/v1/object/public/${SPECIALIST_MEDIA_BUCKET}/${SPECIALIST_ID}/gallery/foo.jpg`;
+  assert.equal(
+    extractManagedStoragePath(`https://evil.example${mimickedPath}`, SPECIALIST_ID, canonicalOriginOptions),
+    null,
+  );
+  assert.equal(
+    extractManagedStoragePath(
+      `https://other-project.supabase.co${mimickedPath}`,
+      SPECIALIST_ID,
+      canonicalOriginOptions,
+    ),
+    null,
+  );
+  assert.equal(
+    extractManagedStoragePath(
+      managedUrl(`${SPECIALIST_ID}/gallery/${encodeURIComponent("..")}/x.jpg`),
+      SPECIALIST_ID,
+      canonicalOriginOptions,
+    ),
+    null,
+  );
+  assert.equal(extractManagedStoragePath("not-a-url", SPECIALIST_ID, canonicalOriginOptions), null);
+});
+
+test("extractManagedStoragePath uses configured Supabase origin from env", () => {
+  const owned = managedUrl(`${SPECIALIST_ID}/photo.jpg`);
+  assert.equal(extractManagedStoragePath(owned, SPECIALIST_ID), `${SPECIALIST_ID}/photo.jpg`);
 });
 
 test("validateSpecialistMediaUpload rejects unsupported MIME and oversized files", () => {
@@ -292,6 +331,71 @@ test("gallery delete rejects non-member URL", async () => {
   );
   assert.equal(result.ok, false);
   if (!result.ok) assert.equal(result.status, 404);
+});
+
+test("gallery delete of external member removes DB reference without Storage remove", async () => {
+  const externalUrl = "https://cdn.example.com/legacy-gallery.jpg";
+  const state: MockState = {
+    avatarUrl: null,
+    photoUrl: null,
+    galleryUrls: [externalUrl, managedUrl(`${SPECIALIST_ID}/gallery/managed.jpg`)],
+    profileExists: true,
+    plan: { plan_code: "basic", plan_status: "active" },
+    storage: new Map([[`${SPECIALIST_ID}/gallery/managed.jpg`, new Uint8Array([1])]]),
+    deletedPaths: [],
+  };
+
+  const deleteExternal = await deleteSpecialistGalleryImage(okCtx(state), externalUrl, "de", stubDeps);
+  assert.equal(deleteExternal.ok, true);
+  assert.deepEqual(state.galleryUrls, [managedUrl(`${SPECIALIST_ID}/gallery/managed.jpg`)]);
+  assert.equal(state.deletedPaths.length, 0);
+
+  const deleteManaged = await deleteSpecialistGalleryImage(
+    okCtx(state),
+    managedUrl(`${SPECIALIST_ID}/gallery/managed.jpg`),
+    "de",
+    stubDeps,
+  );
+  assert.equal(deleteManaged.ok, true);
+  assert.equal(state.galleryUrls.length, 0);
+  assert.deepEqual(state.deletedPaths, [`${SPECIALIST_ID}/gallery/managed.jpg`]);
+});
+
+test("profile replace with external previous photo does not Storage-delete external URL", async () => {
+  const externalPrevious = `https://evil.example/storage/v1/object/public/${SPECIALIST_MEDIA_BUCKET}/${SPECIALIST_ID}/old.jpg`;
+  const state: MockState = {
+    avatarUrl: externalPrevious,
+    photoUrl: externalPrevious,
+    galleryUrls: [],
+    profileExists: true,
+    plan: { plan_code: "basic", plan_status: "active" },
+    storage: new Map(),
+    deletedPaths: [],
+  };
+
+  const result = await uploadSpecialistProfilePhoto(okCtx(state), makeFile({ type: "image/jpeg" }), "de", stubDeps);
+  assert.equal(result.ok, true);
+  assert.equal(state.deletedPaths.length, 0);
+  assert.ok(state.photoUrl?.startsWith(SUPABASE_PUBLIC));
+});
+
+test("profile delete with external current photo clears DB without Storage remove", async () => {
+  const externalPrevious = "https://cdn.example.com/avatar.jpg";
+  const state: MockState = {
+    avatarUrl: externalPrevious,
+    photoUrl: externalPrevious,
+    galleryUrls: [],
+    profileExists: true,
+    plan: { plan_code: "basic", plan_status: "active" },
+    storage: new Map(),
+    deletedPaths: [],
+  };
+
+  const result = await deleteSpecialistProfilePhoto(okCtx(state), "de", stubDeps);
+  assert.equal(result.ok, true);
+  assert.equal(state.photoUrl, null);
+  assert.equal(state.avatarUrl, null);
+  assert.equal(state.deletedPaths.length, 0);
 });
 
 test("route wiring uses specialistMedia modules", () => {
