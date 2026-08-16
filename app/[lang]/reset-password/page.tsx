@@ -1,24 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { getSupabase } from "@/lib/supabaseClient";
+import { mapSupabaseAuthError } from "@/lib/auth/mapSupabaseAuthError";
+import {
+  getDictionary,
+  isSupportedLang,
+  langFromCookie,
+  t,
+  type Dictionary,
+  type Lang,
+} from "@/lib/i18n";
 
 export default function ResetPasswordPage() {
   const params = useParams();
-  const lang = (params?.lang as string) || "ua";
+  const paramLang = typeof params?.lang === "string" ? params.lang : "";
+  const lang: Lang = isSupportedLang(paramLang) ? paramLang : langFromCookie(null);
 
+  const [dict, setDict] = useState<Dictionary | null>(null);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    void getDictionary(lang).then(setDict);
+  }, [lang]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     const trimmed = email.trim();
     if (!trimmed) {
-      setError("Введіть email");
+      setError(t(dict ?? {}, "login.errorRequired"));
       return;
     }
     setLoading(true);
@@ -28,12 +43,12 @@ export default function ResetPasswordPage() {
         redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
       });
       if (resetError) {
-        setError(resetError.message || "Помилка відправки");
+        setError(mapSupabaseAuthError(resetError, dict ?? {}, "recovery"));
         return;
       }
       setSent(true);
     } catch {
-      setError("Помилка мережі");
+      setError(t(dict ?? {}, "login.errorNetwork"));
     } finally {
       setLoading(false);
     }

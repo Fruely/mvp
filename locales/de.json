@@ -90,7 +90,13 @@
     "errorInvalid": "Ungültige E-Mail oder Passwort",
     "errorSignIn": "Anmeldung fehlgeschlagen",
     "errorNoSession": "Anmeldung erfolgreich, aber keine Sitzung erstellt. Bitte E-Mail-Bestätigung prüfen oder erneut versuchen.",
-    "errorNetwork": "Netzwerkfehler"
+    "errorNetwork": "Netzwerkfehler",
+    "errorEmailRateLimit": "Zu viele E-Mails in kurzer Zeit. Bitte warten Sie und versuchen Sie es später erneut.",
+    "errorRecoveryRateLimit": "Zu viele Passwort-zurücksetzen-Anfragen. Bitte warten Sie und versuchen Sie es später erneut.",
+    "errorAlreadyRegistered": "Diese E-Mail ist bereits registriert. Bitte melden Sie sich an oder setzen Sie das Passwort zurück.",
+    "errorAuthGeneric": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es später erneut.",
+    "errorRecoveryGeneric": "Die E-Mail zum Zurücksetzen des Passworts konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.",
+    "signUpPendingHint": "Die Bestätigungs-E-Mail wurde bereits gesendet. Prüfen Sie Ihr Postfach oder melden Sie sich nach der Bestätigung an."
   },
   "serviceRequest": {
     "title": "Beschreiben Sie Ihre Aufgabe – Freuly findet die passende Fachkraft",

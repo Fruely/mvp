@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getSupabase } from "@/lib/supabaseClient";
-import { t, type Dictionary } from "@/lib/i18n";
+import { mapSupabaseAuthError } from "@/lib/auth/mapSupabaseAuthError";
+import { isSupportedLang, t, type Dictionary, type Lang } from "@/lib/i18n";
 
 export default function PartnerClaimClient({
   lang,
@@ -48,18 +49,24 @@ export default function PartnerClaimClient({
         password: password.trim(),
       });
       if (signInError) {
-        setError(t(dict, "partner.claim.authFailed"));
+        setError(mapSupabaseAuthError(signInError, dict, "signin"));
         return false;
       }
       return true;
     }
 
+    const signupLocale: Lang = isSupportedLang(lang) ? lang : "ru";
     const { error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password: password.trim(),
+      options: {
+        data: {
+          locale: signupLocale,
+        },
+      },
     });
     if (signUpError) {
-      setError(t(dict, "partner.claim.authFailed"));
+      setError(mapSupabaseAuthError(signUpError, dict, "signup"));
       return false;
     }
     const {

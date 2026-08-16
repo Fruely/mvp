@@ -1,26 +1,37 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getSupabase } from "@/lib/supabaseClient";
-import { isSupportedLang } from "@/lib/i18n";
+import { mapSupabaseAuthError } from "@/lib/auth/mapSupabaseAuthError";
+import {
+  getDictionary,
+  isSupportedLang,
+  langFromCookie,
+  t,
+  type Dictionary,
+  type Lang,
+} from "@/lib/i18n";
 
-function readFreulyLangFromCookie(): string {
-  if (typeof document === "undefined") return "ua";
+function readFreulyLangFromCookie(): Lang {
+  if (typeof document === "undefined") return "ru";
   const match = document.cookie.match(/(?:^|;\s*)freuly_lang=([^;]*)/);
-  if (!match?.[1]) return "ua";
+  if (!match?.[1]) return "ru";
   const v = decodeURIComponent(match[1].trim());
-  return isSupportedLang(v) ? v : "ua";
+  return isSupportedLang(v) ? v : langFromCookie(v);
 }
 
 export default function ResetPasswordPage() {
+  const [lang, setLang] = useState<Lang>("ru");
+  const [dict, setDict] = useState<Dictionary | null>(null);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loginHref, setLoginHref] = useState("/ua/login");
 
   useEffect(() => {
-    setLoginHref(`/${readFreulyLangFromCookie()}/login`);
+    const resolved = readFreulyLangFromCookie();
+    setLang(resolved);
+    void getDictionary(resolved).then(setDict);
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -28,7 +39,7 @@ export default function ResetPasswordPage() {
     setError(null);
     const trimmed = email.trim();
     if (!trimmed) {
-      setError("Введіть email");
+      setError(t(dict ?? {}, "login.errorRequired"));
       return;
     }
     setLoading(true);
@@ -38,12 +49,12 @@ export default function ResetPasswordPage() {
         redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
       });
       if (resetError) {
-        setError(resetError.message || "Помилка відправки");
+        setError(mapSupabaseAuthError(resetError, dict ?? {}, "recovery"));
         return;
       }
       setSent(true);
     } catch {
-      setError("Помилка мережі");
+      setError(t(dict ?? {}, "login.errorNetwork"));
     } finally {
       setLoading(false);
     }
@@ -58,7 +69,7 @@ export default function ResetPasswordPage() {
             Ми надіслали лист для відновлення пароля.
           </p>
           <a
-            href={loginHref}
+            href={`/${lang}/login`}
             className="mt-4 inline-block text-sm text-blue-600 hover:underline"
           >
             Повернутися до входу
@@ -104,7 +115,7 @@ export default function ResetPasswordPage() {
           </button>
         </form>
         <a
-          href={loginHref}
+          href={`/${lang}/login`}
           className="mt-4 block text-center text-sm text-blue-600 hover:underline"
         >
           Повернутися до входу

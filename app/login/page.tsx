@@ -2,15 +2,16 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { resolveSafeNextPath } from "@/lib/auth/safeNextPath";
+import { resolveLoginLang } from "@/lib/auth/loginLang";
 import SpecialistPasswordSignIn from "@/app/specialist/claim/SpecialistPasswordSignIn";
 import { specialistDashboardPath } from "@/lib/specialists/navigation";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
-import { getDictionary, langFromCookie, t, type Lang } from "@/lib/i18n";
+import { getDictionary, t, type Lang } from "@/lib/i18n";
 
-function loginLangFromCookie(): Lang {
+function loginLangFromRequest(safeNext: string | null): Lang {
   const cookieLang = cookies().get("freuly_lang")?.value ?? "";
-  return langFromCookie(cookieLang);
+  return resolveLoginLang({ cookieLang, safeNext });
 }
 
 /**
@@ -23,7 +24,7 @@ function loginLangFromCookie(): Lang {
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const lang = loginLangFromCookie();
+  const lang = loginLangFromRequest(null);
   const dict = await getDictionary(lang);
   return {
     title: `${t(dict, "login.title")} | Freuly`,
@@ -67,7 +68,7 @@ export default async function LoginPage({ searchParams }: Props) {
   }
 
   const allowPartnerSignUp = Boolean(safeNext?.includes("/partners/"));
-  const lang = loginLangFromCookie();
+  const lang = loginLangFromRequest(safeNext);
   const dict = await getDictionary(lang);
 
   return (

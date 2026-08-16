@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { getSupabase } from "@/lib/supabaseClient";
 import { specialistDashboardHrefClient } from "@/lib/specialists/dashboardHref";
+import { mapSupabaseAuthError } from "@/lib/auth/mapSupabaseAuthError";
 import { t, type Dictionary, type Lang } from "@/lib/i18n";
 
 type Props = {
@@ -24,6 +25,7 @@ export default function SpecialistPasswordSignIn({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [signupAwaitingConfirmation, setSignupAwaitingConfirmation] = useState(false);
 
   function postAuthRedirectHref(): string {
     if (nextPath) return nextPath;
@@ -34,6 +36,12 @@ export default function SpecialistPasswordSignIn({
     e.preventDefault();
     setError(null);
     setMessage(null);
+
+    if (mode === "signup" && allowPartnerSignUp && signupAwaitingConfirmation) {
+      setMessage(t(dict, "login.signUpCheckEmail"));
+      return;
+    }
+
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
     if (!trimmedEmail || !trimmedPassword) {
@@ -49,12 +57,18 @@ export default function SpecialistPasswordSignIn({
         const { data, error: signUpError } = await supabase.auth.signUp({
           email: trimmedEmail,
           password: trimmedPassword,
+          options: {
+            data: {
+              locale: lang,
+            },
+          },
         });
         if (signUpError) {
-          setError(signUpError.message || t(dict, "login.errorSignUp"));
+          setError(mapSupabaseAuthError(signUpError, dict, "signup"));
           return;
         }
         if (!data.session) {
+          setSignupAwaitingConfirmation(true);
           setMessage(t(dict, "login.signUpCheckEmail"));
           setMode("signin");
           return;
@@ -68,11 +82,7 @@ export default function SpecialistPasswordSignIn({
         password: trimmedPassword,
       });
       if (signInError) {
-        if (signInError.message?.toLowerCase().includes("invalid login")) {
-          setError(t(dict, "login.errorInvalid"));
-        } else {
-          setError(signInError.message || t(dict, "login.errorSignIn"));
-        }
+        setError(mapSupabaseAuthError(signInError, dict, "signin"));
         return;
       }
       const targetHref = postAuthRedirectHref();
@@ -87,6 +97,8 @@ export default function SpecialistPasswordSignIn({
       setLoading(false);
     }
   }
+
+  const signupBlocked = mode === "signup" && allowPartnerSignUp && signupAwaitingConfirmation;
 
   return (
     <section className="mx-auto max-w-sm rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -126,7 +138,13 @@ export default function SpecialistPasswordSignIn({
             type="email"
             autoComplete="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (signupAwaitingConfirmation) {
+                setSignupAwaitingConfirmation(false);
+                setMessage(null);
+              }
+            }}
             className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
             required
           />
@@ -155,9 +173,12 @@ export default function SpecialistPasswordSignIn({
             {message}
           </p>
         ) : null}
+        {signupBlocked ? (
+          <p className="text-xs text-gray-500">{t(dict, "login.signUpPendingHint")}</p>
+        ) : null}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || signupBlocked}
           className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
         >
           {loading
