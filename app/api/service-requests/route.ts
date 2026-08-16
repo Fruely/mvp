@@ -19,6 +19,8 @@ import {
   resolveIdempotentReplay,
   shouldRunCreationSideEffects,
 } from "@/lib/mutations/clientIdempotency";
+import { applyClientUserIdempotencyFilter } from "@/lib/mutations/idempotencyOwnerScope";
+import { resolveBearerAuthUser } from "@/lib/auth/resolveBearerAuthUser";
 
 export const dynamic = "force-dynamic";
 
@@ -52,12 +54,16 @@ async function lookupServiceRequestIdempotentReplay(
   supabase: ReturnType<typeof createSupabaseServerClient>,
   clientIdempotencyKey: string,
   idempotencyFingerprint: string,
+  clientUserId: string | null,
 ) {
-  const { data: existingRequest, error: existingError } = await supabase
+  let query = supabase
     .from("service_requests")
     .select("public_id, created_at, client_idempotency_fingerprint")
-    .eq("client_idempotency_key", clientIdempotencyKey)
-    .maybeSingle();
+    .eq("client_idempotency_key", clientIdempotencyKey);
+
+  query = applyClientUserIdempotencyFilter(query, clientUserId);
+
+  const { data: existingRequest, error: existingError } = await query.maybeSingle();
 
   if (existingError) {
     return { kind: "error" as const };
@@ -83,6 +89,13 @@ async function lookupServiceRequestIdempotentReplay(
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await resolveBearerAuthUser(request);
+    if (auth.kind === "invalid") {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401, headers: NO_STORE });
+    }
+
+    const clientUserId = auth.kind === "authenticated" ? auth.userId : null;
+
     const body = await request.json();
     const validated = validateServiceRequestCreate(body);
     if ("error" in validated) {
@@ -101,6 +114,7 @@ export async function POST(request: NextRequest) {
         supabase,
         clientIdempotencyKey,
         idempotencyFingerprint,
+        clientUserId,
       );
 
       if (replay.kind === "error") {
@@ -180,6 +194,7 @@ export async function POST(request: NextRequest) {
         source: SERVICE_REQUEST_SOURCE,
         source_path: validated.source_path,
         client_campaign_link_id: clientCampaignLinkId,
+        client_user_id: clientUserId,
         status: "new",
         updated_at: nowIso,
         ...(clientIdempotencyKey
@@ -212,6 +227,7 @@ export async function POST(request: NextRequest) {
           supabase,
           clientIdempotencyKey,
           idempotencyFingerprint,
+          clientUserId,
         );
 
         if (replay.kind === "replay") {

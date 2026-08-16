@@ -16,17 +16,23 @@ import {
   normalizeClientIdempotencyKey,
   resolveIdempotentReplay,
 } from "@/lib/mutations/clientIdempotency";
+import { applyClientUserIdempotencyFilter } from "@/lib/mutations/idempotencyOwnerScope";
+import { resolveBearerAuthUser } from "@/lib/auth/resolveBearerAuthUser";
 
 async function lookupLeadIdempotentReplay(
   supabase: ReturnType<typeof createSupabaseServerClient>,
   clientIdempotencyKey: string,
   idempotencyFingerprint: string,
+  clientUserId: string | null,
 ) {
-  const { data: existingLead, error: existingError } = await supabase
+  let query = supabase
     .from("leads")
     .select("id, created_at, client_idempotency_fingerprint")
-    .eq("client_idempotency_key", clientIdempotencyKey)
-    .maybeSingle();
+    .eq("client_idempotency_key", clientIdempotencyKey);
+
+  query = applyClientUserIdempotencyFilter(query, clientUserId);
+
+  const { data: existingLead, error: existingError } = await query.maybeSingle();
 
   if (existingError) {
     return { kind: "error" as const };
@@ -51,6 +57,13 @@ async function lookupLeadIdempotentReplay(
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await resolveBearerAuthUser(request);
+    if (auth.kind === "invalid") {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const clientUserId = auth.kind === "authenticated" ? auth.userId : null;
+
     const body = await request.json();
     const {
       specialist_id,
@@ -128,6 +141,7 @@ export async function POST(request: NextRequest) {
         supabase,
         clientIdempotencyKey,
         idempotencyFingerprint,
+        clientUserId,
       );
 
       if (replay.kind === "error") {
@@ -241,6 +255,7 @@ export async function POST(request: NextRequest) {
       .insert([
         {
           ...insertPayload,
+          client_user_id: clientUserId,
           ...(clientIdempotencyKey
             ? {
                 client_idempotency_key: clientIdempotencyKey,
@@ -258,6 +273,7 @@ export async function POST(request: NextRequest) {
           supabase,
           clientIdempotencyKey,
           idempotencyFingerprint,
+          clientUserId,
         );
 
         if (replay.kind === "replay") {
