@@ -1,8 +1,8 @@
 # Datenschutzerklärung Freuly
 
-Version 1.0 — August 2026
+Version 1.1 — August 2026
 
-Maßgeblich ist ausschließlich die deutsche Fassung. Die russische Übersetzung wird nur zur besseren Verständlichkeit bereitgestellt. Bei Abweichungen oder Auslegungsunterschieden ist die deutsche Fassung maßgeblich.
+Maßgeblich ist ausschließlich die deutsche Fassung.
 
 ## § 1 Verantwortlicher
 
@@ -31,11 +31,11 @@ Wir verarbeiten personenbezogene Daten insbesondere von folgenden Personengruppe
 
 Die Verarbeitung erfolgt insbesondere auf Grundlage von:
 
-- **Art. 6 Abs. 1 lit. a DSGVO** (Einwilligung)
-- **Art. 6 Abs. 1 lit. b DSGVO** (Vertragserfüllung bzw. Durchführung vorvertraglicher Maßnahmen)
-- **Art. 6 Abs. 1 lit. c DSGVO** (rechtliche Verpflichtung)
-- **Art. 6 Abs. 1 lit. f DSGVO** (berechtigte Interessen)
-- soweit besondere Kategorien personenbezogener Daten freiwillig übermittelt werden, zusätzlich **Art. 9 Abs. 2 lit. a DSGVO** (ausdrückliche Einwilligung)
+- Art. 6 Abs. 1 lit. a DSGVO (Einwilligung)
+- Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung bzw. Durchführung vorvertraglicher Maßnahmen)
+- Art. 6 Abs. 1 lit. c DSGVO (rechtliche Verpflichtung)
+- Art. 6 Abs. 1 lit. f DSGVO (berechtigte Interessen)
+- soweit besondere Kategorien personenbezogener Daten freiwillig übermittelt werden, zusätzlich Art. 9 Abs. 2 lit. a DSGVO (ausdrückliche Einwilligung)
 
 Unsere berechtigten Interessen liegen insbesondere im sicheren Betrieb der Plattform, in der Beantwortung von Anfragen, in der Missbrauchsprävention, in der technischen Weiterentwicklung, in der Präsentation von Spezialisten sowie in der Vermarktung von Freuly.
 
@@ -52,30 +52,30 @@ Beim Besuch unserer Website werden automatisch technische Informationen verarbei
 - Spracheinstellungen
 - technische Geräteinformationen
 
-Diese Verarbeitung erfolgt zur technischen Bereitstellung der Website, zur Gewährleistung von Stabilität und Sicherheit sowie zur Fehleranalyse auf Grundlage von **Art. 6 Abs. 1 lit. f DSGVO**.
+Diese Verarbeitung erfolgt zur technischen Bereitstellung der Website, zur Gewährleistung von Stabilität und Sicherheit sowie zur Fehleranalyse auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO.
 
 Für den Betrieb der Website und technischer Infrastruktur nutzen wir insbesondere:
 
-- **Vercel** (Hosting / Deployment)
-- **Supabase** (Datenbank, Authentifizierung, Storage)
-- **Resend** (Versand transaktionaler E-Mails)
-- **OpenStreetMap / Nominatim** (Geokodierung und Karten-/Entfernungsfunktionen)
+- Vercel (Hosting / Deployment)
+- Supabase (Datenbank, Authentifizierung, Storage)
+- Resend (Versand transaktionaler E-Mails)
+- OpenStreetMap / Nominatim (Geokodierung und Karten-/Entfernungsfunktionen)
 
-Soweit externe Dienstleister als Auftragsverarbeiter tätig werden, erfolgt dies auf Grundlage von Verträgen gemäß **Art. 28 DSGVO**.
+Soweit externe Dienstleister als Auftragsverarbeiter tätig werden, erfolgt dies auf Grundlage von Verträgen gemäß Art. 28 DSGVO.
 
 ## § 4 Cookies und Einwilligungsmanagement
 
 Unsere Website verwendet Cookies und vergleichbare Technologien.
 
-Technisch notwendige Cookies und vergleichbare Technologien werden eingesetzt, soweit dies zur Bereitstellung der Website oder einzelner ausdrücklich gewünschter Funktionen erforderlich ist. Rechtsgrundlage hierfür ist **§ 25 Abs. 2 TDDDG** sowie **Art. 6 Abs. 1 lit. f DSGVO**.
+Technisch notwendige Cookies und vergleichbare Technologien werden eingesetzt, soweit dies zur Bereitstellung der Website oder einzelner ausdrücklich gewünschter Funktionen erforderlich ist. Rechtsgrundlage hierfür ist § 25 Abs. 2 TDDDG sowie Art. 6 Abs. 1 lit. f DSGVO.
 
-Nicht technisch notwendige Cookies oder Tracking-Technologien, insbesondere für Analysezwecke, werden nur nach vorheriger Einwilligung eingesetzt. Rechtsgrundlage hierfür ist **§ 25 Abs. 1 TDDDG** sowie **Art. 6 Abs. 1 lit. a DSGVO**.
+Nicht technisch notwendige Cookies oder Tracking-Technologien, insbesondere für Analysezwecke, werden nur nach vorheriger Einwilligung eingesetzt. Rechtsgrundlage hierfür ist § 25 Abs. 1 TDDDG sowie Art. 6 Abs. 1 lit. a DSGVO.
 
 Ein Cookie-Consent-Banner ist auf der Website eingebunden. Eine erteilte Einwilligung kann jederzeit mit Wirkung für die Zukunft über die Cookie-Einstellungen widerrufen oder angepasst werden.
 
 ## § 5 Google Analytics
 
-Freuly verwendet **Google Analytics**, einen Webanalysedienst von **Google**, zur Analyse der Nutzung der Website.
+Freuly verwendet Google Analytics, einen Webanalysedienst von Google, zur Analyse der Nutzung der Website.
 
 Google Analytics wird nur eingesetzt, wenn der Nutzer zuvor über das Cookie-Banner eingewilligt hat.
 
@@ -88,9 +88,9 @@ Im Rahmen von Google Analytics können insbesondere folgende Daten verarbeitet w
 - ungefähre Standortdaten
 - Referrer-Informationen
 
-Die Verarbeitung erfolgt auf Grundlage von **Art. 6 Abs. 1 lit. a DSGVO** und **§ 25 Abs. 1 TDDDG**.
+Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. a DSGVO und § 25 Abs. 1 TDDDG.
 
-Empfänger der Daten ist insbesondere **Google Ireland Limited**. Eine Übermittlung an Unternehmen von Google, insbesondere in die USA, kann nicht ausgeschlossen werden. Soweit dabei ein Drittlandtransfer erfolgt, erfolgt dieser nach Maßgabe der datenschutzrechtlich zulässigen Übermittlungsmechanismen.
+Empfänger der Daten ist insbesondere Google Ireland Limited. Eine Übermittlung an Unternehmen von Google, insbesondere in die USA, kann nicht ausgeschlossen werden. Soweit dabei ein Drittlandtransfer erfolgt, erfolgt dieser nach Maßgabe der datenschutzrechtlich zulässigen Übermittlungsmechanismen.
 
 Die Einwilligung kann jederzeit mit Wirkung für die Zukunft widerrufen werden.
 
@@ -117,7 +117,7 @@ Diese Daten werden verarbeitet, um:
 - die Kommunikation und Bearbeitung der Anfrage zu ermöglichen
 - Missbrauch zu verhindern und die Plattform ordnungsgemäß zu betreiben
 
-Rechtsgrundlage ist **Art. 6 Abs. 1 lit. b DSGVO** bzw. die Durchführung vorvertraglicher Maßnahmen auf Anfrage der betroffenen Person.
+Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO bzw. die Durchführung vorvertraglicher Maßnahmen auf Anfrage der betroffenen Person.
 
 Freuly speichert diese Daten nicht nur zur Weiterleitung, sondern auch zur internen Bearbeitung und Nachverfolgung der Anfrage.
 
@@ -125,17 +125,17 @@ Der ausgewählte Spezialist erhält die für die Bearbeitung der Anfrage erforde
 
 ### Besondere Kategorien personenbezogener Daten
 
-Freuly ist nicht darauf ausgelegt, über das Anfrageformular strukturiert Gesundheitsdaten oder andere besondere Kategorien personenbezogener Daten im Sinne von **Art. 9 DSGVO** zu erheben.
+Freuly ist nicht darauf ausgelegt, über das Anfrageformular strukturiert Gesundheitsdaten oder andere besondere Kategorien personenbezogener Daten im Sinne von Art. 9 DSGVO zu erheben.
 
 Da Nutzer im freien Nachrichtentext freiwillig sensible Angaben machen können, bitten wir darum, keine unnötigen sensiblen Daten zu übermitteln.
 
-Soweit Nutzer gleichwohl freiwillig besondere Kategorien personenbezogener Daten im Nachrichtentext angeben und die Anfrage absenden, erfolgt die Verarbeitung dieser Angaben ausschließlich zur Bearbeitung und Übermittlung der Anfrage an den ausgewählten Spezialisten. Rechtsgrundlage ist insoweit zusätzlich **Art. 9 Abs. 2 lit. a DSGVO**.
+Soweit Nutzer gleichwohl freiwillig besondere Kategorien personenbezogener Daten im Nachrichtentext angeben und die Anfrage absenden, erfolgt die Verarbeitung dieser Angaben ausschließlich zur Bearbeitung und Übermittlung der Anfrage an den ausgewählten Spezialisten. Rechtsgrundlage ist insoweit zusätzlich Art. 9 Abs. 2 lit. a DSGVO.
 
 ## § 7 Speicherdauer für Leads
 
 Personenbezogene Daten aus Anfragen (Leads) werden grundsätzlich bis zum Abschluss der Bearbeitung gespeichert.
 
-Anschließend werden diese Daten grundsätzlich noch für **12 Monate nach Abschluss oder letzter Aktivität** gespeichert, sofern keine längere Aufbewahrung erforderlich ist, insbesondere zur Abwehr oder Durchsetzung von Rechtsansprüchen, zur Missbrauchsprävention oder aufgrund gesetzlicher Pflichten.
+Anschließend werden diese Daten grundsätzlich noch für 12 Monate nach Abschluss oder letzter Aktivität gespeichert, sofern keine längere Aufbewahrung erforderlich ist, insbesondere zur Abwehr oder Durchsetzung von Rechtsansprüchen, zur Missbrauchsprävention oder aufgrund gesetzlicher Pflichten.
 
 Nach Ablauf dieses Zeitraums werden die personenbezogenen Daten der Anfrage gelöscht oder anonymisiert, soweit keine weitere Speicherung erforderlich ist.
 
@@ -155,7 +155,7 @@ Bei der Registrierung und Nutzung eines Spezialistenkontos verarbeiten wir insbe
 - Vertrags-, Tarif- und Zahlungsinformationen
 - technische Konto- und Nutzungsdaten
 
-Diese Verarbeitung erfolgt zur Begründung, Durchführung und Verwaltung des Vertragsverhältnisses mit dem Spezialisten auf Grundlage von **Art. 6 Abs. 1 lit. b DSGVO**.
+Diese Verarbeitung erfolgt zur Begründung, Durchführung und Verwaltung des Vertragsverhältnisses mit dem Spezialisten auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO.
 
 ## § 9 Veröffentlichung und Vermarktung von Spezialisten
 
@@ -179,11 +179,11 @@ Hierbei können insbesondere verarbeitet werden:
 - öffentlich sichtbare Profildaten
 - weitere vom Spezialisten bereitgestellte Inhalte
 
-Die Verarbeitung erfolgt auf Grundlage von **Art. 6 Abs. 1 lit. b DSGVO** sowie ergänzend **Art. 6 Abs. 1 lit. f DSGVO**. Unser berechtigtes Interesse liegt in der Vermarktung von Freuly und der Sichtbarmachung der auf Freuly vertretenen Spezialisten.
+Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO sowie ergänzend Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse liegt in der Vermarktung von Freuly und der Sichtbarmachung der auf Freuly vertretenen Spezialisten.
 
 ## § 10 Einsatz von KI-gestützten Diensten zur Content-Erstellung
 
-Freuly nutzt in begrenztem Umfang externe KI-gestützte Dienste, insbesondere **ChatGPT / OpenAI**, zur Erstellung und Aufbereitung von Marketinginhalten.
+Freuly nutzt in begrenztem Umfang externe KI-gestützte Dienste, insbesondere ChatGPT / OpenAI, zur Erstellung und Aufbereitung von Marketinginhalten.
 
 Dies kann insbesondere betreffen:
 
@@ -200,9 +200,9 @@ Dabei können – soweit dies für den jeweiligen Inhalt erforderlich ist – in
 - Fotos des Spezialisten
 - weitere zur Erstellung des jeweiligen Beitrags bereitgestellte Materialien
 
-Diese Verarbeitung erfolgt auf Grundlage von **Art. 6 Abs. 1 lit. b DSGVO** und ergänzend **Art. 6 Abs. 1 lit. f DSGVO**.
+Diese Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO und ergänzend Art. 6 Abs. 1 lit. f DSGVO.
 
-Freuly verwendet KI-Dienste nicht zur automatisierten Entscheidungsfindung im Sinne von **Art. 22 DSGVO** mit rechtlicher oder ähnlich erheblicher Wirkung gegenüber Nutzern.
+Freuly verwendet KI-Dienste nicht zur automatisierten Entscheidungsfindung im Sinne von Art. 22 DSGVO mit rechtlicher oder ähnlich erheblicher Wirkung gegenüber Nutzern.
 
 Kundendaten aus Leads, insbesondere E-Mail-Adressen, Telefonnummern und Nachrichtentexte von Endkunden, werden nicht zu Zwecken der KI-gestützten Content-Erstellung verwendet.
 
@@ -226,7 +226,7 @@ Wenn Nutzer Freuly über soziale Netzwerke oder Telegram kontaktieren (z. B. per
 - freiwillig mitgeteilte Kontaktdaten
 - Zeitpunkt und Kontext der Kommunikation
 
-Die Verarbeitung erfolgt zur Bearbeitung und Beantwortung der Anfrage auf Grundlage von **Art. 6 Abs. 1 lit. b DSGVO** oder **Art. 6 Abs. 1 lit. f DSGVO**.
+Die Verarbeitung erfolgt zur Bearbeitung und Beantwortung der Anfrage auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO oder Art. 6 Abs. 1 lit. f DSGVO.
 
 Nach der Bestätigung des aktuellen Prozessstandes werden solche Direktnachrichten grundsätzlich nicht automatisiert in andere interne Systeme von Freuly übertragen, sofern dies nicht im Einzelfall für die weitere Bearbeitung erforderlich wird.
 
@@ -243,13 +243,13 @@ Dabei können insbesondere verarbeitet werden:
 - Informationen über neue oder geänderte Anfragen
 - gegebenenfalls auf die Anfrage bezogene Benachrichtigungsinformationen
 
-Diese Verarbeitung erfolgt auf Grundlage von **Art. 6 Abs. 1 lit. b DSGVO** sowie **Art. 6 Abs. 1 lit. f DSGVO**.
+Diese Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO sowie Art. 6 Abs. 1 lit. f DSGVO.
 
 Bei der Nutzung von Telegram werden Daten zusätzlich durch den Telegram-Anbieter nach dessen eigenen Datenschutzbestimmungen verarbeitet.
 
 ## § 13 Zahlungsabwicklung
 
-Für kostenpflichtige Tarife und Leistungen nutzt Freuly **Stripe** als Zahlungsdienstleister.
+Für kostenpflichtige Tarife und Leistungen nutzt Freuly Stripe als Zahlungsdienstleister.
 
 Im Rahmen der Zahlungsabwicklung können insbesondere verarbeitet werden:
 
@@ -259,7 +259,7 @@ Im Rahmen der Zahlungsabwicklung können insbesondere verarbeitet werden:
 - Transaktionsdaten
 - gegebenenfalls steuerlich erforderliche Angaben
 
-Die Zahlungsabwicklung erfolgt zur Vertragserfüllung auf Grundlage von **Art. 6 Abs. 1 lit. b DSGVO** sowie zur Erfüllung gesetzlicher Pflichten auf Grundlage von **Art. 6 Abs. 1 lit. c DSGVO**.
+Die Zahlungsabwicklung erfolgt zur Vertragserfüllung auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO sowie zur Erfüllung gesetzlicher Pflichten auf Grundlage von Art. 6 Abs. 1 lit. c DSGVO.
 
 Stripe verarbeitet Zahlungsdaten grundsätzlich in eigener datenschutzrechtlicher Verantwortung.
 
@@ -267,20 +267,36 @@ Stripe verarbeitet Zahlungsdaten grundsätzlich in eigener datenschutzrechtliche
 
 Soweit Freuly Karten-, Orts- oder Entfernungsfunktionen anbietet, können dafür Adress- oder Standortdaten von Spezialisten verarbeitet werden.
 
-Zu diesem Zweck nutzt Freuly insbesondere **OpenStreetMap / Nominatim** zur Geokodierung bzw. kartografischen Darstellung.
+Zu diesem Zweck nutzt Freuly insbesondere OpenStreetMap / Nominatim zur Geokodierung bzw. kartografischen Darstellung.
 
-Die Verarbeitung erfolgt auf Grundlage von **Art. 6 Abs. 1 lit. b DSGVO** für die Bereitstellung der Plattformfunktionen sowie ergänzend **Art. 6 Abs. 1 lit. f DSGVO**.
+Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO für die Bereitstellung der Plattformfunktionen sowie ergänzend Art. 6 Abs. 1 lit. f DSGVO.
 
-## § 15 Empfehlungspartner
+## § 15 Partnerprogramm und Referral-Attribution
 
-Soweit Freuly Programme mit Empfehlungspartnern einsetzt, verarbeiten wir die hierfür erforderlichen Daten, insbesondere:
+Wenn Nutzer über einen persönlichen Referral-Link eines Freuly-Partners auf die Website gelangen, kann Freuly mit vorheriger Einwilligung eine Referral-Attribution speichern. Hierfür wird insbesondere das Cookie freuly_partner_ref verwendet.
 
-- Name
-- Kontaktdaten
-- Zuordnung der vermittelten Kontakte
-- Abrechnungs- und Zahlungsdaten
+Dabei können insbesondere folgende Daten verarbeitet werden:
 
-Die Verarbeitung erfolgt auf Grundlage von **Art. 6 Abs. 1 lit. b DSGVO**.
+- Referral-Code und Partner-ID
+- Zeitpunkt und technische Informationen des Referral-Klicks
+- Zuordnung des Besuchs zum Referral-Partner
+- Einwilligungsstatus für die Kategorie Referral-Attribution
+- Registrierung des vermittelten Spezialisten und die dauerhaft gebundene Attribution
+- Status der ersten qualifizierenden Zahlung und der daraus entstehenden Partnervergütung
+- Status der Vergütung (z. B. pending, approved, reversed, credited oder paid)
+- Partnerkonto, Kontaktdaten sowie Vertrags- und Nachweisdaten
+- angenommene Vertragsversion, Zeitpunkt der Annahme und Prüfnachweis (einschließlich Hash/PDF-Dokumentation)
+- für eine Auszahlung erforderliche Abrechnungs-, Steuer- und Bankdaten
+
+Das Referral-Cookie wird nur nach vorheriger Einwilligung in die entsprechende Cookie-Kategorie gesetzt. Rechtsgrundlage für die Speicherung bzw. den Zugriff auf Informationen im Endgerät ist § 25 Abs. 1 TDDDG; die damit verbundene Verarbeitung personenbezogener Daten erfolgt auf Grundlage von Art. 6 Abs. 1 lit. a DSGVO.
+
+Das Referral-Cookie wird für 90 Tage ab dem ersten gültigen Referral-Touch gespeichert. Eine bereits gültige First-Touch-Zuordnung wird durch einen späteren Partner-Link nicht überschrieben. Nach Registrierung kann die Attribution dem Spezialistenkonto dauerhaft zugeordnet werden, soweit dies zur Durchführung des Partnerprogramms erforderlich ist.
+
+Nach Registrierung verarbeitet Freuly die Partner- und Attributionsdaten insbesondere zur Durchführung des Partnerprogramms, zur Berechnung, Validierung, Gutschrift oder Auszahlung von Vergütungen, zur Missbrauchsprävention, zur Vertragsdokumentation und zur Erfüllung gesetzlicher Abrechnungs- und Nachweispflichten. Rechtsgrundlagen sind je nach Verarbeitung Art. 6 Abs. 1 lit. b, c und f DSGVO.
+
+Ohne Einwilligung in Referral-Attribution wird das Referral-Cookie nicht gesetzt. In diesem Fall kann eine Partnervergütung technisch möglicherweise nicht zuverlässig zugeordnet werden.
+
+Partnervertrags-, Vergütungs-, Auszahlungs- und Abrechnungsdaten werden entsprechend der Dauer des Vertragsverhältnisses sowie der einschlägigen gesetzlichen Aufbewahrungs-, Nachweis- und Verjährungsfristen gespeichert. Nicht mehr erforderliche reine Tracking-Daten werden gelöscht oder anonymisiert, sobald der jeweilige Zweck entfällt und keine gesetzlichen Gründe für eine weitere Speicherung bestehen.
 
 ## § 16 Empfänger und Drittlandübermittlungen
 
@@ -330,7 +346,7 @@ Betroffene Personen haben zudem das Recht, sich bei einer Datenschutzaufsichtsbe
 
 Zuständige Aufsichtsbehörde kann insbesondere sein:
 
-**Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen (LDI NRW)**
+Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen (LDI NRW)
 
 ## § 19 Bereitstellungspflicht
 
