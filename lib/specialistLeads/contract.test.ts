@@ -29,6 +29,11 @@ test("specialist leads routes enforce bearer auth and ownership scoping", async 
   assert.match(serviceSrc, /SPECIALIST_LEAD_READ_SELECT/);
   assert.match(serviceSrc, /DASHBOARD_LEAD_FULL_SELECT/);
   assert.doesNotMatch(serviceSrc, /DASHBOARD_LEAD_REDACTED_SELECT/);
+  assert.match(
+    serviceSrc,
+    /export async function listSpecialistLeads\(\s*\n\s*service: SupabaseClient,/,
+  );
+  assert.match(listRoute, /listSpecialistLeads\(\s*supabase,\s*session\.specialistId,/);
   assert.match(serviceSrc, /currentStatus === nextStatus/);
   assert.match(serviceSrc, /didPersistFirstUnlock/);
   assert.match(statusRoute, /invalid_status_transition/);

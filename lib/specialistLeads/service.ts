@@ -26,6 +26,7 @@ function toApiItem(row: Record<string, unknown>): SpecialistLeadApiItem {
 }
 
 export async function listSpecialistLeads(
+  service: SupabaseClient,
   specialistId: string,
   params: { limit?: unknown; cursor?: unknown; status?: unknown },
 ): Promise<SpecialistLeadListPage> {
