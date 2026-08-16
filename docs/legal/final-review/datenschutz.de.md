@@ -1,448 +1,349 @@
 # Datenschutzerklärung Freuly
 
-<!-- legal-section: ds-meta-01 -->
-Stand: August 2026. Verantwortlicher: Natalia Sheshenia, handelnd unter der Geschäftsbezeichnung Sheshenia – Freuly, Hofolper Straße 46, 57399 Kirchhundem, Deutschland. E-Mail: freuly.de@gmail.com. Telefon: +49 160 92686432. USt-IdNr.: DE464033560. W-IdNr.: DE464033560-00001.
+Version 1.0 — August 2026
 
-<!-- legal-section: ds-meta-02 -->
-Maßgebliche Sprachfassung ist Deutsch. Übersetzungen dienen der Orientierung.
+Maßgeblich ist ausschließlich die deutsche Fassung. Die russische Übersetzung wird nur zur besseren Verständlichkeit bereitgestellt. Bei Abweichungen oder Auslegungsunterschieden ist die deutsche Fassung maßgeblich.
 
-## 1. Überblick
+## § 1 Verantwortlicher
 
-<!-- legal-section: ds-01-01 -->
-Diese Datenschutzerklärung informiert über die Verarbeitung personenbezogener Daten auf der Plattform Freuly für Spezialisten, Endnutzer und Partner.
+Verantwortlicher für die Datenverarbeitung im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:
 
-<!-- legal-section: ds-01-02 -->
-Freuly verarbeitet personenbezogene Daten nur, soweit dies für Betrieb, Vertragserfüllung, Sicherheit, gesetzliche Pflichten oder — bei optionalen Funktionen — auf Grundlage Ihrer Einwilligung erforderlich ist.
+Natalia Sheshenia
+handelnd unter der Geschäftsbezeichnung „Sheshenia – Freuly“
+Hofolper Straße 46
+57399 Kirchhundem
+Deutschland
 
-## 2. Verantwortlicher
+E-Mail: freuly.de@gmail.com
+Telefon: +49 160 92686432
 
-<!-- legal-section: ds-02-01 -->
-Natalia Sheshenia, handelnd unter der Geschäftsbezeichnung Sheshenia – Freuly, Hofolper Straße 46, 57399 Kirchhundem, Deutschland. E-Mail: freuly.de@gmail.com. Telefon: +49 160 92686432. USt-IdNr.: DE464033560. W-IdNr.: DE464033560-00001.
+## § 2 Allgemeines zur Datenverarbeitung
 
-<!-- legal-section: ds-02-02 -->
-Kontakt für Datenschutzanfragen: freuly.de@gmail.com
+Freuly betreibt eine Plattform zur Präsentation von Spezialisten und zur Vermittlung von Kontakten zwischen Spezialisten und Endkunden.
 
-## 3. Verarbeitungsblöcke A–S
+Wir verarbeiten personenbezogene Daten insbesondere von folgenden Personengruppen:
 
-### Block A — Hosting, Sicherheit und technische Logs
+- Website-Besuchern
+- Endkunden bzw. anfragenden Personen
+- registrierten Spezialisten
+- Kommunikationspartnern über soziale Netzwerke und Messenger
+- Empfehlungspartnern, soweit solche Programme genutzt werden
 
-<!-- legal-section: ds-a-purpose -->
-Zweck: Bereitstellung, Betrieb, Sicherheit und Fehleranalyse der Website und Backend-Infrastruktur.
+Die Verarbeitung erfolgt insbesondere auf Grundlage von:
 
-<!-- legal-section: ds-a-data -->
-Datenkategorien: IP-Adresse, Zeitstempel, aufgerufene URLs, HTTP-Status, Browser- und Geräteinformationen, Referrer, technische Fehler- und Sicherheitslogs.
+- **Art. 6 Abs. 1 lit. a DSGVO** (Einwilligung)
+- **Art. 6 Abs. 1 lit. b DSGVO** (Vertragserfüllung bzw. Durchführung vorvertraglicher Maßnahmen)
+- **Art. 6 Abs. 1 lit. c DSGVO** (rechtliche Verpflichtung)
+- **Art. 6 Abs. 1 lit. f DSGVO** (berechtigte Interessen)
+- soweit besondere Kategorien personenbezogener Daten freiwillig übermittelt werden, zusätzlich **Art. 9 Abs. 2 lit. a DSGVO** (ausdrückliche Einwilligung)
 
-<!-- legal-section: ds-a-recipient -->
-Empfänger: Vercel (Hosting/Edge), Supabase (Datenbank/Auth), Upstash (Caching/Rate-Limiting-Infrastruktur).
+Unsere berechtigten Interessen liegen insbesondere im sicheren Betrieb der Plattform, in der Beantwortung von Anfragen, in der Missbrauchsprävention, in der technischen Weiterentwicklung, in der Präsentation von Spezialisten sowie in der Vermarktung von Freuly.
 
-<!-- legal-section: ds-a-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an sicherem und stabilem Betrieb).
+## § 3 Website-Besuch, Server-Logs und technisch notwendige Verarbeitung
 
-<!-- legal-section: ds-a-retention -->
-Speicherdauer: in der Regel bis zu 90 Tage; bei Sicherheitsvorfällen länger, soweit erforderlich.
+Beim Besuch unserer Website werden automatisch technische Informationen verarbeitet, insbesondere:
 
-### Block B — Konto und Authentifizierung
+- IP-Adresse
+- Datum und Uhrzeit des Zugriffs
+- aufgerufene URL bzw. Seite
+- Referrer-URL
+- Browsertyp und Browserversion
+- verwendetes Betriebssystem
+- Spracheinstellungen
+- technische Geräteinformationen
 
-<!-- legal-section: ds-b-purpose -->
-Zweck: Registrierung, Anmeldung, Sitzungsverwaltung und Kontosicherheit.
+Diese Verarbeitung erfolgt zur technischen Bereitstellung der Website, zur Gewährleistung von Stabilität und Sicherheit sowie zur Fehleranalyse auf Grundlage von **Art. 6 Abs. 1 lit. f DSGVO**.
 
-<!-- legal-section: ds-b-data -->
-Datenkategorien: E-Mail-Adresse, Passwort-Hash, Name, Telefonnummer, Kontostatus, Sitzungs-Token.
+Für den Betrieb der Website und technischer Infrastruktur nutzen wir insbesondere:
 
-<!-- legal-section: ds-b-recipient -->
-Empfänger: Supabase (Auth und Datenbank).
+- **Vercel** (Hosting / Deployment)
+- **Supabase** (Datenbank, Authentifizierung, Storage)
+- **Resend** (Versand transaktionaler E-Mails)
+- **OpenStreetMap / Nominatim** (Geokodierung und Karten-/Entfernungsfunktionen)
 
-<!-- legal-section: ds-b-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertrag/ vorvertragliche Maßnahmen).
+Soweit externe Dienstleister als Auftragsverarbeiter tätig werden, erfolgt dies auf Grundlage von Verträgen gemäß **Art. 28 DSGVO**.
 
-<!-- legal-section: ds-b-retention -->
-Speicherdauer: bis zur Kontolöschung zuzüglich gesetzlicher Aufbewahrungsfristen.
+## § 4 Cookies und Einwilligungsmanagement
 
-### Block C — Spezialistenprofil
+Unsere Website verwendet Cookies und vergleichbare Technologien.
 
-<!-- legal-section: ds-c-purpose -->
-Zweck: Erstellung, Veröffentlichung und Verwaltung des Spezialistenprofils.
+Technisch notwendige Cookies und vergleichbare Technologien werden eingesetzt, soweit dies zur Bereitstellung der Website oder einzelner ausdrücklich gewünschter Funktionen erforderlich ist. Rechtsgrundlage hierfür ist **§ 25 Abs. 2 TDDDG** sowie **Art. 6 Abs. 1 lit. f DSGVO**.
 
-<!-- legal-section: ds-c-data -->
-Datenkategorien: Profiltexte, Fotos, Preise, Kategorie, Standort, Sprachen, Zertifikate, Verfügbarkeit, Tarifstatus.
+Nicht technisch notwendige Cookies oder Tracking-Technologien, insbesondere für Analysezwecke, werden nur nach vorheriger Einwilligung eingesetzt. Rechtsgrundlage hierfür ist **§ 25 Abs. 1 TDDDG** sowie **Art. 6 Abs. 1 lit. a DSGVO**.
 
-<!-- legal-section: ds-c-recipient -->
-Empfänger: Supabase, CDN/Storage-Anbieter im Rahmen des Hostings.
+Ein Cookie-Consent-Banner ist auf der Website eingebunden. Eine erteilte Einwilligung kann jederzeit mit Wirkung für die Zukunft über die Cookie-Einstellungen widerrufen oder angepasst werden.
 
-<!-- legal-section: ds-c-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertrag) und lit. f DSGVO (Missbrauchsprävention und Plattformsicherheit).
+## § 5 Google Analytics
 
-<!-- legal-section: ds-c-retention -->
-Speicherdauer: bis zur Profil- oder Kontolöschung; gesetzliche Aufbewahrung bleibt unberührt.
+Freuly verwendet **Google Analytics**, einen Webanalysedienst von **Google**, zur Analyse der Nutzung der Website.
 
-### Block D — Uploads und Medienspeicher
+Google Analytics wird nur eingesetzt, wenn der Nutzer zuvor über das Cookie-Banner eingewilligt hat.
 
-<!-- legal-section: ds-d-purpose -->
-Zweck: Speicherung und Auslieferung von Profilbildern, Galeriebildern und hochgeladenen Dokumenten.
+Im Rahmen von Google Analytics können insbesondere folgende Daten verarbeitet werden:
 
-<!-- legal-section: ds-d-data -->
-Datenkategorien: Bilddateien, Dateimetadaten, ggf. hochgeladene Nachweise.
+- gekürzte IP-Adresse bzw. technische Identifikatoren
+- Nutzungsdaten
+- Informationen über Seitenaufrufe, Sitzungen und Interaktionen
+- Geräte- und Browserinformationen
+- ungefähre Standortdaten
+- Referrer-Informationen
 
-<!-- legal-section: ds-d-recipient -->
-Empfänger: Supabase Storage und verbundene CDN/Hosting-Dienste.
+Die Verarbeitung erfolgt auf Grundlage von **Art. 6 Abs. 1 lit. a DSGVO** und **§ 25 Abs. 1 TDDDG**.
 
-<!-- legal-section: ds-d-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertrag).
+Empfänger der Daten ist insbesondere **Google Ireland Limited**. Eine Übermittlung an Unternehmen von Google, insbesondere in die USA, kann nicht ausgeschlossen werden. Soweit dabei ein Drittlandtransfer erfolgt, erfolgt dieser nach Maßgabe der datenschutzrechtlich zulässigen Übermittlungsmechanismen.
 
-<!-- legal-section: ds-d-retention -->
-Speicherdauer: bis zur Löschung durch den Spezialisten oder bis zur Kontobeendigung.
+Die Einwilligung kann jederzeit mit Wirkung für die Zukunft widerrufen werden.
 
-### Block E — Geocoding (OpenStreetMap / Nominatim)
+## § 6 Anfragen von Endkunden / Leads
 
-<!-- legal-section: ds-e-purpose -->
-Zweck: Umwandlung von Adressen und Standortangaben in Koordinaten für Suche und Entfernungsberechnung.
+Wenn ein Endkunde über Freuly eine Anfrage an einen Spezialisten stellt, verarbeiten wir insbesondere folgende Daten:
 
-<!-- legal-section: ds-e-data -->
-Datenkategorien: eingegebene Adresse, Ort, Postleitzahl, Koordinaten, Suchradius.
+- Name
+- E-Mail-Adresse
+- Telefonnummer
+- Nachricht / Mitteilungstext
+- ausgewählter Spezialist
+- Zeitpunkt der Anfrage
+- Status der Anfrage
+- weitere technisch mit der Anfrage verbundene Informationen
 
-<!-- legal-section: ds-e-recipient -->
-Empfänger: OpenStreetMap-Nominatim-Dienst; serverseitige Verarbeitung über Freuly-Infrastruktur.
+Diese Daten werden verarbeitet, um:
 
-<!-- legal-section: ds-e-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertrag) und lit. f DSGVO (technisch notwendige Standortverarbeitung).
+- die Anfrage entgegenzunehmen
+- sie dem ausgewählten Spezialisten zuzuordnen
+- die Anfrage im System zu speichern
+- sie im Admin- und Spezialistenbereich bereitzustellen
+- den Spezialisten über die Anfrage zu benachrichtigen
+- die Kommunikation und Bearbeitung der Anfrage zu ermöglichen
+- Missbrauch zu verhindern und die Plattform ordnungsgemäß zu betreiben
 
-<!-- legal-section: ds-e-retention -->
-Speicherdauer: Koordinaten im Profil bis zur Löschung; Anfragen an Nominatim gemäß deren Richtlinien.
+Rechtsgrundlage ist **Art. 6 Abs. 1 lit. b DSGVO** bzw. die Durchführung vorvertraglicher Maßnahmen auf Anfrage der betroffenen Person.
 
-### Block F — Direkte Client-Leads
+Freuly speichert diese Daten nicht nur zur Weiterleitung, sondern auch zur internen Bearbeitung und Nachverfolgung der Anfrage.
 
-<!-- legal-section: ds-f-purpose -->
-Zweck: Vermittlung direkter Kontaktanfragen von Endnutzern an ausgewählte Spezialisten.
+Der ausgewählte Spezialist erhält die für die Bearbeitung der Anfrage erforderlichen Daten und verarbeitet diese anschließend in eigener datenschutzrechtlicher Verantwortung.
 
-<!-- legal-section: ds-f-data -->
-Datenkategorien: Name, E-Mail, Telefonnummer, Nachrichteninhalt, Zeitstempel, zugeordneter Spezialist.
+### Besondere Kategorien personenbezogener Daten
 
-<!-- legal-section: ds-f-recipient -->
-Empfänger: ausgewählter Spezialist, Supabase.
+Freuly ist nicht darauf ausgelegt, über das Anfrageformular strukturiert Gesundheitsdaten oder andere besondere Kategorien personenbezogener Daten im Sinne von **Art. 9 DSGVO** zu erheben.
 
-<!-- legal-section: ds-f-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO. Berechtigtes Interesse: Betrieb einer Kontaktvermittlungsplattform; Abwägung zugunsten der Vermittlung bei angemessenen Schutzmaßnahmen.
+Da Nutzer im freien Nachrichtentext freiwillig sensible Angaben machen können, bitten wir darum, keine unnötigen sensiblen Daten zu übermitteln.
 
-<!-- legal-section: ds-f-retention -->
-Speicherdauer: bis zur Löschung durch Spezialist/Freuly oder Ablauf gesetzlicher Fristen.
+Soweit Nutzer gleichwohl freiwillig besondere Kategorien personenbezogener Daten im Nachrichtentext angeben und die Anfrage absenden, erfolgt die Verarbeitung dieser Angaben ausschließlich zur Bearbeitung und Übermittlung der Anfrage an den ausgewählten Spezialisten. Rechtsgrundlage ist insoweit zusätzlich **Art. 9 Abs. 2 lit. a DSGVO**.
 
-### Block G — Service Requests
+## § 7 Speicherdauer für Leads
 
-<!-- legal-section: ds-g-purpose -->
-Zweck: Bearbeitung strukturierter Serviceanfragen und Zuordnung zu geeigneten Spezialisten.
+Personenbezogene Daten aus Anfragen (Leads) werden grundsätzlich bis zum Abschluss der Bearbeitung gespeichert.
 
-<!-- legal-section: ds-g-data -->
-Datenkategorien: Anfrageinhalt, Kontaktdaten, Standort, Kategorie, Status, Zuordnungen.
+Anschließend werden diese Daten grundsätzlich noch für **12 Monate nach Abschluss oder letzter Aktivität** gespeichert, sofern keine längere Aufbewahrung erforderlich ist, insbesondere zur Abwehr oder Durchsetzung von Rechtsansprüchen, zur Missbrauchsprävention oder aufgrund gesetzlicher Pflichten.
 
-<!-- legal-section: ds-g-recipient -->
-Empfänger: betroffene Spezialisten, Supabase.
+Nach Ablauf dieses Zeitraums werden die personenbezogenen Daten der Anfrage gelöscht oder anonymisiert, soweit keine weitere Speicherung erforderlich ist.
 
-<!-- legal-section: ds-g-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (vorvertragliche Maßnahmen) und lit. f DSGVO (Sicherheit und Missbrauchsprävention).
+## § 8 Registrierung und Profil von Spezialisten
 
-<!-- legal-section: ds-g-retention -->
-Speicherdauer: bis Zweckerreichung, Löschung oder gesetzliche Frist.
+Bei der Registrierung und Nutzung eines Spezialistenkontos verarbeiten wir insbesondere:
 
-### Block H — Promoted Request
+- Name
+- Kontaktdaten
+- Berufs- und Tätigkeitsangaben
+- Profilinhalte
+- Fotos
+- Standort- und Adressdaten
+- Sprachangaben
+- Leistungsbeschreibungen und Preisangaben
+- hochgeladene Nachweise, soweit erforderlich
+- Vertrags-, Tarif- und Zahlungsinformationen
+- technische Konto- und Nutzungsdaten
 
-<!-- legal-section: ds-h-purpose -->
-Zweck: Abwicklung des optionalen Promoted-Request-Zusatzdienstes und Zugriffssteuerung.
+Diese Verarbeitung erfolgt zur Begründung, Durchführung und Verwaltung des Vertragsverhältnisses mit dem Spezialisten auf Grundlage von **Art. 6 Abs. 1 lit. b DSGVO**.
 
-<!-- legal-section: ds-h-data -->
-Datenkategorien: Serviceanfrage-ID, Zahlungsstatus, Aktivierungszeitraum, Tarifzuordnung.
+## § 9 Veröffentlichung und Vermarktung von Spezialisten
 
-<!-- legal-section: ds-h-recipient -->
-Empfänger: Supabase, Stripe (Zahlungsabwicklung).
+Öffentlich sichtbare Angaben aus Spezialistenprofilen können von Freuly im Rahmen der Plattform sowie zur Vermarktung von Freuly und der auf Freuly präsentierten Spezialisten verwendet werden.
 
-<!-- legal-section: ds-h-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertrag).
+Dies kann insbesondere folgende Formen umfassen:
 
-<!-- legal-section: ds-h-retention -->
-Speicherdauer: bis Ende des Produktzeitraums und Ablauf handelsrechtlicher Fristen.
+- Veröffentlichung auf der Website
+- Darstellung auf SEO- und redaktionellen Seiten
+- Veröffentlichung in Social-Media-Kanälen von Freuly
+- Veröffentlichung im Telegram-Kanal von Freuly
+- Erstellung und Veröffentlichung von Spezialistenkarten oder sonstigen Marketingmaterialien
+- Verwendung in Beiträgen, Stories, Reels oder ähnlichen Formaten
 
-### Block I — Stripe-Abrechnung
+Hierbei können insbesondere verarbeitet werden:
 
-<!-- legal-section: ds-i-purpose -->
-Zweck: Zahlungsabwicklung, Rechnungsstellung und Verwaltung von Abonnements und Einmalzahlungen.
+- Name des Spezialisten
+- Berufsbezeichnung / Spezialisierung
+- Profilbeschreibung
+- Fotos
+- öffentlich sichtbare Profildaten
+- weitere vom Spezialisten bereitgestellte Inhalte
 
-<!-- legal-section: ds-i-data -->
-Datenkategorien: Rechnungsdaten, Zahlungsstatus, Tarif, Stripe-Kunden- und Zahlungsreferenzen, Transaktionsmetadaten.
+Die Verarbeitung erfolgt auf Grundlage von **Art. 6 Abs. 1 lit. b DSGVO** sowie ergänzend **Art. 6 Abs. 1 lit. f DSGVO**. Unser berechtigtes Interesse liegt in der Vermarktung von Freuly und der Sichtbarmachung der auf Freuly vertretenen Spezialisten.
 
-<!-- legal-section: ds-i-recipient -->
-Empfänger: Stripe, Supabase.
+## § 10 Einsatz von KI-gestützten Diensten zur Content-Erstellung
 
-<!-- legal-section: ds-i-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertrag) und lit. c DSGVO (steuer- und handelsrechtliche Pflichten).
+Freuly nutzt in begrenztem Umfang externe KI-gestützte Dienste, insbesondere **ChatGPT / OpenAI**, zur Erstellung und Aufbereitung von Marketinginhalten.
 
-<!-- legal-section: ds-i-retention -->
-Speicherdauer: handels- und steuerrechtliche Fristen, danach Löschung oder Anonymisierung.
+Dies kann insbesondere betreffen:
 
-### Block J — Partnerkonto
+- Erstellung von Spezialistenkarten für Veröffentlichungen im Telegram-Kanal
+- Erstellung oder Überarbeitung von Texten
+- Erstellung visueller Marketinginhalte
+- Unterstützung bei der redaktionellen Aufbereitung von Spezialisteninformationen
 
-<!-- legal-section: ds-j-purpose -->
-Zweck: Registrierung, Verwaltung und Vertragsnachweis für Partner des Freuly-Partnerprogramms.
+Dabei können – soweit dies für den jeweiligen Inhalt erforderlich ist – insbesondere folgende Daten verarbeitet werden:
 
-<!-- legal-section: ds-j-data -->
-Datenkategorien: Partnerkontodaten, Vertragsannahme, Bankverbindung für SEPA, Auszahlungspräferenzen, PDF-Nachweise.
+- Name des Spezialisten
+- Berufsbezeichnung / Spezialisierung
+- öffentlich sichtbare Profilinformationen
+- Fotos des Spezialisten
+- weitere zur Erstellung des jeweiligen Beitrags bereitgestellte Materialien
 
-<!-- legal-section: ds-j-recipient -->
-Empfänger: Supabase, E-Mail-Dienst (Resend).
+Diese Verarbeitung erfolgt auf Grundlage von **Art. 6 Abs. 1 lit. b DSGVO** und ergänzend **Art. 6 Abs. 1 lit. f DSGVO**.
 
-<!-- legal-section: ds-j-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertrag) und lit. c DSGVO (Nachweis- und Aufbewahrungspflichten).
+Freuly verwendet KI-Dienste nicht zur automatisierten Entscheidungsfindung im Sinne von **Art. 22 DSGVO** mit rechtlicher oder ähnlich erheblicher Wirkung gegenüber Nutzern.
 
-<!-- legal-section: ds-j-retention -->
-Speicherdauer: Vertrags- und steuerrechtliche Fristen.
+Kundendaten aus Leads, insbesondere E-Mail-Adressen, Telefonnummern und Nachrichtentexte von Endkunden, werden nicht zu Zwecken der KI-gestützten Content-Erstellung verwendet.
 
-### Block K — Referral-Klicks
+## § 11 Soziale Netzwerke und Kommunikationskanäle
 
-<!-- legal-section: ds-k-purpose -->
-Zweck: Protokollierung von Klicks auf Partner-Referral-Links zur Missbrauchserkennung und technischen Attribution.
+Freuly unterhält derzeit Präsenzen insbesondere auf:
 
-<!-- legal-section: ds-k-data -->
-Datenkategorien: Zeitstempel, Link-Referenz, anonymisierte oder pseudonyme Besuchsdaten, IP-Adresse (kurzfristig).
+- Instagram
+- Threads
+- TikTok
+- YouTube
+- Telegram
 
-<!-- legal-section: ds-k-recipient -->
-Empfänger: Supabase, Freuly-Server.
+Beim Besuch dieser Plattformen oder bei Interaktionen dort werden personenbezogene Daten auch durch den jeweiligen Plattformbetreiber in eigener Verantwortung verarbeitet.
 
-<!-- legal-section: ds-k-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an Integrität des Partnerprogramms).
+Wenn Nutzer Freuly über soziale Netzwerke oder Telegram kontaktieren (z. B. per Direktnachricht), verarbeiten wir die dabei übermittelten Daten, insbesondere:
 
-<!-- legal-section: ds-k-retention -->
-Speicherdauer: in der Regel bis zu 90 Tage, länger bei Missbrauchsverdacht.
+- Nutzername
+- Anzeigename
+- Inhaltsdaten der Nachricht
+- freiwillig mitgeteilte Kontaktdaten
+- Zeitpunkt und Kontext der Kommunikation
 
-### Block L — Referral-Cookie freuly_partner_ref
+Die Verarbeitung erfolgt zur Bearbeitung und Beantwortung der Anfrage auf Grundlage von **Art. 6 Abs. 1 lit. b DSGVO** oder **Art. 6 Abs. 1 lit. f DSGVO**.
 
-<!-- legal-section: ds-l-purpose -->
-Zweck: First-Touch-Attribution für das Partnerprogramm über den Referral-Link.
+Nach der Bestätigung des aktuellen Prozessstandes werden solche Direktnachrichten grundsätzlich nicht automatisiert in andere interne Systeme von Freuly übertragen, sofern dies nicht im Einzelfall für die weitere Bearbeitung erforderlich wird.
 
-<!-- legal-section: ds-l-data -->
-Datenkategorien: signierte Cookie-Nutzlast mit Partner- und Link-Referenz sowie Zeitstempel.
+## § 12 Telegram-Kanal und Telegram-Bot
 
-<!-- legal-section: ds-l-recipient -->
-Empfänger: Freuly-Server; keine Weitergabe an Partner vor fester Attribution.
+Freuly betreibt einen Telegram-Kanal, in dem insbesondere eigene Inhalte sowie Informationen über Spezialisten veröffentlicht werden können.
 
-<!-- legal-section: ds-l-basis -->
-Rechtsgrundlage: § 25 TDDDG und Art. 6 Abs. 1 lit. a DSGVO (Einwilligung in Referral-Attribution).
+Außerdem nutzt Freuly einen Telegram-Bot bzw. Telegram-basierte Funktionen zur Benachrichtigung von Spezialisten über neue Anfragen.
 
-<!-- legal-section: ds-l-retention -->
-Speicherdauer: 90 Tage ab dem ersten gültigen Referral-Touch.
+Dabei können insbesondere verarbeitet werden:
 
-### Block M — Partner-Attribution
+- Telegram-Chat-ID des Spezialisten
+- technische Verknüpfungsdaten
+- Informationen über neue oder geänderte Anfragen
+- gegebenenfalls auf die Anfrage bezogene Benachrichtigungsinformationen
 
-<!-- legal-section: ds-m-purpose -->
-Zweck: Zuordnung von Registrierungen und qualifizierten Conversions zu Partnern.
+Diese Verarbeitung erfolgt auf Grundlage von **Art. 6 Abs. 1 lit. b DSGVO** sowie **Art. 6 Abs. 1 lit. f DSGVO**.
 
-<!-- legal-section: ds-m-data -->
-Datenkategorien: Partner-ID, Link-ID, Registrierungszeitpunkt, Conversion-Status, Validierungsstatus.
+Bei der Nutzung von Telegram werden Daten zusätzlich durch den Telegram-Anbieter nach dessen eigenen Datenschutzbestimmungen verarbeitet.
 
-<!-- legal-section: ds-m-recipient -->
-Empfänger: Supabase; Partner sehen nur eigene aggregierte Programmdaten im Partner-Dashboard.
+## § 13 Zahlungsabwicklung
 
-<!-- legal-section: ds-m-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Partnervertrag) und lit. f DSGVO (Integrität des Programms).
+Für kostenpflichtige Tarife und Leistungen nutzt Freuly **Stripe** als Zahlungsdienstleister.
 
-<!-- legal-section: ds-m-retention -->
-Speicherdauer: Vertrags- und steuerrechtliche Fristen des Partnerprogramms.
+Im Rahmen der Zahlungsabwicklung können insbesondere verarbeitet werden:
 
-### Block N — Provisionen und Auszahlungen
+- Name
+- Rechnungs- und Kontaktdaten
+- Zahlungsinformationen
+- Transaktionsdaten
+- gegebenenfalls steuerlich erforderliche Angaben
 
-<!-- legal-section: ds-n-purpose -->
-Zweck: Berechnung, Validierung und Auszahlung von Partnervergütungen per manueller SEPA-Überweisung oder Abo-Guthaben.
+Die Zahlungsabwicklung erfolgt zur Vertragserfüllung auf Grundlage von **Art. 6 Abs. 1 lit. b DSGVO** sowie zur Erfüllung gesetzlicher Pflichten auf Grundlage von **Art. 6 Abs. 1 lit. c DSGVO**.
 
-<!-- legal-section: ds-n-data -->
-Datenkategorien: Provisionsbetrag, Validierungszeitraum, Auszahlungsstatus, Bankverbindung, Buchungsreferenzen.
+Stripe verarbeitet Zahlungsdaten grundsätzlich in eigener datenschutzrechtlicher Verantwortung.
 
-<!-- legal-section: ds-n-recipient -->
-Empfänger: Supabase, autorisierte Freuly-Admins, Bank des Partners bei SEPA-Überweisung.
+## § 14 Karten-, Orts- und Entfernungsfunktionen
 
-<!-- legal-section: ds-n-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertrag) und lit. c DSGVO (steuer- und buchhalterische Pflichten).
+Soweit Freuly Karten-, Orts- oder Entfernungsfunktionen anbietet, können dafür Adress- oder Standortdaten von Spezialisten verarbeitet werden.
 
-<!-- legal-section: ds-n-retention -->
-Speicherdauer: handels- und steuerrechtliche Fristen.
+Zu diesem Zweck nutzt Freuly insbesondere **OpenStreetMap / Nominatim** zur Geokodierung bzw. kartografischen Darstellung.
 
-### Block O — E-Mail (Resend)
+Die Verarbeitung erfolgt auf Grundlage von **Art. 6 Abs. 1 lit. b DSGVO** für die Bereitstellung der Plattformfunktionen sowie ergänzend **Art. 6 Abs. 1 lit. f DSGVO**.
 
-<!-- legal-section: ds-o-purpose -->
-Zweck: Versand von Support-, Benachrichtigungs-, Vertrags- und System-E-Mails.
+## § 15 Empfehlungspartner
 
-<!-- legal-section: ds-o-data -->
-Datenkategorien: E-Mail-Adresse, Betreff, Inhalt, Versandstatus, Zeitstempel.
+Soweit Freuly Programme mit Empfehlungspartnern einsetzt, verarbeiten wir die hierfür erforderlichen Daten, insbesondere:
 
-<!-- legal-section: ds-o-recipient -->
-Empfänger: Resend (E-Mail-Dienstleister).
+- Name
+- Kontaktdaten
+- Zuordnung der vermittelten Kontakte
+- Abrechnungs- und Zahlungsdaten
 
-<!-- legal-section: ds-o-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertrag) und lit. f DSGVO (Support und Sicherheitsbenachrichtigungen).
+Die Verarbeitung erfolgt auf Grundlage von **Art. 6 Abs. 1 lit. b DSGVO**.
 
-<!-- legal-section: ds-o-retention -->
-Speicherdauer: bis Zweckerreichung; Protokolle beim Anbieter gemäß dessen Richtlinien.
+## § 16 Empfänger und Drittlandübermittlungen
 
-### Block P — Telegram
+Empfänger personenbezogener Daten können insbesondere sein:
 
-<!-- legal-section: ds-p-purpose -->
-Zweck: optionale Kommunikation in Telegram-Gruppen oder -Kanälen im Zusammenhang mit Freuly.
+- technische Dienstleister für Hosting, Datenbank, Authentifizierung, Storage und E-Mail-Versand
+- Google im Rahmen von Google Analytics
+- Stripe im Rahmen der Zahlungsabwicklung
+- OpenAI im Rahmen der KI-gestützten Content-Erstellung
+- OpenStreetMap / Nominatim bei Karten- und Geokodierungsfunktionen
+- Telegram bei Nutzung des Telegram-Kanals oder Telegram-Bots
+- der jeweils ausgewählte Spezialist bei einer Anfrage
+- soziale Netzwerke bzw. Plattformbetreiber bei der Nutzung entsprechender Kommunikations- und Veröffentlichungswege
 
-<!-- legal-section: ds-p-data -->
-Datenkategorien: Nutzername, Nachrichteninhalt, Gruppen-/Kanalzugehörigkeit, soweit freiwillig genutzt.
+Einige Empfänger können personenbezogene Daten in Drittländern, insbesondere außerhalb der Europäischen Union bzw. des EWR, verarbeiten. In solchen Fällen erfolgt eine Übermittlung nur auf Grundlage der jeweils datenschutzrechtlich zulässigen Mechanismen.
 
-<!-- legal-section: ds-p-recipient -->
-Empfänger: Telegram (Telegram FZ-LLC / verbundene Unternehmen).
+## § 17 Allgemeine Speicherdauer
 
-<!-- legal-section: ds-p-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung), soweit erforderlich, und lit. b DSGVO (Vertrag/Support).
+Soweit in dieser Datenschutzerklärung keine speziellere Speicherdauer genannt ist, speichern wir personenbezogene Daten nur so lange, wie dies für die jeweiligen Zwecke erforderlich ist.
 
-<!-- legal-section: ds-p-retention -->
-Speicherdauer: gemäß Telegram-Richtlinien; Freuly speichert nur, soweit für Support erforderlich.
+Maßgebliche Kriterien sind insbesondere:
 
-### Block Q — DeepL
+- Dauer des Vertragsverhältnisses
+- Bearbeitung laufender Anfragen
+- gesetzliche Aufbewahrungsfristen
+- Nachweis- und Dokumentationspflichten
+- Verteidigung oder Durchsetzung rechtlicher Ansprüche
+- IT-Sicherheits- und Missbrauchspräventionszwecke
 
-<!-- legal-section: ds-q-purpose -->
-Zweck: maschinelle Übersetzung von Inhalten für Mehrsprachigkeit der Plattform.
+Rechnungs- und abrechnungsrelevante Unterlagen werden nach Maßgabe der einschlägigen handels- und steuerrechtlichen Pflichten gespeichert.
 
-<!-- legal-section: ds-q-data -->
-Datenkategorien: zu übersetzende Texte, Sprachcodes; keine vollständigen Profile, sofern vermeidbar.
+## § 18 Rechte der betroffenen Personen
 
-<!-- legal-section: ds-q-recipient -->
-Empfänger: DeepL SE.
+Betroffene Personen haben nach Maßgabe der gesetzlichen Voraussetzungen insbesondere folgende Rechte:
 
-<!-- legal-section: ds-q-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an mehrsprachiger Plattformdarstellung).
+- Recht auf Auskunft (Art. 15 DSGVO)
+- Recht auf Berichtigung (Art. 16 DSGVO)
+- Recht auf Löschung (Art. 17 DSGVO)
+- Recht auf Einschränkung der Verarbeitung (Art. 18 DSGVO)
+- Recht auf Datenübertragbarkeit (Art. 20 DSGVO)
+- Recht auf Widerspruch gegen Verarbeitungen auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO (Art. 21 DSGVO)
+- Recht auf Widerruf erteilter Einwilligungen mit Wirkung für die Zukunft (Art. 7 Abs. 3 DSGVO)
 
-<!-- legal-section: ds-q-retention -->
-Speicherdauer: minimal erforderlich; DeepL gemäß Anbieter-Richtlinien.
+Werden personenbezogene Daten verarbeitet, um Direktwerbung zu betreiben, besteht das Recht, jederzeit Widerspruch gegen diese Verarbeitung zum Zwecke derartiger Werbung einzulegen.
 
-### Block R — Upstash Rate-Limiting
+Betroffene Personen haben zudem das Recht, sich bei einer Datenschutzaufsichtsbehörde zu beschweren.
 
-<!-- legal-section: ds-r-purpose -->
-Zweck: Missbrauchsprävention, Rate-Limiting und Schutz vor automatisierten Angriffen.
+Zuständige Aufsichtsbehörde kann insbesondere sein:
 
-<!-- legal-section: ds-r-data -->
-Datenkategorien: IP-Adresse, Request-Zähler, Zeitfenster, Endpoint-Metadaten.
+**Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen (LDI NRW)**
 
-<!-- legal-section: ds-r-recipient -->
-Empfänger: Upstash.
+## § 19 Bereitstellungspflicht
 
-<!-- legal-section: ds-r-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an IT-Sicherheit).
+Die Bereitstellung personenbezogener Daten ist teilweise gesetzlich oder vertraglich nicht zwingend vorgeschrieben, kann aber für die Nutzung einzelner Funktionen oder für den Vertragsschluss erforderlich sein.
 
-<!-- legal-section: ds-r-retention -->
-Speicherdauer: kurzfristig, typischerweise Minuten bis wenige Tage je nach Rate-Limit-Konfiguration.
+Insbesondere gilt:
 
-### Block S — Admin-Verarbeitung
+- ohne bestimmte Daten kann kein Spezialistenkonto eingerichtet oder verwaltet werden;
+- ohne Kontaktdaten und Anfrageangaben kann eine Lead-Anfrage nicht bearbeitet werden;
+- ohne Zahlungsdaten können kostenpflichtige Leistungen nicht abgewickelt werden.
 
-<!-- legal-section: ds-s-purpose -->
-Zweck: Moderation, Betrugsprävention, Support, Partner-Auszahlungsprüfung und Plattformadministration.
+## § 20 Änderungen dieser Datenschutzerklärung
 
-<!-- legal-section: ds-s-data -->
-Datenkategorien: Profil-, Nutzungs-, Abrechnungs- und Partnerdaten im Einzelfall, soweit für den Vorgang erforderlich.
+Freuly behält sich vor, diese Datenschutzerklärung anzupassen, wenn dies aufgrund geänderter Rechtslage, technischer Änderungen oder geänderter Verarbeitungsprozesse erforderlich wird.
 
-<!-- legal-section: ds-s-recipient -->
-Empfänger: autorisierte Freuly-Administratoren; keine Weitergabe an Dritte außerhalb gesetzlicher Pflichten.
-
-<!-- legal-section: ds-s-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an sicherem Plattformbetrieb).
-
-<!-- legal-section: ds-s-retention -->
-Speicherdauer: bis zur Klärung des Vorgangs; länger nur bei gesetzlicher Pflicht oder dokumentiertem Missbrauchsfall.
-
-## 4. Cookies und Einwilligung
-
-<!-- legal-section: ds-04-01 -->
-Freuly verwendet drei Einwilligungskategorien: Notwendig, Analyse und Referral-Attribution. Notwendige Cookies werden stets gesetzt. Optionale Kategorien werden nur nach Einwilligung aktiviert.
-
-<!-- legal-section: ds-04-02 -->
-Die Einwilligungsauswahl kann in den Cookie-Einstellungen geändert oder widerrufen werden. Details zu freuly_partner_ref finden sich in Block L.
-
-## 5. Google Analytics 4
-
-<!-- legal-section: ds-05-purpose -->
-Zweck: Nutzungsanalyse der Website, soweit eingewilligt.
-
-<!-- legal-section: ds-05-data -->
-Datenkategorien: pseudonyme Nutzungsdaten, gekürzte IP-Adresse, Seitenaufrufe, Ereignisse.
-
-<!-- legal-section: ds-05-recipient -->
-Empfänger: Google Ireland Limited; Verarbeitung kann in Drittländern erfolgen.
-
-<!-- legal-section: ds-05-basis -->
-Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung in Analyse).
-
-<!-- legal-section: ds-05-retention -->
-Speicherdauer: gemäß Google-Konfiguration, typischerweise bis zu 14 Monate.
-
-## 6. Empfänger und Auftragsverarbeiter
-
-<!-- legal-section: ds-06-01 -->
-Freuly setzt Dienstleister als Auftragsverarbeiter ein, soweit erforderlich, insbesondere Vercel, Supabase, Upstash, Stripe, Resend, Google (Analytics), DeepL und OpenStreetMap/Nominatim. Verträge zur Auftragsverarbeitung werden abgeschlossen, soweit gesetzlich erforderlich.
-
-## 7. Drittlandübermittlung
-
-<!-- legal-section: ds-07-01 -->
-Einige Dienstleister können Daten in Drittländern, insbesondere den USA, verarbeiten. Freuly prüft verfügbare Schutzmechanismen wie Standardvertragsklauseln und ergänzende technische Maßnahmen. Freuly behauptet nicht pauschal, dass für alle Anbieter ein Angemessenheitsbeschluss oder das EU-US Data Privacy Framework gilt.
-
-<!-- legal-section: ds-07-02 -->
-Ein absolutes Risiko einer behördlichen Zugriffsnahme in Drittländern kann technisch und rechtlich nicht ausgeschlossen werden. Betroffene können zusätzliche Informationen per E-Mail an freuly.de@gmail.com anfordern.
-
-## 8. Speicherdauer — Grundsätze
-
-<!-- legal-section: ds-08-01 -->
-Personenbezogene Daten werden nur so lange gespeichert, wie es für die jeweiligen Zwecke erforderlich ist oder gesetzliche Aufbewahrungspflichten bestehen. Danach werden Daten gelöscht oder anonymisiert, soweit möglich.
-
-## 9. Betroffenenrechte
-
-### Auskunft
-
-<!-- legal-section: ds-right-01 -->
-Sie haben das Recht, Auskunft über die zu Ihrer Person gespeicherten Daten zu erhalten (Art. 15 DSGVO).
-
-### Berichtigung
-
-<!-- legal-section: ds-right-02 -->
-Sie haben das Recht auf Berichtigung unrichtiger Daten (Art. 16 DSGVO).
-
-### Löschung
-
-<!-- legal-section: ds-right-03 -->
-Sie haben das Recht auf Löschung, soweit keine gesetzlichen Aufbewahrungspflichten entgegenstehen (Art. 17 DSGVO).
-
-### Einschränkung
-
-<!-- legal-section: ds-right-04 -->
-Sie haben das Recht auf Einschränkung der Verarbeitung (Art. 18 DSGVO).
-
-### Datenübertragbarkeit
-
-<!-- legal-section: ds-right-05 -->
-Sie haben das Recht auf Datenübertragbarkeit für automatisiert verarbeitete Daten auf Vertragsbasis (Art. 20 DSGVO). Freuly stellt derzeit keine separate Self-Service-Exportfunktion bereit; Anfragen können per E-Mail gestellt werden.
-
-### Widerspruch
-
-<!-- legal-section: ds-right-06 -->
-Sie haben das Recht, der Verarbeitung auf Grundlage berechtigter Interessen zu widersprechen (Art. 21 DSGVO).
-
-### Widerruf der Einwilligung
-
-<!-- legal-section: ds-right-07 -->
-Erteilte Einwilligungen können jederzeit mit Wirkung für die Zukunft widerrufen werden (Art. 7 Abs. 3 DSGVO).
-
-### Beschwerde bei Aufsichtsbehörde
-
-<!-- legal-section: ds-right-08 -->
-Sie haben das Recht, Beschwerde bei einer Aufsichtsbehörde einzureichen, insbesondere in dem Mitgliedstaat Ihres gewöhnlichen Aufenthalts (Art. 77 DSGVO). Zuständig kann u.a. die Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen sein.
-
-## 10. Datensicherheit
-
-<!-- legal-section: ds-10-01 -->
-Freuly trifft angemessene technische und organisatorische Maßnahmen, insbesondere Zugriffsbeschränkungen, Verschlüsselung wo verfügbar, Protokollierung und regelmäßige Sicherheitsüberprüfungen.
-
-## 11. Änderungen dieser Datenschutzerklärung
-
-<!-- legal-section: ds-11-01 -->
-Freuly kann diese Datenschutzerklärung anpassen, wenn sich Rechtslage, Technik oder Verarbeitungszwecke ändern. Die aktuelle Fassung ist auf der Website veröffentlicht.
-
-## 12. Kontakt
-
-<!-- legal-section: ds-12-01 -->
-Anfragen zu dieser Datenschutzerklärung richten Sie bitte an freuly.de@gmail.com.
+Es gilt die jeweils auf der Website veröffentlichte aktuelle Fassung.
