@@ -10,6 +10,12 @@ import { notify } from "@/lib/notifications/notify";
 import { sendTelegramMessage } from "@/lib/telegram/sendMessage";
 import { specialistDashboardPath } from "@/lib/specialists/navigation";
 import { SPECIALIST_LEAD_TELEGRAM_TEXT } from "@/lib/leads/contactUnlock";
+import {
+  buildClientIdempotencyFingerprint,
+  isUniqueViolation,
+  normalizeClientIdempotencyKey,
+  resolveIdempotentReplay,
+} from "@/lib/mutations/clientIdempotency";
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,6 +30,7 @@ export async function POST(request: NextRequest) {
       source_path,
       referrer,
       hp,
+      idempotency_key,
     } = body;
 
     if (typeof hp === "string" && hp.trim().length > 0) {
@@ -164,6 +171,51 @@ export async function POST(request: NextRequest) {
           : null,
     };
 
+    const clientIdempotencyKey = normalizeClientIdempotencyKey(idempotency_key);
+    const idempotencyFingerprint = buildClientIdempotencyFingerprint(insertPayload);
+
+    if (clientIdempotencyKey) {
+      const { data: existingLead, error: existingError } = await supabase
+        .from("leads")
+        .select("id, created_at, client_idempotency_fingerprint")
+        .eq("client_idempotency_key", clientIdempotencyKey)
+        .maybeSingle();
+
+      if (existingError) {
+        return Response.json(
+          { error: "Failed to verify idempotency" },
+          { status: 500 }
+        );
+      }
+
+      const replay = resolveIdempotentReplay(
+        existingLead
+          ? {
+              fingerprint:
+                typeof existingLead.client_idempotency_fingerprint === "string"
+                  ? existingLead.client_idempotency_fingerprint
+                  : null,
+              response: {
+                id: String(existingLead.id),
+                created_at: existingLead.created_at ?? null,
+              },
+            }
+          : null,
+        idempotencyFingerprint,
+      );
+
+      if (replay.kind === "conflict") {
+        return Response.json(
+          { error: "Idempotency key reused with different payload" },
+          { status: 409 }
+        );
+      }
+
+      if (replay.kind === "replay") {
+        return Response.json({ data: replay.response }, { status: 200 });
+      }
+    }
+
     if (source || source_path || referrer) {
       console.info("[leads/create] lead source", {
         specialist_id,
@@ -175,11 +227,56 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await supabase
       .from("leads")
-      .insert([insertPayload])
+      .insert([
+        {
+          ...insertPayload,
+          ...(clientIdempotencyKey
+            ? {
+                client_idempotency_key: clientIdempotencyKey,
+                client_idempotency_fingerprint: idempotencyFingerprint,
+              }
+            : {}),
+        },
+      ])
       .select()
       .single();
 
     if (error) {
+      if (clientIdempotencyKey && isUniqueViolation(error)) {
+        const { data: racedLead } = await supabase
+          .from("leads")
+          .select("id, created_at, client_idempotency_fingerprint")
+          .eq("client_idempotency_key", clientIdempotencyKey)
+          .maybeSingle();
+
+        const replay = resolveIdempotentReplay(
+          racedLead
+            ? {
+                fingerprint:
+                  typeof racedLead.client_idempotency_fingerprint === "string"
+                    ? racedLead.client_idempotency_fingerprint
+                    : null,
+                response: {
+                  id: String(racedLead.id),
+                  created_at: racedLead.created_at ?? null,
+                },
+              }
+            : null,
+          idempotencyFingerprint,
+        );
+
+        if (replay.kind === "replay") {
+          return Response.json({ data: replay.response }, { status: 200 });
+        }
+
+        if (replay.kind === "conflict") {
+          return Response.json(
+            { error: "Idempotency key reused with different payload" },
+            { status: 409 }
+          );
+        }
+      }
+
       return Response.json(
         { error: error.message },
         { status: 400 }
