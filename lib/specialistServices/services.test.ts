@@ -23,6 +23,11 @@ type MockState = {
   categories: Record<string, unknown>[];
   inserts: Record<string, unknown>[];
   updates: Record<string, unknown>[];
+  insertUniqueViolation?: boolean;
+  idempotencyLookupError?: boolean;
+  /** Row that wins a concurrent INSERT race — visible only after failed insert lookup. */
+  raceWinnerRow?: Record<string, unknown>;
+  idempotencyLookupCount?: number;
 };
 
 function createMockSupabase(state: MockState) {
@@ -30,6 +35,12 @@ function createMockSupabase(state: MockState) {
   let filterId: string | undefined;
   let filterSpecialistId: string | undefined;
   let filterKey: string | undefined;
+  let pendingInsert = false;
+
+  const nextIdempotencyLookup = () => {
+    state.idempotencyLookupCount = (state.idempotencyLookupCount ?? 0) + 1;
+    return state.idempotencyLookupCount;
+  };
 
   const self = () => chain;
   const chain: Record<string, unknown> = {};
@@ -54,19 +65,38 @@ function createMockSupabase(state: MockState) {
   };
   chain.insert = (data: Record<string, unknown>) => {
     state.inserts.push(data);
-    const row = { id: SERVICE_ID, created_at: "2026-01-01", updated_at: "2026-01-01", ...data };
-    state.services.push(row);
-    (chain as { _inserted?: Record<string, unknown> })._inserted = row;
+    pendingInsert = true;
+    if (!state.insertUniqueViolation) {
+      const row = { id: SERVICE_ID, created_at: "2026-01-01", updated_at: "2026-01-01", ...data };
+      state.services.push(row);
+      (chain as { _inserted?: Record<string, unknown> })._inserted = row;
+    }
     return chain;
   };
   chain.delete = self;
   chain.upsert = () => chain;
   chain.maybeSingle = async () => {
+    if (pendingInsert && state.insertUniqueViolation) {
+      pendingInsert = false;
+      return { data: null, error: { code: "23505", message: "duplicate key value" } };
+    }
+    pendingInsert = false;
+
     if (currentTable === "categories") {
       return { data: state.categories[0] ?? null, error: null };
     }
     if (currentTable === "specialist_services") {
       if (filterKey) {
+        const lookupCount = nextIdempotencyLookup();
+        if (state.idempotencyLookupError && lookupCount >= 2) {
+          return { data: null, error: { message: "lookup failed" } };
+        }
+        if (state.raceWinnerRow) {
+          if (lookupCount === 1) {
+            return { data: null, error: null };
+          }
+          return { data: state.raceWinnerRow, error: null };
+        }
         const row = state.services.find((item) => item.client_idempotency_key === filterKey);
         return { data: row ?? null, error: null };
       }
@@ -111,6 +141,66 @@ const stubReadiness = async () => ({
   publication_ready: false,
   public_profile_available: false,
 });
+
+const IDEMPOTENCY_KEY = "native:service:abc12345";
+const OTHER_USER_ID = "99999999-9999-9999-9999-999999999999";
+
+function buildFingerprint(priceFrom = 25) {
+  return buildClientIdempotencyFingerprint({
+    title: "Math tutoring",
+    description: null,
+    price_comment: null,
+    pricing_type: "fixed",
+    price_from: priceFrom,
+    price_to: null,
+    currency: "EUR",
+    duration_minutes: null,
+    is_active: true,
+    category_id: CATEGORY_ID,
+  });
+}
+
+function existingIdempotentRow(args: {
+  fingerprint: string;
+  ownerUserId?: string;
+  title?: string;
+}) {
+  return {
+    id: SERVICE_ID,
+    specialist_id: SPECIALIST_ID,
+    title: args.title ?? "Math tutoring",
+    description: null,
+    price_comment: null,
+    pricing_type: "fixed",
+    price_from: 25,
+    price_to: null,
+    currency: "EUR",
+    duration_minutes: null,
+    is_active: true,
+    category_id: CATEGORY_ID,
+    created_at: "2026-01-01",
+    updated_at: "2026-01-01",
+    client_idempotency_key: IDEMPOTENCY_KEY,
+    client_idempotency_fingerprint: args.fingerprint,
+    owner_user_id: args.ownerUserId ?? USER_ID,
+  };
+}
+
+async function createWithIdempotency(state: MockState, body: Record<string, unknown>) {
+  return createSpecialistService(
+    okCtx(createMockSupabase(state)),
+    {
+      title: "Math tutoring",
+      pricing_type: "fixed",
+      price_from: 25,
+      is_active: true,
+      idempotency_key: IDEMPOTENCY_KEY,
+      ...body,
+    },
+    "de",
+    { loadReadiness: stubReadiness },
+  );
+}
 
 test("normalizeNumber accepts comma decimal input", () => {
   assert.equal(normalizeNumber("49,90"), 49.9);
@@ -245,6 +335,194 @@ test("create idempotency key replays without duplicate insert", async () => {
 
   assert.equal(result.ok, true);
   assert.equal(state.inserts.length, 0);
+});
+
+test("pre-insert fingerprint conflict returns 409", async () => {
+  const fingerprint = buildFingerprint();
+  const state: MockState = {
+    services: [existingIdempotentRow({ fingerprint: buildFingerprint(99) })],
+    categories: [{ id: CATEGORY_ID, parent_id: "parent", slug: "math" }],
+    inserts: [],
+    updates: [],
+  };
+
+  const result = await createWithIdempotency(state, {});
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.status, 409);
+    assert.equal(result.body.error, "Idempotency key reused with different payload");
+  }
+});
+
+test("pre-insert ownership conflict returns 409 without leaking DTO", async () => {
+  const fingerprint = buildFingerprint();
+  const state: MockState = {
+    services: [existingIdempotentRow({ fingerprint, ownerUserId: OTHER_USER_ID, title: "Secret" })],
+    categories: [{ id: CATEGORY_ID, parent_id: "parent", slug: "math" }],
+    inserts: [],
+    updates: [],
+  };
+
+  const result = await createWithIdempotency(state, {});
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.status, 409);
+    assert.match(String(result.body.error), /auth context/i);
+    assert.equal((result.body as { data?: unknown }).data, undefined);
+  }
+});
+
+test("UNIQUE race replay returns 200 without duplicate insert", async () => {
+  const fingerprint = buildFingerprint();
+  const state: MockState = {
+    services: [],
+    categories: [{ id: CATEGORY_ID, parent_id: "parent", slug: "math" }],
+    inserts: [],
+    updates: [],
+    insertUniqueViolation: true,
+    raceWinnerRow: existingIdempotentRow({ fingerprint }),
+  };
+
+  const result = await createWithIdempotency(state, {});
+  assert.equal(result.ok, true);
+  if (result.ok) assert.equal(result.status, 200);
+  assert.equal(state.inserts.length, 1);
+  assert.equal(state.services.length, 0);
+});
+
+test("UNIQUE race fingerprint conflict returns 409 not 500", async () => {
+  const state: MockState = {
+    services: [],
+    categories: [{ id: CATEGORY_ID, parent_id: "parent", slug: "math" }],
+    inserts: [],
+    updates: [],
+    insertUniqueViolation: true,
+    raceWinnerRow: existingIdempotentRow({ fingerprint: buildFingerprint(99) }),
+  };
+
+  const result = await createWithIdempotency(state, {});
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.status, 409);
+    assert.equal(result.body.error, "Idempotency key reused with different payload");
+  }
+});
+
+test("UNIQUE race ownership conflict returns 409 not 500", async () => {
+  const fingerprint = buildFingerprint();
+  const state: MockState = {
+    services: [],
+    categories: [{ id: CATEGORY_ID, parent_id: "parent", slug: "math" }],
+    inserts: [],
+    updates: [],
+    insertUniqueViolation: true,
+    raceWinnerRow: existingIdempotentRow({
+      fingerprint,
+      ownerUserId: OTHER_USER_ID,
+      title: "Secret",
+    }),
+  };
+
+  const result = await createWithIdempotency(state, {});
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.status, 409);
+    assert.match(String(result.body.error), /auth context/i);
+    assert.equal((result.body as { data?: unknown }).data, undefined);
+  }
+});
+
+test("UNIQUE race replay lookup error returns 500", async () => {
+  const fingerprint = buildFingerprint();
+  const state: MockState = {
+    services: [],
+    categories: [{ id: CATEGORY_ID, parent_id: "parent", slug: "math" }],
+    inserts: [],
+    updates: [],
+    insertUniqueViolation: true,
+    idempotencyLookupError: true,
+    raceWinnerRow: existingIdempotentRow({ fingerprint }),
+  };
+
+  const result = await createWithIdempotency(state, {});
+  assert.equal(result.ok, false);
+  if (!result.ok) assert.equal(result.status, 500);
+});
+
+test("pre-insert and UNIQUE-race idempotency semantics match", async () => {
+  const fingerprint = buildFingerprint();
+  const mismatchFingerprint = buildFingerprint(99);
+
+  const cases = [
+    {
+      name: "replay",
+      row: existingIdempotentRow({ fingerprint }),
+      expectOk: true,
+      expectStatus: 200,
+    },
+    {
+      name: "fingerprint conflict",
+      row: existingIdempotentRow({ fingerprint: mismatchFingerprint }),
+      expectOk: false,
+      expectStatus: 409,
+      expectError: "Idempotency key reused with different payload",
+    },
+    {
+      name: "ownership conflict",
+      row: existingIdempotentRow({ fingerprint, ownerUserId: OTHER_USER_ID, title: "Secret" }),
+      expectOk: false,
+      expectStatus: 409,
+      expectError: /auth context/i,
+    },
+  ] as const;
+
+  for (const scenario of cases) {
+    const preInsert = await createWithIdempotency(
+      {
+        services: [scenario.row],
+        categories: [{ id: CATEGORY_ID, parent_id: "parent", slug: "math" }],
+        inserts: [],
+        updates: [],
+      },
+      {},
+    );
+
+    const postRace = await createWithIdempotency(
+      {
+        services: [],
+        categories: [{ id: CATEGORY_ID, parent_id: "parent", slug: "math" }],
+        inserts: [],
+        updates: [],
+        insertUniqueViolation: true,
+        raceWinnerRow: scenario.row,
+      },
+      {},
+    );
+
+    assert.equal(preInsert.ok, scenario.expectOk, `${scenario.name} pre-insert ok`);
+    assert.equal(postRace.ok, scenario.expectOk, `${scenario.name} post-race ok`);
+    if (scenario.expectOk) {
+      if (preInsert.ok) assert.equal(preInsert.status, scenario.expectStatus, `${scenario.name} pre-insert status`);
+      if (postRace.ok) assert.equal(postRace.status, scenario.expectStatus, `${scenario.name} post-race status`);
+    } else {
+      if (!preInsert.ok) {
+        assert.equal(preInsert.status, scenario.expectStatus, `${scenario.name} pre-insert status`);
+        if ("expectError" in scenario && scenario.expectError instanceof RegExp) {
+          assert.match(String(preInsert.body.error), scenario.expectError, `${scenario.name} pre-insert error`);
+        } else if ("expectError" in scenario) {
+          assert.equal(preInsert.body.error, scenario.expectError, `${scenario.name} pre-insert error`);
+        }
+      }
+      if (!postRace.ok) {
+        assert.equal(postRace.status, scenario.expectStatus, `${scenario.name} post-race status`);
+        if ("expectError" in scenario && scenario.expectError instanceof RegExp) {
+          assert.match(String(postRace.body.error), scenario.expectError, `${scenario.name} post-race error`);
+        } else if ("expectError" in scenario) {
+          assert.equal(postRace.body.error, scenario.expectError, `${scenario.name} post-race error`);
+        }
+      }
+    }
+  }
 });
 
 test("update rejects cross-owner service lookup as not found", async () => {

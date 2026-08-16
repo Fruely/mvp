@@ -7,12 +7,13 @@ import {
   isUniqueViolation,
   normalizeClientIdempotencyKey,
 } from "@/lib/mutations/clientIdempotency";
-import {
-  IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE,
-  resolveIdempotentReplayWithOwnership,
-} from "@/lib/mutations/idempotencyOwnership";
 import type { SpecialistServicesContext } from "@/lib/specialistServices/context";
 import { mapServiceRow } from "@/lib/specialistServices/mapServiceRow";
+import {
+  lookupServiceCreateIdempotentReplay,
+  mapServiceCreateIdempotencyResolution,
+  resolveServiceCreateIdempotencyResult,
+} from "@/lib/specialistServices/serviceCreateIdempotency";
 import {
   SERVICE_SELECT,
   type SpecialistServiceDeleteResponse,
@@ -48,39 +49,6 @@ async function defaultLoadReadiness(
 export type ServiceMutationDependencies = {
   loadReadiness?: typeof defaultLoadReadiness;
 };
-
-async function lookupServiceIdempotentReplay(
-  supabase: SupabaseClient,
-  clientIdempotencyKey: string,
-  idempotencyFingerprint: string,
-  ownerUserId: string,
-) {
-  const { data: existingService, error } = await supabase
-    .from("specialist_services")
-    .select(`${SERVICE_SELECT}, client_idempotency_fingerprint, owner_user_id`)
-    .eq("client_idempotency_key", clientIdempotencyKey)
-    .maybeSingle();
-
-  if (error) {
-    return { kind: "error" as const };
-  }
-
-  return resolveIdempotentReplayWithOwnership(
-    existingService
-      ? {
-          fingerprint:
-            typeof existingService.client_idempotency_fingerprint === "string"
-              ? existingService.client_idempotency_fingerprint
-              : null,
-          client_user_id:
-            typeof existingService.owner_user_id === "string" ? existingService.owner_user_id : null,
-          response: { data: mapServiceRow(existingService as Record<string, unknown>) },
-        }
-      : null,
-    idempotencyFingerprint,
-    ownerUserId,
-  );
-}
 
 function buildCreateIdempotencyPayload(payload: Record<string, unknown>) {
   return {
@@ -181,37 +149,26 @@ export async function createSpecialistService(
   const clientIdempotencyKey = normalizeClientIdempotencyKey(body.idempotency_key);
   const idempotencyFingerprint = buildClientIdempotencyFingerprint(buildCreateIdempotencyPayload(payload));
 
+  async function resolveIdempotencyReplay(
+    replay: Awaited<ReturnType<typeof lookupServiceCreateIdempotentReplay>>,
+  ) {
+    return resolveServiceCreateIdempotencyResult(replay, loadReadiness, {
+      supabase: ctx.supabase,
+      specialistId: ctx.specialistId,
+      lang,
+    });
+  }
+
   if (clientIdempotencyKey) {
-    const replay = await lookupServiceIdempotentReplay(
+    const replay = await lookupServiceCreateIdempotentReplay(
       ctx.supabase,
       clientIdempotencyKey,
       idempotencyFingerprint,
       ctx.userId,
     );
-
-    if (replay.kind === "error") {
-      return { ok: false, status: 500, body: { error: "server_error" } };
-    }
-    if (replay.kind === "conflict") {
-      return {
-        ok: false,
-        status: 409,
-        body: { error: "Idempotency key reused with different payload" },
-      };
-    }
-    if (replay.kind === "ownership_conflict") {
-      return { ok: false, status: 409, body: { error: IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE } };
-    }
-    if (replay.kind === "replay") {
-      const readiness = await loadReadiness(ctx.supabase, ctx.specialistId, lang);
-      return {
-        ok: true,
-        status: 200,
-        body: {
-          data: replay.response.data as SpecialistServiceDto,
-          ...readiness,
-        },
-      };
+    const resolution = await resolveIdempotencyReplay(replay);
+    if (resolution.kind !== "continue") {
+      return mapServiceCreateIdempotencyResolution(resolution);
     }
   }
 
@@ -234,22 +191,15 @@ export async function createSpecialistService(
 
   if (error) {
     if (clientIdempotencyKey && isUniqueViolation(error)) {
-      const replay = await lookupServiceIdempotentReplay(
+      const replay = await lookupServiceCreateIdempotentReplay(
         ctx.supabase,
         clientIdempotencyKey,
         idempotencyFingerprint,
         ctx.userId,
       );
-      if (replay.kind === "replay") {
-        const readiness = await loadReadiness(ctx.supabase, ctx.specialistId, lang);
-        return {
-          ok: true,
-          status: 200,
-          body: {
-            data: replay.response.data as SpecialistServiceDto,
-            ...readiness,
-          },
-        };
+      const resolution = await resolveIdempotencyReplay(replay);
+      if (resolution.kind !== "continue") {
+        return mapServiceCreateIdempotencyResolution(resolution);
       }
     }
     console.error("[specialistServices] POST failed", error);
