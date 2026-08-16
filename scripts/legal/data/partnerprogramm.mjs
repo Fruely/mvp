@@ -1,16 +1,6 @@
 import { OPERATOR } from "../lib/render.mjs";
 
-/**
- * LEGACY SNAPSHOT ONLY.
- *
- * The current Partnerprogramm-Bedingungen are maintained directly in
- * docs/legal/final-review/partnerprogramm.{de,ru,ua}.md and versioned through
- * content/partners/agreementMeta.ts. Do not use this generator data to overwrite
- * the current agreement without first synchronizing it with the active legal version.
- *
- * This snapshot intentionally preserves the previous generator structure for
- * historical tooling compatibility.
- */
+/** @type {import("../lib/render.mjs").default} */
 export const PARTNERPROGRAMM_BLOCKS = [
   {
     type: "title",
@@ -21,8 +11,291 @@ export const PARTNERPROGRAMM_BLOCKS = [
   {
     type: "p",
     id: "pp-meta-01",
-    de: "LEGACY SNAPSHOT — current version is maintained in docs/legal/final-review. Anbieter: " + OPERATOR.de,
-    ru: "LEGACY SNAPSHOT — актуальная версия находится в docs/legal/final-review. Поставщик: " + OPERATOR.ru,
-    ua: "LEGACY SNAPSHOT — актуальна версія міститься в docs/legal/final-review. Постачальник: " + OPERATOR.ua,
+    de: "Version 1.2 — August 2026. Anbieter: " + OPERATOR.de,
+    ru: "Версия 1.2 — август 2026 г. Поставщик: " + OPERATOR.ru,
+    ua: "Версія 1.2 — серпень 2026 р. Постачальник: " + OPERATOR.ua,
+  },
+  {
+    type: "h2",
+    de: "§ 1 Anbieter und Geltungsbereich",
+    ru: "§ 1 Поставщик и сфера действия",
+    ua: "§ 1 Постачальник і сфера дії",
+  },
+  {
+    type: "p",
+    id: "pp-01-01",
+    de: "Anbieter des Partnerprogramms ist " + OPERATOR.de + " Diese Bedingungen regeln die Teilnahme am Freuly-Partnerprogramm.",
+    ru: "Поставщик партнёрской программы: " + OPERATOR.ru + " Настоящие условия регулируют участие в партнёрской программе Freuly.",
+    ua: "Постачальник партнерської програми: " + OPERATOR.ua + " Ці умови регулюють участь у партнерській програмі Freuly.",
+  },
+  {
+    type: "p",
+    id: "pp-01-02",
+    de: "Maßgebliche Sprachfassung ist Deutsch.",
+    ru: "Юридически определяющей является немецкая версия.",
+    ua: "Юридично визначальною є німецька версія.",
+  },
+  {
+    type: "h2",
+    de: "§ 2 Teilnahme",
+    ru: "§ 2 Участие",
+    ua: "§ 2 Участь",
+  },
+  {
+    type: "p",
+    id: "pp-02-01",
+    de: "Teilnahmeberechtigt sind volljährige natürliche Personen, Selbständige, Einzelunternehmer, juristische Personen und Organisationen, soweit rechtlich zur Teilnahme befugt. Die Teilnahme erfolgt durch elektronische Annahme dieser Bedingungen.",
+    ru: "Участвовать могут совершеннолетние физические лица, самозанятые, индивидуальные предприниматели, юридические лица и организации, если они имеют право на участие. Участие осуществляется путём электронного принятия настоящих условий.",
+    ua: "Брати участь можуть повнолітні фізичні особи, самозайняті, індивідуальні підприємці, юридичні особи та організації, якщо вони мають право на участь. Участь здійснюється шляхом електронного прийняття цих умов.",
+  },
+  {
+    type: "p",
+    id: "pp-02-02",
+    de: "Freuly kann die Teilnahme aus wichtigem Grund sperren oder beenden. Der Partner ist selbst für steuerliche und registrierungsbezogene Pflichten verantwortlich.",
+    ru: "Freuly может заблокировать или прекратить участие по важной причине. Партнёр сам отвечает за налоговые и регистрационные обязательства.",
+    ua: "Freuly може заблокувати або припинити участь з важливої причини. Партнер сам відповідає за податкові та реєстраційні зобов’язання.",
+  },
+  {
+    type: "h2",
+    de: "§ 3 Referral-Link und Attribution",
+    ru: "§ 3 Referral-ссылка и атрибуция",
+    ua: "§ 3 Referral-посилання та атрибуція",
+  },
+  {
+    type: "p",
+    id: "pp-03-01",
+    de: "Nach wirksamer Teilnahme erhält der Partner einen persönlichen Referral-Link. Dieser gehört ausschließlich dem Partnerkonto. Der Link darf öffentlich und wiederholt genutzt werden, solange Partner und Programm aktiv sind.",
+    ru: "После участия партнёр получает персональную referral-ссылку. Она принадлежит исключительно партнёрскому аккаунту. Ссылку можно публично и многократно использовать, пока партнёр и программа активны.",
+    ua: "Після участі партнер отримує персональне referral-посилання. Воно належить виключно партнерському обліковому запису. Посилання можна публічно та багаторазово використовувати, поки партнер і програма активні.",
+  },
+  {
+    type: "p",
+    id: "pp-03-02",
+    de: "Die Zuordnung eines anonymen Besuchs bis zur Registrierung gilt für 90 Tage ab dem ersten gültigen Klick auf den Partner-Link. Nach Registrierung ist die Zuordnung gesperrt. Für die Speicherung des Referral-Cookies ist die Einwilligung des Nutzers in die Kategorie Referral-Attribution erforderlich.",
+    ru: "Привязка анонимного визита до регистрации действует 90 дней с первого действительного перехода по партнёрской ссылке. После регистрации привязка фиксируется. Для хранения referral-cookie требуется согласие пользователя на категорию referral-атрибуции.",
+    ua: "Прив’язка анонімного візиту до реєстрації діє 90 днів від першого дійсного переходу за партнерським посиланням. Після реєстрації прив’язка фіксується. Для збереження referral-cookie потрібна згода користувача на категорію referral-атрибуції.",
+  },
+  {
+    type: "h2",
+    de: "§ 4 Qualifizierte Empfehlung",
+    ru: "§ 4 Квалифицированная рекомендация",
+    ua: "§ 4 Кваліфікована рекомендація",
+  },
+  {
+    type: "p",
+    id: "pp-04-01",
+    de: "Eine Vergütung entsteht nur für einen neuen Spezialisten, der über die Referral-Attribution des Partners gekommen ist, erstmals als Spezialist registriert wurde, erstmals ein kostenpflichtiges Abonnement abgeschlossen hat und die erste erfolgreiche Zahlung geleistet hat.",
+    ru: "Вознаграждение возникает только за нового специалиста, который пришёл через referral-атрибуцию партнёра, впервые зарегистрировался как специалист, впервые оформил платную подписку и совершил первый успешный платёж.",
+    ua: "Винагорода виникає лише за нового спеціаліста, який прийшов через referral-атрибуцію партнера, вперше зареєструвався як спеціаліст, вперше оформив платну підписку та здійснив перший успішний платіж.",
+  },
+  {
+    type: "p",
+    id: "pp-04-02",
+    de: "Pro Spezialist kann höchstens eine Referral-Vergütung entstehen. Keine neue Vergütung entsteht durch Verlängerungen, Upgrades, Downgrades oder erneute Registrierungen.",
+    ru: "За одного специалиста может возникнуть не более одного referral-вознаграждения. Новое вознаграждение не возникает за продления, апгрейды, даунгрейды или повторные регистрации.",
+    ua: "За одного спеціаліста може виникнути не більше одного referral-винагороди. Нова винагорода не виникає за поновлення, апгрейди, даунгрейди або повторні реєстрації.",
+  },
+  {
+    type: "h2",
+    de: "§ 5 Höhe der Vergütung",
+    ru: "§ 5 Размер вознаграждения",
+    ua: "§ 5 Розмір винагороди",
+  },
+  {
+    type: "p",
+    id: "pp-05-01",
+    de: "Der Partner erhält eine einmalige Vergütung in Höhe der ersten bezahlten monatlichen Tarifbasis des vermittelten Spezialisten, berechnet aus dem von Freuly tatsächlich vereinnahmten Betrag. Abgezogen werden nur gesetzlich geschuldete Umsatzsteuer, soweit sie auf die konkrete Zahlung entfällt, und die tatsächliche Transaktionsgebühr des Zahlungsdienstleisters.",
+    ru: "Партнёр получает единоразовое вознаграждение в размере первой оплаченной месячной тарифной базы привлечённого специалиста, рассчитанное из фактически полученной Freuly суммы. Вычитаются только законно причитающийся НДС, если он относится к конкретному платежу, и фактическая комиссия платёжного провайдера.",
+    ua: "Партнер отримує одноразову винагороду в розмірі першої сплаченої місячної тарифної бази залученого спеціаліста, розраховану з фактично отриманої Freuly суми. Віднімаються лише законно належний ПДВ, якщо він стосується конкретного платежу, та фактична комісія платіжного провайдера.",
+  },
+  {
+    type: "h2",
+    de: "§ 6 Entstehung und Validierung",
+    ru: "§ 6 Возникновение и валидация",
+    ua: "§ 6 Виникнення та валідація",
+  },
+  {
+    type: "p",
+    id: "pp-06-01",
+    de: "Nach der ersten erfolgreichen Zahlung gilt die Vergütung zunächst als ausstehend. Es folgt eine Validierungsfrist von 14 Kalendertagen. Nach Ablauf dieser Frist kann die Vergütung bestätigt und auszahlbar werden, sofern die Ausgangszahlung nicht storniert, erstattet oder bestritten ist.",
+    ru: "После первого успешного платежа вознаграждение сначала считается ожидающим. Следует срок валидации 14 календарных дней. По истечении этого срока вознаграждение может быть подтверждено и доступно к выплате, если исходный платёж не отменён, не возмещён и не оспорен.",
+    ua: "Після першого успішного платежу винагорода спочатку вважається очікуваною. Наступає строк валідації 14 календарних днів. Після спливу цього строку винагорода може бути підтверджена та доступна до виплати, якщо вихідний платіж не скасовано, не відшкодовано та не оспорено.",
+  },
+  {
+    type: "h2",
+    de: "§ 7 Auszahlung per manueller SEPA-Überweisung",
+    ru: "§ 7 Выплата через ручной SEPA-перевод",
+    ua: "§ 7 Виплата через ручний SEPA-переказ",
+  },
+  {
+    type: "p",
+    id: "pp-07-01",
+    de: "Auszahlungen erfolgen durch manuelle SEPA-Überweisung durch Freuly. Es wird kein automatisiertes Auszahlungskonto über Stripe Connect oder vergleichbare Dienste eingesetzt. Der Partner beantragt eine Auszahlung im Dashboard; Freuly prüft und führt die Überweisung extern aus.",
+    ru: "Выплаты осуществляются ручным SEPA-переводом со стороны Freuly. Автоматизированный счёт выплат через Stripe Connect или аналогичные сервисы не используется. Партнёр запрашивает выплату в личном кабинете; Freuly проверяет и выполняет перевод вне платформы.",
+    ua: "Виплати здійснюються ручним SEPA-переказом з боку Freuly. Автоматизований рахунок виплат через Stripe Connect або аналогічні сервіси не використовується. Партнер запитує виплату в особистому кабінеті; Freuly перевіряє та виконує переказ поза платформою.",
+  },
+  {
+    type: "p",
+    id: "pp-07-02",
+    de: "Alternativ kann der Partner bestätigte Vergütungen ganz oder teilweise als Guthaben für das eigene Freuly-Abonnement verwenden. Derselbe Betrag kann nicht zugleich ausgezahlt und als Abo-Guthaben genutzt werden.",
+    ru: "Альтернативно партнёр может использовать подтверждённые вознаграждения полностью или частично как зачёт на собственную подписку Freuly. Одна и та же сумма не может одновременно быть выплачена и использована как зачёт на подписку.",
+    ua: "Альтернативно партнер може використовувати підтверджені винагороди повністю або частково як зарахування на власну підписку Freuly. Одна й та сама сума не може одночасно бути виплачена та використана як зарахування на підписку.",
+  },
+  {
+    type: "h2",
+    de: "§ 8 Keine fortlaufende Beteiligung",
+    ru: "§ 8 Отсутствие текущего участия в доходах",
+    ua: "§ 8 Відсутність поточної участі в доходах",
+  },
+  {
+    type: "p",
+    id: "pp-08-01",
+    de: "Das Programm gewährt keine laufende Umsatzbeteiligung an Folgezahlen oder an der weiteren Plattformnutzung des vermittelten Spezialisten. Es handelt sich um eine einmalige Acquisition-Vergütung.",
+    ru: "Программа не предоставляет текущего участия в доходах от последующих платежей или дальнейшего использования платформы привлечённым специалистом. Это единоразовое вознаграждение за привлечение.",
+    ua: "Програма не надає поточної участі в доходах від наступних платежів або подальшого використання платформи залученим спеціалістом. Це одноразова винагорода за залучення.",
+  },
+  {
+    type: "h2",
+    de: "§ 9 Missbrauch",
+    ru: "§ 9 Злоупотребление",
+    ua: "§ 9 Зловживання",
+  },
+  {
+    type: "p",
+    id: "pp-09-01",
+    de: "Keine Vergütung entsteht bei Selbstempfehlung, Scheinkonten, Manipulation der Zuordnung, automatisierten Scheinregistrierungen, Spam, irreführender Werbung oder sonstigen künstlichen Konversionen.",
+    ru: "Вознаграждение не возникает при саморекомендации, фиктивных аккаунтах, манипуляции привязкой, автоматизированных фиктивных регистрациях, спаме, вводящей в заблуждение рекламе или иных искусственных конверсиях.",
+    ua: "Винагорода не виникає при саморекомендації, фіктивних облікових записах, маніпуляції прив’язкою, автоматизованих фіктивних реєстраціях, спамі, оманливій рекламі або інших штучних конверсіях.",
+  },
+  {
+    type: "h2",
+    de: "§ 10 Werbung",
+    ru: "§ 10 Реклама",
+    ua: "§ 10 Реклама",
+  },
+  {
+    type: "p",
+    id: "pp-10-01",
+    de: "Der Partner darf den Referral-Link rechtmäßig verbreiten, ist jedoch kein Arbeitnehmer oder offizieller Vertreter von Freuly. Der Partner darf keinen garantierten Verdienst zusagen und ist für gesetzlich erforderliche Werbekennzeichnung selbst verantwortlich.",
+    ru: "Партнёр может законно распространять referral-ссылку, но не является сотрудником или официальным представителем Freuly. Партнёр не может обещать гарантированный доход и сам отвечает за законную маркировку рекламы.",
+    ua: "Партнер може законно поширювати referral-посилання, але не є співробітником або офіційним представником Freuly. Партнер не може обіцяти гарантований дохід і сам відповідає за законну маркування реклами.",
+  },
+  {
+    type: "h2",
+    de: "§ 11 Marken",
+    ru: "§ 11 Торговые марки",
+    ua: "§ 11 Торгові марки",
+  },
+  {
+    type: "p",
+    id: "pp-11-01",
+    de: "Gestattet ist die Nutzung des Namens Freuly, der Referral-Links und offiziell bereitgestellter Werbemittel im Rahmen erlaubter Programmwerbung. Unzulässig sind Fake-Domains, Fake-Accounts und irreführende Anzeigen.",
+    ru: "Разрешено использование названия Freuly, referral-ссылок и официально предоставленных рекламных материалов в рамках допустимой программной рекламы. Недопустимы поддельные домены, поддельные аккаунты и вводящая в заблуждение реклама.",
+    ua: "Дозволено використання назви Freuly, referral-посилань і офіційно наданих рекламних матеріалів у межах дозволеної програмної реклами. Недопустимі підроблені домени, підроблені облікові записи та оманлива реклама.",
+  },
+  {
+    type: "h2",
+    de: "§ 12 Steuern",
+    ru: "§ 12 Налоги",
+    ua: "§ 12 Податки",
+  },
+  {
+    type: "p",
+    id: "pp-12-01",
+    de: "Der Partner prüft und erfüllt selbst etwaige steuerliche und registrierungsbezogene Pflichten. Freuly trifft keine verbindliche steuerliche Einordnung einzelner Einnahmen.",
+    ru: "Партнёр сам проверяет и выполняет налоговые и регистрационные обязательства. Freuly не даёт обязательной налоговой классификации отдельных доходов.",
+    ua: "Партнер сам перевіряє та виконує податкові та реєстраційні зобов’язання. Freuly не дає обов’язкової податкової класифікації окремих доходів.",
+  },
+  {
+    type: "h2",
+    de: "§ 13 Auszahlungsvoraussetzungen",
+    ru: "§ 13 Условия выплаты",
+    ua: "§ 13 Умови виплати",
+  },
+  {
+    type: "p",
+    id: "pp-13-01",
+    de: "Vor einer erstmaligen Auszahlung in Geld muss der Partner die für Abrechnung, Buchführung und SEPA-Überweisung benötigten Angaben bereitstellen, insbesondere Name, Anschrift, Land und Bankverbindung.",
+    ru: "Перед первой денежной выплатой партнёр должен предоставить данные, необходимые для расчётов, бухгалтерии и SEPA-перевода, в частности имя, адрес, страну и банковские реквизиты.",
+    ua: "Перед першою грошовою виплатою партнер має надати дані, необхідні для розрахунків, бухгалтерії та SEPA-переказу, зокрема ім’я, адресу, країну та банківські реквізити.",
+  },
+  {
+    type: "p",
+    id: "pp-13-02",
+    de: "Bis die erforderlichen Angaben vollständig vorliegen, kann Freuly die Auszahlung zurückstellen. Bereits bestätigte Vergütungen verfallen hierdurch nicht.",
+    ru: "Пока необходимые данные не предоставлены полностью, Freuly может отложить выплату. Уже подтверждённые вознаграждения при этом не аннулируются.",
+    ua: "Доки необхідні дані не надано повністю, Freuly може відкласти виплату. Уже підтверджені винагороди при цьому не анулюються.",
+  },
+  {
+    type: "h2",
+    de: "§ 14 Kein Clawback nach Auszahlung",
+    ru: "§ 14 Отсутствие clawback после выплаты",
+    ua: "§ 14 Відсутність clawback після виплати",
+  },
+  {
+    type: "p",
+    id: "pp-14-01",
+    de: "Nach vollständiger Auszahlung oder vollständiger Verwendung als Abo-Guthaben erfolgt kein Clawback der bereits ausgezahlten oder gutgeschriebenen Vergütung, es sei denn, die Vergütung beruhte nachweislich auf Missbrauch oder betrügerischer Konversion.",
+    ru: "После полной выплаты или полного использования как зачёта на подписку clawback уже выплаченного или зачтённого вознаграждения не производится, за исключением случаев, когда вознаграждение доказуемо основано на злоупотреблении или мошеннической конверсии.",
+    ua: "Після повної виплати або повного використання як зарахування на підписку clawback уже виплаченої або зарахованої винагороди не здійснюється, за винятком випадків, коли винагорода доведено базується на зловживанні або шахрайській конверсії.",
+  },
+  {
+    type: "h2",
+    de: "§ 15 Beendigung durch den Partner",
+    ru: "§ 15 Прекращение партнёром",
+    ua: "§ 15 Припинення партнером",
+  },
+  {
+    type: "p",
+    id: "pp-15-01",
+    de: "Der Partner kann die Teilnahme jederzeit beenden. Bereits bestätigte Vergütungen bleiben erhalten. Vergütungen in der Validierungsfrist werden nach den bei Konversion geltenden Bedingungen abgeschlossen, sofern kein Verstoß vorliegt.",
+    ru: "Партнёр может прекратить участие в любой момент. Уже подтверждённые вознаграждения сохраняются. Вознаграждения в период валидации завершаются по условиям, действовавшим при конверсии, если нет нарушений.",
+    ua: "Партнер може припинити участь у будь-який момент. Уже підтверджені винагороди зберігаються. Винагороди в період валідації завершуються за умовами, що діяли при конверсії, якщо немає порушень.",
+  },
+  {
+    type: "h2",
+    de: "§ 16 Änderung durch Freuly",
+    ru: "§ 16 Изменение Freuly",
+    ua: "§ 16 Зміна Freuly",
+  },
+  {
+    type: "p",
+    id: "pp-16-01",
+    de: "Freuly darf das Programm für die Zukunft ändern, aussetzen oder beenden. Rückwirkende Entziehung bereits bestätigter und ausgezahlter Vergütungen findet nicht statt, es sei denn, ein Missbrauchsfall liegt vor.",
+    ru: "Freuly может изменять, приостанавливать или прекращать программу на будущее. Обратное лишение уже подтверждённых и выплаченных вознаграждений не производится, за исключением случаев злоупотребления.",
+    ua: "Freuly може змінювати, призупиняти або припиняти програму на майбутнє. Зворотне позбавлення вже підтверджених і виплачених винагород не здійснюється, за винятком випадків зловживання.",
+  },
+  {
+    type: "h2",
+    de: "§ 17 Verfügbarkeit",
+    ru: "§ 17 Доступность",
+    ua: "§ 17 Доступність",
+  },
+  {
+    type: "p",
+    id: "pp-17-01",
+    de: "Freuly bemüht sich um stabile Verfügbarkeit von Plattform und Tracking, schuldet jedoch keine ununterbrochene Erreichbarkeit.",
+    ru: "Freuly стремится обеспечить стабильную доступность платформы и отслеживания, но не гарантирует непрерывную работу.",
+    ua: "Freuly прагне забезпечити стабільну доступність платформи та відстеження, але не гарантує безперервну роботу.",
+  },
+  {
+    type: "h2",
+    de: "§ 18 Haftung und Schlussbestimmungen",
+    ru: "§ 18 Ответственность и заключительные положения",
+    ua: "§ 18 Відповідальність і заключні положення",
+  },
+  {
+    type: "p",
+    id: "pp-18-01",
+    de: "Freuly haftet unbeschränkt für Vorsatz und grobe Fahrlässigkeit sowie für Schäden aus der Verletzung des Lebens, des Körpers oder der Gesundheit. Bei leichter Fahrlässigkeit haftet Freuly nur bei Verletzung wesentlicher Vertragspflichten und begrenzt auf den vorhersehbaren, vertragstypischen Schaden. Zwingende gesetzliche Haftung bleibt unberührt.",
+    ru: "Freuly несёт неограниченную ответственность за умысел и грубую неосторожность, а также за вред жизни, здоровью и телесной неприкосновенности. При лёгкой неосторожности Freuly отвечает только при нарушении существенных договорных обязательств и ограничивает ответственность предсказуемым типичным ущербом. Императивная законная ответственность остаётся незатронутой.",
+    ua: "Freuly несе необмежену відповідальність за умисел і грубу необережність, а також за шкоду життю, здоров’ю та тілесній недоторканності. За легкої необережності Freuly відповідає лише за порушення істотних договірних зобов’язань і обмежує відповідальність передбачуваною типовою шкодою. Імперативна законна відповідальність залишається незмінною.",
+  },
+  {
+    type: "p",
+    id: "pp-18-02",
+    de: "Es gilt das Recht der Bundesrepublik Deutschland. Sollten einzelne Bestimmungen unwirksam sein, bleibt der übrige Vertrag wirksam.",
+    ru: "Применяется право Федеративной Республики Германия. Если отдельные положения недействительны, остальной договор остаётся действительным.",
+    ua: "Застосовується право Федеративної Республіки Німеччина. Якщо окремі положення недійсні, решта договору залишається чинною.",
   },
 ];
