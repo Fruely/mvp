@@ -17,11 +17,69 @@ import {
   buildClientIdempotencyFingerprint,
   normalizeClientIdempotencyKey,
   resolveIdempotentReplay,
+  shouldRunCreationSideEffects,
 } from "@/lib/mutations/clientIdempotency";
 
 export const dynamic = "force-dynamic";
 
 const NO_STORE = { "Cache-Control": "no-store" };
+
+function buildServiceRequestIdempotencyPayload(
+  validated: Exclude<ReturnType<typeof validateServiceRequestCreate>, { error: string }>,
+) {
+  return {
+    client_name: validated.client_name,
+    client_email: validated.client_email,
+    client_phone: validated.client_phone,
+    category_id: validated.category_id,
+    category_text: validated.category_text,
+    description: validated.description,
+    preferred_language: validated.preferred_language,
+    work_format: validated.work_format,
+    city: validated.city,
+    postal_code: validated.postal_code,
+    country_code: validated.country_code,
+    radius_km: validated.radius_km,
+    urgency: validated.urgency,
+    desired_date: validated.desired_date,
+    service_timing: validated.service_timing,
+    locale: validated.locale,
+    source_path: validated.source_path,
+  };
+}
+
+async function lookupServiceRequestIdempotentReplay(
+  supabase: ReturnType<typeof createSupabaseServerClient>,
+  clientIdempotencyKey: string,
+  idempotencyFingerprint: string,
+) {
+  const { data: existingRequest, error: existingError } = await supabase
+    .from("service_requests")
+    .select("public_id, created_at, client_idempotency_fingerprint")
+    .eq("client_idempotency_key", clientIdempotencyKey)
+    .maybeSingle();
+
+  if (existingError) {
+    return { kind: "error" as const };
+  }
+
+  return resolveIdempotentReplay(
+    existingRequest
+      ? {
+          fingerprint:
+            typeof existingRequest.client_idempotency_fingerprint === "string"
+              ? existingRequest.client_idempotency_fingerprint
+              : null,
+          response: {
+            ok: true,
+            public_id: existingRequest.public_id,
+            created_at: existingRequest.created_at,
+          },
+        }
+      : null,
+    idempotencyFingerprint,
+  );
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,6 +87,36 @@ export async function POST(request: NextRequest) {
     const validated = validateServiceRequestCreate(body);
     if ("error" in validated) {
       return NextResponse.json({ error: validated.error }, { status: validated.status, headers: NO_STORE });
+    }
+
+    const supabase = createSupabaseServerClient();
+    const nowIso = new Date().toISOString();
+    const clientIdempotencyKey = normalizeClientIdempotencyKey(body.idempotency_key);
+    const idempotencyFingerprint = buildClientIdempotencyFingerprint(
+      buildServiceRequestIdempotencyPayload(validated),
+    );
+
+    if (clientIdempotencyKey) {
+      const replay = await lookupServiceRequestIdempotentReplay(
+        supabase,
+        clientIdempotencyKey,
+        idempotencyFingerprint,
+      );
+
+      if (replay.kind === "error") {
+        return NextResponse.json({ error: "server_error" }, { status: 500, headers: NO_STORE });
+      }
+
+      if (replay.kind === "conflict") {
+        return NextResponse.json(
+          { error: "Idempotency key reused with different payload" },
+          { status: 409, headers: NO_STORE },
+        );
+      }
+
+      if (replay.kind === "replay") {
+        return NextResponse.json(replay.response, { status: 200, headers: NO_STORE });
+      }
     }
 
     const ip = getClientIP(request);
@@ -48,9 +136,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createSupabaseServerClient();
-    const nowIso = new Date().toISOString();
-
     let clientCampaignLinkId: string | null = null;
     const campaignCookie = cookies().get(CLIENT_CAMPAIGN_COOKIE_NAME)?.value?.trim();
     if (campaignCookie) {
@@ -65,68 +150,7 @@ export async function POST(request: NextRequest) {
     }
 
     let inserted: { public_id: string; created_at: string } | null = null;
-
-    const clientIdempotencyKey = normalizeClientIdempotencyKey(body.idempotency_key);
-    const idempotencyPayload = {
-      client_name: validated.client_name,
-      client_email: validated.client_email,
-      client_phone: validated.client_phone,
-      category_id: validated.category_id,
-      category_text: validated.category_text,
-      description: validated.description,
-      preferred_language: validated.preferred_language,
-      work_format: validated.work_format,
-      city: validated.city,
-      postal_code: validated.postal_code,
-      country_code: validated.country_code,
-      radius_km: validated.radius_km,
-      urgency: validated.urgency,
-      desired_date: validated.desired_date,
-      service_timing: validated.service_timing,
-      locale: validated.locale,
-      source_path: validated.source_path,
-    };
-    const idempotencyFingerprint = buildClientIdempotencyFingerprint(idempotencyPayload);
-
-    if (clientIdempotencyKey) {
-      const { data: existingRequest, error: existingError } = await supabase
-        .from("service_requests")
-        .select("public_id, created_at, client_idempotency_fingerprint")
-        .eq("client_idempotency_key", clientIdempotencyKey)
-        .maybeSingle();
-
-      if (existingError) {
-        return NextResponse.json({ error: "server_error" }, { status: 500, headers: NO_STORE });
-      }
-
-      const replay = resolveIdempotentReplay(
-        existingRequest
-          ? {
-              fingerprint:
-                typeof existingRequest.client_idempotency_fingerprint === "string"
-                  ? existingRequest.client_idempotency_fingerprint
-                  : null,
-              response: {
-                ok: true,
-                public_id: existingRequest.public_id,
-                created_at: existingRequest.created_at,
-              },
-            }
-          : null,
-        idempotencyFingerprint,
-      );
-
-      if (replay.kind === "conflict") {
-        return NextResponse.json(
-          { error: "Idempotency key reused with different payload" },
-          { status: 409, headers: NO_STORE },
-        );
-      }
-
-      if (replay.kind === "replay") {
-        return NextResponse.json(replay.response, { status: 200, headers: NO_STORE });
-      }
-    }
+    let creationReplay = resolveIdempotentReplay(null, idempotencyFingerprint);
 
     for (let attempt = 0; attempt < 5; attempt += 1) {
       const public_id = generateServiceRequestPublicId();
@@ -174,6 +198,7 @@ export async function POST(request: NextRequest) {
 
       if (!error && data) {
         inserted = data as { public_id: string; created_at: string };
+        creationReplay = { kind: "create" };
         break;
       }
 
@@ -183,35 +208,14 @@ export async function POST(request: NextRequest) {
       }
 
       if (clientIdempotencyKey) {
-        const { data: racedRequest } = await supabase
-          .from("service_requests")
-          .select("public_id, created_at, client_idempotency_fingerprint")
-          .eq("client_idempotency_key", clientIdempotencyKey)
-          .maybeSingle();
-
-        const replay = resolveIdempotentReplay(
-          racedRequest
-            ? {
-                fingerprint:
-                  typeof racedRequest.client_idempotency_fingerprint === "string"
-                    ? racedRequest.client_idempotency_fingerprint
-                    : null,
-                response: {
-                  ok: true,
-                  public_id: racedRequest.public_id,
-                  created_at: racedRequest.created_at,
-                },
-              }
-            : null,
+        const replay = await lookupServiceRequestIdempotentReplay(
+          supabase,
+          clientIdempotencyKey,
           idempotencyFingerprint,
         );
 
         if (replay.kind === "replay") {
-          inserted = {
-            public_id: String(replay.response.public_id),
-            created_at: String(replay.response.created_at ?? nowIso),
-          };
-          break;
+          return NextResponse.json(replay.response, { status: 200, headers: NO_STORE });
         }
 
         if (replay.kind === "conflict") {
@@ -228,22 +232,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "server_error" }, { status: 500, headers: NO_STORE });
     }
 
-    try {
-      const timingPayload = buildOwnerTelegramTimingPayload(validated);
-      await notify("NEW_SERVICE_REQUEST", {
-        public_id: inserted.public_id,
-        category_text: validated.category_text,
-        preferred_language: validated.preferred_language,
-        work_format: validated.work_format,
-        city: validated.city,
-        postal_code: validated.postal_code,
-        when_label: timingPayload.when_label,
-        urgency: timingPayload.urgency,
-        created_at: inserted.created_at,
-        locale: validated.locale,
-      });
-    } catch (notifyErr) {
-      console.error("[service-requests/create] owner notification failed", notifyErr);
+    if (shouldRunCreationSideEffects(creationReplay)) {
+      try {
+        const timingPayload = buildOwnerTelegramTimingPayload(validated);
+        await notify("NEW_SERVICE_REQUEST", {
+          public_id: inserted.public_id,
+          category_text: validated.category_text,
+          preferred_language: validated.preferred_language,
+          work_format: validated.work_format,
+          city: validated.city,
+          postal_code: validated.postal_code,
+          when_label: timingPayload.when_label,
+          urgency: timingPayload.urgency,
+          created_at: inserted.created_at,
+          locale: validated.locale,
+        });
+      } catch (notifyErr) {
+        console.error("[service-requests/create] owner notification failed", notifyErr);
+      }
     }
 
     const response = NextResponse.json(

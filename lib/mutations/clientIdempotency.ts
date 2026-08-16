@@ -38,3 +38,17 @@ export function isUniqueViolation(error: unknown): boolean {
   const record = error as { code?: string };
   return record.code === "23505";
 }
+
+/** Rate limits apply only when no existing idempotent row will be replayed. */
+export function shouldApplyNewCreateRateLimit(
+  replay: ReturnType<typeof resolveIdempotentReplay>,
+): boolean {
+  return replay.kind === "create";
+}
+
+/** Creation-only side effects (notifications) must not run on replay paths. */
+export function shouldRunCreationSideEffects(
+  replay: ReturnType<typeof resolveIdempotentReplay>,
+): boolean {
+  return replay.kind === "create";
+}

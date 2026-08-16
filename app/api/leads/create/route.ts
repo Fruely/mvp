@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
+import { isPublicLeadTargetSpecialist } from "@/lib/specialists/status";
 import {
   checkRateLimit,
   getClientIP,
@@ -16,6 +16,38 @@ import {
   normalizeClientIdempotencyKey,
   resolveIdempotentReplay,
 } from "@/lib/mutations/clientIdempotency";
+
+async function lookupLeadIdempotentReplay(
+  supabase: ReturnType<typeof createSupabaseServerClient>,
+  clientIdempotencyKey: string,
+  idempotencyFingerprint: string,
+) {
+  const { data: existingLead, error: existingError } = await supabase
+    .from("leads")
+    .select("id, created_at, client_idempotency_fingerprint")
+    .eq("client_idempotency_key", clientIdempotencyKey)
+    .maybeSingle();
+
+  if (existingError) {
+    return { kind: "error" as const };
+  }
+
+  return resolveIdempotentReplay(
+    existingLead
+      ? {
+          fingerprint:
+            typeof existingLead.client_idempotency_fingerprint === "string"
+              ? existingLead.client_idempotency_fingerprint
+              : null,
+          response: {
+            id: String(existingLead.id),
+            created_at: existingLead.created_at ?? null,
+          },
+        }
+      : null,
+    idempotencyFingerprint,
+  );
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -69,6 +101,54 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "message is too long" }, { status: 400 });
     }
 
+    const insertPayload = {
+      specialist_id,
+      client_name: client_name || null,
+      client_email: client_email || null,
+      client_phone: client_phone || null,
+      message: message || null,
+      source:
+        typeof source === "string" && source.trim() ? source.trim() : null,
+      source_path:
+        typeof source_path === "string" && source_path.trim()
+          ? source_path.trim()
+          : null,
+      referrer:
+        typeof referrer === "string" && referrer.trim()
+          ? referrer.trim()
+          : null,
+    };
+
+    const clientIdempotencyKey = normalizeClientIdempotencyKey(idempotency_key);
+    const idempotencyFingerprint = buildClientIdempotencyFingerprint(insertPayload);
+    const supabase = createSupabaseServerClient();
+
+    if (clientIdempotencyKey) {
+      const replay = await lookupLeadIdempotentReplay(
+        supabase,
+        clientIdempotencyKey,
+        idempotencyFingerprint,
+      );
+
+      if (replay.kind === "error") {
+        return Response.json(
+          { error: "Failed to verify idempotency" },
+          { status: 500 }
+        );
+      }
+
+      if (replay.kind === "conflict") {
+        return Response.json(
+          { error: "Idempotency key reused with different payload" },
+          { status: 409 }
+        );
+      }
+
+      if (replay.kind === "replay") {
+        return Response.json({ data: replay.response }, { status: 200 });
+      }
+    }
+
     const ip = getClientIP(request);
 
     const perSpecialist = await checkRateLimit(request, {
@@ -107,16 +187,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createSupabaseServerClient();
-
     const { data: specialist, error: specialistError } = await supabase
       .from("specialists")
-      .select("id, telegram_chat_id, name, category_id")
+      .select("id, telegram_chat_id, name, category_id, status, is_active, is_visible, billing_visibility_blocked, is_test")
       .eq("id", specialist_id)
-      .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
-      .eq("is_active", true)
-      .eq("is_visible", true)
-      .eq("billing_visibility_blocked", false)
       .maybeSingle();
 
     if (specialistError) {
@@ -126,7 +200,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!specialist) {
+    if (!specialist || !isPublicLeadTargetSpecialist(specialist)) {
       return Response.json(
         { error: "Specialist not found" },
         { status: 404 }
@@ -150,69 +224,6 @@ export async function POST(request: NextRequest) {
       const title = (catRow as { title?: string | null } | null)?.title;
       if (typeof title === "string" && title.trim()) {
         category_title = title.trim();
-      }
-    }
-
-    const insertPayload = {
-      specialist_id,
-      client_name: client_name || null,
-      client_email: client_email || null,
-      client_phone: client_phone || null,
-      message: message || null,
-      source:
-        typeof source === "string" && source.trim() ? source.trim() : null,
-      source_path:
-        typeof source_path === "string" && source_path.trim()
-          ? source_path.trim()
-          : null,
-      referrer:
-        typeof referrer === "string" && referrer.trim()
-          ? referrer.trim()
-          : null,
-    };
-
-    const clientIdempotencyKey = normalizeClientIdempotencyKey(idempotency_key);
-    const idempotencyFingerprint = buildClientIdempotencyFingerprint(insertPayload);
-
-    if (clientIdempotencyKey) {
-      const { data: existingLead, error: existingError } = await supabase
-        .from("leads")
-        .select("id, created_at, client_idempotency_fingerprint")
-        .eq("client_idempotency_key", clientIdempotencyKey)
-        .maybeSingle();
-
-      if (existingError) {
-        return Response.json(
-          { error: "Failed to verify idempotency" },
-          { status: 500 }
-        );
-      }
-
-      const replay = resolveIdempotentReplay(
-        existingLead
-          ? {
-              fingerprint:
-                typeof existingLead.client_idempotency_fingerprint === "string"
-                  ? existingLead.client_idempotency_fingerprint
-                  : null,
-              response: {
-                id: String(existingLead.id),
-                created_at: existingLead.created_at ?? null,
-              },
-            }
-          : null,
-        idempotencyFingerprint,
-      );
-
-      if (replay.kind === "conflict") {
-        return Response.json(
-          { error: "Idempotency key reused with different payload" },
-          { status: 409 }
-        );
-      }
-
-      if (replay.kind === "replay") {
-        return Response.json({ data: replay.response }, { status: 200 });
       }
     }
 
@@ -243,25 +254,9 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (clientIdempotencyKey && isUniqueViolation(error)) {
-        const { data: racedLead } = await supabase
-          .from("leads")
-          .select("id, created_at, client_idempotency_fingerprint")
-          .eq("client_idempotency_key", clientIdempotencyKey)
-          .maybeSingle();
-
-        const replay = resolveIdempotentReplay(
-          racedLead
-            ? {
-                fingerprint:
-                  typeof racedLead.client_idempotency_fingerprint === "string"
-                    ? racedLead.client_idempotency_fingerprint
-                    : null,
-                response: {
-                  id: String(racedLead.id),
-                  created_at: racedLead.created_at ?? null,
-                },
-              }
-            : null,
+        const replay = await lookupLeadIdempotentReplay(
+          supabase,
+          clientIdempotencyKey,
           idempotencyFingerprint,
         );
 
