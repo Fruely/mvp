@@ -51,8 +51,6 @@ test("editable field list matches Native basic profile slice", () => {
     "country_code",
     "lang",
     "languages",
-    "lat",
-    "lng",
     "name",
     "postal_code",
     "service_radius_km",

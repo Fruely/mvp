@@ -25,6 +25,7 @@ test("specialist profile route enforces bearer auth and ownership scoping", asyn
   assert.match(route, /resolveSpecialistProfileBearerSession/);
   assert.match(route, /resolveSpecialistProfileSession/);
   assert.match(route, /loadSpecialistEditableProfile\(service, session\.specialistId/);
+  assert.match(route, /findForbiddenProfilePatchKeys\(body\)/);
   assert.match(route, /patchSpecialistEditableProfile\(\s*service,\s*session\.specialistId/);
   assert.doesNotMatch(route, /searchParams\.get\("specialist_id"\)/);
   assert.match(sessionSrc, /\.eq\("user_id", userId\)/);

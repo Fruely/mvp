@@ -11,8 +11,6 @@ export const SPECIALIST_PROFILE_EDITABLE_FIELDS = [
   "country_code",
   "postal_code",
   "city",
-  "lat",
-  "lng",
   "service_radius_km",
   "category_id",
   "lang",
@@ -60,8 +58,6 @@ export type SpecialistProfilePatchBody = Partial<{
   country_code: string;
   postal_code: string;
   city: string;
-  lat: number;
-  lng: number;
   service_radius_km: number | string | null;
   category_id: string | null;
   lang: string;

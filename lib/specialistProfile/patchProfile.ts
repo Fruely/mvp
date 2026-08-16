@@ -4,7 +4,6 @@ import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncateg
 import { normalizeRouteLangToDbContentCode } from "@/lib/specialists/normalizeContentLanguageCode";
 import {
   GERMANY_COUNTRY_CODE,
-  areValidCoordinates,
   isAllowedServiceRadiusKm,
   normalizeCountryCode,
   normalizePostalCode,
@@ -12,13 +11,14 @@ import {
   saveTouchesGeography,
   validatePublicationGeography,
 } from "@/lib/specialists/geography";
-import { resolveGermanPostalLocation } from "@/lib/specialists/resolvePostalLocation";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 import type { AccountCapabilitiesLang } from "@/lib/account/normalizeAccountCapabilitiesLang";
-import { loadSpecialistEditableProfile } from "@/lib/specialistProfile/loadProfile";
+import type { loadSpecialistEditableProfile } from "@/lib/specialistProfile/loadProfile";
 import {
-  findForbiddenProfilePatchKeys,
-} from "@/lib/specialistProfile/patchWhitelist";
+  LocationPatchValidationError,
+  resolveProfileLocationPatch,
+  type PostalResolver,
+} from "@/lib/specialistProfile/locationResolution";
 import {
   SPECIALIST_PROFILE_ALLOWED_LANGUAGE_CODES,
   type SpecialistProfilePatchBody,
@@ -29,17 +29,18 @@ function hasOwn<T extends object>(obj: T, key: PropertyKey): boolean {
   return Object.prototype.hasOwnProperty.call(obj, key);
 }
 
+export type ProfilePatchDependencies = {
+  resolvePostal?: PostalResolver;
+  loadProfile?: typeof loadSpecialistEditableProfile;
+};
+
 export async function patchSpecialistEditableProfile(
   service: SupabaseClient,
   specialistId: string,
   body: SpecialistProfilePatchBody,
   lang: AccountCapabilitiesLang,
+  deps: ProfilePatchDependencies = {},
 ): Promise<SpecialistProfilePatchResult> {
-  const forbidden = findForbiddenProfilePatchKeys(body as Record<string, unknown>);
-  if (forbidden.length > 0) {
-    throw new ProfilePatchValidationError("forbidden_fields", forbidden);
-  }
-
   const languageCode = normalizeRouteLangToDbContentCode(
     typeof body.lang === "string" ? body.lang : lang,
   );
@@ -137,11 +138,15 @@ export async function patchSpecialistEditableProfile(
   const saveBody: Record<string, unknown> = {};
   if (typeof body.name === "string") saveBody.name = body.name.trim() || null;
   if (body.category_id === null) saveBody.category_id = null;
-  else if (typeof body.category_id === "string") saveBody.category_id = body.category_id.trim() || null;
+  else if (typeof body.category_id === "string") {
+    saveBody.category_id = body.category_id.trim() || null;
+  }
   if (body.work_format === "online" || body.work_format === "offline" || body.work_format === "hybrid") {
     saveBody.work_format = body.work_format;
   }
-  if (typeof body.postal_code === "string") saveBody.postal_code = body.postal_code.trim() || null;
+  if (typeof body.postal_code === "string") {
+    saveBody.postal_code = body.postal_code.trim() || null;
+  }
 
   if (hasOwn(body, "country_code")) {
     const code = normalizeCountryCode(body.country_code);
@@ -172,90 +177,41 @@ export async function patchSpecialistEditableProfile(
     saveBody.languages = languages;
   }
 
-  if (typeof body.about === "string") {
-    saveBody.about_me = body.about.trim() || null;
-  }
-
   saveBody.updated_at = new Date().toISOString();
 
-  let derivedCity: string | null | undefined = undefined;
   let geocodeWarning: string | null = null;
+  let derivedCity: string | null | undefined = undefined;
 
-  const oldPlz = typeof specialist.postal_code === "string" ? specialist.postal_code : null;
-  const newPlzRaw =
-    typeof saveBody.postal_code === "string" ? (saveBody.postal_code as string) : undefined;
-  const newPlzNormalized =
-    newPlzRaw === undefined ? undefined : newPlzRaw ? normalizePostalCode(newPlzRaw) : null;
-
-  if (newPlzRaw !== undefined && newPlzRaw && !newPlzNormalized) {
-    throw new ProfilePatchValidationError("invalid_postal_code", ["postal_code"]);
-  }
-
-  const plzChanged = newPlzNormalized !== undefined && newPlzNormalized !== oldPlz;
-  const coordsMissing =
-    (newPlzNormalized ?? oldPlz) !== null && (specialist.lat == null || specialist.lng == null);
-  const needsResolve = plzChanged || (coordsMissing && newPlzNormalized !== null);
-
-  const bodyCity = hasOwn(body, "city") && typeof body.city === "string" ? body.city.trim() : "";
-  const bodyLat = typeof body.lat === "number" ? body.lat : null;
-  const bodyLng = typeof body.lng === "number" ? body.lng : null;
-
-  if (needsResolve) {
-    const plzToResolve = newPlzNormalized ?? oldPlz;
-    if (plzToResolve) {
-      const resolved = await resolveGermanPostalLocation(service, plzToResolve);
-      if (resolved.ok) {
-        const matched =
-          bodyCity.length > 0
-            ? resolved.candidates.find((c) => c.city.toLowerCase() === bodyCity.toLowerCase())
-            : undefined;
-        const chosen = matched
-          ? {
-              postalCode: resolved.location.postalCode,
-              countryCode: resolved.location.countryCode,
-              city: matched.city,
-              lat: matched.lat,
-              lng: matched.lng,
-            }
-          : resolved.location;
-        saveBody.postal_code = chosen.postalCode;
-        saveBody.country_code = chosen.countryCode;
-        saveBody.lat = chosen.lat;
-        saveBody.lng = chosen.lng;
-        derivedCity = chosen.city;
-      } else {
-        saveBody.lat = null;
-        saveBody.lng = null;
-        derivedCity = null;
-        geocodeWarning = "geocode_failed";
-      }
+  try {
+    const locationPatch = await resolveProfileLocationPatch(
+      service,
+      {
+        body,
+        currentPostalCode: typeof specialist.postal_code === "string" ? specialist.postal_code : null,
+        currentLat: typeof specialist.lat === "number" ? specialist.lat : null,
+        currentLng: typeof specialist.lng === "number" ? specialist.lng : null,
+        pendingPostalCode:
+          typeof body.postal_code === "string" || body.postal_code === null
+            ? body.postal_code
+            : undefined,
+      },
+      deps.resolvePostal,
+    );
+    Object.assign(saveBody, locationPatch.specialistGeoPatch);
+    derivedCity = locationPatch.derivedCity;
+    geocodeWarning = locationPatch.geocodeWarning;
+  } catch (error) {
+    if (error instanceof LocationPatchValidationError) {
+      throw new ProfilePatchValidationError(error.code, error.fields);
     }
-  } else if (newPlzNormalized === null && newPlzRaw !== undefined) {
-    saveBody.lat = null;
-    saveBody.lng = null;
-    derivedCity = null;
-  } else if (
-    !plzChanged &&
-    bodyCity &&
-    areValidCoordinates(bodyLat, bodyLng, { countryCode: GERMANY_COUNTRY_CODE })
-  ) {
-    saveBody.lat = bodyLat;
-    saveBody.lng = bodyLng;
-    derivedCity = bodyCity;
-  }
-
-  if (derivedCity === undefined && hasOwn(body, "city") && typeof body.city === "string") {
-    if (!plzChanged) {
-      derivedCity = body.city.trim() || null;
-    }
+    throw error;
   }
 
   const cleanedPatch = Object.fromEntries(
-    Object.entries(saveBody).filter(([_, v]) => v !== undefined),
+    Object.entries(saveBody).filter(([_, value]) => value !== undefined),
   );
 
-  const geoSaveBody = { ...body, about_me: body.about };
-  if (isCurrentlyPublished && saveTouchesGeography(geoSaveBody)) {
+  if (isCurrentlyPublished && saveTouchesGeography(body as Record<string, unknown>)) {
     const { data: currentProfile } = await service
       .from("specialist_profiles")
       .select("city")
@@ -320,29 +276,13 @@ export async function patchSpecialistEditableProfile(
     }
   }
 
-  if (derivedCity !== undefined) {
-    const { error: citySyncError } = await service.from("specialist_profiles").upsert(
-      {
-        specialist_id: specialistId,
-        city: derivedCity,
-      },
-      { onConflict: "specialist_id" },
-    );
-    if (citySyncError) {
-      throw new Error("profile_city_update_failed");
-    }
-  }
-
   const profilePatch: Record<string, unknown> = {};
   if (hasOwn(body, "about") && typeof body.about === "string") {
     profilePatch.about_me = body.about.trim() || null;
   }
-  if (
-    derivedCity === undefined &&
-    hasOwn(body, "city") &&
-    typeof body.city === "string"
-  ) {
-    profilePatch.city = body.city.trim() || null;
+
+  if (derivedCity !== undefined) {
+    profilePatch.city = derivedCity;
   }
 
   if (Object.keys(profilePatch).length > 0) {
@@ -387,7 +327,11 @@ export async function patchSpecialistEditableProfile(
     }
   }
 
-  const loaded = await loadSpecialistEditableProfile(service, specialistId, lang);
+  const loaded = deps.loadProfile
+    ? await deps.loadProfile(service, specialistId, lang)
+    : await (
+        await import("@/lib/specialistProfile/loadProfile")
+      ).loadSpecialistEditableProfile(service, specialistId, lang);
   return {
     specialist: loaded.specialist,
     ...(geocodeWarning ? { warning: geocodeWarning } : {}),
@@ -403,5 +347,12 @@ export class ProfilePatchValidationError extends Error {
     this.name = "ProfilePatchValidationError";
     this.code = code;
     this.fields = fields;
+  }
+}
+
+/** @internal Test helper — specialists table must never receive about_me. */
+export function assertSpecialistsPatchHasNoAboutMe(patch: Record<string, unknown>): void {
+  if (Object.prototype.hasOwnProperty.call(patch, "about_me")) {
+    throw new Error("specialists patch must not include about_me");
   }
 }

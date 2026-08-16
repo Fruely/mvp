@@ -6,7 +6,7 @@ import {
   patchSpecialistEditableProfile,
   ProfilePatchValidationError,
 } from "@/lib/specialistProfile/patchProfile";
-import { pickEditableProfilePatch } from "@/lib/specialistProfile/patchWhitelist";
+import { pickEditableProfilePatch, findForbiddenProfilePatchKeys } from "@/lib/specialistProfile/patchWhitelist";
 import {
   resolveSpecialistProfileBearerSession,
   resolveSpecialistProfileSession,
@@ -61,6 +61,19 @@ export async function PATCH(request: NextRequest) {
   }
 
   const lang = resolveLang(request, body.lang);
+
+  const forbidden = findForbiddenProfilePatchKeys(body);
+  if (forbidden.length > 0) {
+    return NextResponse.json(
+      {
+        error: "validation_error",
+        code: "forbidden_fields",
+        fields: Object.fromEntries(forbidden.map((field) => [field, "forbidden_fields"])),
+      },
+      { status: 422, headers: NO_STORE },
+    );
+  }
+
   const patch = pickEditableProfilePatch(body);
 
   if (Object.keys(patch).length === 0) {
