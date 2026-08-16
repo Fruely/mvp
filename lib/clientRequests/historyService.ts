@@ -1,8 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
+  buildLeadHistoryPaginationOrFilter,
+  buildServiceRequestHistoryPaginationOrFilter,
   decodeHistoryCursor,
-  itemIsBeforeCursor,
   mapLeadHistoryRow,
   mapServiceRequestHistoryRow,
   mergeHistoryItems,
@@ -43,7 +44,7 @@ export async function listClientRequestHistory(
     ...(serviceRequestsResult.data ?? []).map((row) =>
       mapServiceRequestHistoryRow(row as Record<string, unknown>),
     ),
-  ]).filter((item) => (cursor ? itemIsBeforeCursor(item, cursor) : true));
+  ]);
 
   return paginateHistoryItems(merged, limit);
 }
@@ -59,11 +60,11 @@ async function fetchLeadHistoryRows(
     .select(LEAD_HISTORY_SELECT)
     .eq("client_user_id", userId)
     .order("created_at", { ascending: false })
-    .order("id", { ascending: false })
+    .order("id", { ascending: true })
     .limit(fetchLimit);
 
   if (cursor) {
-    query = query.lt("created_at", cursor.created_at);
+    query = query.or(buildLeadHistoryPaginationOrFilter(cursor));
   }
 
   return query;
@@ -80,11 +81,11 @@ async function fetchServiceRequestHistoryRows(
     .select(SERVICE_REQUEST_HISTORY_SELECT)
     .eq("client_user_id", userId)
     .order("created_at", { ascending: false })
-    .order("public_id", { ascending: false })
+    .order("public_id", { ascending: true })
     .limit(fetchLimit);
 
   if (cursor) {
-    query = query.lt("created_at", cursor.created_at);
+    query = query.or(buildServiceRequestHistoryPaginationOrFilter(cursor));
   }
 
   return query;

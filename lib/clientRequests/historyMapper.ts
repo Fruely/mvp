@@ -2,7 +2,7 @@ import {
   CLIENT_REQUEST_HISTORY_DEFAULT_LIMIT,
   CLIENT_REQUEST_HISTORY_MAX_LIMIT,
   type ClientRequestKind,
-} from "@/lib/clientRequests/constants";
+} from "./constants.ts";
 
 const SUMMARY_MAX_LEN = 160;
 
@@ -111,13 +111,18 @@ export function mapServiceRequestHistoryRow(row: Record<string, unknown>): Clien
 }
 
 export function mergeHistoryItems(items: ClientRequestHistoryItem[]): ClientRequestHistoryItem[] {
-  return [...items].sort((left, right) => {
-    const createdCompare = right.created_at.localeCompare(left.created_at);
-    if (createdCompare !== 0) return createdCompare;
-    const kindCompare = left.kind.localeCompare(right.kind);
-    if (kindCompare !== 0) return kindCompare;
-    return left.id.localeCompare(right.id);
-  });
+  return [...items].sort(compareHistoryItemsDesc);
+}
+
+export function compareHistoryItemsDesc(
+  left: ClientRequestHistoryItem,
+  right: ClientRequestHistoryItem,
+): number {
+  const createdCompare = right.created_at.localeCompare(left.created_at);
+  if (createdCompare !== 0) return createdCompare;
+  const kindCompare = left.kind.localeCompare(right.kind);
+  if (kindCompare !== 0) return kindCompare;
+  return left.id.localeCompare(right.id);
 }
 
 export type HistoryCursor = {
@@ -149,12 +154,36 @@ export function decodeHistoryCursor(value: unknown): HistoryCursor | null {
   return null;
 }
 
-export function itemIsBeforeCursor(item: ClientRequestHistoryItem, cursor: HistoryCursor): boolean {
+/** True when item sorts strictly after cursor in newest-first order (belongs on a later page). */
+export function itemIsAfterCursor(item: ClientRequestHistoryItem, cursor: HistoryCursor): boolean {
   if (item.created_at < cursor.created_at) return true;
   if (item.created_at > cursor.created_at) return false;
-  if (item.kind < cursor.kind) return true;
-  if (item.kind > cursor.kind) return false;
-  return item.id < cursor.id;
+  if (item.kind > cursor.kind) return true;
+  if (item.kind < cursor.kind) return false;
+  return item.id > cursor.id;
+}
+
+/** @deprecated Use itemIsAfterCursor — kept as alias for in-flight callers during correction. */
+export function itemIsBeforeCursor(item: ClientRequestHistoryItem, cursor: HistoryCursor): boolean {
+  return itemIsAfterCursor(item, cursor);
+}
+
+export function buildLeadHistoryPaginationOrFilter(cursor: HistoryCursor): string {
+  const timestamp = cursor.created_at;
+  if (cursor.kind === "service_request") {
+    return `created_at.lt.${timestamp}`;
+  }
+
+  return `created_at.lt.${timestamp},and(created_at.eq.${timestamp},id.gt.${cursor.id})`;
+}
+
+export function buildServiceRequestHistoryPaginationOrFilter(cursor: HistoryCursor): string {
+  const timestamp = cursor.created_at;
+  if (cursor.kind === "lead") {
+    return `created_at.lt.${timestamp},created_at.eq.${timestamp}`;
+  }
+
+  return `created_at.lt.${timestamp},and(created_at.eq.${timestamp},public_id.gt.${cursor.id})`;
 }
 
 export function paginateHistoryItems(

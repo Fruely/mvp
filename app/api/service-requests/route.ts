@@ -15,11 +15,14 @@ import { buildOwnerTelegramTimingPayload } from "@/lib/serviceRequests/ownerTele
 import { validateServiceRequestCreate } from "@/lib/serviceRequests/validation";
 import {
   buildClientIdempotencyFingerprint,
+  isUniqueViolation,
   normalizeClientIdempotencyKey,
-  resolveIdempotentReplay,
-  shouldRunCreationSideEffects,
 } from "@/lib/mutations/clientIdempotency";
-import { applyClientUserIdempotencyFilter } from "@/lib/mutations/idempotencyOwnerScope";
+import {
+  IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE,
+  resolveIdempotentReplayWithOwnership,
+  shouldRunCreationSideEffectsWithOwnership,
+} from "@/lib/mutations/idempotencyOwnership";
 import { resolveBearerAuthUser } from "@/lib/auth/resolveBearerAuthUser";
 
 export const dynamic = "force-dynamic";
@@ -56,25 +59,26 @@ async function lookupServiceRequestIdempotentReplay(
   idempotencyFingerprint: string,
   clientUserId: string | null,
 ) {
-  let query = supabase
+  const { data: existingRequest, error: existingError } = await supabase
     .from("service_requests")
-    .select("public_id, created_at, client_idempotency_fingerprint")
-    .eq("client_idempotency_key", clientIdempotencyKey);
-
-  query = applyClientUserIdempotencyFilter(query, clientUserId);
-
-  const { data: existingRequest, error: existingError } = await query.maybeSingle();
+    .select("public_id, created_at, client_idempotency_fingerprint, client_user_id")
+    .eq("client_idempotency_key", clientIdempotencyKey)
+    .maybeSingle();
 
   if (existingError) {
     return { kind: "error" as const };
   }
 
-  return resolveIdempotentReplay(
+  return resolveIdempotentReplayWithOwnership(
     existingRequest
       ? {
           fingerprint:
             typeof existingRequest.client_idempotency_fingerprint === "string"
               ? existingRequest.client_idempotency_fingerprint
+              : null,
+          client_user_id:
+            typeof existingRequest.client_user_id === "string"
+              ? existingRequest.client_user_id
               : null,
           response: {
             ok: true,
@@ -84,6 +88,7 @@ async function lookupServiceRequestIdempotentReplay(
         }
       : null,
     idempotencyFingerprint,
+    clientUserId,
   );
 }
 
@@ -128,6 +133,13 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      if (replay.kind === "ownership_conflict") {
+        return NextResponse.json(
+          { error: IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE },
+          { status: 409, headers: NO_STORE },
+        );
+      }
+
       if (replay.kind === "replay") {
         return NextResponse.json(replay.response, { status: 200, headers: NO_STORE });
       }
@@ -164,7 +176,7 @@ export async function POST(request: NextRequest) {
     }
 
     let inserted: { public_id: string; created_at: string } | null = null;
-    let creationReplay = resolveIdempotentReplay(null, idempotencyFingerprint);
+    let creationReplay: { kind: "create" } | { kind: "replay" } = { kind: "create" };
 
     for (let attempt = 0; attempt < 5; attempt += 1) {
       const public_id = generateServiceRequestPublicId();
@@ -240,6 +252,13 @@ export async function POST(request: NextRequest) {
             { status: 409, headers: NO_STORE },
           );
         }
+
+        if (replay.kind === "ownership_conflict") {
+          return NextResponse.json(
+            { error: IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE },
+            { status: 409, headers: NO_STORE },
+          );
+        }
       }
     }
 
@@ -248,7 +267,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "server_error" }, { status: 500, headers: NO_STORE });
     }
 
-    if (shouldRunCreationSideEffects(creationReplay)) {
+    if (shouldRunCreationSideEffectsWithOwnership(creationReplay)) {
       try {
         const timingPayload = buildOwnerTelegramTimingPayload(validated);
         await notify("NEW_SERVICE_REQUEST", {

@@ -14,9 +14,12 @@ import {
   buildClientIdempotencyFingerprint,
   isUniqueViolation,
   normalizeClientIdempotencyKey,
-  resolveIdempotentReplay,
 } from "@/lib/mutations/clientIdempotency";
-import { applyClientUserIdempotencyFilter } from "@/lib/mutations/idempotencyOwnerScope";
+import {
+  IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE,
+  resolveIdempotentReplayWithOwnership,
+  shouldRunCreationSideEffectsWithOwnership,
+} from "@/lib/mutations/idempotencyOwnership";
 import { resolveBearerAuthUser } from "@/lib/auth/resolveBearerAuthUser";
 
 async function lookupLeadIdempotentReplay(
@@ -25,26 +28,25 @@ async function lookupLeadIdempotentReplay(
   idempotencyFingerprint: string,
   clientUserId: string | null,
 ) {
-  let query = supabase
+  const { data: existingLead, error: existingError } = await supabase
     .from("leads")
-    .select("id, created_at, client_idempotency_fingerprint")
-    .eq("client_idempotency_key", clientIdempotencyKey);
-
-  query = applyClientUserIdempotencyFilter(query, clientUserId);
-
-  const { data: existingLead, error: existingError } = await query.maybeSingle();
+    .select("id, created_at, client_idempotency_fingerprint, client_user_id")
+    .eq("client_idempotency_key", clientIdempotencyKey)
+    .maybeSingle();
 
   if (existingError) {
     return { kind: "error" as const };
   }
 
-  return resolveIdempotentReplay(
+  return resolveIdempotentReplayWithOwnership(
     existingLead
       ? {
           fingerprint:
             typeof existingLead.client_idempotency_fingerprint === "string"
               ? existingLead.client_idempotency_fingerprint
               : null,
+          client_user_id:
+            typeof existingLead.client_user_id === "string" ? existingLead.client_user_id : null,
           response: {
             id: String(existingLead.id),
             created_at: existingLead.created_at ?? null,
@@ -52,6 +54,7 @@ async function lookupLeadIdempotentReplay(
         }
       : null,
     idempotencyFingerprint,
+    clientUserId,
   );
 }
 
@@ -156,6 +159,10 @@ export async function POST(request: NextRequest) {
           { error: "Idempotency key reused with different payload" },
           { status: 409 }
         );
+      }
+
+      if (replay.kind === "ownership_conflict") {
+        return Response.json({ error: IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE }, { status: 409 });
       }
 
       if (replay.kind === "replay") {
@@ -285,6 +292,10 @@ export async function POST(request: NextRequest) {
             { error: "Idempotency key reused with different payload" },
             { status: 409 }
           );
+        }
+
+        if (replay.kind === "ownership_conflict") {
+          return Response.json({ error: IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE }, { status: 409 });
         }
       }
 
