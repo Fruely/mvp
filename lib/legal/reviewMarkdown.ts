@@ -14,6 +14,10 @@ export type ReviewDocumentSlug =
   | "cookie-copy"
   | "ranking";
 
+function normalizeInlineMarkdown(text: string): string {
+  return text.replace(/\*\*(.+?)\*\*/g, "$1");
+}
+
 export function stripReviewMarkers(raw: string): string {
   return raw
     .split("\n")
@@ -42,7 +46,7 @@ function parseBlocks(sectionBody: string): LegalBlock[] {
           ? trimmed.replace(/^###\s+/, "").trim()
           : trimmed.slice(4, firstNewline).trim();
       if (heading) {
-        blocks.push({ type: "p", text: heading });
+        blocks.push({ type: "p", text: normalizeInlineMarkdown(heading) });
       }
       const rest = firstNewline === -1 ? "" : trimmed.slice(firstNewline + 1).trim();
       if (rest) {
@@ -72,12 +76,12 @@ function parseParagraphAndListBlocks(text: string): LegalBlock[] {
     if (listItems.length === lines.length) {
       blocks.push({
         type: "ul",
-        items: listItems.map((line) => line.replace(/^-\s+/, "")),
+        items: listItems.map((line) => normalizeInlineMarkdown(line.replace(/^-\s+/, ""))),
       });
       continue;
     }
 
-    blocks.push({ type: "p", text: lines.join("\n") });
+    blocks.push({ type: "p", text: normalizeInlineMarkdown(lines.join("\n")) });
   }
 
   return blocks;
@@ -106,7 +110,7 @@ export function parseReviewMarkdownToLegalDocument(
       continue;
     }
     if (line.startsWith("# ")) {
-      title = line.slice(2).trim();
+      title = normalizeInlineMarkdown(line.slice(2).trim());
       i += 1;
       break;
     }
@@ -116,7 +120,7 @@ export function parseReviewMarkdownToLegalDocument(
   while (i < lines.length) {
     const line = lines[i].trim();
     if (line.startsWith("## ")) break;
-    if (line) preamble.push(line);
+    if (line) preamble.push(normalizeInlineMarkdown(line));
     i += 1;
   }
 
@@ -136,7 +140,7 @@ export function parseReviewMarkdownToLegalDocument(
       continue;
     }
 
-    const sectionTitle = line.slice(3).trim();
+    const sectionTitle = normalizeInlineMarkdown(line.slice(3).trim());
     i += 1;
     const bodyLines: string[] = [];
 
@@ -197,7 +201,7 @@ export function parseReviewMarkdownToAgreementBlocks(raw: string): AgreementBloc
   while (i < lines.length && !lines[i].trim().startsWith("## ")) {
     const line = lines[i].trim();
     if (line && !line.startsWith("# ")) {
-      blocks.push({ type: "p", text: line });
+      blocks.push({ type: "p", text: normalizeInlineMarkdown(line) });
     }
     i += 1;
   }
@@ -209,7 +213,7 @@ export function parseReviewMarkdownToAgreementBlocks(raw: string): AgreementBloc
       continue;
     }
 
-    blocks.push({ type: "h2", text: line.slice(3).trim() });
+    blocks.push({ type: "h2", text: normalizeInlineMarkdown(line.slice(3).trim()) });
     i += 1;
     const bodyLines: string[] = [];
 
