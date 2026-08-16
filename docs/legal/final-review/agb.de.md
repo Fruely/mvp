@@ -1,213 +1,457 @@
 # Allgemeine Geschäftsbedingungen für Spezialisten (AGB)
 
-<!-- legal-section: agb-meta-01 -->
-Version 1.0 — August 2026. Anbieter: Natalia Sheshenia, handelnd unter der Geschäftsbezeichnung Sheshenia – Freuly, Hofolper Straße 46, 57399 Kirchhundem, Deutschland. E-Mail: freuly.de@gmail.com. Telefon: +49 160 92686432. USt-IdNr.: DE464033560. W-IdNr.: DE464033560-00001.
+Version 1.0 — August 2026
 
-<!-- legal-section: agb-meta-02 -->
-Maßgebliche Sprachfassung ist Deutsch. Übersetzungen dienen der Orientierung.
+Maßgeblich ist ausschließlich die deutsche Fassung. Eine russische Übersetzung wird ausschließlich zur besseren Verständlichkeit bereitgestellt. Im Falle von Abweichungen oder Auslegungsunterschieden ist die deutsche Fassung maßgeblich.
 
-## § 1 Geltungsbereich und Vertragspartner
+## § 1 Geltungsbereich und Vertragsparteien
 
-<!-- legal-section: agb-01-01 -->
-Diese Allgemeinen Geschäftsbedingungen (AGB) regeln die Nutzung der Plattform Freuly durch Spezialistinnen und Spezialisten (nachfolgend „Spezialist“). Vertragspartner ist Natalia Sheshenia, handelnd unter der Geschäftsbezeichnung Sheshenia – Freuly, Hofolper Straße 46, 57399 Kirchhundem, Deutschland. E-Mail: freuly.de@gmail.com. Telefon: +49 160 92686432. USt-IdNr.: DE464033560. W-IdNr.: DE464033560-00001.
+1. Diese Allgemeinen Geschäftsbedingungen („AGB“) regeln die Nutzung der Plattform Freuly durch selbständig tätige Spezialisten und Dienstleister („Spezialisten“).
 
-<!-- legal-section: agb-01-02 -->
-Freuly ist eine B2B-Plattform zur Veröffentlichung von Spezialistenprofilen und zur Vermittlung von Kontaktanfragen. Freuly ist weder Arbeitgeber noch Vermittler von Arbeitsverträgen zwischen Spezialist und Endkunden.
+2. Vertragspartner und Betreiber von Freuly ist:
 
-## § 2 Vertragsschluss
+Natalia Sheshenia
+handelnd unter der Geschäftsbezeichnung „Sheshenia – Freuly“
+Hofolper Straße 46
+57399 Kirchhundem
+Deutschland
 
-<!-- legal-section: agb-02-01 -->
-Der Vertrag kommt durch Registrierung, Annahme dieser AGB und ggf. Abschluss eines kostenpflichtigen Abonnements zustande. Freuly kann Registrierungen und Profile vor Veröffentlichung prüfen.
+E-Mail: freuly.de@gmail.com
+Telefon: +49 160 92686432
 
-<!-- legal-section: agb-02-02 -->
-Mit Abschluss eines kostenpflichtigen Tarifs im Checkout schließen Sie ein entgeltliches Abonnement bzw. einen entgeltlichen Zusatzdienst ab. Preise und Leistungsumfang werden vor Vertragsschluss im Checkout ausgewiesen.
+USt-IdNr.: DE464033560
+W-IdNr.: DE464033560-00001
 
-## § 3 Gewerbliche Nutzer
+nachfolgend „Freuly“.
 
-<!-- legal-section: agb-03-01 -->
-Die Nutzung der kostenpflichtigen Plattformleistungen richtet sich ausschließlich an gewerbliche Nutzer im Sinne der Verordnung (EU) 2019/1150. Mit Registrierung und Abschluss eines kostenpflichtigen Tarifs erklären Sie, dass Sie die Plattform in gewerblicher Eigenschaft nutzen.
+3. Freuly betreibt eine digitale Vermittlungs- und Präsentationsplattform, über die Spezialisten ihre beruflichen oder gewerblichen Leistungen gegenüber potenziellen Endkunden präsentieren und Anfragen erhalten können.
 
-<!-- legal-section: agb-03-02 -->
-Freuly verlangt derzeit weder einen Gewerbeschein noch eine KYC-Prüfung vor der Registrierung oder vor der ersten Veröffentlichung. Der Spezialist ist selbst dafür verantwortlich, dass er zur gewerblichen Nutzung berechtigt ist und alle berufs- und gewerberechtlichen Pflichten erfüllt.
+4. Freuly richtet sich an Spezialisten verschiedener Berufs- und Dienstleistungsbereiche, insbesondere aus Beratung, Gesundheit und Psychologie, Recht, Bildung, Beauty und Pflege, Handwerk, Haushalt, Transport, Tourismus, IT sowie weiteren Dienstleistungsbereichen.
+
+5. Die Nutzung von Freuly als Spezialist ist ausschließlich im Rahmen einer gewerblichen, freiberuflichen oder sonstigen selbständigen beruflichen Tätigkeit zulässig. Eine Nutzung als Verbraucher ist für Spezialistenprofile nicht vorgesehen.
+
+6. Spezialisten mit Sitz oder Tätigkeitsschwerpunkt innerhalb oder außerhalb der Europäischen Union dürfen Freuly nutzen, sofern sie berechtigt sind, die von ihnen beworbenen Leistungen gegenüber Kunden im jeweiligen Zielmarkt rechtmäßig anzubieten und zu erbringen.
+
+7. Der Spezialist ist selbst dafür verantwortlich, sämtliche für seine Tätigkeit geltenden berufs-, gewerbe-, steuer-, sozialversicherungs-, aufenthalts- und sonstigen gesetzlichen Voraussetzungen zu erfüllen.
+
+## § 2 Vertragsschluss und Registrierung
+
+1. Der Nutzungsvertrag zwischen Freuly und dem Spezialisten kommt durch Registrierung eines Spezialistenkontos und Zustimmung zu diesen AGB zustande.
+
+2. Soweit ein kostenpflichtiger Tarif oder eine kostenpflichtige Zusatzleistung gebucht wird, kommt der entsprechende zusätzliche Vertrag durch Abschluss des jeweiligen Bestellvorgangs zustande.
+
+3. Preise, Leistungsumfang, Laufzeit und sonstige wesentliche Bedingungen einer kostenpflichtigen Leistung werden dem Spezialisten vor Abschluss des Bestellvorgangs angezeigt.
+
+4. Freuly ist berechtigt, Registrierungen und Profile vor oder nach ihrer Veröffentlichung zu prüfen.
+
+5. Ein Anspruch auf Registrierung, Veröffentlichung eines Profils oder dauerhafte Bereitstellung einer bestimmten Funktion besteht nicht, soweit gesetzlich nichts anderes vorgeschrieben ist.
+
+## § 3 Unternehmerische Nutzung und Nachweise
+
+1. Mit der Registrierung als Spezialist bestätigt der Nutzer, Freuly im Rahmen einer selbständigen beruflichen, freiberuflichen oder gewerblichen Tätigkeit zu nutzen.
+
+2. Freuly verlangt nicht zwingend vor jeder Registrierung oder ersten Veröffentlichung eine vollständige Identitäts-, Gewerbe- oder Berufsprüfung, soweit eine solche Prüfung nicht gesetzlich erforderlich ist.
+
+3. Der Spezialist ist verpflichtet, alle für seine Tätigkeit gesetzlich erforderlichen Erlaubnisse, Zulassungen, Registrierungen, Berufshaftpflichtversicherungen, Approbationen oder sonstigen Nachweise selbst vorzuhalten.
+
+4. Freuly kann jederzeit geeignete Nachweise verlangen, insbesondere wenn:
+
+- die angebotene Tätigkeit einer gesetzlichen Zulassung oder Berufserlaubnis unterliegt;
+- Zweifel an der Richtigkeit von Profilangaben bestehen;
+- eine Beschwerde oder ein Hinweis auf einen möglichen Rechtsverstoß vorliegt;
+- dies zur Erfüllung gesetzlicher Pflichten von Freuly erforderlich ist.
+
+5. Der Spezialist hat angeforderte Nachweise innerhalb einer angemessenen Frist bereitzustellen.
 
 ## § 4 Leistungen von Freuly
 
-<!-- legal-section: agb-04-01 -->
-Freuly stellt technische Infrastruktur bereit: Profilverwaltung, öffentliche Darstellung, Anfragevermittlung, Abrechnung von Plattformgebühren und optionale Zusatzfunktionen gemäß dem gewählten Tarif.
+1. Freuly stellt insbesondere technische Funktionen für folgende Zwecke bereit:
 
-<!-- legal-section: agb-04-02 -->
-Freuly garantiert keine bestimmte Anzahl von Anfragen, Sichtbarkeit, Umsatz oder Geschäftserfolg. Freuly schuldet keinen bestimmten Platz in Suchergebnissen und keine kaufbare Spitzenposition in organischen Suchergebnissen.
+- Erstellung und Verwaltung eines Spezialistenprofils;
+- öffentliche Darstellung von Profilen und Dienstleistungen;
+- Auffindbarkeit über Kategorien, Such- und Filterfunktionen;
+- Übermittlung bzw. Bereitstellung von Kundenanfragen;
+- Verwaltung von Tarif- und Zahlungsinformationen;
+- Benachrichtigungs- und Kommunikationsfunktionen, soweit im jeweiligen Tarif enthalten;
+- zusätzliche Sichtbarkeits-, Präsentations- oder Marketingfunktionen, soweit angeboten.
+
+2. Der konkrete Leistungsumfang richtet sich nach dem jeweils gebuchten Tarif und den vor Vertragsschluss dargestellten Produktinformationen.
+
+3. Freuly ist grundsätzlich Vermittlungs- und Präsentationsplattform. Freuly wird nicht Vertragspartei eines Dienstleistungsvertrags zwischen Spezialist und Endkunde.
+
+4. Freuly garantiert insbesondere nicht:
+
+- eine bestimmte Anzahl von Anfragen oder Kunden;
+- eine bestimmte Conversion Rate;
+- bestimmte Umsätze oder Einnahmen;
+- einen bestimmten wirtschaftlichen Erfolg;
+- eine bestimmte Position in Suchergebnissen;
+- eine ununterbrochene öffentliche Sichtbarkeit außerhalb der vertraglich zugesagten Funktionen.
 
 ## § 5 Pflichten des Spezialisten
 
-<!-- legal-section: agb-05-01 -->
-Der Spezialist ist verpflichtet, wahrheitsgemäße Profilangaben zu machen, die Spezialisten-Regeln einzuhalten, erforderliche Nachweise bereitzuhalten und die Gesetzmäßigkeit seiner Leistungen selbst zu gewährleisten.
+1. Der Spezialist ist verpflichtet, sämtliche Angaben im Profil vollständig und wahrheitsgemäß zu machen und wesentliche Änderungen unverzüglich zu aktualisieren.
 
-<!-- legal-section: agb-05-02 -->
-Der Spezialist ist für die rechtmäßige Verarbeitung von Endkundendaten verantwortlich, die er über Freuly erhält. Der Spezialist darf die Plattform nicht missbräuchlich nutzen, insbesondere nicht durch irreführende Angaben, Spam oder Manipulation von Anfragen.
+2. Insbesondere dürfen keine falschen oder irreführenden Angaben über Qualifikationen, Zulassungen, Preise, Erfahrungen, Bewertungen, Standorte oder Leistungsangebote gemacht werden.
+
+3. Der Spezialist ist selbst für die Rechtmäßigkeit der von ihm angebotenen und erbrachten Leistungen verantwortlich.
+
+4. Unzulässig sind insbesondere:
+
+- rechtswidrige Dienstleistungen oder Inhalte;
+- falsche Berufs- oder Qualifikationsangaben;
+- manipulierte oder fingierte Bewertungen;
+- Spam;
+- betrügerische oder irreführende Angebote;
+- Manipulation von Leads, Rankings oder Plattformfunktionen;
+- missbräuchliche Mehrfachkonten;
+- Umgehung technischer Schutzmaßnahmen;
+- Angriffe auf die Sicherheit oder Verfügbarkeit der Plattform;
+- Nutzung fremder Inhalte ohne erforderliche Rechte.
+
+5. Der Spezialist ist verpflichtet, erhaltene Kundenanfragen und darin enthaltene personenbezogene Daten ausschließlich rechtmäßig und für zulässige Zwecke zu verwenden.
 
 ## § 6 Inhalte und Nutzungsrechte
 
-<!-- legal-section: agb-06-01 -->
-Der Spezialist räumt Freuly ein einfaches, weltweites, übertragbares Nutzungsrecht an den von ihm bereitgestellten Profilinhalten ein, soweit dies für Betrieb, Darstellung und Vermittlung der Plattform erforderlich ist.
+1. Der Spezialist bleibt Inhaber der Rechte an den von ihm bereitgestellten Inhalten, soweit diese Rechte ihm zustehen.
 
-<!-- legal-section: agb-06-02 -->
-Der Spezialist bleibt Inhaber seiner Inhalte. Freuly darf Inhalte entfernen oder einschränken, wenn sie gegen AGB, Spezialisten-Regeln oder geltendes Recht verstoßen.
+2. Der Spezialist räumt Freuly für die Dauer des Vertragsverhältnisses ein einfaches, räumlich unbeschränktes und für die vereinbarten Zwecke erforderliches Nutzungsrecht an den bereitgestellten Profilinhalten ein.
 
-## § 7 Datenschutz
+3. Dieses Recht umfasst insbesondere die Nutzung, technische Verarbeitung, Vervielfältigung, Darstellung und erforderliche Anpassung von Profiltexten, Bildern, Logos und sonstigen bereitgestellten Inhalten für:
 
-<!-- legal-section: agb-07-01 -->
-Die Verarbeitung personenbezogener Daten richtet sich nach der Datenschutzerklärung von Freuly. Der Spezialist ist für die rechtmäßige Verarbeitung von Endkundendaten verantwortlich, die er über Freuly erhält.
+- den Betrieb von Freuly;
+- die öffentliche Darstellung des Spezialistenprofils;
+- Such- und Kategorieseiten;
+- SEO- und redaktionelle Seiten von Freuly;
+- eigene Social-Media-Kanäle von Freuly;
+- Newsletter und sonstige eigene Kommunikationskanäle;
+- Werbung für Freuly oder für auf Freuly verfügbare Spezialisten;
+- technische Dienstleister, soweit deren Einbindung für diese Zwecke erforderlich ist.
 
-## § 8 Verfügbarkeit
+4. Eine Nutzung darf den Inhalt oder die fachliche Aussage des Spezialistenprofils nicht sinnentstellend verändern.
 
-<!-- legal-section: agb-08-01 -->
-Freuly bemüht sich um eine stabile Verfügbarkeit, schuldet jedoch keine ununterbrochene Erreichbarkeit. Wartung, Störungen Dritter oder höhere Gewalt können die Nutzung vorübergehend beeinträchtigen.
+5. Der Spezialist versichert, über die für die Nutzung der bereitgestellten Inhalte erforderlichen Rechte zu verfügen.
 
-## § 9 Abonnement-Lebenszyklus und Kulanzzeiträume
+6. Nach Beendigung des Vertrags endet das Nutzungsrecht grundsätzlich, soweit eine weitere Nutzung nicht aufgrund gesetzlicher Aufbewahrungspflichten, technischer Sicherungskopien oder bereits rechtmäßig veröffentlichter bzw. abgeschlossener Marketingmaßnahmen vorübergehend erforderlich ist.
 
-<!-- legal-section: agb-09-01 -->
-Nach der ersten Veröffentlichung eines Profils ohne laufende bezahlte Tarifdeckung gewährt Freuly einen Kulanzzeitraum von 7 Kalendertagen. Dies ist kein kostenloses Testabonnement, sondern eine begrenzte Übergangsfrist, in der das Profil öffentlich sichtbar bleiben kann, sofern keine anderen Gründe für eine Einschränkung vorliegen.
+## § 7 Datenschutz und Kundendaten
 
-<!-- legal-section: agb-09-02 -->
-Während eines aktiven, bezahlten Abonnementzeitraums ist der Tarif gemäß dem gewählten Plan aktiv. Nach natürlichem Ablauf eines bezahlten Zeitraums ohne rechtzeitige manuelle Verlängerung kann Freuly einen weiteren Kulanzzeitraum von 7 Kalendertagen einräumen.
+1. Die Verarbeitung personenbezogener Daten durch Freuly richtet sich nach der jeweils geltenden Datenschutzerklärung von Freuly.
 
-<!-- legal-section: agb-09-03 -->
-Bei Rückerstattung oder Stornierung einer Abo-Zahlung kann Freuly einen Kulanzzeitraum von 7 Kalendertagen ab dem wirksamen Zeitpunkt der Rückerstattung oder Stornierung gewähren. Der Spezialist wird im Dashboard über Kulanzzeiträume und deren Enddatum informiert.
+2. Soweit ein Spezialist personenbezogene Daten eines Endkunden über Freuly erhält und anschließend für eigene Zwecke verarbeitet, ist der Spezialist für die Rechtmäßigkeit dieser Verarbeitung selbst verantwortlich.
 
-<!-- legal-section: agb-09-04 -->
-Nach Ablauf eines Kulanzzeitraums ohne erfolgreiche Zahlung für einen laufenden Tarif kann Freuly die öffentliche Sichtbarkeit des Profils sperren oder einschränken. Das Dashboard kann weiterhin zugänglich bleiben, soweit technisch und rechtlich zulässig.
+3. Der Spezialist darf Kundendaten insbesondere nicht für unzulässige Werbung, Weiterverkauf von Daten, Spam oder andere mit dem ursprünglichen Zweck unvereinbare Verarbeitungen verwenden.
+
+## § 8 Verfügbarkeit und technische Änderungen
+
+1. Freuly bemüht sich um eine zuverlässige Verfügbarkeit der Plattform, schuldet jedoch keine ununterbrochene oder fehlerfreie Verfügbarkeit.
+
+2. Vorübergehende Einschränkungen können insbesondere entstehen durch:
+
+- Wartungsarbeiten;
+- Sicherheitsmaßnahmen;
+- technische Störungen;
+- Ausfälle von Hosting-, Zahlungs-, Kommunikations- oder sonstigen Drittanbietern;
+- Änderungen externer Schnittstellen;
+- höhere Gewalt.
+
+3. Freuly kann technische Funktionen weiterentwickeln, ersetzen oder einstellen, soweit dadurch der vertragliche Hauptzweck nicht unangemessen beeinträchtigt wird und zwingende gesetzliche Vorschriften eingehalten werden.
+
+## § 9 Tarifstatus, Kulanzfrist und öffentliche Sichtbarkeit
+
+1. Für die öffentliche Sichtbarkeit eines Spezialistenprofils kann ein aktiver, zur öffentlichen Darstellung berechtigender Tarif erforderlich sein.
+
+2. Nach der erstmaligen Veröffentlichung eines Profils ohne aktiven kostenpflichtigen Tarif kann Freuly eine Kulanzfrist von **7 Kalendertagen** gewähren.
+
+3. Diese Kulanzfrist ist kein automatisch verlängerbares kostenloses Abonnement.
+
+4. Nach Ablauf eines bezahlten Tarifzeitraums ohne rechtzeitige manuelle Verlängerung kann Freuly eine weitere Kulanzfrist von **7 Kalendertagen** gewähren.
+
+5. Nach vollständiger Rückerstattung oder wirksamer Rückabwicklung einer für den Tarif geleisteten Zahlung kann Freuly ab dem maßgeblichen Rückerstattungs- bzw. Rückabwicklungszeitpunkt eine Kulanzfrist von **7 Kalendertagen** gewähren.
+
+6. Nach Ablauf der jeweiligen Kulanzfrist kann das Profil auf **inaktiv** gesetzt und aus der öffentlichen Darstellung entfernt werden.
+
+7. Die Inaktivsetzung löscht das Spezialistenkonto oder die gespeicherten Profildaten nicht automatisch.
+
+8. Eine erneute öffentliche Sichtbarkeit setzt die Erfüllung der zu diesem Zeitpunkt geltenden Voraussetzungen voraus.
 
 ## § 10 Support
 
-<!-- legal-section: agb-10-01 -->
-Supportanfragen können per E-Mail an freuly.de@gmail.com gerichtet werden. Freuly bemüht sich um zeitnahe Bearbeitung in angemessener Frist, garantiert jedoch keine bestimmten Reaktionszeiten.
+Support-Anfragen können an **freuly.de@gmail.com** gerichtet werden.
 
-## § 11 Tarife und Preise
+Freuly bearbeitet Support-Anfragen innerhalb einer angemessenen Frist, garantiert jedoch keine bestimmte Reaktionszeit, soweit nicht gesetzlich etwas anderes vorgeschrieben ist.
 
-<!-- legal-section: agb-11-01 -->
-Freuly Professional kostet 29 € pro Monatszeitraum, Freuly Growth 59 € pro Monatszeitraum, jeweils brutto sofern Umsatzsteuer anfällt. Die Preise werden im Checkout ausgewiesen.
+## § 11 Tarife, Preise und Leistungsumfang
 
-<!-- legal-section: agb-11-02 -->
-Der Leistungsumfang der Tarife ergibt sich aus der Tarifbeschreibung im Checkout und auf der Website. Freuly kann Tarifinhalte anpassen; wesentliche Änderungen für gewerbliche Nutzer richten sich nach § 25.
+1. Freuly kann kostenlose und kostenpflichtige Tarife sowie Zusatzleistungen anbieten.
 
-## § 12 Verlängerung und Zahlung
+2. Die jeweils aktuellen Tarifbezeichnungen, Preise, Laufzeiten und Leistungsumfänge werden auf der Tarifseite sowie spätestens vor Abschluss einer kostenpflichtigen Bestellung angezeigt.
 
-<!-- legal-section: agb-12-01 -->
-Abonnements werden ausschließlich durch manuelle Verlängerung fortgeführt. Es erfolgt keine automatische wiederkehrende Abbuchung. Eine Fortführung setzt eine ausdrückliche erneute Zahlung durch den Spezialisten im Checkout voraus.
+3. Maßgeblich für einen konkreten Vertrag ist der Leistungsumfang, der dem Spezialisten beim Abschluss des betreffenden Tarifs oder der Zusatzleistung angezeigt wurde.
 
-<!-- legal-section: agb-12-02 -->
-Zahlungen erfolgen über den im Checkout angegebenen Zahlungsdienstleister. Der Spezialist ist dafür verantwortlich, vor Ablauf des laufenden Zeitraums oder des Kulanzzeitraums rechtzeitig manuell zu verlängern, wenn er die öffentliche Sichtbarkeit und Tarifleistungen fortsetzen möchte.
+4. Soweit Freuly die Voraussetzungen der Kleinunternehmerregelung erfüllt, wird für eigene Leistungen von Freuly gemäß § 19 UStG keine Umsatzsteuer ausgewiesen.
 
-## § 13 Kündigung durch den Spezialisten
+5. Änderungen von Tarifen oder Leistungen für bereits bestehende Vertragsverhältnisse richten sich zusätzlich nach § 25 dieser AGB.
 
-<!-- legal-section: agb-13-01 -->
-Der Spezialist kann das Abonnement jederzeit zum Ende des laufenden bezahlten Monatszeitraums kündigen. Bereits gezahlte Zeiträume werden nicht anteilig erstattet, sofern gesetzlich nichts Abweichendes gilt.
+## § 12 Zahlung und manuelle Verlängerung
 
-## § 14 Promoted Request
+1. Kostenpflichtige Tarifzeiträume werden grundsätzlich **nicht automatisch verlängert**, sofern im konkreten Bestellvorgang nicht ausdrücklich etwas anderes vereinbart wird.
 
-<!-- legal-section: agb-14-01 -->
-Promoted Request ist ein optionaler Zusatzdienst gegen Einmalzahlung von 10 € (brutto, sofern Umsatzsteuer anfällt). Er ermöglicht die bevorzugte Sichtbarkeit einer konkreten Serviceanfrage für einen begrenzten Zeitraum gemäß den jeweils gültigen Produktregeln.
+2. Bei der derzeit vorgesehenen manuellen Verlängerung erfolgt keine automatische wiederkehrende Abbuchung.
 
-<!-- legal-section: agb-14-02 -->
-Promoted Request betrifft ausschließlich die beworbene Serviceanfrage und begründet keinen Anspruch auf dauerhafte oder organische Spitzenplatzierung in allgemeinen Suchergebnissen.
+3. Zur Fortsetzung eines kostenpflichtigen Tarifzeitraums muss der Spezialist den Tarif erneut aktiv auswählen und bezahlen.
 
-## § 15 Promoted-Gutschrift
+4. Die Zahlung erfolgt über den im Bestellvorgang angegebenen Zahlungsdienstleister.
 
-<!-- legal-section: agb-15-01 -->
-Wenn der Spezialist nach einer erfolgreichen Promoted-Request-Zahlung innerhalb von 7 Kalendertagen erstmals ein Abonnement Freuly Professional oder Freuly Growth abschließt, kann der Betrag von 10 € als Gutschrift auf die erste Abo-Zahlung angerechnet werden, sofern die technischen Voraussetzungen erfüllt sind und die Gutschrift zum Zeitpunkt des Checkouts verfügbar ist.
+5. Der Spezialist ist für eine rechtzeitige Verlängerung verantwortlich, wenn er eine Unterbrechung der tarifabhängigen Leistungen oder der öffentlichen Sichtbarkeit vermeiden möchte.
 
-<!-- legal-section: agb-15-02 -->
-Die Gutschrift ist einmalig, nicht übertragbar und an die konkrete Promoted-Request-Zahlung gebunden. Nach Ablauf von 7 Kalendertagen ab der Promoted-Request-Zahlung entfällt der Anspruch auf die Gutschrift.
+## § 13 Beendigung durch den Spezialisten
 
-## § 16 Geistiges Eigentum von Freuly
+1. Ein bereits bezahlter, nicht automatisch verlängerter Tarif endet grundsätzlich mit Ablauf des bezahlten Zeitraums, ohne dass es einer gesonderten Kündigung bedarf.
 
-<!-- legal-section: agb-16-01 -->
-Marken, Logos, Software, Design und sonstige Schutzrechte von Freuly bleiben im Eigentum von Freuly. Eine darüber hinausgehende Nutzung bedarf der vorherigen Zustimmung.
+2. Bereits bezahlte Zeiträume werden nicht anteilig erstattet, soweit gesetzlich oder ausdrücklich vertraglich nichts anderes vorgesehen ist.
 
-## § 17 Ranking-Parameter
+3. Unabhängig vom Ablauf eines Tarifs kann der Spezialist das zugrunde liegende Vertragsverhältnis mit Freuly beenden und die Löschung bzw. Deaktivierung seines Spezialistenkontos verlangen.
 
-<!-- legal-section: agb-17-01 -->
-Die Sortierung von Spezialisten in Suchergebnissen wird primär nach Entfernung vorgenommen. Bei gleicher oder vergleichbarer Entfernung kann ein internes profilspezifisches Prioritätsmerkmal die Reihenfolge beeinflussen.
+4. Gesetzliche Aufbewahrungspflichten sowie erforderliche Sicherheits-, Abrechnungs- und Nachweisdaten bleiben von einem Löschungsverlangen unberührt.
 
-<!-- legal-section: agb-17-02 -->
-Sofern Bewertungen berücksichtigt werden, können höhere Bewertungen bei sonst gleichen Bedingungen zu einer höheren Position führen. Eine organische Spitzenposition in allgemeinen Suchergebnissen ist nicht käuflich.
+## § 14 Kostenpflichtige Zusatzleistungen und hervorgehobene Sichtbarkeit
 
-<!-- legal-section: agb-17-03 -->
-Freuly garantiert keine bestimmte Ranking-Position und stellt keine aggregierte Dashboard-Ansicht über die individuelle Ranking-Position bereit. Details sind in der Ranking-Offenlegung beschrieben.
+1. Freuly kann optionale kostenpflichtige Zusatzleistungen anbieten, durch die ein Profil, eine Anfrage oder ein anderer Inhalt für einen begrenzten Zeitraum oder in einem bestimmten Bereich eine erhöhte Sichtbarkeit erhält.
 
-## § 18 Verhältnis zu Endkunden
+2. Bezeichnung, Preis, Dauer und konkrete Wirkung einer solchen Zusatzleistung werden vor der Bestellung angezeigt.
 
-<!-- legal-section: agb-18-01 -->
-Freuly ist nicht Partei von Verträgen zwischen Spezialist und Endkunde. Streitigkeiten hierüber sind zwischen diesen Parteien zu klären.
+3. Eine Zusatzleistung begründet keinen Anspruch auf:
 
-## § 19 Einschränkung und Sperrung
+- eine bestimmte Anzahl von Kunden oder Anfragen;
+- einen Vertragsabschluss mit einem Endkunden;
+- dauerhafte bevorzugte Sichtbarkeit;
+- eine bestimmte organische Position außerhalb des beschriebenen Leistungsumfangs.
 
-<!-- legal-section: agb-19-01 -->
-Freuly kann Profile einschränken oder sperren, wenn der Spezialist gegen AGB, Spezialisten-Regeln oder geltendes Recht verstößt, Missbrauch betreibt oder Sicherheitsrisiken bestehen. In Fällen, in denen eine sofortige Maßnahme gesetzlich zulässig ist, kann Freuly ohne vorherige Ankündigung einschränken oder sperren.
+4. Soweit für eine Zusatzleistung eine Anrechnung auf einen späteren Tarif angeboten wird, gelten die im Bestellvorgang angezeigten Voraussetzungen und Fristen.
 
-<!-- legal-section: agb-19-02 -->
-Freuly teilt dem Spezialisten die Gründe für eine Einschränkung oder Sperrung soweit gesetzlich erforderlich, vor oder spätestens zum Zeitpunkt des Wirksamwerdens der Einschränkung oder Sperrung auf einem dauerhaften Datenträger mit. Fragen hierzu können an freuly.de@gmail.com gerichtet werden; Freuly bemüht sich um Bearbeitung in angemessener Frist.
+## § 15 Geistiges Eigentum von Freuly
 
-## § 20 Kündigung durch Freuly
+1. Rechte an Software, Quellcode, Datenbankstrukturen, Marken, Logos, Design, Texten und sonstigen eigenen Inhalten von Freuly verbleiben bei Freuly bzw. den jeweiligen Rechteinhabern.
 
-<!-- legal-section: agb-20-01 -->
-Freuly kann den Vertrag mit gewerblichen Nutzern aus wichtigem Grund fristlos kündigen, soweit dies gesetzlich zulässig ist. In anderen Fällen, in denen die Verordnung (EU) 2019/1150 eine Kündigungsfrist vorsieht, beträgt die Frist 30 Kalendertage.
+2. Eine Nutzung außerhalb der bestimmungsgemäßen Nutzung der Plattform bedarf der vorherigen Zustimmung, soweit kein gesetzliches Nutzungsrecht besteht.
 
-<!-- legal-section: agb-20-02 -->
-Die Kündigung erfolgt unter Angabe der Gründe, soweit gesetzlich erforderlich. Eine sofortige Beendigung ist nur zulässig, soweit dies gesetzlich erlaubt ist.
+## § 16 Ranking und Sichtbarkeit
+
+1. Die Reihenfolge und Sichtbarkeit von Spezialisten auf Freuly kann von mehreren Parametern abhängen.
+
+2. Zu den wesentlichen Parametern können insbesondere gehören:
+
+- Übereinstimmung mit der gesuchten Kategorie oder Dienstleistung;
+- Standort und Entfernung bei ortsbezogenen Suchen;
+- angebotene Arbeitsform, insbesondere online, vor Ort oder hybrid;
+- Sprache und weitere vom Nutzer gewählte Filter;
+- Vollständigkeit, Aktivität und Veröffentlichungsstatus des Profils;
+- Bewertung und Bewertungsanzahl, soweit Bewertungen für die betreffende Darstellung berücksichtigt werden;
+- tarifabhängige Priorisierung oder hervorgehobene Sichtbarkeit;
+- interne Rotations- oder Gleichstandsmechanismen.
+
+3. Welche Parameter in einer konkreten Suche relevant sind, hängt von den vom Endkunden eingegebenen Suchkriterien und dem jeweiligen Bereich der Plattform ab.
+
+4. **Kostenpflichtige Tarife oder Zusatzleistungen können die Sichtbarkeit oder Priorisierung eines Spezialisten beeinflussen**, soweit dies Bestandteil des betreffenden Tarifs oder der betreffenden Zusatzleistung ist.
+
+5. Eine solche tarifabhängige Priorisierung bedeutet nicht, dass Freuly einen bestimmten Rang, eine bestimmte Anzahl von Impressionen oder eine bestimmte Position dauerhaft garantiert.
+
+6. Freuly kann gesonderte Bereiche wie „Empfohlen“, hervorgehobene Profile oder ähnliche Präsentationsflächen anbieten, deren Teilnahme insbesondere vom gebuchten Tarif oder von weiteren transparent beschriebenen Voraussetzungen abhängen kann.
+
+7. Freuly veröffentlicht keine geheimen technischen Gewichtungen, Quellcodes oder Parameter, deren Offenlegung Manipulation oder Missbrauch der Ranking-Systeme ermöglichen würde.
+
+8. Weiterführende Informationen können in einer gesonderten Erläuterung zu den Ranking-Parametern bereitgestellt werden.
+
+## § 17 Beziehung zwischen Spezialist und Endkunde
+
+1. Freuly ermöglicht die Kontaktaufnahme zwischen Spezialisten und potenziellen Endkunden.
+
+2. Der Vertrag über die eigentliche Dienstleistung kommt ausschließlich zwischen Spezialist und Endkunde zustande.
+
+3. Freuly ist weder Vertreter noch Arbeitgeber des Spezialisten und wird nicht Vertragspartner der vom Spezialisten angebotenen Dienstleistung.
+
+4. Der Spezialist bestimmt im Rahmen der gesetzlichen Vorgaben selbst insbesondere:
+
+- ob er eine Anfrage annimmt;
+- den konkreten Leistungsumfang;
+- Preise und Zahlungsbedingungen gegenüber dem Endkunden;
+- Termin und Ort der Leistung;
+- fachliche Durchführung der Leistung.
+
+5. Streitigkeiten aus dem Dienstleistungsverhältnis sind grundsätzlich zwischen Spezialist und Endkunde zu klären.
+
+## § 18 Weitere Vertriebs- und Marketingkanäle
+
+1. Freuly kann öffentlich sichtbare Spezialistenprofile oder Ausschnitte daraus über eigene oder von Freuly eingesetzte Marketing- und Kommunikationskanäle präsentieren.
+
+2. Dazu können insbesondere gehören:
+
+- Suchmaschinen und SEO-Seiten;
+- Social-Media-Auftritte;
+- Newsletter;
+- redaktionelle Beiträge und Empfehlungsseiten;
+- Online-Werbung;
+- sonstige eigene Marketingkanäle von Freuly.
+
+3. Ziel solcher Maßnahmen ist insbesondere die Bewerbung von Freuly und die Vermittlung potenzieller Kunden an Spezialisten.
+
+4. Ein Anspruch eines einzelnen Spezialisten auf Aufnahme in einen bestimmten externen Marketingkanal besteht nur, wenn dies ausdrücklich Bestandteil seines Tarifs oder einer gebuchten Zusatzleistung ist.
+
+5. Eine eigenständige Vermarktung der Leistungen eines Spezialisten durch externe Vertriebspartner erfolgt nur, soweit hierfür eine entsprechende rechtliche oder vertragliche Grundlage besteht.
+
+## § 19 Einschränkung, Entfernung und Sperrung
+
+1. Freuly kann einzelne Inhalte, Funktionen oder ein Spezialistenprofil einschränken, entfernen oder sperren, wenn hierfür ein sachlicher oder rechtlicher Grund besteht.
+
+2. Gründe können insbesondere sein:
+
+- Verstoß gegen diese AGB;
+- Verstoß gegen Plattformregeln;
+- rechtswidrige Inhalte oder Dienstleistungen;
+- falsche oder irreführende Profilangaben;
+- fehlende gesetzlich erforderliche Berufs- oder Tätigkeitsberechtigung;
+- gefälschte oder manipulierte Bewertungen;
+- Betrugsverdacht;
+- Spam oder missbräuchliche Kontaktaufnahme;
+- Manipulation von Leads, Rankings oder technischen Funktionen;
+- erhebliche Zahlungsprobleme;
+- Sicherheits- oder Cybersecurity-Risiken;
+- wiederholte erhebliche Beschwerden;
+- gesetzliche oder behördliche Verpflichtungen.
+
+3. Soweit gesetzlich erforderlich, erhält der Spezialist eine Begründung der Maßnahme auf einem dauerhaften Datenträger.
+
+4. Eine sofortige Einschränkung oder Sperrung ohne vorherige Ankündigung bleibt zulässig, soweit dies gesetzlich erlaubt oder aufgrund der Art des Verstoßes erforderlich ist.
+
+5. Der Spezialist kann sich bezüglich einer Maßnahme an **freuly.de@gmail.com** wenden.
+
+## § 20 Beendigung durch Freuly
+
+1. Freuly kann das Vertragsverhältnis aus wichtigem Grund ohne Einhaltung einer Frist beenden, soweit dies gesetzlich zulässig ist.
+
+2. Ein wichtiger Grund kann insbesondere bei schwerwiegenden oder wiederholten Verstößen gegen § 19 vorliegen.
+
+3. Soweit für die vollständige Beendigung der Bereitstellung der Online-Vermittlungsdienste gegenüber einem kommerziellen Nutzer nach der Verordnung (EU) 2019/1150 eine Vorankündigung erforderlich ist, wird Freuly die Beendigung grundsätzlich mindestens **30 Tage vor Wirksamwerden** auf einem dauerhaften Datenträger mitteilen und begründen.
+
+4. Die gesetzlich vorgesehenen Ausnahmen von dieser Vorankündigungsfrist bleiben unberührt, insbesondere bei gesetzlichen oder behördlichen Verpflichtungen, zwingenden Gründen oder wiederholten Verstößen.
 
 ## § 21 Beschwerden und Kontakt
 
-<!-- legal-section: agb-21-01 -->
-Gewerbliche Nutzer können Anliegen, Hinweise und Beschwerden zu Freuly per E-Mail an freuly.de@gmail.com einreichen. Freuly prüft eingegangene Mitteilungen und bemüht sich um eine sachliche Bearbeitung in angemessener Frist.
+1. Spezialisten können Beschwerden, Fragen oder Einwände bezüglich der Plattform, einer Einschränkung, eines Tarifs oder sonstiger Vertragsangelegenheiten per E-Mail an **freuly.de@gmail.com** richten.
 
-<!-- legal-section: agb-21-02 -->
-Freuly dokumentiert Beschwerden nach internen Prozessen. Ein gesondertes externes Beschwerdeportal wird derzeit nicht bereitgestellt.
+2. Freuly bemüht sich um eine sachliche und angemessene Prüfung der eingehenden Mitteilung.
 
-## § 22 Datenzugang und P2B-Transparenz
+3. Soweit Freuly gesetzlich zur Einrichtung oder Unterhaltung eines besonderen internen Beschwerdemanagementsystems verpflichtet wird, werden die hierfür geltenden gesetzlichen Anforderungen umgesetzt.
 
-<!-- legal-section: agb-22-01 -->
-Spezialisten können im Dashboard auf ihre Profildaten, empfangene Leads, angezeigte Abrechnungsinformationen und den Status ihres Abonnements zugreifen. Freuly stellt keine aggregierte Dashboard-Ansicht über die individuelle Ranking-Position bereit.
+## § 22 Datenzugang und Datennutzung
 
-<!-- legal-section: agb-22-02 -->
-Freuly greift auf Profildaten, Leads, Abrechnungsdaten und technische Nutzungsdaten zu, soweit dies für Betrieb, Abrechnung, Sicherheit, Support und Erfüllung gesetzlicher Pflichten erforderlich ist. Eine Weitergabe an Dritte erfolgt nur, soweit dies für Zahlungsabwicklung, Hosting, E-Mail-Versand, Geocoding, Übersetzungsdienste, Analyse, Partner-Attribution oder gesetzliche Pflichten erforderlich ist.
+1. Der Spezialist hat im Rahmen der jeweils bereitgestellten Funktionen Zugriff auf die ihn betreffenden Daten, insbesondere auf:
 
-<!-- legal-section: agb-22-03 -->
-Freuly stellt derzeit keine automatisierte Datenexport-Funktion bereit. Nach Vertragsbeendigung kann Freuly verbleibende Plattformkopien nach Ablauf gesetzlicher Aufbewahrungsfristen löschen oder anonymisieren. Leads, die bereits an den Spezialisten übermittelt wurden, verbleiben beim Spezialisten.
+- eigene Profil- und Kontodaten;
+- von ihm eingestellte Leistungsinformationen;
+- an ihn übermittelte oder für ihn freigegebene Kundenanfragen;
+- Tarif- und Abonnementstatus;
+- für ihn bereitgestellte Zahlungs- oder Abrechnungsinformationen;
+- weitere im persönlichen Bereich angebotene Daten und Statistiken.
+
+2. Spezialisten erhalten grundsätzlich keinen Zugriff auf nicht öffentliche personenbezogene, geschäftliche oder technische Daten anderer Spezialisten.
+
+3. Freuly hat im für Betrieb und Verwaltung der Plattform erforderlichen Umfang Zugriff auf insbesondere:
+
+- Konten- und Profildaten;
+- Inhalte und Dienstleistungsinformationen;
+- Kundenanfragen und deren technischen Status;
+- Zahlungs- und Abrechnungsinformationen;
+- Tarif- und Lifecycle-Daten;
+- Kommunikations- und Benachrichtigungsdaten;
+- technische Nutzungs-, Sicherheits- und Protokolldaten.
+
+4. Freuly verwendet solche Daten insbesondere für:
+
+- Betrieb der Plattform;
+- Vermittlung und Zustellung von Anfragen;
+- Abrechnung;
+- Kundensupport;
+- Missbrauchs- und Betrugsprävention;
+- IT-Sicherheit;
+- technische Verbesserung der Plattform;
+- Analyse der Plattformnutzung;
+- Erfüllung gesetzlicher Pflichten.
+
+5. Soweit für den Betrieb erforderlich, können Daten an eingesetzte technische Dienstleister übermittelt werden, insbesondere für Hosting, Zahlungsabwicklung, E-Mail- oder Benachrichtigungsversand, Geokodierung, Übersetzung, Analyse oder andere technische Funktionen. Maßgeblich bleiben die datenschutzrechtlichen Vorgaben und die Datenschutzerklärung.
+
+6. Freuly gewährt Spezialisten grundsätzlich keinen Zugang zu personenbezogenen Rohdaten anderer Spezialisten oder deren Kundenanfragen.
+
+7. Soweit Freuly aggregierte oder anonymisierte Daten über die Nutzung der Plattform erstellt, können diese insbesondere für Analysen, Produktentwicklung und Geschäftssteuerung verwendet werden.
+
+8. Nach Vertragsbeendigung kann der unmittelbare Zugang des Spezialisten zu seinem persönlichen Bereich und den darin enthaltenen Daten enden.
+
+9. Freuly kann Daten nach Vertragsbeendigung weiter speichern, soweit dies aufgrund gesetzlicher Aufbewahrungspflichten, zur Rechtsverteidigung, für Sicherheitszwecke oder aus anderen rechtmäßigen Gründen erforderlich ist.
+
+10. Nach Ablauf der einschlägigen Aufbewahrungsfristen können Daten gelöscht oder anonymisiert werden.
+
+11. Bereits rechtmäßig an einen Spezialisten übermittelte Kundendaten verbleiben in dessen eigenem Verantwortungsbereich.
 
 ## § 23 Haftung
 
-<!-- legal-section: agb-23-01 -->
-Freuly haftet unbeschränkt für Vorsatz und grobe Fahrlässigkeit sowie für Schäden aus der Verletzung des Lebens, des Körpers oder der Gesundheit. Bei leichter Fahrlässigkeit haftet Freuly nur bei Verletzung wesentlicher Vertragspflichten und begrenzt auf den vorhersehbaren, vertragstypischen Schaden. Zwingende gesetzliche Haftung bleibt unberührt.
+1. Freuly haftet unbeschränkt:
 
-## § 24 Rechnungen
+- bei Vorsatz und grober Fahrlässigkeit;
+- bei Verletzung von Leben, Körper oder Gesundheit;
+- nach zwingenden Vorschriften des Produkthaftungsrechts;
+- in sonstigen Fällen zwingender gesetzlicher Haftung.
 
-<!-- legal-section: agb-24-01 -->
-Rechnungen und Zahlungsbelege werden über den Zahlungsdienstleister und im Dashboard bereitgestellt, soweit verfügbar. Der Spezialist ist für die ordnungsgemäße steuerliche Behandlung seiner Geschäftsvorgänge selbst verantwortlich.
+2. Bei einfacher Fahrlässigkeit haftet Freuly nur bei Verletzung einer wesentlichen Vertragspflicht, deren Erfüllung die ordnungsgemäße Durchführung des Vertrags überhaupt erst ermöglicht und auf deren Einhaltung der Vertragspartner regelmäßig vertrauen darf.
 
-## § 25 Änderungen der AGB
+3. In diesem Fall ist die Haftung auf den vorhersehbaren, vertragstypischen Schaden begrenzt.
 
-<!-- legal-section: agb-25-01 -->
-Freuly kann diese AGB mit Wirkung für die Zukunft ändern. Gewerbliche Nutzer im Sinne der Verordnung (EU) 2019/1150 werden mindestens 15 Kalendertage vor Inkrafttreten der Änderung informiert.
+4. Freuly haftet insbesondere nicht für den fachlichen Erfolg, die Qualität, Richtigkeit oder Rechtmäßigkeit der vom Spezialisten gegenüber Endkunden erbrachten Dienstleistungen.
 
-<!-- legal-section: agb-25-02 -->
-Gewerbliche Nutzer können vor Ablauf der 15 Kalendertage aus wichtigem Grund kündigen, wenn die Änderung ihre Rechte wesentlich beeinträchtigt und die Verordnung (EU) 2019/1150 dies vorsieht. Schweigen oder bloße Fortnutzung gilt nicht als Zustimmung zu wesentlichen Änderungen.
+5. Freuly haftet nicht für Angaben, Zusagen oder Inhalte eines Spezialisten, soweit Freuly nicht aufgrund eigener Pflichtverletzung haftet.
 
-## § 26 Anwendbares Recht und Schlussbestimmungen
+6. Zwingende gesetzliche Haftungsvorschriften bleiben unberührt.
 
-<!-- legal-section: agb-26-01 -->
-Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts. Es wird kein ausschließlicher Gerichtsstand vereinbart; es gelten die gesetzlichen Gerichtsstandsregelungen.
+## § 24 Anwendbares Recht und Gerichtsstand
 
-<!-- legal-section: agb-26-02 -->
-Sollten einzelne Bestimmungen unwirksam sein, bleibt der übrige Vertrag wirksam. An die Stelle der unwirksamen Bestimmung tritt die gesetzlich zulässige Regelung, die dem wirtschaftlichen Zweck am nächsten kommt.
+1. Auf das Vertragsverhältnis zwischen Freuly und dem Spezialisten findet deutsches Recht Anwendung.
 
-## § 27 Salvatorische Klausel und Kommunikation
+2. Das Übereinkommen der Vereinten Nationen über Verträge über den internationalen Warenkauf (CISG) findet keine Anwendung.
 
-<!-- legal-section: agb-27-01 -->
-Freuly kann Mitteilungen zu diesen AGB per E-Mail an die im Konto hinterlegte Adresse senden. Der Spezialist ist verpflichtet, diese Adresse aktuell zu halten.
+3. Soweit eine Gerichtsstandsvereinbarung gesetzlich zulässig ist, insbesondere wenn der Spezialist Kaufmann, juristische Person des öffentlichen Rechts oder öffentlich-rechtliches Sondervermögen ist, ist Gerichtsstand der Sitz von Freuly.
 
-## § 28 Stand der AGB
+4. Zwingende gesetzliche Zuständigkeitsregeln bleiben unberührt.
 
-<!-- legal-section: agb-28-01 -->
-Diese Fassung tritt im August 2026 in Kraft und ersetzt frühere Fassungen der Spezialisten-AGB, soweit vorhanden.
+## § 25 Änderungen dieser AGB
+
+1. Freuly kann diese AGB mit Wirkung für die Zukunft ändern, sofern hierfür ein sachlicher Grund besteht.
+
+2. Ein sachlicher Grund kann insbesondere vorliegen bei:
+
+- Änderungen gesetzlicher Vorschriften oder behördlicher Anforderungen;
+- Änderungen der Rechtsprechung;
+- Weiterentwicklung oder Änderung der Plattform;
+- Einführung, Änderung oder Einstellung von Funktionen;
+- Änderungen von Tarifen oder Geschäftsmodellen;
+- Sicherheitsanforderungen;
+- technischen oder organisatorischen Änderungen.
+
+3. Soweit die Verordnung (EU) 2019/1150 Anwendung findet, werden vorgeschlagene Änderungen grundsätzlich mindestens **15 Kalendertage vor ihrem Inkrafttreten** auf einem dauerhaften Datenträger mitgeteilt.
+
+4. Freuly gewährt einen längeren Zeitraum, wenn dies erforderlich ist, damit der Spezialist aufgrund der Änderung technische oder geschäftliche Anpassungen vornehmen kann.
+
+5. Die gesetzlich vorgesehenen Ausnahmen von der Vorankündigungsfrist bleiben unberührt, insbesondere wenn Freuly einer gesetzlichen oder behördlichen Verpflichtung unterliegt oder eine unvorhergesehene und unmittelbar drohende Gefahr für Sicherheit, Betrug, Malware, Spam, Datenschutzverletzungen oder andere Cybersecurity-Risiken abwehren muss.
+
+6. Der Spezialist kann das Vertragsverhältnis vor Inkrafttreten der angekündigten Änderungen beenden, soweit gesetzlich vorgesehen.
+
+7. Eine Verkürzung oder ein Verzicht auf eine gesetzliche Vorankündigungsfrist erfolgt nur, soweit dies rechtlich zulässig ist.
+
+8. Änderungen werden nicht rückwirkend angewendet, soweit eine rückwirkende Anwendung nicht gesetzlich erforderlich oder für den Spezialisten eindeutig vorteilhaft ist.
+
+## § 26 Schlussbestimmungen
+
+1. Sollten einzelne Bestimmungen dieser AGB ganz oder teilweise unwirksam oder undurchführbar sein oder werden, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt.
+
+2. An die Stelle zwingend unwirksamer Bestimmungen treten die gesetzlichen Vorschriften.
+
+3. Individuelle Vereinbarungen zwischen Freuly und dem Spezialisten haben im jeweiligen Einzelfall Vorrang vor diesen AGB.
