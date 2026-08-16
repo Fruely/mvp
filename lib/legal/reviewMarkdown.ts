@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { LegalBlock, LegalDocument, LegalPublicLang } from "@/content/legal/types";
 import { applyPublicLegalAmendments } from "./publicLegalAmendments";
+import { applyPublicLegalPostFixes } from "./publicLegalPostFixes";
 
 const REVIEW_DIR = path.join(process.cwd(), "docs/legal/final-review");
 const MARKER_LINE_RE = /^\s*<!--\s*legal-section:[^>]+-->\s*$/;
@@ -30,7 +31,8 @@ export function stripReviewMarkers(raw: string): string {
 export function readReviewMarkdown(slug: ReviewDocumentSlug, lang: LegalPublicLang): string {
   const filePath = path.join(REVIEW_DIR, `${slug}.${lang}.md`);
   const raw = fs.readFileSync(filePath, "utf8");
-  return stripReviewMarkers(applyPublicLegalAmendments(slug, lang, raw));
+  const amended = applyPublicLegalAmendments(slug, lang, raw);
+  return stripReviewMarkers(applyPublicLegalPostFixes(slug, lang, amended));
 }
 
 function parseBlocks(sectionBody: string): LegalBlock[] {
