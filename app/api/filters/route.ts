@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from '@/lib/specialists/status';
 import { CACHE_PUBLIC_FILTERS, jsonWithCache } from '@/lib/http/cache';
-import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from '@/lib/categories/uncategorizedSpecialistCategory';
+import { selectPublicFilterCategories } from '@/lib/filters/publicFilterCategories';
 
 const NO_STORE = { 'Cache-Control': 'no-store' } as const;
 
@@ -12,10 +12,11 @@ export async function GET() {
   try {
     const supabase = createSupabaseServerClient();
 
-    // Categories list (slug + title)
+    // Child specialization categories only (parent rows excluded at source).
     const { data: categoryData, error: categoryError } = await supabase
       .from('categories')
-      .select('slug, title, title_ru, title_de, title_ua')
+      .select('slug, title, title_ru, title_de, title_ua, parent_id')
+      .not('parent_id', 'is', null)
       .order('title', { ascending: true });
 
     if (categoryError) {
@@ -76,9 +77,7 @@ export async function GET() {
     });
     const languages = Array.from(langSet).sort();
 
-    const categories = (categoryData ?? []).filter(
-      (row) => row.slug !== UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG
-    );
+    const categories = selectPublicFilterCategories(categoryData);
 
     return jsonWithCache(
       {
