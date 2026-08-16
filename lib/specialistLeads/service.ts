@@ -2,7 +2,6 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
   DASHBOARD_LEAD_FULL_SELECT,
-  DASHBOARD_LEAD_REDACTED_SELECT,
   mapRowToDashboardLead,
 } from "@/lib/leads/contactUnlock";
 import { sendEmail } from "@/lib/email";
@@ -17,6 +16,9 @@ import {
 } from "@/lib/specialistLeads/mapper";
 import { SPECIALIST_LEAD_STATUSES, type SpecialistLeadApiItem, type SpecialistLeadListPage } from "@/lib/specialistLeads/types";
 
+/** Trusted server reads use full columns; `mapRowToDashboardLead` is the redaction boundary. */
+const SPECIALIST_LEAD_READ_SELECT = DASHBOARD_LEAD_FULL_SELECT;
+
 function toApiItem(row: Record<string, unknown>): SpecialistLeadApiItem {
   return assertClientSafeSpecialistLeadDto(
     mapDashboardLeadToApiItem(mapRowToDashboardLead(row)),
@@ -24,7 +26,6 @@ function toApiItem(row: Record<string, unknown>): SpecialistLeadApiItem {
 }
 
 export async function listSpecialistLeads(
-  service: SupabaseClient,
   specialistId: string,
   params: { limit?: unknown; cursor?: unknown; status?: unknown },
 ): Promise<SpecialistLeadListPage> {
@@ -41,7 +42,7 @@ export async function listSpecialistLeads(
 
   let query = service
     .from("leads")
-    .select(DASHBOARD_LEAD_REDACTED_SELECT)
+    .select(SPECIALIST_LEAD_READ_SELECT)
     .eq("specialist_id", specialistId)
     .order("created_at", { ascending: false })
     .order("id", { ascending: true })
@@ -91,7 +92,7 @@ export async function getSpecialistLeadById(
 ): Promise<SpecialistLeadApiItem | null> {
   const { data, error } = await service
     .from("leads")
-    .select(DASHBOARD_LEAD_REDACTED_SELECT)
+    .select(SPECIALIST_LEAD_READ_SELECT)
     .eq("id", leadId)
     .eq("specialist_id", specialistId)
     .maybeSingle();
@@ -120,7 +121,7 @@ export async function updateSpecialistLeadStatus(
 
   const { data: existing, error: fetchError } = await service
     .from("leads")
-    .select(DASHBOARD_LEAD_REDACTED_SELECT)
+    .select(SPECIALIST_LEAD_READ_SELECT)
     .eq("id", leadId)
     .eq("specialist_id", specialistId)
     .maybeSingle();
@@ -151,7 +152,7 @@ export async function updateSpecialistLeadStatus(
     updateQuery = updateQuery.eq("status", currentStatus);
   }
 
-  const { data, error } = await updateQuery.select(DASHBOARD_LEAD_REDACTED_SELECT).maybeSingle();
+  const { data, error } = await updateQuery.select(SPECIALIST_LEAD_READ_SELECT).maybeSingle();
 
   if (error) {
     console.error("[specialistLeads/service] status update failed", error.message);
@@ -164,7 +165,7 @@ export async function updateSpecialistLeadStatus(
 
   const { data: refetched, error: refetchError } = await service
     .from("leads")
-    .select(DASHBOARD_LEAD_REDACTED_SELECT)
+    .select(SPECIALIST_LEAD_READ_SELECT)
     .eq("id", leadId)
     .eq("specialist_id", specialistId)
     .maybeSingle();
@@ -189,7 +190,7 @@ export async function unlockSpecialistLeadContacts(
 ): Promise<SpecialistLeadApiItem | null> {
   const { data: existing, error: fetchError } = await service
     .from("leads")
-    .select(DASHBOARD_LEAD_FULL_SELECT)
+    .select(SPECIALIST_LEAD_READ_SELECT)
     .eq("id", leadId)
     .eq("specialist_id", specialistId)
     .maybeSingle();
@@ -218,7 +219,7 @@ export async function unlockSpecialistLeadContacts(
     .eq("id", leadId)
     .eq("specialist_id", specialistId)
     .is("contact_unlocked_at", null)
-    .select(DASHBOARD_LEAD_FULL_SELECT)
+    .select(SPECIALIST_LEAD_READ_SELECT)
     .maybeSingle();
 
   if (updateError) {
@@ -232,7 +233,7 @@ export async function unlockSpecialistLeadContacts(
   if (!resultRow) {
     const { data: refetched } = await service
       .from("leads")
-      .select(DASHBOARD_LEAD_FULL_SELECT)
+      .select(SPECIALIST_LEAD_READ_SELECT)
       .eq("id", leadId)
       .eq("specialist_id", specialistId)
       .maybeSingle();

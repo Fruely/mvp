@@ -26,6 +26,9 @@ test("specialist leads routes enforce bearer auth and ownership scoping", async 
   assert.match(detailRoute, /getSpecialistLeadById\(supabase, session\.specialistId/);
   assert.doesNotMatch(listRoute, /searchParams\.get\("specialist_id"\)/);
   assert.match(serviceSrc, /\.eq\("specialist_id", specialistId\)/);
+  assert.match(serviceSrc, /SPECIALIST_LEAD_READ_SELECT/);
+  assert.match(serviceSrc, /DASHBOARD_LEAD_FULL_SELECT/);
+  assert.doesNotMatch(serviceSrc, /DASHBOARD_LEAD_REDACTED_SELECT/);
   assert.match(serviceSrc, /currentStatus === nextStatus/);
   assert.match(serviceSrc, /didPersistFirstUnlock/);
   assert.match(statusRoute, /invalid_status_transition/);
