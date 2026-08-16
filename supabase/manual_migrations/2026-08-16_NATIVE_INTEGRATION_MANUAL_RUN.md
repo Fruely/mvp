@@ -12,6 +12,10 @@ Run these **manually in Supabase SQL Editor** against the target Freuly project.
 
 ---
 
+## Applied (manual) — 2026-08-16
+
+All three migrations below were applied manually by project owner in Freuly Supabase Dashboard SQL Editor (Success / No rows returned). Cursor did not independently re-verify schema.
+
 ## Execution order
 
 1. `2026-08-16_client_mutation_idempotency.sql`
