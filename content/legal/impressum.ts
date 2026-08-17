@@ -102,7 +102,7 @@ const ru: LegalDocument = {
       ] }],
     },
     {
-      title: "Идентификационный номер плательщика НДС",
+      title: "Идентификационный номер для целей НДС (USt-IdNr.)",
       blocks: [{ type: "p", text: "Umsatzsteuer-Identifikationsnummer согласно § 27a UStG:\nDE464033560" }],
     },
     {
@@ -165,7 +165,7 @@ const ua: LegalDocument = {
       ] }],
     },
     {
-      title: "Ідентифікаційний номер платника ПДВ",
+      title: "Ідентифікаційний номер для цілей ПДВ (USt-IdNr.)",
       blocks: [{ type: "p", text: "Umsatzsteuer-Identifikationsnummer згідно з § 27a UStG:\nDE464033560" }],
     },
     {
