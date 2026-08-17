@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 
 import { jsonNoStore } from "@/lib/api/response";
 import { resolveDashboardSpecialistAuth } from "@/lib/specialistDashboard/dashboardRouteAuth";
-import { publishSpecialistProfile } from "@/lib/specialistDashboard/publishSpecialist";
+import { unpublishSpecialistProfile } from "@/lib/specialistDashboard/unpublishSpecialist";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
   }
 
   const service = createServiceClient();
-  const result = await publishSpecialistProfile(service, auth.specialistId);
+  const result = await unpublishSpecialistProfile(service, auth.specialistId);
 
   if (!result.ok) {
     return jsonNoStore(result.body, { status: result.status });
@@ -23,6 +23,6 @@ export async function POST(request: NextRequest) {
   return jsonNoStore({
     success: true,
     status: result.status,
-    ...(result.alreadyPublished ? { alreadyPublished: true } : {}),
+    ...(result.alreadyPrivate ? { alreadyPrivate: true } : {}),
   });
 }
