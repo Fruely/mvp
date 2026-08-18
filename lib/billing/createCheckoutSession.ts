@@ -7,6 +7,7 @@ import {
 import { buildBillingCheckoutUrls } from "@/lib/billing/billingUrls";
 import { getPaymentProvider } from "@/lib/billing/paymentProvider";
 import { parsePaidPlanCode } from "@/lib/billing/plans";
+import type { CheckoutReturnTarget } from "@/lib/billing/checkoutReturnTarget";
 import type { CheckoutSessionResult } from "@/lib/billing/paymentProvider";
 import { getStripeCheckoutReadiness } from "@/lib/billing/stripeReadiness";
 import type { Lang } from "@/lib/i18n";
@@ -22,6 +23,7 @@ export type CreateCheckoutInput = {
   planCodeRaw: unknown;
   lang: Lang;
   siteUrl: string;
+  returnTarget?: CheckoutReturnTarget;
 };
 
 export type CreateCheckoutSuccess = {
@@ -54,6 +56,7 @@ export async function createCheckoutSessionForSpecialist(
       planCode,
       lang: input.lang,
       siteUrl: input.siteUrl,
+      returnTarget: input.returnTarget ?? "web",
     });
     if (!manual.ok) return manual;
     return {
@@ -78,6 +81,7 @@ export async function createCheckoutSessionForSpecialist(
     siteUrl: input.siteUrl,
     lang: input.lang,
     planCode,
+    returnTarget: input.returnTarget ?? "web",
   });
 
   const provider = getPaymentProvider({
