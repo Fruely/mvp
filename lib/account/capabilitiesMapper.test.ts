@@ -110,6 +110,8 @@ test("published gate when status is published", () => {
   assert.equal(row.onboarding_gate, "published");
   assert.equal(row.publication_ready, true);
   assert.equal(row.plan_code, "pro");
+  assert.equal(row.can_unlock_contacts, true);
+  assert.equal(row.billing_access_state, "active");
 });
 
 test("partner capability coexists with specialist", () => {
@@ -126,6 +128,36 @@ test("partner capability coexists with specialist", () => {
   });
   assert.equal(dto.capabilities.specialist, true);
   assert.equal(dto.capabilities.partner, true);
+});
+
+test("inactive plan_status blocks contact unlock entitlement", () => {
+  const row = mapSpecialistOverview({
+    row: { id: "spec-1", status: "draft" },
+    city: null,
+    categoryLabel: null,
+    gate: { state: "incomplete", publicationReady: false },
+    planCode: "basic",
+    planStatus: "inactive",
+    graceUntil: "2026-08-01T00:00:00.000Z",
+  });
+  assert.equal(row.can_unlock_contacts, false);
+  assert.equal(row.billing_access_state, "inactive");
+  assert.equal(row.plan_status, "inactive");
+  assert.equal(row.grace_until, "2026-08-01T00:00:00.000Z");
+});
+
+test("grace plan_status still allows contact unlock", () => {
+  const row = mapSpecialistOverview({
+    row: { id: "spec-1", status: "draft" },
+    city: null,
+    categoryLabel: null,
+    gate: { state: "incomplete", publicationReady: false },
+    planCode: "basic",
+    planStatus: "grace",
+    graceUntil: "2026-08-25T00:00:00.000Z",
+  });
+  assert.equal(row.can_unlock_contacts, true);
+  assert.equal(row.billing_access_state, "grace");
 });
 
 test("DTO contract excludes private fields", () => {

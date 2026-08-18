@@ -17,6 +17,10 @@ test("specialist leads routes enforce bearer auth and ownership scoping", async 
     fileURLToPath(new URL("../../app/api/specialist/leads/status/route.ts", import.meta.url)),
     "utf8",
   );
+  const unlockRoute = await readFile(
+    fileURLToPath(new URL("../../app/api/specialist/leads/[id]/unlock-contacts/route.ts", import.meta.url)),
+    "utf8",
+  );
   const serviceSrc = await readFile(
     fileURLToPath(new URL("./service.ts", import.meta.url)),
     "utf8",
@@ -36,6 +40,11 @@ test("specialist leads routes enforce bearer auth and ownership scoping", async 
   assert.match(listRoute, /listSpecialistLeads\(\s*supabase,\s*session\.specialistId,/);
   assert.match(serviceSrc, /currentStatus === nextStatus/);
   assert.match(serviceSrc, /didPersistFirstUnlock/);
+  assert.match(serviceSrc, /ContactUnlockEntitlementError/);
+  assert.match(serviceSrc, /canUnlockLeadContacts/);
+  assert.match(serviceSrc, /update\(\{ status: nextStatus \}\)/);
+  assert.match(unlockRoute, /CONTACT_UNLOCK_REQUIRES_ACTIVE_PLAN/);
+  assert.match(unlockRoute, /isContactUnlockEntitlementError/);
   assert.match(statusRoute, /invalid_status_transition/);
 });
 

@@ -1,17 +1,14 @@
-/** Statuses that had full contact access before contact_unlock columns existed. */
-const LEGACY_UNLOCKED_STATUSES = new Set(["accepted", "contacted", "closed"]);
-
 export type LeadContactRow = {
   contact_unlocked_at?: string | null;
   status?: string | null;
 };
 
+/**
+ * Contacts are visible only after an explicit unlock timestamp.
+ * Lead status (accepted/contacted/closed) must not reveal PII.
+ */
 export function isLeadContactUnlocked(lead: LeadContactRow): boolean {
-  if (typeof lead.contact_unlocked_at === "string" && lead.contact_unlocked_at.trim()) {
-    return true;
-  }
-  const status = (lead.status ?? "").trim().toLowerCase();
-  return LEGACY_UNLOCKED_STATUSES.has(status);
+  return typeof lead.contact_unlocked_at === "string" && lead.contact_unlocked_at.trim().length > 0;
 }
 
 const PREVIEW_MAX_LEN = 120;

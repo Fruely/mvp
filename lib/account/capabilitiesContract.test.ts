@@ -23,6 +23,16 @@ test("capabilities route requires bearer auth and does not accept client ownersh
   assert.match(serviceSrc, /\.eq\("user_id", userId\)/);
   assert.match(serviceSrc, /getCategoryTitle\(categoryResult\.data, lang\)/);
   assert.match(serviceSrc, /maybeSingle\(\)/);
+  assert.match(serviceSrc, /planCode: plan\.plan_code/);
+  assert.match(serviceSrc, /planStatus: plan\.plan_status/);
+  assert.match(serviceSrc, /graceUntil: plan\.grace_until/);
+  const mapperSrc = await readFile(
+    fileURLToPath(new URL("./capabilitiesMapper.ts", import.meta.url)),
+    "utf8",
+  );
+  assert.match(mapperSrc, /can_unlock_contacts/);
+  assert.match(mapperSrc, /billing_access_state/);
+  assert.match(mapperSrc, /resolveContactUnlockEntitlement/);
   assert.doesNotMatch(serviceSrc, /auto-create|\.insert\(/);
 });
 

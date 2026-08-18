@@ -67,6 +67,23 @@ After transition to `inactive`, billing visibility is blocked.
 The specialist account and profile data are not automatically deleted.
 The dashboard remains available so the specialist can pay and reactivate.
 
+## Contact unlock
+
+New reveal of locked lead contacts is a billing-gated mutation, not a UI decision.
+
+Canonical helper: `lib/billing/contactUnlockEntitlement.ts`
+(`canUnlockLeadContacts` / `resolveBillingAccessState`).
+
+- `active` (including `early_access` / `trialing` / missing plan row): may unlock
+- `grace` (`grace` / `grace_period`, 7 days): may unlock
+- `inactive` (`inactive` / `expired` / `cancelled`): may not newly unlock
+
+Previously unlocked contacts (`contact_unlocked_at` set) stay readable after
+billing becomes inactive. Lead status changes (`accepted` / `contacted` /
+`closed`) must not reveal contacts.
+
+Blocked specialist accounts remain forbidden by existing session auth.
+
 ## Canonical implementation
 
 Lifecycle interpretation must have one canonical source of truth.

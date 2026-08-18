@@ -1,5 +1,9 @@
 import { isPublicLeadTargetSpecialist } from "../specialists/status";
 import type { SpecialistOnboardingGateState } from "../specialists/server";
+import {
+  resolveContactUnlockEntitlement,
+  type BillingAccessState,
+} from "../billing/contactUnlockEntitlement";
 
 export type AccountCapabilitiesDto = {
   capabilities: {
@@ -23,6 +27,10 @@ export type AccountSpecialistOverviewDto = {
   publication_ready: boolean;
   founder_badge: boolean;
   plan_code: string;
+  plan_status: string;
+  billing_access_state: BillingAccessState;
+  grace_until: string | null;
+  can_unlock_contacts: boolean;
 };
 
 export type AccountPartnerOverviewDto = {
@@ -50,6 +58,8 @@ export function mapSpecialistOverview(input: {
     publicationReady: boolean;
   };
   planCode: string;
+  planStatus?: string | null;
+  graceUntil?: string | null;
 }): AccountSpecialistOverviewDto {
   const slug = typeof input.row.slug === "string" && input.row.slug.trim() ? input.row.slug.trim() : null;
   const status = typeof input.row.status === "string" && input.row.status.trim() ? input.row.status.trim() : "draft";
@@ -62,6 +72,7 @@ export function mapSpecialistOverview(input: {
       billing_visibility_blocked: input.row.billing_visibility_blocked,
       is_test: input.row.is_test,
     });
+  const entitlement = resolveContactUnlockEntitlement(input.planStatus);
 
   return {
     id: input.row.id,
@@ -81,6 +92,10 @@ export function mapSpecialistOverview(input: {
     publication_ready: input.gate.publicationReady,
     founder_badge: input.row.founder_badge === true,
     plan_code: input.planCode,
+    plan_status: typeof input.planStatus === "string" ? input.planStatus : "",
+    billing_access_state: entitlement.billing_access_state,
+    grace_until: input.graceUntil ?? null,
+    can_unlock_contacts: entitlement.can_unlock_contacts,
   };
 }
 
@@ -114,6 +129,10 @@ export function assertClientSafeCapabilitiesDto(dto: AccountCapabilitiesDto): Ac
       "publication_ready",
       "founder_badge",
       "plan_code",
+      "plan_status",
+      "billing_access_state",
+      "grace_until",
+      "can_unlock_contacts",
     ]);
     for (const key of Object.keys(dto.specialist)) {
       if (!allowed.has(key)) {

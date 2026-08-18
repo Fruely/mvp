@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
+  canUnlockLeadContacts,
+  ContactUnlockEntitlementError,
+} from "@/lib/billing/contactUnlockEntitlement";
+import {
   DASHBOARD_LEAD_FULL_SELECT,
   mapRowToDashboardLead,
 } from "@/lib/leads/contactUnlock";
@@ -208,6 +212,22 @@ export async function unlockSpecialistLeadContacts(
   const mapped = mapRowToDashboardLead(existing as Record<string, unknown>);
   if (mapped.contacts_unlocked) {
     return toApiItem(existing as Record<string, unknown>);
+  }
+
+  const { data: plan, error: planError } = await service
+    .from("specialist_plan")
+    .select("plan_status")
+    .eq("specialist_id", specialistId)
+    .maybeSingle();
+
+  if (planError) {
+    console.error("[specialistLeads/service] unlock plan lookup failed", planError.message);
+    throw new Error("lead_unlock_failed");
+  }
+
+  const planStatus = typeof plan?.plan_status === "string" ? plan.plan_status : null;
+  if (!canUnlockLeadContacts(planStatus)) {
+    throw new ContactUnlockEntitlementError();
   }
 
   const nowIso = new Date().toISOString();

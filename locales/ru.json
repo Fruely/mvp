@@ -1134,6 +1134,8 @@
   "dashboard.leads.unlockCta": "Связаться с клиентом",
   "dashboard.leads.unlockSuccess": "Контакты открыты",
   "dashboard.leads.unlockError": "Не удалось открыть контакты",
+  "dashboard.leads.unlockRequiresPlan": "Чтобы открыть контакты, нужен действующий тариф или льготный период.",
+  "dashboard.leads.unlockRequiresPlanCta": "Оплатить тариф",
   "dashboard.leads.statusSuccess": "Статус обновлён",
   "dashboard.leads.statusError": "Не удалось обновить статус",
   "dashboard.leads.loadMore": "Показать ещё",

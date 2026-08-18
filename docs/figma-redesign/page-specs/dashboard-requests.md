@@ -21,7 +21,7 @@ Only real `/requests/*` page is `/dashboard/requests/promoted` (no Figma).
 
 ## Preserve
 
-`LeadsTable`; subscription banner; `contactUnlock.ts` redaction; real lead records.
+`LeadsTable`; subscription banner; `contactUnlock.ts` redaction; billing-gated unlock (`canUnlockLeadContacts`); real lead records.
 
 ## Mock-only
 
