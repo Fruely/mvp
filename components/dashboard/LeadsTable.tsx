@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import type { DashboardLead } from "@/lib/dashboard/getDashboardData";
 import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
 import {
@@ -11,6 +12,7 @@ import {
   dashboardTableRowClass,
 } from "@/components/dashboard/dashboardStyles";
 import { Alert, Badge, Button, Card, Select, type BadgeVariant } from "@/components/ui";
+import { CONTACT_UNLOCK_REQUIRES_ACTIVE_PLAN } from "@/lib/billing/contactUnlockEntitlement";
 import { t, type Dictionary, type Lang } from "@/lib/i18n";
 
 const ALLOWED_STATUSES = ["new", "accepted", "contacted", "closed"] as const;
@@ -31,7 +33,7 @@ function localeTag(lang: Lang): string {
 }
 
 type UnlockResponse = {
-  data?: {
+  item?: {
     id: string;
     contact_unlocked_at: string | null;
     client_name: string | null;
@@ -46,10 +48,14 @@ export default function LeadsTable({
   initialLeads,
   lang,
   dict,
+  canUnlockContacts,
+  billingHref,
 }: {
   initialLeads: DashboardLead[];
   lang: Lang;
   dict: Dictionary;
+  canUnlockContacts: boolean;
+  billingHref: string;
 }) {
   const [leads, setLeads] = useState<DashboardLead[]>(initialLeads);
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "all">("all");
@@ -75,11 +81,15 @@ export default function LeadsTable({
       });
       const result = (await response.json().catch(() => ({}))) as UnlockResponse;
 
-      if (!response.ok || !result.data) {
+      if (response.status === 403 && result.error === CONTACT_UNLOCK_REQUIRES_ACTIVE_PLAN) {
+        throw new Error(t(dict, "dashboard.leads.unlockRequiresPlan"));
+      }
+
+      if (!response.ok || !result.item) {
         throw new Error(result.error || t(dict, "dashboard.leads.unlockError"));
       }
 
-      const unlocked = result.data;
+      const unlocked = result.item;
       setLeads((prev) =>
         prev.map((lead) =>
           lead.id === leadId
@@ -236,16 +246,24 @@ export default function LeadsTable({
                       ) : (
                         <div className="space-y-2">
                           <p className="text-xs leading-relaxed text-freuly-text-muted">
-                            {t(dict, "dashboard.leads.contactsProtectedHint")}
+                            {canUnlockContacts
+                              ? t(dict, "dashboard.leads.contactsProtectedHint")
+                              : t(dict, "dashboard.leads.unlockRequiresPlan")}
                           </p>
-                          <Button
-                            type="button"
-                            className="min-h-9 h-9 px-3 text-xs"
-                            disabled={Boolean(updatingById[lead.id])}
-                            onClick={() => void unlockContacts(lead.id)}
-                          >
-                            {t(dict, "dashboard.leads.unlockCta")}
-                          </Button>
+                          {canUnlockContacts ? (
+                            <Button
+                              type="button"
+                              className="min-h-9 h-9 px-3 text-xs"
+                              disabled={Boolean(updatingById[lead.id])}
+                              onClick={() => void unlockContacts(lead.id)}
+                            >
+                              {t(dict, "dashboard.leads.unlockCta")}
+                            </Button>
+                          ) : (
+                            <Link href={billingHref} className={`${dashboardLinkSecondaryClass} !min-h-9 h-9 !px-3 !text-xs`}>
+                              {t(dict, "dashboard.leads.unlockRequiresPlanCta")}
+                            </Link>
+                          )}
                         </div>
                       )}
                     </td>

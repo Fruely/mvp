@@ -98,7 +98,7 @@ test("same-target status retry preserves contact data for unlocked lead", () => 
   assert.equal(dto.client_email, "anna@example.com");
 });
 
-test("legacy accepted/contacted/closed without contact_unlocked_at are unlocked", () => {
+test("legacy accepted/contacted/closed without contact_unlocked_at stay redacted", () => {
   for (const status of ["accepted", "contacted", "closed"] as const) {
     const dto = toApiDto({
       id: LEAD_ID,
@@ -111,11 +111,12 @@ test("legacy accepted/contacted/closed without contact_unlocked_at are unlocked"
       message: "Legacy message",
     });
 
-    assert.equal(dto.contact_available, true, status);
-    assert.equal(dto.client_name, "Legacy Client", status);
-    assert.equal(dto.client_email, "legacy@example.com", status);
-    assert.equal(dto.client_phone, "+491709999999", status);
-    assert.equal(dto.message, "Legacy message", status);
+    assert.equal(dto.contact_available, false, status);
+    assert.equal(dto.contacts_unlocked, false, status);
+    assert.equal(dto.client_name, null, status);
+    assert.equal(dto.client_email, null, status);
+    assert.equal(dto.client_phone, null, status);
+    assert.equal(dto.message, null, status);
   }
 });
 

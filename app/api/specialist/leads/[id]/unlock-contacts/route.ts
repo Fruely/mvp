@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  CONTACT_UNLOCK_REQUIRES_ACTIVE_PLAN,
+  isContactUnlockEntitlementError,
+} from "@/lib/billing/contactUnlockEntitlement";
 import { unlockSpecialistLeadContacts } from "@/lib/specialistLeads/service";
 import {
   resolveSpecialistLeadSession,
@@ -44,6 +48,13 @@ export async function POST(
 
     return NextResponse.json({ item }, { status: 200, headers: NO_STORE });
   } catch (error) {
+    if (isContactUnlockEntitlementError(error)) {
+      return NextResponse.json(
+        { error: CONTACT_UNLOCK_REQUIRES_ACTIVE_PLAN },
+        { status: 403, headers: NO_STORE },
+      );
+    }
+
     console.error("[specialist/leads/unlock-contacts] unexpected error", error);
     return NextResponse.json({ error: "server_error" }, { status: 500, headers: NO_STORE });
   }

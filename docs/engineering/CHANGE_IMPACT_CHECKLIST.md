@@ -10,6 +10,8 @@ When a Web API/backend change is required by **Freuly Native** (or another Freul
 
 Canonical consumer-side tracking lives in `Fruely/freuly-native` → `RELEASE_STRATEGY.md` (*Current unresolved release dependencies*).
 
+**Open producer contract (2026-08-18):** branch `feat/billing-gated-contact-unlock` — specialist lead contact unlock is billing-gated (`active`/`grace` allowed, `inactive` rejected with `403 CONTACT_UNLOCK_REQUIRES_ACTIVE_PLAN`). Capabilities DTO adds `plan_status`, `billing_access_state`, `grace_until`, `can_unlock_contacts`. Native must consume these after producer merge/deploy; do not infer entitlement from Stripe or plan labels.
+
 **Open producer contract (2026-08):** commit `57e76d3` on branch `fix/filters-child-categories-only` — `GET /api/filters` must return child specialization categories only (`parent_id` set), excluding slug `other`. Required by Native Search until integrated and smoke-tested.
 
 ## Rule

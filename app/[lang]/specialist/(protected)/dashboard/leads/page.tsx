@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import LeadsTable from "@/components/dashboard/LeadsTable";
 import { Alert } from "@/components/ui";
 import { dashboardPageStackClass } from "@/components/dashboard/dashboardStyles";
+import { canUnlockLeadContacts } from "@/lib/billing/contactUnlockEntitlement";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
 import {
@@ -52,6 +53,8 @@ export default async function SpecialistDashboardLeadsPage({
   const leads = (data ?? []).map((row) => mapRowToDashboardLead(row as Record<string, unknown>));
   const display = getSubscriptionDisplayState(plan);
   const leadsBanner = leadsSubscriptionBannerText(dict, display);
+  const canUnlockContacts = canUnlockLeadContacts(plan.plan_status);
+  const billingHref = `/${lang}/specialist/dashboard/billing`;
 
   return (
     <div className={dashboardPageStackClass}>
@@ -60,7 +63,13 @@ export default async function SpecialistDashboardLeadsPage({
           {leadsBanner}
         </Alert>
       ) : null}
-      <LeadsTable initialLeads={leads} lang={lang} dict={dict} />
+      <LeadsTable
+        initialLeads={leads}
+        lang={lang}
+        dict={dict}
+        canUnlockContacts={canUnlockContacts}
+        billingHref={billingHref}
+      />
     </div>
   );
 }

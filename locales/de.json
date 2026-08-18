@@ -984,6 +984,8 @@
   "dashboard.leads.unlockCta": "Kundenkontakt öffnen",
   "dashboard.leads.unlockSuccess": "Kontakte geöffnet",
   "dashboard.leads.unlockError": "Kontakte konnten nicht geöffnet werden",
+  "dashboard.leads.unlockRequiresPlan": "Kontakte können nur mit aktivem Tarif oder in der Nachfrist geöffnet werden.",
+  "dashboard.leads.unlockRequiresPlanCta": "Tarif bezahlen",
   "dashboard.leads.statusSuccess": "Status aktualisiert",
   "dashboard.leads.statusError": "Status konnte nicht aktualisiert werden",
   "dashboard.leads.loadMore": "Mehr anzeigen",

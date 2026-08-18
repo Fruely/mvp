@@ -87,6 +87,8 @@ export async function resolveAccountCapabilities(
     categoryLabel,
     gate,
     planCode: plan.plan_code,
+    planStatus: plan.plan_status,
+    graceUntil: plan.grace_until,
   });
 
   return assertClientSafeCapabilitiesDto(

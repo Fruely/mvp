@@ -991,6 +991,8 @@
   "dashboard.leads.unlockCta": "Зв’язатися з клієнтом",
   "dashboard.leads.unlockSuccess": "Контакти відкрито",
   "dashboard.leads.unlockError": "Не вдалося відкрити контакти",
+  "dashboard.leads.unlockRequiresPlan": "Щоб відкрити контакти, потрібен чинний тариф або пільговий період.",
+  "dashboard.leads.unlockRequiresPlanCta": "Оплатити тариф",
   "dashboard.leads.statusSuccess": "Статус оновлено",
   "dashboard.leads.statusError": "Не вдалося оновити статус",
   "dashboard.leads.loadMore": "Показати ще",
