@@ -336,7 +336,7 @@ export async function publishSpecialistProfile(
   const { data: services, error: servicesCheckError } = row.category_id
     ? await service
         .from("specialist_services")
-        .select("title, price_from, is_active")
+        .select("title, price_from, price_to, pricing_type, price_comment, pricing_exception, is_active")
         .eq("specialist_id", specialistId)
         .eq("category_id", row.category_id as string)
         .eq("is_active", true)

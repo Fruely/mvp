@@ -2,13 +2,19 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { checkPublishableCategory } from "@/lib/dashboard/publicationReadiness";
 import {
+  isValidPublishableServicePricing,
+} from "@/lib/specialistServices/pricing";
+import {
   ALLOWED_PRICING_TYPES,
+  SERVICE_PRICING_READINESS_SELECT,
   SPECIALIST_SERVICE_CURRENCY,
   type PricingType,
 } from "@/lib/specialistServices/types";
 
-export const ACTIVE_PRICE_REQUIRED_ERROR =
-  "Чтобы показывать услугу в профиле и использовать её для публикации, укажите цену больше 0 или заполните комментарий к цене.";
+export const ACTIVE_PRICE_REQUIRED_ERROR = "ACTIVE_PRICE_REQUIRED";
+export const PRICING_EXCEPTION_INVALID_ERROR = "PRICING_EXCEPTION_INVALID";
+export const PRICING_EXCEPTION_EXPLANATION_REQUIRED_ERROR =
+  "PRICING_EXCEPTION_EXPLANATION_REQUIRED";
 export const LAST_PUBLIC_SERVICE_ERROR =
   "Нельзя удалить или отключить последнюю услугу у опубликованного профиля. Сначала добавьте другую активную услугу или снимите профиль с публикации.";
 export const SPECIALIST_CATEGORY_REQUIRED_ERROR = "SPECIALIST_CATEGORY_REQUIRED";
@@ -28,6 +34,7 @@ export type ServiceValidationRow = {
   price_from?: unknown;
   price_to?: unknown;
   price_comment?: unknown;
+  pricing_exception?: unknown;
   is_active?: unknown;
   category_id?: unknown;
 };
@@ -76,12 +83,6 @@ export function hasValidServicePriceShape(args: {
   return true;
 }
 
-export function hasDisplayableServicePrice(priceFrom: number | null, priceComment: string | null): boolean {
-  if (typeof priceFrom !== "number" || !Number.isFinite(priceFrom) || priceFrom < 0) return false;
-  if (priceFrom > 0) return true;
-  return priceFrom === 0 && Boolean(priceComment?.trim());
-}
-
 export function isValidActiveServiceForPublication(
   row: ServiceValidationRow,
   profileCategoryId: string | null,
@@ -92,15 +93,7 @@ export function isValidActiveServiceForPublication(
   const title = normalizeText(row.title);
   if (!title) return false;
 
-  const pricingType = normalizePricingType(row.pricing_type);
-  const priceFrom = normalizeNumber(row.price_from);
-  const priceTo = normalizeNumber(row.price_to);
-  const priceComment = normalizeText(row.price_comment);
-
-  return (
-    hasValidServicePriceShape({ pricingType, priceFrom, priceTo }) &&
-    hasDisplayableServicePrice(priceFrom, priceComment)
-  );
+  return isValidPublishableServicePricing(row);
 }
 
 export async function validateServiceCategory(
@@ -142,7 +135,7 @@ export async function validatePublishedProfileWouldStillHaveService(args: {
 
   const { data: services, error } = await args.supabase
     .from("specialist_services")
-    .select("id, title, pricing_type, price_from, price_to, price_comment, is_active, category_id")
+    .select(SERVICE_PRICING_READINESS_SELECT)
     .eq("specialist_id", args.specialistId);
 
   if (error) {

@@ -4,6 +4,7 @@
  */
 
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
+import { isValidPublishableServicePricing } from "@/lib/specialistServices/pricing";
 import {
   areValidCoordinates,
   isAllowedServiceRadiusKm,
@@ -15,21 +16,22 @@ import {
 } from "@/lib/specialists/geography";
 export type PublicationStep = "basic" | "services" | "about" | "photos" | "review";
 
-export function hasValidServiceForPublish(
-  services: Array<{
-    title?: unknown;
-    price_from?: unknown;
-    is_active?: unknown;
-  }>
-): boolean {
+export type PublishableServiceRow = {
+  title?: unknown;
+  price_from?: unknown;
+  price_to?: unknown;
+  pricing_type?: unknown;
+  price_comment?: unknown;
+  pricing_exception?: unknown;
+  is_active?: unknown;
+};
+
+export function hasValidServiceForPublish(services: PublishableServiceRow[]): boolean {
   return services.some((s) => {
     const title = typeof s.title === "string" ? s.title.trim() : "";
     if (!title) return false;
     if (s.is_active === false) return false;
-    const raw = String(s.price_from ?? "").trim();
-    if (!raw) return false;
-    const n = Number(raw.replace(",", "."));
-    return Number.isFinite(n) && n > 0;
+    return isValidPublishableServicePricing(s);
   });
 }
 
@@ -85,11 +87,7 @@ export type PublicationValidatorInput = {
   lat: number | null | undefined;
   lng: number | null | undefined;
   serviceRadiusKm: number | string | null | undefined;
-  servicesInSelectedCategory: Array<{
-    title?: unknown;
-    price_from?: unknown;
-    is_active?: unknown;
-  }>;
+  servicesInSelectedCategory: PublishableServiceRow[];
   hasAbout?: boolean;
   hasPhoto?: boolean;
   hasGallery?: boolean;

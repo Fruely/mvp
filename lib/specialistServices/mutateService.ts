@@ -21,15 +21,22 @@ import {
   type SpecialistServiceMutationResponse,
 } from "@/lib/specialistServices/types";
 import {
+  isValidPublishableServicePricing,
+  parsePricingException,
+  persistPriceFromForException,
+  type PricingException,
+} from "@/lib/specialistServices/pricing";
+import {
   ACTIVE_PRICE_REQUIRED_ERROR,
   enforceServiceCurrency,
-  hasDisplayableServicePrice,
   hasOwn,
   hasValidServicePriceShape,
   isAllowedPricingType,
   normalizeNumber,
   normalizePricingType,
   normalizeText,
+  PRICING_EXCEPTION_EXPLANATION_REQUIRED_ERROR,
+  PRICING_EXCEPTION_INVALID_ERROR,
   SPECIALIST_CATEGORY_REQUIRED_ERROR,
   validatePublishedProfileWouldStillHaveService,
   validateServiceCategory,
@@ -55,6 +62,7 @@ function buildCreateIdempotencyPayload(payload: Record<string, unknown>) {
     title: payload.title,
     description: payload.description,
     price_comment: payload.price_comment,
+    pricing_exception: payload.pricing_exception ?? null,
     pricing_type: payload.pricing_type,
     price_from: payload.price_from,
     price_to: payload.price_to,
@@ -63,6 +71,14 @@ function buildCreateIdempotencyPayload(payload: Record<string, unknown>) {
     is_active: payload.is_active,
     category_id: payload.category_id,
   };
+}
+
+function resolvePricingException(body: Record<string, unknown>): {
+  ok: true;
+  value: PricingException | null;
+} | { ok: false } {
+  if (!hasOwn(body, "pricing_exception")) return { ok: true, value: null };
+  return parsePricingException(body.pricing_exception);
 }
 
 export async function createSpecialistService(
@@ -82,6 +98,11 @@ export async function createSpecialistService(
   const title = normalizeText(body.title);
   const description = normalizeText(body.description);
   const priceComment = normalizeText(body.price_comment);
+  const pricingExceptionResult = resolvePricingException(body);
+  if (!pricingExceptionResult.ok) {
+    return { ok: false, status: 400, body: { error: PRICING_EXCEPTION_INVALID_ERROR } };
+  }
+  const pricingException = pricingExceptionResult.value;
   const pricingType = normalizeText(body.pricing_type);
   const priceFrom = normalizeNumber(body.price_from);
   const priceTo = normalizeNumber(body.price_to);
@@ -109,11 +130,11 @@ export async function createSpecialistService(
       body: { error: "pricing_type is required and must be fixed/range/hourly" },
     };
   }
-  if (priceFrom == null || priceFrom < 0) {
+  if (!pricingException && (priceFrom == null || priceFrom < 0)) {
     return { ok: false, status: 400, body: { error: "price_from is required and must be numeric" } };
   }
-  if (pricingType === "range") {
-    if (priceTo == null || priceTo < 0 || priceTo < priceFrom) {
+  if (!pricingException && pricingType === "range") {
+    if (priceTo == null || priceTo < 0 || priceTo < (priceFrom ?? 0)) {
       return {
         ok: false,
         status: 400,
@@ -122,13 +143,26 @@ export async function createSpecialistService(
     }
   }
 
-  const validPriceShape = hasValidServicePriceShape({
-    pricingType,
-    priceFrom,
-    priceTo,
+  const persistedPriceFrom = persistPriceFromForException(priceFrom, pricingException);
+  const persistedPriceTo = pricingException ? null : pricingType === "range" ? priceTo : null;
+  const validPriceShape = pricingException
+    ? true
+    : hasValidServicePriceShape({
+        pricingType,
+        priceFrom: persistedPriceFrom,
+        priceTo: persistedPriceTo,
+      });
+  const validPublishablePricing = isValidPublishableServicePricing({
+    pricing_type: pricingType,
+    price_from: persistedPriceFrom,
+    price_to: persistedPriceTo,
+    price_comment: priceComment,
+    pricing_exception: pricingException,
   });
-  const validDisplayPrice = hasDisplayableServicePrice(priceFrom, priceComment);
-  if (requestedActive && (!validPriceShape || !validDisplayPrice)) {
+  if (requestedActive && pricingException && !priceComment) {
+    return { ok: false, status: 400, body: { error: PRICING_EXCEPTION_EXPLANATION_REQUIRED_ERROR } };
+  }
+  if (requestedActive && (!validPriceShape || !validPublishablePricing)) {
     return { ok: false, status: 400, body: { error: ACTIVE_PRICE_REQUIRED_ERROR } };
   }
 
@@ -137,12 +171,13 @@ export async function createSpecialistService(
     title,
     description,
     price_comment: priceComment,
+    pricing_exception: pricingException,
     pricing_type: pricingType,
-    price_from: priceFrom,
-    price_to: pricingType === "range" ? priceTo : null,
+    price_from: persistedPriceFrom,
+    price_to: persistedPriceTo,
     currency: enforceServiceCurrency(),
     duration_minutes: durationMinutes,
-    is_active: validPriceShape && validDisplayPrice ? requestedActive : false,
+    is_active: validPriceShape && validPublishablePricing ? requestedActive : false,
     category_id: resolvedCategoryId,
   };
 
@@ -262,9 +297,16 @@ export async function updateSpecialistService(
   const isActive = typeof body.is_active === "boolean" ? body.is_active : null;
   const requestedCategoryId = normalizeText(body.category_id);
 
+  if (hasOwn(body, "pricing_exception")) {
+    const parsedException = parsePricingException(body.pricing_exception);
+    if (!parsedException.ok) {
+      return { ok: false, status: 400, body: { error: PRICING_EXCEPTION_INVALID_ERROR } };
+    }
+  }
+
   const { data: currentService, error: currentServiceError } = await ctx.supabase
     .from("specialist_services")
-    .select("id, title, pricing_type, price_from, price_to, price_comment, is_active, category_id")
+    .select("id, title, pricing_type, price_from, price_to, price_comment, pricing_exception, is_active, category_id")
     .eq("id", id)
     .eq("specialist_id", ctx.specialistId)
     .maybeSingle();
@@ -282,6 +324,10 @@ export async function updateSpecialistService(
   if (title !== null) patch.title = title;
   if (hasOwn(body, "description")) patch.description = description;
   if (hasOwn(body, "price_comment")) patch.price_comment = priceComment;
+  if (hasOwn(body, "pricing_exception")) {
+    const parsedException = parsePricingException(body.pricing_exception);
+    patch.pricing_exception = parsedException.ok ? parsedException.value : null;
+  }
   if (pricingType !== null) {
     if (!isAllowedPricingType(pricingType)) {
       return { ok: false, status: 400, body: { error: "pricing_type must be fixed/range/hourly" } };
@@ -297,39 +343,63 @@ export async function updateSpecialistService(
   const effectivePriceComment = hasOwn(patch, "price_comment")
     ? (patch.price_comment as string | null)
     : normalizeText(currentService.price_comment);
+  const currentExceptionParsed = parsePricingException(currentService.pricing_exception);
+  const effectivePricingException = hasOwn(patch, "pricing_exception")
+    ? (patch.pricing_exception as PricingException | null)
+    : currentExceptionParsed.ok
+      ? currentExceptionParsed.value
+      : null;
   const effectivePricingType = normalizePricingType(
     (patch.pricing_type as string | undefined) ??
       pricingType ??
       (typeof currentService.pricing_type === "string" ? currentService.pricing_type : "fixed"),
   );
-  const effectivePriceFrom =
+  const rawEffectivePriceFrom =
     (patch.price_from as number | undefined) ??
     priceFrom ??
     normalizeNumber(currentService.price_from);
-  const effectivePriceTo =
-    (patch.price_to as number | null | undefined) ??
-    priceTo ??
-    normalizeNumber(currentService.price_to);
+  const effectivePriceFrom = persistPriceFromForException(rawEffectivePriceFrom, effectivePricingException);
+  const effectivePriceTo = effectivePricingException
+    ? null
+    : (patch.price_to as number | null | undefined) ??
+      priceTo ??
+      normalizeNumber(currentService.price_to);
 
-  if (effectivePricingType === "range") {
+  if (effectivePricingException) {
+    patch.price_from = effectivePriceFrom;
+    patch.price_to = null;
+  }
+
+  if (!effectivePricingException && effectivePricingType === "range") {
     if (effectivePriceFrom == null || effectivePriceTo == null || effectivePriceTo < effectivePriceFrom) {
       return { ok: false, status: 400, body: { error: "range requires price_to >= price_from" } };
     }
   }
 
-  const validPriceShape = hasValidServicePriceShape({
-    pricingType: effectivePricingType,
-    priceFrom: effectivePriceFrom,
-    priceTo: effectivePriceTo,
+  const validPriceShape = effectivePricingException
+    ? true
+    : hasValidServicePriceShape({
+        pricingType: effectivePricingType,
+        priceFrom: effectivePriceFrom,
+        priceTo: effectivePriceTo,
+      });
+  const validPublishablePricing = isValidPublishableServicePricing({
+    pricing_type: effectivePricingType,
+    price_from: effectivePriceFrom,
+    price_to: effectivePriceTo,
+    price_comment: effectivePriceComment,
+    pricing_exception: effectivePricingException,
   });
-  const validDisplayPrice = hasDisplayableServicePrice(effectivePriceFrom, effectivePriceComment);
 
   const currentIsActive = Boolean(currentService.is_active);
   const nextRequestedIsActive = isActive ?? currentIsActive;
-  if (nextRequestedIsActive && (!validPriceShape || !validDisplayPrice)) {
+  if (nextRequestedIsActive && effectivePricingException && !effectivePriceComment) {
+    return { ok: false, status: 400, body: { error: PRICING_EXCEPTION_EXPLANATION_REQUIRED_ERROR } };
+  }
+  if (nextRequestedIsActive && (!validPriceShape || !validPublishablePricing)) {
     return { ok: false, status: 400, body: { error: ACTIVE_PRICE_REQUIRED_ERROR } };
   }
-  if (!validPriceShape || !validDisplayPrice) {
+  if (!validPriceShape || !validPublishablePricing) {
     patch.is_active = false;
   }
 
@@ -354,8 +424,9 @@ export async function updateSpecialistService(
     title: effectiveTitle,
     pricing_type: effectivePricingType,
     price_from: effectivePriceFrom,
-    price_to: effectivePricingType === "range" ? effectivePriceTo : null,
+    price_to: effectivePricingException ? null : effectivePricingType === "range" ? effectivePriceTo : null,
     price_comment: effectivePriceComment,
+    pricing_exception: effectivePricingException,
     is_active: patch.is_active ?? nextRequestedIsActive,
     category_id: patch.category_id ?? currentService.category_id,
   };

@@ -99,16 +99,21 @@ function toSpecialistJsonLd(
       : undefined,
     knowsLanguage: profile.languages,
     serviceType: profile.categoryTitle ?? undefined,
-    makesOffer: services.map((service) => ({
-      "@type": "Offer",
-      name: service.title,
-      price: service.price_from ?? undefined,
-      priceCurrency: service.currency ?? "EUR",
-      itemOffered: {
-        "@type": "Service",
+    makesOffer: services.map((service) => {
+      const numericPrice =
+        typeof service.price_from === "number" && Number.isFinite(service.price_from) && service.price_from > 0
+          ? service.price_from
+          : undefined;
+      return {
+        "@type": "Offer",
         name: service.title,
-      },
-    })),
+        ...(numericPrice != null ? { price: numericPrice, priceCurrency: service.currency ?? "EUR" } : {}),
+        itemOffered: {
+          "@type": "Service",
+          name: service.title,
+        },
+      };
+    }),
   };
 }
 
@@ -134,6 +139,9 @@ function toInitialSpecialist(
       price_from: service.price_from ?? 0,
       price_to: service.price_to ?? null,
       currency: service.currency ?? "EUR",
+      price_comment: service.price_comment,
+      pricing_exception: service.pricing_exception,
+      pricing_type: service.pricing_type,
     })),
   };
 }

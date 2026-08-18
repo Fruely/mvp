@@ -73,7 +73,7 @@ export async function GET(
 
   const { data: services } = await supabase
     .from("specialist_services")
-    .select("id, title, price_from, price_to, currency, is_active, price_comment")
+    .select("id, title, price_from, price_to, currency, is_active, price_comment, pricing_exception, pricing_type")
     .eq("specialist_id", specialist.id)
     .eq("is_active", true);
 
@@ -167,6 +167,14 @@ export async function GET(
         price_to: s.price_to,
         currency: s.currency ?? "EUR",
         price_comment: priceCommentResolved,
+        pricing_exception:
+          s.pricing_exception === "THIRD_PARTY_FUNDED" || s.pricing_exception === "AFTER_ASSESSMENT"
+            ? s.pricing_exception
+            : null,
+        pricing_type:
+          s.pricing_type === "fixed" || s.pricing_type === "range" || s.pricing_type === "hourly"
+            ? s.pricing_type
+            : null,
       };
     }),
   };

@@ -1,17 +1,23 @@
+import { registerPartnerTestHooks } from "../partners/partnerTestHooks.mjs";
+
+registerPartnerTestHooks();
+
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildClientIdempotencyFingerprint } from "../mutations/clientIdempotency.ts";
-import {
+const { buildClientIdempotencyFingerprint } = await import("../mutations/clientIdempotency.ts");
+const {
   createSpecialistService,
   deleteSpecialistService,
   updateSpecialistService,
-} from "./mutateService.ts";
-import {
-  hasDisplayableServicePrice,
+} = await import("./mutateService.ts");
+const {
   isValidActiveServiceForPublication,
   normalizeNumber,
-} from "./validation.ts";
+  ACTIVE_PRICE_REQUIRED_ERROR,
+  PRICING_EXCEPTION_EXPLANATION_REQUIRED_ERROR,
+  PRICING_EXCEPTION_INVALID_ERROR,
+} = await import("./validation.ts");
 
 const SPECIALIST_ID = "11111111-1111-1111-1111-111111111111";
 const USER_ID = "22222222-2222-2222-2222-222222222222";
@@ -150,6 +156,7 @@ function buildFingerprint(priceFrom = 25) {
     title: "Math tutoring",
     description: null,
     price_comment: null,
+    pricing_exception: null,
     pricing_type: "fixed",
     price_from: priceFrom,
     price_to: null,
@@ -171,6 +178,7 @@ function existingIdempotentRow(args: {
     title: args.title ?? "Math tutoring",
     description: null,
     price_comment: null,
+    pricing_exception: null,
     pricing_type: "fixed",
     price_from: 25,
     price_to: null,
@@ -206,9 +214,21 @@ test("normalizeNumber accepts comma decimal input", () => {
   assert.equal(normalizeNumber("49,90"), 49.9);
 });
 
-test("zero price requires price_comment for displayable price", () => {
-  assert.equal(hasDisplayableServicePrice(0, "по договорённости"), true);
-  assert.equal(hasDisplayableServicePrice(0, null), false);
+test("comment alone does not make a zero price publishable", () => {
+  assert.equal(
+    isValidActiveServiceForPublication(
+      {
+        is_active: true,
+        category_id: CATEGORY_ID,
+        title: "Jobcenter service",
+        pricing_type: "fixed",
+        price_from: 0,
+        price_comment: "по договорённости",
+      },
+      CATEGORY_ID,
+    ),
+    false,
+  );
 });
 
 test("publication counts only active services in profile category", () => {
@@ -284,6 +304,7 @@ test("create idempotency key replays without duplicate insert", async () => {
     title: payload.title,
     description: payload.description,
     price_comment: payload.price_comment,
+    pricing_exception: null,
     pricing_type: payload.pricing_type,
     price_from: payload.price_from,
     price_to: payload.price_to,
@@ -584,6 +605,186 @@ test("delete succeeds for owned draft specialist service", async () => {
   );
 
   assert.equal(result.ok, true);
+});
+
+function emptyState(): MockState {
+  return {
+    services: [],
+    categories: [{ id: CATEGORY_ID, parent_id: "parent", slug: "math" }],
+    inserts: [],
+    updates: [],
+  };
+}
+
+test("create A: positive price without exception is valid", async () => {
+  const state = emptyState();
+  const result = await createSpecialistService(
+    okCtx(createMockSupabase(state)),
+    { title: "Consult", pricing_type: "fixed", price_from: 50, is_active: true },
+    "de",
+    { loadReadiness: stubReadiness },
+  );
+  assert.equal(result.ok, true);
+  assert.equal(state.inserts[0]?.price_from, 50);
+  assert.equal(state.inserts[0]?.pricing_exception, null);
+});
+
+test("create B: zero without exception is invalid for active service", async () => {
+  const result = await createSpecialistService(
+    okCtx(createMockSupabase(emptyState())),
+    { title: "Consult", pricing_type: "fixed", price_from: 0, is_active: true },
+    "de",
+    { loadReadiness: stubReadiness },
+  );
+  assert.equal(result.ok, false);
+  if (!result.ok) assert.equal(result.body.error, ACTIVE_PRICE_REQUIRED_ERROR);
+});
+
+test("create C: missing price without exception is invalid for active service", async () => {
+  const result = await createSpecialistService(
+    okCtx(createMockSupabase(emptyState())),
+    { title: "Consult", pricing_type: "fixed", is_active: true },
+    "de",
+    { loadReadiness: stubReadiness },
+  );
+  assert.equal(result.ok, false);
+});
+
+test("create D: funded exception plus explanation is valid without numeric price", async () => {
+  const state = emptyState();
+  const result = await createSpecialistService(
+    okCtx(createMockSupabase(state)),
+    {
+      title: "Jobcenter coaching",
+      pricing_type: "fixed",
+      pricing_exception: "THIRD_PARTY_FUNDED",
+      price_comment: "Оплата через Jobcenter",
+      is_active: true,
+    },
+    "de",
+    { loadReadiness: stubReadiness },
+  );
+  assert.equal(result.ok, true);
+  assert.equal(state.inserts[0]?.price_from, 0);
+  assert.equal(state.inserts[0]?.pricing_exception, "THIRD_PARTY_FUNDED");
+  assert.equal(state.inserts[0]?.is_active, true);
+});
+
+test("create E: after-assessment exception plus explanation is valid", async () => {
+  const state = emptyState();
+  const result = await createSpecialistService(
+    okCtx(createMockSupabase(state)),
+    {
+      title: "Inspection",
+      pricing_type: "fixed",
+      pricing_exception: "AFTER_ASSESSMENT",
+      price_comment: "Preis nach Besichtigung",
+      is_active: true,
+    },
+    "de",
+    { loadReadiness: stubReadiness },
+  );
+  assert.equal(result.ok, true);
+  assert.equal(state.inserts[0]?.pricing_exception, "AFTER_ASSESSMENT");
+});
+
+test("create F: exception without explanation is invalid", async () => {
+  const result = await createSpecialistService(
+    okCtx(createMockSupabase(emptyState())),
+    {
+      title: "Inspection",
+      pricing_type: "fixed",
+      pricing_exception: "AFTER_ASSESSMENT",
+      price_comment: "   ",
+      is_active: true,
+    },
+    "de",
+    { loadReadiness: stubReadiness },
+  );
+  assert.equal(result.ok, false);
+  if (!result.ok) assert.equal(result.body.error, PRICING_EXCEPTION_EXPLANATION_REQUIRED_ERROR);
+});
+
+test("create G: positive price plus optional explanation is valid", async () => {
+  const state = emptyState();
+  const result = await createSpecialistService(
+    okCtx(createMockSupabase(state)),
+    {
+      title: "Consult",
+      pricing_type: "fixed",
+      price_from: 80,
+      price_comment: "inkl. Anfahrt",
+      is_active: true,
+    },
+    "de",
+    { loadReadiness: stubReadiness },
+  );
+  assert.equal(result.ok, true);
+  assert.equal(state.inserts[0]?.price_comment, "inkl. Anfahrt");
+});
+
+test("create rejects unsupported pricing exception values", async () => {
+  const result = await createSpecialistService(
+    okCtx(createMockSupabase(emptyState())),
+    {
+      title: "Consult",
+      pricing_type: "fixed",
+      pricing_exception: "BY_AGREEMENT",
+      price_comment: "по договорённости",
+      is_active: true,
+    },
+    "de",
+    { loadReadiness: stubReadiness },
+  );
+  assert.equal(result.ok, false);
+  if (!result.ok) assert.equal(result.body.error, PRICING_EXCEPTION_INVALID_ERROR);
+});
+
+test("update uses the same canonical pricing validator as create", async () => {
+  const state: MockState = {
+    services: [
+      {
+        id: SERVICE_ID,
+        specialist_id: SPECIALIST_ID,
+        title: "Consult",
+        pricing_type: "fixed",
+        price_from: 50,
+        price_to: null,
+        price_comment: null,
+        pricing_exception: null,
+        is_active: true,
+        category_id: CATEGORY_ID,
+      },
+    ],
+    categories: [{ id: CATEGORY_ID, parent_id: "parent", slug: "math" }],
+    inserts: [],
+    updates: [],
+  };
+
+  const invalid = await updateSpecialistService(
+    okCtx(createMockSupabase(state)),
+    { id: SERVICE_ID, price_from: 0, is_active: true },
+    "de",
+    { loadReadiness: stubReadiness },
+  );
+  assert.equal(invalid.ok, false);
+  if (!invalid.ok) assert.equal(invalid.body.error, ACTIVE_PRICE_REQUIRED_ERROR);
+
+  const valid = await updateSpecialistService(
+    okCtx(createMockSupabase(state)),
+    {
+      id: SERVICE_ID,
+      price_from: 0,
+      pricing_exception: "THIRD_PARTY_FUNDED",
+      price_comment: "Jobcenter trägt die Kosten",
+      is_active: true,
+    },
+    "de",
+    { loadReadiness: stubReadiness },
+  );
+  assert.equal(valid.ok, true);
+  assert.equal(state.updates.at(-1)?.pricing_exception, "THIRD_PARTY_FUNDED");
+  assert.equal(state.updates.at(-1)?.price_from, 0);
 });
 
 test("route wiring uses specialistServices modules", async () => {

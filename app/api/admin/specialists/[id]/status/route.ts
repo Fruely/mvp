@@ -87,7 +87,7 @@ async function validateAdminPublishReadiness(
 
   const { data: services, error: servicesError } = await supabase
     .from("specialist_services")
-    .select("title, price_from, is_active")
+    .select("title, price_from, price_to, pricing_type, price_comment, pricing_exception, is_active")
     .eq("specialist_id", specialistId)
     .eq("category_id", categoryId)
     .eq("is_active", true);

@@ -7,6 +7,7 @@ import { t, type Dictionary } from "@/lib/i18n";
 import { getSpecialistUrl } from "@/lib/urls";
 import FounderBadge from "@/components/specialist/FounderBadge";
 import { getPublicSpecialistLocation } from "@/lib/specialists/geography";
+import { resolvePublicServicePriceView } from "@/lib/specialistServices/pricing";
 
 type SpecialistPreview = {
   id: string;
@@ -31,6 +32,7 @@ type SpecialistPreview = {
   min_currency?: string | null;
   active_services_count?: number | null;
   price_comment?: string | null;
+  pricing_exception?: "THIRD_PARTY_FUNDED" | "AFTER_ASSESSMENT" | null;
   mobile_service?: boolean;
   service_radius_km?: number | null;
   founder_badge?: boolean;
@@ -84,25 +86,32 @@ export default function SpecialistPreviewCard({
       : null;
 
   const priceText = (() => {
-    if (typeof minPrice !== "number" || !Number.isFinite(minPrice)) return null;
-
-    if (minPrice > 0) {
+    const view = resolvePublicServicePriceView(
+      {
+        price_from: minPrice,
+        price_to: minPriceTo,
+        pricing_type: pricingType,
+        price_comment: priceCommentTrimmed,
+        pricing_exception: specialist.pricing_exception,
+      },
+      {
+        thirdPartyFunded: t(dict, "services.pricing.public.thirdPartyFunded"),
+        afterAssessment: t(dict, "services.pricing.public.afterAssessment"),
+      },
+    );
+    if (view.kind === "exception") {
+      return view.main;
+    }
+    if (view.kind === "numeric") {
       if (serviceCount > 1) {
         return `${fromLabel(lang)} ${minPrice}${currency === "EUR" ? "€" : ` ${currency}`}`;
-      }
-      if (pricingType === "range" && typeof minPriceTo === "number" && Number.isFinite(minPriceTo)) {
-        return `${minPrice}–${minPriceTo}${currency === "EUR" ? "€" : ` ${currency}`}`;
       }
       if (pricingType === "hourly") {
         return `${minPrice}${currency === "EUR" ? "€" : ` ${currency}`}/час`;
       }
-      return `${minPrice}${currency === "EUR" ? "€" : ` ${currency}`}`;
+      return view.main.replace(" €", currency === "EUR" ? "€" : ` ${currency}`);
     }
-
-    if (minPrice === 0 && priceCommentTrimmed) {
-      return priceCommentTrimmed;
-    }
-
+    if (view.kind === "note") return view.main;
     return null;
   })();
 

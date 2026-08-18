@@ -37,7 +37,9 @@ They must not affect the required-step resolver or disable publication.
 ## Guided behavior
 
 - Every active step exposes one obvious primary action.
-- Missing service state explicitly asks for at least one valid priced service.
+- Missing service state explicitly asks for at least one valid service:
+  a positive numeric price, or a supported pricing exception plus a
+  non-empty price explanation.
 - The onboarding services editor opens the form immediately and returns to the
   next wizard step after a valid service is saved.
 - A publish-ready review shows the Publish action before long reference content.

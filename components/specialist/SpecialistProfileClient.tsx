@@ -17,6 +17,7 @@ import SpecialistDocumentsLightbox from "@/components/specialist/SpecialistDocum
 import MobileStickyCTA from "@/components/MobileStickyCTA";
 import InstallFreuly from "@/components/pwa/InstallFreuly";
 import { getPublicSpecialistLocation } from "@/lib/specialists/geography";
+import { resolvePublicServicePriceView } from "@/lib/specialistServices/pricing";
 import { publicFieldClass } from "@/components/public/publicStyles";
 
 const LEGACY_SLUGS: Record<string, string> = {
@@ -70,6 +71,8 @@ export interface Specialist {
     price_to: number | null;
     currency: string;
     price_comment?: string | null;
+    pricing_exception?: "THIRD_PARTY_FUNDED" | "AFTER_ASSESSMENT" | null;
+    pricing_type?: "fixed" | "range" | "hourly" | null;
   }>;
 }
 
@@ -79,34 +82,20 @@ function getSpecialistServicePriceDisplay(
     price_to?: number | null;
     currency?: string | null;
     price_comment?: string | null;
+    pricing_exception?: "THIRD_PARTY_FUNDED" | "AFTER_ASSESSMENT" | null;
+    pricing_type?: "fixed" | "range" | "hourly" | null;
   },
+  dict: Dictionary,
   priceOnRequestLabel: string
 ): { main: string; commentBelow: string | null } {
-  const raw = service.price_from;
-  const pf =
-    typeof raw === "number" && Number.isFinite(raw)
-      ? raw
-      : typeof raw === "string" && String(raw).trim()
-        ? Number(String(raw).replace(/\s/g, "").replace(",", "."))
-        : NaN;
-  const comment =
-    service.price_comment != null && String(service.price_comment).trim()
-      ? String(service.price_comment).trim()
-      : null;
-
-  if (Number.isFinite(pf) && pf > 0) {
-    const to = service.price_to;
-    const hasRange =
-      to != null && typeof to === "number" && Number.isFinite(to) && to > 0;
-    const main = hasRange ? `${pf}–${to} €` : `${pf} €`;
-    return { main, commentBelow: comment };
+  const view = resolvePublicServicePriceView(service, {
+    thirdPartyFunded: t(dict, "services.pricing.public.thirdPartyFunded"),
+    afterAssessment: t(dict, "services.pricing.public.afterAssessment"),
+  });
+  if (view.kind === "empty") {
+    return { main: priceOnRequestLabel, commentBelow: null };
   }
-
-  if (pf === 0 && comment) {
-    return { main: comment, commentBelow: null };
-  }
-
-  return { main: priceOnRequestLabel, commentBelow: null };
+  return { main: view.main, commentBelow: view.explanation };
 }
 
 export default function SpecialistProfileClient({
@@ -596,6 +585,7 @@ export default function SpecialistProfileClient({
                   ? (specialist.specialist_services ?? []).map((service, index) => {
                       const { main, commentBelow } = getSpecialistServicePriceDisplay(
                         service,
+                        dict,
                         sectionText.servicePriceOnRequest
                       );
                       return (

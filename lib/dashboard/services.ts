@@ -1,10 +1,12 @@
 export type PricingType = "fixed" | "range" | "hourly";
+export type PricingException = "THIRD_PARTY_FUNDED" | "AFTER_ASSESSMENT";
 
 export type SpecialistService = {
   id: string;
   title: string;
   description: string | null;
   price_comment?: string | null;
+  pricing_exception?: PricingException | null;
   pricing_type: PricingType;
   price_from: number;
   price_to: number | null;
@@ -20,6 +22,7 @@ type ServicePayload = {
   title: string;
   description: string | null;
   price_comment?: string | null;
+  pricing_exception?: PricingException | null;
   pricing_type: PricingType;
   price_from: number;
   price_to: number | null;

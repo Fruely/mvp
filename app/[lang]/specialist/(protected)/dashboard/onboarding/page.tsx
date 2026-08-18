@@ -108,7 +108,7 @@ export default async function SpecialistDashboardOnboardingPage({
 
   const { data: servicesRows } = await service
     .from("specialist_services")
-    .select("title, price_from, is_active, category_id")
+    .select("title, price_from, price_to, pricing_type, price_comment, pricing_exception, is_active, category_id")
     .eq("specialist_id", specialist.id);
 
   const { data: categoriesRows } = await service

@@ -1,3 +1,4 @@
+import { normalizePricingException } from "@/lib/specialistServices/pricing";
 import type { SpecialistServiceDto } from "@/lib/specialistServices/types";
 
 export function mapServiceRow(row: Record<string, unknown>): SpecialistServiceDto {
@@ -6,6 +7,7 @@ export function mapServiceRow(row: Record<string, unknown>): SpecialistServiceDt
     title: typeof row.title === "string" ? row.title : "",
     description: typeof row.description === "string" ? row.description : null,
     price_comment: typeof row.price_comment === "string" ? row.price_comment : null,
+    pricing_exception: normalizePricingException(row.pricing_exception),
     pricing_type:
       row.pricing_type === "fixed" || row.pricing_type === "range" || row.pricing_type === "hourly"
         ? row.pricing_type
