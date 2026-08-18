@@ -6,10 +6,15 @@ import {
   type CreateCheckoutResult,
 } from "@/lib/billing/createCheckoutSession";
 import type { PlanPaymentCheckoutResult } from "@/lib/billing/createPlanPaymentCheckout";
+import { parseCheckoutReturnTarget } from "@/lib/billing/checkoutReturnTarget";
 import { planPaymentFailureToApi } from "@/lib/billing/planPaymentErrors";
 import { isManualRenewalEnabled } from "@/lib/billing/featureFlags";
 import { isSupportedLang, type Lang } from "@/lib/i18n";
-import { createSupabaseServerClient } from "@/lib/supabase/auth-server";
+import {
+  resolveSpecialistLeadSession,
+  specialistLeadSessionErrorCode,
+  specialistLeadSessionErrorStatus,
+} from "@/lib/specialistLeads/session";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import type { CheckoutSessionResult } from "@/lib/billing/paymentProvider";
 
@@ -33,14 +38,12 @@ function isManualPaymentSuccess(
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = createSupabaseServerClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401, headers: NO_STORE });
+  const session = await resolveSpecialistLeadSession(request);
+  if (session.kind !== "ok") {
+    return NextResponse.json(
+      { error: specialistLeadSessionErrorCode(session) },
+      { status: specialistLeadSessionErrorStatus(session), headers: NO_STORE },
+    );
   }
 
   const body = await request.json().catch(() => null);
@@ -59,6 +62,13 @@ export async function POST(request: NextRequest) {
 
   const planCodeRaw = "plan_code" in bodyRecord ? bodyRecord.plan_code : null;
   const langRaw = "lang" in bodyRecord && typeof bodyRecord.lang === "string" ? bodyRecord.lang : "ua";
+  const returnTarget = parseCheckoutReturnTarget(
+    "return_target" in bodyRecord ? bodyRecord.return_target : undefined,
+  );
+
+  if (returnTarget === null) {
+    return NextResponse.json({ error: "invalid_return_target" }, { status: 400, headers: NO_STORE });
+  }
 
   if (isManualRenewalEnabled()) {
     if (!isSupportedLang(langRaw.trim())) {
@@ -71,29 +81,30 @@ export async function POST(request: NextRequest) {
   const service = createServiceClient();
   const { data: specialist, error: specError } = await service
     .from("specialists")
-    .select("id, name, email")
-    .eq("user_id", user.id)
-    .neq("status", "blocked")
+    .select("name, email")
+    .eq("id", session.specialistId)
     .maybeSingle();
 
-  if (specError || !specialist?.id) {
+  if (specError) {
     return NextResponse.json({ error: "specialist_not_found" }, { status: 403, headers: NO_STORE });
   }
 
   console.info("[billing/checkout] requested", {
-    specialistId: specialist.id,
+    specialistId: session.specialistId,
     manualRenewal: isManualRenewalEnabled(),
+    returnTarget,
   });
 
   const result = await createCheckoutSessionForSpecialist({
     supabase: service,
-    specialistId: specialist.id,
-    userId: user.id,
-    userEmail: user.email ?? specialist.email,
-    userName: typeof specialist.name === "string" ? specialist.name : null,
+    specialistId: session.specialistId,
+    userId: session.userId,
+    userEmail: specialist?.email ?? null,
+    userName: typeof specialist?.name === "string" ? specialist.name : null,
     planCodeRaw,
     lang,
     siteUrl: resolveSiteUrl(request),
+    returnTarget,
   });
 
   if (!result.ok) {

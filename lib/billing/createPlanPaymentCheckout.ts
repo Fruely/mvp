@@ -18,6 +18,7 @@ import {
 import { getManualPlanPaymentConfig } from "@/lib/billing/planPaymentConfig";
 import { evaluatePlanPurchasePolicy } from "@/lib/billing/planPaymentPolicy";
 import { isPlanPaymentCheckoutReady } from "@/lib/billing/planPaymentReadiness";
+import type { CheckoutReturnTarget } from "@/lib/billing/checkoutReturnTarget";
 import { buildPlanPaymentCheckoutUrls } from "@/lib/billing/planPaymentUrls";
 import { validatePlanPaymentStripePrice } from "@/lib/billing/validatePlanPaymentStripePrice";
 import { getStripeClient } from "@/lib/billing/stripeClient";
@@ -90,6 +91,11 @@ async function expireStripeCheckoutSession(sessionId: string): Promise<void> {
   }
 }
 
+/**
+ * One-time Checkout: each call inserts a new plan_payments row.
+ * Unpaid pending/checkout_created rows are not reused. Promoted-credit
+ * reservations remain uniquely constrained; stale pending rows expire.
+ */
 export async function createPlanPaymentCheckout(input: {
   supabase: SupabaseClient;
   specialistId: string;
@@ -97,6 +103,7 @@ export async function createPlanPaymentCheckout(input: {
   planCode: PaidPlanCode;
   lang: Lang;
   siteUrl: string;
+  returnTarget?: CheckoutReturnTarget;
 }): Promise<PlanPaymentCheckoutResult> {
   if (!isPlanPaymentCheckoutReady(input.planCode)) {
     console.info("[billing/plan-payment] payments_not_ready", {
@@ -223,6 +230,7 @@ export async function createPlanPaymentCheckout(input: {
     siteUrl: input.siteUrl,
     lang: input.lang,
     planCode: input.planCode,
+    returnTarget: input.returnTarget ?? "web",
   });
 
   const metadata = buildPlanPaymentStripeMetadata({

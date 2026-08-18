@@ -47,5 +47,8 @@ export function parsePlanCode(value: unknown): PlanCode | null {
 export function parsePaidPlanCode(value: unknown): PaidPlanCode | null {
   const parsed = parsePlanCode(value);
   if (!parsed || !isPaidPlanCode(parsed)) return null;
+  if (!PUBLIC_COMMERCIAL_PLAN_CATALOG.some((plan) => plan.code === parsed)) {
+    return null;
+  }
   return parsed;
 }
