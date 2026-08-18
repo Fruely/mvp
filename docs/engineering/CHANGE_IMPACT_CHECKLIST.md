@@ -1,5 +1,17 @@
 # Change Impact Checklist
 
+## Cross-client producer contracts
+
+When a Web API/backend change is required by **Freuly Native** (or another Freuly client):
+
+- record the producer commit and branch in the change PR/description;
+- note affected endpoint and expected contract behaviour;
+- do not treat the change as production-complete for Native until deployed to Native’s target environment.
+
+Canonical consumer-side tracking lives in `Fruely/freuly-native` → `RELEASE_STRATEGY.md` (*Current unresolved release dependencies*).
+
+**Open producer contract (2026-08):** commit `57e76d3` on branch `fix/filters-child-categories-only` — `GET /api/filters` must return child specialization categories only (`parent_id` set), excluding slug `other`. Required by Native Search until integrated and smoke-tested.
+
 ## Rule
 
 A new required domain field must **not** be introduced only in a validator or API.

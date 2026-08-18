@@ -55,6 +55,7 @@ type ServiceRow = {
   price_to: number | null;
   currency: string | null;
   price_comment?: string | null;
+  pricing_exception?: "THIRD_PARTY_FUNDED" | "AFTER_ASSESSMENT" | null;
 };
 type ServiceWithSpecialistRow = {
   specialist_id: string | null;
@@ -138,6 +139,7 @@ type SpecialistServiceListMeta = {
   min_currency: string;
   active_services_count: number;
   price_comment: string | null;
+  pricing_exception: "THIRD_PARTY_FUNDED" | "AFTER_ASSESSMENT" | null;
   has_real_price: boolean;
 };
 
@@ -149,6 +151,7 @@ function aggregateSpecialistServicesForList(rows: ServiceRow[]): SpecialistServi
     currency: string;
     priceTo: number | null;
     rowComment: string | null;
+    pricingException: "THIRD_PARTY_FUNDED" | "AFTER_ASSESSMENT" | null;
   };
 
   const parsed: Parsed[] = [];
@@ -168,6 +171,10 @@ function aggregateSpecialistServicesForList(rows: ServiceRow[]): SpecialistServi
       row.price_comment != null && String(row.price_comment).trim()
         ? String(row.price_comment).trim().slice(0, 120)
         : null;
+    const pricingException =
+      row.pricing_exception === "THIRD_PARTY_FUNDED" || row.pricing_exception === "AFTER_ASSESSMENT"
+        ? row.pricing_exception
+        : null;
 
     parsed.push({
       priceFrom: priceFromParsed,
@@ -175,6 +182,7 @@ function aggregateSpecialistServicesForList(rows: ServiceRow[]): SpecialistServi
       currency,
       priceTo: nextPriceTo,
       rowComment,
+      pricingException,
     });
   }
 
@@ -192,11 +200,12 @@ function aggregateSpecialistServicesForList(rows: ServiceRow[]): SpecialistServi
       min_currency: chosen.currency,
       active_services_count: parsed.length,
       price_comment: chosen.rowComment,
+      pricing_exception: null,
       has_real_price: true,
     };
   }
 
-  const chosen = zeroPrices[0];
+  const chosen = zeroPrices.find((p) => p.pricingException) ?? zeroPrices[0];
   return {
     min_price_from: 0,
     min_price_to: chosen.priceTo,
@@ -204,6 +213,7 @@ function aggregateSpecialistServicesForList(rows: ServiceRow[]): SpecialistServi
     min_currency: chosen.currency,
     active_services_count: parsed.length,
     price_comment: chosen.rowComment,
+    pricing_exception: chosen.pricingException,
     has_real_price: false,
   };
 }
@@ -509,7 +519,7 @@ export async function GET(request: NextRequest) {
 
       const servicesResponse = await supabase
         .from('specialist_services')
-        .select('specialist_id, pricing_type, price_from, price_to, currency, price_comment')
+        .select('specialist_id, pricing_type, price_from, price_to, currency, price_comment, pricing_exception')
         .in('specialist_id', specialistIds)
         .eq('category_id', categoryId)
         .eq('is_active', true);
@@ -600,6 +610,7 @@ export async function GET(request: NextRequest) {
         min_currency: serviceMeta?.min_currency ?? null,
         active_services_count: serviceMeta?.active_services_count ?? 0,
         price_comment: serviceMeta?.price_comment ?? null,
+        pricing_exception: serviceMeta?.pricing_exception ?? null,
         has_real_price: serviceMeta?.has_real_price ?? false,
         mobile_service: Boolean(row.mobile_service),
         service_radius_km:
@@ -723,6 +734,7 @@ export async function GET(request: NextRequest) {
         min_currency: rest.min_currency,
         active_services_count: rest.active_services_count,
         price_comment: rest.price_comment,
+        pricing_exception: rest.pricing_exception,
         has_real_price: rest.has_real_price,
         mobile_service: rest.mobile_service,
         service_radius_km: rest.service_radius_km,

@@ -8,6 +8,7 @@ import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 import { isPublicationReadyForDashboard } from "@/lib/dashboard/publicationReadiness";
+import { hasValidServiceForPublish } from "@/lib/dashboard/publicationValidator";
 import {
   GERMANY_COUNTRY_CODE,
   PUBLIC_SERVICE_RADII_KM,
@@ -35,6 +36,9 @@ type ServiceInput = {
   price_from: string;
   is_active: boolean;
   price_comment?: string;
+  pricing_exception?: string | null;
+  pricing_type?: string;
+  price_to?: string | number | null;
 };
 
 type Props = {
@@ -110,16 +114,7 @@ function focusFirstInteractive(container: HTMLElement) {
 }
 
 function hasValidService(services: ServiceInput[]): boolean {
-  return services.some((s) => {
-    if (!s.title?.trim()) return false;
-    if (s.is_active === false) return false;
-
-    const raw = String(s.price_from ?? "").trim();
-    if (!raw) return false;
-
-    const n = Number(raw.replace(",", "."));
-    return Number.isFinite(n) && n > 0;
-  });
+  return hasValidServiceForPublish(services);
 }
 
 export default function SpecialistDashboardEditor({
@@ -310,6 +305,10 @@ export default function SpecialistDashboardEditor({
       servicesInSelectedCategory: form.services.map((service) => ({
         title: service.title,
         price_from: service.price_from,
+        price_to: service.price_to,
+        pricing_type: service.pricing_type,
+        price_comment: service.price_comment,
+        pricing_exception: service.pricing_exception,
         is_active: service.is_active,
       })),
     });

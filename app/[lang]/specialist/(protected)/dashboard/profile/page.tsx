@@ -47,7 +47,7 @@ export default async function SpecialistDashboardProfilePage({
         .maybeSingle(),
       service
         .from("specialist_services")
-        .select("id, title, price_from, is_active, price_comment")
+        .select("id, title, price_from, is_active, price_comment, pricing_exception, pricing_type, price_to")
         .eq("specialist_id", specialist.id)
         .order("created_at", { ascending: false }),
       getDashboardCategoryOptions(),
@@ -138,6 +138,17 @@ export default async function SpecialistDashboardProfilePage({
                 : "",
             is_active: Boolean(service.is_active),
             price_comment: service.price_comment != null ? String(service.price_comment) : "",
+            pricing_exception:
+              service.pricing_exception === "THIRD_PARTY_FUNDED" ||
+              service.pricing_exception === "AFTER_ASSESSMENT"
+                ? service.pricing_exception
+                : null,
+            pricing_type:
+              service.pricing_type === "fixed" ||
+              service.pricing_type === "range" ||
+              service.pricing_type === "hourly"
+                ? service.pricing_type
+                : undefined,
           })),
         }}
         categories={categoriesRows}

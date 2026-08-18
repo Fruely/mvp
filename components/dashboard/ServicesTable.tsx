@@ -19,6 +19,12 @@ import {
   toggleService,
   updateService,
 } from "@/lib/dashboard/services";
+import {
+  isValidPublishableServicePricing,
+  resolvePublicServicePriceView,
+  type PricingException,
+} from "@/lib/specialistServices/pricing";
+import type { ServiceFormSubmitPayload } from "@/components/dashboard/ServiceForm";
 
 function pricingBadgeVariant(type: PricingType): BadgeVariant {
   if (type === "fixed") return "info";
@@ -26,25 +32,22 @@ function pricingBadgeVariant(type: PricingType): BadgeVariant {
   return "success";
 }
 
-function formatPrice(service: SpecialistService): string {
-  if (service.pricing_type === "range") {
-    return `${service.price_from}–${service.price_to ?? "—"} €`;
-  }
-  return `${service.price_from} €`;
+function formatPrice(service: SpecialistService, dict: Dictionary): string {
+  const view = resolvePublicServicePriceView(service, {
+    thirdPartyFunded: t(dict, "services.pricing.public.thirdPartyFunded"),
+    afterAssessment: t(dict, "services.pricing.public.afterAssessment"),
+  });
+  return view.main || "—";
 }
 
 function hasValidPrice(service: {
   pricing_type: PricingType;
   price_from: number | null;
   price_to: number | null;
+  price_comment?: string | null;
+  pricing_exception?: PricingException | null;
 }): boolean {
-  if (typeof service.price_from !== "number" || !Number.isFinite(service.price_from)) return false;
-  if (service.price_from <= 0) return false;
-  if (service.pricing_type === "range") {
-    if (typeof service.price_to !== "number" || !Number.isFinite(service.price_to)) return false;
-    if (service.price_to < service.price_from) return false;
-  }
-  return true;
+  return isValidPublishableServicePricing(service);
 }
 
 function categoryMismatchMessage(lang: string): string {
@@ -115,16 +118,7 @@ export default function ServicesTable({
     }
   }
 
-  async function handleCreate(payload: {
-    title: string;
-    description: string | null;
-    price_comment: string | null;
-    pricing_type: PricingType;
-    price_from: number;
-    price_to: number | null;
-    duration_minutes: number | null;
-    requested_active: boolean;
-  }) {
+  async function handleCreate(payload: ServiceFormSubmitPayload) {
     setCreating(true);
     setToast(null);
     try {
@@ -147,19 +141,7 @@ export default function ServicesTable({
     }
   }
 
-  async function handleUpdate(
-    id: string,
-    payload: {
-      title: string;
-      description: string | null;
-      price_comment: string | null;
-      pricing_type: PricingType;
-      price_from: number;
-      price_to: number | null;
-      duration_minutes: number | null;
-      requested_active: boolean;
-    }
-  ) {
+  async function handleUpdate(id: string, payload: ServiceFormSubmitPayload) {
     setBusyById((prev) => ({ ...prev, [id]: true }));
     setToast(null);
     try {
@@ -318,10 +300,7 @@ export default function ServicesTable({
                 const isEditing = editingId === service.id;
                 const matchesCurrentCategory = isCurrentCategoryService(service);
                 const shouldShowPublishPriceHint =
-                  !service.is_active &&
-                  (typeof service.price_from !== "number" ||
-                    !Number.isFinite(service.price_from) ||
-                    service.price_from <= 0);
+                  !service.is_active && !hasValidPrice(service);
                 return (
                   <Fragment key={service.id}>
                     <tr className={dashboardTableRowClass}>
@@ -342,7 +321,7 @@ export default function ServicesTable({
                         </Badge>
                       </td>
                       <td className="px-2 py-3">
-                        <div className="text-freuly-text-primary">{formatPrice(service)}</div>
+                        <div className="text-freuly-text-primary">{formatPrice(service, dict)}</div>
                         {service.price_comment ? (
                           <div className="mt-1 max-w-[280px] text-xs text-freuly-text-muted">
                             {service.price_comment}
@@ -411,8 +390,15 @@ export default function ServicesTable({
                               description: service.description ?? "",
                               price_comment: service.price_comment ?? "",
                               pricing_type: service.pricing_type,
-                              price_from: String(service.price_from ?? ""),
-                              price_to: service.price_to == null ? "" : String(service.price_to),
+                              pricing_exception: service.pricing_exception ?? "",
+                              price_from:
+                                service.pricing_exception || service.price_from <= 0
+                                  ? ""
+                                  : String(service.price_from ?? ""),
+                              price_to:
+                                service.pricing_exception || service.price_to == null
+                                  ? ""
+                                  : String(service.price_to),
                               duration_minutes:
                                 service.duration_minutes == null ? "" : String(service.duration_minutes),
                             }}

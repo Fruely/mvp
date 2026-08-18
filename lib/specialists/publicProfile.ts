@@ -26,6 +26,9 @@ export type PublicSpecialistProfile = {
     price_from: number | null;
     price_to: number | null;
     currency: string | null;
+    price_comment: string | null;
+    pricing_exception: "THIRD_PARTY_FUNDED" | "AFTER_ASSESSMENT" | null;
+    pricing_type: "fixed" | "range" | "hourly" | null;
   }>;
 };
 
@@ -87,7 +90,7 @@ export async function getPublicSpecialistProfile(
 
   const { data: services } = await supabase
     .from("specialist_services")
-    .select("id, title, price_from, price_to, currency, is_active")
+    .select("id, title, price_from, price_to, currency, is_active, price_comment, pricing_exception, pricing_type")
     .eq("specialist_id", specialist.id)
     .eq("is_active", true);
 
@@ -149,6 +152,18 @@ export async function getPublicSpecialistProfile(
             price_from: service.price_from ?? null,
             price_to: service.price_to ?? null,
             currency: service.currency ?? null,
+            price_comment: localized?.priceComment ?? (typeof service.price_comment === "string" ? service.price_comment : null),
+            pricing_exception:
+              service.pricing_exception === "THIRD_PARTY_FUNDED" ||
+              service.pricing_exception === "AFTER_ASSESSMENT"
+                ? service.pricing_exception
+                : null,
+            pricing_type:
+              service.pricing_type === "fixed" ||
+              service.pricing_type === "range" ||
+              service.pricing_type === "hourly"
+                ? service.pricing_type
+                : null,
           };
         })
       : [],

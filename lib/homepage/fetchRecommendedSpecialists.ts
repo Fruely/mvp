@@ -4,6 +4,9 @@ import { resolveProfileContent, toContentLocale } from "@/lib/localization";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 import type { HomepageRecommendedSpecialist } from "@/lib/homepage/types";
 import {
+  isValidPublishableServicePricing,
+} from "@/lib/specialistServices/pricing";
+import {
   buildPrioritizedOrderedPool,
   isPremiumPlacement,
   premiumSort,
@@ -52,25 +55,10 @@ type SelectedSpecialist = SpecialistRow & {
   badges: RecommendationBadge[];
 };
 
-function normalizePrice(value: unknown): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string" && value.trim()) {
-    const parsed = Number(value.trim().replace(/\s/g, "").replace(",", "."));
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  return null;
-}
-
 function normalizeText(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
   return trimmed ? trimmed : null;
-}
-
-function hasDisplayableServicePrice(priceFrom: number | null, priceComment: string | null): boolean {
-  if (priceFrom == null || !Number.isFinite(priceFrom) || priceFrom < 0) return false;
-  if (priceFrom > 0) return true;
-  return priceFrom === 0 && Boolean(priceComment);
 }
 
 function hasValidServiceForRecommended(services: unknown): boolean {
@@ -80,14 +68,15 @@ function hasValidServiceForRecommended(services: unknown): boolean {
       title?: unknown;
       price_from?: unknown;
       price_comment?: unknown;
+      pricing_exception?: unknown;
+      pricing_type?: unknown;
+      price_to?: unknown;
       is_active?: unknown;
     };
     const title = normalizeText(row.title);
     if (!title) return false;
     if (row.is_active !== true) return false;
-    const priceFrom = normalizePrice(row.price_from);
-    const priceComment = normalizeText(row.price_comment);
-    return hasDisplayableServicePrice(priceFrom, priceComment);
+    return isValidPublishableServicePricing(row);
   });
 }
 
@@ -155,7 +144,7 @@ function visibleQuery(supabase: ReturnType<typeof createSupabaseServerClient>) {
   return supabase
     .from("specialists")
     .select(
-      "id, slug, name, avatar_url, category_id, languages, status, featured_priority, is_featured, founder_badge, published_at, created_at, specialist_services!inner(id, title, price_from, price_comment, is_active)"
+      "id, slug, name, avatar_url, category_id, languages, status, featured_priority, is_featured, founder_badge, published_at, created_at, specialist_services!inner(id, title, price_from, price_to, pricing_type, price_comment, pricing_exception, is_active)"
     )
     .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
     .eq("is_active", true)

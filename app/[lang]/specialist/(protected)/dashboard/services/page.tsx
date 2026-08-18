@@ -44,7 +44,7 @@ export default async function SpecialistDashboardServicesPage({
   const { data, error } = await service
     .from("specialist_services")
     .select(
-      "id, title, description, price_comment, pricing_type, price_from, price_to, currency, duration_minutes, is_active, category_id, created_at, updated_at"
+      "id, title, description, price_comment, pricing_exception, pricing_type, price_from, price_to, currency, duration_minutes, is_active, category_id, created_at, updated_at"
     )
     .eq("specialist_id", specialist.id)
     .order("created_at", { ascending: false });
@@ -58,6 +58,10 @@ export default async function SpecialistDashboardServicesPage({
     title: typeof row.title === "string" ? row.title : "",
     description: typeof row.description === "string" ? row.description : null,
     price_comment: typeof row.price_comment === "string" ? row.price_comment : null,
+    pricing_exception:
+      row.pricing_exception === "THIRD_PARTY_FUNDED" || row.pricing_exception === "AFTER_ASSESSMENT"
+        ? row.pricing_exception
+        : null,
     pricing_type:
       row.pricing_type === "fixed" || row.pricing_type === "range" || row.pricing_type === "hourly"
         ? row.pricing_type

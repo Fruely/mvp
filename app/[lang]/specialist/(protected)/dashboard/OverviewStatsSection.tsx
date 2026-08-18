@@ -161,7 +161,7 @@ export default async function OverviewStatsSection({
       : Promise.resolve({ data: null, error: null }),
     service
       .from("specialist_services")
-      .select("title, price_from, is_active, category_id")
+      .select("title, price_from, price_to, pricing_type, price_comment, pricing_exception, is_active, category_id")
       .eq("specialist_id", specialist.id)
       .eq("is_active", true),
     getSpecialistPlanForDashboard(service, specialist.id),
