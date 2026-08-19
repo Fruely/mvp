@@ -7,7 +7,11 @@ import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { getSpecialistUrl } from "@/lib/urls";
 import FounderBadge from "@/components/specialist/FounderBadge";
-import { SPECIALIST_MAIN_PHOTO_FIT_CLASS } from "@/components/specialist/specialistMainPhotoFit";
+import {
+  type PhotoFocus,
+  resolveSpecialistPhotoFit,
+  specialistMainPhotoFitClass,
+} from "@/components/specialist/specialistMainPhotoFit";
 import { publicCardClass } from "@/components/public/publicStyles";
 
 export type VariantCSpecialist = {
@@ -29,10 +33,12 @@ export default function VariantCSpecialistCard({
   specialist,
   lang,
   dict,
+  photoFocus = null,
 }: {
   specialist: VariantCSpecialist;
   lang: Lang;
   dict: Dictionary;
+  photoFocus?: PhotoFocus | null;
 }) {
   const categoryLabel =
     getCategoryTitle(
@@ -48,6 +54,7 @@ export default function VariantCSpecialistCard({
   const name = specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback");
   const profileHref = getSpecialistUrl(lang, specialist);
   const languages = specialist.languages.filter(Boolean).slice(0, 3);
+  const photoFit = resolveSpecialistPhotoFit({ focus: photoFocus, surface: "card" });
 
   return (
     <article className={`${publicCardClass} flex h-full flex-col overflow-hidden`}>
@@ -63,7 +70,8 @@ export default function VariantCSpecialistCard({
             alt={name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 320px"
-            className={SPECIALIST_MAIN_PHOTO_FIT_CLASS}
+            className={specialistMainPhotoFitClass(photoFit)}
+            style={{ objectPosition: photoFit.objectPosition }}
             loading="lazy"
           />
         ) : (

@@ -6,7 +6,11 @@ import Link from "next/link";
 import { t, type Dictionary } from "@/lib/i18n";
 import { getSpecialistUrl } from "@/lib/urls";
 import FounderBadge from "@/components/specialist/FounderBadge";
-import { SPECIALIST_MAIN_PHOTO_FIT_CLASS } from "@/components/specialist/specialistMainPhotoFit";
+import {
+  type PhotoFocus,
+  resolveSpecialistPhotoFit,
+  specialistMainPhotoFitClass,
+} from "@/components/specialist/specialistMainPhotoFit";
 import { getPublicSpecialistLocation } from "@/lib/specialists/geography";
 import { resolvePublicServicePriceView } from "@/lib/specialistServices/pricing";
 
@@ -56,11 +60,13 @@ export default function SpecialistPreviewCard({
   lang,
   dict,
   categoryLabel,
+  photoFocus = null,
 }: {
   specialist: SpecialistPreview;
   lang: string;
   dict: Dictionary;
   categoryLabel?: string | null;
+  photoFocus?: PhotoFocus | null;
 }) {
   const languageList = Array.isArray(specialist.languages) ? specialist.languages : [];
   const chips = languageList.slice(0, 3);
@@ -123,6 +129,8 @@ export default function SpecialistPreviewCard({
     onlineLabel: t(dict, "specialist.workFormat.online"),
   });
 
+  const photoFit = resolveSpecialistPhotoFit({ focus: photoFocus, surface: "card" });
+
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-freuly-border-default bg-freuly-surface">
       <div className="relative h-[200px] overflow-hidden bg-freuly-page">
@@ -132,7 +140,8 @@ export default function SpecialistPreviewCard({
             alt={specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
             fill
             sizes="(min-width: 1024px) 304px, (min-width: 640px) 50vw, 100vw"
-            className={SPECIALIST_MAIN_PHOTO_FIT_CLASS}
+            className={specialistMainPhotoFitClass(photoFit)}
+            style={{ objectPosition: photoFit.objectPosition }}
             unoptimized
           />
         ) : (

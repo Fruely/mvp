@@ -1,7 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { SPECIALIST_MAIN_PHOTO_FIT_CLASS } from "@/components/specialist/specialistMainPhotoFit";
+import {
+  resolveSpecialistPhotoFit,
+  specialistMainPhotoFitClass,
+} from "@/components/specialist/specialistMainPhotoFit";
 
 type SpecialistAvatarImageProps = {
   src: string | null | undefined;
@@ -18,6 +21,7 @@ export default function SpecialistAvatarImage({
   loading = false,
 }: SpecialistAvatarImageProps) {
   const trimmed = typeof src === "string" ? src.trim() : "";
+  const photoFit = resolveSpecialistPhotoFit({ focus: null, surface: "dashboard" });
 
   return (
     <div
@@ -28,7 +32,8 @@ export default function SpecialistAvatarImage({
           src={trimmed}
           alt={alt}
           fill
-          className={SPECIALIST_MAIN_PHOTO_FIT_CLASS}
+          className={specialistMainPhotoFitClass(photoFit)}
+          style={{ objectPosition: photoFit.objectPosition }}
           sizes="(max-width: 768px) 100vw, 320px"
           unoptimized
         />

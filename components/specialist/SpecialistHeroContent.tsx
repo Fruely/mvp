@@ -2,10 +2,15 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import { Briefcase, Globe, MapPin } from "lucide-react";
 import FounderBadge from "@/components/specialist/FounderBadge";
-import { SPECIALIST_MAIN_PHOTO_FIT_CLASS } from "@/components/specialist/specialistMainPhotoFit";
+import {
+  type PhotoFocus,
+  resolveSpecialistPhotoFit,
+  specialistMainPhotoFitClass,
+} from "@/components/specialist/specialistMainPhotoFit";
 
 export type SpecialistHeroContentProps = {
   avatarUrl?: string | null;
+  photoFocus?: PhotoFocus | null;
   avatarAlt: string;
   name: string;
   specialization: string | null;
@@ -37,6 +42,7 @@ function MetaItem({
 
 export default function SpecialistHeroContent({
   avatarUrl,
+  photoFocus = null,
   avatarAlt,
   name,
   specialization,
@@ -51,6 +57,7 @@ export default function SpecialistHeroContent({
   actions,
 }: SpecialistHeroContentProps) {
   const trimmed = typeof avatarUrl === "string" ? avatarUrl.trim() : "";
+  const photoFit = resolveSpecialistPhotoFit({ focus: photoFocus, surface: "hero" });
 
   return (
     <div className="flex w-full flex-col gap-5 md:flex-row md:items-center md:gap-12">
@@ -60,7 +67,8 @@ export default function SpecialistHeroContent({
             src={trimmed}
             alt={avatarAlt}
             fill
-            className={SPECIALIST_MAIN_PHOTO_FIT_CLASS}
+            className={specialistMainPhotoFitClass(photoFit)}
+            style={{ objectPosition: photoFit.objectPosition }}
             sizes="(max-width: 768px) 100vw, 380px"
             unoptimized
             priority
