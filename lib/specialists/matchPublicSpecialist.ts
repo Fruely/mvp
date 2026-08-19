@@ -43,16 +43,34 @@ export function matchPublicSpecialist(
   return null;
 }
 
+/**
+ * Public canonical slug for redirects and SEO.
+ * Known garbled aliases map to their persisted target even when the DB row
+ * still stores the garbled value in `specialists.slug` (pre data migration).
+ */
+export function resolvePublicCanonicalSpecialistSlug(
+  slug: string | null | undefined,
+): string | null {
+  if (typeof slug !== "string") return null;
+  const trimmed = slug.trim();
+  if (!trimmed) return null;
+
+  const mappedLegacy = mapLegacySpecialistSlug(trimmed);
+  if (mappedLegacy) return mappedLegacy;
+
+  return persistedCanonicalSpecialistSlug(trimmed);
+}
+
 /** One-hop 308 target, or null when the request is already canonical. */
 export function specialistCanonicalRedirectPath(
   lang: string,
   requested: string,
   specialist: { id: string; slug: string | null },
 ): string | null {
-  const canonical = persistedCanonicalSpecialistSlug(specialist.slug);
+  const canonical = resolvePublicCanonicalSpecialistSlug(specialist.slug);
   if (!canonical) return null;
   const decoded = decodePathSegment(requested).trim();
-  if (decoded === canonical) return null;
+  if (!decoded || decoded === canonical) return null;
   return `/${lang}/specialist/${canonical}`;
 }
 
