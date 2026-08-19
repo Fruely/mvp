@@ -52,7 +52,8 @@ export function getSpecialistPublicSlug(specialist: {
   id: string;
   slug?: string | null;
 }): string {
-  if (isAsciiSlug(specialist.slug)) return specialist.slug.trim();
+  const slug = specialist.slug;
+  if (typeof slug === "string" && isAsciiSlug(slug)) return slug.trim();
   return specialist.id;
 }
 
