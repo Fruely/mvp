@@ -29,7 +29,7 @@ function toUiLang(lang: string): UiLang {
   const lower = lang.toLowerCase();
   if (lower === "de") return "de";
   if (lower === "ru") return "ru";
-  if (lower === "uk") return "ua";
+  if (lower === "ua" || lower === "uk") return "ua";
   return DEFAULT_LANG;
 }
 
