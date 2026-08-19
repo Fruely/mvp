@@ -4,15 +4,21 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import {
+import { registerPartnerTestHooks } from "../../lib/partners/partnerTestHooks.mjs";
+
+registerPartnerTestHooks();
+
+const {
   canAdvanceFromStep,
   createInitialFlowState,
   getActionLabel,
   getNextStep,
   getPreviousStep,
   isSubmitStep,
-} from "../../lib/search/serviceSearchFlow.logic.ts";
-import { buildServiceSearchResultsUrl } from "../../lib/search/serviceSearchUrl.ts";
+} = await import("../../lib/search/serviceSearchFlow.logic.ts");
+const { buildServiceSearchResultsUrl } = await import("../../lib/search/serviceSearchUrl.ts");
+const { buildCategorySearchHref } = await import("../../lib/search/searchContext.ts");
+const { SERVICE_SEARCH_FLOW_TEXT } = await import("../../lib/search/serviceSearchFlowText.ts");
 
 const flowSrc = readFileSync(
   new URL("./ServiceSearchFlow.tsx", import.meta.url),
@@ -140,4 +146,35 @@ test("submit label appears on format step for online/any", () => {
     "Показать специалистов"
   );
   assert.equal(isSubmitStep("radius", state({ selectedFormat: "nearby", location: "Bonn" })), true);
+});
+
+test("popular category chips navigate via canonical category URLs", () => {
+  assert.match(flowSrc, /buildCategorySearchHref/);
+  assert.match(flowSrc, /onCategorySelect=\{navigateToCategory\}/);
+  assert.match(flowSrc, /onClick=\{\(\) => onCategorySelect\(category\.slug\)\}/);
+  assert.doesNotMatch(flowSrc, /onSelect=\{\(value\) => \{\s*setService\(value\)/);
+
+  const psychologists = SERVICE_SEARCH_FLOW_TEXT.ru.popularCategories.find(
+    (item) => item.slug === "psychologists",
+  );
+  assert.ok(psychologists);
+  assert.equal(psychologists.label, "Психологи");
+  assert.equal(buildCategorySearchHref("ru", psychologists.slug), "/ru/specialists/psychologists");
+  assert.equal(buildCategorySearchHref("ua", psychologists.slug), "/ua/specialists/psychologists");
+  assert.equal(buildCategorySearchHref("de", psychologists.slug), "/de/specialists/psychologists");
+});
+
+test("free-text service search keeps query URL with Unicode q", () => {
+  const url = buildServiceSearchResultsUrl({
+    service: "психологи",
+    language: "ru",
+    format: "online",
+    location: "",
+    radiusKm: 30,
+  });
+  const params = new URLSearchParams(url.split("?")[1]);
+  assert.equal(params.get("lang"), "ru");
+  assert.equal(params.get("q"), "психологи");
+  assert.equal(params.get("category"), null);
+  assert.match(url, /^\/specialists\?/);
 });

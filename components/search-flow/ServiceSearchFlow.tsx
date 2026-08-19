@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode, RefObject } from "react";
+import type { Lang } from "@/lib/i18n";
+import { buildCategorySearchHref } from "@/lib/search/searchContext";
 import {
   buildServiceSearchResultsUrl,
   DEFAULT_SERVICE_SEARCH_RADIUS_KM,
@@ -357,11 +359,11 @@ function PrimaryButton({
 function PopularCategories({
   label,
   categories,
-  onSelect,
+  onCategorySelect,
 }: {
   label: string;
   categories: PopularCategory[];
-  onSelect: (value: string) => void;
+  onCategorySelect: (slug: string) => void;
 }) {
   if (categories.length === 0) return null;
 
@@ -373,7 +375,7 @@ function PopularCategories({
           {index > 0 ? <span className="text-freuly-text-secondary"> • </span> : null}
           <button
             type="button"
-            onClick={() => onSelect(category.label)}
+            onClick={() => onCategorySelect(category.slug)}
             className="font-semibold text-freuly-primary hover:text-freuly-primary-hover freuly-focus-ring"
           >
             {category.label}
@@ -392,6 +394,7 @@ export default function ServiceSearchFlow({
   className = "",
 }: ServiceSearchFlowProps) {
   const router = useRouter();
+  const uiLang = (defaultLanguage ?? "ru") as Lang;
   const isHomeVariant = variant === "home";
   const [step, setStep] = useState<Step>("service");
   const [service, setService] = useState("");
@@ -486,6 +489,10 @@ export default function ServiceSearchFlow({
       location: state.location,
       radiusKm: state.radiusKm || DEFAULT_SERVICE_SEARCH_RADIUS_KM,
     });
+  }
+
+  function navigateToCategory(slug: string) {
+    router.push(buildCategorySearchHref(uiLang, slug));
   }
 
   function submitResults() {
@@ -610,10 +617,7 @@ export default function ServiceSearchFlow({
                 <PopularCategories
                   label={text.popularCategoriesLabel}
                   categories={text.popularCategories}
-                  onSelect={(value) => {
-                    setService(value);
-                    if (error) setError(null);
-                  }}
+                  onCategorySelect={navigateToCategory}
                 />
               </>
             }
