@@ -181,6 +181,9 @@ export default async function SpecialistsPage({
   if (!canonicalCategorySlug && category && !q && !place && !pageMode) {
     canonicalCategorySlug = await resolveCategoryAsciiSlug(category);
   }
+  if (!canonicalCategorySlug && q && !category && !place && !pageMode) {
+    canonicalCategorySlug = await resolveCategoryAsciiSlug(q);
+  }
   if (canonicalCategorySlug) {
     permanentRedirect(getCategoryUrl(uiLang, canonicalCategorySlug));
   }
