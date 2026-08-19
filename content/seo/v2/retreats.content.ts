@@ -150,7 +150,7 @@ export const retreatsContent: LocalizedSeoCategory = {
         heading: "Retreat-Angebote in der Kategorie",
         body: "Filtern Sie nach Schwerpunkt und Sprache — dann gezielt nachfragen.",
         buttonLabel: "Kategorie Retreats",
-        ctaHref: "/de/category/yoga-retreats",
+        ctaHref: "/de/specialists/yoga-retreats",
       },
     },
     ru: {
@@ -288,7 +288,7 @@ export const retreatsContent: LocalizedSeoCategory = {
         heading: "Ретриты в категории",
         body: "Фильтр по йоге/медитации и языку.",
         buttonLabel: "Открыть категорию",
-        ctaHref: "/ru/category/yoga-retreats",
+        ctaHref: "/ru/specialists/yoga-retreats",
       },
     },
     ua: {
@@ -422,7 +422,7 @@ export const retreatsContent: LocalizedSeoCategory = {
         heading: "Категорія ретритів",
         body: "Фільтр за фокусом і мовою.",
         buttonLabel: "Відкрити",
-        ctaHref: "/ua/category/yoga-retreats",
+        ctaHref: "/ua/specialists/yoga-retreats",
       },
     },
   },

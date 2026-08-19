@@ -158,7 +158,7 @@ export const pflegeBetreuungContent: LocalizedSeoCategory = {
         heading: "Pflegeprofile in der Kategorie öffnen",
         body: "Start mit Seniorenbetreuung, dann nach Qualifikation verfeinern.",
         buttonLabel: "Kategorie Seniorenbetreuung",
-        ctaHref: "/de/category/seniorenbetreuung",
+        ctaHref: "/de/specialists/seniorenbetreuung",
       },
     },
     ru: {
@@ -305,7 +305,7 @@ export const pflegeBetreuungContent: LocalizedSeoCategory = {
         heading: "Категория ухода за пожилыми",
         body: "Старт фильтра — дальше уточнение по квалификации.",
         buttonLabel: "Открыть",
-        ctaHref: "/ru/category/seniorenbetreuung",
+        ctaHref: "/ru/specialists/seniorenbetreuung",
       },
     },
     ua: {
@@ -456,7 +456,7 @@ export const pflegeBetreuungContent: LocalizedSeoCategory = {
         heading: "Перейти до категорії догляду за літніми",
         body: "Почніть з профілів у категорії «Догляд за літніми» і звужуйте пошук за мовою та кваліфікацією.",
         buttonLabel: "Відкрити категорію",
-        ctaHref: "/ua/category/seniorenbetreuung",
+        ctaHref: "/ua/specialists/seniorenbetreuung",
       },
     },
   },

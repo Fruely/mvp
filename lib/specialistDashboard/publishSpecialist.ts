@@ -8,6 +8,8 @@ import {
   type CategoryTitleRow,
 } from "@/lib/notifications/specialistPublishNotify";
 import { buildSpecialistSlug } from "@/lib/slugify";
+import { isAsciiSlug } from "@/lib/publicUrls";
+import { proposeMigratedCanonicalSlug, uniqueAsciiSlug } from "@/lib/specialists/canonicalSlug";
 import {
   reconcileSpecialistAccess,
   isLifecycleReconciliationEnabled,
@@ -390,8 +392,13 @@ export async function publishSpecialistProfile(
   }
 
   let generatedSlug: string | null = null;
+  let preservedLegacySlug: string | null = null;
+  const storedSlug = typeof row.slug === "string" ? row.slug.trim() : "";
+  const hasPersistedCanonical = isAsciiSlug(storedSlug);
 
-  if (!row.slug) {
+  if (!hasPersistedCanonical) {
+    if (storedSlug) preservedLegacySlug = storedSlug;
+
     let categorySlug: string | null = null;
     if (row.category_id) {
       const { data: cat } = await service
@@ -418,19 +425,22 @@ export async function publishSpecialistProfile(
       citySlug = cityRow?.slug ?? null;
     }
 
-    if (row.name) {
-      const base = buildSpecialistSlug(categorySlug, citySlug, row.name);
-      let candidate = base;
-      let suffix = 2;
+    const base =
+      (storedSlug ? proposeMigratedCanonicalSlug(storedSlug, []) : null) ||
+      (row.name ? buildSpecialistSlug(categorySlug, citySlug, row.name) : "");
+
+    if (isAsciiSlug(base)) {
+      const taken = new Set<string>();
+      let candidate = uniqueAsciiSlug(base, taken);
       while (true) {
         const { data: existing } = await service
           .from("specialists")
           .select("id")
           .eq("slug", candidate)
           .maybeSingle();
-        if (!existing) break;
-        candidate = `${base}-${suffix}`;
-        suffix++;
+        if (!existing || existing.id === specialistId) break;
+        taken.add(candidate);
+        candidate = uniqueAsciiSlug(base, taken);
       }
       generatedSlug = candidate;
     }
@@ -443,6 +453,7 @@ export async function publishSpecialistProfile(
     published_at: new Date().toISOString(),
   };
   if (generatedSlug) updatePayload.slug = generatedSlug;
+  if (preservedLegacySlug) updatePayload.slug_legacy = preservedLegacySlug;
 
   const { data: updated, error: updateError } = await service
     .from("specialists")

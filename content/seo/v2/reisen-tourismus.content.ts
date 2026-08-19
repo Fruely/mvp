@@ -155,7 +155,7 @@ export const reisenTourismusContent: LocalizedSeoCategory = {
         heading: "In eine konkrete Kategorie wechseln",
         body: "Wenn Sie bereits wissen, dass Beratung zuerst kommt — öffnen Sie Reiseberatung; bei Stadttag Touren & Ausflüge.",
         buttonLabel: "Reiseberatung-Kategorie",
-        ctaHref: "/de/category/reiseberatung",
+        ctaHref: "/de/specialists/reiseberatung",
       },
     },
     ru: {
@@ -303,7 +303,7 @@ export const reisenTourismusContent: LocalizedSeoCategory = {
         heading: "К консультациям по поездкам",
         body: "Если нужен маршрут целиком — откройте категорию; для одного дня с гидом идите в экскурсии.",
         buttonLabel: "Категория консультаций",
-        ctaHref: "/ru/category/reiseberatung",
+        ctaHref: "/ru/specialists/reiseberatung",
       },
     },
     ua: {
@@ -446,7 +446,7 @@ export const reisenTourismusContent: LocalizedSeoCategory = {
         heading: "До консультацій з подорожей",
         body: "Якщо потрібна вся логістика; для гіда на день — екскурсії.",
         buttonLabel: "Категорія консультацій",
-        ctaHref: "/ua/category/reiseberatung",
+        ctaHref: "/ua/specialists/reiseberatung",
       },
     },
   },

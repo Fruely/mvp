@@ -58,7 +58,7 @@ export const autowerkstattReparaturContent: LocalizedSeoCategory = {
         heading: "Autowerkstatt anfragen",
         body: "Beschreiben Sie Symptome, Modell, Baujahr und was bereits geprüft wurde.",
         buttonLabel: "Kategorie öffnen",
-        ctaHref: "/de/category/autowerkstatt-reparatur",
+        ctaHref: "/de/specialists/autowerkstatt-reparatur",
       },
       seoText:
         "Autowerkstatt Deutschland, Kfz Reparatur, Automechaniker, Fahrzeugdiagnose, Bremsen Reparatur, Fahrwerk Reparatur, TÜV Vorbereitung, russischsprachige Werkstatt.",
@@ -112,7 +112,7 @@ export const autowerkstattReparaturContent: LocalizedSeoCategory = {
         heading: "Отправить заявку в автосервис",
         body: "Опишите симптомы, модель, год выпуска и что уже проверяли.",
         buttonLabel: "Открыть категорию",
-        ctaHref: "/ru/category/autowerkstatt-reparatur",
+        ctaHref: "/ru/specialists/autowerkstatt-reparatur",
       },
       seoText:
         "автосервис Германия, ремонт авто Германия, автомеханик Германия, диагностика авто, ремонт ходовой, ремонт тормозов, подготовка к TÜV, русскоязычный автосервис.",
@@ -166,7 +166,7 @@ export const autowerkstattReparaturContent: LocalizedSeoCategory = {
         heading: "Надіслати запит в автосервіс",
         body: "Опишіть симптоми, модель, рік випуску і що вже перевіряли.",
         buttonLabel: "Відкрити категорію",
-        ctaHref: "/ua/category/autowerkstatt-reparatur",
+        ctaHref: "/ua/specialists/autowerkstatt-reparatur",
       },
       seoText:
         "автосервіс Німеччина, ремонт авто Німеччина, автомеханік Німеччина, діагностика авто, ремонт ходової, ремонт гальм, підготовка до TÜV.",

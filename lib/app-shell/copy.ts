@@ -8,7 +8,7 @@ import type { Lang } from "@/lib/i18n";
  * - supabase/manual_migrations/2026-05-16_homepage_parent_category_slots.sql
  *   (tech-it-support, house-garden, health-psychology join public.categories);
  * - locales/{ua,ru,de}.json `categories.*` parent groups (full label parity).
- * Each tile links to the existing `/{lang}/category/{slug}` route.
+ * Each tile links to the existing `/{lang}/specialists/{slug}` route.
  */
 export const APP_SHELL_CATEGORY_SLUGS = [
   "health-psychology",

@@ -163,7 +163,7 @@ export const healthPsychologyContent: LocalizedSeoCategory = {
         heading: "In die passende Kategorie springen",
         body: "Öffnen Sie Psycholog:innen und filtern Sie nach Stadt, Sprache und Format — oder nutzen Sie die vertiefende Seite zu Ukrainisch und Russisch im Menü „Verwandte Themen“.",
         buttonLabel: "Psycholog:innen durchsuchen",
-        ctaHref: "/de/category/psychologists",
+        ctaHref: "/de/specialists/psychologists",
       },
     },
     ru: {
@@ -318,7 +318,7 @@ export const healthPsychologyContent: LocalizedSeoCategory = {
         heading: "Перейти к категории или углубиться по языку",
         body: "Откройте список психологов с фильтрами по городу и языку; если важнее узкий контекст — используйте ссылку на страницу «Психологи в Германии» в блоке ниже.",
         buttonLabel: "Категория «Психологи»",
-        ctaHref: "/ru/category/psychologists",
+        ctaHref: "/ru/specialists/psychologists",
       },
     },
     ua: {
@@ -472,7 +472,7 @@ export const healthPsychologyContent: LocalizedSeoCategory = {
         heading: "Перейти до категорії чи звузити за мовою",
         body: "Відкрийте список психологів із фільтрами; якщо важливий саме мовний контекст — скористайтесь сторінкою в блоці «Пов’язані розділи».",
         buttonLabel: "Дивитися «Психологи»",
-        ctaHref: "/ua/category/psychologists",
+        ctaHref: "/ua/specialists/psychologists",
       },
     },
   },

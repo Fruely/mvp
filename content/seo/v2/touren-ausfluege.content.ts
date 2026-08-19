@@ -140,7 +140,7 @@ export const tourenAusfluegeContent: LocalizedSeoCategory = {
         heading: "Guides in der Kategorie öffnen",
         body: "Stadt und Sprache filtern, dann konkrete Nachricht.",
         buttonLabel: "Kategorie Tourguides",
-        ctaHref: "/de/category/tourguide",
+        ctaHref: "/de/specialists/tourguide",
       },
     },
     ru: {
@@ -268,7 +268,7 @@ export const tourenAusfluegeContent: LocalizedSeoCategory = {
         heading: "К списку гидов",
         body: "Город + язык экскурсии.",
         buttonLabel: "Категория гидов",
-        ctaHref: "/ru/category/tourguide",
+        ctaHref: "/ru/specialists/tourguide",
       },
     },
     ua: {
@@ -392,7 +392,7 @@ export const tourenAusfluegeContent: LocalizedSeoCategory = {
         heading: "До гідів",
         body: "Місто й мова в фільтрі.",
         buttonLabel: "Категорія гідів",
-        ctaHref: "/ua/category/tourguide",
+        ctaHref: "/ua/specialists/tourguide",
       },
     },
   },

@@ -33,6 +33,11 @@ const nextConfig = {
         destination: "/de/datenschutzerklaerung",
         permanent: true,
       },
+      {
+        source: "/:lang(ru|ua|de)/category/:slug([a-z0-9-]+)",
+        destination: "/:lang/specialists/:slug",
+        permanent: true,
+      },
     ];
   },
 };

@@ -90,7 +90,7 @@ export default function SpecialistsList({ specialists, isLoading }: Props) {
 
           <div className="mt-auto pt-4">
             <Link
-              href={`/specialist/${encodeURIComponent(specialist.slug?.trim() || specialist.id)}`}
+              href={getSpecialistUrl("ru", specialist)}
               className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:text-blue-800"
             >
               Подробнее

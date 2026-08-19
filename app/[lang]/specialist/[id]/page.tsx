@@ -1,37 +1,50 @@
-import type { Metadata } from 'next';
-import { getPublicSpecialistProfile } from '@/lib/specialists/publicProfile';
-import SpecialistProfileClient from '@/components/specialist/SpecialistProfileClient';
-import type { Specialist } from '@/components/specialist/SpecialistProfileClient';
+import type { Metadata } from "next";
+import { permanentRedirect } from "next/navigation";
+import { getPublicSpecialistProfile } from "@/lib/specialists/publicProfile";
+import SpecialistProfileClient from "@/components/specialist/SpecialistProfileClient";
+import type { Specialist } from "@/components/specialist/SpecialistProfileClient";
+import { specialistCanonicalRedirectPath } from "@/lib/specialists/matchPublicSpecialist";
+import {
+  appendPreservedQuery,
+  getSpecialistPublicSlug,
+  hreflangSpecialist,
+  specialistCanonicalUrl,
+} from "@/lib/publicUrls";
 
 interface SpecialistPageProps {
   params: {
-    lang: 'ru' | 'ua' | 'de';
+    lang: "ru" | "ua" | "de";
     id: string;
   };
+  searchParams?: { open?: string };
 }
 
 export async function generateMetadata({ params }: SpecialistPageProps): Promise<Metadata> {
   const profile = await getPublicSpecialistProfile(params.id, params.lang);
-  const identifier = profile?.slug ?? params.id;
+  const specialist = profile
+    ? { id: profile.id, slug: profile.slug }
+    : { id: params.id, slug: params.id };
+  const canonical = specialistCanonicalUrl(params.lang, specialist);
+  const languages = hreflangSpecialist(getSpecialistPublicSlug(specialist));
 
   const localized = {
     ru: {
-      fallbackTitle: 'Специалист Freuly',
-      fallbackDescription: 'Профиль специалиста на Freuly.',
-      cityConnector: 'в',
-      descriptionSuffix: 'Услуги, цены, языки и заявка через Freuly.',
+      fallbackTitle: "Специалист Freuly",
+      fallbackDescription: "Профиль специалиста на Freuly.",
+      cityConnector: "в",
+      descriptionSuffix: "Услуги, цены, языки и заявка через Freuly.",
     },
     ua: {
-      fallbackTitle: 'Спеціаліст Freuly',
-      fallbackDescription: 'Профіль спеціаліста на Freuly.',
-      cityConnector: 'у',
-      descriptionSuffix: 'Послуги, ціни, мови та заявка через Freuly.',
+      fallbackTitle: "Спеціаліст Freuly",
+      fallbackDescription: "Профіль спеціаліста на Freuly.",
+      cityConnector: "у",
+      descriptionSuffix: "Послуги, ціни, мови та заявка через Freuly.",
     },
     de: {
-      fallbackTitle: 'Freuly Spezialist',
-      fallbackDescription: 'Spezialistenprofil auf Freuly.',
-      cityConnector: 'in',
-      descriptionSuffix: 'Leistungen, Preise, Sprachen und Anfrage über Freuly.',
+      fallbackTitle: "Freuly Spezialist",
+      fallbackDescription: "Spezialistenprofil auf Freuly.",
+      cityConnector: "in",
+      descriptionSuffix: "Leistungen, Preise, Sprachen und Anfrage über Freuly.",
     },
   }[params.lang];
 
@@ -41,23 +54,22 @@ export async function generateMetadata({ params }: SpecialistPageProps): Promise
       : `${profile.name} | Freuly`
     : localized.fallbackTitle;
 
-  const description = profile?.name && profile.categoryTitle && profile.city
-    ? `${profile.name} — ${profile.categoryTitle} ${localized.cityConnector} ${profile.city}. ${localized.descriptionSuffix}`
-    : localized.fallbackDescription;
-
-  const baseUrl = `https://freuly.de/${params.lang}/specialist/${identifier}`;
+  const description =
+    profile?.name && profile.categoryTitle && profile.city
+      ? `${profile.name} — ${profile.categoryTitle} ${localized.cityConnector} ${profile.city}. ${localized.descriptionSuffix}`
+      : localized.fallbackDescription;
 
   return {
     title,
     description,
     alternates: {
-      canonical: baseUrl,
-      languages: {
-        ru: `https://freuly.de/ru/specialist/${identifier}`,
-        uk: `https://freuly.de/ua/specialist/${identifier}`,
-        de: `https://freuly.de/de/specialist/${identifier}`,
-        'x-default': `https://freuly.de/ru/specialist/${identifier}`,
-      },
+      canonical,
+      languages,
+    },
+    openGraph: {
+      url: canonical,
+      title,
+      description,
     },
   };
 }
@@ -69,12 +81,10 @@ function escapeJsonLd(value: unknown): string {
 function toSpecialistJsonLd(
   profile: Awaited<ReturnType<typeof getPublicSpecialistProfile>>,
   lang: "ru" | "ua" | "de",
-  identifier: string
 ): Record<string, unknown> | null {
   if (!profile?.name) return null;
 
-  const publicId = profile.slug ?? identifier;
-  const url = `https://freuly.de/${lang}/specialist/${publicId}`;
+  const url = specialistCanonicalUrl(lang, profile);
   const services = profile.services.filter((service) => service.title);
 
   return {
@@ -118,7 +128,7 @@ function toSpecialistJsonLd(
 }
 
 function toInitialSpecialist(
-  profile: Awaited<ReturnType<typeof getPublicSpecialistProfile>>
+  profile: Awaited<ReturnType<typeof getPublicSpecialistProfile>>,
 ): Specialist | null {
   if (!profile) return null;
 
@@ -146,9 +156,18 @@ function toInitialSpecialist(
   };
 }
 
-export default async function SpecialistPage({ params }: SpecialistPageProps) {
+export default async function SpecialistPage({ params, searchParams }: SpecialistPageProps) {
   const profile = await getPublicSpecialistProfile(params.id, params.lang);
-  const jsonLd = toSpecialistJsonLd(profile, params.lang, params.id);
+  if (profile) {
+    const dest = specialistCanonicalRedirectPath(params.lang, params.id, profile);
+    if (dest) {
+      const query = new URLSearchParams();
+      if (searchParams?.open?.trim()) query.set("open", searchParams.open.trim());
+      permanentRedirect(appendPreservedQuery(dest, query));
+    }
+  }
+
+  const jsonLd = toSpecialistJsonLd(profile, params.lang);
 
   return (
     <>
@@ -160,7 +179,7 @@ export default async function SpecialistPage({ params }: SpecialistPageProps) {
       ) : null}
       <SpecialistProfileClient
         lang={params.lang}
-        id={params.id}
+        id={profile ? getSpecialistPublicSlug(profile) : params.id}
         initialSpecialist={toInitialSpecialist(profile)}
       />
     </>

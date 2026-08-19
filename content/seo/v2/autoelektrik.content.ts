@@ -63,7 +63,7 @@ export const autoelektrikContent: LocalizedSeoCategory = {
         heading: "Autoelektrik-Problem beschreiben",
         body: "Notieren Sie Fehlermeldungen, Batteriewechsel, Startverhalten und ob das Fahrzeug fahrbereit ist.",
         buttonLabel: "Kategorie öffnen",
-        ctaHref: "/de/category/autoelektrik",
+        ctaHref: "/de/specialists/autoelektrik",
       },
       seoText:
         "Autoelektrik Deutschland, mobiler Autoelektriker, Auto startet nicht, Batterie Auto, Starter, Lichtmaschine, Fehlerdiagnose Auto, russischsprachiger Autoelektriker.",
@@ -122,7 +122,7 @@ export const autoelektrikContent: LocalizedSeoCategory = {
         heading: "Опишите проблему автоэлектрику",
         body: "Укажите ошибки, поведение при запуске, аккумулятор и готовность машины к поездке.",
         buttonLabel: "Открыть категорию",
-        ctaHref: "/ru/category/autoelektrik",
+        ctaHref: "/ru/specialists/autoelektrik",
       },
       seoText:
         "автоэлектрик Германия, выездной автоэлектрик, машина не заводится, диагностика автоэлектрики, аккумулятор авто, стартер, генератор, ошибки авто, русскоязычный автоэлектрик.",
@@ -181,7 +181,7 @@ export const autoelektrikContent: LocalizedSeoCategory = {
         heading: "Опишіть проблему автоелектрику",
         body: "Вкажіть помилки, поведінку під час запуску, акумулятор і чи може авто їхати.",
         buttonLabel: "Відкрити категорію",
-        ctaHref: "/ua/category/autoelektrik",
+        ctaHref: "/ua/specialists/autoelektrik",
       },
       seoText:
         "автоелектрик Німеччина, виїзний автоелектрик, машина не заводиться, діагностика автоелектрики, акумулятор авто, стартер, генератор, помилки авто.",

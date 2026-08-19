@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Lang } from "@/lib/i18n";
+import { tryGetCategoryUrl } from "@/lib/publicUrls";
 import type { SeoCategoryContent } from "@/lib/seo/content";
 import {
   buildBreadcrumbListJsonLd,
@@ -48,7 +49,7 @@ export default function CategoryContentPage({
 }: Props) {
   const introParagraphs = toParagraphs(content.intro);
   const ctaHref =
-    content.cta.ctaHref ?? `/${lang}/category/${content.slug}`;
+    content.cta.ctaHref ?? tryGetCategoryUrl(lang, content.slug) ?? `/${lang}`;
 
   const breadcrumbJsonLd = buildBreadcrumbListJsonLd({ lang, content });
   const collectionJsonLd = buildCollectionPageJsonLd({ lang, content });
@@ -104,7 +105,7 @@ export default function CategoryContentPage({
             {content.subcategories.map((sub) => (
               <Link
                 key={sub.slug}
-                href={`/${lang}/category/${sub.slug}`}
+                href={tryGetCategoryUrl(lang, sub.slug) ?? `/${lang}/${sub.slug}`}
                 className="block rounded-lg border border-gray-200 bg-white px-4 py-3 transition-shadow hover:shadow-md"
               >
                 <span className="block text-sm font-semibold text-gray-900">

@@ -7,6 +7,9 @@ import {
   resolveServiceContent,
   toContentLocale,
 } from "@/lib/localization";
+import { decodePathSegment } from "@/lib/publicUrls";
+import { isSpecialistUuid } from "@/lib/specialists/matchPublicSpecialist";
+import { mapLegacySpecialistSlug } from "@/lib/specialists/legacySlugs";
 
 export type PublicSpecialistProfile = {
   id: string;
@@ -32,7 +35,45 @@ export type PublicSpecialistProfile = {
   }>;
 };
 
-const isUuid = (identifier: string): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(identifier);
+async function resolveSpecialistId(
+  supabase: ReturnType<typeof createSupabaseServerClient>,
+  identifier: string,
+): Promise<string | null> {
+  const decoded = decodePathSegment(identifier).trim();
+  if (!decoded) return null;
+  if (isSpecialistUuid(decoded)) return decoded;
+
+  const { data: exact, error: exactError } = await supabase
+    .from("specialists")
+    .select("id")
+    .eq("slug", decoded)
+    .maybeSingle();
+  if (!exactError && exact?.id) return exact.id;
+
+  const { data: legacy, error: legacyError } = await supabase
+    .from("specialists")
+    .select("id")
+    .eq("slug_legacy", decoded)
+    .maybeSingle();
+  if (!legacyError && legacy?.id) return legacy.id;
+
+  const aliasCanonical = mapLegacySpecialistSlug(decoded);
+  if (aliasCanonical && aliasCanonical !== decoded) {
+    const { data: aliasRow, error: aliasError } = await supabase
+      .from("specialists")
+      .select("id")
+      .eq("slug", aliasCanonical)
+      .maybeSingle();
+    if (!aliasError && aliasRow?.id) return aliasRow.id;
+  }
+
+  return null;
+}
+
+export async function resolvePublicSpecialistId(identifier: string): Promise<string | null> {
+  const supabase = createSupabaseServerClient();
+  return resolveSpecialistId(supabase, identifier);
+}
 
 export async function getPublicSpecialistProfile(
   identifier: string,
@@ -40,19 +81,9 @@ export async function getPublicSpecialistProfile(
 ): Promise<PublicSpecialistProfile | null> {
   const supabase = createSupabaseServerClient();
 
-  let resolvedId = identifier;
-  if (!isUuid(identifier)) {
-    const { data: slugRow, error: slugError } = await supabase
-      .from("specialists")
-      .select("id")
-      .eq("slug", identifier)
-      .maybeSingle();
-
-    if (slugError || !slugRow?.id) {
-      return null;
-    }
-
-    resolvedId = slugRow.id;
+  const resolvedId = await resolveSpecialistId(supabase, identifier);
+  if (!resolvedId) {
+    return null;
   }
 
   const { data: specialist, error: specialistError } = await supabase

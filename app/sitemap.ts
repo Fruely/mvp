@@ -3,6 +3,8 @@ import { SEO_CATEGORY_SLUGS } from "@/content/seo/categories";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 import { SITE_DOMAIN } from "@/lib/seo/siteMetadata";
+import { isAsciiPublicPath, isAsciiSlug } from "@/lib/publicUrls";
+import { isExcludedFromPublicCategoryListing } from "@/lib/categories/uncategorizedSpecialistCategory";
 
 const LANGS = ["ua", "ru", "de"] as const;
 
@@ -93,6 +95,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   const supabase = createSupabaseServerClient();
+  const { data: categories } = await supabase
+    .from("categories")
+    .select("slug")
+    .not("slug", "is", null)
+    .neq("slug", "");
+
+  if (categories) {
+    for (const row of categories) {
+      const slug = typeof row.slug === "string" ? row.slug.trim() : "";
+      if (!isAsciiSlug(slug) || isExcludedFromPublicCategoryListing(slug)) continue;
+      for (const lang of LANGS) {
+        const url = `${SITE_DOMAIN}/${lang}/specialists/${slug}`;
+        if (!isAsciiPublicPath(url)) continue;
+        entries.push({
+          url,
+          lastModified,
+          changeFrequency: "weekly",
+          priority: 0.65,
+        });
+      }
+    }
+  }
+
   const { data: specialists } = await supabase
     .from("specialists")
     .select("slug, updated_at")
@@ -106,10 +131,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (specialists) {
     for (const sp of specialists) {
       const slug = typeof sp.slug === "string" ? sp.slug.trim() : "";
-      if (!slug) continue;
-      const segment = encodeURIComponent(slug);
+      if (!isAsciiSlug(slug)) continue;
+      const segment = slug;
 
       for (const lang of LANGS) {
+        const url = `${SITE_DOMAIN}/${lang}/specialist/${segment}`;
+        if (!isAsciiPublicPath(url)) continue;
         entries.push({
           url: `${SITE_DOMAIN}/${lang}/specialist/${segment}`,
           lastModified: sp.updated_at ? new Date(sp.updated_at) : lastModified,

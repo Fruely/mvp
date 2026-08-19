@@ -3,7 +3,7 @@ import type { LocalizedSeoCategory } from "@/lib/seo/content";
 /**
  * Child SEO page under `health-psychology`: psychologists in Germany, Ukrainian & Russian speaking context.
  *
- * Specialist list uses the same Supabase `category` ilike pattern as the public `/category/psychologists` hub.
+ * Specialist list uses the same Supabase `category` ilike pattern as the public `/specialists/psychologists` hub.
  */
 export const psychologistsGermanyContent: LocalizedSeoCategory = {
   slug: "psychologists-germany",
@@ -157,7 +157,7 @@ export const psychologistsGermanyContent: LocalizedSeoCategory = {
         heading: "Alle Psycholog:innen mit Filtern öffnen",
         body: "Gleiche Profilbasis wie hier — enger nach Stadt, Sprache und Verfügbarkeit eingrenzen.",
         buttonLabel: "Zur Kategorie Psycholog:innen",
-        ctaHref: "/de/category/psychologists",
+        ctaHref: "/de/specialists/psychologists",
       },
     },
     ru: {
@@ -313,7 +313,7 @@ export const psychologistsGermanyContent: LocalizedSeoCategory = {
         heading: "Открыть полный список психологов",
         body: "Фильтры по городу и языку — та же логика отображения, что здесь.",
         buttonLabel: "К категории «Психологи»",
-        ctaHref: "/ru/category/psychologists",
+        ctaHref: "/ru/specialists/psychologists",
       },
     },
     ua: {
@@ -466,7 +466,7 @@ export const psychologistsGermanyContent: LocalizedSeoCategory = {
         heading: "Відкрити категорію «Психологи»",
         body: "Фільтри міста та мови — та ж база профілів.",
         buttonLabel: "До списку психологів",
-        ctaHref: "/ua/category/psychologists",
+        ctaHref: "/ua/specialists/psychologists",
       },
     },
   },

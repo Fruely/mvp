@@ -1,4 +1,5 @@
-import { redirect } from "next/navigation";
+import { permanentRedirect, redirect } from "next/navigation";
+import { tryGetCategoryUrl } from "@/lib/publicUrls";
 
 type UiLang = "ru" | "ua" | "de";
 
@@ -59,9 +60,14 @@ export default async function SearchPage({
   }
 
   if (category) {
+    const dest = tryGetCategoryUrl(uiLang, category);
+    if (dest) {
+      permanentRedirect(dest);
+    }
     const qp = new URLSearchParams();
     qp.set("lang", searchLang);
-    redirect(`/${uiLang}/category/${encodeURIComponent(category)}?${qp.toString()}`);
+    qp.set("category", category);
+    redirect(`/specialists?${qp.toString()}`);
   }
 
   redirect(`/${uiLang}`);

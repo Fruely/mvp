@@ -33,7 +33,7 @@ export type SeoFaqItem = {
 };
 
 export type SeoSubcategoryLink = {
-  /** Slug used in `/{lang}/category/{slug}` links. */
+  /** Slug used in `/{lang}/specialists/{slug}` category hub links. */
   slug: string;
   label: string;
   /** Optional short description shown on the parent/child page. */
@@ -56,7 +56,7 @@ export type SeoCallout = {
   buttonLabel: string;
   /**
    * Optional override for the CTA destination. Defaults to
-   * `/{lang}/category/{slug}` when not provided.
+   * `/{lang}/specialists/{slug}` when not provided.
    */
   ctaHref?: string;
 };

@@ -136,7 +136,7 @@ export const reiseberatungContent: LocalizedSeoCategory = {
         heading: "Reiseberatung in der Kategorie öffnen",
         body: "Filtern Sie nach Sprache und schreiben Sie mit Datumsspanne plus Budget.",
         buttonLabel: "Kategorie Reiseberatung",
-        ctaHref: "/de/category/reiseberatung",
+        ctaHref: "/de/specialists/reiseberatung",
       },
     },
     ru: {
@@ -264,7 +264,7 @@ export const reiseberatungContent: LocalizedSeoCategory = {
         heading: "Открыть категорию консультантов",
         body: "Фильтр по языку и конкретные даты в заявке.",
         buttonLabel: "Категория",
-        ctaHref: "/ru/category/reiseberatung",
+        ctaHref: "/ru/specialists/reiseberatung",
       },
     },
     ua: {
@@ -392,7 +392,7 @@ export const reiseberatungContent: LocalizedSeoCategory = {
         heading: "До категорії консультацій",
         body: "Мова + дати + бюджет у першому листі.",
         buttonLabel: "Відкрити категорію",
-        ctaHref: "/ua/category/reiseberatung",
+        ctaHref: "/ua/specialists/reiseberatung",
       },
     },
   },

@@ -14,7 +14,7 @@ export function serviceSearchHref(lang: Lang): string {
 }
 
 export function categoryHref(lang: Lang, slug: string): string {
-  return `/${lang}/category/${slug}`;
+  return `/${lang}/specialists/${slug}`;
 }
 
 export function homeHref(lang: Lang): string {

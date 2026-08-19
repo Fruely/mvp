@@ -10,6 +10,7 @@ import {
   normalizeWorkFormat,
   parseServiceRadiusKm,
 } from "@/lib/specialists/geography";
+import { isAsciiSlug } from "@/lib/publicUrls";
 
 export type CategoryTitleRow = {
   id: string;
@@ -178,8 +179,8 @@ export function formatSpecialistPublishNotifyDetails(input: {
   const site = trimOrNull(input.siteUrl)?.replace(/\/$/, "") ?? null;
   if (slug || status) {
     const extra: string[] = [];
-    if (slug) {
-      const path = `/ru/specialist/${encodeURIComponent(slug)}`;
+    if (slug && isAsciiSlug(slug)) {
+      const path = `/ru/specialist/${slug}`;
       extra.push(`Профиль: ${sanitizeTelegramPlainText(site ? `${site}${path}` : path)}`);
     }
     if (status) extra.push(`Статус: ${sanitizeTelegramPlainText(status)}`);

@@ -17,14 +17,9 @@ import SpecialistDocumentsLightbox from "@/components/specialist/SpecialistDocum
 import MobileStickyCTA from "@/components/MobileStickyCTA";
 import InstallFreuly from "@/components/pwa/InstallFreuly";
 import { getPublicSpecialistLocation } from "@/lib/specialists/geography";
+import { mapLegacySpecialistSlug } from "@/lib/specialists/legacySlugs";
 import { resolvePublicServicePriceView } from "@/lib/specialistServices/pricing";
 import { publicFieldClass } from "@/components/public/publicStyles";
-
-const LEGACY_SLUGS: Record<string, string> = {
-  "zkeiy-lbztieh": "cosmetologists-kassel-irina-melnik",
-  "nhliy-oyimbzeae": "psychologists-oksana-pantelidi",
-  "mymyzth-sbtbih": "business-kirchhundem-natalya-sheshenya",
-};
 
 /** Slug lookup failed — show localized not-found copy via `t(dict, …)` in the error UI. */
 const SLUG_NOT_FOUND = "SLUG_NOT_FOUND";
@@ -148,9 +143,10 @@ export default function SpecialistProfileClient({
   }, [lang]);
 
   useEffect(() => {
-    if (id in LEGACY_SLUGS) {
+    const mapped = mapLegacySpecialistSlug(id);
+    if (mapped) {
       redirected.current = true;
-      window.location.replace(`/${lang}/specialist/${LEGACY_SLUGS[id]}`);
+      window.location.replace(`/${lang}/specialist/${mapped}`);
     }
   }, [id, lang]);
 

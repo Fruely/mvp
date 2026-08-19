@@ -62,7 +62,8 @@ check_post_status() {
 
 echo "==> Running smoke checks against ${BASE_URL}"
 check_status "${BASE_URL}/ua" "200"
-check_status "${BASE_URL}/ua/category/tutors" "200"
+check_status "${BASE_URL}/ua/category/tutors" "308"
+check_status "${BASE_URL}/ua/specialists/tutors" "200"
 check_status "${BASE_URL}/api/specialists/categories" "200"
 check_post_status "${BASE_URL}/api/specialists/create" "410"
 

@@ -1,10 +1,7 @@
 import type { Lang } from "../i18n";
+import { tryGetCategoryUrl } from "@/lib/publicUrls";
 
 const PLZ_PATTERN = /^\d{5}$/;
-
-function toSearchLangForHref(lang: Lang): string {
-  return lang === "ua" ? "uk" : lang;
-}
 
 export type SearchContextParams = {
   lang?: string | null;
@@ -105,10 +102,7 @@ export function splitPlaceForPrefill(place: string | null | undefined): {
   return { city: trimmed, postal_code: "" };
 }
 
-/** Canonical deep-link into contextual specialist search (category shortcut). */
+/** Canonical public category URL. Query-based `/specialists?category=` is search-only. */
 export function buildCategorySearchHref(lang: Lang, categorySlug: string): string {
-  const params = new URLSearchParams();
-  params.set("lang", toSearchLangForHref(lang));
-  params.set("category", categorySlug.trim());
-  return `/specialists?${params.toString()}`;
+  return tryGetCategoryUrl(lang, categorySlug) ?? `/${lang}/service-search`;
 }

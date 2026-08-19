@@ -63,7 +63,7 @@ export const autokaufBeratungContent: LocalizedSeoCategory = {
         heading: "Fahrzeug vor dem Kauf prüfen lassen",
         body: "Senden Sie Inserat, Modell, Budget und Fragen zur Historie an passende Spezialisten.",
         buttonLabel: "Kategorie öffnen",
-        ctaHref: "/de/category/autokauf-beratung",
+        ctaHref: "/de/specialists/autokauf-beratung",
       },
       seoText:
         "Autokauf Beratung Deutschland, Auto prüfen vor Kauf, Gebrauchtwagen prüfen, Fahrzeugbewertung, Autokauf Hilfe, russischsprachige Autoberatung, ukrainischsprachige Autoberatung.",
@@ -122,7 +122,7 @@ export const autokaufBeratungContent: LocalizedSeoCategory = {
         heading: "Проверить автомобиль перед покупкой",
         body: "Отправьте ссылку на объявление, модель, бюджет и вопросы к истории машины.",
         buttonLabel: "Открыть категорию",
-        ctaHref: "/ru/category/autokauf-beratung",
+        ctaHref: "/ru/specialists/autokauf-beratung",
       },
       seoText:
         "подбор авто Германия, покупка авто Германия, проверка авто перед покупкой, помощь с покупкой машины, диагностика перед покупкой, купить авто в Германии, автоконсультант Германия.",
@@ -181,7 +181,7 @@ export const autokaufBeratungContent: LocalizedSeoCategory = {
         heading: "Перевірити автомобіль перед купівлею",
         body: "Надішліть посилання на оголошення, модель, бюджет і питання до історії машини.",
         buttonLabel: "Відкрити категорію",
-        ctaHref: "/ua/category/autokauf-beratung",
+        ctaHref: "/ua/specialists/autokauf-beratung",
       },
       seoText:
         "підбір авто Німеччина, купівля авто Німеччина, перевірка авто перед покупкою, допомога з купівлею машини, діагностика перед покупкою, автоконсультант Німеччина.",

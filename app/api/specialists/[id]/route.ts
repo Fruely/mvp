@@ -14,6 +14,7 @@ import {
   selectPublicGalleryUrls,
 } from "@/lib/billing/planEntitlements";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
+import { resolvePublicSpecialistId } from "@/lib/specialists/publicProfile";
 
 export async function GET(
   request: Request,
@@ -27,16 +28,18 @@ export async function GET(
     return jsonNoStore({ error: "Missing specialist id" }, { status: 400 });
   }
 
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(param);
-
   const supabase = createSupabaseServerClient();
+  const resolvedId = await resolvePublicSpecialistId(param);
+  if (!resolvedId) {
+    return jsonNoStore({ error: "Specialist not found" }, { status: 404 });
+  }
 
   const { data: specialist, error: specError } = await supabase
     .from("specialists")
     .select(
       "id, slug, name, avatar_url, category_id, status, is_active, is_visible, billing_visibility_blocked, is_test, languages, work_format, created_at, lat, lng, founder_badge"
     )
-    .eq(isUuid ? "id" : "slug", param)
+    .eq("id", resolvedId)
     .maybeSingle();
 
   if (specError) {

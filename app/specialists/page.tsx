@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect, permanentRedirect } from "next/navigation";
 import { DEFAULT_LANG } from "@/lib/i18n";
 import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
 import { getDictionary, t, tCount, type Dictionary, type Lang } from "@/lib/i18n";
@@ -10,6 +10,8 @@ import { getSearchSuggestions } from "@/lib/search/searchSuggestions";
 import { shouldOfferOnlineFallbackForNoLocalResults } from "@/lib/search/noLocalResultsFallback";
 import { parseSearchContext, searchContextToAssistedPrefill } from "@/lib/search/searchContext";
 import { assistedPrefillToRequestHref } from "@/lib/serviceRequests/requestServiceHref";
+import { categorySlugForCanonicalSearch, getCategoryUrl, getSpecialistUrl } from "@/lib/publicUrls";
+import { resolveCategoryAsciiSlug } from "@/lib/categories/resolvePublicCategorySlug";
 import ServiceRequestCtaBlock from "@/components/serviceRequests/ServiceRequestCtaBlock";
 import AssistedMatchingContinuation from "@/components/public/AssistedMatchingContinuation";
 import SpecialistResultCard from "@/components/public/SpecialistResultCard";
@@ -77,8 +79,7 @@ function buildSuggestionHref(
 }
 
 function safeSpecialistUrl(lang: string, specialist: { id: string; slug?: string | null }): string {
-  const segment = specialist.slug?.trim() || specialist.id;
-  return `/${lang}/specialist/${encodeURIComponent(segment)}`;
+  return getSpecialistUrl(lang, specialist);
 }
 
 function formatResultsCount(
@@ -171,6 +172,19 @@ export default async function SpecialistsPage({
   const radiusParam = searchParams?.radius?.trim() || null;
   const isOnlineList = pageMode === "online";
   const uiLang = toUiLang(lang);
+  let canonicalCategorySlug = categorySlugForCanonicalSearch({
+    category,
+    q,
+    place,
+    mode: pageMode,
+  });
+  if (!canonicalCategorySlug && category && !q && !place && !pageMode) {
+    canonicalCategorySlug = await resolveCategoryAsciiSlug(category);
+  }
+  if (canonicalCategorySlug) {
+    permanentRedirect(getCategoryUrl(uiLang, canonicalCategorySlug));
+  }
+
   const dict = await getDictionary(uiLang);
   const searchContext = parseSearchContext(searchParams);
   const assistedPrefill = searchContextToAssistedPrefill(searchContext);
