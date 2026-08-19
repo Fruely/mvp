@@ -16,6 +16,7 @@ registerPartnerTestHooks();
 const {
   SPECIALIST_MAIN_PHOTO_FIT_CLASS,
   SPECIALIST_PHOTO_FRAME_ASPECT,
+  resolveLiveSpecialistPhotoFit,
   resolveSpecialistPhotoFit,
   specialistMainPhotoFitClass,
   visibleCoverWindow,
@@ -28,7 +29,7 @@ function readSrc(relativePath) {
 }
 
 function usesResolver(src) {
-  return /resolveSpecialistPhotoFit\(/.test(src) && /specialistMainPhotoFitClass\(/.test(src);
+  return /resolveLiveSpecialistPhotoFit\(/.test(src) && /specialistMainPhotoFitClass\(/.test(src);
 }
 
 const PORTRAIT_ASPECT = 3 / 4;
@@ -187,6 +188,90 @@ test("manual source skips confidence gate but still refuses an unsafe crop", () 
   assert.equal(safe.fit, "cover");
 });
 
+test("large face ratio (tight selfie) → contain on every public surface", () => {
+  const tightSelfie = {
+    focalX: 0.5,
+    focalY: 0.48,
+    confidence: 0.9,
+    source: "auto",
+    face: { x: 0.25, y: 0.29, w: 0.48, h: 0.48 },
+    subject: { x: 0.05, y: 0.12, w: 0.9, h: 0.85 },
+  };
+  for (const surface of ["card", "thumb", "hero"]) {
+    const fit = resolveSpecialistPhotoFit({
+      focus: tightSelfie,
+      surface,
+      imageAspect: 1,
+    });
+    assert.equal(fit.fit, "contain", surface);
+  }
+});
+
+test("insufficient source headroom → contain on card and hero, thumb may still cover", () => {
+  const hairNearTop = {
+    focalX: 0.57,
+    focalY: 0.36,
+    confidence: 0.96,
+    source: "auto",
+    face: { x: 0.44, y: 0.251, w: 0.258, h: 0.258 },
+    subject: { x: 0.02, y: 0.12, w: 0.94, h: 0.88 },
+  };
+  const card = resolveSpecialistPhotoFit({
+    focus: hairNearTop,
+    surface: "card",
+    imageAspect: 0.85,
+  });
+  const hero = resolveSpecialistPhotoFit({
+    focus: hairNearTop,
+    surface: "hero",
+    imageAspect: 0.85,
+  });
+  const thumb = resolveSpecialistPhotoFit({
+    focus: hairNearTop,
+    surface: "thumb",
+    imageAspect: 0.85,
+  });
+  assert.equal(card.fit, "contain");
+  assert.equal(hero.fit, "contain");
+  assert.equal(thumb.fit, "cover");
+});
+
+test("hero rejects a mid-size headshot that thumb and card may still cover", () => {
+  const midHeadshot = {
+    focalX: 0.5,
+    focalY: 0.45,
+    confidence: 0.95,
+    source: "auto",
+    face: { x: 0.3, y: 0.38, w: 0.32, h: 0.32 },
+    subject: { x: 0.1, y: 0.2, w: 0.7, h: 0.75 },
+  };
+  const card = resolveSpecialistPhotoFit({ focus: midHeadshot, surface: "card", imageAspect: 1 });
+  const thumb = resolveSpecialistPhotoFit({ focus: midHeadshot, surface: "thumb", imageAspect: 1 });
+  const hero = resolveSpecialistPhotoFit({ focus: midHeadshot, surface: "hero", imageAspect: 1 });
+  assert.equal(card.fit, "cover");
+  assert.equal(thumb.fit, "cover");
+  assert.equal(hero.fit, "contain");
+});
+
+test("small face with ample headroom stays cover on card, thumb, and hero", () => {
+  const ampleHeadroom = {
+    focalX: 0.49,
+    focalY: 0.44,
+    confidence: 0.93,
+    source: "auto",
+    face: { x: 0.42, y: 0.38, w: 0.14, h: 0.14 },
+    subject: { x: 0.28, y: 0.32, w: 0.44, h: 0.68 },
+  };
+  for (const surface of ["card", "thumb", "hero"]) {
+    const fit = resolveSpecialistPhotoFit({
+      focus: ampleHeadroom,
+      surface,
+      imageAspect: 1,
+    });
+    assert.equal(fit.fit, "cover", surface);
+  }
+});
+
 test("person-only subject: top of subject must stay visible", () => {
   const fit = resolveSpecialistPhotoFit({
     focus: {
@@ -207,6 +292,18 @@ test("visibleCoverWindow crops vertically for portrait-in-landscape", () => {
   assert.equal(window.w, 1);
   assert.ok(window.h < 1);
   assert.ok(window.y > 0);
+});
+
+test("live cover gate keeps public surfaces on contain even with trusted metadata", () => {
+  for (const surface of ["card", "thumb", "hero"]) {
+    const fit = resolveLiveSpecialistPhotoFit({
+      focus: safePortraitFocus,
+      surface,
+      imageAspect: PORTRAIT_ASPECT,
+      frameAspect: CARD_ASPECT,
+    });
+    assert.equal(fit.fit, "contain", surface);
+  }
 });
 
 test("SpecialistHeroContent resolves fit (no hardcoded cover)", () => {
@@ -239,9 +336,21 @@ test("VariantCSpecialistCard resolves fit as card", () => {
 
 test("SpecialistAvatarImage dashboard surface always uses resolver contain path", () => {
   const src = readSrc("components/specialist/SpecialistAvatarImage.tsx");
-  assert.equal(usesResolver(src), true);
+  assert.match(src, /resolveSpecialistPhotoFit\(/);
   assert.match(src, /surface: "dashboard"/);
   assert.doesNotMatch(src, /className="object-cover"/);
+});
+
+test("public MAIN photo callers do not pass imageAspect (contain lock)", () => {
+  for (const relative of [
+    "components/specialist/SpecialistHeroContent.tsx",
+    "components/specialist/SpecialistPreviewCard.tsx",
+    "components/public/SpecialistResultCard.tsx",
+    "components/home/variantC/VariantCSpecialistCard.tsx",
+  ]) {
+    const src = readSrc(relative);
+    assert.doesNotMatch(src, /imageAspect/);
+  }
 });
 
 test("hero and listing card frames keep existing geometry (no size change)", () => {

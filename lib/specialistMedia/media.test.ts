@@ -1,18 +1,18 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
+import { registerPartnerTestHooks } from "../partners/partnerTestHooks.mjs";
 
-import {
+registerPartnerTestHooks();
+
+const {
   buildIdempotentGalleryStoragePath,
   extractManagedStoragePath,
   validateSpecialistMediaUpload,
-} from "./storage.ts";
-import { uploadSpecialistProfilePhoto, deleteSpecialistProfilePhoto } from "./mutatePhoto.ts";
-import {
-  addSpecialistGalleryImage,
-  deleteSpecialistGalleryImage,
-} from "./mutateGallery.ts";
-import { SPECIALIST_MEDIA_BUCKET } from "./types.ts";
+} = await import("./storage.ts");
+const { uploadSpecialistProfilePhoto, deleteSpecialistProfilePhoto } = await import("./mutatePhoto.ts");
+const { addSpecialistGalleryImage, deleteSpecialistGalleryImage } = await import("./mutateGallery.ts");
+const { SPECIALIST_MEDIA_BUCKET } = await import("./types.ts");
 
 const SPECIALIST_ID = "11111111-1111-1111-1111-111111111111";
 const USER_ID = "22222222-2222-2222-2222-222222222222";
@@ -36,6 +36,7 @@ function makeFile(args: { type: string; size?: number; name?: string }) {
 type MockState = {
   avatarUrl: string | null;
   photoUrl: string | null;
+  photoFocus: unknown;
   galleryUrls: string[];
   profileExists: boolean;
   plan: { plan_code: string; plan_status: string };
@@ -84,6 +85,7 @@ function createMockSupabase(state: MockState) {
         data: {
           specialist_id: SPECIALIST_ID,
           photo_url: state.photoUrl,
+          photo_focus: state.photoFocus,
           gallery_urls: state.galleryUrls,
         },
         error: null,
@@ -112,6 +114,9 @@ function createMockSupabase(state: MockState) {
       }
       if ("photo_url" in updatePayload) {
         state.photoUrl = (updatePayload.photo_url as string | null) ?? null;
+      }
+      if ("photo_focus" in updatePayload) {
+        state.photoFocus = updatePayload.photo_focus ?? null;
       }
       if ("gallery_urls" in updatePayload) {
         state.galleryUrls = updatePayload.gallery_urls as string[];
@@ -218,6 +223,7 @@ test("profile photo upload persists before deleting previous managed object", as
   const state: MockState = {
     avatarUrl: managedUrl(oldPath),
     photoUrl: managedUrl(oldPath),
+    photoFocus: null,
     galleryUrls: [],
     profileExists: true,
     plan: { plan_code: "basic", plan_status: "active" },
@@ -229,13 +235,33 @@ test("profile photo upload persists before deleting previous managed object", as
   assert.equal(result.ok, true);
   assert.ok(state.photoUrl?.includes(SPECIALIST_ID));
   assert.equal(state.avatarUrl, state.photoUrl);
+  assert.equal(state.photoFocus, null);
   assert.ok(state.deletedPaths.includes(oldPath));
+});
+
+test("profile photo upload invalidates previous focus metadata", async () => {
+  const oldPath = `${SPECIALIST_ID}/old.jpg`;
+  const state: MockState = {
+    avatarUrl: managedUrl(oldPath),
+    photoUrl: managedUrl(oldPath),
+    photoFocus: { version: 1, photo_identity: `storage:${oldPath}` },
+    galleryUrls: [],
+    profileExists: true,
+    plan: { plan_code: "basic", plan_status: "active" },
+    storage: new Map([[oldPath, new Uint8Array([1])]]),
+    deletedPaths: [],
+  };
+
+  const result = await uploadSpecialistProfilePhoto(okCtx(state), makeFile({ type: "image/jpeg" }), "de", stubDeps);
+  assert.equal(result.ok, true);
+  assert.equal(state.photoFocus, null);
 });
 
 test("profile photo upload compensates new object when avatar persistence fails", async () => {
   const state: MockState = {
     avatarUrl: null,
     photoUrl: null,
+    photoFocus: null,
     galleryUrls: [],
     profileExists: true,
     plan: { plan_code: "basic", plan_status: "active" },
@@ -247,6 +273,8 @@ test("profile photo upload compensates new object when avatar persistence fails"
   const result = await uploadSpecialistProfilePhoto(okCtx(state), makeFile({ type: "image/jpeg" }), "de", stubDeps);
   assert.equal(result.ok, false);
   if (!result.ok) assert.equal(result.status, 500);
+  assert.equal(state.photoUrl, null);
+  assert.equal(state.avatarUrl, null);
 });
 
 test("profile photo delete clears DB and removes managed storage only", async () => {
@@ -254,6 +282,7 @@ test("profile photo delete clears DB and removes managed storage only", async ()
   const state: MockState = {
     avatarUrl: managedUrl(oldPath),
     photoUrl: managedUrl(oldPath),
+    photoFocus: { version: 1, photo_identity: `storage:${oldPath}` },
     galleryUrls: [],
     profileExists: true,
     plan: { plan_code: "basic", plan_status: "active" },
@@ -265,6 +294,7 @@ test("profile photo delete clears DB and removes managed storage only", async ()
   assert.equal(result.ok, true);
   assert.equal(state.photoUrl, null);
   assert.equal(state.avatarUrl, null);
+  assert.equal(state.photoFocus, null);
   assert.ok(state.deletedPaths.includes(oldPath));
 });
 
@@ -272,6 +302,7 @@ test("gallery add enforces server limit", async () => {
   const state: MockState = {
     avatarUrl: null,
     photoUrl: null,
+    photoFocus: null,
     galleryUrls: Array.from({ length: 5 }, (_, index) => managedUrl(`${SPECIALIST_ID}/gallery/${index}.jpg`)),
     profileExists: true,
     plan: { plan_code: "basic", plan_status: "active" },
@@ -294,6 +325,7 @@ test("gallery add with idempotency key replays without duplicate reference", asy
   const state: MockState = {
     avatarUrl: null,
     photoUrl: null,
+    photoFocus: null,
     galleryUrls: [existingUrl],
     profileExists: true,
     plan: { plan_code: "basic", plan_status: "active" },
@@ -316,6 +348,7 @@ test("gallery delete rejects non-member URL", async () => {
   const state: MockState = {
     avatarUrl: null,
     photoUrl: null,
+    photoFocus: null,
     galleryUrls: [managedUrl(`${SPECIALIST_ID}/gallery/1.jpg`)],
     profileExists: true,
     plan: { plan_code: "basic", plan_status: "active" },
@@ -338,6 +371,7 @@ test("gallery delete of external member removes DB reference without Storage rem
   const state: MockState = {
     avatarUrl: null,
     photoUrl: null,
+    photoFocus: null,
     galleryUrls: [externalUrl, managedUrl(`${SPECIALIST_ID}/gallery/managed.jpg`)],
     profileExists: true,
     plan: { plan_code: "basic", plan_status: "active" },
@@ -366,6 +400,7 @@ test("profile replace with external previous photo does not Storage-delete exter
   const state: MockState = {
     avatarUrl: externalPrevious,
     photoUrl: externalPrevious,
+    photoFocus: null,
     galleryUrls: [],
     profileExists: true,
     plan: { plan_code: "basic", plan_status: "active" },
@@ -384,6 +419,7 @@ test("profile delete with external current photo clears DB without Storage remov
   const state: MockState = {
     avatarUrl: externalPrevious,
     photoUrl: externalPrevious,
+    photoFocus: null,
     galleryUrls: [],
     profileExists: true,
     plan: { plan_code: "basic", plan_status: "active" },
@@ -406,4 +442,7 @@ test("route wiring uses specialistMedia modules", () => {
   assert.match(mediaRoute, /loadSpecialistMediaPage/);
   assert.match(photoRoute, /uploadSpecialistProfilePhoto/);
   assert.match(galleryRoute, /addSpecialistGalleryImage/);
+
+  const avatarUpload = readFileSync(new URL("../../app/api/specialist/avatar/upload/route.ts", import.meta.url), "utf8");
+  assert.match(avatarUpload, /photo_focus: null/);
 });

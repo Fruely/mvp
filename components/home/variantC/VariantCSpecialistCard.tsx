@@ -9,7 +9,7 @@ import { getSpecialistUrl } from "@/lib/urls";
 import FounderBadge from "@/components/specialist/FounderBadge";
 import {
   type PhotoFocus,
-  resolveSpecialistPhotoFit,
+  resolveLiveSpecialistPhotoFit,
   specialistMainPhotoFitClass,
 } from "@/components/specialist/specialistMainPhotoFit";
 import { publicCardClass } from "@/components/public/publicStyles";
@@ -54,7 +54,7 @@ export default function VariantCSpecialistCard({
   const name = specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback");
   const profileHref = getSpecialistUrl(lang, specialist);
   const languages = specialist.languages.filter(Boolean).slice(0, 3);
-  const photoFit = resolveSpecialistPhotoFit({ focus: photoFocus, surface: "card" });
+  const photoFit = resolveLiveSpecialistPhotoFit({ focus: photoFocus, surface: "card" });
 
   return (
     <article className={`${publicCardClass} flex h-full flex-col overflow-hidden`}>

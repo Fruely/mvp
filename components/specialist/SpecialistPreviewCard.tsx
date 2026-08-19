@@ -8,7 +8,7 @@ import { getSpecialistUrl } from "@/lib/urls";
 import FounderBadge from "@/components/specialist/FounderBadge";
 import {
   type PhotoFocus,
-  resolveSpecialistPhotoFit,
+  resolveLiveSpecialistPhotoFit,
   specialistMainPhotoFitClass,
 } from "@/components/specialist/specialistMainPhotoFit";
 import { getPublicSpecialistLocation } from "@/lib/specialists/geography";
@@ -129,7 +129,7 @@ export default function SpecialistPreviewCard({
     onlineLabel: t(dict, "specialist.workFormat.online"),
   });
 
-  const photoFit = resolveSpecialistPhotoFit({ focus: photoFocus, surface: "card" });
+  const photoFit = resolveLiveSpecialistPhotoFit({ focus: photoFocus, surface: "card" });
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-freuly-border-default bg-freuly-surface">

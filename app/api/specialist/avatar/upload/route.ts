@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
 
     await supabase
       .from("specialist_profiles")
-      .update({ photo_url: publicUrl })
+      .update({ photo_url: publicUrl, photo_focus: null })
       .eq("specialist_id", specialist.id);
 
     await supabase

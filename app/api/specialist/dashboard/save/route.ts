@@ -24,6 +24,7 @@ import {
   resolveSpecialistEntitlements,
 } from "@/lib/billing/planEntitlements";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
+import { photoFocusClearPatch, photoIdentityChanged } from "@/lib/specialists/photoFocusMetadata";
 
 const MAX_CERTIFICATE_URLS = 10;
 
@@ -143,7 +144,7 @@ export async function PUT(request: NextRequest) {
   const { data: specialist, error: specialistError } = await service
     .from("specialists")
     .select(
-      "id, category_id, postal_code, lat, lng, country_code, work_format, service_radius_km, status, is_active, is_visible"
+      "id, category_id, postal_code, lat, lng, country_code, work_format, service_radius_km, status, is_active, is_visible, avatar_url"
     )
     .eq("user_id", user.id)
     .maybeSingle();
@@ -470,6 +471,33 @@ export async function PUT(request: NextRequest) {
   }
   if (hasOwn(body, "photo_url") && typeof body.photo_url === "string") {
     profilePatch.photo_url = body.photo_url.trim() || null;
+  }
+
+  const nextAvatarUrl =
+    typeof avatarUrlValue === "string" ? avatarUrlValue.trim() || null : undefined;
+  if (hasOwn(body, "photo_url") || nextAvatarUrl !== undefined) {
+    const { data: currentPhotoRow } = await service
+      .from("specialist_profiles")
+      .select("photo_url")
+      .eq("specialist_id", specialistId)
+      .maybeSingle();
+    const nextPhotoUrl = hasOwn(body, "photo_url") && typeof body.photo_url === "string"
+      ? body.photo_url.trim() || null
+      : typeof currentPhotoRow?.photo_url === "string"
+        ? currentPhotoRow.photo_url
+        : null;
+    const previousAvatarUrl =
+      typeof specialist.avatar_url === "string" ? specialist.avatar_url : null;
+    if (
+      photoIdentityChanged(
+        specialistId,
+        typeof currentPhotoRow?.photo_url === "string" ? currentPhotoRow.photo_url : null,
+        nextPhotoUrl,
+      ) ||
+      photoIdentityChanged(specialistId, previousAvatarUrl, nextAvatarUrl ?? previousAvatarUrl)
+    ) {
+      Object.assign(profilePatch, photoFocusClearPatch());
+    }
   }
   if (hasOwn(body, "gallery_urls") && Array.isArray(body.gallery_urls)) {
     const plan = await getSpecialistPlanForDashboard(service, specialistId);

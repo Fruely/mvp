@@ -1,3 +1,5 @@
+import { isSpecialistPhotoCoverEnabled } from "@/lib/specialists/photoFocusGate";
+
 /** Canonical fit for the specialist MAIN profile photo when no trusted focal metadata exists. */
 export const SPECIALIST_MAIN_PHOTO_FIT_CLASS = "object-contain object-center";
 
@@ -46,11 +48,39 @@ const COVER_MIN_CONFIDENCE: Record<SpecialistPhotoSurface, number> = {
   dashboard: Number.POSITIVE_INFINITY,
 };
 
+/** Extra padding above the face that the cover window must keep visible. */
 const FACE_HEADROOM_RATIO: Record<SpecialistPhotoSurface, number> = {
-  card: 0.2,
-  thumb: 0.2,
+  card: 0.35,
+  thumb: 0.25,
+  hero: 0.45,
+  dashboard: 0.45,
+};
+
+/**
+ * If the detected face already fills this much of the source height, the photo is a
+ * tight headshot/selfie — cover would crowd or clip hair. Contain instead.
+ */
+const MAX_FACE_HEIGHT_RATIO: Record<SpecialistPhotoSurface, number> = {
+  card: 0.34,
+  thumb: 0.4,
   hero: 0.3,
   dashboard: 0.3,
+};
+
+/** Source space above the face must be at least this multiple of face height. */
+const MIN_FACE_TOP_HEADROOM_RATIO: Record<SpecialistPhotoSurface, number> = {
+  card: 1.05,
+  thumb: 0.8,
+  hero: 1.15,
+  dashboard: 1.15,
+};
+
+/** Absolute minimum face.y (normalized). Catches hair already against the top edge. */
+const MIN_FACE_TOP: Record<SpecialistPhotoSurface, number> = {
+  card: 0.16,
+  thumb: 0.1,
+  hero: 0.2,
+  dashboard: 0.2,
 };
 
 const BOX_EPSILON = 1e-4;
@@ -112,6 +142,13 @@ function boxFullyVisible(inner: PhotoBox, window: PhotoBox): boolean {
   );
 }
 
+function faceSourceIsTooTight(face: PhotoBox, surface: SpecialistPhotoSurface): boolean {
+  if (face.h > MAX_FACE_HEIGHT_RATIO[surface] + BOX_EPSILON) return true;
+  if (face.y + BOX_EPSILON < MIN_FACE_TOP[surface]) return true;
+  if (face.y + BOX_EPSILON < face.h * MIN_FACE_TOP_HEADROOM_RATIO[surface]) return true;
+  return false;
+}
+
 function cropIsSafe(input: {
   focus: PhotoFocus;
   surface: SpecialistPhotoSurface;
@@ -126,6 +163,7 @@ function cropIsSafe(input: {
   );
 
   if (isValidBox(input.focus.face)) {
+    if (faceSourceIsTooTight(input.focus.face, input.surface)) return false;
     const safeFace = expandFaceHeadroom(input.focus.face, FACE_HEADROOM_RATIO[input.surface]);
     return boxFullyVisible(safeFace, window);
   }
@@ -153,8 +191,9 @@ function formatObjectPosition(focalX: number, focalY: number): string {
  * Resolve how the MAIN specialist photo should fit a UI frame.
  *
  * No metadata, low confidence, missing image aspect, dashboard surface,
- * or a crop that would clip the head → contain (current production behavior).
- * Trusted focal metadata that keeps face/headroom in frame → cover + object-position.
+ * an unsafe crop, or a tight source headshot/selfie → contain
+ * (current production behavior when no metadata is passed).
+ * Trusted focal metadata that keeps face + headroom in frame → cover + object-position.
  */
 export function resolveSpecialistPhotoFit(input: {
   focus?: PhotoFocus | null;
@@ -195,6 +234,21 @@ export function resolveSpecialistPhotoFit(input: {
     fit: "cover",
     objectPosition: formatObjectPosition(focus.focalX, focus.focalY),
   };
+}
+
+/**
+ * Public-UI entry point. Cover stays contain while the feature gate is off,
+ * even if trusted metadata and imageAspect are passed.
+ * The pure resolver above remains ungated for the offline evaluator and unit tests.
+ */
+export function resolveLiveSpecialistPhotoFit(input: {
+  focus?: PhotoFocus | null;
+  frameAspect?: number;
+  imageAspect?: number;
+  surface: SpecialistPhotoSurface;
+}): SpecialistPhotoFit {
+  if (!isSpecialistPhotoCoverEnabled(input.surface)) return CONTAIN_FIT;
+  return resolveSpecialistPhotoFit(input);
 }
 
 export function specialistMainPhotoFitClass(fit: SpecialistPhotoFit): string {

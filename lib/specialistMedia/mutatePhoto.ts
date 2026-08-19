@@ -9,6 +9,7 @@ import {
 } from "@/lib/specialistMedia/storage";
 import type { SpecialistMediaContext } from "@/lib/specialistMedia/context";
 import type { SpecialistMediaMutationResponse, SpecialistMediaPageResponse } from "@/lib/specialistMedia/types";
+import { photoFocusClearPatch } from "@/lib/specialists/photoFocusMetadata";
 
 export type PhotoMutationDependencies = {
   loadMediaPage?: (
@@ -53,7 +54,7 @@ export async function uploadSpecialistProfilePhoto(
       ctx.supabase.from("specialists").select("avatar_url").eq("id", ctx.specialistId).maybeSingle(),
       ctx.supabase
         .from("specialist_profiles")
-        .select("photo_url")
+        .select("photo_url, photo_focus")
         .eq("specialist_id", ctx.specialistId)
         .maybeSingle(),
     ]);
@@ -64,6 +65,7 @@ export async function uploadSpecialistProfilePhoto(
   }
 
   const previousPhotoUrl = typeof profileRow?.photo_url === "string" ? profileRow.photo_url : null;
+  const previousPhotoFocus = profileRow?.photo_focus ?? null;
   const previousAvatarUrl = typeof specialistRow.avatar_url === "string" ? specialistRow.avatar_url : null;
   const previousPhotoPath = extractManagedStoragePath(previousPhotoUrl, ctx.specialistId);
   const previousAvatarPath = extractManagedStoragePath(previousAvatarUrl, ctx.specialistId);
@@ -83,7 +85,7 @@ export async function uploadSpecialistProfilePhoto(
 
   const { error: profileUpdateError } = await ctx.supabase
     .from("specialist_profiles")
-    .update({ photo_url: uploaded.publicUrl })
+    .update({ photo_url: uploaded.publicUrl, ...photoFocusClearPatch() })
     .eq("specialist_id", ctx.specialistId);
 
   if (profileUpdateError) {
@@ -101,7 +103,7 @@ export async function uploadSpecialistProfilePhoto(
     console.error("[specialistMedia/photo] avatar update failed", avatarUpdateError.message);
     await ctx.supabase
       .from("specialist_profiles")
-      .update({ photo_url: previousPhotoUrl })
+      .update({ photo_url: previousPhotoUrl, photo_focus: previousPhotoFocus })
       .eq("specialist_id", ctx.specialistId);
     await deleteManagedStoragePaths(ctx.supabase, [uploaded.path]);
     return { ok: false, status: 500, body: { error: "server_error" } };
@@ -131,7 +133,7 @@ export async function deleteSpecialistProfilePhoto(
       ctx.supabase.from("specialists").select("avatar_url").eq("id", ctx.specialistId).maybeSingle(),
       ctx.supabase
         .from("specialist_profiles")
-        .select("photo_url")
+        .select("photo_url, photo_focus")
         .eq("specialist_id", ctx.specialistId)
         .maybeSingle(),
     ]);
@@ -142,13 +144,14 @@ export async function deleteSpecialistProfilePhoto(
   }
 
   const previousPhotoUrl = typeof profileRow?.photo_url === "string" ? profileRow.photo_url : null;
+  const previousPhotoFocus = profileRow?.photo_focus ?? null;
   const previousAvatarUrl = typeof specialistRow.avatar_url === "string" ? specialistRow.avatar_url : null;
   const previousPhotoPath = extractManagedStoragePath(previousPhotoUrl, ctx.specialistId);
   const previousAvatarPath = extractManagedStoragePath(previousAvatarUrl, ctx.specialistId);
 
   const { error: profileUpdateError } = await ctx.supabase
     .from("specialist_profiles")
-    .update({ photo_url: null })
+    .update({ photo_url: null, ...photoFocusClearPatch() })
     .eq("specialist_id", ctx.specialistId);
 
   if (profileUpdateError) {
@@ -165,7 +168,7 @@ export async function deleteSpecialistProfilePhoto(
     console.error("[specialistMedia/photo] delete avatar update failed", avatarUpdateError.message);
     await ctx.supabase
       .from("specialist_profiles")
-      .update({ photo_url: previousPhotoUrl })
+      .update({ photo_url: previousPhotoUrl, photo_focus: previousPhotoFocus })
       .eq("specialist_id", ctx.specialistId);
     return { ok: false, status: 500, body: { error: "server_error" } };
   }

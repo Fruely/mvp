@@ -6,7 +6,7 @@ import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import type { SpecialistResult } from "@/lib/search/specialistSearch";
 import {
   type PhotoFocus,
-  resolveSpecialistPhotoFit,
+  resolveLiveSpecialistPhotoFit,
   specialistMainPhotoFitClass,
 } from "@/components/specialist/specialistMainPhotoFit";
 
@@ -69,7 +69,7 @@ export default function SpecialistResultCard({
     : [];
   const formatLabel = workFormatLabel(dict, specialist.work_format);
   const hasDistance = typeof specialist.distance === "number" && Number.isFinite(specialist.distance);
-  const photoFit = resolveSpecialistPhotoFit({ focus: photoFocus, surface: "thumb" });
+  const photoFit = resolveLiveSpecialistPhotoFit({ focus: photoFocus, surface: "thumb" });
   const name = specialist.name?.trim() || t(dict, "specialist.fallback");
 
   return (

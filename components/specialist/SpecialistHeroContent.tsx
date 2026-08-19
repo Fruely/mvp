@@ -4,7 +4,7 @@ import { Briefcase, Globe, MapPin } from "lucide-react";
 import FounderBadge from "@/components/specialist/FounderBadge";
 import {
   type PhotoFocus,
-  resolveSpecialistPhotoFit,
+  resolveLiveSpecialistPhotoFit,
   specialistMainPhotoFitClass,
 } from "@/components/specialist/specialistMainPhotoFit";
 
@@ -57,7 +57,7 @@ export default function SpecialistHeroContent({
   actions,
 }: SpecialistHeroContentProps) {
   const trimmed = typeof avatarUrl === "string" ? avatarUrl.trim() : "";
-  const photoFit = resolveSpecialistPhotoFit({ focus: photoFocus, surface: "hero" });
+  const photoFit = resolveLiveSpecialistPhotoFit({ focus: photoFocus, surface: "hero" });
 
   return (
     <div className="flex w-full flex-col gap-5 md:flex-row md:items-center md:gap-12">
