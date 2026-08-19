@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireAdminToken } from "@/lib/adminApiAuth";
 import { assertSpecialistCanBePublished } from "@/lib/specialists/publicationGeography";
+import { ensureCanonicalSpecialistSlug } from "@/lib/specialists/ensureCanonicalSpecialistSlug";
 
 type ModerationAction = "approve" | "feature" | "deactivate";
 
@@ -41,6 +42,14 @@ export async function PATCH(
             code: geoCheck.code,
             fields: [geoCheck.code],
           },
+          { status: 400, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+
+      const slugResult = await ensureCanonicalSpecialistSlug(supabase, id);
+      if (!slugResult.ok) {
+        return NextResponse.json(
+          { error: "SLUG_GENERATION_FAILED", reason: slugResult.reason },
           { status: 400, headers: { "Cache-Control": "no-store" } }
         );
       }

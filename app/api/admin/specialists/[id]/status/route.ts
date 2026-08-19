@@ -6,6 +6,7 @@ import {
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireAdminToken } from "@/lib/adminApiAuth";
 import { assertSpecialistCanBePublished } from "@/lib/specialists/publicationGeography";
+import { ensureCanonicalSpecialistSlug } from "@/lib/specialists/ensureCanonicalSpecialistSlug";
 
 const ALLOWED_STATUSES = new Set([
   "draft",
@@ -134,6 +135,14 @@ export async function PATCH(
   if (PUBLISHED_STATUSES.has(nextStatus)) {
     const readinessError = await validateAdminPublishReadiness(supabase, specialistId);
     if (readinessError) return readinessError;
+
+    const slugResult = await ensureCanonicalSpecialistSlug(supabase, specialistId);
+    if (!slugResult.ok) {
+      return NextResponse.json(
+        { error: "SLUG_GENERATION_FAILED", reason: slugResult.reason },
+        { status: 400 },
+      );
+    }
   }
 
   const isPublishedStatus = PUBLISHED_STATUSES.has(nextStatus);

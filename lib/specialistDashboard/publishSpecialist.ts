@@ -7,9 +7,11 @@ import {
   formatSpecialistPublishNotifyDetails,
   type CategoryTitleRow,
 } from "@/lib/notifications/specialistPublishNotify";
-import { buildSpecialistSlug } from "@/lib/slugify";
-import { isAsciiSlug } from "@/lib/publicUrls";
-import { proposeMigratedCanonicalSlug, uniqueAsciiSlug } from "@/lib/specialists/canonicalSlug";
+import {
+  ensureCanonicalSpecialistSlug,
+  isStoredSlugCanonical,
+  resolveCanonicalSlugForPublish,
+} from "@/lib/specialists/ensureCanonicalSpecialistSlug";
 import {
   reconcileSpecialistAccess,
   isLifecycleReconciliationEnabled,
@@ -320,6 +322,9 @@ export async function publishSpecialistProfile(
   const currentStatus = typeof row.status === "string" ? row.status : null;
 
   if (isPublishedSpecialistStatus(currentStatus)) {
+    if (!isStoredSlugCanonical(row.slug)) {
+      await ensureCanonicalSpecialistSlug(service, specialistId);
+    }
     return {
       ok: true,
       status: currentStatus ?? "published_unverified",
@@ -391,59 +396,18 @@ export async function publishSpecialistProfile(
     };
   }
 
-  let generatedSlug: string | null = null;
-  let preservedLegacySlug: string | null = null;
-  const storedSlug = typeof row.slug === "string" ? row.slug.trim() : "";
-  const hasPersistedCanonical = isAsciiSlug(storedSlug);
+  const slugResolution = await resolveCanonicalSlugForPublish(service, specialistId, {
+    slug: row.slug ?? null,
+    name: row.name ?? null,
+    category_id: row.category_id ?? null,
+  });
 
-  if (!hasPersistedCanonical) {
-    if (storedSlug) preservedLegacySlug = storedSlug;
-
-    let categorySlug: string | null = null;
-    if (row.category_id) {
-      const { data: cat } = await service
-        .from("categories")
-        .select("slug")
-        .eq("id", row.category_id)
-        .maybeSingle();
-      categorySlug = cat?.slug ?? null;
-    }
-
-    let citySlug: string | null = null;
-    const { data: profile } = await service
-      .from("specialist_profiles")
-      .select("city")
-      .eq("specialist_id", specialistId)
-      .maybeSingle();
-    if (profile?.city) {
-      const { data: cityRow } = await service
-        .from("cities")
-        .select("slug")
-        .ilike("name", profile.city)
-        .eq("is_active", true)
-        .maybeSingle();
-      citySlug = cityRow?.slug ?? null;
-    }
-
-    const base =
-      (storedSlug ? proposeMigratedCanonicalSlug(storedSlug, []) : null) ||
-      (row.name ? buildSpecialistSlug(categorySlug, citySlug, row.name) : "");
-
-    if (isAsciiSlug(base)) {
-      const taken = new Set<string>();
-      let candidate = uniqueAsciiSlug(base, taken);
-      while (true) {
-        const { data: existing } = await service
-          .from("specialists")
-          .select("id")
-          .eq("slug", candidate)
-          .maybeSingle();
-        if (!existing || existing.id === specialistId) break;
-        taken.add(candidate);
-        candidate = uniqueAsciiSlug(base, taken);
-      }
-      generatedSlug = candidate;
-    }
+  if (!slugResolution.ok) {
+    return {
+      ok: false,
+      status: 400,
+      body: { error: "Canonical slug could not be generated", code: "slug_generation_failed" },
+    };
   }
 
   const updatePayload: Record<string, unknown> = {
@@ -452,8 +416,12 @@ export async function publishSpecialistProfile(
     is_visible: true,
     published_at: new Date().toISOString(),
   };
-  if (generatedSlug) updatePayload.slug = generatedSlug;
-  if (preservedLegacySlug) updatePayload.slug_legacy = preservedLegacySlug;
+  if (slugResolution.changed) {
+    updatePayload.slug = slugResolution.slug;
+    if (slugResolution.slugLegacy && slugResolution.slugLegacy !== slugResolution.slug) {
+      updatePayload.slug_legacy = slugResolution.slugLegacy;
+    }
+  }
 
   const { data: updated, error: updateError } = await service
     .from("specialists")
