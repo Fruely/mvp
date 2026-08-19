@@ -6,6 +6,7 @@ import Link from "next/link";
 import { t, type Dictionary } from "@/lib/i18n";
 import { getSpecialistUrl } from "@/lib/urls";
 import FounderBadge from "@/components/specialist/FounderBadge";
+import { SPECIALIST_MAIN_PHOTO_FIT_CLASS } from "@/components/specialist/specialistMainPhotoFit";
 import { getPublicSpecialistLocation } from "@/lib/specialists/geography";
 import { resolvePublicServicePriceView } from "@/lib/specialistServices/pricing";
 
@@ -131,7 +132,7 @@ export default function SpecialistPreviewCard({
             alt={specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback")}
             fill
             sizes="(min-width: 1024px) 304px, (min-width: 640px) 50vw, 100vw"
-            className="object-cover"
+            className={SPECIALIST_MAIN_PHOTO_FIT_CLASS}
             unoptimized
           />
         ) : (

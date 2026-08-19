@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import { Briefcase, Globe, MapPin } from "lucide-react";
 import FounderBadge from "@/components/specialist/FounderBadge";
+import { SPECIALIST_MAIN_PHOTO_FIT_CLASS } from "@/components/specialist/specialistMainPhotoFit";
 
 export type SpecialistHeroContentProps = {
   avatarUrl?: string | null;
@@ -59,7 +60,7 @@ export default function SpecialistHeroContent({
             src={trimmed}
             alt={avatarAlt}
             fill
-            className="object-cover object-center"
+            className={SPECIALIST_MAIN_PHOTO_FIT_CLASS}
             sizes="(max-width: 768px) 100vw, 380px"
             unoptimized
             priority

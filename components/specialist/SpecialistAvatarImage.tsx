@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import { SPECIALIST_MAIN_PHOTO_FIT_CLASS } from "@/components/specialist/specialistMainPhotoFit";
 
 type SpecialistAvatarImageProps = {
   src: string | null | undefined;
   alt: string;
-  /** Matches public profile hero cropping (4:3, object-contain). */
+  /** Dashboard/onboarding preview of the main specialist photo (contain, no crop). */
   className?: string;
   loading?: boolean;
 };
@@ -27,7 +28,7 @@ export default function SpecialistAvatarImage({
           src={trimmed}
           alt={alt}
           fill
-          className="object-contain object-center"
+          className={SPECIALIST_MAIN_PHOTO_FIT_CLASS}
           sizes="(max-width: 768px) 100vw, 320px"
           unoptimized
         />

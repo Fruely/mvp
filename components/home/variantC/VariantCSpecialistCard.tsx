@@ -7,6 +7,7 @@ import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { getSpecialistUrl } from "@/lib/urls";
 import FounderBadge from "@/components/specialist/FounderBadge";
+import { SPECIALIST_MAIN_PHOTO_FIT_CLASS } from "@/components/specialist/specialistMainPhotoFit";
 import { publicCardClass } from "@/components/public/publicStyles";
 
 export type VariantCSpecialist = {
@@ -62,7 +63,7 @@ export default function VariantCSpecialistCard({
             alt={name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 320px"
-            className="object-cover"
+            className={SPECIALIST_MAIN_PHOTO_FIT_CLASS}
             loading="lazy"
           />
         ) : (

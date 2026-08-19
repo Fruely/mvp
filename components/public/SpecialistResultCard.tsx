@@ -4,6 +4,7 @@ import { t, type Dictionary } from "@/lib/i18n";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import type { SpecialistResult } from "@/lib/search/specialistSearch";
+import { SPECIALIST_MAIN_PHOTO_FIT_CLASS } from "@/components/specialist/specialistMainPhotoFit";
 
 type SpecialistResultCardProps = {
   specialist: SpecialistResult;
@@ -76,7 +77,7 @@ export default function SpecialistResultCard({
                 fill
                 sizes="96px"
                 unoptimized
-                className="object-cover"
+                className={SPECIALIST_MAIN_PHOTO_FIT_CLASS}
               />
             ) : (
               <div
