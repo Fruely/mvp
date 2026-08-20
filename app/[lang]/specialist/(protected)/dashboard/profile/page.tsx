@@ -42,7 +42,7 @@ export default async function SpecialistDashboardProfilePage({
         .maybeSingle(),
       service
         .from("specialist_profiles")
-        .select("photo_url, about_me, city, address, gallery_urls, certificate_urls, video_url")
+        .select("photo_url, photo_source_url, homepage_photo_url, homepage_photo, about_me, city, address, gallery_urls, certificate_urls, video_url")
         .eq("specialist_id", specialist.id)
         .maybeSingle(),
       service
@@ -76,6 +76,14 @@ export default async function SpecialistDashboardProfilePage({
         galleryLimit={entitlements.galleryLimit}
         effectivePaidPlan={entitlements.effectivePaidPlan}
         initialStatus={status || "draft"}
+        specialistId={specialist.id}
+        homepagePhoto={{
+          photo_source_url:
+            typeof profile?.photo_source_url === "string" ? profile.photo_source_url : null,
+          homepage_photo_url:
+            typeof profile?.homepage_photo_url === "string" ? profile.homepage_photo_url : null,
+          homepage_photo: profile?.homepage_photo ?? null,
+        }}
         telegramConnected={telegramConnected}
         telegramConnectHref={telegramConnectHref}
         initialData={{
