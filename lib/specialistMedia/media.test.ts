@@ -452,4 +452,13 @@ test("route wiring uses specialistMedia modules", () => {
   );
   assert.match(homepageSourceSign, /resolveSpecialistMediaContext/);
   assert.match(homepageSourceSign, /handleHomepageSourceSignRequest/);
+
+  const homepagePhotoGenerate = readFileSync(
+    new URL("../../app/api/specialist/media/homepage-photo/route.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(homepagePhotoGenerate, /runtime = "nodejs"/);
+  assert.match(homepagePhotoGenerate, /handleHomepagePhotoGenerateRequest/);
+  assert.match(homepagePhotoGenerate, /resolveSpecialistMediaContext/);
+  assert.doesNotMatch(homepagePhotoGenerate, /runtime = "edge"/);
 });

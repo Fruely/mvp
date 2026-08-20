@@ -7,6 +7,11 @@ export const HOMEPAGE_PHOTO_OUTPUT_WIDTH = 1550;
 export const HOMEPAGE_PHOTO_OUTPUT_HEIGHT = 1000;
 export const HOMEPAGE_PHOTO_SOURCE_KIND = "source";
 export const HOMEPAGE_PHOTO_OUTPUT_KIND = "homepage";
+export const HOMEPAGE_PHOTO_SOURCE_MAX_BYTES = 12 * 1024 * 1024;
+export const HOMEPAGE_PHOTO_MIN_ORIENTED_WIDTH = 775;
+export const HOMEPAGE_PHOTO_MIN_ORIENTED_HEIGHT = 500;
+export const HOMEPAGE_PHOTO_RATIO_WIDTH = 31;
+export const HOMEPAGE_PHOTO_RATIO_HEIGHT = 20;
 
 const ISO_TIMESTAMP =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
@@ -109,6 +114,72 @@ export function homepageSourceIdentityFromPath(
 ): string | null {
   if (!isManagedHomepageSourcePath(storagePath, specialistId)) return null;
   return photoIdentityFromStoragePath(storagePath);
+}
+
+/**
+ * Parses `storage:{specialistId}/source/{file}` for the authenticated specialist.
+ * Rejects url: identities, raw URLs, other specialists, MAIN/gallery/homepage paths.
+ */
+export function parseManagedHomepageSourceIdentity(
+  identity: string,
+  specialistId: string,
+): string | null {
+  if (!specialistId || typeof identity !== "string") return null;
+  const trimmed = identity.trim();
+  if (!trimmed.startsWith("storage:")) return null;
+  if (trimmed.startsWith("url:")) return null;
+  const storagePath = trimmed.slice("storage:".length);
+  if (!storagePath || storagePath.includes("\\") || storagePath.includes("\0")) return null;
+  if (storagePath.includes("..") || storagePath.startsWith("/")) return null;
+  if (!isManagedHomepageSourcePath(storagePath, specialistId)) return null;
+  return storagePath;
+}
+
+export function isManagedHomepageOutputPath(storagePath: string, specialistId: string): boolean {
+  if (!specialistId || !storagePath) return false;
+  if (!isManagedKindPath(storagePath, specialistId, HOMEPAGE_PHOTO_OUTPUT_KIND)) return false;
+  const rest = storagePath.slice(`${specialistId}/${HOMEPAGE_PHOTO_OUTPUT_KIND}/`.length);
+  if (!rest || rest.includes("/") || rest.includes("\\") || rest.includes("\0")) return false;
+  const dot = rest.lastIndexOf(".");
+  if (dot <= 0 || dot === rest.length - 1) return false;
+  return rest.slice(dot + 1).toLowerCase() === "jpg";
+}
+
+export function homepageOutputIdentityFromPath(
+  storagePath: string,
+  specialistId: string,
+): string | null {
+  if (!isManagedHomepageOutputPath(storagePath, specialistId)) return null;
+  return photoIdentityFromStoragePath(storagePath);
+}
+
+/**
+ * Integer 31:20 check. Allows at most ~1px rounding error:
+ * |20 * width - 31 * height| <= 31
+ */
+export function isHomepagePhotoCropAspectValid(width: number, height: number): boolean {
+  if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1) return false;
+  return Math.abs(HOMEPAGE_PHOTO_RATIO_HEIGHT * width - HOMEPAGE_PHOTO_RATIO_WIDTH * height) <= HOMEPAGE_PHOTO_RATIO_WIDTH;
+}
+
+export function buildHomepagePhotoMetadata(input: {
+  source_identity: string;
+  output_identity: string;
+  crop: HomepagePhotoCrop;
+  zoom: number;
+  updated_at: string;
+}): HomepagePhotoMetadata | null {
+  return parseHomepagePhotoMetadata({
+    version: HOMEPAGE_PHOTO_VERSION,
+    ratio: HOMEPAGE_PHOTO_RATIO,
+    output_width: HOMEPAGE_PHOTO_OUTPUT_WIDTH,
+    output_height: HOMEPAGE_PHOTO_OUTPUT_HEIGHT,
+    source_identity: input.source_identity,
+    output_identity: input.output_identity,
+    crop: input.crop,
+    zoom: input.zoom,
+    updated_at: input.updated_at,
+  });
 }
 
 /**

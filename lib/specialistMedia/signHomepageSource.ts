@@ -4,9 +4,12 @@ import type { SpecialistMediaContext } from "@/lib/specialistMedia/context";
 import { buildHomepageSourceStoragePath } from "@/lib/specialistMedia/storage";
 import { SPECIALIST_MEDIA_BUCKET } from "@/lib/specialistMedia/types";
 import {
+  HOMEPAGE_PHOTO_SOURCE_MAX_BYTES,
   homepageSourceIdentityFromPath,
   isManagedHomepageSourcePath,
 } from "@/lib/specialists/homepagePhoto";
+
+export { HOMEPAGE_PHOTO_SOURCE_MAX_BYTES };
 
 /**
  * Sign-time checks are policy only (claimed MIME and size).
@@ -14,7 +17,6 @@ import {
  * This module performs ZERO database writes. A signed target does not prove upload succeeded.
  */
 
-export const HOMEPAGE_PHOTO_SOURCE_MAX_BYTES = 12 * 1024 * 1024;
 export const HOMEPAGE_PHOTO_SOURCE_SIGNED_UPLOAD_TTL_SECONDS = 7200;
 
 const ALLOWED_CONTENT_TYPES = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"]);

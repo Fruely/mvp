@@ -59,6 +59,10 @@ export function buildHomepageSourceStoragePath(specialistId: string, safeExt: st
   return `${specialistId}/source/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${safeExt}`;
 }
 
+export function buildHomepageOutputStoragePath(specialistId: string): string {
+  return `${specialistId}/homepage/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.jpg`;
+}
+
 export function buildIdempotentGalleryStoragePath(
   specialistId: string,
   idempotencyKey: string,
@@ -91,6 +95,33 @@ export async function uploadSpecialistMediaObject(
       return { ok: false, status: 503, error: "storage_not_configured" };
     }
     return { ok: false, status: 500, error: "upload_failed" };
+  }
+
+  return {
+    ok: true,
+    path: data.path,
+    publicUrl: getPublicUrlForStoragePath(supabase, data.path),
+  };
+}
+
+export async function uploadSpecialistMediaBytes(
+  supabase: SupabaseClient,
+  storagePath: string,
+  bytes: Uint8Array,
+  contentType: string,
+  upsert = false,
+): Promise<{ ok: true; path: string; publicUrl: string } | { ok: false; status: number; error: string }> {
+  const { data, error } = await supabase.storage.from(SPECIALIST_MEDIA_BUCKET).upload(storagePath, bytes, {
+    contentType,
+    cacheControl: "3600",
+    upsert,
+  });
+
+  if (error) {
+    if (error.message?.includes("Bucket not found")) {
+      return { ok: false, status: 503, error: "storage_not_configured" };
+    }
+    return { ok: false, status: 500, error: "storage_failed" };
   }
 
   return {

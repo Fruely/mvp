@@ -13,7 +13,7 @@
     "test": "node --experimental-strip-types --test lib/**/*.test.ts"
   },
   "engines": {
-    "node": ">=20 <23"
+    "node": ">=20.9 <23"
   },
   "dependencies": {
     "@serwist/next": "^9.5.11",
@@ -31,6 +31,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "resend": "^3.5.0",
+    "sharp": "^0.35.3",
     "stripe": "^17.7.0"
   },
   "devDependencies": {

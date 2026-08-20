@@ -13,6 +13,9 @@ const withSerwist = withSerwistInit({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    serverComponentsExternalPackages: ["sharp"],
+  },
   images: {
     remotePatterns: [
       {
