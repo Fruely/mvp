@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --experimental-strip-types --test lib/**/*.test.ts"
+    "test": "node --import ./scripts/node-alias-loader.mjs --test lib/**/*.test.ts"
   },
   "engines": {
     "node": ">=20.9 <23"
