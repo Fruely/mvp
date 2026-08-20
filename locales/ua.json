@@ -1050,6 +1050,8 @@
   "dashboard.home.improve.allGood": "Профіль виглядає добре — усе основне заповнено.",
   "dashboard.home.improve.more": "Ще {{count}} порад у розділі «Профіль».",
   "dashboard.home.improve.cta": "Відкрити профіль",
+  "dashboard.home.homepagePhoto.recommendBody": "Рекомендуємо підготувати кадр 31:20 спеціально для картки на головній Freuly. Це не обов’язково для публікації.",
+  "dashboard.home.homepagePhoto.recommendCta": "Відкрити редактор фото для головної",
   "dashboard.home.improve.severity.missing": "Потрібно додати",
   "dashboard.home.improve.severity.improve": "Можна покращити",
   "dashboard.home.improve.items.photo": "Додайте фото профілю — із фото запитів зазвичай більше.",

@@ -18,6 +18,7 @@ import {
 } from "@/lib/specialists/geography";
 import SpecialistAvatarImage from "@/components/specialist/SpecialistAvatarImage";
 import HomepagePhotoCropEditor from "@/components/specialist/HomepagePhotoCropEditor";
+import { HOMEPAGE_PHOTO_EDITOR_ELEMENT_ID } from "@/lib/dashboard/homepagePhotoRecommendation";
 import { canAddGalleryImage } from "@/lib/billing/planEntitlements";
 import { Alert, Badge, Button, Card } from "@/components/ui";
 import {
@@ -1074,20 +1075,22 @@ export default function SpecialistDashboardEditor({
           </div>
         </div>
 
-        <HomepagePhotoCropEditor
-          dict={dict}
-          specialistId={specialistId}
-          initialSourceUrl={homepagePhoto.photo_source_url}
-          initialHomepagePhotoUrl={homepagePhoto.homepage_photo_url}
-          initialMetadata={homepagePhoto.homepage_photo}
-          canonicalOrigin={process.env.NEXT_PUBLIC_SUPABASE_URL ?? null}
-          previewName={form.name}
-          previewCategory={
-            selectedCategory
-              ? getCategoryTitle(selectedCategory, toCategoryTitleLang(lang)) || ""
-              : ""
-          }
-        />
+        <div id={HOMEPAGE_PHOTO_EDITOR_ELEMENT_ID}>
+          <HomepagePhotoCropEditor
+            dict={dict}
+            specialistId={specialistId}
+            initialSourceUrl={homepagePhoto.photo_source_url}
+            initialHomepagePhotoUrl={homepagePhoto.homepage_photo_url}
+            initialMetadata={homepagePhoto.homepage_photo}
+            canonicalOrigin={process.env.NEXT_PUBLIC_SUPABASE_URL ?? null}
+            previewName={form.name}
+            previewCategory={
+              selectedCategory
+                ? getCategoryTitle(selectedCategory, toCategoryTitleLang(lang)) || ""
+                : ""
+            }
+          />
+        </div>
 
         <label className="block space-y-1 text-sm">
           <span className="font-medium text-freuly-text-primary">{t(dict, "dashboard.fields.description")}</span>

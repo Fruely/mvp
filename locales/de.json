@@ -1043,6 +1043,8 @@
   "dashboard.home.improve.allGood": "Ihr Profil sieht gut aus — alles Wesentliche ist ausgefüllt.",
   "dashboard.home.improve.more": "Weitere {{count}} Empfehlungen im Bereich „Profil“.",
   "dashboard.home.improve.cta": "Profil öffnen",
+  "dashboard.home.homepagePhoto.recommendBody": "Wir empfehlen einen 31:20-Ausschnitt speziell für die Freuly-Startseitenkarte. Das ist für die Veröffentlichung nicht erforderlich.",
+  "dashboard.home.homepagePhoto.recommendCta": "Startseitenfoto-Editor öffnen",
   "dashboard.home.improve.severity.missing": "Noch hinzufügen",
   "dashboard.home.improve.severity.improve": "Optimieren",
   "dashboard.home.improve.items.photo": "Laden Sie ein Profilfoto hoch — mit Foto kommen meist mehr Anfragen.",
