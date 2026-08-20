@@ -11,7 +11,9 @@ import {
   needsServiceRadius,
   validatePublication,
 } from "@/lib/dashboard/publicationValidator";
+import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { getDictionary, isSupportedLang, t, type Dictionary } from "@/lib/i18n";
+import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import {
   GERMANY_COUNTRY_CODE,
   areValidCoordinates,
@@ -25,7 +27,20 @@ import {
   isPublishedSpecialistStatus,
 } from "@/lib/specialists/server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
+import { resolveHomepagePhotoState } from "@/lib/specialists/homepagePhoto";
 import { getSpecialistUrl } from "@/lib/urls";
+
+function homepagePhotoFromProfile(profile: {
+  photo_source_url?: unknown;
+  homepage_photo_url?: unknown;
+  homepage_photo?: unknown;
+} | null) {
+  return {
+    photo_source_url: typeof profile?.photo_source_url === "string" ? profile.photo_source_url : null,
+    homepage_photo_url: typeof profile?.homepage_photo_url === "string" ? profile.homepage_photo_url : null,
+    homepage_photo: profile?.homepage_photo ?? null,
+  };
+}
 
 function normalizeStep(value: string | string[] | undefined): OnboardingStepKey | null {
   const raw = Array.isArray(value) ? value[0] : value;
@@ -82,7 +97,7 @@ export default async function SpecialistDashboardOnboardingPage({
 
   const { data: profile } = await service
     .from("specialist_profiles")
-    .select("photo_url, about_me, city, address, video_url, gallery_urls, certificate_urls")
+    .select("photo_url, photo_source_url, homepage_photo_url, homepage_photo, about_me, city, address, video_url, gallery_urls, certificate_urls")
     .eq("specialist_id", specialist.id)
     .maybeSingle();
 
@@ -117,6 +132,8 @@ export default async function SpecialistDashboardOnboardingPage({
     .or(`parent_id.not.is.null,slug.eq.${UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG}`)
     .order("title", { ascending: true });
 
+  const homepagePhoto = homepagePhotoFromProfile(profile);
+
   if (!Array.isArray(categoriesRows) || categoriesRows.length === 0) {
     return (
       <SpecialistOnboardingWizard
@@ -143,6 +160,10 @@ export default async function SpecialistDashboardOnboardingPage({
         initialAboutData={{ about_me: "" }}
         servicesSummary={{ totalServices: 0, activeServices: 0, hasValidServiceForPublish: false }}
         currentPhotoUrl=""
+        specialistId={specialist.id}
+        homepagePhoto={homepagePhoto}
+        previewName=""
+        previewCategory=""
         reviewSummary={{
           publishReady: false,
           blocking: [],
@@ -166,6 +187,7 @@ export default async function SpecialistDashboardOnboardingPage({
           hasAbout: false,
           hasPhoto: false,
           hasGallery: false,
+          hasHomepagePhoto: false,
         }}
         publicProfileHref={publicProfileHref}
         categories={[]}
@@ -219,6 +241,18 @@ export default async function SpecialistDashboardOnboardingPage({
         ? profile.photo_url
         : "";
   const hasPhoto = avatarUrl.trim().length > 0;
+  const hasHomepagePhoto =
+    resolveHomepagePhotoState({
+      specialistId: specialist.id,
+      photoSourceUrl: homepagePhoto.photo_source_url,
+      homepagePhotoUrl: homepagePhoto.homepage_photo_url,
+      storedMetadata: homepagePhoto.homepage_photo,
+      canonicalOrigin: process.env.NEXT_PUBLIC_SUPABASE_URL ?? null,
+    }).kind === "ready";
+  const selectedCategory = (categoriesRows ?? []).find((category) => category.id === categoryId);
+  const previewCategory = selectedCategory
+    ? getCategoryTitle(selectedCategory, toCategoryTitleLang(lang)) || ""
+    : "";
   const hasGallery = Array.isArray(profile?.gallery_urls)
     ? profile.gallery_urls.some((value) => typeof value === "string" && value.trim().length > 0)
     : false;
@@ -301,6 +335,12 @@ export default async function SpecialistDashboardOnboardingPage({
       recommendation: true,
     },
     {
+      key: "homepagePhoto",
+      label: t(dict, "dashboard.homepagePhoto.title"),
+      done: hasHomepagePhoto,
+      recommendation: true,
+    },
+    {
       key: "about",
       label: t(dict, "dashboard.onboarding.checklist.about"),
       done: hasAbout,
@@ -342,6 +382,10 @@ export default async function SpecialistDashboardOnboardingPage({
         hasValidServiceForPublish: hasValidService,
       }}
       currentPhotoUrl={avatarUrl}
+      specialistId={specialist.id}
+      homepagePhoto={homepagePhoto}
+      previewName={name}
+      previewCategory={previewCategory}
       reviewSummary={{
         publishReady,
         blocking: validation.blocking,
@@ -365,6 +409,7 @@ export default async function SpecialistDashboardOnboardingPage({
         hasAbout,
         hasPhoto,
         hasGallery,
+        hasHomepagePhoto,
       }}
       publicProfileHref={publicProfileHref}
       categories={(categoriesRows ?? [])

@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useId, useState } from "react";
 import SpecialistAvatarImage from "@/components/specialist/SpecialistAvatarImage";
+import HomepagePhotoCropEditor from "@/components/specialist/HomepagePhotoCropEditor";
 import { Alert, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { dashboardLinkSecondaryClass, dashboardUploadButtonClass } from "@/components/dashboard/dashboardStyles";
 import { t, type Dictionary } from "@/lib/i18n";
@@ -11,19 +12,35 @@ import { t, type Dictionary } from "@/lib/i18n";
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
+export type OnboardingHomepagePhoto = {
+  photo_source_url: string | null;
+  homepage_photo_url: string | null;
+  homepage_photo: unknown;
+};
+
 export default function OnboardingPhotoStep({
   dict,
   lang,
   baseHref,
   currentPhotoUrl,
+  specialistId,
+  homepagePhoto,
+  previewName,
+  previewCategory,
 }: {
   dict: Dictionary;
   lang: string;
   baseHref: string;
   dashboardHref: string;
   currentPhotoUrl: string;
+  specialistId: string;
+  homepagePhoto: OnboardingHomepagePhoto;
+  previewName?: string;
+  previewCategory?: string;
 }) {
   const router = useRouter();
+  const mainPhotoFormId = useId();
+  const reviewHref = `/${lang}/specialist/dashboard/onboarding?step=review`;
   const [previewUrl, setPreviewUrl] = useState(currentPhotoUrl);
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -106,10 +123,8 @@ export default function OnboardingPhotoStep({
     }
   }
 
-  const reviewHref = `/${lang}/specialist/dashboard/onboarding?step=review`;
-
   return (
-    <Card padding="lg" className="shadow-none">
+    <Card padding="lg" className="min-w-0 shadow-none">
       <CardHeader>
         <CardTitle className="text-freuly-card-title">
           {t(dict, "dashboard.onboarding.photoStep.title")}
@@ -119,8 +134,8 @@ export default function OnboardingPhotoStep({
         </p>
       </CardHeader>
 
-      <CardContent>
-        <form className="space-y-freuly-5" onSubmit={handleSubmit}>
+      <CardContent className="min-w-0">
+        <form id={mainPhotoFormId} className="space-y-freuly-5" onSubmit={handleSubmit}>
           <div className="space-y-freuly-3">
             <p className="text-freuly-body-sm font-medium text-freuly-text-primary">
               {t(dict, "dashboard.onboarding.photoStep.currentPhoto")}
@@ -158,20 +173,36 @@ export default function OnboardingPhotoStep({
           {error ? <Alert variant="error">{error}</Alert> : null}
 
           {uploaded ? <Alert variant="success">{t(dict, "dashboard.onboarding.photoStep.uploaded")}</Alert> : null}
-
-          <div className="flex flex-wrap items-center gap-freuly-3">
-            <Link href={`${baseHref}?step=services`} className={dashboardLinkSecondaryClass}>
-              {t(dict, "dashboard.onboarding.nav.back")}
-            </Link>
-            <Button type="submit" disabled={uploading} className="w-full sm:w-auto">
-              {uploading
-                ? t(dict, "dashboard.onboarding.photoStep.uploading")
-                : file
-                  ? t(dict, "dashboard.onboarding.photoStep.uploadAndContinue")
-                  : t(dict, "dashboard.onboarding.photoStep.next")}
-            </Button>
-          </div>
         </form>
+
+        <div className="mt-freuly-8 min-w-0 overflow-x-hidden border-t border-freuly-border-subtle pt-freuly-6">
+          <p className="mb-freuly-4 text-freuly-helper text-freuly-text-muted">
+            {t(dict, "dashboard.onboarding.homepagePhoto.optionalHint")}
+          </p>
+          <HomepagePhotoCropEditor
+            dict={dict}
+            specialistId={specialistId}
+            initialSourceUrl={homepagePhoto.photo_source_url}
+            initialHomepagePhotoUrl={homepagePhoto.homepage_photo_url}
+            initialMetadata={homepagePhoto.homepage_photo}
+            canonicalOrigin={process.env.NEXT_PUBLIC_SUPABASE_URL ?? null}
+            previewName={previewName}
+            previewCategory={previewCategory}
+          />
+        </div>
+
+        <div className="mt-freuly-6 flex flex-wrap items-center gap-freuly-3">
+          <Link href={`${baseHref}?step=services`} className={dashboardLinkSecondaryClass}>
+            {t(dict, "dashboard.onboarding.nav.back")}
+          </Link>
+          <Button type="submit" form={mainPhotoFormId} disabled={uploading} className="w-full sm:w-auto">
+            {uploading
+              ? t(dict, "dashboard.onboarding.photoStep.uploading")
+              : file
+                ? t(dict, "dashboard.onboarding.photoStep.uploadAndContinue")
+                : t(dict, "dashboard.onboarding.photoStep.next")}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

@@ -14,7 +14,7 @@ import OnboardingProgress, {
   type OnboardingStep,
   type OnboardingStepKey,
 } from "./OnboardingProgress";
-import OnboardingPhotoStep from "./OnboardingPhotoStep";
+import OnboardingPhotoStep, { type OnboardingHomepagePhoto } from "./OnboardingPhotoStep";
 import OnboardingReviewStep, { type OnboardingReviewSummary } from "./OnboardingReviewStep";
 import OnboardingServicesStep, { type OnboardingServicesSummary } from "./OnboardingServicesStep";
 import OnboardingStepShell from "./OnboardingStepShell";
@@ -58,6 +58,10 @@ export default function SpecialistOnboardingWizard({
   initialAboutData,
   servicesSummary,
   currentPhotoUrl,
+  specialistId,
+  homepagePhoto,
+  previewName,
+  previewCategory,
   reviewSummary,
   publicProfileHref,
   categories,
@@ -76,6 +80,10 @@ export default function SpecialistOnboardingWizard({
   initialAboutData: OnboardingAboutData;
   servicesSummary: OnboardingServicesSummary;
   currentPhotoUrl: string;
+  specialistId: string;
+  homepagePhoto: OnboardingHomepagePhoto;
+  previewName?: string;
+  previewCategory?: string;
   reviewSummary: OnboardingReviewSummary;
   publicProfileHref: string;
   categories: OnboardingCategory[];
@@ -212,13 +220,17 @@ export default function SpecialistOnboardingWizard({
       ) : null}
 
       {activeStep === "photo" ? (
-        <div className="grid gap-freuly-6 lg:grid-cols-[1fr_360px]">
+        <div className="grid min-w-0 gap-freuly-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           <OnboardingPhotoStep
             dict={dict}
             lang={lang}
             baseHref={baseHref}
             dashboardHref={`/${lang}/specialist/dashboard`}
             currentPhotoUrl={currentPhotoUrl}
+            specialistId={specialistId}
+            homepagePhoto={homepagePhoto}
+            previewName={previewName}
+            previewCategory={previewCategory}
           />
           <OnboardingChecklist
             title={t(dict, "dashboard.onboarding.checklist.title")}
