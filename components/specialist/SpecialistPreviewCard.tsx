@@ -7,12 +7,12 @@ import { t, type Dictionary } from "@/lib/i18n";
 import { getSpecialistUrl } from "@/lib/urls";
 import FounderBadge from "@/components/specialist/FounderBadge";
 import {
-  type PhotoFocus,
   resolveLiveSpecialistPhotoFit,
   specialistMainPhotoFitClass,
 } from "@/components/specialist/specialistMainPhotoFit";
 import { getPublicSpecialistLocation } from "@/lib/specialists/geography";
 import { resolvePublicServicePriceView } from "@/lib/specialistServices/pricing";
+import { resolvePublicMainPhotoView } from "@/lib/specialists/publicMainPhoto";
 
 type SpecialistPreview = {
   id: string;
@@ -41,6 +41,7 @@ type SpecialistPreview = {
   mobile_service?: boolean;
   service_radius_km?: number | null;
   founder_badge?: boolean;
+  photo_focus?: unknown;
 };
 
 function workFormatLabel(workFormat: SpecialistPreview["work_format"], dict: Dictionary): string {
@@ -60,13 +61,11 @@ export default function SpecialistPreviewCard({
   lang,
   dict,
   categoryLabel,
-  photoFocus = null,
 }: {
   specialist: SpecialistPreview;
   lang: string;
   dict: Dictionary;
   categoryLabel?: string | null;
-  photoFocus?: PhotoFocus | null;
 }) {
   const languageList = Array.isArray(specialist.languages) ? specialist.languages : [];
   const chips = languageList.slice(0, 3);
@@ -129,7 +128,16 @@ export default function SpecialistPreviewCard({
     onlineLabel: t(dict, "specialist.workFormat.online"),
   });
 
-  const photoFit = resolveLiveSpecialistPhotoFit({ focus: photoFocus, surface: "card" });
+  const mainPhoto = resolvePublicMainPhotoView({
+    src: specialist.avatar_url,
+    storedPhotoFocus: specialist.photo_focus,
+    specialistId: specialist.id,
+  });
+  const photoFit = resolveLiveSpecialistPhotoFit({
+    focus: mainPhoto.photoFocus,
+    imageAspect: mainPhoto.imageAspect,
+    surface: "card",
+  });
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-freuly-border-default bg-freuly-surface">

@@ -41,6 +41,7 @@ type SpecialistRow = {
 type ProfileRow = {
   specialist_id: string;
   photo_url: string | null;
+  photo_focus?: unknown;
   city?: string | null;
   about_me?: string | null;
   services?: string | null;
@@ -504,13 +505,13 @@ export async function GET(request: NextRequest) {
     if (specialistIds.length > 0) {
       const fullProfile = await supabase
         .from('specialist_profiles')
-        .select('specialist_id, photo_url, city, about_me, services, experience')
+        .select('specialist_id, photo_url, photo_focus, city, about_me, services, experience')
         .in('specialist_id', specialistIds);
 
       if (fullProfile.error && /column.*does not exist/i.test(fullProfile.error.message ?? '')) {
         const fallbackProfile = await supabase
           .from('specialist_profiles')
-          .select('specialist_id, photo_url, city')
+          .select('specialist_id, photo_url, photo_focus, city')
           .in('specialist_id', specialistIds);
         profileRows = (fallbackProfile.data as ProfileRow[] | null) ?? [];
       } else {
@@ -584,6 +585,7 @@ export async function GET(request: NextRequest) {
         slug: (typeof row.slug === 'string' && row.slug.trim()) ? row.slug.trim() : normalizeSlug(nameFromDb || '', row.id),
         name: nameFromDb,
         avatar_url: profile?.photo_url ?? row.avatar_url ?? null,
+        photo_focus: profile?.photo_focus ?? null,
         about_line: pickAboutLine({
           profileAbout:
             profileContentById?.get(row.id)?.aboutMe ??
@@ -718,6 +720,7 @@ export async function GET(request: NextRequest) {
         slug: rest.slug,
         name: rest.name,
         avatar_url: rest.avatar_url,
+        photo_focus: rest.photo_focus ?? null,
         about_line: rest.about_line,
         city: rest.city,
         work_format: rest.work_format,

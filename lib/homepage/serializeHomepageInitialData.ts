@@ -32,6 +32,7 @@ export function toHomepageRecommendedDto(
     category_title_ua: row.category_title_ua,
     about_line: truncateAboutLine(row.about_line),
     founder_badge: row.founder_badge === true ? true : undefined,
+    photo_focus: row.photo_focus ?? null,
   }));
 }
 

@@ -5,10 +5,10 @@ import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import type { SpecialistResult } from "@/lib/search/specialistSearch";
 import {
-  type PhotoFocus,
   resolveLiveSpecialistPhotoFit,
   specialistMainPhotoFitClass,
 } from "@/components/specialist/specialistMainPhotoFit";
+import { resolvePublicMainPhotoView } from "@/lib/specialists/publicMainPhoto";
 
 type SpecialistResultCardProps = {
   specialist: SpecialistResult;
@@ -16,7 +16,6 @@ type SpecialistResultCardProps = {
   dict: Dictionary;
   profileHref: string;
   leadHref: string;
-  photoFocus?: PhotoFocus | null;
 };
 
 function workFormatLabel(dict: Dictionary, workFormat: string | null): string | null {
@@ -53,7 +52,6 @@ export default function SpecialistResultCard({
   dict,
   profileHref,
   leadHref,
-  photoFocus = null,
 }: SpecialistResultCardProps) {
   const categoryLabel = getCategoryTitle(
     {
@@ -69,7 +67,16 @@ export default function SpecialistResultCard({
     : [];
   const formatLabel = workFormatLabel(dict, specialist.work_format);
   const hasDistance = typeof specialist.distance === "number" && Number.isFinite(specialist.distance);
-  const photoFit = resolveLiveSpecialistPhotoFit({ focus: photoFocus, surface: "thumb" });
+  const mainPhoto = resolvePublicMainPhotoView({
+    src: specialist.avatar_url,
+    storedPhotoFocus: specialist.photo_focus,
+    specialistId: specialist.id,
+  });
+  const photoFit = resolveLiveSpecialistPhotoFit({
+    focus: mainPhoto.photoFocus,
+    imageAspect: mainPhoto.imageAspect,
+    surface: "thumb",
+  });
   const name = specialist.name?.trim() || t(dict, "specialist.fallback");
 
   return (

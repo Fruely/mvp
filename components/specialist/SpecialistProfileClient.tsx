@@ -59,6 +59,7 @@ export interface Specialist {
   lat?: number | null;
   lng?: number | null;
   founder_badge?: boolean;
+  photo_focus?: unknown;
   specialist_services?: Array<{
     id: string;
     title: string;
@@ -548,6 +549,8 @@ export default function SpecialistProfileClient({
       {!hideHero ? (
         <SpecialistHero
           avatarUrl={specialist.avatar_url}
+          storedPhotoFocus={specialist.photo_focus}
+          specialistId={specialist.id}
           avatarAlt={displayName}
           name={displayName}
           specialization={specializationText}

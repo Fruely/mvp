@@ -1,5 +1,5 @@
 import type { PhotoBox, PhotoFocus } from "@/components/specialist/specialistMainPhotoFit";
-import { extractManagedStoragePath } from "@/lib/specialistMedia/storage";
+import { extractManagedStoragePath } from "@/lib/specialistMedia/storagePath";
 
 export const PHOTO_FOCUS_VERSION = 1;
 export const PHOTO_FOCUS_ALGORITHM = "coco-ssd+blazeface";
@@ -159,8 +159,12 @@ export function parseStoredPhotoFocus(value: unknown): StoredPhotoFocus | null {
 }
 
 export function imageAspectFromStored(stored: StoredPhotoFocus): number | null {
-  if (!(stored.image_width > 0) || !(stored.image_height > 0)) return null;
-  return stored.image_width / stored.image_height;
+  const width = stored.image_width;
+  const height = stored.image_height;
+  if (!Number.isFinite(width) || !Number.isFinite(height)) return null;
+  if (!(width > 0) || !(height > 0)) return null;
+  const aspect = width / height;
+  return Number.isFinite(aspect) && aspect > 0 ? aspect : null;
 }
 
 /**

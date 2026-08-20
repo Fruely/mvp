@@ -198,7 +198,7 @@ function formatObjectPosition(focalX: number, focalY: number): string {
 export function resolveSpecialistPhotoFit(input: {
   focus?: PhotoFocus | null;
   frameAspect?: number;
-  imageAspect?: number;
+  imageAspect?: number | null;
   surface: SpecialistPhotoSurface;
 }): SpecialistPhotoFit {
   const surface = input.surface;
@@ -244,7 +244,7 @@ export function resolveSpecialistPhotoFit(input: {
 export function resolveLiveSpecialistPhotoFit(input: {
   focus?: PhotoFocus | null;
   frameAspect?: number;
-  imageAspect?: number;
+  imageAspect?: number | null;
   surface: SpecialistPhotoSurface;
 }): SpecialistPhotoFit {
   if (!isSpecialistPhotoCoverEnabled(input.surface)) return CONTAIN_FIT;

@@ -92,6 +92,7 @@ export type SpecialistResult = {
   work_format: string | null;
   postal_code: string | null;
   distance?: number;
+  photo_focus?: unknown;
 };
 
 export type SpecialistSearchInput = {
@@ -351,15 +352,31 @@ async function mapWithCategories(
     });
   }
 
+  const specialistIds = specialists.map((s) => s.id).filter(Boolean);
+  const focusBySpecialistId = new Map<string, unknown>();
+  if (specialistIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("specialist_profiles")
+      .select("specialist_id, photo_focus")
+      .in("specialist_id", specialistIds);
+    for (const profile of profiles ?? []) {
+      if (typeof profile?.specialist_id === "string") {
+        focusBySpecialistId.set(profile.specialist_id, profile.photo_focus ?? null);
+      }
+    }
+  }
+
   return specialists.map((s) => {
     const cat = s.category_id ? categoryMap[s.category_id] : null;
     const distance = normalizeDistanceKm(s.distance);
+    const storedFocus = focusBySpecialistId.get(s.id);
     return {
       id: s.id,
       slug: s.slug ?? null,
       name: s.name != null && String(s.name).trim() ? String(s.name).trim() : null,
       bio: s.bio,
       avatar_url: s.avatar_url,
+      photo_focus: storedFocus === undefined ? null : storedFocus,
       category_id: s.category_id,
       category_slug: cat?.slug ?? null,
       category_title: cat?.title ?? null,

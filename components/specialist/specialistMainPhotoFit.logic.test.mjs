@@ -341,7 +341,7 @@ test("SpecialistAvatarImage dashboard surface always uses resolver contain path"
   assert.doesNotMatch(src, /className="object-cover"/);
 });
 
-test("public MAIN photo callers do not pass imageAspect (contain lock)", () => {
+test("public MAIN photo callers pass view-model imageAspect into the live resolver", () => {
   for (const relative of [
     "components/specialist/SpecialistHeroContent.tsx",
     "components/specialist/SpecialistPreviewCard.tsx",
@@ -349,7 +349,8 @@ test("public MAIN photo callers do not pass imageAspect (contain lock)", () => {
     "components/home/variantC/VariantCSpecialistCard.tsx",
   ]) {
     const src = readSrc(relative);
-    assert.doesNotMatch(src, /imageAspect/);
+    assert.match(src, /resolveLiveSpecialistPhotoFit\(/);
+    assert.match(src, /imageAspect:\s*mainPhoto\.imageAspect/);
   }
 });
 

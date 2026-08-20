@@ -138,6 +138,7 @@ function toInitialSpecialist(
     name: profile.name,
     description: profile.description ?? undefined,
     avatar_url: profile.avatarUrl,
+    photo_focus: profile.photoFocus ?? null,
     city: profile.city,
     category: profile.categoryTitle ?? undefined,
     languages: profile.languages,

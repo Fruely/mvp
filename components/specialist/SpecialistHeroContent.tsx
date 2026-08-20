@@ -3,14 +3,15 @@ import Image from "next/image";
 import { Briefcase, Globe, MapPin } from "lucide-react";
 import FounderBadge from "@/components/specialist/FounderBadge";
 import {
-  type PhotoFocus,
   resolveLiveSpecialistPhotoFit,
   specialistMainPhotoFitClass,
 } from "@/components/specialist/specialistMainPhotoFit";
+import { resolvePublicMainPhotoView } from "@/lib/specialists/publicMainPhoto";
 
 export type SpecialistHeroContentProps = {
   avatarUrl?: string | null;
-  photoFocus?: PhotoFocus | null;
+  storedPhotoFocus?: unknown;
+  specialistId?: string | null;
   avatarAlt: string;
   name: string;
   specialization: string | null;
@@ -42,7 +43,8 @@ function MetaItem({
 
 export default function SpecialistHeroContent({
   avatarUrl,
-  photoFocus = null,
+  storedPhotoFocus = null,
+  specialistId = null,
   avatarAlt,
   name,
   specialization,
@@ -57,7 +59,16 @@ export default function SpecialistHeroContent({
   actions,
 }: SpecialistHeroContentProps) {
   const trimmed = typeof avatarUrl === "string" ? avatarUrl.trim() : "";
-  const photoFit = resolveLiveSpecialistPhotoFit({ focus: photoFocus, surface: "hero" });
+  const mainPhoto = resolvePublicMainPhotoView({
+    src: trimmed,
+    storedPhotoFocus,
+    specialistId,
+  });
+  const photoFit = resolveLiveSpecialistPhotoFit({
+    focus: mainPhoto.photoFocus,
+    imageAspect: mainPhoto.imageAspect,
+    surface: "hero",
+  });
 
   return (
     <div className="flex w-full flex-col gap-5 md:flex-row md:items-center md:gap-12">

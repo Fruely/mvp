@@ -1,12 +1,12 @@
 "use client";
 
 import SpecialistHeroContent from "@/components/specialist/SpecialistHeroContent";
-import type { PhotoFocus } from "@/components/specialist/specialistMainPhotoFit";
 import Button from "@/components/ui/Button";
 
 export default function SpecialistHero({
   avatarUrl,
-  photoFocus = null,
+  storedPhotoFocus = null,
+  specialistId = null,
   avatarAlt,
   name,
   specialization,
@@ -25,7 +25,8 @@ export default function SpecialistHero({
   showServicesCta,
 }: {
   avatarUrl?: string | null;
-  photoFocus?: PhotoFocus | null;
+  storedPhotoFocus?: unknown;
+  specialistId?: string | null;
   avatarAlt: string;
   name: string;
   specialization: string | null;
@@ -48,7 +49,8 @@ export default function SpecialistHero({
       <div className="mx-auto w-full max-w-[1280px] px-5 py-5 md:px-20 md:py-14">
         <SpecialistHeroContent
           avatarUrl={avatarUrl}
-          photoFocus={photoFocus}
+          storedPhotoFocus={storedPhotoFocus}
+          specialistId={specialistId}
           avatarAlt={avatarAlt}
           name={name}
           specialization={specialization}

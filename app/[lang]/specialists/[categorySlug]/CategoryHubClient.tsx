@@ -45,6 +45,7 @@ interface SpecialistPreview {
   mobile_service?: boolean;
   service_radius_km?: number | null;
   founder_badge?: boolean;
+  photo_focus?: unknown;
 }
 
 interface Category {
@@ -139,6 +140,7 @@ function normalizeSpecialistPreview(input: any): SpecialistPreview | null {
     service_radius_km:
       typeof input.service_radius_km === "number" ? input.service_radius_km : null,
     founder_badge: input.founder_badge === true,
+    photo_focus: input.photo_focus ?? null,
   };
 }
 

@@ -329,7 +329,7 @@ export async function fetchRecommendedSpecialists(
     await Promise.all([
       supabase
         .from("specialist_profiles")
-        .select("specialist_id, city, photo_url, about_me")
+        .select("specialist_id, city, photo_url, photo_focus, about_me")
         .in("specialist_id", specialistIds),
       contentLocale
         ? resolveProfileContent(supabase, {
@@ -354,13 +354,14 @@ export async function fetchRecommendedSpecialists(
 
   const profileBySpecialistId = new Map<
     string,
-    { city: string | null; photo_url: string | null; about_me: string | null }
+    { city: string | null; photo_url: string | null; photo_focus: unknown; about_me: string | null }
   >();
   for (const p of profilesResult.data ?? []) {
     if (p?.specialist_id) {
       profileBySpecialistId.set(p.specialist_id, {
         city: typeof p.city === "string" ? p.city : null,
         photo_url: typeof p.photo_url === "string" ? p.photo_url : null,
+        photo_focus: p.photo_focus ?? null,
         about_me: typeof p.about_me === "string" ? p.about_me : null,
       });
     }
@@ -406,6 +407,7 @@ export async function fetchRecommendedSpecialists(
       slug: row.slug ?? null,
       name: row.name != null && String(row.name).trim() ? String(row.name).trim() : null,
       avatar_url: row.avatar_url ?? profile?.photo_url ?? null,
+      photo_focus: profile?.photo_focus ?? null,
       city: profile?.city ?? null,
       languages: Array.isArray(row.languages) ? row.languages : [],
       category_title: category?.title ?? null,

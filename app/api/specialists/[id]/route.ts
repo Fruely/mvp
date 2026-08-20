@@ -61,7 +61,7 @@ export async function GET(
   const { data: profile } = await supabase
     .from("specialist_profiles")
     .select(
-      "photo_url, video_url, gallery_urls, certificate_urls, about_me, city, address"
+      "photo_url, photo_focus, video_url, gallery_urls, certificate_urls, about_me, city, address"
     )
     .eq("specialist_id", specialist.id)
     .maybeSingle();
@@ -143,6 +143,7 @@ export async function GET(
     gallery_urls: selectPublicGalleryUrls(allGalleryUrls, entitlements.galleryPublicLimit),
     certificate_urls: Array.isArray(profile?.certificate_urls) ? profile.certificate_urls : [],
     photo_url: profile?.photo_url ?? null,
+    photo_focus: profile?.photo_focus ?? null,
     lat: specialist.lat ?? null,
     lng: specialist.lng ?? null,
     founder_badge: specialist.founder_badge === true,

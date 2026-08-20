@@ -8,11 +8,11 @@ import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { getSpecialistUrl } from "@/lib/urls";
 import FounderBadge from "@/components/specialist/FounderBadge";
 import {
-  type PhotoFocus,
   resolveLiveSpecialistPhotoFit,
   specialistMainPhotoFitClass,
 } from "@/components/specialist/specialistMainPhotoFit";
 import { publicCardClass } from "@/components/public/publicStyles";
+import { resolvePublicMainPhotoView } from "@/lib/specialists/publicMainPhoto";
 
 export type VariantCSpecialist = {
   id: string;
@@ -27,18 +27,17 @@ export type VariantCSpecialist = {
   category_title_ua: string | null;
   about_line?: string | null;
   founder_badge?: boolean;
+  photo_focus?: unknown;
 };
 
 export default function VariantCSpecialistCard({
   specialist,
   lang,
   dict,
-  photoFocus = null,
 }: {
   specialist: VariantCSpecialist;
   lang: Lang;
   dict: Dictionary;
-  photoFocus?: PhotoFocus | null;
 }) {
   const categoryLabel =
     getCategoryTitle(
@@ -54,7 +53,16 @@ export default function VariantCSpecialistCard({
   const name = specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback");
   const profileHref = getSpecialistUrl(lang, specialist);
   const languages = specialist.languages.filter(Boolean).slice(0, 3);
-  const photoFit = resolveLiveSpecialistPhotoFit({ focus: photoFocus, surface: "card" });
+  const mainPhoto = resolvePublicMainPhotoView({
+    src: specialist.avatar_url,
+    storedPhotoFocus: specialist.photo_focus,
+    specialistId: specialist.id,
+  });
+  const photoFit = resolveLiveSpecialistPhotoFit({
+    focus: mainPhoto.photoFocus,
+    imageAspect: mainPhoto.imageAspect,
+    surface: "card",
+  });
 
   return (
     <article className={`${publicCardClass} flex h-full flex-col overflow-hidden`}>

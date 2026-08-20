@@ -62,6 +62,7 @@ export type HomepageRecommendedSpecialist = {
   reviews_count?: number;
   founder_badge?: boolean;
   is_featured?: boolean;
+  photo_focus?: unknown;
   placement_group?: RecommendationPlacementGroup;
   recommendation_row?: number;
   badges?: RecommendationBadge[];
