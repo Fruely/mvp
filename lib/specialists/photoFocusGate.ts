@@ -8,11 +8,12 @@ export const SPECIALIST_PHOTO_COVER_ENV = "NEXT_PUBLIC_SPECIALIST_PHOTO_COVER_EN
 export type SpecialistPhotoCoverSurface = "card" | "thumb" | "hero" | "dashboard";
 
 /**
- * Per-surface rollout. All false until an explicit later enablement step.
+ * Per-surface rollout. Card is prepared; thumb/hero stay false.
+ * Live cover still requires NEXT_PUBLIC_SPECIALIST_PHOTO_COVER_ENABLED=true.
  * Intended sequence: cards first, thumbs next, hero last. Dashboard never covers.
  */
 export const SPECIALIST_PHOTO_COVER_SURFACES: Record<SpecialistPhotoCoverSurface, boolean> = {
-  card: false,
+  card: true,
   thumb: false,
   hero: false,
   dashboard: false,
