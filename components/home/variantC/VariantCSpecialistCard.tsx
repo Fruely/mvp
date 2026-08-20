@@ -66,7 +66,7 @@ export default function VariantCSpecialistCard({
 
   return (
     <article className={`${publicCardClass} flex h-full flex-col overflow-hidden`}>
-      <div className="relative h-[200px] w-full overflow-hidden bg-freuly-border-subtle sm:h-[220px]">
+      <div className="relative h-[200px] w-full overflow-hidden bg-freuly-border-subtle">
         {specialist.founder_badge ? (
           <div className="absolute left-4 top-4 z-10">
             <FounderBadge />

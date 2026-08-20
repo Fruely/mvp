@@ -373,8 +373,20 @@ test("hero and listing card frames keep existing geometry (no size change)", () 
   const variantC = readSrc("components/home/variantC/VariantCSpecialistCard.tsx");
   assert.match(
     variantC,
-    /relative h-\[200px\] w-full overflow-hidden bg-freuly-border-subtle sm:h-\[220px\]/,
+    /relative h-\[200px\] w-full overflow-hidden bg-freuly-border-subtle/,
   );
+  assert.doesNotMatch(variantC, /sm:h-\[220px\]/);
+
+  const home = readSrc("app/[lang]/HomeClient.tsx");
+  const recommendedBlock = home.slice(
+    home.indexOf("{/* Recommended specialists */}"),
+    home.indexOf("{/* Story */}"),
+  );
+  assert.match(recommendedBlock, /max-w-\[1312px\]/);
+  assert.doesNotMatch(recommendedBlock, /max-w-7xl/);
+  assert.match(recommendedBlock, /h-\[200px\] animate-pulse/);
+  assert.doesNotMatch(recommendedBlock, /h-\[220px\]/);
+  assert.match(readSrc("components/public/publicStyles.ts"), /max-w-7xl/);
 });
 
 test("negative: category images keep object-cover", () => {

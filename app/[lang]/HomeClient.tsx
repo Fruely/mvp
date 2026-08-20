@@ -308,7 +308,7 @@ export default function HomeClient({
       {/* Recommended specialists */}
       {(isRecommendedLoading || recommendedSpecialists.length > 0) && (
         <section className="bg-[#f8f7f5] px-freuly-4 pb-20 pt-16 sm:px-freuly-6 sm:pb-24 sm:pt-20 lg:px-16 lg:pb-[104px] lg:pt-24">
-          <div className={`${publicPageContainerClass} space-y-12 px-0`}>
+          <div className="mx-auto w-full max-w-[1312px] space-y-12">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="space-y-2">
                 <p className="text-xs font-bold uppercase tracking-wide text-freuly-primary">
@@ -331,7 +331,7 @@ export default function HomeClient({
               <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4" aria-hidden>
                 {Array.from({ length: 4 }).map((_, idx) => (
                   <div key={`recommended-skeleton-${idx}`} className={`${publicCardClass} overflow-hidden`}>
-                    <div className="h-[220px] animate-pulse bg-freuly-border-subtle" />
+                    <div className="h-[200px] animate-pulse bg-freuly-border-subtle" />
                     <div className="space-y-2 p-5">
                       <div className="h-5 w-2/3 rounded bg-freuly-border-subtle" />
                       <div className="h-4 w-1/2 rounded bg-freuly-border-subtle" />
