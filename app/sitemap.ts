@@ -94,7 +94,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  const supabase = createSupabaseServerClient();
+  // CI next build has no Supabase secrets; skip DB URLs instead of failing export.
+  // Production Vercel still has env, so the live sitemap is unchanged.
+  let supabase;
+  try {
+    supabase = createSupabaseServerClient();
+  } catch (error) {
+    console.error("[sitemap] supabase unavailable", error);
+    return entries;
+  }
+
   const { data: categories } = await supabase
     .from("categories")
     .select("slug")
