@@ -15,6 +15,8 @@ import {
   utcDaySeed,
   utcHalfDaySeed,
 } from "@/lib/homepage/recommendedSelection";
+import { resolveHomepageCardImage } from "@/lib/homepage/homepageCardImage";
+import { resolveCanonicalSupabaseOrigin } from "@/lib/specialistMedia/storagePath";
 
 /**
  * Homepage recommended grid: 3 rows x 4 cards (Variant C displays the first row only).
@@ -329,7 +331,7 @@ export async function fetchRecommendedSpecialists(
     await Promise.all([
       supabase
         .from("specialist_profiles")
-        .select("specialist_id, city, photo_url, photo_focus, about_me")
+        .select("specialist_id, city, photo_url, photo_source_url, homepage_photo_url, homepage_photo, photo_focus, about_me")
         .in("specialist_id", specialistIds),
       contentLocale
         ? resolveProfileContent(supabase, {
@@ -354,13 +356,24 @@ export async function fetchRecommendedSpecialists(
 
   const profileBySpecialistId = new Map<
     string,
-    { city: string | null; photo_url: string | null; photo_focus: unknown; about_me: string | null }
+    {
+      city: string | null;
+      photo_url: string | null;
+      photo_source_url: string | null;
+      homepage_photo_url: string | null;
+      homepage_photo: unknown;
+      photo_focus: unknown;
+      about_me: string | null;
+    }
   >();
   for (const p of profilesResult.data ?? []) {
     if (p?.specialist_id) {
       profileBySpecialistId.set(p.specialist_id, {
         city: typeof p.city === "string" ? p.city : null,
         photo_url: typeof p.photo_url === "string" ? p.photo_url : null,
+        photo_source_url: typeof p.photo_source_url === "string" ? p.photo_source_url : null,
+        homepage_photo_url: typeof p.homepage_photo_url === "string" ? p.homepage_photo_url : null,
+        homepage_photo: p.homepage_photo ?? null,
         photo_focus: p.photo_focus ?? null,
         about_me: typeof p.about_me === "string" ? p.about_me : null,
       });
@@ -402,11 +415,23 @@ export async function fetchRecommendedSpecialists(
     const category =
       typeof row.category_id === "string" ? categoryById.get(row.category_id) : undefined;
     const premiumPlacement = isPremiumPlacement(row) || row.placement_group === "premium";
+    const mainPhotoUrl = row.avatar_url ?? profile?.photo_url ?? null;
+    const homepageCardImage = resolveHomepageCardImage({
+      specialistId: row.id,
+      photoSourceUrl: profile?.photo_source_url ?? null,
+      homepagePhotoUrl: profile?.homepage_photo_url ?? null,
+      storedMetadata: profile?.homepage_photo ?? null,
+      canonicalOrigin: resolveCanonicalSupabaseOrigin(),
+      fallbackUrl: mainPhotoUrl,
+    });
     return {
       id: row.id,
       slug: row.slug ?? null,
       name: row.name != null && String(row.name).trim() ? String(row.name).trim() : null,
-      avatar_url: row.avatar_url ?? profile?.photo_url ?? null,
+      avatar_url: mainPhotoUrl,
+      homepage_card_image_url: homepageCardImage.usesCanonicalHomepagePhoto
+        ? homepageCardImage.src
+        : null,
       photo_focus: profile?.photo_focus ?? null,
       city: profile?.city ?? null,
       languages: Array.isArray(row.languages) ? row.languages : [],

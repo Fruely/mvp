@@ -19,6 +19,7 @@ export type VariantCSpecialist = {
   slug: string | null;
   name: string | null;
   avatar_url: string | null;
+  homepage_card_image_url?: string | null;
   city: string | null;
   languages: string[];
   category_title: string | null;
@@ -53,6 +54,10 @@ export default function VariantCSpecialistCard({
   const name = specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback");
   const profileHref = getSpecialistUrl(lang, specialist);
   const languages = specialist.languages.filter(Boolean).slice(0, 3);
+  const canonicalHomepageImage =
+    typeof specialist.homepage_card_image_url === "string" && specialist.homepage_card_image_url.trim()
+      ? specialist.homepage_card_image_url.trim()
+      : null;
   const mainPhoto = resolvePublicMainPhotoView({
     src: specialist.avatar_url,
     storedPhotoFocus: specialist.photo_focus,
@@ -63,6 +68,10 @@ export default function VariantCSpecialistCard({
     imageAspect: mainPhoto.imageAspect,
     surface: "card",
   });
+  const imageSrc = canonicalHomepageImage ?? specialist.avatar_url;
+  const imageFit = canonicalHomepageImage
+    ? { fit: "cover" as const, objectPosition: "50% 50%" }
+    : photoFit;
 
   return (
     <article className={`${publicCardClass} flex h-full flex-col overflow-hidden`}>
@@ -72,14 +81,14 @@ export default function VariantCSpecialistCard({
             <FounderBadge />
           </div>
         ) : null}
-        {specialist.avatar_url ? (
+        {imageSrc ? (
           <Image
-            src={specialist.avatar_url}
+            src={imageSrc}
             alt={name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 320px"
-            className={specialistMainPhotoFitClass(photoFit)}
-            style={{ objectPosition: photoFit.objectPosition }}
+            className={specialistMainPhotoFitClass(imageFit)}
+            style={{ objectPosition: imageFit.objectPosition }}
             loading="lazy"
           />
         ) : (

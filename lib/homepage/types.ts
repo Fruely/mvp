@@ -63,6 +63,7 @@ export type HomepageRecommendedSpecialist = {
   founder_badge?: boolean;
   is_featured?: boolean;
   photo_focus?: unknown;
+  homepage_card_image_url?: string | null;
   placement_group?: RecommendationPlacementGroup;
   recommendation_row?: number;
   badges?: RecommendationBadge[];

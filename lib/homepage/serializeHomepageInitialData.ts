@@ -33,6 +33,10 @@ export function toHomepageRecommendedDto(
     about_line: truncateAboutLine(row.about_line),
     founder_badge: row.founder_badge === true ? true : undefined,
     photo_focus: row.photo_focus ?? null,
+    homepage_card_image_url:
+      typeof row.homepage_card_image_url === "string" && row.homepage_card_image_url.trim()
+        ? row.homepage_card_image_url.trim()
+        : null,
   }));
 }
 
