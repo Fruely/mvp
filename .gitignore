@@ -34,6 +34,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# supabase CLI local cache (never commit)
+supabase/.temp/
+
 # IDE
 .vscode
 .idea

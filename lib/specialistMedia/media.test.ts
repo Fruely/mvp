@@ -445,4 +445,11 @@ test("route wiring uses specialistMedia modules", () => {
 
   const avatarUpload = readFileSync(new URL("../../app/api/specialist/avatar/upload/route.ts", import.meta.url), "utf8");
   assert.match(avatarUpload, /photo_focus: null/);
+
+  const homepageSourceSign = readFileSync(
+    new URL("../../app/api/specialist/media/homepage-source/sign/route.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(homepageSourceSign, /resolveSpecialistMediaContext/);
+  assert.match(homepageSourceSign, /handleHomepageSourceSignRequest/);
 });

@@ -75,12 +75,40 @@ function isValidIsoTimestamp(value: unknown): value is string {
   return Number.isFinite(Date.parse(value));
 }
 
+const HOMEPAGE_SOURCE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp"]);
+
 function isManagedKindPath(storagePath: string, specialistId: string, kind: HomepagePhotoKind): boolean {
   const prefix = `${specialistId}/${kind}/`;
   if (!storagePath.startsWith(prefix)) return false;
   const rest = storagePath.slice(prefix.length);
   if (!rest || rest.includes("..")) return false;
   return rest.split("/").every((segment) => segment.length > 0);
+}
+
+/**
+ * True when `storagePath` is a managed homepage SOURCE object for this specialist.
+ * Requires `{specialistId}/source/{filename}.{jpg|jpeg|png|webp}` with no nested folders.
+ */
+export function isManagedHomepageSourcePath(storagePath: string, specialistId: string): boolean {
+  if (!specialistId || !storagePath) return false;
+  if (!isManagedKindPath(storagePath, specialistId, HOMEPAGE_PHOTO_SOURCE_KIND)) return false;
+  const rest = storagePath.slice(`${specialistId}/${HOMEPAGE_PHOTO_SOURCE_KIND}/`.length);
+  if (!rest || rest.includes("/") || rest.includes("\\") || rest.includes("\0")) return false;
+  const dot = rest.lastIndexOf(".");
+  if (dot <= 0 || dot === rest.length - 1) return false;
+  return HOMEPAGE_SOURCE_EXTENSIONS.has(rest.slice(dot + 1).toLowerCase());
+}
+
+/**
+ * Canonical `storage:{path}` identity for a managed homepage SOURCE path.
+ * Same format as photoIdentityFromStoragePath / homepagePhotoIdentityFromUrl.
+ */
+export function homepageSourceIdentityFromPath(
+  storagePath: string,
+  specialistId: string,
+): string | null {
+  if (!isManagedHomepageSourcePath(storagePath, specialistId)) return null;
+  return photoIdentityFromStoragePath(storagePath);
 }
 
 /**

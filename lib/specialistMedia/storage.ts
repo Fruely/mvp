@@ -55,6 +55,10 @@ export function buildGalleryStoragePath(specialistId: string, safeExt: string): 
   return `${specialistId}/gallery/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${safeExt}`;
 }
 
+export function buildHomepageSourceStoragePath(specialistId: string, safeExt: string): string {
+  return `${specialistId}/source/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${safeExt}`;
+}
+
 export function buildIdempotentGalleryStoragePath(
   specialistId: string,
   idempotencyKey: string,
