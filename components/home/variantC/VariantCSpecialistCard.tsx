@@ -87,23 +87,23 @@ export default function VariantCSpecialistCard({
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-4 p-5">
-        <div className="space-y-1.5">
-          <p className="text-lg font-bold leading-tight text-freuly-text-primary line-clamp-1">{name}</p>
-          <p className="text-sm leading-snug text-freuly-text-secondary line-clamp-1">{categoryLabel}</p>
+      <div className="flex flex-1 flex-col gap-3 p-5">
+        <div className="flex flex-col gap-1">
+          <p className="line-clamp-1 text-[20px] font-bold leading-6 text-freuly-text-primary">{name}</p>
+          <p className="line-clamp-1 text-sm leading-[17px] text-freuly-text-secondary">{categoryLabel}</p>
         </div>
 
         {languages.length > 0 ? (
-          <div className="space-y-1.5">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-freuly-text-muted">
+          <div className="flex flex-col gap-2">
+            <p className="text-[11px] font-semibold uppercase leading-[13px] tracking-wide text-freuly-text-muted">
               {t(dict, "home.variantC.recommended.speaks")}
             </p>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {languages.map((code, idx) => (
                 <span
                   key={code}
                   className={[
-                    "rounded-full px-2.5 py-1 text-[11px] font-medium",
+                    "inline-flex h-7 items-center rounded-full px-3 text-[11px] font-medium",
                     idx === 0
                       ? "bg-[#eaf6f5] text-freuly-primary"
                       : "bg-[#f8f7f5] text-freuly-text-secondary",
@@ -118,23 +118,23 @@ export default function VariantCSpecialistCard({
 
         {specialist.about_line ? (
           <>
-            <hr className="border-freuly-border-default" />
-            <p className="min-h-[3.75rem] text-[13px] italic leading-relaxed text-freuly-text-secondary line-clamp-3">
+            <div className="h-0 w-full border-t border-freuly-border-default" aria-hidden />
+            <p className="text-[13px] italic leading-[1.6] text-freuly-text-secondary line-clamp-3">
               {specialist.about_line}
             </p>
           </>
         ) : null}
 
-        <div className="mt-auto flex items-center justify-between gap-3 pt-1">
-          <span className="inline-flex min-w-0 items-center gap-1 text-[13px] text-freuly-text-muted">
-            <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            <span className="truncate">
-              {specialist.city || t(dict, "home.recommended.newSpecialist")}
-            </span>
+        <div className="mt-auto flex min-w-0 items-center gap-1 text-[12px] leading-[15px] text-freuly-text-muted">
+          <MapPin className="h-3 w-3 shrink-0" aria-hidden />
+          <span className="truncate">
+            {specialist.city || t(dict, "home.recommended.newSpecialist")}
           </span>
+        </div>
+        <div className="flex w-full justify-end">
           <Link
             href={profileHref}
-            className="inline-flex shrink-0 items-center gap-1 text-[13px] font-semibold text-freuly-primary hover:text-freuly-primary-hover"
+            className="inline-flex shrink-0 items-center gap-1 text-[13px] font-semibold leading-4 text-freuly-primary hover:text-freuly-primary-hover"
           >
             {t(dict, "search.results.viewProfile")}
             <ChevronRight className="h-3 w-3" aria-hidden />

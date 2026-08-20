@@ -376,6 +376,18 @@ test("hero and listing card frames keep existing geometry (no size change)", () 
     /relative h-\[200px\] w-full overflow-hidden bg-freuly-border-subtle/,
   );
   assert.doesNotMatch(variantC, /sm:h-\[220px\]/);
+  assert.match(variantC, /flex flex-1 flex-col gap-3 p-5/);
+  assert.match(variantC, /text-\[20px\] font-bold leading-6/);
+  assert.match(variantC, /flex flex-col gap-1/);
+  assert.match(variantC, /text-sm leading-\[17px\]/);
+  assert.match(variantC, /inline-flex h-7 items-center rounded-full/);
+  assert.match(variantC, /h-0 w-full border-t border-freuly-border-default/);
+  assert.match(variantC, /text-\[13px\] italic leading-\[1\.6\].*line-clamp-3/);
+  assert.doesNotMatch(variantC, /min-h-\[3\.75rem\]/);
+  assert.doesNotMatch(variantC, /h-\[467px\]|min-h-\[467px\]|h-\[488px\]/);
+  assert.match(variantC, /text-\[12px\] leading-\[15px\]/);
+  assert.match(variantC, /flex w-full justify-end/);
+  assert.doesNotMatch(variantC, /justify-between gap-3 pt-1/);
 
   const home = readSrc("app/[lang]/HomeClient.tsx");
   const recommendedBlock = home.slice(
