@@ -20,9 +20,14 @@ export const SPECIALIST_PHOTO_COVER_SURFACES: Record<SpecialistPhotoCoverSurface
 };
 
 export function isSpecialistPhotoCoverEnvEnabled(
-  env: NodeJS.ProcessEnv = process.env,
+  env?: NodeJS.ProcessEnv,
 ): boolean {
-  return env[SPECIALIST_PHOTO_COVER_ENV] === "true";
+  if (env) {
+    return env[SPECIALIST_PHOTO_COVER_ENV] === "true";
+  }
+  // Literal member access so Next.js inlines this into client bundles.
+  // Dynamic process.env[NAME] stays undefined in the browser.
+  return process.env.NEXT_PUBLIC_SPECIALIST_PHOTO_COVER_ENABLED === "true";
 }
 
 export function isSpecialistPhotoCoverEnabled(
@@ -33,7 +38,7 @@ export function isSpecialistPhotoCoverEnabled(
   } = {},
 ): boolean {
   if (surface === "dashboard") return false;
-  if (!isSpecialistPhotoCoverEnvEnabled(options.env ?? process.env)) return false;
+  if (!isSpecialistPhotoCoverEnvEnabled(options.env)) return false;
   const surfaces = options.surfaces ?? SPECIALIST_PHOTO_COVER_SURFACES;
   return surfaces[surface] === true;
 }
