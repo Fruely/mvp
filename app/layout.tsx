@@ -15,6 +15,9 @@ const inter = Inter({
 /** Fallback when middleware does not set (e.g. some static routes). */
 const DEFAULT_HTML_LANG = "ru";
 
+/** Bump when favicon assets change to bust browser favicon cache. */
+const FAVICON_VERSION = 2;
+
 export const metadata = {
   title: "Freuly — специалист на твоём языке",
   description: "Найди специалиста, который говорит на твоём языке",
@@ -26,8 +29,8 @@ export const metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.ico" },
-      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: `/favicon.svg?v=${FAVICON_VERSION}`, type: "image/svg+xml" },
+      { url: `/favicon.ico?v=${FAVICON_VERSION}` },
       { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
     ],

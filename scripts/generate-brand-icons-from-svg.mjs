@@ -42,19 +42,34 @@ async function loadSymbolCropSquare(size) {
     .png();
 }
 
-function makeICO(pngBuffer, size) {
+function makeICO(entries) {
+  const count = entries.length;
   const header = Buffer.alloc(6);
   header.writeUInt16LE(0, 0);
   header.writeUInt16LE(1, 2);
-  header.writeUInt16LE(1, 4);
-  const dir = Buffer.alloc(16);
-  dir[0] = size >= 256 ? 0 : size;
-  dir[1] = size >= 256 ? 0 : size;
-  dir.writeUInt16LE(1, 4);
-  dir.writeUInt16LE(32, 6);
-  dir.writeUInt32LE(pngBuffer.length, 8);
-  dir.writeUInt32LE(22, 12);
-  return Buffer.concat([header, dir, pngBuffer]);
+  header.writeUInt16LE(count, 4);
+
+  const headerSize = 6 + count * 16;
+  let offset = headerSize;
+  const dirEntries = [];
+  const images = [];
+
+  for (const { size, png } of entries) {
+    const dir = Buffer.alloc(16);
+    dir[0] = size >= 256 ? 0 : size;
+    dir[1] = size >= 256 ? 0 : size;
+    dir[2] = 0;
+    dir[3] = 0;
+    dir.writeUInt16LE(1, 4);
+    dir.writeUInt16LE(32, 6);
+    dir.writeUInt32LE(png.length, 8);
+    dir.writeUInt32LE(offset, 12);
+    dirEntries.push(dir);
+    images.push(png);
+    offset += png.length;
+  }
+
+  return Buffer.concat([header, ...dirEntries, ...images]);
 }
 
 async function makeMaskable512() {
@@ -79,13 +94,19 @@ mkdirSync(ICONS_DIR, { recursive: true });
 const icon192 = await loadSymbolCropSquare(192).then((s) => s.toBuffer());
 const icon512 = await loadSymbolCropSquare(512).then((s) => s.toBuffer());
 const apple180 = await loadSymbolCropSquare(180).then((s) => s.toBuffer());
-const favicon32 = await loadSymbolCropSquare(32).then((s) => s.toBuffer());
+const faviconSizes = [16, 32, 48];
+const faviconPngs = await Promise.all(
+  faviconSizes.map(async (size) => ({
+    size,
+    png: await loadSymbolCropSquare(size).then((s) => s.toBuffer()),
+  })),
+);
 const maskable512 = await makeMaskable512();
 
 writeFileSync(join(ICONS_DIR, "icon-192.png"), icon192);
 writeFileSync(join(ICONS_DIR, "icon-512.png"), icon512);
 writeFileSync(join(ICONS_DIR, "apple-touch-icon.png"), apple180);
 writeFileSync(join(ICONS_DIR, "maskable-512.png"), maskable512);
-writeFileSync(join(ROOT, "public/favicon.ico"), makeICO(favicon32, 32));
+writeFileSync(join(ROOT, "public/favicon.ico"), makeICO(faviconPngs));
 
 console.log("Brand icons generated from public/brand/freuly-symbol.svg");

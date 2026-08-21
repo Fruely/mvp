@@ -7,7 +7,7 @@ declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
     // Injected at build time by @serwist/next. Contains ONLY hashed build output
     // (/_next/static/**) and the public assets matched by `globPublicPatterns`
-    // (offline.html, favicon.ico, icons/*.png). No HTML pages, no API, no data.
+    // (offline.html, favicon.ico, favicon.svg, icons/*.png). No HTML pages, no API, no data.
     __SW_MANIFEST: (PrecacheEntry | string)[] | undefined;
   }
 }
