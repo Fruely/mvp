@@ -263,14 +263,14 @@ export default function SpecialistProPageClient({
         >
           <div className="order-1 md:order-2 md:h-[600px] md:w-[520px] md:shrink-0">
             <div className="flex h-[360px] flex-col items-center justify-end overflow-hidden rounded-[20px] border border-[#E3DDD5] bg-[#F4EFEA] px-3 pt-3 md:h-[600px] md:rounded-[24px] md:px-5 md:pt-5">
-              <div className="relative h-[348px] w-full max-w-[326px] overflow-hidden rounded-tl-xl rounded-tr-xl md:h-[580px] md:max-w-[480px]">
+              <div className="relative h-[348px] w-full max-w-[326px] shrink-0 overflow-hidden rounded-tl-xl rounded-tr-xl md:h-[580px] md:max-w-[480px]">
                 {specialist?.avatar_url ? (
                   <Image
                     src={specialist.avatar_url}
                     alt={displayName}
                     fill
                     priority
-                    className="object-cover object-[50%_20%]"
+                    className="object-cover object-center"
                     sizes="(max-width: 768px) 100vw, 520px"
                   />
                 ) : (
@@ -443,8 +443,14 @@ export default function SpecialistProPageClient({
                 </h2>
               </div>
               {whyMeImageUrl ? (
-                <div className="relative hidden h-[260px] w-full overflow-hidden rounded-2xl border border-[#E3DDD5] md:block">
-                  <Image src={whyMeImageUrl} alt="" fill className="object-cover" sizes="480px" />
+                <div className="relative hidden h-[260px] w-full shrink-0 overflow-hidden rounded-2xl border border-[#E3DDD5] bg-[#FAF7F2] md:block md:w-[480px]">
+                  <Image
+                    src={whyMeImageUrl}
+                    alt=""
+                    fill
+                    className="object-contain object-center"
+                    sizes="480px"
+                  />
                 </div>
               ) : null}
             </div>
@@ -464,8 +470,14 @@ export default function SpecialistProPageClient({
             </div>
 
             {whyMeImageUrl ? (
-              <div className="relative h-[200px] w-full overflow-hidden rounded-2xl border border-[#E3DDD5] md:hidden">
-                <Image src={whyMeImageUrl} alt="" fill className="object-cover" sizes="100vw" />
+              <div className="relative h-[200px] w-full shrink-0 overflow-hidden rounded-2xl border border-[#E3DDD5] bg-[#FAF7F2] md:hidden">
+                <Image
+                  src={whyMeImageUrl}
+                  alt=""
+                  fill
+                  className="object-contain object-center"
+                  sizes="100vw"
+                />
               </div>
             ) : null}
           </div>
@@ -640,7 +652,7 @@ export default function SpecialistProPageClient({
                 src={finalCtaImageUrl}
                 alt=""
                 fill
-                className="object-cover"
+                className="object-cover object-center"
                 sizes="(max-width: 768px) 100vw, 480px"
               />
             </div>
