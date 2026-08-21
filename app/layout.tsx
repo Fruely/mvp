@@ -27,6 +27,7 @@ export const metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
@@ -35,7 +36,7 @@ export const metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#4B50E6",
+  themeColor: "#107B80",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

@@ -26,7 +26,7 @@ export default function AppShellHeader({
 }) {
   return (
     <header className="flex items-center justify-between gap-4 border-b border-black/[0.04] px-4 py-3">
-      <FreulyLogo className="h-9 w-auto" priority />
+      <FreulyLogo variant="symbol" className="h-9 w-9" priority />
       <nav aria-label={languageSwitcherLabel} className="flex items-center gap-1">
         {SUPPORTED_LANGS.map((option) => {
           const active = option === lang;
@@ -37,7 +37,7 @@ export default function AppShellHeader({
               aria-current={active ? "true" : undefined}
               className={`min-h-[40px] min-w-[40px] rounded-lg px-2.5 py-2 text-center text-sm font-semibold transition-colors ${
                 active
-                  ? "bg-[#4B50E6] text-white"
+                  ? "bg-freuly-primary text-white"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >

@@ -7,7 +7,7 @@ const withSerwist = withSerwistInit({
   reloadOnOnline: false,
   cacheOnNavigation: false,
   disable: process.env.NODE_ENV !== "production",
-  globPublicPatterns: ["offline.html", "favicon.ico", "icons/*.png"],
+    globPublicPatterns: ["offline.html", "favicon.ico", "favicon.svg", "icons/*.png"],
 });
 
 /** @type {import('next').NextConfig} */

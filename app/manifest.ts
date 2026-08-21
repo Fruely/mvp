@@ -8,7 +8,7 @@ import type { MetadataRoute } from "next";
  * - no forced `orientation` (avoids degrading the tablet experience).
  *
  * Colors are taken from real brand tokens already used in the codebase:
- * - theme_color `#4B50E6` — primary CTA (components/consent/CookieConsentBanner.tsx);
+ * - theme_color `#107B80` — Freuly primary (tailwind freuly-primary);
  * - background_color `#FFFFFF` — root <body> background (app/layout.tsx, bg-white).
  */
 export default function manifest(): MetadataRoute.Manifest {
@@ -18,7 +18,7 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/app?source=pwa",
     scope: "/",
     display: "standalone",
-    theme_color: "#4B50E6",
+    theme_color: "#107B80",
     background_color: "#FFFFFF",
     icons: [
       {

@@ -1,54 +1,51 @@
-import Image from "next/image";
+/** Canonical full wordmark — Logo_Full_Vector_Freuly.svg */
+export const FREULY_LOGO_SRC = "/brand/freuly-logo.svg";
 
-/** Original committed brand asset (1024×1024, opaque white padding). */
-export const FREULY_FULL_LOGO_SRC = "/brand/freuly-full-logo.png";
+/** Canonical symbol mark — Favicon3_Freuly.svg */
+export const FREULY_SYMBOL_SRC = "/brand/freuly-symbol.svg";
 
-/** Tight crop of the full logo with transparent padding removed (600×856). */
-export const FREULY_FULL_LOGO_CROPPED_SRC = "/brand/freuly-full-logo-cropped.png";
-
-/** Symbol-only source used for PWA icon generation. */
-export const FREULY_SYMBOL_SRC = "/brand/freuly-symbol-source.png";
-
-/** Cropped symbol with transparent padding removed. */
-export const FREULY_SYMBOL_CROPPED_SRC = "/brand/freuly-symbol-cropped.png";
-
-/** Visible content bounds after transparent crop of freuly-full-logo.png. */
-export const FREULY_FULL_LOGO_CROPPED_WIDTH = 600;
-export const FREULY_FULL_LOGO_CROPPED_HEIGHT = 856;
-
-/** Visible content bounds after transparent crop of freuly-symbol-source.png. */
-export const FREULY_SYMBOL_CROPPED_WIDTH = 494;
-export const FREULY_SYMBOL_CROPPED_HEIGHT = 635;
+/** Intrinsic viewBox ratio (48259.98 / 25399.98). */
+export const FREULY_LOGO_ASPECT = 48259.98 / 25399.98;
 
 type FreulyLogoProps = {
-  /** Render full stacked logo (default) or symbol mark only. */
+  /** Full stacked wordmark (default) or symbol mark for compact placements. */
   variant?: "full" | "symbol";
   className?: string;
   priority?: boolean;
 };
 
 /**
- * Canonical Freuly brand logo — uses cropped committed assets so UI height maps
- * to visible artwork, not opaque padding on the source PNG canvas.
+ * Canonical Freuly brand logo — vector SVG assets committed under public/brand/.
+ * Symbol variant crops the centered F mark from Favicon3's wide Corel canvas via CSS.
  */
 export default function FreulyLogo({
   variant = "full",
   className = "h-10 w-auto",
   priority = false,
 }: FreulyLogoProps) {
-  const isSymbol = variant === "symbol";
-  const src = isSymbol ? FREULY_SYMBOL_CROPPED_SRC : FREULY_FULL_LOGO_CROPPED_SRC;
-  const width = isSymbol ? FREULY_SYMBOL_CROPPED_WIDTH : FREULY_FULL_LOGO_CROPPED_WIDTH;
-  const height = isSymbol ? FREULY_SYMBOL_CROPPED_HEIGHT : FREULY_FULL_LOGO_CROPPED_HEIGHT;
+  if (variant === "symbol") {
+    return (
+      <span className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden ${className}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={FREULY_SYMBOL_SRC}
+          alt="Freuly"
+          className="absolute left-1/2 top-1/2 h-[1200%] w-auto max-w-none -translate-x-1/2 -translate-y-1/2"
+          decoding="async"
+          fetchPriority={priority ? "high" : undefined}
+        />
+      </span>
+    );
+  }
 
   return (
-    <Image
-      src={src}
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={FREULY_LOGO_SRC}
       alt="Freuly"
-      width={width}
-      height={height}
       className={className}
-      priority={priority}
+      decoding="async"
+      fetchPriority={priority ? "high" : undefined}
     />
   );
 }
