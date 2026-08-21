@@ -35,7 +35,6 @@ export type OnboardingReviewSummary = {
   hasAbout: boolean;
   hasPhoto: boolean;
   hasGallery: boolean;
-  hasHomepagePhoto: boolean;
 };
 
 type ReviewItem = {
@@ -206,14 +205,6 @@ export default function OnboardingReviewStep({
       key: "photo",
       label: t(dict, "dashboard.onboarding.reviewStep.recommendPhoto"),
       done: summary.hasPhoto,
-      href: `${baseHref}?step=photos`,
-      pendingLabel: recommendationPendingLabel,
-      neutralPending: true,
-    },
-    {
-      key: "homepagePhoto",
-      label: t(dict, "dashboard.onboarding.reviewStep.recommendHomepagePhoto"),
-      done: summary.hasHomepagePhoto,
       href: `${baseHref}?step=photos`,
       pendingLabel: recommendationPendingLabel,
       neutralPending: true,

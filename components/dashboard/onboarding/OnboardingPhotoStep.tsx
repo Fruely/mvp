@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
 import SpecialistAvatarImage from "@/components/specialist/SpecialistAvatarImage";
-import HomepagePhotoCropEditor from "@/components/specialist/HomepagePhotoCropEditor";
 import { Alert, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { dashboardLinkSecondaryClass, dashboardUploadButtonClass } from "@/components/dashboard/dashboardStyles";
 import { t, type Dictionary } from "@/lib/i18n";
@@ -12,31 +11,17 @@ import { t, type Dictionary } from "@/lib/i18n";
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
-export type OnboardingHomepagePhoto = {
-  photo_source_url: string | null;
-  homepage_photo_url: string | null;
-  homepage_photo: unknown;
-};
-
 export default function OnboardingPhotoStep({
   dict,
   lang,
   baseHref,
   currentPhotoUrl,
-  specialistId,
-  homepagePhoto,
-  previewName,
-  previewCategory,
 }: {
   dict: Dictionary;
   lang: string;
   baseHref: string;
   dashboardHref: string;
   currentPhotoUrl: string;
-  specialistId: string;
-  homepagePhoto: OnboardingHomepagePhoto;
-  previewName?: string;
-  previewCategory?: string;
 }) {
   const router = useRouter();
   const mainPhotoFormId = useId();
@@ -174,22 +159,6 @@ export default function OnboardingPhotoStep({
 
           {uploaded ? <Alert variant="success">{t(dict, "dashboard.onboarding.photoStep.uploaded")}</Alert> : null}
         </form>
-
-        <div className="mt-freuly-8 min-w-0 overflow-x-hidden border-t border-freuly-border-subtle pt-freuly-6">
-          <p className="mb-freuly-4 text-freuly-helper text-freuly-text-muted">
-            {t(dict, "dashboard.onboarding.homepagePhoto.optionalHint")}
-          </p>
-          <HomepagePhotoCropEditor
-            dict={dict}
-            specialistId={specialistId}
-            initialSourceUrl={homepagePhoto.photo_source_url}
-            initialHomepagePhotoUrl={homepagePhoto.homepage_photo_url}
-            initialMetadata={homepagePhoto.homepage_photo}
-            canonicalOrigin={process.env.NEXT_PUBLIC_SUPABASE_URL ?? null}
-            previewName={previewName}
-            previewCategory={previewCategory}
-          />
-        </div>
 
         <div className="mt-freuly-6 flex flex-wrap items-center gap-freuly-3">
           <Link href={`${baseHref}?step=services`} className={dashboardLinkSecondaryClass}>

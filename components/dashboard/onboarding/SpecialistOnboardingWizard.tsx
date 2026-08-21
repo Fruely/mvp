@@ -14,7 +14,7 @@ import OnboardingProgress, {
   type OnboardingStep,
   type OnboardingStepKey,
 } from "./OnboardingProgress";
-import OnboardingPhotoStep, { type OnboardingHomepagePhoto } from "./OnboardingPhotoStep";
+import OnboardingPhotoStep from "./OnboardingPhotoStep";
 import OnboardingReviewStep, { type OnboardingReviewSummary } from "./OnboardingReviewStep";
 import OnboardingServicesStep, { type OnboardingServicesSummary } from "./OnboardingServicesStep";
 import OnboardingStepShell from "./OnboardingStepShell";
@@ -58,10 +58,6 @@ export default function SpecialistOnboardingWizard({
   initialAboutData,
   servicesSummary,
   currentPhotoUrl,
-  specialistId,
-  homepagePhoto,
-  previewName,
-  previewCategory,
   reviewSummary,
   publicProfileHref,
   categories,
@@ -80,10 +76,6 @@ export default function SpecialistOnboardingWizard({
   initialAboutData: OnboardingAboutData;
   servicesSummary: OnboardingServicesSummary;
   currentPhotoUrl: string;
-  specialistId: string;
-  homepagePhoto: OnboardingHomepagePhoto;
-  previewName?: string;
-  previewCategory?: string;
   reviewSummary: OnboardingReviewSummary;
   publicProfileHref: string;
   categories: OnboardingCategory[];
@@ -227,10 +219,6 @@ export default function SpecialistOnboardingWizard({
             baseHref={baseHref}
             dashboardHref={`/${lang}/specialist/dashboard`}
             currentPhotoUrl={currentPhotoUrl}
-            specialistId={specialistId}
-            homepagePhoto={homepagePhoto}
-            previewName={previewName}
-            previewCategory={previewCategory}
           />
           <OnboardingChecklist
             title={t(dict, "dashboard.onboarding.checklist.title")}

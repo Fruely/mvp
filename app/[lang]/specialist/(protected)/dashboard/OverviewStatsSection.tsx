@@ -35,12 +35,6 @@ import {
   dashboardLinkPrimaryClass,
   dashboardLinkSecondaryClass,
 } from "@/components/dashboard/dashboardStyles";
-import HomepagePhotoRecommendationBanner from "@/components/dashboard/HomepagePhotoRecommendationBanner";
-import {
-  dashboardHomepagePhotoEditorHref,
-  shouldShowHomepagePhotoRecommendation,
-} from "@/lib/dashboard/homepagePhotoRecommendation";
-
 function formatDashboardDate(value: string | null, lang: string): string {
   if (!value) return "—";
   const date = new Date(value);
@@ -158,7 +152,7 @@ export default async function OverviewStatsSection({
       .maybeSingle(),
     service
       .from("specialist_profiles")
-      .select("photo_url, photo_source_url, homepage_photo_url, homepage_photo, about_me, video_url, gallery_urls, certificate_urls, city")
+      .select("photo_url, about_me, video_url, gallery_urls, certificate_urls, city")
       .eq("specialist_id", specialist.id)
       .maybeSingle(),
     categoryId
@@ -351,15 +345,6 @@ export default async function OverviewStatsSection({
     });
   }
 
-  const showHomepagePhotoRecommendation = shouldShowHomepagePhotoRecommendation({
-    specialistId: specialist.id,
-    photoSourceUrl: typeof profileRow?.photo_source_url === "string" ? profileRow.photo_source_url : null,
-    homepagePhotoUrl: typeof profileRow?.homepage_photo_url === "string" ? profileRow.homepage_photo_url : null,
-    storedMetadata: profileRow?.homepage_photo ?? null,
-    canonicalOrigin: process.env.NEXT_PUBLIC_SUPABASE_URL ?? null,
-  });
-  const homepagePhotoEditorHref = dashboardHomepagePhotoEditorHref(lang);
-
   const MAX_IMPROVEMENTS = 6;
   const visibleImprovements = improvements.slice(0, MAX_IMPROVEMENTS);
   const hiddenImprovementsCount = Math.max(0, improvements.length - MAX_IMPROVEMENTS);
@@ -430,10 +415,6 @@ export default async function OverviewStatsSection({
             </Link>
           </div>
         </Card>
-      ) : null}
-
-      {showHomepagePhotoRecommendation ? (
-        <HomepagePhotoRecommendationBanner dict={dict} href={homepagePhotoEditorHref} />
       ) : null}
 
       <Card>
