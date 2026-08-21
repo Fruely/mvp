@@ -2,11 +2,6 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import { Briefcase, Globe, MapPin } from "lucide-react";
 import FounderBadge from "@/components/specialist/FounderBadge";
-import {
-  resolveLiveSpecialistPhotoFit,
-  specialistMainPhotoFitClass,
-} from "@/components/specialist/specialistMainPhotoFit";
-import { resolvePublicMainPhotoView } from "@/lib/specialists/publicMainPhoto";
 
 export type SpecialistHeroContentProps = {
   avatarUrl?: string | null;
@@ -43,8 +38,6 @@ function MetaItem({
 
 export default function SpecialistHeroContent({
   avatarUrl,
-  storedPhotoFocus = null,
-  specialistId = null,
   avatarAlt,
   name,
   specialization,
@@ -59,27 +52,16 @@ export default function SpecialistHeroContent({
   actions,
 }: SpecialistHeroContentProps) {
   const trimmed = typeof avatarUrl === "string" ? avatarUrl.trim() : "";
-  const mainPhoto = resolvePublicMainPhotoView({
-    src: trimmed,
-    storedPhotoFocus,
-    specialistId,
-  });
-  const photoFit = resolveLiveSpecialistPhotoFit({
-    focus: mainPhoto.photoFocus,
-    imageAspect: mainPhoto.imageAspect,
-    surface: "hero",
-  });
 
   return (
     <div className="flex w-full flex-col gap-5 md:flex-row md:items-center md:gap-12">
-      <div className="relative h-[280px] w-full shrink-0 overflow-hidden rounded-2xl bg-freuly-primary-light md:h-[380px] md:w-[380px] md:rounded-[24px]">
+      <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-2xl bg-freuly-primary-light md:h-[380px] md:w-[380px] md:rounded-[24px]">
         {trimmed ? (
           <Image
             src={trimmed}
             alt={avatarAlt}
             fill
-            className={specialistMainPhotoFitClass(photoFit)}
-            style={{ objectPosition: photoFit.objectPosition }}
+            className="object-cover object-[50%_20%]"
             sizes="(max-width: 768px) 100vw, 380px"
             unoptimized
             priority

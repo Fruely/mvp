@@ -306,11 +306,14 @@ test("live cover gate keeps public surfaces on contain even with trusted metadat
   }
 });
 
-test("SpecialistHeroContent resolves fit (no hardcoded cover)", () => {
+test("SpecialistHeroContent uses deterministic MAIN cover, not photo_focus", () => {
   const src = readSrc("components/specialist/SpecialistHeroContent.tsx");
-  assert.equal(usesResolver(src), true);
-  assert.match(src, /surface: "hero"/);
-  assert.doesNotMatch(src, /className="object-cover"/);
+  assert.equal(usesResolver(src), false);
+  assert.doesNotMatch(src, /resolveLiveSpecialistPhotoFit/);
+  assert.doesNotMatch(src, /resolvePublicMainPhotoView/);
+  assert.doesNotMatch(src, /homepage_photo_url/);
+  assert.match(src, /object-cover object-\[50%_20%\]/);
+  assert.match(src, /aspect-square/);
 });
 
 test("SpecialistPreviewCard resolves fit as card", () => {
@@ -345,7 +348,6 @@ test("SpecialistAvatarImage dashboard surface always uses resolver contain path"
 
 test("public MAIN photo callers pass view-model imageAspect into the live resolver", () => {
   for (const relative of [
-    "components/specialist/SpecialistHeroContent.tsx",
     "components/specialist/SpecialistPreviewCard.tsx",
     "components/public/SpecialistResultCard.tsx",
   ]) {
@@ -359,8 +361,9 @@ test("hero and listing card frames keep existing geometry (no size change)", () 
   const hero = readSrc("components/specialist/SpecialistHeroContent.tsx");
   assert.match(
     hero,
-    /h-\[280px\] w-full shrink-0 overflow-hidden rounded-2xl bg-freuly-primary-light md:h-\[380px\] md:w-\[380px\]/,
+    /aspect-square w-full shrink-0 overflow-hidden rounded-2xl bg-freuly-primary-light md:h-\[380px\] md:w-\[380px\]/,
   );
+  assert.doesNotMatch(hero, /h-\[280px\]/);
 
   const preview = readSrc("components/specialist/SpecialistPreviewCard.tsx");
   assert.match(preview, /relative h-\[200px\] overflow-hidden bg-freuly-page/);
