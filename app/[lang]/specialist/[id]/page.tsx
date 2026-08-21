@@ -2,8 +2,14 @@ import type { Metadata } from "next";
 import { permanentRedirect } from "next/navigation";
 import { getPublicSpecialistProfile } from "@/lib/specialists/publicProfile";
 import SpecialistProfileClient from "@/components/specialist/SpecialistProfileClient";
+import SpecialistProPageClient from "@/components/specialist/pro/SpecialistProPageClient";
 import type { Specialist } from "@/components/specialist/SpecialistProfileClient";
 import { specialistCanonicalRedirectPath } from "@/lib/specialists/matchPublicSpecialist";
+import {
+  buildProPageDescription,
+  loadPublicProPageBundle,
+} from "@/lib/specialists/proPage/resolvePublicProPage";
+import { resolveProPageDisplayName } from "@/lib/specialists/proPage/entitlement";
 import {
   appendPreservedQuery,
   getSpecialistPublicSlug,
@@ -21,6 +27,7 @@ interface SpecialistPageProps {
 
 export async function generateMetadata({ params }: SpecialistPageProps): Promise<Metadata> {
   const profile = await getPublicSpecialistProfile(params.id, params.lang);
+  const proBundle = profile ? await loadPublicProPageBundle(profile.id) : null;
   const specialist = profile
     ? { id: profile.id, slug: profile.slug }
     : { id: params.id, slug: params.id };
@@ -48,16 +55,43 @@ export async function generateMetadata({ params }: SpecialistPageProps): Promise
     },
   }[params.lang];
 
-  const title = profile?.name
-    ? profile.categoryTitle && profile.city
-      ? `${profile.categoryTitle} ${localized.cityConnector} ${profile.city} — ${profile.name} | Freuly`
-      : `${profile.name} | Freuly`
+  const metadataName =
+    proBundle?.renderAsProPage && proBundle.content
+      ? resolveProPageDisplayName(profile?.name ?? null, proBundle.content.displayName)
+      : profile?.name ?? null;
+
+  const proProfession =
+    proBundle?.renderAsProPage && proBundle.content?.professionLabel
+      ? proBundle.content.professionLabel
+      : profile?.categoryTitle ?? null;
+
+  const title = metadataName
+    ? proProfession && profile?.city
+      ? `${proProfession} ${localized.cityConnector} ${profile.city} — ${metadataName} | Freuly`
+      : proProfession
+        ? `${proProfession} — ${metadataName} | Freuly`
+        : profile?.categoryTitle && profile?.city
+          ? `${profile.categoryTitle} ${localized.cityConnector} ${profile.city} — ${metadataName} | Freuly`
+          : `${metadataName} | Freuly`
     : localized.fallbackTitle;
 
+  const proDescription =
+    proBundle?.renderAsProPage && proBundle.content
+      ? buildProPageDescription({
+          name: metadataName,
+          professionLabel: proBundle.content.professionLabel,
+          categoryTitle: profile?.categoryTitle ?? null,
+          city: profile?.city ?? null,
+          positioning: proBundle.content.positioning,
+          lang: params.lang,
+        })
+      : null;
+
   const description =
-    profile?.name && profile.categoryTitle && profile.city
+    proDescription ??
+    (profile?.name && profile.categoryTitle && profile.city
       ? `${profile.name} — ${profile.categoryTitle} ${localized.cityConnector} ${profile.city}. ${localized.descriptionSuffix}`
-      : localized.fallbackDescription;
+      : localized.fallbackDescription);
 
   return {
     title,
@@ -168,7 +202,9 @@ export default async function SpecialistPage({ params, searchParams }: Specialis
     }
   }
 
+  const proBundle = profile ? await loadPublicProPageBundle(profile.id) : null;
   const jsonLd = toSpecialistJsonLd(profile, params.lang);
+  const publicSlug = profile ? getSpecialistPublicSlug(profile) : params.id;
 
   return (
     <>
@@ -178,11 +214,20 @@ export default async function SpecialistPage({ params, searchParams }: Specialis
           dangerouslySetInnerHTML={{ __html: escapeJsonLd(jsonLd) }}
         />
       ) : null}
-      <SpecialistProfileClient
-        lang={params.lang}
-        id={profile ? getSpecialistPublicSlug(profile) : params.id}
-        initialSpecialist={toInitialSpecialist(profile)}
-      />
+      {proBundle?.renderAsProPage && proBundle.content ? (
+        <SpecialistProPageClient
+          lang={params.lang}
+          id={publicSlug}
+          proContent={proBundle.content}
+          initialSpecialist={toInitialSpecialist(profile)}
+        />
+      ) : (
+        <SpecialistProfileClient
+          lang={params.lang}
+          id={publicSlug}
+          initialSpecialist={toInitialSpecialist(profile)}
+        />
+      )}
     </>
   );
 }
