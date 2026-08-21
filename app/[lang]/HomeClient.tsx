@@ -331,10 +331,11 @@ export default function HomeClient({
               <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4" aria-hidden>
                 {Array.from({ length: 4 }).map((_, idx) => (
                   <div key={`recommended-skeleton-${idx}`} className={`${publicCardClass} overflow-hidden`}>
-                    <div className="h-[200px] animate-pulse bg-freuly-border-subtle" />
-                    <div className="space-y-2 p-5">
-                      <div className="h-5 w-2/3 rounded bg-freuly-border-subtle" />
-                      <div className="h-4 w-1/2 rounded bg-freuly-border-subtle" />
+                    <div className="aspect-square animate-pulse bg-freuly-border-subtle" />
+                    <div className="flex flex-col gap-2 px-5 py-4">
+                      <div className="h-6 w-2/3 rounded bg-freuly-border-subtle" />
+                      <div className="h-[17px] w-1/2 rounded bg-freuly-border-subtle" />
+                      <div className="h-7 w-24 rounded-full bg-freuly-border-subtle" />
                     </div>
                   </div>
                 ))}

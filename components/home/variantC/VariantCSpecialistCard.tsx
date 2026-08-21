@@ -1,18 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronRight, MapPin } from "lucide-react";
 import type { Dictionary, Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import { getSpecialistUrl } from "@/lib/urls";
 import FounderBadge from "@/components/specialist/FounderBadge";
-import {
-  resolveLiveSpecialistPhotoFit,
-  specialistMainPhotoFitClass,
-} from "@/components/specialist/specialistMainPhotoFit";
 import { publicCardClass } from "@/components/public/publicStyles";
-import { resolvePublicMainPhotoView } from "@/lib/specialists/publicMainPhoto";
 
 export type VariantCSpecialist = {
   id: string;
@@ -53,42 +47,33 @@ export default function VariantCSpecialistCard({
 
   const name = specialist.name?.trim() ? specialist.name : t(dict, "specialist.fallback");
   const profileHref = getSpecialistUrl(lang, specialist);
-  const languages = specialist.languages.filter(Boolean).slice(0, 3);
-  const canonicalHomepageImage =
-    typeof specialist.homepage_card_image_url === "string" && specialist.homepage_card_image_url.trim()
-      ? specialist.homepage_card_image_url.trim()
+  const languageList = specialist.languages.filter(Boolean);
+  const languages = languageList.slice(0, 3);
+  const extraLanguageCount = Math.max(0, languageList.length - languages.length);
+  const imageSrc =
+    typeof specialist.avatar_url === "string" && specialist.avatar_url.trim()
+      ? specialist.avatar_url.trim()
       : null;
-  const mainPhoto = resolvePublicMainPhotoView({
-    src: specialist.avatar_url,
-    storedPhotoFocus: specialist.photo_focus,
-    specialistId: specialist.id,
-  });
-  const photoFit = resolveLiveSpecialistPhotoFit({
-    focus: mainPhoto.photoFocus,
-    imageAspect: mainPhoto.imageAspect,
-    surface: "card",
-  });
-  const imageSrc = canonicalHomepageImage ?? specialist.avatar_url;
-  const imageFit = canonicalHomepageImage
-    ? { fit: "cover" as const, objectPosition: "50% 50%" }
-    : photoFit;
 
   return (
-    <article className={`${publicCardClass} flex h-full flex-col overflow-hidden`}>
-      <div className="relative h-[200px] w-full overflow-hidden bg-freuly-border-subtle">
+    <Link
+      href={profileHref}
+      aria-label={name}
+      className={`${publicCardClass} flex flex-col overflow-hidden outline-none transition-colors freuly-focus-ring hover:border-freuly-primary/30`}
+    >
+      <div className="relative aspect-square w-full overflow-hidden bg-freuly-border-subtle">
         {specialist.founder_badge ? (
-          <div className="absolute left-4 top-4 z-10">
+          <div className="pointer-events-none absolute left-4 top-4 z-10">
             <FounderBadge />
           </div>
         ) : null}
         {imageSrc ? (
           <Image
             src={imageSrc}
-            alt={name}
+            alt=""
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 320px"
-            className={specialistMainPhotoFitClass(imageFit)}
-            style={{ objectPosition: imageFit.objectPosition }}
+            className="object-cover object-[50%_20%]"
             loading="lazy"
           />
         ) : (
@@ -96,60 +81,32 @@ export default function VariantCSpecialistCard({
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-5">
+      <div className="flex flex-col gap-2 px-5 py-4">
         <div className="flex flex-col gap-1">
-          <p className="line-clamp-1 text-[20px] font-bold leading-6 text-freuly-text-primary">{name}</p>
-          <p className="line-clamp-1 text-sm leading-[17px] text-freuly-text-secondary">{categoryLabel}</p>
+          <p className="truncate text-[20px] font-bold leading-6 text-freuly-text-primary">{name}</p>
+          <p className="truncate text-sm leading-[17px] text-freuly-text-secondary">{categoryLabel}</p>
         </div>
-
-        {languages.length > 0 ? (
-          <div className="flex flex-col gap-2">
-            <p className="text-[11px] font-semibold uppercase leading-[13px] tracking-wide text-freuly-text-muted">
-              {t(dict, "home.variantC.recommended.speaks")}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {languages.map((code, idx) => (
-                <span
-                  key={code}
-                  className={[
-                    "inline-flex h-7 items-center rounded-full px-3 text-[11px] font-medium",
-                    idx === 0
-                      ? "bg-[#eaf6f5] text-freuly-primary"
-                      : "bg-[#f8f7f5] text-freuly-text-secondary",
-                  ].join(" ")}
-                >
-                  {code}
-                </span>
-              ))}
-            </div>
-          </div>
-        ) : null}
-
-        {specialist.about_line ? (
-          <>
-            <div className="h-0 w-full border-t border-freuly-border-default" aria-hidden />
-            <p className="text-[13px] italic leading-[1.6] text-freuly-text-secondary line-clamp-3">
-              {specialist.about_line}
-            </p>
-          </>
-        ) : null}
-
-        <div className="mt-auto flex min-w-0 items-center gap-1 text-[12px] leading-[15px] text-freuly-text-muted">
-          <MapPin className="h-3 w-3 shrink-0" aria-hidden />
-          <span className="truncate">
-            {specialist.city || t(dict, "home.recommended.newSpecialist")}
-          </span>
-        </div>
-        <div className="flex w-full justify-end">
-          <Link
-            href={profileHref}
-            className="inline-flex shrink-0 items-center gap-1 text-[13px] font-semibold leading-4 text-freuly-primary hover:text-freuly-primary-hover"
-          >
-            {t(dict, "search.results.viewProfile")}
-            <ChevronRight className="h-3 w-3" aria-hidden />
-          </Link>
+        <div className="flex h-7 min-h-7 flex-nowrap items-center gap-2 overflow-hidden">
+          {languages.map((code, idx) => (
+            <span
+              key={code}
+              className={[
+                "inline-flex h-7 shrink-0 items-center rounded-full px-3 text-[11px] font-medium",
+                idx === 0
+                  ? "bg-[#eaf6f5] text-freuly-primary"
+                  : "bg-[#f8f7f5] text-freuly-text-secondary",
+              ].join(" ")}
+            >
+              {code}
+            </span>
+          ))}
+          {extraLanguageCount > 0 ? (
+            <span className="inline-flex h-7 shrink-0 items-center rounded-full bg-[#f8f7f5] px-2 text-[11px] font-medium text-freuly-text-secondary">
+              +{extraLanguageCount}
+            </span>
+          ) : null}
         </div>
       </div>
-    </article>
+    </Link>
   );
 }

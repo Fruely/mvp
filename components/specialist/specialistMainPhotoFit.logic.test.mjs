@@ -327,11 +327,13 @@ test("SpecialistResultCard resolves fit as thumb", () => {
   assert.doesNotMatch(src, /className="object-cover"/);
 });
 
-test("VariantCSpecialistCard resolves fit as card", () => {
+test("VariantCSpecialistCard uses deterministic MAIN cover, not photo_focus", () => {
   const src = readSrc("components/home/variantC/VariantCSpecialistCard.tsx");
-  assert.equal(usesResolver(src), true);
-  assert.match(src, /surface: "card"/);
-  assert.doesNotMatch(src, /className="object-cover"/);
+  assert.equal(usesResolver(src), false);
+  assert.doesNotMatch(src, /resolveLiveSpecialistPhotoFit/);
+  assert.doesNotMatch(src, /storedPhotoFocus|mainPhoto\.photoFocus/);
+  assert.match(src, /object-cover object-\[50%_20%\]/);
+  assert.match(src, /aspect-square/);
 });
 
 test("SpecialistAvatarImage dashboard surface always uses resolver contain path", () => {
@@ -346,7 +348,6 @@ test("public MAIN photo callers pass view-model imageAspect into the live resolv
     "components/specialist/SpecialistHeroContent.tsx",
     "components/specialist/SpecialistPreviewCard.tsx",
     "components/public/SpecialistResultCard.tsx",
-    "components/home/variantC/VariantCSpecialistCard.tsx",
   ]) {
     const src = readSrc(relative);
     assert.match(src, /resolveLiveSpecialistPhotoFit\(/);
@@ -371,23 +372,18 @@ test("hero and listing card frames keep existing geometry (no size change)", () 
   );
 
   const variantC = readSrc("components/home/variantC/VariantCSpecialistCard.tsx");
-  assert.match(
-    variantC,
-    /relative h-\[200px\] w-full overflow-hidden bg-freuly-border-subtle/,
-  );
+  assert.match(variantC, /relative aspect-square w-full overflow-hidden bg-freuly-border-subtle/);
+  assert.doesNotMatch(variantC, /h-\[200px\]/);
   assert.doesNotMatch(variantC, /sm:h-\[220px\]/);
-  assert.match(variantC, /flex flex-1 flex-col gap-3 p-5/);
   assert.match(variantC, /text-\[20px\] font-bold leading-6/);
   assert.match(variantC, /flex flex-col gap-1/);
   assert.match(variantC, /text-sm leading-\[17px\]/);
-  assert.match(variantC, /inline-flex h-7 items-center rounded-full/);
-  assert.match(variantC, /h-0 w-full border-t border-freuly-border-default/);
-  assert.match(variantC, /text-\[13px\] italic leading-\[1\.6\].*line-clamp-3/);
-  assert.doesNotMatch(variantC, /min-h-\[3\.75rem\]/);
+  assert.match(variantC, /inline-flex h-7 shrink-0 items-center rounded-full/);
+  assert.doesNotMatch(variantC, /h-0 w-full border-t border-freuly-border-default/);
+  assert.doesNotMatch(variantC, /italic/);
+  assert.doesNotMatch(variantC, /MapPin/);
+  assert.doesNotMatch(variantC, /search\.results\.viewProfile/);
   assert.doesNotMatch(variantC, /h-\[467px\]|min-h-\[467px\]|h-\[488px\]/);
-  assert.match(variantC, /text-\[12px\] leading-\[15px\]/);
-  assert.match(variantC, /flex w-full justify-end/);
-  assert.doesNotMatch(variantC, /justify-between gap-3 pt-1/);
 
   const home = readSrc("app/[lang]/HomeClient.tsx");
   const recommendedBlock = home.slice(
@@ -396,7 +392,8 @@ test("hero and listing card frames keep existing geometry (no size change)", () 
   );
   assert.match(recommendedBlock, /max-w-\[1312px\]/);
   assert.doesNotMatch(recommendedBlock, /max-w-7xl/);
-  assert.match(recommendedBlock, /h-\[200px\] animate-pulse/);
+  assert.match(recommendedBlock, /aspect-square animate-pulse/);
+  assert.doesNotMatch(recommendedBlock, /h-\[200px\] animate-pulse/);
   assert.doesNotMatch(recommendedBlock, /h-\[220px\]/);
   assert.match(readSrc("components/public/publicStyles.ts"), /max-w-7xl/);
 });
