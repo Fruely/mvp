@@ -236,11 +236,8 @@ export default function SpecialistProPageClient({
   const certificateUrls = Array.isArray(specialist?.certificate_urls)
     ? specialist.certificate_urls.filter((url) => typeof url === "string" && url.trim())
     : [];
-  const galleryUrls = Array.isArray(specialist?.gallery_urls)
-    ? specialist.gallery_urls.filter((url) => typeof url === "string" && url.trim())
-    : [];
-  const whyMeImageUrl = galleryUrls[0] ?? null;
-  const finalCtaImageUrl = galleryUrls[1] ?? null;
+  const whyMeImageUrl: string | null = null;
+  const finalCtaImageUrl: string | null = null;
   const services = Array.isArray(specialist?.specialist_services) ? specialist.specialist_services : [];
   const specialistId = specialist?.id ?? null;
   const priceOnRequestLabel = t(dict, "services.pricing.public.onRequest");
@@ -443,12 +440,12 @@ export default function SpecialistProPageClient({
                 </h2>
               </div>
               {whyMeImageUrl ? (
-                <div className="relative hidden h-[260px] w-full shrink-0 overflow-hidden rounded-2xl border border-[#E3DDD5] bg-[#FAF7F2] md:block md:w-[480px]">
+                <div className="relative hidden h-[260px] w-full shrink-0 overflow-hidden rounded-2xl border border-[#E3DDD5] md:block md:w-[480px]">
                   <Image
                     src={whyMeImageUrl}
                     alt=""
                     fill
-                    className="object-contain object-center"
+                    className="object-cover object-center"
                     sizes="480px"
                   />
                 </div>
@@ -470,12 +467,12 @@ export default function SpecialistProPageClient({
             </div>
 
             {whyMeImageUrl ? (
-              <div className="relative h-[200px] w-full shrink-0 overflow-hidden rounded-2xl border border-[#E3DDD5] bg-[#FAF7F2] md:hidden">
+              <div className="relative h-[200px] w-full shrink-0 overflow-hidden rounded-2xl border border-[#E3DDD5] md:hidden">
                 <Image
                   src={whyMeImageUrl}
                   alt=""
                   fill
-                  className="object-contain object-center"
+                  className="object-cover object-center"
                   sizes="100vw"
                 />
               </div>
