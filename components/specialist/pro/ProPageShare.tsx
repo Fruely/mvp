@@ -40,9 +40,9 @@ export default function ProPageShare({ url, title, text, label, copiedLabel }: P
     <button
       type="button"
       onClick={() => void handleShare()}
-      className="inline-flex items-center gap-2 rounded-full border border-freuly-border-default bg-freuly-surface px-5 py-3 text-sm font-semibold text-freuly-text-primary transition-colors freuly-focus-ring hover:border-freuly-primary/40"
+      className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#E3DDD5] bg-freuly-surface px-5 py-3.5 text-sm font-semibold text-freuly-primary transition-colors freuly-focus-ring hover:border-freuly-primary md:w-auto md:border-freuly-primary md:bg-freuly-primary-light md:px-6"
     >
-      <Share2 className="size-4 text-freuly-primary" aria-hidden />
+      <Share2 className="size-3.5 shrink-0 text-freuly-primary" aria-hidden />
       {copied ? copiedLabel : label}
     </button>
   );
