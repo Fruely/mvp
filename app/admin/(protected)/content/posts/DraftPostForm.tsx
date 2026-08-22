@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import type { ContentPost } from "@/lib/content/types";
+import { generateSlugFromTitle } from "@/lib/content/slug";
 
 const labelClass = "block text-[13px] font-semibold text-freuly-text-primary";
 const inputClass =
@@ -18,6 +20,23 @@ type DraftPostFormProps = {
 };
 
 export function DraftPostForm({ action, post, publishAction }: DraftPostFormProps) {
+  const [title, setTitle] = useState(post?.title ?? "");
+  const [slug, setSlug] = useState(post?.slug ?? "");
+  const [slugTouched, setSlugTouched] = useState(!!post?.slug);
+
+  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    if (!slugTouched) {
+      setSlug(generateSlugFromTitle(newTitle));
+    }
+  }, [slugTouched]);
+
+  const handleSlugChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSlug(e.target.value);
+    setSlugTouched(true);
+  }, []);
+
   return (
     <form action={action} className="flex flex-col gap-8 rounded-freuly-lg border border-freuly-border-default bg-white p-8">
       {post && <input type="hidden" name="id" value={post.id} />}
@@ -28,7 +47,8 @@ export function DraftPostForm({ action, post, publishAction }: DraftPostFormProp
           Заголовок
           <input
             name="title"
-            defaultValue={post?.title ?? ""}
+            value={title}
+            onChange={handleTitleChange}
             className="mt-2 h-[52px] w-full rounded-freuly-button border border-freuly-border-default bg-white px-4 text-[16px] font-medium text-freuly-text-primary placeholder:text-[#9b9b9b] focus:border-freuly-primary focus:outline-none focus:ring-1 focus:ring-freuly-primary"
             placeholder="Введите заголовок публикации..."
             required
@@ -98,7 +118,8 @@ export function DraftPostForm({ action, post, publishAction }: DraftPostFormProp
           URL (slug)
           <input
             name="slug"
-            defaultValue={post?.slug ?? ""}
+            value={slug}
+            onChange={handleSlugChange}
             className={inputClass}
             placeholder="auto-generated"
             required
