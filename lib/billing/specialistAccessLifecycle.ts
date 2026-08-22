@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { deactivatePaidProEntitlement } from "@/lib/specialists/proPage/syncPaidProEntitlement";
 
 /**
  * Central lifecycle resolver for specialist access.
@@ -53,6 +54,17 @@ export async function reconcileSpecialistAccess(
     lifecycleStatus,
     previousStatus: result.previous_status,
   });
+
+  if (lifecycleStatus === "inactive") {
+    const deactivate = await deactivatePaidProEntitlement(supabase, specialistId);
+    if (!deactivate.ok) {
+      console.error("[billing/lifecycle] paid_pro_entitlement_deactivate_failed", {
+        specialistId,
+        code: deactivate.code,
+      });
+      return { outcome: "retryable_failure" };
+    }
+  }
 
   return {
     outcome: "success",

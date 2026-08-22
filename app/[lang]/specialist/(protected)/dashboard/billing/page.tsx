@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import PlanCheckoutButton from "@/components/billing/PlanCheckoutButton";
+import PremiumProActivationPoller from "@/components/billing/PremiumProActivationPoller";
 import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
 import {
   dashboardLinkPrimaryClass,
@@ -95,12 +96,19 @@ export default async function SpecialistDashboardBillingPage({
   const isInactive = planStatus === "inactive";
   const graceUntilFormatted = isGrace ? formatPlanDate(plan.grace_until, lang) : null;
 
-  const checkoutNotice =
-    resolvedSearch.checkout === "success"
-      ? t(dict, "dashboard.billingPage.checkout.processingNotice")
-      : resolvedSearch.checkout === "cancel"
-        ? t(dict, "dashboard.billingPage.checkout.cancelNotice")
-        : null;
+  const isPremiumCheckoutSuccess =
+    resolvedSearch.checkout === "success" && selectedPaidPlan === "premium";
+  const isBasicCheckoutSuccess =
+    resolvedSearch.checkout === "success" && selectedPaidPlan === "basic";
+  const isCheckoutCancelled =
+    resolvedSearch.checkout === "cancel" || resolvedSearch.checkout === "cancelled";
+
+  const checkoutNotice = isBasicCheckoutSuccess
+    ? t(dict, "dashboard.billingPage.checkout.processingNotice")
+    : null;
+  const cancelNotice = isCheckoutCancelled
+    ? t(dict, "dashboard.billingPage.checkout.cancelNotice")
+    : null;
 
   const promotedCheckoutNotice =
     resolvedSearch.promoted_checkout === "success"
@@ -115,6 +123,7 @@ export default async function SpecialistDashboardBillingPage({
   )}`;
   const subscriptionHref = `/${lang}/specialist/dashboard/subscription`;
   const pricingHref = `/${lang}/pricing`;
+  const proPageHref = `/${lang}/specialist/dashboard/pro-page`;
 
   return (
     <div className={dashboardPageStackClass}>
@@ -147,7 +156,19 @@ export default async function SpecialistDashboardBillingPage({
         <Alert variant="error">{t(dict, "dashboard.billingPage.inactiveNotice")}</Alert>
       ) : null}
 
+      {isPremiumCheckoutSuccess ? (
+        <PremiumProActivationPoller
+          proPageHref={proPageHref}
+          billingHref={`/${lang}/specialist/dashboard/billing`}
+          activatingLabel={t(dict, "dashboard.billingPage.proActivation.activating")}
+          timeoutLabel={t(dict, "dashboard.billingPage.proActivation.timeout")}
+          backToBillingLabel={t(dict, "dashboard.billingPage.proActivation.backToBilling")}
+        />
+      ) : null}
+
       {checkoutNotice ? <Alert variant="info">{checkoutNotice}</Alert> : null}
+
+      {cancelNotice ? <Alert variant="info">{cancelNotice}</Alert> : null}
 
       {promotedCheckoutNotice ? (
         <Alert variant="info">

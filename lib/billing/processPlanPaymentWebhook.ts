@@ -25,6 +25,7 @@ import {
   reconcileSpecialistAccess,
   isLifecycleReconciliationEnabled,
 } from "@/lib/billing/specialistAccessLifecycle";
+import { grantPaidProEntitlement } from "@/lib/specialists/proPage/syncPaidProEntitlement";
 
 export type PlanPaymentWebhookOutcome =
   | "ignored"
@@ -215,6 +216,25 @@ async function handleCheckoutSessionSuccess(
   }
   if (fulfillment.outcome === "validation_failed") {
     return { outcome: "validation_failed", failureCode: fulfillment.code };
+  }
+
+  if (payment.plan_code === "premium") {
+    const proGrant = await grantPaidProEntitlement(supabase, payment.specialist_id, {
+      planPaymentId: payment.id,
+      stripeCheckoutSessionId: expandedSession.id,
+    });
+    if (!proGrant.ok) {
+      console.error("[billing/plan-payment] paid_pro_entitlement_grant_failed", {
+        planPaymentId: payment.id,
+        specialistId: payment.specialist_id,
+        code: proGrant.code,
+        retryable: proGrant.retryable,
+      });
+      return {
+        outcome: proGrant.retryable ? "retryable_failure" : "validation_failed",
+        failureCode: proGrant.code,
+      };
+    }
   }
 
   return { outcome: "success" };
