@@ -88,6 +88,12 @@ export default async function AdminProtectedLayout({
               Site Blocks
             </Link>
             <Link
+              href="/admin/content/posts"
+              className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition"
+            >
+              Content Hub
+            </Link>
+            <Link
               href="/admin/content/homepage/social-insights"
               className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition"
             >
