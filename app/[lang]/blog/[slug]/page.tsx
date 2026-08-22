@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { MarkdownContent } from "@/components/content/MarkdownContent";
+import { ArticleShareBlock } from "@/components/content/ArticleShareBlock";
 import { getPublishedPost } from "@/lib/content/queries";
 import { isSupportedLang, type Lang } from "@/lib/i18n";
 import { SITE_DOMAIN } from "@/lib/seo/siteMetadata";
@@ -217,6 +218,8 @@ export default async function BlogArticlePage({
             </div>
           </div>
         )}
+
+        <ArticleShareBlock url={url} title={post.title} />
       </article>
 
       <Link
