@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getPublishedPosts } from "@/lib/content/queries";
 import { isSupportedLang, type Lang } from "@/lib/i18n";
@@ -77,21 +78,24 @@ export default async function BlogPage({ params }: { params: { lang: string } })
         <section className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => {
             const publishedDate = formatDate(post.published_at, lang);
+            const articleHref = `/${lang}/blog/${post.slug}`;
 
             return (
               <article
                 key={post.id}
                 className="overflow-hidden rounded-freuly-card border border-freuly-border-subtle bg-freuly-surface shadow-card"
               >
-                {post.hero_image_url ? (
-                  <div
-                    className="aspect-[16/9] bg-cover bg-center"
-                    style={{ backgroundImage: `url(${post.hero_image_url})` }}
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <div className="aspect-[16/9] bg-freuly-primary-light" aria-hidden="true" />
-                )}
+                <Link href={articleHref} className="block">
+                  {post.hero_image_url ? (
+                    <div
+                      className="aspect-[16/9] bg-cover bg-center"
+                      style={{ backgroundImage: `url(${post.hero_image_url})` }}
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <div className="aspect-[16/9] bg-freuly-primary-light" aria-hidden="true" />
+                  )}
+                </Link>
 
                 <div className="p-5">
                   <div className="flex flex-wrap items-center gap-2 text-freuly-helper text-freuly-text-muted">
@@ -104,7 +108,11 @@ export default async function BlogPage({ params }: { params: { lang: string } })
                     )}
                   </div>
 
-                  <h2 className="mt-3 text-freuly-card-title text-freuly-text-primary">{post.title}</h2>
+                  <h2 className="mt-3 text-freuly-card-title text-freuly-text-primary">
+                    <Link href={articleHref} className="hover:underline">
+                      {post.title}
+                    </Link>
+                  </h2>
                   {post.excerpt && (
                     <p className="mt-2 text-freuly-body text-freuly-text-secondary">{post.excerpt}</p>
                   )}

@@ -1,0 +1,141 @@
+import type { ReactNode } from "react";
+
+function safeHref(value: string): string | null {
+  const trimmed = value.trim();
+  if (trimmed.startsWith("/")) return trimmed;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return null;
+}
+
+function renderInline(text: string, keyPrefix: string): ReactNode[] {
+  const tokenPattern = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^\)]+\))/g;
+  const parts = text.split(tokenPattern).filter(Boolean);
+
+  return parts.map((part, index) => {
+    const key = `${keyPrefix}-${index}`;
+
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={key}>{part.slice(2, -2)}</strong>;
+    }
+
+    const linkMatch = part.match(/^\[([^\]]+)\]\(([^\)]+)\)$/);
+    if (linkMatch) {
+      const href = safeHref(linkMatch[2]);
+      if (!href) return <span key={key}>{linkMatch[1]}</span>;
+      return (
+        <a key={key} href={href} className="font-medium text-freuly-primary underline underline-offset-2">
+          {linkMatch[1]}
+        </a>
+      );
+    }
+
+    return <span key={key}>{part}</span>;
+  });
+}
+
+export function MarkdownContent({ source }: { source: string }) {
+  const lines = source.replace(/\r\n/g, "\n").split("\n");
+  const blocks: ReactNode[] = [];
+  let index = 0;
+
+  while (index < lines.length) {
+    const raw = lines[index];
+    const line = raw.trim();
+
+    if (!line) {
+      index += 1;
+      continue;
+    }
+
+    const imageMatch = line.match(/^!\[([^\]]*)\]\(([^\)]+)\)$/);
+    if (imageMatch) {
+      const src = safeHref(imageMatch[2]);
+      if (src && /^https?:\/\//i.test(src)) {
+        blocks.push(
+          <figure key={`image-${index}`} className="my-8 overflow-hidden rounded-freuly-card border border-freuly-border-subtle">
+            <img src={src} alt={imageMatch[1]} className="h-auto w-full" loading="lazy" />
+          </figure>,
+        );
+      }
+      index += 1;
+      continue;
+    }
+
+    if (line.startsWith("### ")) {
+      blocks.push(
+        <h3 key={`h3-${index}`} className="mt-8 text-xl font-semibold text-freuly-text-primary">
+          {renderInline(line.slice(4), `h3-${index}`)}
+        </h3>,
+      );
+      index += 1;
+      continue;
+    }
+
+    if (line.startsWith("## ")) {
+      blocks.push(
+        <h2 key={`h2-${index}`} className="mt-10 text-2xl font-bold text-freuly-text-primary">
+          {renderInline(line.slice(3), `h2-${index}`)}
+        </h2>,
+      );
+      index += 1;
+      continue;
+    }
+
+    if (line.startsWith("> ")) {
+      blocks.push(
+        <blockquote key={`quote-${index}`} className="my-6 border-l-4 border-freuly-primary pl-4 text-freuly-body text-freuly-text-secondary">
+          {renderInline(line.slice(2), `quote-${index}`)}
+        </blockquote>,
+      );
+      index += 1;
+      continue;
+    }
+
+    if (/^[-*]\s+/.test(line)) {
+      const items: ReactNode[] = [];
+      while (index < lines.length && /^[-*]\s+/.test(lines[index].trim())) {
+        const item = lines[index].trim().replace(/^[-*]\s+/, "");
+        items.push(<li key={`ul-${index}`}>{renderInline(item, `ul-${index}`)}</li>);
+        index += 1;
+      }
+      blocks.push(
+        <ul key={`ul-block-${index}`} className="my-5 list-disc space-y-2 pl-6 text-freuly-body text-freuly-text-primary">
+          {items}
+        </ul>,
+      );
+      continue;
+    }
+
+    if (/^\d+\.\s+/.test(line)) {
+      const items: ReactNode[] = [];
+      while (index < lines.length && /^\d+\.\s+/.test(lines[index].trim())) {
+        const item = lines[index].trim().replace(/^\d+\.\s+/, "");
+        items.push(<li key={`ol-${index}`}>{renderInline(item, `ol-${index}`)}</li>);
+        index += 1;
+      }
+      blocks.push(
+        <ol key={`ol-block-${index}`} className="my-5 list-decimal space-y-2 pl-6 text-freuly-body text-freuly-text-primary">
+          {items}
+        </ol>,
+      );
+      continue;
+    }
+
+    const paragraphLines = [line];
+    index += 1;
+    while (index < lines.length) {
+      const next = lines[index].trim();
+      if (!next || /^(## |### |> |[-*]\s+|\d+\.\s+|!\[)/.test(next)) break;
+      paragraphLines.push(next);
+      index += 1;
+    }
+
+    blocks.push(
+      <p key={`p-${index}`} className="my-5 text-freuly-body leading-7 text-freuly-text-primary">
+        {renderInline(paragraphLines.join(" "), `p-${index}`)}
+      </p>,
+    );
+  }
+
+  return <div>{blocks}</div>;
+}
