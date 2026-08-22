@@ -272,18 +272,12 @@ export function DraftPostForm({ action, post, publishAction }: DraftPostFormProp
             className={inputClass}
             placeholder="SEO заголовок для поисковых систем..."
           />
+          <span className="mt-1 block text-[12px] text-[#9b9b9b]">
+            Заголовок для Google. Если оставить пустым, используется обычный заголовок статьи.
+          </span>
         </label>
 
-        <label className={labelClass}>
-          SEO описание
-          <textarea
-            name="seo_description"
-            defaultValue={post?.seo_description ?? ""}
-            rows={2}
-            className={textareaClass}
-            placeholder="Краткое поисковое описание (рекомендуется до 160 символов)..."
-          />
-        </label>
+        <SeoDescriptionField defaultValue={post?.seo_description ?? ""} />
       </div>
 
       {/* CTA SECTION */}
@@ -352,5 +346,26 @@ export function DraftPostForm({ action, post, publishAction }: DraftPostFormProp
         </Link>
       </div>
     </form>
+  );
+}
+
+function SeoDescriptionField({ defaultValue }: { defaultValue: string }) {
+  const [value, setValue] = useState(defaultValue);
+  return (
+    <label className={labelClass}>
+      SEO описание
+      <textarea
+        name="seo_description"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        rows={2}
+        className={textareaClass}
+        placeholder="Краткое описание для Google — 1–2 предложения..."
+      />
+      <span className="mt-1 flex items-center justify-between text-[12px] text-[#9b9b9b]">
+        <span>Короткое описание для Google — 1–2 предложения. Если оставить пустым, используется краткое описание статьи.</span>
+        <span className={value.length > 160 ? "text-freuly-error" : ""}>{value.length}&nbsp;/&nbsp;160</span>
+      </span>
+    </label>
   );
 }

@@ -90,8 +90,8 @@ export async function generateMetadata({
   if (!post) return {};
 
   const url = articleUrl(lang, post.slug);
-  const title = post.seo_title || post.title;
-  const description = post.seo_description || post.excerpt;
+  const title = post.seo_title?.trim() || post.title;
+  const description = post.seo_description?.trim() || post.excerpt;
 
   return {
     title,
@@ -131,11 +131,11 @@ export default async function BlogArticlePage({
       ? post.cta_label || CTA_LABELS[lang][post.cta_type]
       : null;
   const url = articleUrl(lang, post.slug);
-  const description = post.seo_description || post.excerpt;
+  const description = post.seo_description?.trim() || post.excerpt;
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
-    headline: post.seo_title || post.title,
+    headline: post.seo_title?.trim() || post.title,
     description: description || undefined,
     image: post.hero_image_url ? [post.hero_image_url] : undefined,
     datePublished: post.published_at ?? undefined,
