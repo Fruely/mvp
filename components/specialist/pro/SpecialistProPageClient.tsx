@@ -31,14 +31,6 @@ import { getSpecialistUrl } from "@/lib/urls";
 import uaDict from "@/locales/ua.json";
 
 const PRO_CTA_LABEL = "Рассказать о своём запросе";
-const ISSUES_INTRO =
-  "Мы фокусируемся на конкретных запросах, чтобы вы почувствовали результат и вернули контроль над своей жизнью.";
-const PROCESS_INTRO =
-  "Понятный, бережный и структурированный процесс взаимодействия без лишней теории.";
-const PRICING_INTRO =
-  "Выберите подходящий формат взаимодействия. Все сессии проходят в бережной, конфиденциальной атмосфере.";
-const FINAL_CTA_BODY =
-  "Иногда достаточно просто понять, что вы больше не хотите оставлять всё как есть. Расскажите коротко, что сейчас происходит, и мы подберем бережный путь решения.";
 
 type SpecialistProPageClientProps = {
   lang: Lang;
@@ -356,7 +348,7 @@ export default function SpecialistProPageClient({
                 С чем можно обратиться
               </h2>
               <p className={`text-sm leading-[1.5] md:text-base md:leading-[1.6] ${PRO_TEXT_SECONDARY}`}>
-                {ISSUES_INTRO}
+                {t(dict, "proPage.template.issuesIntro")}
               </p>
             </div>
 
@@ -394,7 +386,7 @@ export default function SpecialistProPageClient({
                 Как проходит работа
               </h2>
               <p className={`text-sm leading-[1.5] md:text-base md:leading-[1.6] ${PRO_TEXT_SECONDARY}`}>
-                {PROCESS_INTRO}
+                {t(dict, "proPage.template.processIntro")}
               </p>
             </div>
             <div className="mt-8 flex flex-col gap-3 md:mt-14 md:flex-row md:gap-6">
@@ -523,7 +515,7 @@ export default function SpecialistProPageClient({
                 {sectionText.servicesAndPricesTitle}
               </h2>
               <p className={`text-sm leading-[1.5] md:text-base md:leading-[1.6] ${PRO_TEXT_SECONDARY}`}>
-                {PRICING_INTRO}
+                {t(dict, "proPage.template.pricingIntro")}
               </p>
             </div>
             <div className="mt-8 flex flex-col gap-4 md:mt-12 md:flex-row md:gap-6">
@@ -637,7 +629,7 @@ export default function SpecialistProPageClient({
               </h2>
             </div>
             <p className="text-sm leading-[1.5] text-[#F4EFEA] md:text-base md:leading-[1.6] md:text-white">
-              {FINAL_CTA_BODY}
+              {t(dict, "proPage.template.finalCtaBody")}
             </p>
             <ProPrimaryButton onClick={scrollToLeadForm} fullWidthMobile>
               {PRO_CTA_LABEL}

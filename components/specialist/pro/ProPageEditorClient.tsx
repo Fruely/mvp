@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState, type ChangeEvent } from "react";
 import { Button, Input, Textarea } from "@/components/ui";
 import { dashboardLinkPrimaryClass, dashboardLinkSecondaryClass } from "@/components/dashboard/dashboardStyles";
 import type { ProPageEditorBundle, ProPageSectionItem } from "@/lib/specialists/proPage/types";
+import type { ProPageEditorialImageSlot } from "@/lib/specialists/proPage/proPageImageSlots";
 import { getSpecialistUrl } from "@/lib/publicUrls";
 import { t, type Dictionary } from "@/lib/i18n";
 
@@ -91,27 +92,141 @@ function SectionListEditor({
   );
 }
 
-function EditorialImagePreview({
+function editorialImagePreviewAspectClass(slot: ProPageEditorialImageSlot): string {
+  return slot === "why_me"
+    ? "aspect-[350/200] md:aspect-[480/260]"
+    : "aspect-[350/220] md:aspect-[480/320]";
+}
+
+function EditorialImageSlot({
   dict,
+  slot,
   label,
+  guidanceKey,
   url,
+  disabled,
+  onUrlChange,
 }: {
   dict: Dictionary;
+  slot: ProPageEditorialImageSlot;
   label: string;
+  guidanceKey: string;
   url: string | null;
+  disabled: boolean;
+  onUrlChange: (nextUrl: string | null) => void;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleFileSelected(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setUploading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("slot", slot);
+      const response = await fetch("/api/specialist/pro-page/images/upload", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      const result = (await response.json()) as {
+        error?: string;
+        url?: string;
+        draft?: DraftFormState;
+      };
+      if (!response.ok) {
+        setError(t(dict, "dashboard.proPageEditor.images.uploadFailed"));
+        return;
+      }
+      if (result.draft) {
+        onUrlChange(
+          slot === "why_me" ? result.draft.whyMeImageUrl : result.draft.finalCtaImageUrl,
+        );
+      } else if (typeof result.url === "string") {
+        onUrlChange(result.url);
+      }
+    } catch {
+      setError(t(dict, "dashboard.proPageEditor.images.uploadFailed"));
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleRemove() {
+    setUploading(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/specialist/pro-page/images/upload", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slot }),
+        credentials: "include",
+      });
+      const result = (await response.json()) as { error?: string; draft?: DraftFormState };
+      if (!response.ok) {
+        setError(t(dict, "dashboard.proPageEditor.images.uploadFailed"));
+        return;
+      }
+      if (result.draft) {
+        onUrlChange(
+          slot === "why_me" ? result.draft.whyMeImageUrl : result.draft.finalCtaImageUrl,
+        );
+      } else {
+        onUrlChange(null);
+      }
+    } catch {
+      setError(t(dict, "dashboard.proPageEditor.images.uploadFailed"));
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
-    <div className="space-y-freuly-2">
-      <p className="text-freuly-body-sm font-medium text-freuly-text-primary">{label}</p>
+    <div className="space-y-freuly-3 rounded-freuly-md border border-freuly-border-subtle p-freuly-4">
+      <div>
+        <p className="text-freuly-body-sm font-medium text-freuly-text-primary">{label}</p>
+        <p className="mt-1 text-freuly-body-sm text-freuly-text-secondary">{t(dict, guidanceKey)}</p>
+      </div>
       {url ? (
-        <div className="relative h-40 w-full max-w-md overflow-hidden rounded-freuly-md border border-freuly-border-default">
-          <Image src={url} alt="" fill className="object-cover object-center" sizes="400px" />
+        <div
+          className={`relative w-full max-w-md overflow-hidden rounded-freuly-md border border-freuly-border-default ${editorialImagePreviewAspectClass(slot)}`}
+        >
+          <Image src={url} alt="" fill className="object-cover object-center" sizes="480px" />
         </div>
-      ) : (
-        <p className="text-freuly-body-sm text-freuly-text-secondary">
-          {t(dict, "dashboard.proPageEditor.imageLaterNote")}
-        </p>
-      )}
+      ) : null}
+      {error ? <p className="text-freuly-body-sm text-freuly-error">{error}</p> : null}
+      <div className="flex flex-wrap gap-freuly-2">
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={handleFileSelected}
+        />
+        <Button
+          type="button"
+          variant="outlinePrimary"
+          disabled={disabled || uploading}
+          onClick={() => inputRef.current?.click()}
+        >
+          {uploading
+            ? t(dict, "dashboard.proPageEditor.images.uploading")
+            : url
+              ? t(dict, "dashboard.proPageEditor.images.replace")
+              : t(dict, "dashboard.proPageEditor.images.upload")}
+        </Button>
+        {url ? (
+          <Button type="button" variant="ghost" disabled={disabled || uploading} onClick={handleRemove}>
+            {t(dict, "dashboard.proPageEditor.images.remove")}
+          </Button>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -337,15 +452,23 @@ export default function ProPageEditorClient({
         <h2 className="text-freuly-card-title text-freuly-text-primary">
           {t(dict, "dashboard.proPageEditor.sections.editorialImages")}
         </h2>
-        <EditorialImagePreview
+        <EditorialImageSlot
           dict={dict}
+          slot="why_me"
           label={t(dict, "dashboard.proPageEditor.fields.whyMeImage")}
+          guidanceKey="dashboard.proPageEditor.images.whyMeGuidance"
           url={form.whyMeImageUrl}
+          disabled={saveLoading || publishLoading}
+          onUrlChange={(whyMeImageUrl) => setForm((prev) => ({ ...prev, whyMeImageUrl }))}
         />
-        <EditorialImagePreview
+        <EditorialImageSlot
           dict={dict}
+          slot="final_cta"
           label={t(dict, "dashboard.proPageEditor.fields.finalCtaImage")}
+          guidanceKey="dashboard.proPageEditor.images.finalCtaGuidance"
           url={form.finalCtaImageUrl}
+          disabled={saveLoading || publishLoading}
+          onUrlChange={(finalCtaImageUrl) => setForm((prev) => ({ ...prev, finalCtaImageUrl }))}
         />
       </section>
 

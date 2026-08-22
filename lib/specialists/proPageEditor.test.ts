@@ -9,6 +9,14 @@ import {
   mapProPageRowToPublicContent,
 } from "@/lib/specialists/proPage/rowMapping";
 import { validateProPageForPublish } from "@/lib/specialists/proPage/validateProPageForPublish";
+import { parseProPageEditorialImageSlot } from "@/lib/specialists/proPage/proPageImageSlots";
+import {
+  buildProPageEditorialStoragePath,
+  parseManagedProPageImageStoragePath,
+  PRO_PAGE_IMAGE_BUCKET,
+  PRO_PAGE_IMAGE_MAX_BYTES,
+  validateProPageImageFile,
+} from "@/lib/specialists/proPage/proPageImageUpload";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -153,5 +161,69 @@ describe("draft save isolation", () => {
     assert.match(source, /proContent\.finalCtaImageUrl/);
     assert.doesNotMatch(source, /gallery_urls\[0\]/);
     assert.doesNotMatch(source, /gallery_urls\[1\]/);
+  });
+
+  test("Pro page client uses neutral localized template copy", () => {
+    const source = readFileSync(
+      join(root, "components/specialist/pro/SpecialistProPageClient.tsx"),
+      "utf8",
+    );
+    assert.match(source, /proPage\.template\.issuesIntro/);
+    assert.match(source, /proPage\.template\.processIntro/);
+    assert.match(source, /proPage\.template\.pricingIntro/);
+    assert.doesNotMatch(source, /вернули контроль над своей жизнью/);
+    assert.doesNotMatch(source, /конфиденциальной атмосфере/);
+  });
+});
+
+describe("pro page editorial image upload", () => {
+  test("parseProPageEditorialImageSlot accepts only why_me and final_cta", () => {
+    assert.equal(parseProPageEditorialImageSlot("why_me"), "why_me");
+    assert.equal(parseProPageEditorialImageSlot("final_cta"), "final_cta");
+    assert.equal(parseProPageEditorialImageSlot("gallery"), null);
+  });
+
+  test("buildProPageEditorialStoragePath uses specialist-owned pro folders", () => {
+    const whyPath = buildProPageEditorialStoragePath("spec-1", "why_me", "photo.JPG");
+    const ctaPath = buildProPageEditorialStoragePath("spec-1", "final_cta", "cta.webp");
+    assert.match(whyPath, /^spec-1\/pro\/why-me\/.+\.jpg$/);
+    assert.match(ctaPath, /^spec-1\/pro\/final-cta\/.+\.webp$/);
+  });
+
+  test("parseManagedProPageImageStoragePath only accepts owned pro paths", () => {
+    const url = `https://example.supabase.co/storage/v1/object/public/${PRO_PAGE_IMAGE_BUCKET}/spec-1/pro/why-me/test.jpg`;
+    assert.equal(parseManagedProPageImageStoragePath(url, "spec-1"), "spec-1/pro/why-me/test.jpg");
+    assert.equal(parseManagedProPageImageStoragePath(url, "other"), null);
+  });
+
+  test("validateProPageImageFile rejects invalid type and oversize files", () => {
+    assert.equal(validateProPageImageFile({ type: "image/png", size: 1024 } as File).ok, true);
+    assert.equal(validateProPageImageFile({ type: "application/pdf", size: 1024 } as File).ok, false);
+    assert.equal(
+      validateProPageImageFile({ type: "image/png", size: PRO_PAGE_IMAGE_MAX_BYTES + 1 } as File).ok,
+      false,
+    );
+  });
+
+  test("upload module writes only specialist_pro_page_drafts", () => {
+    const source = readFileSync(join(root, "lib/specialists/proPage/proPageImageUpload.ts"), "utf8");
+    assert.match(source, /from\("specialist_pro_page_drafts"\)/);
+    assert.doesNotMatch(source, /specialist_pro_pages/);
+  });
+
+  test("upload route requires auth and Pro entitlement", () => {
+    const source = readFileSync(
+      join(root, "app/api/specialist/pro-page/images/upload/route.ts"),
+      "utf8",
+    );
+    assert.match(source, /requireProPageEditorAccess/);
+    assert.doesNotMatch(source, /plan_code/);
+    assert.match(source, /invalid_slot/);
+    assert.match(source, /removeProPageEditorialImage/);
+  });
+
+  test("remove sets draft image URL to null in update patch", () => {
+    const source = readFileSync(join(root, "lib/specialists/proPage/proPageImageUpload.ts"), "utf8");
+    assert.match(source, /updateDraftImageUrl\(service, specialistId, slot, null\)/);
   });
 });
