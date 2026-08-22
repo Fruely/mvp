@@ -29,8 +29,8 @@ const TYPE_LABELS: Record<Lang, Record<ContentType, string>> = {
 };
 
 const BACK_LABEL: Record<Lang, string> = {
-  ru: "Все материалы",
-  ua: "Усі матеріали",
+  ru: "Все публикации",
+  ua: "Усі публікації",
   de: "Alle Beiträge",
 };
 
@@ -156,7 +156,7 @@ export default async function BlogArticlePage({
   };
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+    <main className="mx-auto w-full max-w-[720px] px-freuly-4 pb-20 pt-14 sm:px-freuly-6 lg:px-0">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -164,52 +164,70 @@ export default async function BlogArticlePage({
         }}
       />
 
-      <Link
-        href={`/${lang}/blog`}
-        className="text-freuly-body-sm font-medium text-freuly-primary hover:underline"
-      >
-        ← {BACK_LABEL[lang]}
-      </Link>
-
-      <article className="mt-8">
-        <header>
-          <div className="flex flex-wrap items-center gap-2 text-freuly-helper text-freuly-text-muted">
-            <span>{TYPE_LABELS[lang][post.content_type]}</span>
-            {publishedDate && (
-              <>
-                <span aria-hidden="true">·</span>
-                <time dateTime={post.published_at ?? undefined}>{publishedDate}</time>
-              </>
-            )}
-          </div>
-
-          <h1 className="mt-4 text-freuly-page-title text-freuly-text-primary">{post.title}</h1>
-          {post.excerpt && (
-            <p className="mt-4 text-freuly-page-subtitle text-freuly-text-secondary">{post.excerpt}</p>
-          )}
+      <article>
+        <header className="pb-4">
+          <span className="text-[12px] font-semibold uppercase text-freuly-primary">
+            {TYPE_LABELS[lang][post.content_type]}
+          </span>
+          <h1 className="mt-3 text-[32px] font-semibold leading-[1.3] text-freuly-text-primary">
+            {post.title}
+          </h1>
         </header>
 
+        {post.excerpt && (
+          <p className="pb-8 text-[18px] leading-[1.6] text-freuly-text-secondary">
+            {post.excerpt}
+          </p>
+        )}
+
+        {publishedDate && (
+          <p className="pb-8 text-[13px] text-[#9b9b9b]">
+            <time dateTime={post.published_at ?? undefined}>{publishedDate}</time>
+          </p>
+        )}
+
         {post.hero_image_url && (
-          <div className="mt-8 overflow-hidden rounded-freuly-card border border-freuly-border-subtle bg-freuly-surface">
-            <img src={post.hero_image_url} alt="" className="h-auto w-full" />
+          <div className="mb-10 overflow-hidden rounded-freuly-lg">
+            <img
+              src={post.hero_image_url}
+              alt=""
+              className="h-[400px] w-full object-cover"
+            />
           </div>
         )}
 
-        <div className="mt-10">
+        <div className="pb-14">
           <MarkdownContent source={post.body_markdown} />
         </div>
 
         {showCta && ctaLabel && (
-          <aside className="mt-12 rounded-freuly-card border border-freuly-border-subtle bg-freuly-primary-light p-6">
-            <a
-              href={ctaHref}
-              className="inline-flex rounded-freuly-button bg-freuly-primary px-5 py-3 text-freuly-button text-freuly-text-on-primary hover:bg-freuly-primary-hover"
-            >
-              {ctaLabel}
-            </a>
-          </aside>
+          <div className="mb-8 rounded-freuly-lg bg-freuly-page p-8">
+            {post.cta_label && (
+              <p className="text-[18px] font-semibold text-freuly-text-primary">
+                {post.cta_label}
+              </p>
+            )}
+            <div className="mt-4">
+              <a
+                href={ctaHref}
+                className="inline-flex rounded-freuly-button bg-freuly-primary px-6 py-3.5 text-[15px] font-semibold text-freuly-text-on-primary hover:bg-freuly-primary-hover"
+              >
+                {ctaLabel}
+              </a>
+            </div>
+          </div>
         )}
       </article>
+
+      <Link
+        href={`/${lang}/blog`}
+        className="mt-8 inline-flex items-center gap-2 text-[14px] font-semibold text-freuly-primary hover:underline"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M10 4L6 8L10 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        {BACK_LABEL[lang]}
+      </Link>
     </main>
   );
 }
