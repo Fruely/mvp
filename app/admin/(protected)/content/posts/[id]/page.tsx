@@ -20,56 +20,57 @@ export default async function EditContentPostPage({ params }: PageProps) {
 
   return (
     <div className="px-4 py-8">
-      <div className="mx-auto max-w-4xl space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit post</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            {isDraft
-              ? "Save draft changes before publishing."
-              : "Published posts are read-only until moved back to draft."}
-          </p>
+      <div className="mx-auto max-w-[640px] space-y-6">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-[24px] font-semibold text-freuly-text-primary">
+              {isDraft ? "Редактирование" : "Публикация"}
+            </h1>
+            <p className="mt-1 text-[14px] text-freuly-text-secondary">
+              {isDraft
+                ? "Создайте и опубликуйте статью для Freuly Journal"
+                : "Статья опубликована. Снимите с публикации, чтобы редактировать."}
+            </p>
+          </div>
+          <span
+            className={`inline-flex items-center rounded-freuly-sm px-2.5 py-1 text-[12px] font-medium ${
+              isDraft
+                ? "bg-freuly-page text-freuly-text-secondary"
+                : "bg-freuly-primary text-white"
+            }`}
+          >
+            {isDraft ? "Черновик" : "Опубликовано"}
+          </span>
         </div>
 
         {isDraft ? (
-          <DraftPostForm action={updateDraftPostAction} post={post} />
+          <DraftPostForm
+            action={updateDraftPostAction}
+            post={post}
+            publishAction={publishPostAction}
+          />
         ) : (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-            This post is published. Move it back to draft before editing its content.
-          </div>
-        )}
-
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h2 className="text-base font-semibold text-gray-900">Publication status</h2>
-              <p className="mt-1 text-sm text-gray-600">
-                Current status: <span className="font-medium text-gray-900">{post.status}</span>
+          <div className="flex flex-col gap-6 rounded-freuly-lg border border-freuly-border-default bg-white p-8">
+            <div className="flex flex-col gap-3">
+              <h2 className="text-[18px] font-semibold text-freuly-text-primary">{post.title}</h2>
+              {post.excerpt && (
+                <p className="text-[14px] text-freuly-text-secondary">{post.excerpt}</p>
+              )}
+              <p className="text-[13px] text-[#9b9b9b]">
+                Slug: <span className="font-mono">{post.slug}</span>
               </p>
             </div>
-
-            {isDraft ? (
-              <form action={publishPostAction}>
-                <input type="hidden" name="id" value={post.id} />
-                <button
-                  type="submit"
-                  className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
-                >
-                  Publish
-                </button>
-              </form>
-            ) : (
-              <form action={unpublishPostAction}>
-                <input type="hidden" name="id" value={post.id} />
-                <button
-                  type="submit"
-                  className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50"
-                >
-                  Move to draft
-                </button>
-              </form>
-            )}
+            <form action={unpublishPostAction}>
+              <input type="hidden" name="id" value={post.id} />
+              <button
+                type="submit"
+                className="h-[40px] rounded-freuly-button border border-freuly-border-default px-5 text-[14px] font-semibold text-freuly-primary hover:bg-gray-50"
+              >
+                Снять с публикации
+              </button>
+            </form>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
