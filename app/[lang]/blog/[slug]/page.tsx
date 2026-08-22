@@ -1,8 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { MarkdownContent } from "@/components/content/MarkdownContent";
 import { getPublishedPost } from "@/lib/content/queries";
 import { isSupportedLang, type Lang } from "@/lib/i18n";
+import { SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 import type { ContentCtaType, ContentType } from "@/lib/content/types";
 
 const TYPE_LABELS: Record<Lang, Record<ContentType, string>> = {
@@ -71,6 +73,44 @@ function safeCtaHref(value: string | null): string | null {
   return null;
 }
 
+function articleUrl(lang: Lang, slug: string): string {
+  return `${SITE_DOMAIN}/${lang}/blog/${slug}`;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { lang: string; slug: string };
+}): Promise<Metadata> {
+  if (!isSupportedLang(params.lang)) return {};
+
+  const lang = params.lang as Lang;
+  const post = await getPublishedPost(lang, params.slug);
+  if (!post) return {};
+
+  const url = articleUrl(lang, post.slug);
+  const title = post.seo_title || post.title;
+  const description = post.seo_description || post.excerpt;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      type: "article",
+      url,
+      title,
+      description,
+      publishedTime: post.published_at ?? undefined,
+      modifiedTime: post.updated_at,
+      images: post.hero_image_url ? [{ url: post.hero_image_url }] : undefined,
+      siteName: "Freuly",
+    },
+  };
+}
+
 export default async function BlogArticlePage({
   params,
 }: {
@@ -89,9 +129,41 @@ export default async function BlogArticlePage({
     post.cta_type !== "none"
       ? post.cta_label || CTA_LABELS[lang][post.cta_type]
       : null;
+  const url = articleUrl(lang, post.slug);
+  const description = post.seo_description || post.excerpt;
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.seo_title || post.title,
+    description: description || undefined,
+    image: post.hero_image_url ? [post.hero_image_url] : undefined,
+    datePublished: post.published_at ?? undefined,
+    dateModified: post.updated_at,
+    author: {
+      "@type": "Organization",
+      name: "Freuly",
+      url: SITE_DOMAIN,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Freuly",
+      url: SITE_DOMAIN,
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": url,
+    },
+  };
 
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(articleJsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
+
       <Link
         href={`/${lang}/blog`}
         className="text-freuly-body-sm font-medium text-freuly-primary hover:underline"
