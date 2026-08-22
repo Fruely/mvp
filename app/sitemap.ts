@@ -29,6 +29,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
 
     entries.push({
+      url: `${SITE_DOMAIN}/${lang}/blog`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    });
+
+    entries.push({
       url: `${SITE_DOMAIN}/${lang}/become-specialist`,
       lastModified,
       changeFrequency: "weekly",
@@ -104,6 +111,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return entries;
   }
 
+  const { data: posts } = await supabase
+    .from("content_posts")
+    .select("lang, slug, updated_at")
+    .eq("status", "published")
+    .not("slug", "is", null)
+    .neq("slug", "");
+
+  if (posts) {
+    for (const post of posts) {
+      const lang = typeof post.lang === "string" ? post.lang : "";
+      const slug = typeof post.slug === "string" ? post.slug.trim() : "";
+      if (!LANGS.includes(lang as (typeof LANGS)[number]) || !isAsciiSlug(slug)) continue;
+
+      const url = `${SITE_DOMAIN}/${lang}/blog/${slug}`;
+      if (!isAsciiPublicPath(url)) continue;
+
+      entries.push({
+        url,
+        lastModified: post.updated_at ? new Date(post.updated_at) : lastModified,
+        changeFrequency: "monthly",
+        priority: 0.6,
+      });
+    }
+  }
+
   const { data: categories } = await supabase
     .from("categories")
     .select("slug")
@@ -158,4 +190,3 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return entries;
 }
-
