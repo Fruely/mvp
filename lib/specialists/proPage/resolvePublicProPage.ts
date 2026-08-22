@@ -3,13 +3,14 @@ import {
   mapProPageRow,
   shouldRenderProPage,
 } from "@/lib/specialists/proPage/entitlement";
+import {
+  PRO_PAGE_PUBLISHED_SELECT,
+  mapProPageRowFromDb,
+} from "@/lib/specialists/proPage/rowMapping";
 import type {
   ProEntitlementSource,
   PublicProPageBundle,
-  ProPageSectionItem,
-  ProPageStatus,
   SpecialistProEntitlementRow,
-  SpecialistProPageRow,
 } from "@/lib/specialists/proPage/types";
 
 function parseEntitlementSource(value: unknown): ProEntitlementSource | null {
@@ -32,26 +33,6 @@ function mapEntitlementRow(row: Record<string, unknown>): SpecialistProEntitleme
   };
 }
 
-function mapProPageRowFromDb(row: Record<string, unknown>): SpecialistProPageRow | null {
-  const specialistId = typeof row.specialist_id === "string" ? row.specialist_id : null;
-  const status = row.status === "draft" || row.status === "published" ? row.status : null;
-  if (!specialistId || !status) return null;
-  return {
-    specialist_id: specialistId,
-    status,
-    display_name: typeof row.display_name === "string" ? row.display_name : null,
-    profession_label: typeof row.profession_label === "string" ? row.profession_label : null,
-    positioning: typeof row.positioning === "string" ? row.positioning : null,
-    client_requests: (row.client_requests as ProPageSectionItem[]) ?? [],
-    work_process: (row.work_process as ProPageSectionItem[]) ?? [],
-    why_me: (row.why_me as ProPageSectionItem[]) ?? [],
-    story: typeof row.story === "string" ? row.story : null,
-    client_language: typeof row.client_language === "string" ? row.client_language : null,
-    published_at: typeof row.published_at === "string" ? row.published_at : null,
-    updated_at: typeof row.updated_at === "string" ? row.updated_at : new Date(0).toISOString(),
-  };
-}
-
 export async function loadPublicProPageBundle(
   specialistId: string,
 ): Promise<PublicProPageBundle> {
@@ -64,9 +45,7 @@ export async function loadPublicProPageBundle(
       .maybeSingle(),
     supabase
       .from("specialist_pro_pages")
-      .select(
-        "specialist_id, status, display_name, profession_label, positioning, client_requests, work_process, why_me, story, client_language, published_at, updated_at"
-      )
+      .select(PRO_PAGE_PUBLISHED_SELECT)
       .eq("specialist_id", specialistId)
       .maybeSingle(),
   ]);

@@ -35,6 +35,7 @@ import {
   dashboardLinkPrimaryClass,
   dashboardLinkSecondaryClass,
 } from "@/components/dashboard/dashboardStyles";
+import { loadProPageDashboardState } from "@/lib/specialists/proPage/dashboardState";
 function formatDashboardDate(value: string | null, lang: string): string {
   if (!value) return "—";
   const date = new Date(value);
@@ -146,7 +147,7 @@ export default async function OverviewStatsSection({
     service
       .from("specialists")
       .select(
-        "postal_code, country_code, work_format, languages, telegram_chat_id, onboarding_state, service_radius_km, lat, lng"
+        "postal_code, country_code, work_format, languages, telegram_chat_id, onboarding_state, service_radius_km, lat, lng, slug"
       )
       .eq("id", specialist.id)
       .maybeSingle(),
@@ -250,6 +251,13 @@ export default async function OverviewStatsSection({
   const billingHref = `/${lang}/specialist/dashboard/billing`;
   const pricingHref = `/${lang}/pricing`;
   const leadsHref = `/${lang}/specialist/dashboard/leads`;
+
+  const proPageState = await loadProPageDashboardState(
+    service,
+    specialist.id,
+    lang,
+    typeof specExtra?.slug === "string" ? specExtra.slug : null,
+  );
 
   const display = getSubscriptionDisplayState(plan);
   const subscriptionNoticePick = pickDashboardSubscriptionNotice(display);
@@ -414,6 +422,30 @@ export default async function OverviewStatsSection({
               {onboardingCtaButton}
             </Link>
           </div>
+        </Card>
+      ) : null}
+
+      {proPageState ? (
+        <Card className="border-freuly-primary/15 bg-freuly-primary-light/40 shadow-none">
+          <CardHeader>
+            <CardTitle>{t(dict, "dashboard.home.proPage.title")}</CardTitle>
+            <CardDescription>{t(dict, "dashboard.home.proPage.subtitle")}</CardDescription>
+          </CardHeader>
+          <CardFooter className="flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Link href={proPageState.editorHref} className={linkPrimaryClass}>
+              {t(dict, `dashboard.home.proPage.cta.${proPageState.primaryCta}`)}
+            </Link>
+            {proPageState.publicHref ? (
+              <Link
+                href={proPageState.publicHref}
+                className={linkOutlinePrimaryClass}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t(dict, "dashboard.home.proPage.openPublic")}
+              </Link>
+            ) : null}
+          </CardFooter>
         </Card>
       ) : null}
 

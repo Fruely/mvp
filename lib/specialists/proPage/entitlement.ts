@@ -1,3 +1,4 @@
+import { mapProPageRowToPublicContent } from "@/lib/specialists/proPage/rowMapping";
 import type {
   ProPageSectionItem,
   ProPageStatus,
@@ -57,16 +58,7 @@ export function resolveProPageDisplayName(
 }
 
 export function mapProPageRow(row: SpecialistProPageRow): PublicProPageContent {
-  return {
-    displayName: row.display_name?.trim() || null,
-    professionLabel: row.profession_label?.trim() || null,
-    positioning: row.positioning?.trim() || null,
-    clientRequests: parseProPageSectionItems(row.client_requests),
-    workProcess: parseProPageSectionItems(row.work_process),
-    whyMe: parseProPageSectionItems(row.why_me),
-    story: row.story?.trim() || null,
-    clientLanguage: row.client_language?.trim() || null,
-  };
+  return mapProPageRowToPublicContent(row);
 }
 
 /** Gifted/admin Pro entitlements stay valid regardless of specialist_plan billing state. */

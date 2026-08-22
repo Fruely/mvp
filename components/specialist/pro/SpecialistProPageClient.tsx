@@ -236,8 +236,8 @@ export default function SpecialistProPageClient({
   const certificateUrls = Array.isArray(specialist?.certificate_urls)
     ? specialist.certificate_urls.filter((url) => typeof url === "string" && url.trim())
     : [];
-  const whyMeImageUrl: string | null = null;
-  const finalCtaImageUrl: string | null = null;
+  const whyMeImageUrl = proContent.whyMeImageUrl;
+  const finalCtaImageUrl = proContent.finalCtaImageUrl;
   const services = Array.isArray(specialist?.specialist_services) ? specialist.specialist_services : [];
   const specialistId = specialist?.id ?? null;
   const priceOnRequestLabel = t(dict, "services.pricing.public.onRequest");
