@@ -94,3 +94,71 @@ export async function updateDraftPostAction(formData: FormData): Promise<void> {
   revalidatePath(`/admin/content/posts/${id}`);
   redirect(`/admin/content/posts/${id}`);
 }
+
+export async function publishPostAction(formData: FormData): Promise<void> {
+  await assertAdminSession();
+  const id = text(formData, "id");
+  if (!id) throw new Error("ID_REQUIRED");
+
+  const supabase = createSupabaseServerClient();
+  const { data: current, error: currentError } = await supabase
+    .from("content_posts")
+    .select("id, status, published_at")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (currentError) {
+    console.error("[admin/content] read before publish failed", currentError);
+    throw new Error("PUBLISH_READ_FAILED");
+  }
+  if (!current || current.status !== "draft") throw new Error("POST_NOT_DRAFT");
+
+  const nowIso = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("content_posts")
+    .update({
+      status: "published",
+      published_at: current.published_at ?? nowIso,
+      updated_at: nowIso,
+    })
+    .eq("id", id)
+    .eq("status", "draft")
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    console.error("[admin/content] publish failed", error);
+    throw new Error("PUBLISH_FAILED");
+  }
+  if (!data) throw new Error("PUBLISH_CONFLICT");
+
+  revalidatePath("/admin/content/posts");
+  revalidatePath(`/admin/content/posts/${id}`);
+  redirect(`/admin/content/posts/${id}`);
+}
+
+export async function unpublishPostAction(formData: FormData): Promise<void> {
+  await assertAdminSession();
+  const id = text(formData, "id");
+  if (!id) throw new Error("ID_REQUIRED");
+
+  const supabase = createSupabaseServerClient();
+  const nowIso = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("content_posts")
+    .update({ status: "draft", updated_at: nowIso })
+    .eq("id", id)
+    .eq("status", "published")
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    console.error("[admin/content] unpublish failed", error);
+    throw new Error("UNPUBLISH_FAILED");
+  }
+  if (!data) throw new Error("POST_NOT_PUBLISHED");
+
+  revalidatePath("/admin/content/posts");
+  revalidatePath(`/admin/content/posts/${id}`);
+  redirect(`/admin/content/posts/${id}`);
+}
