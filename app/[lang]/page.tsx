@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import HomeClient from "./HomeClient";
+import LatestContentPostsSection from "@/components/content/LatestContentPostsSection";
 import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
 import { HOME_METADATA, HREFLANG_HOME, SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 import { loadHomepageInitialData } from "@/lib/homepage/loadHomepageInitialData";
@@ -40,10 +41,13 @@ export default async function LangHomePage({ params }: { params: { lang: string 
   ]);
 
   return (
-    <HomeClient
-      lang={lang}
-      dict={dict}
-      initialData={serializeHomepageInitialData(initialData)}
-    />
+    <>
+      <HomeClient
+        lang={lang}
+        dict={dict}
+        initialData={serializeHomepageInitialData(initialData)}
+      />
+      <LatestContentPostsSection lang={lang} posts={initialData.latestPosts ?? []} />
+    </>
   );
 }

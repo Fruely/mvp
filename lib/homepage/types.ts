@@ -1,3 +1,5 @@
+import type { ContentType } from "@/lib/content/types";
+
 export type HomepageCategoryChild = {
   id: string;
   slug: string;
@@ -85,10 +87,21 @@ export type HomepageStarMapData = {
   missingCoordinatesCount: number;
 };
 
+export type HomepageLatestPost = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content_type: ContentType;
+  hero_image_url: string | null;
+  published_at: string | null;
+};
+
 export type HomepageInitialData = {
   categories: HomepageCategoryStat[];
   popularCategories: HomepagePopularCategory[];
   recommendedSpecialists: HomepageRecommendedSpecialist[];
   homepageParentSlotSlugs: string[];
   starMap: HomepageStarMapData;
+  latestPosts?: HomepageLatestPost[];
 };

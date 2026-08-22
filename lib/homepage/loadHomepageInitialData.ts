@@ -8,7 +8,8 @@ import {
 } from "@/lib/homepage/fetchRecommendedSpecialists";
 import { fetchStarMapData } from "@/lib/homepage/fetchStarMapData";
 import { HOMEPAGE_DATA_REVALIDATE_SECONDS } from "@/lib/homepage/constants";
-import type { HomepageInitialData } from "@/lib/homepage/types";
+import type { HomepageInitialData, HomepageLatestPost } from "@/lib/homepage/types";
+import { getLatestPublishedPosts } from "@/lib/content/queries";
 
 export { HOMEPAGE_DATA_REVALIDATE_SECONDS };
 
@@ -30,14 +31,29 @@ const cachedParentCategorySlots = unstable_cache(
   { revalidate: HOMEPAGE_DATA_REVALIDATE_SECONDS }
 );
 
+function toHomepageLatestPosts(
+  posts: Awaited<ReturnType<typeof getLatestPublishedPosts>>,
+): HomepageLatestPost[] {
+  return posts.slice(0, 3).map((post) => ({
+    id: post.id,
+    slug: post.slug,
+    title: post.title,
+    excerpt: post.excerpt,
+    content_type: post.content_type,
+    hero_image_url: post.hero_image_url,
+    published_at: post.published_at,
+  }));
+}
+
 async function loadHomepageInitialDataUncached(lang: Lang): Promise<HomepageInitialData> {
-  const [categoriesResult, popularCategoriesResult, slotsResult, recommendedResult, starMapResult] =
+  const [categoriesResult, popularCategoriesResult, slotsResult, recommendedResult, starMapResult, latestPostsResult] =
     await Promise.allSettled([
       cachedParentCategories(),
       cachedPopularCategories(),
       cachedParentCategorySlots(),
       fetchRecommendedSpecialistsCached(lang),
       fetchStarMapData(),
+      getLatestPublishedPosts(lang, 3),
     ]);
 
   let categories =
@@ -49,6 +65,10 @@ async function loadHomepageInitialDataUncached(lang: Lang): Promise<HomepageInit
 
   if (categoriesResult.status === "rejected") {
     console.error("[homepage/loadInitialData] categories failed", categoriesResult.reason);
+  }
+
+  if (latestPostsResult.status === "rejected") {
+    console.error("[homepage/loadInitialData] latest content failed", latestPostsResult.reason);
   }
 
   return {
@@ -69,13 +89,17 @@ async function loadHomepageInitialDataUncached(lang: Lang): Promise<HomepageInit
             representedCount: 0,
             missingCoordinatesCount: 0,
           },
+    latestPosts:
+      latestPostsResult.status === "fulfilled"
+        ? toHomepageLatestPosts(latestPostsResult.value)
+        : [],
   };
 }
 
 export function loadHomepageInitialData(lang: Lang): Promise<HomepageInitialData> {
   return unstable_cache(
     () => loadHomepageInitialDataUncached(lang),
-    ["homepage-initial-data-v2", lang],
+    ["homepage-initial-data-v3", lang],
     { revalidate: HOMEPAGE_DATA_REVALIDATE_SECONDS }
   )();
 }
