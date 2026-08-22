@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdminPost } from "@/lib/content/queries";
 import {
@@ -31,6 +32,14 @@ export default async function EditContentPostPage({ params }: PageProps) {
                 ? "Создайте и опубликуйте статью для Freuly Journal"
                 : "Статья опубликована. Снимите с публикации, чтобы редактировать."}
             </p>
+            <Link
+              href={`/${post.lang}/blog`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-block text-[13px] text-freuly-primary hover:underline"
+            >
+              Открыть Journal ↗
+            </Link>
           </div>
           <span
             className={`inline-flex items-center rounded-freuly-sm px-2.5 py-1 text-[12px] font-medium ${
@@ -60,15 +69,25 @@ export default async function EditContentPostPage({ params }: PageProps) {
                 Slug: <span className="font-mono">{post.slug}</span>
               </p>
             </div>
-            <form action={unpublishPostAction}>
-              <input type="hidden" name="id" value={post.id} />
-              <button
-                type="submit"
-                className="h-[40px] rounded-freuly-button border border-freuly-border-default px-5 text-[14px] font-semibold text-freuly-primary hover:bg-gray-50"
+            <div className="flex items-center gap-4">
+              <form action={unpublishPostAction}>
+                <input type="hidden" name="id" value={post.id} />
+                <button
+                  type="submit"
+                  className="h-[40px] rounded-freuly-button border border-freuly-border-default px-5 text-[14px] font-semibold text-freuly-primary hover:bg-gray-50"
+                >
+                  Снять с публикации
+                </button>
+              </form>
+              <Link
+                href={`/${post.lang}/blog/${post.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[14px] font-semibold text-freuly-primary hover:underline"
               >
-                Снять с публикации
-              </button>
-            </form>
+                Открыть статью ↗
+              </Link>
+            </div>
           </div>
         )}
       </div>

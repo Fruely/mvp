@@ -17,6 +17,14 @@ export default async function AdminContentPostsPage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Content Hub</h1>
             <p className="mt-1 text-sm text-gray-600">Articles and editorial materials.</p>
+            <Link
+              href="/ru/blog"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-block text-[13px] text-freuly-primary hover:underline"
+            >
+              Открыть Journal ↗
+            </Link>
           </div>
           <Link
             href="/admin/content/posts/new"
