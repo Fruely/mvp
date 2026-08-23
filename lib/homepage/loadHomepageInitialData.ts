@@ -31,6 +31,12 @@ const cachedParentCategorySlots = unstable_cache(
   { revalidate: HOMEPAGE_DATA_REVALIDATE_SECONDS }
 );
 
+const cachedLatestPublishedPosts = unstable_cache(
+  async (lang: Lang) => getLatestPublishedPosts(lang, 3),
+  ["homepage-latest-published-posts-v1"],
+  { revalidate: HOMEPAGE_DATA_REVALIDATE_SECONDS }
+);
+
 function toHomepageLatestPosts(
   posts: Awaited<ReturnType<typeof getLatestPublishedPosts>>,
 ): HomepageLatestPost[] {
@@ -53,7 +59,7 @@ async function loadHomepageInitialDataUncached(lang: Lang): Promise<HomepageInit
       cachedParentCategorySlots(),
       fetchRecommendedSpecialistsCached(lang),
       fetchStarMapData(),
-      getLatestPublishedPosts(lang, 3),
+      cachedLatestPublishedPosts(lang),
     ]);
 
   let categories =
@@ -99,7 +105,7 @@ async function loadHomepageInitialDataUncached(lang: Lang): Promise<HomepageInit
 export function loadHomepageInitialData(lang: Lang): Promise<HomepageInitialData> {
   return unstable_cache(
     () => loadHomepageInitialDataUncached(lang),
-    ["homepage-initial-data-v3", lang],
+    ["homepage-initial-data-v4", lang],
     { revalidate: HOMEPAGE_DATA_REVALIDATE_SECONDS }
   )();
 }
