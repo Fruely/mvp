@@ -1,7 +1,10 @@
 import "server-only";
 
 import { assertAdminSession } from "@/lib/adminSession";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  createCacheableSupabaseServerClient,
+  createSupabaseServerClient,
+} from "@/lib/supabase/server";
 import { isValidContentSlug } from "@/lib/content/slug";
 import type { ContentLang, ContentPost, ContentPostListItem } from "@/lib/content/types";
 
@@ -56,7 +59,7 @@ export async function getLatestPublishedPosts(
   limit: number,
 ): Promise<ContentPostListItem[]> {
   const safeLimit = Math.max(1, Math.min(Math.trunc(limit), 20));
-  const supabase = createSupabaseServerClient();
+  const supabase = createCacheableSupabaseServerClient();
   const { data, error } = await supabase
     .from("content_posts")
     .select(LIST_SELECT)
