@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Alert } from "@/components/ui";
+import SpecialistContactRulesNotice from "@/components/legal/SpecialistContactRulesNotice";
 import { dashboardLinkPrimaryClass } from "@/components/dashboard/dashboardStyles";
 import { t, type Dictionary } from "@/lib/i18n";
 import OnboardingAboutForm, { type OnboardingAboutData } from "./OnboardingAboutForm";
@@ -118,6 +119,8 @@ export default function SpecialistOnboardingWizard({
           {gateMessage.body}
         </Alert>
       ) : null}
+
+      <SpecialistContactRulesNotice lang={lang} />
 
       <OnboardingProgress steps={steps} activeStep={activeStep} />
 
