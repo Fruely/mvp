@@ -4,10 +4,31 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { assertAdminSession } from "@/lib/adminSession";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { CONTENT_LANGS, CONTENT_TYPES } from "@/lib/content/types";
+import { removeOwnedContentImageByUrl } from "@/lib/content/contentImageStorage";
+import { CONTENT_LANGS, CONTENT_TYPES, isContentLang } from "@/lib/content/types";
 import { isValidContentSlug } from "@/lib/content/slug";
 
 const CTA_TYPES = ["none", "search", "specialist", "become_specialist"] as const;
+
+export type ContentAdminActionError = {
+  error: "POST_NOT_FOUND" | "DELETE_FAILED" | "UNPUBLISH_FAILED" | "POST_NOT_PUBLISHED";
+};
+
+function revalidateContentSurfaces(lang: string, slug: string | null, postId?: string): void {
+  revalidatePath("/admin/content/posts");
+  if (postId) {
+    revalidatePath(`/admin/content/posts/${postId}`);
+  }
+  revalidatePath("/sitemap.xml");
+
+  if (!isContentLang(lang)) return;
+
+  revalidatePath(`/${lang}`);
+  revalidatePath(`/${lang}/blog`);
+  if (slug) {
+    revalidatePath(`/${lang}/blog/${slug}`);
+  }
+}
 
 function text(formData: FormData, key: string): string {
   return String(formData.get(key) ?? "").trim();
@@ -132,8 +153,18 @@ export async function publishPostAction(formData: FormData): Promise<void> {
   }
   if (!data) throw new Error("PUBLISH_CONFLICT");
 
-  revalidatePath("/admin/content/posts");
-  revalidatePath(`/admin/content/posts/${id}`);
+  const { data: publishedPost } = await supabase
+    .from("content_posts")
+    .select("lang, slug")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (publishedPost) {
+    revalidateContentSurfaces(publishedPost.lang, publishedPost.slug, id);
+  } else {
+    revalidateContentSurfaces("", null, id);
+  }
+
   redirect(`/admin/content/posts/${id}`);
 }
 
@@ -143,6 +174,18 @@ export async function unpublishPostAction(formData: FormData): Promise<void> {
   if (!id) throw new Error("ID_REQUIRED");
 
   const supabase = createSupabaseServerClient();
+  const { data: current, error: currentError } = await supabase
+    .from("content_posts")
+    .select("id, lang, slug, status")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (currentError) {
+    console.error("[admin/content] read before unpublish failed", currentError);
+    throw new Error("UNPUBLISH_READ_FAILED");
+  }
+  if (!current || current.status !== "published") throw new Error("POST_NOT_PUBLISHED");
+
   const nowIso = new Date().toISOString();
   const { data, error } = await supabase
     .from("content_posts")
@@ -158,7 +201,45 @@ export async function unpublishPostAction(formData: FormData): Promise<void> {
   }
   if (!data) throw new Error("POST_NOT_PUBLISHED");
 
-  revalidatePath("/admin/content/posts");
-  revalidatePath(`/admin/content/posts/${id}`);
-  redirect(`/admin/content/posts/${id}`);
+  revalidateContentSurfaces(current.lang, current.slug, id);
+  redirect(`/admin/content/posts/${id}?unpublished=1`);
+}
+
+export async function deletePostAction(
+  formData: FormData,
+): Promise<ContentAdminActionError | { ok: true }> {
+  await assertAdminSession();
+  const id = text(formData, "id");
+  if (!id) return { error: "POST_NOT_FOUND" };
+
+  const supabase = createSupabaseServerClient();
+  const { data: current, error: currentError } = await supabase
+    .from("content_posts")
+    .select("id, lang, slug, hero_image_url")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (currentError) {
+    console.error("[admin/content] read before delete failed", currentError);
+    return { error: "DELETE_FAILED" };
+  }
+  if (!current) return { error: "POST_NOT_FOUND" };
+
+  const { data: deleted, error: deleteError } = await supabase
+    .from("content_posts")
+    .delete()
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+
+  if (deleteError) {
+    console.error("[admin/content] delete failed", deleteError);
+    return { error: "DELETE_FAILED" };
+  }
+  if (!deleted) return { error: "POST_NOT_FOUND" };
+
+  await removeOwnedContentImageByUrl(current.hero_image_url);
+
+  revalidateContentSurfaces(current.lang, current.slug);
+  return { ok: true as const };
 }

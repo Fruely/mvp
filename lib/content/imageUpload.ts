@@ -3,8 +3,11 @@
 import { randomUUID } from "node:crypto";
 import { assertAdminSession } from "@/lib/adminSession";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  CONTENT_IMAGES_BUCKET,
+  resolveContentImageStoragePath,
+} from "@/lib/content/contentImageStorage";
 
-const CONTENT_IMAGES_BUCKET = "content-images";
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 
@@ -68,21 +71,11 @@ export async function removeContentImageAction(
   const url = String(formData.get("url") ?? "").trim();
   if (!url) return { ok: false, error: "missing_url" };
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!supabaseUrl) return { ok: false, error: "config_error" };
-
-  const prefix = `${supabaseUrl}/storage/v1/object/public/${CONTENT_IMAGES_BUCKET}/`;
-  if (!url.startsWith(prefix)) return { ok: false, error: "invalid_url" };
-
-  const storagePath = url.slice(prefix.length);
-  if (!storagePath || storagePath.includes("..")) {
-    return { ok: false, error: "invalid_path" };
-  }
+  const storagePath = resolveContentImageStoragePath(url);
+  if (!storagePath) return { ok: false, error: "invalid_url" };
 
   const supabase = createSupabaseServerClient();
-  const { error } = await supabase.storage
-    .from(CONTENT_IMAGES_BUCKET)
-    .remove([storagePath]);
+  const { error } = await supabase.storage.from(CONTENT_IMAGES_BUCKET).remove([storagePath]);
 
   if (error) {
     console.error("[content/imageUpload] remove failed", error);

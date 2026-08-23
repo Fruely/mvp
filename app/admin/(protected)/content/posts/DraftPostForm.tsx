@@ -8,6 +8,7 @@ import {
   uploadContentImageAction,
   removeContentImageAction,
 } from "@/lib/content/imageUpload";
+import { DeletePostButton } from "./DeletePostButton";
 
 const labelClass = "block text-[13px] font-semibold text-freuly-text-primary";
 const inputClass =
@@ -97,6 +98,7 @@ export function DraftPostForm({ action, post, publishAction }: DraftPostFormProp
   }, [heroUrl]);
 
   return (
+    <>
     <form action={action} className="flex flex-col gap-8 rounded-freuly-lg border border-freuly-border-default bg-white p-8">
       {post && <input type="hidden" name="id" value={post.id} />}
 
@@ -346,6 +348,19 @@ export function DraftPostForm({ action, post, publishAction }: DraftPostFormProp
         </Link>
       </div>
     </form>
+
+    {post ? (
+      <div className="rounded-freuly-lg border border-freuly-border-default bg-white p-8">
+        <p className="text-[13px] font-semibold text-freuly-text-secondary">Опасная зона</p>
+        <p className="mt-1 text-[13px] text-freuly-text-secondary">
+          Полное удаление публикации без возможности восстановления.
+        </p>
+        <div className="mt-4">
+          <DeletePostButton postId={post.id} postTitle={post.title} />
+        </div>
+      </div>
+    ) : null}
+    </>
   );
 }
 

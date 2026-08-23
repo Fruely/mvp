@@ -7,17 +7,21 @@ import {
   updateDraftPostAction,
 } from "@/lib/content/adminActions";
 import { DraftPostForm } from "../DraftPostForm";
+import { DeletePostButton } from "../DeletePostButton";
 
 type PageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ unpublished?: string }>;
 };
 
-export default async function EditContentPostPage({ params }: PageProps) {
+export default async function EditContentPostPage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const { unpublished } = await searchParams;
   const post = await getAdminPost(id);
   if (!post) notFound();
 
   const isDraft = post.status === "draft";
+  const showUnpublishedNotice = unpublished === "1" && isDraft;
 
   return (
     <div className="px-4 py-8">
@@ -29,8 +33,8 @@ export default async function EditContentPostPage({ params }: PageProps) {
             </h1>
             <p className="mt-1 text-[14px] text-freuly-text-secondary">
               {isDraft
-                ? "Создайте и опубликуйте статью для Freuly Journal"
-                : "Статья опубликована. Снимите с публикации, чтобы редактировать."}
+                ? "Черновик Freuly Journal. Сохраните изменения или опубликуйте статью."
+                : "Статья опубликована. Снимите с публикации, чтобы вернуть её в черновик."}
             </p>
             <Link
               href={`/${post.lang}/blog`}
@@ -51,6 +55,12 @@ export default async function EditContentPostPage({ params }: PageProps) {
             {isDraft ? "Черновик" : "Опубликовано"}
           </span>
         </div>
+
+        {showUnpublishedNotice ? (
+          <div className="rounded-freuly-lg border border-freuly-primary/20 bg-freuly-primary-light px-4 py-3 text-[14px] text-freuly-text-primary">
+            Публикация снята. Статья сохранена как черновик и больше не видна на сайте.
+          </div>
+        ) : null}
 
         {isDraft ? (
           <DraftPostForm
@@ -87,6 +97,16 @@ export default async function EditContentPostPage({ params }: PageProps) {
               >
                 Открыть статью ↗
               </Link>
+            </div>
+
+            <div className="border-t border-freuly-border-default pt-6">
+              <p className="text-[13px] font-semibold text-freuly-text-secondary">Опасная зона</p>
+              <p className="mt-1 text-[13px] text-freuly-text-secondary">
+                Полное удаление публикации без возможности восстановления.
+              </p>
+              <div className="mt-4">
+                <DeletePostButton postId={post.id} postTitle={post.title} />
+              </div>
             </div>
           </div>
         )}
