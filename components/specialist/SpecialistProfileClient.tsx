@@ -59,6 +59,7 @@ export interface Specialist {
   lat?: number | null;
   lng?: number | null;
   founder_badge?: boolean;
+  is_freuly_cofounder?: boolean;
   photo_focus?: unknown;
   specialist_services?: Array<{
     id: string;
@@ -560,6 +561,8 @@ export default function SpecialistProfileClient({
           isNew={isNewActive}
           newBadgeLabel={sectionText.newBadge}
           showFounderBadge={specialist.founder_badge === true}
+          showCofounderBadge={specialist.is_freuly_cofounder === true}
+          cofounderBadgeLabel={sectionText.cofounderBadge}
           successMessage={null}
           aboutPreview={aboutText || null}
           requestLabel={t(dict, "specialist.sendRequest")}

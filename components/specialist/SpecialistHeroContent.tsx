@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import { Briefcase, Globe, MapPin } from "lucide-react";
 import FounderBadge from "@/components/specialist/FounderBadge";
+import CofounderBadge from "@/components/specialist/CofounderBadge";
 
 export type SpecialistHeroContentProps = {
   avatarUrl?: string | null;
@@ -16,6 +17,8 @@ export type SpecialistHeroContentProps = {
   isNew: boolean;
   newBadgeLabel: string;
   showFounderBadge?: boolean;
+  showCofounderBadge?: boolean;
+  cofounderBadgeLabel?: string;
   successMessage?: string | null;
   aboutPreview?: string | null;
   actions?: ReactNode;
@@ -47,6 +50,8 @@ export default function SpecialistHeroContent({
   isNew,
   newBadgeLabel,
   showFounderBadge,
+  showCofounderBadge,
+  cofounderBadgeLabel,
   successMessage,
   aboutPreview,
   actions,
@@ -93,6 +98,10 @@ export default function SpecialistHeroContent({
         <h1 className="text-[28px] font-extrabold leading-tight text-freuly-text-primary md:text-[40px]">
           {name}
         </h1>
+
+        {showCofounderBadge && cofounderBadgeLabel ? (
+          <CofounderBadge label={cofounderBadgeLabel} />
+        ) : null}
 
         <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2 sm:gap-x-6">
           {city ? (

@@ -37,7 +37,7 @@ export async function GET(
   const { data: specialist, error: specError } = await supabase
     .from("specialists")
     .select(
-      "id, slug, name, avatar_url, category_id, status, is_active, is_visible, billing_visibility_blocked, is_test, languages, work_format, created_at, lat, lng, founder_badge"
+      "id, slug, name, avatar_url, category_id, status, is_active, is_visible, billing_visibility_blocked, is_test, languages, work_format, created_at, lat, lng, founder_badge, is_freuly_cofounder"
     )
     .eq("id", resolvedId)
     .maybeSingle();
@@ -147,6 +147,7 @@ export async function GET(
     lat: specialist.lat ?? null,
     lng: specialist.lng ?? null,
     founder_badge: specialist.founder_badge === true,
+    is_freuly_cofounder: specialist.is_freuly_cofounder === true,
     plan_code: plan.plan_code,
     plan_status: plan.plan_status,
     rating: ratingRow?.rating_avg ?? null,

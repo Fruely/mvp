@@ -24,6 +24,7 @@ export type PublicSpecialistProfile = {
   avatarUrl: string | null;
   photoFocus: unknown;
   createdAt: string;
+  isFreulyCofounder: boolean;
   services: Array<{
     id: string;
     title: string | null;
@@ -90,7 +91,7 @@ export async function getPublicSpecialistProfile(
   const { data: specialist, error: specialistError } = await supabase
     .from("specialists")
     .select(
-      "id, slug, name, avatar_url, category_id, status, is_active, is_visible, billing_visibility_blocked, languages, created_at, work_format, postal_code"
+      "id, slug, name, avatar_url, category_id, status, is_active, is_visible, billing_visibility_blocked, languages, created_at, work_format, postal_code, is_freuly_cofounder"
     )
     .eq("id", resolvedId)
     .maybeSingle();
@@ -175,6 +176,7 @@ export async function getPublicSpecialistProfile(
     avatarUrl: specialist.avatar_url ?? null,
     photoFocus: profile?.photo_focus ?? null,
     createdAt: specialist.created_at ?? new Date(0).toISOString(),
+    isFreulyCofounder: specialist.is_freuly_cofounder === true,
     services: Array.isArray(services)
       ? services.map((service) => {
           const serviceId = String(service.id);

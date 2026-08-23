@@ -16,6 +16,8 @@ export default function SpecialistHero({
   isNew,
   newBadgeLabel,
   showFounderBadge,
+  showCofounderBadge,
+  cofounderBadgeLabel,
   successMessage,
   aboutPreview,
   requestLabel,
@@ -36,6 +38,8 @@ export default function SpecialistHero({
   isNew: boolean;
   newBadgeLabel: string;
   showFounderBadge?: boolean;
+  showCofounderBadge?: boolean;
+  cofounderBadgeLabel?: string;
   successMessage?: string | null;
   aboutPreview?: string | null;
   requestLabel: string;
@@ -60,6 +64,8 @@ export default function SpecialistHero({
           isNew={isNew}
           newBadgeLabel={newBadgeLabel}
           showFounderBadge={showFounderBadge}
+          showCofounderBadge={showCofounderBadge}
+          cofounderBadgeLabel={cofounderBadgeLabel}
           successMessage={successMessage}
           aboutPreview={aboutPreview}
           actions={

@@ -37,6 +37,7 @@ export type Translations = {
   };
   readMore: string;
   newBadge: string;
+  cofounderBadge: string;
   videoTitle: string;
   certificatesTitle: string;
   certificatesSubtitle: string;

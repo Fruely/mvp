@@ -8,6 +8,7 @@ import LeadForm from "@/components/LeadForm";
 import MobileStickyCTA from "@/components/MobileStickyCTA";
 import SpecialistDocumentsLightbox from "@/components/specialist/SpecialistDocumentsLightbox";
 import ProPageBadge from "@/components/specialist/pro/ProPageBadge";
+import CofounderBadge from "@/components/specialist/CofounderBadge";
 import ProPageShare from "@/components/specialist/pro/ProPageShare";
 import ProPrimaryButton from "@/components/specialist/pro/ProPrimaryButton";
 import ProSectionLabel from "@/components/specialist/pro/ProSectionLabel";
@@ -285,6 +286,9 @@ export default function SpecialistProPageClient({
               <h1 className="text-[36px] font-bold leading-[1.15] tracking-tight text-[#242220] md:text-[64px] md:leading-[1.1]">
                 {displayName}
               </h1>
+              {specialist?.is_freuly_cofounder ? (
+                <CofounderBadge label={sectionText.cofounderBadge} />
+              ) : null}
               {professionLabel ? (
                 <p className="text-[15px] font-semibold uppercase tracking-[0.08em] text-[#4A5840] md:text-lg">
                   {professionLabel}

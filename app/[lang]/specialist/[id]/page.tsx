@@ -178,6 +178,7 @@ function toInitialSpecialist(
     languages: profile.languages,
     work_format: profile.workFormat,
     created_at: profile.createdAt,
+    is_freuly_cofounder: profile.isFreulyCofounder,
     specialist_services: profile.services.map((service) => ({
       id: service.id,
       title: service.title ?? "",
