@@ -1,7 +1,7 @@
 # Spezialisten-Regeln Freuly
 
 <!-- legal-section: sr-meta-01 -->
-Version 2.0 — August 2026. Code of Conduct für Spezialistinnen und Spezialisten auf der Plattform Freuly.
+Version 2.1 — August 2026. Code of Conduct für Spezialistinnen und Spezialisten auf der Plattform Freuly.
 
 ## Einleitung
 
@@ -62,6 +62,19 @@ Freuly darf Profile aus der Veröffentlichung nehmen, die Sichtbarkeit einschrä
 
 <!-- legal-section: sr-11-01 -->
 Die Plattform darf nicht für Trolling, Spam, digitale Rowdysmus, Test- oder Provokationsinhalte oder Handlungen genutzt werden, die das Vertrauen in die Plattform und ihre Spezialistinnen und Spezialisten untergraben.
+
+## 12. Kontaktdaten, externe Links und Weitergabe von Anfragedaten
+
+<!-- legal-section: sr-12-01 -->
+Kontaktdaten, externe Links und andere Möglichkeiten zur direkten Kontaktaufnahme dürfen nur in denjenigen Profilelementen veröffentlicht werden, die Freuly hierfür ausdrücklich bereitstellt, sofern solche Funktionen verfügbar sind.
+
+Es ist untersagt, im Profil Kontaktdaten, externe Links oder sonstige Angaben zu veröffentlichen, die es Nutzerinnen oder Nutzern ermöglichen, den Spezialisten direkt zu kontaktieren oder unter Umgehung der von Freuly vorgesehenen Funktionen zu einer externen Ressource zu wechseln. Dazu gehören insbesondere Telefonnummern, E-Mail-Adressen, Websites und Domainnamen, Links zu sozialen Netzwerken, Messengern und anderen externen Ressourcen, Usernames, Handles und Accountnamen, QR-Codes, Einladungslinks sowie sonstige Angaben, mit denen ein externer Kontaktkanal des Spezialisten gefunden werden kann.
+
+Das Verbot gilt auch für solche Angaben in Avataren, Hauptfotos, Galeriebildern, Collagen, Bannern, Logos, Wasserzeichen, Profilbeschreibungen, Leistungsbeschreibungen und -bezeichnungen sowie sonstigen Profilelementen.
+
+Freuly stellt zugleich den von der Plattform vorgesehenen Weg zur Kontaktaufnahme zwischen Kundin bzw. Kunde und Spezialist bereit. Sendet eine Nutzerin oder ein Nutzer selbst eine Anfrage über Freuly, können die für die Bearbeitung dieser Anfrage und die Kontaktaufnahme erforderlichen Daten der anfragenden Person gemäß den Bedingungen von Freuly und der Datenschutzerklärung an den entsprechenden Spezialisten übermittelt werden. Nach Erhalt einer solchen Anfrage darf der Spezialist die anfragende Person unmittelbar kontaktieren, soweit dies ausschließlich der Bearbeitung der konkreten Anfrage und der weiteren Abstimmung der Leistung dient.
+
+Freuly ist berechtigt, Inhalte, die gegen diese Regel verstoßen, abzulehnen, auszublenden oder zu entfernen. Bei wiederholten oder erheblichen Verstößen darf Freuly die Sichtbarkeit des Profils einschränken, es aus der Veröffentlichung nehmen oder andere in diesen Regeln und den AGB vorgesehene Maßnahmen ergreifen.
 
 ## Schlussbestimmung
 
