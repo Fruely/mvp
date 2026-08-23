@@ -8,6 +8,7 @@ import { getDictionary, isSupportedLang, type Dictionary } from "@/lib/i18n";
 import SpecialistDashboardEditor from "../SpecialistDashboardEditor";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import VerificationBanner from "../VerificationBanner";
+import SpecialistContactRulesNotice from "@/components/legal/SpecialistContactRulesNotice";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
 import { resolveSpecialistEntitlements } from "@/lib/billing/planEntitlements";
 import { getDashboardCategoryOptions } from "@/lib/categories/dashboardCategoryOptions";
@@ -70,6 +71,7 @@ export default async function SpecialistDashboardProfilePage({
   return (
     <div className="space-y-freuly-8">
       <VerificationBanner status={status} dict={dict} />
+      <SpecialistContactRulesNotice lang={lang} />
       <SpecialistDashboardEditor
         dict={dict}
         lang={lang}
