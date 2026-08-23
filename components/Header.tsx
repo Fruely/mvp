@@ -36,6 +36,7 @@ export default function Header({ lang, dict = fallbackDict }: HeaderProps) {
   const disablePrefetch = isPrivateDashboardPath(pathname);
 
   const navItems = [
+    { href: `/${lang}/blog`, label: "Journal" },
     { href: `/${lang}/pricing`, label: t(d, "header.nav.pricing") },
     { href: `/${lang}/partners`, label: t(d, "header.nav.partners") },
     { href: cabinetHref, label: t(d, "header.cabinet"), prefetch: false as const },
