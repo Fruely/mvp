@@ -17,6 +17,8 @@ const selectClass =
   "mt-2 h-[44px] w-full appearance-none rounded-freuly-button border border-freuly-border-default bg-white px-4 text-[14px] text-freuly-text-primary focus:border-freuly-primary focus:outline-none focus:ring-1 focus:ring-freuly-primary";
 const textareaClass =
   "mt-2 w-full rounded-freuly-button border border-freuly-border-default bg-white p-3 text-[14px] text-freuly-text-primary placeholder:text-[#9b9b9b] focus:border-freuly-primary focus:outline-none focus:ring-1 focus:ring-freuly-primary";
+const toolbarButtonClass =
+  "inline-flex h-8 min-w-8 items-center justify-center rounded-md border border-freuly-border-default bg-white px-2 text-[13px] font-semibold text-freuly-text-primary hover:border-freuly-primary hover:text-freuly-primary focus:outline-none focus:ring-1 focus:ring-freuly-primary";
 
 type DraftPostFormProps = {
   action: (formData: FormData) => Promise<void>;
@@ -29,10 +31,12 @@ export function DraftPostForm({ action, post, publishAction }: DraftPostFormProp
   const [slug, setSlug] = useState(post?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(!!post?.slug);
   const [heroUrl, setHeroUrl] = useState(post?.hero_image_url ?? "");
+  const [bodyMarkdown, setBodyMarkdown] = useState(post?.body_markdown ?? "");
   const [uploadState, setUploadState] = useState<"idle" | "uploading" | "error">("idle");
   const [uploadError, setUploadError] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const bodyTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
@@ -46,6 +50,45 @@ export function DraftPostForm({ action, post, publishAction }: DraftPostFormProp
     setSlug(e.target.value);
     setSlugTouched(true);
   }, []);
+
+  const replaceBodySelection = useCallback((before: string, after: string, fallback = "текст") => {
+    const textarea = bodyTextareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = bodyMarkdown.slice(start, end) || fallback;
+    const replacement = `${before}${selected}${after}`;
+    const nextValue = bodyMarkdown.slice(0, start) + replacement + bodyMarkdown.slice(end);
+    setBodyMarkdown(nextValue);
+
+    requestAnimationFrame(() => {
+      textarea.focus();
+      const selectionStart = start + before.length;
+      textarea.setSelectionRange(selectionStart, selectionStart + selected.length);
+    });
+  }, [bodyMarkdown]);
+
+  const addLink = useCallback(() => {
+    const textarea = bodyTextareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = bodyMarkdown.slice(start, end);
+    const url = window.prompt("Введите ссылку (https://...)");
+    if (!url) return;
+
+    const label = selected || url;
+    const replacement = `[${label}](${url.trim()})`;
+    const nextValue = bodyMarkdown.slice(0, start) + replacement + bodyMarkdown.slice(end);
+    setBodyMarkdown(nextValue);
+
+    requestAnimationFrame(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start, start + replacement.length);
+    });
+  }, [bodyMarkdown]);
 
   const doUpload = useCallback(async (file: File) => {
     const mime = file.type.toLowerCase();
@@ -232,16 +275,59 @@ export function DraftPostForm({ action, post, publishAction }: DraftPostFormProp
           )}
         </div>
 
-        <label className={labelClass}>
-          Текст статьи
+        <div>
+          <span className={labelClass}>Текст статьи</span>
+          <div className="mt-2 flex flex-wrap items-center gap-2 rounded-t-freuly-button border border-b-0 border-freuly-border-default bg-[#fafafa] px-3 py-2">
+            <button
+              type="button"
+              onClick={() => replaceBodySelection("**", "**")}
+              className={toolbarButtonClass}
+              title="Жирный"
+              aria-label="Жирный"
+            >
+              B
+            </button>
+            <button
+              type="button"
+              onClick={() => replaceBodySelection("*", "*")}
+              className={`${toolbarButtonClass} italic`}
+              title="Курсив"
+              aria-label="Курсив"
+            >
+              I
+            </button>
+            <button
+              type="button"
+              onClick={() => replaceBodySelection("==", "==")}
+              className={`${toolbarButtonClass} text-freuly-primary`}
+              title="Фирменный цветовой акцент"
+              aria-label="Фирменный цветовой акцент"
+            >
+              Акцент
+            </button>
+            <button
+              type="button"
+              onClick={addLink}
+              className={toolbarButtonClass}
+              title="Добавить ссылку"
+              aria-label="Добавить ссылку"
+            >
+              Ссылка
+            </button>
+            <span className="ml-1 text-[12px] font-normal text-freuly-text-secondary">
+              Выделите текст и нажмите нужный формат
+            </span>
+          </div>
           <textarea
+            ref={bodyTextareaRef}
             name="body_markdown"
-            defaultValue={post?.body_markdown ?? ""}
+            value={bodyMarkdown}
+            onChange={(e) => setBodyMarkdown(e.target.value)}
             rows={14}
-            className={`${textareaClass} font-mono`}
+            className="w-full rounded-b-freuly-button border border-freuly-border-default bg-white p-3 font-mono text-[14px] text-freuly-text-primary placeholder:text-[#9b9b9b] focus:border-freuly-primary focus:outline-none focus:ring-1 focus:ring-freuly-primary"
             placeholder="Начните писать свою историю здесь..."
           />
-        </label>
+        </div>
       </div>
 
       {/* SEO / TECHNICAL SECTION */}
