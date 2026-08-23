@@ -62,7 +62,7 @@ function renderPlainText(text: string, keyPrefix: string): ReactNode[] {
 }
 
 function renderInline(text: string, keyPrefix: string): ReactNode[] {
-  const tokenPattern = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^\)]+\))/g;
+  const tokenPattern = /(\*\*[^*]+\*\*|==[^=]+==|\*[^*]+\*|\[[^\]]+\]\([^\)]+\))/g;
   const parts = text.split(tokenPattern).filter(Boolean);
 
   return parts.flatMap((part, index) => {
@@ -70,6 +70,18 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
 
     if (part.startsWith("**") && part.endsWith("**")) {
       return <strong key={key}>{renderPlainText(part.slice(2, -2), `${key}-strong`)}</strong>;
+    }
+
+    if (part.startsWith("==") && part.endsWith("==")) {
+      return (
+        <strong key={key} className="font-semibold text-freuly-primary">
+          {renderPlainText(part.slice(2, -2), `${key}-accent`)}
+        </strong>
+      );
+    }
+
+    if (part.startsWith("*") && part.endsWith("*")) {
+      return <em key={key}>{renderPlainText(part.slice(1, -1), `${key}-italic`)}</em>;
     }
 
     const linkMatch = part.match(/^\[([^\]]+)\]\(([^\)]+)\)$/);
