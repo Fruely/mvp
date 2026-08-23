@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import LanguageBar from "@/components/LanguageBar";
+import LatestContentPostsSection from "@/components/content/LatestContentPostsSection";
 import { getDictionary, type Lang } from "@/lib/i18n";
 import { HOME_METADATA, HREFLANG_HOME, SITE_ROOT_URL } from "@/lib/seo/siteMetadata";
 import { loadHomepageInitialData } from "@/lib/homepage/loadHomepageInitialData";
@@ -39,6 +40,7 @@ export default async function Page() {
         dict={dict}
         initialData={serializeHomepageInitialData(initialData)}
       />
+      <LatestContentPostsSection lang={ROOT_LANG} posts={initialData.latestPosts ?? []} />
       <Footer dict={dict} lang={ROOT_LANG} />
     </div>
   );
