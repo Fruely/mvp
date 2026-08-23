@@ -16,7 +16,7 @@ const inter = Inter({
 const DEFAULT_HTML_LANG = "ru";
 
 /** Bump when favicon assets change to bust browser favicon cache. */
-const FAVICON_VERSION = 2;
+const FAVICON_VERSION = 3;
 
 export const metadata = {
   title: "Freuly — специалист на твоём языке",
@@ -31,10 +31,24 @@ export const metadata = {
     icon: [
       { url: `/favicon.svg?v=${FAVICON_VERSION}`, type: "image/svg+xml" },
       { url: `/favicon.ico?v=${FAVICON_VERSION}` },
-      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+      {
+        url: `/favicon-32x32.png?v=${FAVICON_VERSION}`,
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: `/favicon-16x16.png?v=${FAVICON_VERSION}`,
+        sizes: "16x16",
+        type: "image/png",
+      },
     ],
-    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
+    apple: [
+      {
+        url: `/icons/apple-touch-icon.png?v=${FAVICON_VERSION}`,
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
   },
 };
 
