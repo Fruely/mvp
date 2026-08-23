@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
 
+const LINK_CLASS = "font-medium text-freuly-primary underline underline-offset-2";
+const BARE_URL_PATTERN = /https?:\/\/[^\s<]+/gi;
+
 function safeHref(value: string): string | null {
   const trimmed = value.trim();
   if (trimmed.startsWith("/")) return trimmed;
@@ -7,15 +10,66 @@ function safeHref(value: string): string | null {
   return null;
 }
 
+function splitTrailingPunctuation(value: string): { href: string; trailing: string } {
+  let href = value;
+  let trailing = "";
+
+  while (/[.,!?;:]$/.test(href)) {
+    trailing = href.slice(-1) + trailing;
+    href = href.slice(0, -1);
+  }
+
+  return { href, trailing };
+}
+
+function renderPlainText(text: string, keyPrefix: string): ReactNode[] {
+  const nodes: ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  BARE_URL_PATTERN.lastIndex = 0;
+
+  while ((match = BARE_URL_PATTERN.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      nodes.push(<span key={`${keyPrefix}-text-${lastIndex}`}>{text.slice(lastIndex, match.index)}</span>);
+    }
+
+    const { href: rawHref, trailing } = splitTrailingPunctuation(match[0]);
+    const href = safeHref(rawHref);
+
+    if (href) {
+      nodes.push(
+        <a key={`${keyPrefix}-link-${match.index}`} href={href} className={LINK_CLASS}>
+          {rawHref}
+        </a>,
+      );
+    } else {
+      nodes.push(<span key={`${keyPrefix}-url-${match.index}`}>{rawHref}</span>);
+    }
+
+    if (trailing) {
+      nodes.push(<span key={`${keyPrefix}-trail-${match.index}`}>{trailing}</span>);
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    nodes.push(<span key={`${keyPrefix}-text-${lastIndex}`}>{text.slice(lastIndex)}</span>);
+  }
+
+  return nodes.length ? nodes : [<span key={`${keyPrefix}-text`}>{text}</span>];
+}
+
 function renderInline(text: string, keyPrefix: string): ReactNode[] {
   const tokenPattern = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^\)]+\))/g;
   const parts = text.split(tokenPattern).filter(Boolean);
 
-  return parts.map((part, index) => {
+  return parts.flatMap((part, index) => {
     const key = `${keyPrefix}-${index}`;
 
     if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={key}>{part.slice(2, -2)}</strong>;
+      return <strong key={key}>{renderPlainText(part.slice(2, -2), `${key}-strong`)}</strong>;
     }
 
     const linkMatch = part.match(/^\[([^\]]+)\]\(([^\)]+)\)$/);
@@ -23,13 +77,13 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
       const href = safeHref(linkMatch[2]);
       if (!href) return <span key={key}>{linkMatch[1]}</span>;
       return (
-        <a key={key} href={href} className="font-medium text-freuly-primary underline underline-offset-2">
+        <a key={key} href={href} className={LINK_CLASS}>
           {linkMatch[1]}
         </a>
       );
     }
 
-    return <span key={key}>{part}</span>;
+    return renderPlainText(part, key);
   });
 }
 
