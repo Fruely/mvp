@@ -11,7 +11,7 @@ export const SPECIALIST_AGB_EFFECTIVE_DATE = "2026-08-09";
 export const SPECIALIST_AGB_DOCUMENT_ID = "freuly-specialist-agb";
 
 export const SPECIALIST_RULES_VERSION =
-  process.env.SPECIALIST_RULES_VERSION || "2.0";
+  process.env.SPECIALIST_RULES_VERSION || "2.1";
 
 export function getSpecialistRulesVersion(): string {
   return SPECIALIST_RULES_VERSION;
