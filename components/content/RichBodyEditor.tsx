@@ -186,6 +186,7 @@ type RichBodyEditorProps = {
 export default function RichBodyEditor({ name, value, onChange }: RichBodyEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
+  const savedRangeRef = useRef<Range | null>(null);
 
   useEffect(() => {
     if (editorRef.current && !initializedRef.current) {
@@ -194,29 +195,46 @@ export default function RichBodyEditor({ name, value, onChange }: RichBodyEditor
     }
   }, [value]);
 
+  useEffect(() => {
+    const handler = () => {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+      const range = sel.getRangeAt(0);
+      if (editorRef.current?.contains(range.startContainer)) {
+        savedRangeRef.current = range.cloneRange();
+      }
+    };
+    document.addEventListener("selectionchange", handler);
+    return () => document.removeEventListener("selectionchange", handler);
+  }, []);
+
   const syncMarkdown = useCallback(() => {
     if (!editorRef.current) return;
     const md = htmlToMarkdown(editorRef.current.innerHTML);
     onChange(md);
   }, [onChange]);
 
-  const selectionIsInsideEditor = useCallback((range: Range) => {
-    const editor = editorRef.current;
-    if (!editor) return false;
-    return editor.contains(range.startContainer) && editor.contains(range.endContainer);
-  }, []);
-
-  const keepEditorSelection = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    // Keep the contentEditable range alive until the click handler applies formatting.
-    event.preventDefault();
+  const getActiveRange = useCallback((): Range | null => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+      const range = sel.getRangeAt(0);
+      if (editorRef.current?.contains(range.startContainer)) return range;
+    }
+    if (savedRangeRef.current && editorRef.current?.contains(savedRangeRef.current.startContainer)) {
+      return savedRangeRef.current;
+    }
+    return null;
   }, []);
 
   const wrapSelection = useCallback((tag: string, unwrapTag: string) => {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
+    const range = getActiveRange();
+    if (!range) return;
 
-    const range = selection.getRangeAt(0);
-    if (!selectionIsInsideEditor(range)) return;
+    const selection = window.getSelection();
+    if (selection) {
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
 
     const commonElement =
       range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE
@@ -230,12 +248,14 @@ export default function RichBodyEditor({ name, value, onChange }: RichBodyEditor
       const first = fragment.firstChild;
       const last = fragment.lastChild;
       existing.replaceWith(fragment);
-      selection.removeAllRanges();
-      if (first && last) {
-        const newRange = document.createRange();
-        newRange.setStartBefore(first);
-        newRange.setEndAfter(last);
-        selection.addRange(newRange);
+      if (selection) {
+        selection.removeAllRanges();
+        if (first && last) {
+          const newRange = document.createRange();
+          newRange.setStartBefore(first);
+          newRange.setEndAfter(last);
+          selection.addRange(newRange);
+        }
       }
     } else {
       const el = document.createElement(tag);
@@ -245,66 +265,74 @@ export default function RichBodyEditor({ name, value, onChange }: RichBodyEditor
         el.appendChild(range.extractContents());
         range.insertNode(el);
       }
-      selection.removeAllRanges();
-      const newRange = document.createRange();
-      newRange.selectNodeContents(el);
-      selection.addRange(newRange);
+      if (selection) {
+        selection.removeAllRanges();
+        const newRange = document.createRange();
+        newRange.selectNodeContents(el);
+        selection.addRange(newRange);
+      }
     }
 
+    savedRangeRef.current = null;
     editorRef.current?.focus({ preventScroll: true });
     syncMarkdown();
-  }, [selectionIsInsideEditor, syncMarkdown]);
+  }, [getActiveRange, syncMarkdown]);
 
   const handleBold = useCallback(() => wrapSelection("strong", "strong"), [wrapSelection]);
   const handleItalic = useCallback(() => wrapSelection("em", "em"), [wrapSelection]);
   const handleAccent = useCallback(() => wrapSelection("mark", "mark"), [wrapSelection]);
 
   const handleLink = useCallback(() => {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
+    const range = getActiveRange();
+    if (!range) return;
 
-    const range = selection.getRangeAt(0);
-    if (!selectionIsInsideEditor(range)) return;
-
-    const savedRange = range.cloneRange();
-    const text = selection.toString();
+    const text = range.toString();
     const url = window.prompt("Введите ссылку (https://...)", "https://");
     if (!url || !/^(https?:\/\/|\/)/i.test(url.trim())) return;
 
     const safeUrl = url.trim();
     if (/^javascript:/i.test(safeUrl)) return;
 
-    selection.removeAllRanges();
-    selection.addRange(savedRange);
+    const selection = window.getSelection();
+    if (selection) {
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
 
     const a = document.createElement("a");
     a.href = safeUrl;
     a.textContent = text || safeUrl;
-    savedRange.deleteContents();
-    savedRange.insertNode(a);
+    range.deleteContents();
+    range.insertNode(a);
 
-    selection.removeAllRanges();
-    const newRange = document.createRange();
-    newRange.selectNodeContents(a);
-    selection.addRange(newRange);
+    if (selection) {
+      selection.removeAllRanges();
+      const newRange = document.createRange();
+      newRange.selectNodeContents(a);
+      selection.addRange(newRange);
+    }
+    savedRangeRef.current = null;
     editorRef.current?.focus({ preventScroll: true });
     syncMarkdown();
-  }, [selectionIsInsideEditor, syncMarkdown]);
+  }, [getActiveRange, syncMarkdown]);
 
   return (
     <div>
       <textarea name={name} value={value} readOnly hidden aria-hidden="true" />
-      <div className="flex flex-wrap items-center gap-2 rounded-t-freuly-button border border-b-0 border-freuly-border-default bg-[#fafafa] px-3 py-2">
-        <button type="button" onMouseDown={keepEditorSelection} onClick={handleBold} className={TOOLBAR_BTN} title="Жирный" aria-label="Жирный">
+      <div
+        className="flex flex-wrap items-center gap-2 rounded-t-freuly-button border border-b-0 border-freuly-border-default bg-[#fafafa] px-3 py-2"
+        onMouseDown={(e) => e.preventDefault()}
+      >
+        <button type="button" onClick={handleBold} className={TOOLBAR_BTN} title="Жирный" aria-label="Жирный">
           <strong>B</strong>
         </button>
-        <button type="button" onMouseDown={keepEditorSelection} onClick={handleItalic} className={`${TOOLBAR_BTN} italic`} title="Курсив" aria-label="Курсив">
+        <button type="button" onClick={handleItalic} className={`${TOOLBAR_BTN} italic`} title="Курсив" aria-label="Курсив">
           I
         </button>
-        <button type="button" onMouseDown={keepEditorSelection} onClick={handleAccent} className={`${TOOLBAR_BTN} text-freuly-primary`} title="Фирменный акцент" aria-label="Фирменный акцент">
+        <button type="button" onClick={handleAccent} className={`${TOOLBAR_BTN} text-freuly-primary`} title="Фирменный акцент" aria-label="Фирменный акцент">
           Акцент
         </button>
-        <button type="button" onMouseDown={keepEditorSelection} onClick={handleLink} className={TOOLBAR_BTN} title="Добавить ссылку" aria-label="Добавить ссылку">
+        <button type="button" onClick={handleLink} className={TOOLBAR_BTN} title="Добавить ссылку" aria-label="Добавить ссылку">
           Ссылка
         </button>
         <span className="ml-1 text-[12px] font-normal text-freuly-text-secondary">
