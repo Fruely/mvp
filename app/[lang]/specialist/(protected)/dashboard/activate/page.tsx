@@ -6,6 +6,7 @@ import { getDemandChannelCopy } from "@/lib/dashboard/demandChannelCopy";
 import { getDictionary, isSupportedLang, t, type Lang } from "@/lib/i18n";
 import { PUBLIC_COMMERCIAL_PLAN_CATALOG } from "@/lib/billing/plans";
 import { isBillingPagePlanCheckoutEnabled } from "@/lib/billing/billingPageCheckoutReadiness";
+import { dashboardLinkSecondaryClass } from "@/components/dashboard/dashboardStyles";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,8 @@ export default async function SpecialistDemandChannelActivationPage({
         {copy.billing.introBody}
       </Alert>
 
+      <Alert variant="warning">{copy.billing.draftNotice}</Alert>
+
       <Card>
         <CardHeader>
           <CardTitle>{copy.billing.planPickerTitle}</CardTitle>
@@ -54,12 +57,8 @@ export default async function SpecialistDemandChannelActivationPage({
                       : "border-freuly-primary/30 bg-freuly-primary-light/20 ring-1 ring-freuly-primary/10"
                   }`}
                 >
-                  <h2 className="text-freuly-card-title text-freuly-text-primary">
-                    {t(dict, nameKey)}
-                  </h2>
-                  <p className="mt-freuly-2 text-xl font-semibold text-freuly-text-primary">
-                    {t(dict, priceKey)}
-                  </p>
+                  <h2 className="text-freuly-card-title text-freuly-text-primary">{t(dict, nameKey)}</h2>
+                  <p className="mt-freuly-2 text-xl font-semibold text-freuly-text-primary">{t(dict, priceKey)}</p>
                   <p className="mt-freuly-3 flex-1 text-freuly-body-sm leading-relaxed text-freuly-text-secondary">
                     {professional ? copy.billing.professionalHint : copy.billing.growthHint}
                   </p>
@@ -76,14 +75,17 @@ export default async function SpecialistDemandChannelActivationPage({
             })}
           </div>
 
-          <p className="mt-freuly-5 text-freuly-body-sm text-freuly-text-muted">
+          <div className="mt-freuly-5 flex flex-wrap items-center gap-freuly-4">
+            <Link href={`/${lang}/specialist/dashboard`} className={dashboardLinkSecondaryClass}>
+              {copy.billing.decideLater}
+            </Link>
             <Link
               href={`/${lang}/pricing`}
-              className="font-medium text-freuly-primary underline-offset-4 hover:underline"
+              className="text-freuly-body-sm font-medium text-freuly-primary underline-offset-4 hover:underline"
             >
               {t(dict, "dashboard.billingPage.planPicker.viewAllPlans")}
             </Link>
-          </p>
+          </div>
         </CardContent>
       </Card>
     </div>
