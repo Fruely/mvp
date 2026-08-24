@@ -69,7 +69,7 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
     const key = `${keyPrefix}-${index}`;
 
     if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={key}>{renderPlainText(part.slice(2, -2), `${key}-strong`)}</strong>;
+      return <strong key={key} className="font-bold">{renderPlainText(part.slice(2, -2), `${key}-strong`)}</strong>;
     }
 
     if (part.startsWith("==") && part.endsWith("==")) {
@@ -81,7 +81,7 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
     }
 
     if (part.startsWith("*") && part.endsWith("*")) {
-      return <em key={key}>{renderPlainText(part.slice(1, -1), `${key}-italic`)}</em>;
+      return <em key={key} className="italic">{renderPlainText(part.slice(1, -1), `${key}-italic`)}</em>;
     }
 
     const linkMatch = part.match(/^\[([^\]]+)\]\(([^\)]+)\)$/);
