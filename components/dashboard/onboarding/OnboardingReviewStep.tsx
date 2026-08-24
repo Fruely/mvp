@@ -53,13 +53,7 @@ function itemBadgeVariant(done: boolean, neutralPending?: boolean): "success" | 
   return "warning";
 }
 
-function ReviewList({
-  items,
-  doneLabel,
-}: {
-  items: ReviewItem[];
-  doneLabel: string;
-}) {
+function ReviewList({ items, doneLabel }: { items: ReviewItem[]; doneLabel: string }) {
   return (
     <div className="space-y-freuly-3">
       {items.map((item) => (
@@ -113,7 +107,7 @@ export default function OnboardingReviewStep({
   const [error, setError] = useState<string | null>(null);
   const [serverIssues, setServerIssues] = useState<PublicationIssue[]>([]);
   const demandCopy = getDemandChannelCopy(lang);
-  const billingLink = `/${lang}/specialist/dashboard/billing`;
+  const activationLink = `/${lang}/specialist/dashboard/activate`;
 
   const categoryLabel = summary.isUncategorizedCategory
     ? t(dict, "dashboard.onboarding.reviewStep.fixUncategorizedCategory")
@@ -185,7 +179,7 @@ export default function OnboardingReviewStep({
       }
 
       publishSucceeded = true;
-      router.push(billingLink);
+      router.push(activationLink);
     } catch {
       setError(t(dict, "dashboard.onboarding.reviewStep.publishFailed"));
     } finally {
