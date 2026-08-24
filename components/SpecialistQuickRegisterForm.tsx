@@ -14,16 +14,16 @@ type Props = {
   dict: Dictionary;
 };
 
-function getEarlyAccessConsentHint(lang?: string) {
+function getRegistrationCommercialHint(lang?: string) {
   if (lang === "de") {
-    return "Dazu gehören die Bedingungen des kostenlosen 3-monatigen Startangebots für die ersten 50 veröffentlichten Spezialisten. Es wird kein kostenpflichtiges Abo automatisch aktiviert und es erfolgen keine automatischen Abbuchungen ohne separate Zustimmung.";
+    return "Mit der Registrierung wird zunächst ein nicht öffentlich sichtbarer Entwurf angelegt. Öffentliche Sichtbarkeit und die Teilnahme am Kundenanfrage-Kanal werden erst nach der Aktivierung von Freuly Professional oder Freuly Growth freigeschaltet. Es gibt keine automatische wiederkehrende Abbuchung.";
   }
 
   if (lang === "ua") {
-    return "До них входять умови безкоштовного стартового розміщення на 3 місяці для перших 50 опублікованих спеціалістів. Платна підписка не підключається автоматично, автоматичних списань без окремої згоди не буде.";
+    return "Після реєстрації спочатку створюється непублічна чернетка. Публічна видимість і участь у каналі клієнтських запитів вмикаються після активації Freuly Professional або Freuly Growth. Автоматичного повторного списання немає.";
   }
 
-  return "В них входят условия бесплатного стартового размещения на 3 месяца для первых 50 опубликованных специалистов. Платная подписка не подключается автоматически, автоматических списаний без отдельного согласия не будет.";
+  return "После регистрации сначала создаётся непубличный черновик. Публичная видимость и участие в канале клиентских заявок включаются после активации Freuly Professional или Freuly Growth. Автоматического повторного списания нет.";
 }
 
 export default function SpecialistQuickRegisterForm({ dict, lang }: Props) {
@@ -210,7 +210,7 @@ export default function SpecialistQuickRegisterForm({ dict, lang }: Props) {
                 error={legalError}
               />
               <p className="text-freuly-helper leading-relaxed text-freuly-text-secondary">
-                {getEarlyAccessConsentHint(lang)}
+                {getRegistrationCommercialHint(lang)}
               </p>
 
               {error ? <Alert variant="error">{error}</Alert> : null}
