@@ -166,8 +166,11 @@ function nodeToMd(node: Node): string {
       return inner;
     case "span": {
       const style = el.getAttribute("style") ?? "";
-      if (/font-weight:\s*(bold|700|800|900)/i.test(style)) return `**${inner}**`;
-      if (/font-style:\s*italic/i.test(style)) return `*${inner}*`;
+      const isBold = /font-weight:\s*(bold|[7-9]00)/i.test(style);
+      const isItalic = /font-style:\s*italic/i.test(style);
+      if (isBold && isItalic) return `***${inner}***`;
+      if (isBold) return `**${inner}**`;
+      if (isItalic) return `*${inner}*`;
       return inner;
     }
     default:
@@ -200,20 +203,43 @@ export default function RichBodyEditor({ name, value, onChange }: RichBodyEditor
     onChange(md);
   }, [onChange]);
 
+  const selectionIsInsideEditor = useCallback((range: Range) => {
+    const editor = editorRef.current;
+    if (!editor) return false;
+    return editor.contains(range.startContainer) && editor.contains(range.endContainer);
+  }, []);
+
+  const keepEditorSelection = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+    // Toolbar buttons must not steal focus/selection from contentEditable before onClick.
+    event.preventDefault();
+  }, []);
+
   const wrapSelection = useCallback((tag: string, unwrapTag: string) => {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
 
     const range = selection.getRangeAt(0);
-    const parent = range.commonAncestorContainer.parentElement;
+    if (!selectionIsInsideEditor(range)) return;
 
-    if (parent?.tagName === unwrapTag.toUpperCase()) {
-      const text = document.createTextNode(parent.textContent ?? "");
-      parent.replaceWith(text);
+    const commonElement =
+      range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE
+        ? (range.commonAncestorContainer as Element)
+        : range.commonAncestorContainer.parentElement;
+    const existing = commonElement?.closest(unwrapTag);
+
+    if (existing && editorRef.current?.contains(existing)) {
+      const fragment = document.createDocumentFragment();
+      while (existing.firstChild) fragment.appendChild(existing.firstChild);
+      const first = fragment.firstChild;
+      const last = fragment.lastChild;
+      existing.replaceWith(fragment);
       selection.removeAllRanges();
-      const newRange = document.createRange();
-      newRange.selectNodeContents(text);
-      selection.addRange(newRange);
+      if (first && last) {
+        const newRange = document.createRange();
+        newRange.setStartBefore(first);
+        newRange.setEndAfter(last);
+        selection.addRange(newRange);
+      }
     } else {
       const el = document.createElement(tag);
       try {
@@ -227,8 +253,10 @@ export default function RichBodyEditor({ name, value, onChange }: RichBodyEditor
       newRange.selectNodeContents(el);
       selection.addRange(newRange);
     }
+
+    editorRef.current?.focus({ preventScroll: true });
     syncMarkdown();
-  }, [syncMarkdown]);
+  }, [selectionIsInsideEditor, syncMarkdown]);
 
   const handleBold = useCallback(() => wrapSelection("strong", "strong"), [wrapSelection]);
   const handleItalic = useCallback(() => wrapSelection("em", "em"), [wrapSelection]);
@@ -236,9 +264,12 @@ export default function RichBodyEditor({ name, value, onChange }: RichBodyEditor
 
   const handleLink = useCallback(() => {
     const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
+    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
 
     const range = selection.getRangeAt(0);
+    if (!selectionIsInsideEditor(range)) return;
+
+    const savedRange = range.cloneRange();
     const text = selection.toString();
     const url = window.prompt("Введите ссылку (https://...)", "https://");
     if (!url || !/^(https?:\/\/|\/)/i.test(url.trim())) return;
@@ -246,35 +277,37 @@ export default function RichBodyEditor({ name, value, onChange }: RichBodyEditor
     const safeUrl = url.trim();
     if (/^javascript:/i.test(safeUrl)) return;
 
-    if (text) {
-      const a = document.createElement("a");
-      a.href = safeUrl;
-      a.textContent = text;
-      range.deleteContents();
-      range.insertNode(a);
-    } else {
-      const a = document.createElement("a");
-      a.href = safeUrl;
-      a.textContent = safeUrl;
-      range.insertNode(a);
-    }
+    selection.removeAllRanges();
+    selection.addRange(savedRange);
+
+    const a = document.createElement("a");
+    a.href = safeUrl;
+    a.textContent = text || safeUrl;
+    savedRange.deleteContents();
+    savedRange.insertNode(a);
+
+    selection.removeAllRanges();
+    const newRange = document.createRange();
+    newRange.selectNodeContents(a);
+    selection.addRange(newRange);
+    editorRef.current?.focus({ preventScroll: true });
     syncMarkdown();
-  }, [syncMarkdown]);
+  }, [selectionIsInsideEditor, syncMarkdown]);
 
   return (
     <div>
       <textarea name={name} value={value} readOnly hidden aria-hidden="true" />
       <div className="flex flex-wrap items-center gap-2 rounded-t-freuly-button border border-b-0 border-freuly-border-default bg-[#fafafa] px-3 py-2">
-        <button type="button" onClick={handleBold} className={TOOLBAR_BTN} title="Жирный" aria-label="Жирный">
+        <button type="button" onMouseDown={keepEditorSelection} onClick={handleBold} className={TOOLBAR_BTN} title="Жирный" aria-label="Жирный">
           <strong>B</strong>
         </button>
-        <button type="button" onClick={handleItalic} className={`${TOOLBAR_BTN} italic`} title="Курсив" aria-label="Курсив">
+        <button type="button" onMouseDown={keepEditorSelection} onClick={handleItalic} className={`${TOOLBAR_BTN} italic`} title="Курсив" aria-label="Курсив">
           I
         </button>
-        <button type="button" onClick={handleAccent} className={`${TOOLBAR_BTN} text-freuly-primary`} title="Фирменный акцент" aria-label="Фирменный акцент">
+        <button type="button" onMouseDown={keepEditorSelection} onClick={handleAccent} className={`${TOOLBAR_BTN} text-freuly-primary`} title="Фирменный акцент" aria-label="Фирменный акцент">
           Акцент
         </button>
-        <button type="button" onClick={handleLink} className={TOOLBAR_BTN} title="Добавить ссылку" aria-label="Добавить ссылку">
+        <button type="button" onMouseDown={keepEditorSelection} onClick={handleLink} className={TOOLBAR_BTN} title="Добавить ссылку" aria-label="Добавить ссылку">
           Ссылка
         </button>
         <span className="ml-1 text-[12px] font-normal text-freuly-text-secondary">
@@ -287,7 +320,7 @@ export default function RichBodyEditor({ name, value, onChange }: RichBodyEditor
         suppressContentEditableWarning
         onInput={syncMarkdown}
         onBlur={syncMarkdown}
-        className="min-h-[320px] w-full rounded-b-freuly-button border border-freuly-border-default bg-white p-4 text-[15px] leading-[1.7] text-freuly-text-primary focus:border-freuly-primary focus:outline-none focus:ring-1 focus:ring-freuly-primary [&_a]:font-medium [&_a]:text-freuly-primary [&_a]:underline [&_blockquote]:my-3 [&_blockquote]:border-l-[3px] [&_blockquote]:border-freuly-primary [&_blockquote]:pl-4 [&_blockquote]:text-freuly-text-secondary [&_h2]:mt-6 [&_h2]:text-[20px] [&_h2]:font-bold [&_h3]:mt-4 [&_h3]:text-[17px] [&_h3]:font-semibold [&_li]:ml-5 [&_mark]:rounded-sm [&_mark]:bg-freuly-primary-light [&_mark]:px-0.5 [&_mark]:font-semibold [&_mark]:text-freuly-primary [&_ol]:list-decimal [&_ol]:pl-4 [&_p]:my-2 [&_ul]:list-disc [&_ul]:pl-4"
+        className="min-h-[320px] w-full rounded-b-freuly-button border border-freuly-border-default bg-white p-4 text-[15px] leading-[1.7] text-freuly-text-primary focus:border-freuly-primary focus:outline-none focus:ring-1 focus:ring-freuly-primary [&_a]:font-medium [&_a]:text-freuly-primary [&_a]:underline [&_blockquote]:my-3 [&_blockquote]:border-l-[3px] [&_blockquote]:border-freuly-primary [&_blockquote]:pl-4 [&_blockquote]:text-freuly-text-secondary [&_h2]:mt-6 [&_h2]:text-[20px] [&_h2]:font-bold [&_h3]:mt-4 [&_h3]:text-[17px] [&_h3]:font-semibold [&_li]:ml-5 [&_li]:ml-5 [&_mark]:rounded-sm [&_mark]:bg-freuly-primary-light [&_mark]:px-0.5 [&_mark]:font-semibold [&_mark]:text-freuly-primary [&_ol]:list-decimal [&_ol]:pl-4 [&_p]:my-2 [&_strong]:font-bold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-4"
         data-placeholder="Начните писать статью..."
       />
       <style>{`[data-placeholder]:empty:before { content: attr(data-placeholder); color: #9b9b9b; pointer-events: none; }`}</style>
