@@ -17,8 +17,8 @@ export const GALLERY_LIMIT_PROFESSIONAL = 5;
 export const GALLERY_LIMIT_GROWTH = 15;
 
 export const PLAN_PUBLIC_NAMES = {
-  basic: "Freuly Professional",
-  premium: "Freuly Growth",
+  basic: "Freuly Pro",
+  premium: "Freuly Pro Premium",
 } as const;
 
 export const PLAN_MONTHLY_PRICE_EUR = {
