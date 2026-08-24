@@ -1,14 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { t, type Dictionary } from "@/lib/i18n";
 import { getDemandChannelCopy } from "@/lib/dashboard/demandChannelCopy";
-import type {
-  PublicationIssue,
-  PublicationRecommendation,
-} from "@/lib/dashboard/publicationValidator";
+import type { PublicationIssue, PublicationRecommendation } from "@/lib/dashboard/publicationValidator";
 import { Alert, Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { dashboardLinkSecondaryClass } from "@/components/dashboard/dashboardStyles";
 import { onboardingChecklistItemClass } from "./onboardingStyles";
@@ -89,7 +84,7 @@ export default function OnboardingReviewStep({
   dict,
   lang,
   baseHref,
-  dashboardHref: _dashboardHref,
+  dashboardHref,
   publicProfileHref: _publicProfileHref,
   publishReady,
   summary,
@@ -102,12 +97,8 @@ export default function OnboardingReviewStep({
   publishReady: boolean;
   summary: OnboardingReviewSummary;
 }) {
-  const router = useRouter();
-  const [publishing, setPublishing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [serverIssues, setServerIssues] = useState<PublicationIssue[]>([]);
   const demandCopy = getDemandChannelCopy(lang);
-  const activationLink = `/${lang}/specialist/dashboard/activate`;
+  const activationHref = `/${lang}/specialist/dashboard/activate`;
 
   const categoryLabel = summary.isUncategorizedCategory
     ? t(dict, "dashboard.onboarding.reviewStep.fixUncategorizedCategory")
@@ -135,59 +126,13 @@ export default function OnboardingReviewStep({
 
   const recommendationPendingLabel = t(dict, "dashboard.onboarding.checklist.recommendation");
   const optionalPendingLabel = t(dict, "dashboard.onboarding.reviewStep.optionalLabel");
-
   const recommendations: ReviewItem[] = [
     { key: "about", label: t(dict, "dashboard.onboarding.reviewStep.recommendAbout"), done: summary.hasAbout, href: `${baseHref}?step=about`, pendingLabel: recommendationPendingLabel, neutralPending: true },
     { key: "photo", label: t(dict, "dashboard.onboarding.reviewStep.recommendPhoto"), done: summary.hasPhoto, href: `${baseHref}?step=photos`, pendingLabel: recommendationPendingLabel, neutralPending: true },
     { key: "gallery", label: t(dict, "dashboard.onboarding.reviewStep.recommendGallery"), done: summary.hasGallery, pendingLabel: optionalPendingLabel, neutralPending: true },
   ];
 
-  async function handlePublish() {
-    if (publishing) return;
-    if (!publishReady || !summary.publishReady) {
-      setError(t(dict, "dashboard.onboarding.reviewStep.preflightError"));
-      setServerIssues(summary.blocking);
-      return;
-    }
-
-    setPublishing(true);
-    setError(null);
-    setServerIssues([]);
-    let publishSucceeded = false;
-
-    try {
-      const res = await fetch("/api/specialist/dashboard/publish", { method: "POST" });
-      const json = (await res.json().catch(() => ({}))) as {
-        error?: unknown;
-        fields?: unknown;
-        issues?: PublicationIssue[];
-        code?: string;
-      };
-
-      if (!res.ok) {
-        if (Array.isArray(json.issues) && json.issues.length > 0) {
-          setServerIssues(json.issues);
-          setError(typeof json.error === "string" ? json.error : t(dict, "dashboard.onboarding.reviewStep.preflightError"));
-          return;
-        }
-        const fields = Array.isArray(json.fields)
-          ? json.fields.filter((field) => typeof field === "string").join(", ")
-          : "";
-        const message = typeof json.error === "string" ? json.error : t(dict, "dashboard.onboarding.reviewStep.publishFailed");
-        setError(fields ? `${message}: ${fields}` : message);
-        return;
-      }
-
-      publishSucceeded = true;
-      router.push(activationLink);
-    } catch {
-      setError(t(dict, "dashboard.onboarding.reviewStep.publishFailed"));
-    } finally {
-      if (!publishSucceeded) setPublishing(false);
-    }
-  }
-
-  const visibleIssues = serverIssues.length > 0 ? serverIssues : summary.blocking;
+  const visibleIssues = summary.blocking;
 
   return (
     <Card padding="lg" className="shadow-none">
@@ -220,21 +165,21 @@ export default function OnboardingReviewStep({
         </Alert>
 
         {publishReady ? (
-          <div className="mt-freuly-5">
-            <Button type="button" onClick={handlePublish} disabled={publishing} className="w-full sm:w-auto">
-              {publishing ? demandCopy.onboarding.finishingSetup : demandCopy.onboarding.finishSetup}
-            </Button>
+          <div className="mt-freuly-5 space-y-freuly-3">
+            <Link href={activationHref} className="inline-flex w-full sm:w-auto">
+              <Button type="button" className="w-full sm:w-auto">{demandCopy.onboarding.finishSetup}</Button>
+            </Link>
+            <p className="text-freuly-helper leading-relaxed text-freuly-text-muted">
+              {demandCopy.onboarding.draftUntilPaid}
+            </p>
           </div>
         ) : null}
-
-        {error ? <Alert variant="error" className="mt-freuly-5">{error}</Alert> : null}
 
         <div className="mt-freuly-5 space-y-freuly-6">
           <div>
             <h3 className="text-freuly-body font-semibold text-freuly-text-primary">{t(dict, "dashboard.onboarding.reviewStep.hardRequirementsTitle")}</h3>
             <div className="mt-freuly-3"><ReviewList items={hardItems} doneLabel={t(dict, "dashboard.onboarding.checklist.done")} /></div>
           </div>
-
           <div>
             <h3 className="text-freuly-body font-semibold text-freuly-text-primary">{t(dict, "dashboard.onboarding.reviewStep.recommendationsTitle")}</h3>
             <div className="mt-freuly-3"><ReviewList items={recommendations} doneLabel={t(dict, "dashboard.onboarding.checklist.done")} /></div>
@@ -242,9 +187,12 @@ export default function OnboardingReviewStep({
         </div>
 
         <div className="mt-freuly-5 flex flex-wrap items-center gap-freuly-3">
-          <Link href={`${baseHref}?step=photos`} className={dashboardLinkSecondaryClass}>
-            {t(dict, "dashboard.onboarding.reviewStep.backToPhoto")}
-          </Link>
+          <Link href={`${baseHref}?step=photos`} className={dashboardLinkSecondaryClass}>{t(dict, "dashboard.onboarding.reviewStep.backToPhoto")}</Link>
+          {publishReady ? (
+            <Link href={dashboardHref} className="text-freuly-body-sm font-medium text-freuly-text-muted underline-offset-4 hover:underline">
+              {demandCopy.onboarding.decideLater}
+            </Link>
+          ) : null}
         </div>
       </CardContent>
     </Card>
