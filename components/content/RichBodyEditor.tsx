@@ -197,10 +197,12 @@ export default function RichBodyEditor({ name, value, onChange }: RichBodyEditor
 
   useEffect(() => {
     const handler = () => {
+      const editor = editorRef.current;
+      if (!editor) return;
       const sel = window.getSelection();
       if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
       const range = sel.getRangeAt(0);
-      if (editorRef.current?.contains(range.startContainer)) {
+      if (editor.contains(range.startContainer) && editor.contains(range.endContainer)) {
         savedRangeRef.current = range.cloneRange();
       }
     };
@@ -215,14 +217,33 @@ export default function RichBodyEditor({ name, value, onChange }: RichBodyEditor
   }, [onChange]);
 
   const getActiveRange = useCallback((): Range | null => {
+    const editor = editorRef.current;
+    if (!editor) return null;
+
     const sel = window.getSelection();
     if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
       const range = sel.getRangeAt(0);
-      if (editorRef.current?.contains(range.startContainer)) return range;
+      if (editor.contains(range.startContainer) && editor.contains(range.endContainer)) {
+        return range;
+      }
     }
-    if (savedRangeRef.current && editorRef.current?.contains(savedRangeRef.current.startContainer)) {
-      return savedRangeRef.current;
+
+    const saved = savedRangeRef.current;
+    if (saved) {
+      try {
+        if (
+          !saved.collapsed &&
+          editor.contains(saved.startContainer) &&
+          editor.contains(saved.endContainer)
+        ) {
+          return saved;
+        }
+      } catch {
+        // Range references detached nodes
+      }
+      savedRangeRef.current = null;
     }
+
     return null;
   }, []);
 

@@ -134,10 +134,12 @@ export async function publishPostAction(formData: FormData): Promise<void> {
   }
   if (!current || current.status !== "draft") throw new Error("POST_NOT_DRAFT");
 
+  const payload = parseDraft(formData);
   const nowIso = new Date().toISOString();
   const { data, error } = await supabase
     .from("content_posts")
     .update({
+      ...payload,
       status: "published",
       published_at: current.published_at ?? nowIso,
       updated_at: nowIso,
@@ -153,18 +155,7 @@ export async function publishPostAction(formData: FormData): Promise<void> {
   }
   if (!data) throw new Error("PUBLISH_CONFLICT");
 
-  const { data: publishedPost } = await supabase
-    .from("content_posts")
-    .select("lang, slug")
-    .eq("id", id)
-    .maybeSingle();
-
-  if (publishedPost) {
-    revalidateContentSurfaces(publishedPost.lang, publishedPost.slug, id);
-  } else {
-    revalidateContentSurfaces("", null, id);
-  }
-
+  revalidateContentSurfaces(payload.lang, payload.slug, id);
   redirect(`/admin/content/posts/${id}`);
 }
 
