@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import PlanVisualPreview from "@/components/pricing/PlanVisualPreview";
+import PricingAdditionalServices from "@/components/pricing/PricingAdditionalServices";
 import { getDictionary, getDictValue, t, isSupportedLang, type Lang } from "@/lib/i18n";
 import { PRICING_METADATA, hreflangPricing, SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 import { getOptionalAuthenticatedSpecialist } from "@/lib/specialists/optionalAuth";
@@ -145,11 +146,7 @@ export default async function PricingPage({ params }: { params: { lang: string }
             </p>
             <p className="mt-4 text-sm leading-relaxed text-gray-600">{copy.professional.description}</p>
             <FeatureList items={copy.professional.features} />
-            <PlanVisualPreview
-              plan="professional"
-              lang={lang}
-              label={copy.preview.professionalLabel}
-            />
+            <PlanVisualPreview plan="professional" lang={lang} label={copy.preview.professionalLabel} />
             <div className="mt-8">
               <PricingPaidPlanCta
                 lang={lang}
@@ -212,6 +209,8 @@ export default async function PricingPage({ params }: { params: { lang: string }
           </div>
         </section>
       )}
+
+      <PricingAdditionalServices lang={lang} />
 
       <section className="mx-auto mt-16 max-w-3xl">
         <h2 className="text-xl font-semibold text-gray-900">{copy.faqTitle}</h2>
