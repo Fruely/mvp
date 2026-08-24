@@ -10,6 +10,7 @@ import { PUBLIC_COMMERCIAL_PLAN_CATALOG } from "@/lib/billing/plans";
 import { isBillingPagePlanCheckoutEnabled } from "@/lib/billing/billingPageCheckoutReadiness";
 import { dashboardLinkSecondaryClass } from "@/components/dashboard/dashboardStyles";
 import { getPublicPricingCopy } from "@/lib/pricing/publicPricingCopy";
+import { brandPlanText, PLAN_DISPLAY_NAMES } from "@/lib/pricing/planDisplayBranding";
 import {
   getCurrentUserAndSpecialist,
   getSpecialistOnboardingGateState,
@@ -41,30 +42,30 @@ export default async function SpecialistDemandChannelActivationPage({
   return (
     <div className="space-y-freuly-6">
       <DashboardPageHeader
-        kicker={copy.billing.kicker}
-        title={copy.billing.title}
-        subtitle={copy.billing.subtitle}
+        kicker={brandPlanText(copy.billing.kicker)}
+        title={brandPlanText(copy.billing.title)}
+        subtitle={brandPlanText(copy.billing.subtitle)}
       />
 
-      <Alert variant="info" title={copy.billing.introTitle}>
-        {copy.billing.introBody}
+      <Alert variant="info" title={brandPlanText(copy.billing.introTitle)}>
+        {brandPlanText(copy.billing.introBody)}
       </Alert>
 
-      <Alert variant="warning">{copy.billing.draftNotice}</Alert>
+      <Alert variant="warning">{brandPlanText(copy.billing.draftNotice)}</Alert>
 
       <Card>
         <CardHeader>
-          <CardTitle>{copy.billing.planPickerTitle}</CardTitle>
+          <CardTitle>{brandPlanText(copy.billing.planPickerTitle)}</CardTitle>
           <p className="mt-freuly-2 max-w-3xl text-freuly-body text-freuly-text-secondary">
-            {copy.billing.planPickerSubtitle}
+            {brandPlanText(copy.billing.planPickerSubtitle)}
           </p>
         </CardHeader>
         <CardContent>
           <div className="grid gap-freuly-4 md:grid-cols-2">
             {PUBLIC_COMMERCIAL_PLAN_CATALOG.map((entry) => {
               const professional = entry.code === "basic";
-              const nameKey = professional ? "pricing.professional.name" : "pricing.growth.name";
               const priceKey = professional ? "pricing.professional.price" : "pricing.growth.price";
+              const displayName = professional ? PLAN_DISPLAY_NAMES.basic : PLAN_DISPLAY_NAMES.premium;
 
               return (
                 <div
@@ -75,15 +76,17 @@ export default async function SpecialistDemandChannelActivationPage({
                       : "border-freuly-primary/30 bg-freuly-primary-light/20 ring-1 ring-freuly-primary/10"
                   }`}
                 >
-                  <h2 className="text-freuly-card-title text-freuly-text-primary">{t(dict, nameKey)}</h2>
+                  <h2 className="text-freuly-card-title text-freuly-text-primary">{displayName}</h2>
                   <p className="mt-freuly-2 text-xl font-semibold text-freuly-text-primary">{t(dict, priceKey)}</p>
                   <p className="mt-freuly-3 flex-1 text-freuly-body-sm leading-relaxed text-freuly-text-secondary">
-                    {professional ? copy.billing.professionalHint : copy.billing.growthHint}
+                    {brandPlanText(professional ? copy.billing.professionalHint : copy.billing.growthHint)}
                   </p>
                   <PlanVisualPreview
                     plan={professional ? "professional" : "growth"}
                     lang={lang}
-                    label={professional ? pricingCopy.preview.professionalLabel : pricingCopy.preview.growthLabel}
+                    label={brandPlanText(
+                      professional ? pricingCopy.preview.professionalLabel : pricingCopy.preview.growthLabel,
+                    )}
                   />
                   <div className="mt-freuly-5">
                     <PlanCheckoutButton
@@ -100,13 +103,13 @@ export default async function SpecialistDemandChannelActivationPage({
 
           <div className="mt-freuly-5 flex flex-wrap items-center gap-freuly-4">
             <Link href={`/${lang}/specialist/dashboard`} className={dashboardLinkSecondaryClass}>
-              {copy.billing.decideLater}
+              {brandPlanText(copy.billing.decideLater)}
             </Link>
             <Link
               href={`/${lang}/pricing`}
               className="text-freuly-body-sm font-medium text-freuly-primary underline-offset-4 hover:underline"
             >
-              {t(dict, "dashboard.billingPage.planPicker.viewAllPlans")}
+              {brandPlanText(t(dict, "dashboard.billingPage.planPicker.viewAllPlans"))}
             </Link>
           </div>
         </CardContent>
