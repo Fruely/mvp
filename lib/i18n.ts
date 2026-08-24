@@ -1,3 +1,9 @@
+import { applyCommercialCopyOverrides } from "@/lib/i18nCommercialOverrides";
+import { applyCommercialCopyOverridesV2 } from "@/lib/i18nCommercialOverridesV2";
+import { applyCommercialFlatOverrides } from "@/lib/i18nCommercialFlatOverrides";
+import { applyCommercialFinalOverrides } from "@/lib/i18nCommercialFinalOverrides";
+import { PLAN_DISPLAY_NAMES, brandPlanText } from "@/lib/pricing/planDisplayBranding";
+
 export const SUPPORTED_LANGS = ["ua", "ru", "de"] as const;
 export type Lang = (typeof SUPPORTED_LANGS)[number];
 
@@ -14,15 +20,59 @@ export function isSupportedLang(value: string): value is Lang {
   return (SUPPORTED_LANGS as readonly string[]).includes(value);
 }
 
+function applyPlanBranding(value: unknown): unknown {
+  if (typeof value === "string") return brandPlanText(value);
+  if (Array.isArray(value)) return value.map(applyPlanBranding);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, item]) => [key, applyPlanBranding(item)]),
+    );
+  }
+  return value;
+}
+
+function setDictionaryValue(dict: Dictionary, path: string, value: string): void {
+  const parts = path.split(".").filter(Boolean);
+  if (!parts.length) return;
+
+  let cursor: Record<string, unknown> = dict;
+  for (const part of parts.slice(0, -1)) {
+    const current = cursor[part];
+    if (!current || typeof current !== "object" || Array.isArray(current)) {
+      cursor[part] = {};
+    }
+    cursor = cursor[part] as Record<string, unknown>;
+  }
+  cursor[parts[parts.length - 1]] = value;
+}
+
+function enforceCommercialPlanLabels(dict: Dictionary): Dictionary {
+  setDictionaryValue(dict, "dashboard.subscriptionPage.plan.basic", PLAN_DISPLAY_NAMES.basic);
+  setDictionaryValue(dict, "dashboard.subscriptionPage.plan.premium", PLAN_DISPLAY_NAMES.premium);
+  setDictionaryValue(dict, "pricing.professional.name", PLAN_DISPLAY_NAMES.basic);
+  setDictionaryValue(dict, "pricing.growth.name", PLAN_DISPLAY_NAMES.premium);
+  return dict;
+}
+
 async function loadDictionary(lang: Lang): Promise<Dictionary> {
+  let dictionary: Dictionary;
   switch (lang) {
     case "ua":
-      return (await import("@/locales/ua.json")).default as Dictionary;
+      dictionary = (await import("@/locales/ua.json")).default as Dictionary;
+      break;
     case "ru":
-      return (await import("@/locales/ru.json")).default as Dictionary;
+      dictionary = (await import("@/locales/ru.json")).default as Dictionary;
+      break;
     case "de":
-      return (await import("@/locales/de.json")).default as Dictionary;
+      dictionary = (await import("@/locales/de.json")).default as Dictionary;
+      break;
   }
+  const commercial = applyCommercialCopyOverrides(lang, dictionary);
+  const commercialV2 = applyCommercialCopyOverridesV2(lang, commercial);
+  const flatAligned = applyCommercialFlatOverrides(lang, commercialV2);
+  const finalAligned = applyCommercialFinalOverrides(lang, flatAligned);
+  const branded = applyPlanBranding(finalAligned) as Dictionary;
+  return enforceCommercialPlanLabels(branded);
 }
 
 const dictionaryPromises = new Map<Lang, Promise<Dictionary>>();

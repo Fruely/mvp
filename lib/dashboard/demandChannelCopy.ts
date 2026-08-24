@@ -1,3 +1,5 @@
+import { brandPlanText } from "@/lib/pricing/planDisplayBranding";
+
 export type DemandChannelLang = "ru" | "ua" | "de";
 
 export type DemandChannelCopy = {
@@ -156,6 +158,38 @@ const COPY: Record<DemandChannelLang, DemandChannelCopy> = {
   }
 };
 
+function brandDemandCopy(copy: DemandChannelCopy): DemandChannelCopy {
+  return {
+    onboarding: {
+      ...copy.onboarding,
+      welcomeTitle: brandPlanText(copy.onboarding.welcomeTitle),
+      welcomeBody: brandPlanText(copy.onboarding.welcomeBody),
+      start: brandPlanText(copy.onboarding.start),
+      continue: brandPlanText(copy.onboarding.continue),
+      readyCta: brandPlanText(copy.onboarding.readyCta),
+      publishReady: brandPlanText(copy.onboarding.publishReady),
+      publishNotReady: brandPlanText(copy.onboarding.publishNotReady),
+      steps: Object.fromEntries(
+        Object.entries(copy.onboarding.steps).map(([key, value]) => [key, brandPlanText(value)]),
+      ) as DemandChannelCopy["onboarding"]["steps"],
+      reviewTitle: brandPlanText(copy.onboarding.reviewTitle),
+      reviewBody: brandPlanText(copy.onboarding.reviewBody),
+      reviewReadyTitle: brandPlanText(copy.onboarding.reviewReadyTitle),
+      reviewReadyBody: brandPlanText(copy.onboarding.reviewReadyBody),
+      reviewNotReadyTitle: brandPlanText(copy.onboarding.reviewNotReadyTitle),
+      reviewNotReadyBody: brandPlanText(copy.onboarding.reviewNotReadyBody),
+      finishSetup: brandPlanText(copy.onboarding.finishSetup),
+      finishingSetup: brandPlanText(copy.onboarding.finishingSetup),
+      draftUntilPaid: brandPlanText(copy.onboarding.draftUntilPaid),
+      decideLater: brandPlanText(copy.onboarding.decideLater),
+      checklistTitle: brandPlanText(copy.onboarding.checklistTitle),
+    },
+    billing: Object.fromEntries(
+      Object.entries(copy.billing).map(([key, value]) => [key, brandPlanText(value)]),
+    ) as DemandChannelCopy["billing"],
+  };
+}
+
 export function getDemandChannelCopy(lang: string): DemandChannelCopy {
-  return COPY[lang === "de" ? "de" : lang === "ua" ? "ua" : "ru"];
+  return brandDemandCopy(COPY[lang === "de" ? "de" : lang === "ua" ? "ua" : "ru"]);
 }

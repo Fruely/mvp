@@ -1,7 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { LegalBlock, LegalDocument, LegalPublicLang } from "@/content/legal/types";
+import { brandPlanText } from "@/lib/pricing/planDisplayBranding";
 import { applyPublicLegalAmendments } from "./publicLegalAmendments";
+import { applyPublicCommercialAmendments } from "./publicCommercialAmendments";
+import { applyPublicCommercialAmendmentsV2 } from "./publicCommercialAmendmentsV2";
+import { applyPublicSpecialistRulesAmendments } from "./publicSpecialistRulesAmendments";
 import { applyPublicLegalPostFixes } from "./publicLegalPostFixes";
 
 const REVIEW_DIR = path.join(process.cwd(), "docs/legal/final-review");
@@ -17,7 +21,7 @@ export type ReviewDocumentSlug =
   | "ranking";
 
 function normalizeInlineMarkdown(text: string): string {
-  return text.replace(/\*\*(.+?)\*\*/g, "$1");
+  return brandPlanText(text.replace(/\*\*(.+?)\*\*/g, "$1"));
 }
 
 export function stripReviewMarkers(raw: string): string {
@@ -32,7 +36,11 @@ export function readReviewMarkdown(slug: ReviewDocumentSlug, lang: LegalPublicLa
   const filePath = path.join(REVIEW_DIR, `${slug}.${lang}.md`);
   const raw = fs.readFileSync(filePath, "utf8");
   const amended = applyPublicLegalAmendments(slug, lang, raw);
-  return stripReviewMarkers(applyPublicLegalPostFixes(slug, lang, amended));
+  const commerciallyAligned = applyPublicCommercialAmendments(slug, lang, amended);
+  const commerciallyAlignedV2 = applyPublicCommercialAmendmentsV2(slug, lang, commerciallyAligned);
+  const specialistRulesAligned = applyPublicSpecialistRulesAmendments(slug, lang, commerciallyAlignedV2);
+  const postFixed = applyPublicLegalPostFixes(slug, lang, specialistRulesAligned);
+  return brandPlanText(stripReviewMarkers(postFixed));
 }
 
 function parseBlocks(sectionBody: string): LegalBlock[] {
@@ -162,8 +170,8 @@ export function parseReviewMarkdownToLegalDocument(
   }
 
   return {
-    metaTitle: options.metaTitle,
-    metaDescription: options.metaDescription,
+    metaTitle: brandPlanText(options.metaTitle),
+    metaDescription: brandPlanText(options.metaDescription),
     title,
     subtitle,
     stand,

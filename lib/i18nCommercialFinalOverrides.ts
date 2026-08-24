@@ -1,0 +1,182 @@
+type CommercialLang = "ua" | "ru" | "de";
+type Dict = Record<string, unknown>;
+
+const FLAT: Record<CommercialLang, Record<string, string>> = {
+  ru: {
+    "dashboard.subscriptionPage.label.graceUntil": "Восстановление оплаты до",
+    "dashboard.subscriptionPage.status.early_access": "Переходный доступ",
+    "dashboard.subscriptionPage.status.trialing": "Переходный доступ",
+    "dashboard.subscriptionPage.status.grace": "Восстановление оплаты",
+    "dashboard.subscriptionPage.status.grace_period": "Восстановление оплаты",
+    "dashboard.subscriptionPage.context.earlyAccess": "Для ранее подключённых специалистов может действовать индивидуальный переходный режим. Для новых специалистов публичный профиль и канал заявок активируются после оплаты Professional или Growth.",
+    "dashboard.subscriptionPage.context.general": "Публичный профиль и коммерческое участие в канале клиентских заявок работают при действующем Professional или Growth. Автоматического повторного списания нет.",
+    "dashboard.billingPage.graceNotice": "Текущий оплаченный период требует восстановления оплаты до {{graceUntil}}. Продлите тариф, чтобы сохранить коммерческое участие в канале заявок без перерыва.",
+    "dashboard.billingPage.graceNoticeNoDays": "Текущий оплаченный период требует восстановления оплаты. Продлите тариф, чтобы сохранить коммерческое участие в канале заявок.",
+    "dashboard.billingPage.inactiveNotice": "Коммерческое участие в канале заявок и публичная видимость сейчас не активны. После оплаты Professional или Growth доступ будет восстановлен.",
+    "dashboard.introBanner": "Заполните данные профиля и услуги. Для новых специалистов публичная видимость и канал клиентских заявок активируются после оплаты Professional или Growth.",
+    "dashboard.important.body": "Сначала сохраните изменения. Публичная видимость нового профиля зависит от действующего Professional или Growth.",
+    "dashboard.home.incompleteBody": "Заполните обязательные данные, чтобы подготовить черновик к активации Professional или Growth.",
+    "dashboard.home.statusHint.approved": "Ваш профиль опубликован и участвует в работе Freuly согласно текущему статусу доступа.",
+    "dashboard.home.subscription.grace": "Восстановление оплаты до",
+    "dashboard.home.subscription.cta": "Статус канала и тарифа",
+    "dashboard.home.subscription.ctaChoosePlan": "Активировать канал заявок",
+    "dashboard.home.subscription.ctaPay": "Продлить тариф",
+    "dashboard.home.subscription.ctaUrgent": "Восстановить оплату",
+    "dashboard.onboarding.welcome.title": "Настройте канал клиентских заявок",
+    "dashboard.onboarding.welcome.body": "Расскажите, какие услуги вы оказываете, где и на каких языках работаете. Эти данные помогают Freuly сопоставлять вас с подходящими запросами клиентов.",
+    "dashboard.onboarding.cta.start": "Начать настройку",
+    "dashboard.onboarding.cta.continue": "Продолжить настройку",
+    "dashboard.onboarding.ctaCard.title": "Продолжите настройку канала заявок",
+    "dashboard.onboarding.ctaCard.body": "Заполните данные, которые нужны для подбора подходящих клиентских запросов. До оплаты профиль остаётся невидимым черновиком.",
+    "dashboard.onboarding.ctaCard.button": "Продолжить настройку",
+    "dashboard.onboarding.ctaCard.readyTitle": "Черновик готов к активации",
+    "dashboard.onboarding.ctaCard.readyBody": "Обязательные данные заполнены. Выберите Professional или Growth, чтобы опубликовать профиль и активировать канал заявок.",
+    "dashboard.onboarding.ctaCard.readyButton": "Перейти к активации",
+    "dashboard.onboarding.stepContent.review.title": "Готовность к активации",
+    "dashboard.onboarding.stepContent.review.body": "Проверьте данные перед выбором Professional или Growth.",
+    "dashboard.onboarding.reviewStep.title": "Канал заявок почти готов",
+    "dashboard.onboarding.reviewStep.body": "Проверьте обязательные пункты. После настройки можно выбрать Professional или Growth и активировать коммерческий доступ.",
+    "dashboard.onboarding.reviewStep.readyTitle": "Параметры для подбора заявок настроены",
+    "dashboard.onboarding.reviewStep.readyBody": "Все обязательные данные заполнены. Следующий шаг — выбрать Professional или Growth.",
+    "dashboard.onboarding.reviewStep.publish": "Завершить настройку и выбрать тариф",
+    "dashboard.onboarding.reviewStep.publishing": "Проверяем готовность…",
+    "dashboard.onboarding.reviewStep.viewProfile": "Перейти к активации",
+    "dashboard.onboarding.steps.review": "Готовность",
+    "dashboard.onboarding.publishReady": "Черновик готов к активации Professional или Growth.",
+    "dashboard.onboarding.publishNotReady": "Черновик пока не готов к активации. Заполните оставшиеся обязательные данные.",
+    "dashboard.onboarding.checklist.title": "Готовность к заявкам",
+    "dashboard.readiness.title": "Что нужно для активации",
+    "dashboard.readiness.allReady": "Черновик готов к активации",
+  },
+  ua: {
+    "dashboard.subscriptionPage.label.graceUntil": "Відновлення оплати до",
+    "dashboard.subscriptionPage.status.early_access": "Перехідний доступ",
+    "dashboard.subscriptionPage.status.trialing": "Перехідний доступ",
+    "dashboard.subscriptionPage.status.grace": "Відновлення оплати",
+    "dashboard.subscriptionPage.status.grace_period": "Відновлення оплати",
+    "dashboard.subscriptionPage.context.earlyAccess": "Для раніше підключених спеціалістів може діяти індивідуальний перехідний режим. Для нових спеціалістів публічний профіль і канал запитів активуються після оплати Professional або Growth.",
+    "dashboard.subscriptionPage.context.general": "Публічний профіль і комерційна участь у каналі клієнтських запитів працюють за чинного Professional або Growth. Автоматичного повторного списання немає.",
+    "dashboard.billingPage.graceNotice": "Поточний оплачений період потребує відновлення оплати до {{graceUntil}}. Продовжте тариф, щоб зберегти комерційну участь у каналі запитів без перерви.",
+    "dashboard.billingPage.graceNoticeNoDays": "Поточний оплачений період потребує відновлення оплати. Продовжте тариф, щоб зберегти комерційну участь у каналі запитів.",
+    "dashboard.billingPage.inactiveNotice": "Комерційна участь у каналі запитів і публічна видимість зараз не активні. Після оплати Professional або Growth доступ буде відновлено.",
+    "dashboard.introBanner": "Заповніть дані профілю та послуги. Для нових спеціалістів публічна видимість і канал клієнтських запитів активуються після оплати Professional або Growth.",
+    "dashboard.important.body": "Спочатку збережіть зміни. Публічна видимість нового профілю залежить від чинного Professional або Growth.",
+    "dashboard.home.incompleteBody": "Заповніть обов’язкові дані, щоб підготувати чернетку до активації Professional або Growth.",
+    "dashboard.home.statusHint.approved": "Ваш профіль опубліковано й він бере участь у роботі Freuly відповідно до поточного статусу доступу.",
+    "dashboard.home.subscription.grace": "Відновлення оплати до",
+    "dashboard.home.subscription.cta": "Статус каналу і тарифу",
+    "dashboard.home.subscription.ctaChoosePlan": "Активувати канал запитів",
+    "dashboard.home.subscription.ctaPay": "Продовжити тариф",
+    "dashboard.home.subscription.ctaUrgent": "Відновити оплату",
+    "dashboard.onboarding.welcome.title": "Налаштуйте канал клієнтських запитів",
+    "dashboard.onboarding.welcome.body": "Розкажіть, які послуги ви надаєте, де та якими мовами працюєте. Ці дані допомагають Freuly зіставляти вас із відповідними запитами клієнтів.",
+    "dashboard.onboarding.cta.start": "Почати налаштування",
+    "dashboard.onboarding.cta.continue": "Продовжити налаштування",
+    "dashboard.onboarding.ctaCard.title": "Продовжте налаштування каналу запитів",
+    "dashboard.onboarding.ctaCard.body": "Заповніть дані, потрібні для підбору відповідних клієнтських запитів. До оплати профіль залишається невидимою чернеткою.",
+    "dashboard.onboarding.ctaCard.button": "Продовжити налаштування",
+    "dashboard.onboarding.ctaCard.readyTitle": "Чернетка готова до активації",
+    "dashboard.onboarding.ctaCard.readyBody": "Обов’язкові дані заповнено. Оберіть Professional або Growth, щоб опублікувати профіль і активувати канал запитів.",
+    "dashboard.onboarding.ctaCard.readyButton": "Перейти до активації",
+    "dashboard.onboarding.stepContent.review.title": "Готовність до активації",
+    "dashboard.onboarding.stepContent.review.body": "Перевірте дані перед вибором Professional або Growth.",
+    "dashboard.onboarding.reviewStep.title": "Канал запитів майже готовий",
+    "dashboard.onboarding.reviewStep.body": "Перевірте обов’язкові пункти. Після налаштування можна обрати Professional або Growth і активувати комерційний доступ.",
+    "dashboard.onboarding.reviewStep.readyTitle": "Параметри для підбору запитів налаштовані",
+    "dashboard.onboarding.reviewStep.readyBody": "Усі обов’язкові дані заповнено. Наступний крок — обрати Professional або Growth.",
+    "dashboard.onboarding.reviewStep.publish": "Завершити налаштування та обрати тариф",
+    "dashboard.onboarding.reviewStep.publishing": "Перевіряємо готовність…",
+    "dashboard.onboarding.reviewStep.viewProfile": "Перейти до активації",
+    "dashboard.onboarding.steps.review": "Готовність",
+    "dashboard.onboarding.publishReady": "Чернетка готова до активації Professional або Growth.",
+    "dashboard.onboarding.publishNotReady": "Чернетка поки не готова до активації. Заповніть решту обов’язкових даних.",
+    "dashboard.onboarding.checklist.title": "Готовність до запитів",
+    "dashboard.readiness.title": "Що потрібно для активації",
+    "dashboard.readiness.allReady": "Чернетка готова до активації",
+  },
+  de: {
+    "dashboard.subscriptionPage.label.graceUntil": "Zahlungswiederherstellung bis",
+    "dashboard.subscriptionPage.status.early_access": "Übergangszugang",
+    "dashboard.subscriptionPage.status.trialing": "Übergangszugang",
+    "dashboard.subscriptionPage.status.grace": "Zahlungswiederherstellung",
+    "dashboard.subscriptionPage.status.grace_period": "Zahlungswiederherstellung",
+    "dashboard.subscriptionPage.context.earlyAccess": "Für bereits früher verbundene Spezialisten kann ein individueller Übergangsmodus gelten. Für neue Spezialisten werden öffentliches Profil und Anfragekanal erst nach Zahlung von Professional oder Growth aktiviert.",
+    "dashboard.subscriptionPage.context.general": "Öffentliches Profil und kommerzielle Teilnahme am Kundenanfrage-Kanal gelten bei aktivem Professional oder Growth. Es gibt keine automatische wiederkehrende Abbuchung.",
+    "dashboard.billingPage.graceNotice": "Für den aktuellen bezahlten Zeitraum muss die Zahlung bis {{graceUntil}} wiederhergestellt werden. Verlängern Sie den Tarif, um die kommerzielle Teilnahme ohne Unterbrechung zu behalten.",
+    "dashboard.billingPage.graceNoticeNoDays": "Für den aktuellen bezahlten Zeitraum muss die Zahlung wiederhergestellt werden. Verlängern Sie den Tarif, um die kommerzielle Teilnahme am Anfragekanal zu behalten.",
+    "dashboard.billingPage.inactiveNotice": "Kommerzielle Teilnahme am Anfragekanal und öffentliche Sichtbarkeit sind derzeit nicht aktiv. Nach Zahlung von Professional oder Growth wird der Zugang wiederhergestellt.",
+    "dashboard.introBanner": "Vervollständigen Sie Profilangaben und Leistungen. Für neue Spezialisten werden öffentliche Sichtbarkeit und Kundenanfrage-Kanal nach Zahlung von Professional oder Growth aktiviert.",
+    "dashboard.important.body": "Speichern Sie Änderungen zuerst. Die öffentliche Sichtbarkeit eines neuen Profils setzt aktives Professional oder Growth voraus.",
+    "dashboard.home.incompleteBody": "Vervollständigen Sie die erforderlichen Angaben, um den Entwurf für Professional oder Growth vorzubereiten.",
+    "dashboard.home.statusHint.approved": "Ihr Profil ist veröffentlicht und nimmt gemäß dem aktuellen Zugangsstatus an Freuly teil.",
+    "dashboard.home.subscription.grace": "Zahlungswiederherstellung bis",
+    "dashboard.home.subscription.cta": "Kanal- und Tarifstatus",
+    "dashboard.home.subscription.ctaChoosePlan": "Anfragekanal aktivieren",
+    "dashboard.home.subscription.ctaPay": "Tarif verlängern",
+    "dashboard.home.subscription.ctaUrgent": "Zahlung wiederherstellen",
+    "dashboard.onboarding.welcome.title": "Richten Sie Ihren Kundenanfrage-Kanal ein",
+    "dashboard.onboarding.welcome.body": "Geben Sie an, welche Leistungen Sie anbieten, wo und in welchen Sprachen Sie arbeiten. Diese Daten helfen Freuly, Sie passenden Kundenanfragen zuzuordnen.",
+    "dashboard.onboarding.cta.start": "Einrichtung starten",
+    "dashboard.onboarding.cta.continue": "Einrichtung fortsetzen",
+    "dashboard.onboarding.ctaCard.title": "Einrichtung des Anfragekanals fortsetzen",
+    "dashboard.onboarding.ctaCard.body": "Vervollständigen Sie die Angaben für die Zuordnung passender Kundenanfragen. Vor der Zahlung bleibt das Profil ein nicht sichtbarer Entwurf.",
+    "dashboard.onboarding.ctaCard.button": "Einrichtung fortsetzen",
+    "dashboard.onboarding.ctaCard.readyTitle": "Entwurf bereit zur Aktivierung",
+    "dashboard.onboarding.ctaCard.readyBody": "Die Pflichtangaben sind vollständig. Wählen Sie Professional oder Growth, um das Profil zu veröffentlichen und den Anfragekanal zu aktivieren.",
+    "dashboard.onboarding.ctaCard.readyButton": "Zur Aktivierung",
+    "dashboard.onboarding.stepContent.review.title": "Bereit zur Aktivierung",
+    "dashboard.onboarding.stepContent.review.body": "Prüfen Sie Ihre Angaben vor der Wahl von Professional oder Growth.",
+    "dashboard.onboarding.reviewStep.title": "Ihr Anfragekanal ist fast bereit",
+    "dashboard.onboarding.reviewStep.body": "Prüfen Sie die Pflichtangaben. Danach können Sie Professional oder Growth wählen und den kommerziellen Zugang aktivieren.",
+    "dashboard.onboarding.reviewStep.readyTitle": "Parameter für die Anfragezuordnung sind eingerichtet",
+    "dashboard.onboarding.reviewStep.readyBody": "Alle Pflichtangaben sind vollständig. Als Nächstes wählen Sie Professional oder Growth.",
+    "dashboard.onboarding.reviewStep.publish": "Einrichtung abschließen und Tarif wählen",
+    "dashboard.onboarding.reviewStep.publishing": "Bereitschaft wird geprüft…",
+    "dashboard.onboarding.reviewStep.viewProfile": "Zur Aktivierung",
+    "dashboard.onboarding.steps.review": "Bereitschaft",
+    "dashboard.onboarding.publishReady": "Der Entwurf ist für Professional oder Growth bereit.",
+    "dashboard.onboarding.publishNotReady": "Der Entwurf ist noch nicht bereit. Vervollständigen Sie die fehlenden Pflichtangaben.",
+    "dashboard.onboarding.checklist.title": "Bereitschaft für Anfragen",
+    "dashboard.readiness.title": "Was für die Aktivierung fehlt",
+    "dashboard.readiness.allReady": "Entwurf bereit zur Aktivierung",
+  },
+};
+
+const SPECIALIST_RULES: Record<CommercialLang, Dict> = {
+  ru: {
+    title: "Правила для специалистов Freuly",
+    intro: "Чтобы Freuly оставался полезным и вызывал доверие, специалисты обязаны поддерживать достоверный профиль, соблюдать требования к услугам и добросовестно работать с клиентскими запросами.",
+    closing: "Регистрируясь и принимая Правила Freuly, специалист подтверждает, что понимает и будет их соблюдать. Публичная публикация нового профиля осуществляется по действующим условиям тарифа и публикации.",
+  },
+  ua: {
+    title: "Правила для спеціалістів Freuly",
+    intro: "Щоб Freuly залишався корисним і викликав довіру, спеціалісти мають підтримувати достовірний профіль, дотримуватися вимог до послуг і добросовісно працювати з клієнтськими запитами.",
+    closing: "Реєструючись і приймаючи Правила Freuly, спеціаліст підтверджує, що розуміє та дотримуватиметься їх. Публічна публікація нового профілю здійснюється за чинними умовами тарифу та публікації.",
+  },
+  de: {
+    title: "Regeln für Spezialisten bei Freuly",
+    intro: "Damit Freuly nützlich und vertrauenswürdig bleibt, müssen Spezialisten korrekte Profildaten pflegen, die Anforderungen an Leistungen einhalten und verantwortungsvoll mit Kundenanfragen arbeiten.",
+    closing: "Mit der Registrierung und Annahme der Freuly-Regeln bestätigt der Spezialist, dass er sie versteht und einhalten wird. Die öffentliche Veröffentlichung eines neuen Profils erfolgt nach den jeweils geltenden Tarif- und Veröffentlichungsbedingungen.",
+  },
+};
+
+function isPlainObject(value: unknown): value is Dict {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function merge(target: Dict, patch: Dict): Dict {
+  const result: Dict = { ...target };
+  for (const [key, value] of Object.entries(patch)) {
+    if (isPlainObject(value) && isPlainObject(result[key])) {
+      result[key] = merge(result[key] as Dict, value);
+    } else {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
+export function applyCommercialFinalOverrides(lang: CommercialLang, dictionary: Dict): Dict {
+  const withFlat = { ...dictionary, ...FLAT[lang] };
+  return merge(withFlat, { specialistRules: SPECIALIST_RULES[lang] });
+}
