@@ -3,6 +3,7 @@ import {
   PLAN_PAYMENT_WEBHOOK_SELECT,
   type PlanPaymentRow,
 } from "@/lib/billing/planPaymentWebhookValidation";
+import { publishSpecialistProfile } from "@/lib/specialistDashboard/publishSpecialist";
 
 export type PlanPaymentFulfillmentRpcOutcome =
   | "applied"
@@ -65,6 +66,36 @@ export async function loadPlanPaymentByStripePaymentIntentId(
   return data as PlanPaymentRow;
 }
 
+async function publishPreparedPaidSpecialist(
+  supabase: SupabaseClient,
+  specialistId: string | null | undefined,
+): Promise<void> {
+  if (!specialistId) return;
+
+  try {
+    const result = await publishSpecialistProfile(supabase, specialistId);
+    if (!result.ok) {
+      console.error("[billing/plan-payment] paid_profile_publication_failed", {
+        specialistId,
+        status: result.status,
+        body: result.body,
+      });
+      return;
+    }
+
+    console.info("[billing/plan-payment] paid_profile_publication_ready", {
+      specialistId,
+      status: result.status,
+      alreadyPublished: result.alreadyPublished === true,
+    });
+  } catch (error) {
+    console.error("[billing/plan-payment] paid_profile_publication_crashed", {
+      specialistId,
+      error,
+    });
+  }
+}
+
 export async function fulfillPlanPaymentEntitlement(
   supabase: SupabaseClient,
   input: {
@@ -100,12 +131,14 @@ export async function fulfillPlanPaymentEntitlement(
 
   const payload = (data ?? {}) as {
     outcome?: PlanPaymentFulfillmentRpcOutcome;
+    specialist_id?: string | null;
     period_end_at?: string | null;
     paid_at?: string | null;
   };
 
   switch (payload.outcome) {
     case "applied":
+      await publishPreparedPaidSpecialist(supabase, payload.specialist_id);
       return {
         outcome: "success",
         periodEndAt: payload.period_end_at ?? null,
@@ -113,6 +146,7 @@ export async function fulfillPlanPaymentEntitlement(
         idempotent: false,
       };
     case "already_applied":
+      await publishPreparedPaidSpecialist(supabase, payload.specialist_id);
       return {
         outcome: "success",
         periodEndAt: payload.period_end_at ?? null,
