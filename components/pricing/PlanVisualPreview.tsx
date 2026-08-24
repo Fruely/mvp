@@ -6,60 +6,56 @@ import type { Lang } from "@/lib/i18n";
 
 type PlanKind = "professional" | "growth";
 
-const OWNER_GROWTH_EXAMPLE_SLUG = "artur-niskubin";
+const PRO_EXAMPLE_SLUG = "business-kirchhundem-natalya-sheshenya";
+const PRO_PREMIUM_EXAMPLE_SLUG = "artur-niskubin";
 
 const COPY: Record<
   Lang,
   {
     close: string;
-    profile: string;
-    services: string;
-    about: string;
-    gallery: string;
-    request: string;
-    growth: string;
-    liveExample: string;
-    liveNote: string;
+    proTitle: string;
+    proPremiumTitle: string;
+    proBadge: string;
+    proPremiumBadge: string;
+    proNote: string;
+    proPremiumNote: string;
     openFull: string;
   }
 > = {
   ru: {
     close: "Закрыть",
-    profile: "Профиль специалиста",
-    services: "Услуги и цены",
-    about: "О специалисте",
-    gallery: "Галерея",
-    request: "Оставить заявку",
-    growth: "Пример реальной Pro Premium Page",
-    liveExample: "Живой пример Pro Premium",
-    liveNote:
-      "Это реальная опубликованная Pro Page владельца Freuly. Ваши фото, тексты, услуги и структура будут зависеть от вашего предложения.",
+    proTitle: "Пример реальной страницы Freuly Pro",
+    proPremiumTitle: "Пример реальной страницы Freuly Pro Premium",
+    proBadge: "Живой пример Pro",
+    proPremiumBadge: "Живой пример Pro Premium",
+    proNote:
+      "Это реальная опубликованная страница специалиста в формате Freuly Pro. Ваши фото, тексты, услуги и наполнение будут зависеть от вашего предложения.",
+    proPremiumNote:
+      "Это реальная опубликованная Pro Page в формате Freuly Pro Premium. Ваши фото, тексты, услуги и структура будут зависеть от вашего предложения.",
     openFull: "Открыть пример полностью",
   },
   ua: {
     close: "Закрити",
-    profile: "Профіль спеціаліста",
-    services: "Послуги та ціни",
-    about: "Про спеціаліста",
-    gallery: "Галерея",
-    request: "Залишити запит",
-    growth: "Приклад реальної Pro Premium Page",
-    liveExample: "Живий приклад Pro Premium",
-    liveNote:
-      "Це реальна опублікована Pro Page власника Freuly. Ваші фото, тексти, послуги та структура залежатимуть від вашої пропозиції.",
+    proTitle: "Приклад реальної сторінки Freuly Pro",
+    proPremiumTitle: "Приклад реальної сторінки Freuly Pro Premium",
+    proBadge: "Живий приклад Pro",
+    proPremiumBadge: "Живий приклад Pro Premium",
+    proNote:
+      "Це реальна опублікована сторінка спеціаліста у форматі Freuly Pro. Ваші фото, тексти, послуги та наповнення залежатимуть від вашої пропозиції.",
+    proPremiumNote:
+      "Це реальна опублікована Pro Page у форматі Freuly Pro Premium. Ваші фото, тексти, послуги та структура залежатимуть від вашої пропозиції.",
     openFull: "Відкрити приклад повністю",
   },
   de: {
     close: "Schließen",
-    profile: "Spezialistenprofil",
-    services: "Leistungen und Preise",
-    about: "Über den Spezialisten",
-    gallery: "Galerie",
-    request: "Anfrage senden",
-    growth: "Beispiel einer echten Pro Premium Page",
-    liveExample: "Live-Beispiel Pro Premium",
-    liveNote:
-      "Dies ist die tatsächlich veröffentlichte Pro Page des Freuly-Inhabers. Ihre Fotos, Texte, Leistungen und Seitenstruktur richten sich nach Ihrem eigenen Angebot.",
+    proTitle: "Beispiel einer echten Freuly Pro Seite",
+    proPremiumTitle: "Beispiel einer echten Freuly Pro Premium Seite",
+    proBadge: "Live-Beispiel Pro",
+    proPremiumBadge: "Live-Beispiel Pro Premium",
+    proNote:
+      "Dies ist die tatsächlich veröffentlichte Seite einer Spezialistin im Freuly-Pro-Format. Fotos, Texte, Leistungen und Inhalte richten sich nach Ihrem eigenen Angebot.",
+    proPremiumNote:
+      "Dies ist eine tatsächlich veröffentlichte Pro Page im Freuly-Pro-Premium-Format. Fotos, Texte, Leistungen und Seitenstruktur richten sich nach Ihrem eigenen Angebot.",
     openFull: "Beispiel vollständig öffnen",
   },
 };
@@ -75,7 +71,12 @@ export default function PlanVisualPreview({
 }) {
   const [open, setOpen] = useState(false);
   const copy = COPY[lang] ?? COPY.ua;
-  const ownerExamplePath = `/${lang}/specialist/${OWNER_GROWTH_EXAMPLE_SLUG}`;
+  const isPremium = plan === "growth";
+  const exampleSlug = isPremium ? PRO_PREMIUM_EXAMPLE_SLUG : PRO_EXAMPLE_SLUG;
+  const examplePath = `/${lang}/specialist/${exampleSlug}`;
+  const title = isPremium ? copy.proPremiumTitle : copy.proTitle;
+  const badge = isPremium ? copy.proPremiumBadge : copy.proBadge;
+  const note = isPremium ? copy.proPremiumNote : copy.proNote;
 
   useEffect(() => {
     if (!open) return;
@@ -114,12 +115,8 @@ export default function PlanVisualPreview({
           <div className="relative flex max-h-[94vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
             <div className="flex items-center justify-between gap-4 border-b border-gray-200 px-4 py-4 sm:px-6">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-600">
-                  {plan === "growth" ? copy.liveExample : "Freuly Pro"}
-                </p>
-                <h2 className="mt-1 text-xl font-semibold text-gray-950">
-                  {plan === "growth" ? copy.growth : copy.profile}
-                </h2>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-600">{badge}</p>
+                <h2 className="mt-1 text-xl font-semibold text-gray-950">{title}</h2>
               </div>
               <button
                 type="button"
@@ -130,105 +127,29 @@ export default function PlanVisualPreview({
               </button>
             </div>
 
-            {plan === "growth" ? (
-              <div className="flex min-h-0 flex-1 flex-col">
-                <div className="min-h-[560px] flex-1 bg-gray-100 sm:min-h-[680px]">
-                  <iframe
-                    src={ownerExamplePath}
-                    title={copy.growth}
-                    className="h-full min-h-[560px] w-full border-0 bg-white sm:min-h-[680px]"
-                  />
-                </div>
-                <div className="flex flex-col gap-3 border-t border-gray-200 bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                  <p className="max-w-3xl text-xs leading-relaxed text-gray-500">{copy.liveNote}</p>
-                  <Link
-                    href={ownerExamplePath}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="shrink-0 text-sm font-semibold text-indigo-700 underline decoration-indigo-200 underline-offset-4 hover:text-indigo-900"
-                  >
-                    {copy.openFull} ↗
-                  </Link>
-                </div>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="min-h-[560px] flex-1 bg-gray-100 sm:min-h-[680px]">
+                <iframe
+                  src={examplePath}
+                  title={title}
+                  className="h-full min-h-[560px] w-full border-0 bg-white sm:min-h-[680px]"
+                />
               </div>
-            ) : (
-              <div className="overflow-y-auto p-4 sm:p-6">
-                <div className="overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-inner">
-                  <div className="flex items-center gap-1.5 border-b border-gray-200 bg-white px-4 py-3">
-                    <span className="h-2.5 w-2.5 rounded-full bg-gray-200" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-gray-200" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-gray-200" />
-                    <div className="ml-3 h-6 flex-1 rounded-full bg-gray-100 px-3 text-[10px] leading-6 text-gray-400">
-                      freuly.de/specialist/example
-                    </div>
-                  </div>
-                  <ProfessionalMock copy={copy} />
-                </div>
+              <div className="flex flex-col gap-3 border-t border-gray-200 bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                <p className="max-w-3xl text-xs leading-relaxed text-gray-500">{note}</p>
+                <Link
+                  href={examplePath}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="shrink-0 text-sm font-semibold text-indigo-700 underline decoration-indigo-200 underline-offset-4 hover:text-indigo-900"
+                >
+                  {copy.openFull} ↗
+                </Link>
               </div>
-            )}
+            </div>
           </div>
         </div>
       ) : null}
     </>
-  );
-}
-
-function ProfessionalMock({ copy }: { copy: (typeof COPY)[Lang] }) {
-  return (
-    <div className="bg-white p-5 sm:p-8">
-      <div className="grid gap-6 md:grid-cols-[220px_1fr]">
-        <div>
-          <div className="aspect-[4/5] rounded-2xl bg-gradient-to-br from-indigo-100 via-gray-100 to-slate-200" />
-          <div className="mt-4 rounded-xl border border-gray-200 p-4">
-            <div className="h-3 w-24 rounded bg-gray-200" />
-            <div className="mt-3 h-2.5 w-full rounded bg-gray-100" />
-            <div className="mt-2 h-2.5 w-4/5 rounded bg-gray-100" />
-          </div>
-        </div>
-        <div>
-          <div className="h-3 w-28 rounded bg-indigo-100" />
-          <div className="mt-3 h-8 w-3/5 rounded bg-gray-900/90" />
-          <div className="mt-2 h-4 w-2/5 rounded bg-gray-200" />
-          <div className="mt-5 space-y-2">
-            <div className="h-3 w-full rounded bg-gray-100" />
-            <div className="h-3 w-11/12 rounded bg-gray-100" />
-            <div className="h-3 w-4/5 rounded bg-gray-100" />
-          </div>
-          <button
-            type="button"
-            tabIndex={-1}
-            className="mt-6 rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white"
-          >
-            {copy.request}
-          </button>
-          <MockSection title={copy.services} rows={3} />
-          <MockSection title={copy.about} rows={4} />
-          <div className="mt-7">
-            <div className="text-sm font-semibold text-gray-900">{copy.gallery}</div>
-            <div className="mt-3 grid grid-cols-3 gap-3">
-              {[0, 1, 2].map((item) => (
-                <div key={item} className="aspect-square rounded-xl bg-gray-100" />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MockSection({ title, rows }: { title: string; rows: number }) {
-  return (
-    <div className="mt-7 first:mt-0">
-      <div className="text-sm font-semibold text-gray-900">{title}</div>
-      <div className="mt-3 space-y-2">
-        {Array.from({ length: rows }).map((_, index) => (
-          <div
-            key={index}
-            className={`h-3 rounded bg-gray-100 ${index === rows - 1 ? "w-3/4" : "w-full"}`}
-          />
-        ))}
-      </div>
-    </div>
   );
 }
