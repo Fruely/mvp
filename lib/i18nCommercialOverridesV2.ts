@@ -7,6 +7,25 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
       pricingNote:
         "Регистрация и подготовка черновика не требуют оплаты. Публичная видимость и участие в канале клиентских заявок включаются после активации Freuly Professional или Freuly Growth.",
     },
+    pricing: {
+      compare: {
+        rows: [
+          { label: "Канал клиентских заявок", professional: "Да", growth: "Да" },
+          { label: "Публичный профиль", professional: "Да", growth: "Да" },
+          { label: "Услуги и цены", professional: "Да", growth: "Да" },
+          { label: "Фотографии в галерее", professional: "До 5", growth: "До 15" },
+          { label: "Языки, формат работы и география", professional: "Да", growth: "Да" },
+          { label: "Категории и поиск Freuly", professional: "Да", growth: "Да" },
+          { label: "Уведомления о подходящих заявках", professional: "Да", growth: "Да" },
+          { label: "Самостоятельное редактирование", professional: "Да", growth: "Да" },
+          { label: "Расширенная Pro Page", professional: "—", growth: "Да" },
+          { label: "Дополнительные смысловые блоки", professional: "—", growth: "Да" },
+          { label: "Расширенная визуальная подача", professional: "—", growth: "Да" },
+          { label: "Заполнение профиля нашей командой", professional: "+30 €", growth: "+30 €" },
+          { label: "Профессиональная упаковка продукта", professional: "+149 €", growth: "+149 €" },
+        ],
+      },
+    },
     dashboard: {
       billingPage: {
         title: "Оплата и активация канала заявок",
@@ -21,11 +40,11 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
         planPicker: {
           title: "Выберите уровень подключения",
           subtitle:
-            "Оба тарифа подключают коммерческое участие в канале клиентских заявок. Growth дополнительно включает расширенную профессиональную страницу и редакторскую упаковку.",
+            "Оба тарифа подключают коммерческое участие в канале клиентских заявок. Growth дополнительно включает расширенную Pro Page. Ручная упаковка предложения оплачивается отдельно.",
           professionalHint:
             "Канал клиентских заявок, публичный профиль, самостоятельное ведение и до 5 фото в галерее.",
           growthHint:
-            "Канал клиентских заявок плюс расширенная профессиональная страница, редакторская упаковка и до 15 фото.",
+            "Канал клиентских заявок плюс расширенная Pro Page и до 15 фото. Профессиональная упаковка продукта доступна отдельно.",
         },
       },
       home: {
@@ -56,6 +75,25 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
       pricingNote:
         "Реєстрація та підготовка чернетки не потребують оплати. Публічна видимість і участь у каналі клієнтських запитів вмикаються після активації Freuly Professional або Freuly Growth.",
     },
+    pricing: {
+      compare: {
+        rows: [
+          { label: "Канал клієнтських запитів", professional: "Так", growth: "Так" },
+          { label: "Публічний профіль", professional: "Так", growth: "Так" },
+          { label: "Послуги та ціни", professional: "Так", growth: "Так" },
+          { label: "Фотографії в галереї", professional: "До 5", growth: "До 15" },
+          { label: "Мови, формат роботи та географія", professional: "Так", growth: "Так" },
+          { label: "Категорії та пошук Freuly", professional: "Так", growth: "Так" },
+          { label: "Сповіщення про відповідні запити", professional: "Так", growth: "Так" },
+          { label: "Самостійне редагування", professional: "Так", growth: "Так" },
+          { label: "Розширена Pro Page", professional: "—", growth: "Так" },
+          { label: "Додаткові змістові блоки", professional: "—", growth: "Так" },
+          { label: "Розширена візуальна подача", professional: "—", growth: "Так" },
+          { label: "Заповнення профілю нашою командою", professional: "+30 €", growth: "+30 €" },
+          { label: "Професійне оформлення продукту", professional: "+149 €", growth: "+149 €" },
+        ],
+      },
+    },
     dashboard: {
       billingPage: {
         title: "Оплата та активація каналу запитів",
@@ -70,11 +108,11 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
         planPicker: {
           title: "Оберіть рівень підключення",
           subtitle:
-            "Обидва тарифи підключають комерційну участь у каналі клієнтських запитів. Growth додатково включає розширену професійну сторінку та редакторське оформлення.",
+            "Обидва тарифи підключають комерційну участь у каналі клієнтських запитів. Growth додатково включає розширену Pro Page. Ручне оформлення пропозиції оплачується окремо.",
           professionalHint:
             "Канал клієнтських запитів, публічний профіль, самостійне ведення та до 5 фото в галереї.",
           growthHint:
-            "Канал клієнтських запитів плюс розширена професійна сторінка, редакторське оформлення та до 15 фото.",
+            "Канал клієнтських запитів плюс розширена Pro Page та до 15 фото. Професійне оформлення продукту доступне окремо.",
         },
       },
       home: {
@@ -105,6 +143,25 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
       pricingNote:
         "Registrierung und Vorbereitung des Entwurfs sind ohne Tarifzahlung möglich. Öffentliche Sichtbarkeit und die Teilnahme am Kundenanfrage-Kanal werden nach Aktivierung von Freuly Professional oder Freuly Growth freigeschaltet.",
     },
+    pricing: {
+      compare: {
+        rows: [
+          { label: "Kundenanfrage-Kanal", professional: "Ja", growth: "Ja" },
+          { label: "Öffentliches Profil", professional: "Ja", growth: "Ja" },
+          { label: "Leistungen und Preise", professional: "Ja", growth: "Ja" },
+          { label: "Galeriebilder", professional: "Bis 5", growth: "Bis 15" },
+          { label: "Sprachen, Arbeitsformat und Geografie", professional: "Ja", growth: "Ja" },
+          { label: "Kategorien und Freuly-Suche", professional: "Ja", growth: "Ja" },
+          { label: "Benachrichtigungen zu passenden Anfragen", professional: "Ja", growth: "Ja" },
+          { label: "Eigenständige Bearbeitung", professional: "Ja", growth: "Ja" },
+          { label: "Erweiterte Pro Page", professional: "—", growth: "Ja" },
+          { label: "Zusätzliche Inhaltsblöcke", professional: "—", growth: "Ja" },
+          { label: "Erweiterte visuelle Präsentation", professional: "—", growth: "Ja" },
+          { label: "Profilbefüllung durch unser Team", professional: "+30 €", growth: "+30 €" },
+          { label: "Professionelle Produktaufbereitung", professional: "+149 €", growth: "+149 €" },
+        ],
+      },
+    },
     dashboard: {
       billingPage: {
         title: "Zahlung und Aktivierung des Anfragekanals",
@@ -119,11 +176,11 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
         planPicker: {
           title: "Verbindungsstufe wählen",
           subtitle:
-            "Beide Tarife aktivieren die kommerzielle Teilnahme am Kundenanfrage-Kanal. Growth ergänzt eine erweiterte professionelle Seite und redaktionelle Aufbereitung.",
+            "Beide Tarife aktivieren die kommerzielle Teilnahme am Kundenanfrage-Kanal. Growth ergänzt eine erweiterte Pro Page. Manuelle Angebotsaufbereitung wird separat berechnet.",
           professionalHint:
             "Kundenanfrage-Kanal, öffentliches Profil, eigenständige Verwaltung und bis zu 5 Galeriebilder.",
           growthHint:
-            "Kundenanfrage-Kanal plus erweiterte professionelle Seite, redaktionelle Aufbereitung und bis zu 15 Bilder.",
+            "Kundenanfrage-Kanal plus erweiterte Pro Page und bis zu 15 Bilder. Professionelle Produktaufbereitung ist separat verfügbar.",
         },
       },
       home: {
