@@ -1,4 +1,5 @@
 import { applyCommercialCopyOverrides } from "@/lib/i18nCommercialOverrides";
+import { applyCommercialCopyOverridesV2 } from "@/lib/i18nCommercialOverridesV2";
 
 export const SUPPORTED_LANGS = ["ua", "ru", "de"] as const;
 export type Lang = (typeof SUPPORTED_LANGS)[number];
@@ -29,7 +30,8 @@ async function loadDictionary(lang: Lang): Promise<Dictionary> {
       dictionary = (await import("@/locales/de.json")).default as Dictionary;
       break;
   }
-  return applyCommercialCopyOverrides(lang, dictionary);
+  const commercial = applyCommercialCopyOverrides(lang, dictionary);
+  return applyCommercialCopyOverridesV2(lang, commercial);
 }
 
 const dictionaryPromises = new Map<Lang, Promise<Dictionary>>();
