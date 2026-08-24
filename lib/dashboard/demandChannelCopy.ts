@@ -18,6 +18,8 @@ export type DemandChannelCopy = {
     reviewNotReadyBody: string;
     finishSetup: string;
     finishingSetup: string;
+    draftUntilPaid: string;
+    decideLater: string;
     checklistTitle: string;
   };
   billing: {
@@ -32,6 +34,8 @@ export type DemandChannelCopy = {
     growthHint: string;
     activateProfessional: string;
     activateGrowth: string;
+    draftNotice: string;
+    decideLater: string;
   };
 };
 
@@ -47,27 +51,31 @@ const COPY: Record<DemandChannelLang, DemandChannelCopy> = {
       publishNotReady: "Заполните основные параметры, чтобы Freuly понимал, какие клиентские запросы вам подходят.",
       steps: { welcome: "Старт", basic: "Какие заявки вам подходят", about: "Почему выбирают вас", services: "Услуги и цены", photo: "Доверие", review: "Готовность" },
       reviewTitle: "Канал заявок почти готов",
-      reviewBody: "Проверьте параметры. После завершения настройки останется выбрать Professional или Growth и активировать коммерческий доступ к клиентским запросам Freuly.",
-      reviewReadyTitle: "Параметры для подбора заявок настроены",
-      reviewReadyBody: "Freuly уже понимает, какие услуги, языки и формат работы вам подходят. Завершите настройку, чтобы перейти к активации канала заявок.",
+      reviewBody: "Проверьте параметры. Профиль пока сохранён как невидимый черновик. После выбора Professional или Growth и успешной оплаты Freuly опубликует профиль и активирует канал клиентских заявок.",
+      reviewReadyTitle: "Черновик готов к активации",
+      reviewReadyBody: "Freuly уже понимает, какие услуги, языки и формат работы вам подходят. Теперь выберите пакет, чтобы опубликовать профиль и активировать канал заявок.",
       reviewNotReadyTitle: "Нужно уточнить параметры",
       reviewNotReadyBody: "Заполните обязательные пункты — без них Freuly не сможет надёжно сопоставлять ваш профиль с клиентскими запросами.",
-      finishSetup: "Завершить настройку и выбрать пакет",
-      finishingSetup: "Завершаем настройку…",
+      finishSetup: "Выбрать пакет и активировать канал",
+      finishingSetup: "Переходим к активации…",
+      draftUntilPaid: "До успешной оплаты профиль остаётся невидимым черновиком и не участвует в получении клиентских заявок.",
+      decideLater: "Решу позже — сохранить черновик",
       checklistTitle: "Готовность к заявкам"
     },
     billing: {
       kicker: "Канал заявок",
       title: "Активируйте канал клиентских заявок",
-      subtitle: "Ознакомительный режим позволяет настроить профиль и изучить кабинет. Для коммерческого использования Freuly и участия в получении подходящих клиентских запросов подключите Professional или Growth.",
+      subtitle: "Профиль уже подготовлен. Для публикации профиля и коммерческого участия в получении подходящих клиентских запросов подключите Professional или Growth.",
       introTitle: "Freuly — не просто размещение в каталоге",
       introBody: "Мы создаём канал спроса на услуги специалистов: привлекаем клиентские запросы и сопоставляем их с подходящими специалистами по услуге, языку и формату работы. Оплата пакета активирует ваше коммерческое участие в этой системе.",
       planPickerTitle: "Выберите уровень подключения",
-      planPickerSubtitle: "Оба платных пакета подключают коммерческий доступ к каналу заявок. Growth дополнительно усиливает вашу презентацию полноценной профессиональной страницей.",
-      professionalHint: "Коммерческое подключение к каналу клиентских заявок, самостоятельное ведение профиля и до 5 фото в галерее.",
-      growthHint: "Коммерческое подключение к каналу клиентских заявок плюс профессиональная landing page и до 15 фото в галерее.",
+      planPickerSubtitle: "Оба платных пакета публикуют ваш профиль и подключают канал заявок. Growth дополнительно усиливает вашу презентацию полноценной профессиональной страницей.",
+      professionalHint: "Публикация профиля, коммерческое подключение к каналу клиентских заявок, самостоятельное ведение профиля и до 5 фото в галерее.",
+      growthHint: "Публикация профиля, коммерческое подключение к каналу клиентских заявок плюс профессиональная landing page и до 15 фото в галерее.",
       activateProfessional: "Активировать Professional",
-      activateGrowth: "Активировать Growth"
+      activateGrowth: "Активировать Growth",
+      draftNotice: "Пока пакет не оплачен, профиль не публикуется и остаётся сохранённым черновиком.",
+      decideLater: "Решу позже — оставить черновиком"
     }
   },
   ua: {
@@ -81,27 +89,31 @@ const COPY: Record<DemandChannelLang, DemandChannelCopy> = {
       publishNotReady: "Заповніть основні параметри, щоб Freuly розумів, які клієнтські запити вам підходять.",
       steps: { welcome: "Старт", basic: "Які заявки вам підходять", about: "Чому обирають вас", services: "Послуги та ціни", photo: "Довіра", review: "Готовність" },
       reviewTitle: "Канал заявок майже готовий",
-      reviewBody: "Перевірте параметри. Після завершення налаштування залишиться обрати Professional або Growth і активувати комерційний доступ до клієнтських запитів Freuly.",
-      reviewReadyTitle: "Параметри для підбору заявок налаштовані",
-      reviewReadyBody: "Freuly вже розуміє, які послуги, мови та формат роботи вам підходять. Завершіть налаштування, щоб перейти до активації каналу заявок.",
+      reviewBody: "Перевірте параметри. Профіль поки збережений як невидима чернетка. Після вибору Professional або Growth та успішної оплати Freuly опублікує профіль і активує канал клієнтських заявок.",
+      reviewReadyTitle: "Чернетка готова до активації",
+      reviewReadyBody: "Freuly вже розуміє, які послуги, мови та формат роботи вам підходять. Тепер оберіть пакет, щоб опублікувати профіль і активувати канал заявок.",
       reviewNotReadyTitle: "Потрібно уточнити параметри",
       reviewNotReadyBody: "Заповніть обов’язкові пункти — без них Freuly не зможе надійно зіставляти ваш профіль із клієнтськими запитами.",
-      finishSetup: "Завершити налаштування й обрати пакет",
-      finishingSetup: "Завершуємо налаштування…",
+      finishSetup: "Обрати пакет і активувати канал",
+      finishingSetup: "Переходимо до активації…",
+      draftUntilPaid: "До успішної оплати профіль залишається невидимою чернеткою та не бере участі в отриманні клієнтських заявок.",
+      decideLater: "Вирішу пізніше — зберегти чернетку",
       checklistTitle: "Готовність до заявок"
     },
     billing: {
       kicker: "Канал заявок",
       title: "Активуйте канал клієнтських заявок",
-      subtitle: "Ознайомчий режим дозволяє налаштувати профіль і вивчити кабінет. Для комерційного використання Freuly та участі в отриманні відповідних клієнтських запитів підключіть Professional або Growth.",
+      subtitle: "Профіль уже підготовлений. Для публікації профілю та комерційної участі в отриманні відповідних клієнтських запитів підключіть Professional або Growth.",
       introTitle: "Freuly — не просто розміщення в каталозі",
       introBody: "Ми створюємо канал попиту на послуги спеціалістів: залучаємо клієнтські запити та зіставляємо їх із відповідними спеціалістами за послугою, мовою і форматом роботи. Оплата пакета активує вашу комерційну участь у цій системі.",
       planPickerTitle: "Оберіть рівень підключення",
-      planPickerSubtitle: "Обидва платні пакети підключають комерційний доступ до каналу заявок. Growth додатково посилює вашу презентацію повноцінною професійною сторінкою.",
-      professionalHint: "Комерційне підключення до каналу клієнтських заявок, самостійне ведення профілю та до 5 фото в галереї.",
-      growthHint: "Комерційне підключення до каналу клієнтських заявок плюс професійна landing page та до 15 фото в галереї.",
+      planPickerSubtitle: "Обидва платні пакети публікують ваш профіль і підключають канал заявок. Growth додатково посилює вашу презентацію повноцінною професійною сторінкою.",
+      professionalHint: "Публікація профілю, комерційне підключення до каналу клієнтських заявок, самостійне ведення профілю та до 5 фото в галереї.",
+      growthHint: "Публікація профілю, комерційне підключення до каналу клієнтських заявок плюс професійна landing page та до 15 фото в галереї.",
       activateProfessional: "Активувати Professional",
-      activateGrowth: "Активувати Growth"
+      activateGrowth: "Активувати Growth",
+      draftNotice: "Поки пакет не оплачено, профіль не публікується та залишається збереженою чернеткою.",
+      decideLater: "Вирішу пізніше — залишити чернеткою"
     }
   },
   de: {
@@ -115,27 +127,31 @@ const COPY: Record<DemandChannelLang, DemandChannelCopy> = {
       publishNotReady: "Vervollständigen Sie die wichtigsten Angaben, damit Freuly erkennen kann, welche Kundenanfragen zu Ihnen passen.",
       steps: { welcome: "Start", basic: "Passende Anfragen", about: "Warum Sie", services: "Leistungen & Preise", photo: "Vertrauen", review: "Bereitschaft" },
       reviewTitle: "Ihr Anfragekanal ist fast bereit",
-      reviewBody: "Prüfen Sie Ihre Angaben. Danach wählen Sie Professional oder Growth und aktivieren den kommerziellen Zugang zu Kundenanfragen bei Freuly.",
-      reviewReadyTitle: "Ihre Matching-Angaben sind eingerichtet",
-      reviewReadyBody: "Freuly kennt nun Ihre Leistungen, Sprachen und Ihr Arbeitsformat. Schließen Sie die Einrichtung ab, um den Anfragekanal zu aktivieren.",
+      reviewBody: "Prüfen Sie Ihre Angaben. Ihr Profil bleibt zunächst als unsichtbarer Entwurf gespeichert. Nach Auswahl von Professional oder Growth und erfolgreicher Zahlung veröffentlicht Freuly das Profil und aktiviert den Anfragekanal.",
+      reviewReadyTitle: "Ihr Entwurf ist bereit zur Aktivierung",
+      reviewReadyBody: "Freuly kennt nun Ihre Leistungen, Sprachen und Ihr Arbeitsformat. Wählen Sie jetzt ein Paket, um Ihr Profil zu veröffentlichen und den Anfragekanal zu aktivieren.",
       reviewNotReadyTitle: "Einige Angaben fehlen noch",
       reviewNotReadyBody: "Vervollständigen Sie die Pflichtangaben — ohne sie kann Freuly Ihr Profil nicht zuverlässig mit Kundenanfragen abgleichen.",
-      finishSetup: "Einrichtung abschließen und Paket wählen",
-      finishingSetup: "Einrichtung wird abgeschlossen…",
+      finishSetup: "Paket wählen und Anfragekanal aktivieren",
+      finishingSetup: "Weiter zur Aktivierung…",
+      draftUntilPaid: "Bis zur erfolgreichen Zahlung bleibt Ihr Profil ein unsichtbarer Entwurf und nimmt nicht an Kundenanfragen teil.",
+      decideLater: "Später entscheiden — Entwurf speichern",
       checklistTitle: "Bereit für Anfragen"
     },
     billing: {
       kicker: "Anfragekanal",
       title: "Aktivieren Sie Ihren Kanal für Kundenanfragen",
-      subtitle: "Im Kennenlernmodus können Sie Ihr Profil einrichten und das Fachkräfte-Konto kennenlernen. Für die kommerzielle Nutzung von Freuly und die Teilnahme an passenden Kundenanfragen aktivieren Sie Professional oder Growth.",
+      subtitle: "Ihr Profil ist vorbereitet. Für die Veröffentlichung und die kommerzielle Teilnahme an passenden Kundenanfragen aktivieren Sie Professional oder Growth.",
       introTitle: "Freuly ist mehr als ein Verzeichniseintrag",
       introBody: "Wir schaffen Nachfrage nach Leistungen: Freuly gewinnt Kundenanfragen und gleicht sie nach Leistung, Sprache und Arbeitsformat mit passenden Fachkräften ab. Mit einem bezahlten Paket aktivieren Sie Ihre kommerzielle Teilnahme an diesem System.",
       planPickerTitle: "Wählen Sie Ihren Zugang",
-      planPickerSubtitle: "Beide bezahlten Pakete aktivieren den kommerziellen Zugang zum Anfragekanal. Growth ergänzt dies um eine professionelle Landingpage für eine stärkere Präsentation.",
-      professionalHint: "Kommerzieller Zugang zum Kundenanfrage-Kanal, eigenständige Profilpflege und bis zu 5 Galerie-Fotos.",
-      growthHint: "Kommerzieller Zugang zum Kundenanfrage-Kanal plus professionelle Landingpage und bis zu 15 Galerie-Fotos.",
+      planPickerSubtitle: "Beide bezahlten Pakete veröffentlichen Ihr Profil und aktivieren den Anfragekanal. Growth ergänzt dies um eine professionelle Landingpage für eine stärkere Präsentation.",
+      professionalHint: "Profilveröffentlichung, kommerzieller Zugang zum Kundenanfrage-Kanal, eigenständige Profilpflege und bis zu 5 Galerie-Fotos.",
+      growthHint: "Profilveröffentlichung, kommerzieller Zugang zum Kundenanfrage-Kanal plus professionelle Landingpage und bis zu 15 Galerie-Fotos.",
       activateProfessional: "Professional aktivieren",
-      activateGrowth: "Growth aktivieren"
+      activateGrowth: "Growth aktivieren",
+      draftNotice: "Bis zur Zahlung wird Ihr Profil nicht veröffentlicht und bleibt als Entwurf gespeichert.",
+      decideLater: "Später entscheiden — Entwurf behalten"
     }
   }
 };
