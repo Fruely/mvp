@@ -30,8 +30,8 @@ const COPY: Record<
     about: "О специалисте",
     gallery: "Галерея",
     request: "Оставить заявку",
-    growth: "Пример реальной Growth Page",
-    liveExample: "Живой пример",
+    growth: "Пример реальной Pro Premium Page",
+    liveExample: "Живой пример Pro Premium",
     liveNote:
       "Это реальная опубликованная Pro Page владельца Freuly. Ваши фото, тексты, услуги и структура будут зависеть от вашего предложения.",
     openFull: "Открыть пример полностью",
@@ -43,8 +43,8 @@ const COPY: Record<
     about: "Про спеціаліста",
     gallery: "Галерея",
     request: "Залишити запит",
-    growth: "Приклад реальної Growth Page",
-    liveExample: "Живий приклад",
+    growth: "Приклад реальної Pro Premium Page",
+    liveExample: "Живий приклад Pro Premium",
     liveNote:
       "Це реальна опублікована Pro Page власника Freuly. Ваші фото, тексти, послуги та структура залежатимуть від вашої пропозиції.",
     openFull: "Відкрити приклад повністю",
@@ -56,8 +56,8 @@ const COPY: Record<
     about: "Über den Spezialisten",
     gallery: "Galerie",
     request: "Anfrage senden",
-    growth: "Beispiel einer echten Growth Page",
-    liveExample: "Live-Beispiel",
+    growth: "Beispiel einer echten Pro Premium Page",
+    liveExample: "Live-Beispiel Pro Premium",
     liveNote:
       "Dies ist die tatsächlich veröffentlichte Pro Page des Freuly-Inhabers. Ihre Fotos, Texte, Leistungen und Seitenstruktur richten sich nach Ihrem eigenen Angebot.",
     openFull: "Beispiel vollständig öffnen",
@@ -115,7 +115,7 @@ export default function PlanVisualPreview({
             <div className="flex items-center justify-between gap-4 border-b border-gray-200 px-4 py-4 sm:px-6">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-600">
-                  {plan === "growth" ? copy.liveExample : "Freuly Professional"}
+                  {plan === "growth" ? copy.liveExample : "Freuly Pro"}
                 </p>
                 <h2 className="mt-1 text-xl font-semibold text-gray-950">
                   {plan === "growth" ? copy.growth : copy.profile}
