@@ -87,19 +87,19 @@ export function hreflangSupport(): HreflangTriple {
 
 export const PRICING_METADATA = {
   ua: {
-    title: "Тарифи Freuly — Freuly Professional та Freuly Growth",
+    title: "Тарифи Freuly — Professional та Growth",
     description:
-      "Freuly Professional (29 €/міс.) для самостійного профілю та Freuly Growth (59 €/міс.) з професійною упаковкою. До 5 або 15 фото в галереї.",
+      "Підключіть канал клієнтських запитів Freuly: Professional за 29 €/міс. або Growth за 59 €/міс. із розширеною професійною сторінкою.",
   },
   ru: {
-    title: "Тарифы Freuly — Freuly Professional и Freuly Growth",
+    title: "Тарифы Freuly — Professional и Growth",
     description:
-      "Freuly Professional (29 €/мес.) для самостоятельного профиля и Freuly Growth (59 €/мес.) с профессиональной упаковкой. До 5 или 15 фото в галерее.",
+      "Подключите канал клиентских заявок Freuly: Professional за 29 €/мес. или Growth за 59 €/мес. с расширенной профессиональной страницей.",
   },
   de: {
-    title: "Freuly Tarife — Freuly Professional und Freuly Growth",
+    title: "Freuly Tarife — Professional und Growth",
     description:
-      "Freuly Professional (29 €/Monat) für eigenständiges Profil-Management und Freuly Growth (59 €/Monat) mit professioneller Profilaufbereitung. Bis zu 5 oder 15 Galeriebilder.",
+      "Aktivieren Sie den Freuly-Kanal für Kundenanfragen: Professional für 29 €/Monat oder Growth für 59 €/Monat mit erweiterter professioneller Seite.",
   },
 } as const;
 
@@ -113,19 +113,19 @@ export function hreflangPricing(): HreflangTriple {
 
 export const SPECIALIST_RULES_METADATA = {
   ua: {
-    title: "Правила розміщення спеціалістів на Freuly",
+    title: "Правила для спеціалістів Freuly",
     description:
-      "Умови розміщення профілю та послуг спеціалістів на платформі Freuly: достовірність, якість контенту та відповідність кваліфікації.",
+      "Правила роботи спеціалістів у Freuly: достовірність профілю, якість контенту, кваліфікація, послуги та участь у каналі клієнтських запитів.",
   },
   ru: {
-    title: "Правила размещения специалистов на Freuly",
+    title: "Правила для специалистов Freuly",
     description:
-      "Условия размещения профиля и услуг специалистов на платформе Freuly: достоверность, качество контента и соответствие квалификации.",
+      "Правила работы специалистов в Freuly: достоверность профиля, качество контента, квалификация, услуги и участие в канале клиентских заявок.",
   },
   de: {
-    title: "Regeln für die Platzierung von Spezialisten auf Freuly",
+    title: "Regeln für Spezialisten bei Freuly",
     description:
-      "Bedingungen für Profil und Leistungen auf Freuly: Wahrhaftigkeit, Qualität der Inhalte und Nachweis der Qualifikation.",
+      "Regeln für Spezialisten bei Freuly: korrekte Profildaten, Inhaltsqualität, Qualifikation, Leistungen und Teilnahme am Kundenanfrage-Kanal.",
   },
 } as const;
 
