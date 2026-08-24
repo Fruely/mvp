@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Lang } from "@/lib/i18n";
+import { brandPlanText } from "@/lib/pricing/planDisplayBranding";
 
 type ServiceItem = {
   title: string;
@@ -194,7 +195,7 @@ export default function PricingAdditionalServices({ lang }: { lang: Lang }) {
         </div>
       </div>
 
-      <p className="mt-4 text-center text-xs leading-relaxed text-gray-500">{copy.note}</p>
+      <p className="mt-4 text-center text-xs leading-relaxed text-gray-500">{brandPlanText(copy.note)}</p>
     </section>
   );
 }
