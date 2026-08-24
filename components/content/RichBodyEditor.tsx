@@ -164,8 +164,12 @@ function nodeToMd(node: Node): string {
       );
     case "li":
       return inner;
-    case "span":
+    case "span": {
+      const style = el.getAttribute("style") ?? "";
+      if (/font-weight:\s*(bold|700|800|900)/i.test(style)) return `**${inner}**`;
+      if (/font-style:\s*italic/i.test(style)) return `*${inner}*`;
       return inner;
+    }
     default:
       return inner;
   }
@@ -196,23 +200,14 @@ export default function RichBodyEditor({ name, value, onChange }: RichBodyEditor
     onChange(md);
   }, [onChange]);
 
-  const execFormat = useCallback((command: string, value?: string) => {
-    editorRef.current?.focus();
-    document.execCommand(command, false, value);
-    syncMarkdown();
-  }, [syncMarkdown]);
-
-  const handleBold = useCallback(() => execFormat("bold"), [execFormat]);
-  const handleItalic = useCallback(() => execFormat("italic"), [execFormat]);
-
-  const handleAccent = useCallback(() => {
+  const wrapSelection = useCallback((tag: string, unwrapTag: string) => {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
 
     const range = selection.getRangeAt(0);
     const parent = range.commonAncestorContainer.parentElement;
 
-    if (parent?.tagName === "MARK") {
+    if (parent?.tagName === unwrapTag.toUpperCase()) {
       const text = document.createTextNode(parent.textContent ?? "");
       parent.replaceWith(text);
       selection.removeAllRanges();
@@ -220,15 +215,24 @@ export default function RichBodyEditor({ name, value, onChange }: RichBodyEditor
       newRange.selectNodeContents(text);
       selection.addRange(newRange);
     } else {
-      const mark = document.createElement("mark");
-      range.surroundContents(mark);
+      const el = document.createElement(tag);
+      try {
+        range.surroundContents(el);
+      } catch {
+        el.appendChild(range.extractContents());
+        range.insertNode(el);
+      }
       selection.removeAllRanges();
       const newRange = document.createRange();
-      newRange.selectNodeContents(mark);
+      newRange.selectNodeContents(el);
       selection.addRange(newRange);
     }
     syncMarkdown();
   }, [syncMarkdown]);
+
+  const handleBold = useCallback(() => wrapSelection("strong", "strong"), [wrapSelection]);
+  const handleItalic = useCallback(() => wrapSelection("em", "em"), [wrapSelection]);
+  const handleAccent = useCallback(() => wrapSelection("mark", "mark"), [wrapSelection]);
 
   const handleLink = useCallback(() => {
     const selection = window.getSelection();
