@@ -3,6 +3,7 @@ import path from "node:path";
 import type { LegalBlock, LegalDocument, LegalPublicLang } from "@/content/legal/types";
 import { applyPublicLegalAmendments } from "./publicLegalAmendments";
 import { applyPublicCommercialAmendments } from "./publicCommercialAmendments";
+import { applyPublicSpecialistRulesAmendments } from "./publicSpecialistRulesAmendments";
 import { applyPublicLegalPostFixes } from "./publicLegalPostFixes";
 
 const REVIEW_DIR = path.join(process.cwd(), "docs/legal/final-review");
@@ -34,7 +35,8 @@ export function readReviewMarkdown(slug: ReviewDocumentSlug, lang: LegalPublicLa
   const raw = fs.readFileSync(filePath, "utf8");
   const amended = applyPublicLegalAmendments(slug, lang, raw);
   const commerciallyAligned = applyPublicCommercialAmendments(slug, lang, amended);
-  return stripReviewMarkers(applyPublicLegalPostFixes(slug, lang, commerciallyAligned));
+  const specialistRulesAligned = applyPublicSpecialistRulesAmendments(slug, lang, commerciallyAligned);
+  return stripReviewMarkers(applyPublicLegalPostFixes(slug, lang, specialistRulesAligned));
 }
 
 function parseBlocks(sectionBody: string): LegalBlock[] {
