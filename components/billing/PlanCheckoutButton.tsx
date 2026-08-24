@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { t, type Dictionary } from "@/lib/i18n";
+import { getDemandChannelCopy } from "@/lib/dashboard/demandChannelCopy";
 import type { PaidPlanCode } from "@/lib/billing/plans";
 import CheckoutLegalDisclosure from "@/components/billing/CheckoutLegalDisclosure";
 import { Button } from "@/components/ui";
 import type { LegalPublicLang } from "@/content/legal/types";
-import { PLAN_DISPLAY_NAMES } from "@/lib/pricing/planDisplayBranding";
 
 type Props = {
   planCode: PaidPlanCode;
@@ -26,6 +26,7 @@ export default function PlanCheckoutButton({
   const [loading, setLoading] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const demandCopy = getDemandChannelCopy(lang);
 
   if (!checkoutEnabled) {
     return (
@@ -93,8 +94,8 @@ export default function PlanCheckoutButton({
 
   const idleLabel =
     planCode === "basic"
-      ? `Активировать ${PLAN_DISPLAY_NAMES.basic}`
-      : `Активировать ${PLAN_DISPLAY_NAMES.premium}`;
+      ? demandCopy.billing.activateProfessional
+      : demandCopy.billing.activateGrowth;
   const buttonLabel = redirecting
     ? t(dict, "dashboard.billingPage.checkout.redirecting")
     : loading
