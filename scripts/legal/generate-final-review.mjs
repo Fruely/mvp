@@ -17,6 +17,16 @@ import { RANKING_BLOCKS } from "./data/ranking.mjs";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = join(__dirname, "../../docs/legal/final-review");
 
+function applyPlanDisplayBranding(text) {
+  return text
+    .replaceAll("Freuly Professional", "Freuly Pro")
+    .replaceAll("Freuly Growth", "Freuly Pro Premium")
+    .replaceAll("Professional oder Growth", "Pro oder Pro Premium")
+    .replaceAll("Professional or Growth", "Pro or Pro Premium")
+    .replaceAll("Professional или Growth", "Pro или Pro Premium")
+    .replaceAll("Professional або Growth", "Pro або Pro Premium");
+}
+
 const README = `# Final Legal Review Pack — INTERNAL
 
 > **Status: REVIEW ONLY** — These files are for lawyer review. They are not yet wired into production routes.
@@ -36,7 +46,7 @@ const README = `# Final Legal Review Pack — INTERNAL
 ## Code-verified facts
 
 - **Operator (public):** Natalia Sheshenia, Sheshenia – Freuly, Hofolper Straße 46, 57399 Kirchhundem, Deutschland. Email: freuly.de@gmail.com. Phone: +49 160 92686432. USt-IdNr.: DE464033560. W-IdNr.: DE464033560-00001. **Steuernummer is internal-only** (\`lib/legal/freulyIdentity.ts\`, not in public bundles).
-- **Prices:** Professional 29 €/month, Growth 59 €/month, Promoted Request 10 € one-time (\`locales/de.json\` pricing section).
+- **Prices:** Pro 29 €/month, Pro Premium 59 €/month, Promoted Request 10 € one-time (\`locales/de.json\` pricing section).
 - **7-day grace:** Subscription grace period and Promoted credit window (\`locales/de.json\` dashboard billing strings).
 - **Partner validation:** 14 calendar days (\`content/partners/agreementContentV10.ts\` constant; v1.2 text uses same rule).
 - **Referral cookie:** \`freuly_partner_ref\`, 90 days (\`lib/partners/cookie.ts\` \`PARTNER_REF_MAX_AGE_SEC\`).
@@ -47,7 +57,7 @@ const README = `# Final Legal Review Pack — INTERNAL
 
 - **Column:** \`specialists.is_pro\` (boolean), read in search RPC projection.
 - **TypeScript:** No application-level setter for \`is_pro\` was found in TS/TSX sources; only SQL read paths and migration/check scripts reference it.
-- **Legal wording:** Public docs use neutral phrase **„internes profilspezifisches Prioritätsmerkmal“** instead of product name „Growth“.
+- **Legal wording:** Public docs use neutral phrase **„internes profilspezifisches Prioritätsmerkmal“** instead of a tariff/product label.
 - **Lawyer item:** Confirm mapping from paid tariff → \`is_pro\` flag and whether P2B disclosure is sufficient without naming the tariff.
 
 ## Client-lead GDPR reasoning
@@ -127,7 +137,7 @@ for (const { base, blocks } of DOCS) {
   for (const lang of ["de", "ru", "ua"]) {
     const filename = `${base}.${lang}.md`;
     const filepath = join(OUT_DIR, filename);
-    const content = renderMarkdown(blocks, lang);
+    const content = applyPlanDisplayBranding(renderMarkdown(blocks, lang));
     writeFileSync(filepath, content, "utf8");
     const bytes = statSync(filepath).size;
     report.push({ file: filename, bytes, markers: countMarkers(blocks) });
