@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { t, type Dictionary } from "@/lib/i18n";
+import { getDemandChannelCopy } from "@/lib/dashboard/demandChannelCopy";
 import type { PaidPlanCode } from "@/lib/billing/plans";
 import CheckoutLegalDisclosure from "@/components/billing/CheckoutLegalDisclosure";
 import { Button } from "@/components/ui";
@@ -25,6 +26,7 @@ export default function PlanCheckoutButton({
   const [loading, setLoading] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const demandCopy = getDemandChannelCopy(lang);
 
   if (!checkoutEnabled) {
     return (
@@ -90,11 +92,15 @@ export default function PlanCheckoutButton({
     }
   }
 
+  const idleLabel =
+    planCode === "basic"
+      ? demandCopy.billing.activateProfessional
+      : demandCopy.billing.activateGrowth;
   const buttonLabel = redirecting
     ? t(dict, "dashboard.billingPage.checkout.redirecting")
     : loading
       ? t(dict, "dashboard.billingPage.checkout.loading")
-      : t(dict, "dashboard.billingPage.checkout.cta");
+      : idleLabel;
 
   return (
     <div className="space-y-2">

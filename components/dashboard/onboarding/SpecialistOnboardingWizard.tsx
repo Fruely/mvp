@@ -3,6 +3,7 @@ import { Alert } from "@/components/ui";
 import SpecialistContactRulesNotice from "@/components/legal/SpecialistContactRulesNotice";
 import { dashboardLinkPrimaryClass } from "@/components/dashboard/dashboardStyles";
 import { t, type Dictionary } from "@/lib/i18n";
+import { getDemandChannelCopy } from "@/lib/dashboard/demandChannelCopy";
 import OnboardingAboutForm, { type OnboardingAboutData } from "./OnboardingAboutForm";
 import OnboardingBasicForm, {
   type OnboardingBasicData,
@@ -29,20 +30,20 @@ function incompleteProfileGateMessage(lang: string): { title: string; body: stri
   if (lang === "de") {
     return {
       title: "Ihr Profil ist noch nicht veröffentlicht.",
-      body: "Bitte schließen Sie die Veröffentlichung Ihres Profils ab. Danach werden alle Bereiche des Spezialisten-Kontos freigeschaltet.",
+      body: "Bitte schließen Sie die Einrichtung ab. Danach werden alle Bereiche des Fachkräfte-Kontos freigeschaltet.",
     };
   }
 
   if (lang === "ua") {
     return {
       title: "Ваш профіль ще не опубліковано.",
-      body: "Будь ласка, завершіть публікацію профілю. Після цього всі розділи кабінету спеціаліста стануть доступними.",
+      body: "Будь ласка, завершіть налаштування. Після цього всі розділи кабінету спеціаліста стануть доступними.",
     };
   }
 
   return {
     title: "Ваш профиль ещё не опубликован.",
-    body: "Пожалуйста, завершите публикацию профиля. После этого все разделы кабинета специалиста станут доступны.",
+    body: "Пожалуйста, завершите настройку. После этого все разделы кабинета специалиста станут доступны.",
   };
 }
 
@@ -85,10 +86,11 @@ export default function SpecialistOnboardingWizard({
 }) {
   const baseHref = `/${lang}/specialist/dashboard/onboarding`;
   const gateMessage = incompleteProfileGateMessage(lang);
+  const demandCopy = getDemandChannelCopy(lang);
 
   const steps: OnboardingStep[] = ONBOARDING_STEP_ORDER.map((step) => ({
     key: step,
-    label: t(dict, `dashboard.onboarding.steps.${step}`),
+    label: demandCopy.onboarding.steps[step],
     href: stepHref(baseHref, step),
   }));
 
@@ -99,10 +101,10 @@ export default function SpecialistOnboardingWizard({
         className={dashboardLinkPrimaryClass}
       >
         {publishReady
-          ? t(dict, "dashboard.onboarding.ctaCard.readyButton")
+          ? demandCopy.onboarding.readyCta
           : profileStarted
-            ? t(dict, "dashboard.onboarding.cta.continue")
-            : t(dict, "dashboard.onboarding.cta.start")}
+            ? demandCopy.onboarding.continue
+            : demandCopy.onboarding.start}
       </Link>
     </div>
   );
@@ -126,15 +128,15 @@ export default function SpecialistOnboardingWizard({
 
       {activeStep === "welcome" ? (
         <OnboardingStepShell
-          title={t(dict, "dashboard.onboarding.welcome.title")}
-          body={t(dict, "dashboard.onboarding.welcome.body")}
+          title={demandCopy.onboarding.welcomeTitle}
+          body={demandCopy.onboarding.welcomeBody}
           footer={welcomeFooter}
           titleAs="h1"
         >
           <Alert variant={publishReady ? "success" : "warning"}>
             {publishReady
-              ? t(dict, "dashboard.onboarding.publishReady")
-              : t(dict, "dashboard.onboarding.publishNotReady")}
+              ? demandCopy.onboarding.publishReady
+              : demandCopy.onboarding.publishNotReady}
           </Alert>
           {isUncategorizedCategory ? (
             <Alert variant="warning" className="mt-freuly-3">
@@ -156,7 +158,7 @@ export default function SpecialistOnboardingWizard({
             preserveProfileData={preserveProfileData}
           />
           <OnboardingChecklist
-            title={t(dict, "dashboard.onboarding.checklist.title")}
+            title={demandCopy.onboarding.checklistTitle}
             publishReadyLabel={t(dict, "dashboard.onboarding.checklist.done")}
             recommendationLabel={t(dict, "dashboard.onboarding.checklist.recommendation")}
             items={checklistItems}
@@ -194,7 +196,7 @@ export default function SpecialistOnboardingWizard({
             }}
           />
           <OnboardingChecklist
-            title={t(dict, "dashboard.onboarding.checklist.title")}
+            title={demandCopy.onboarding.checklistTitle}
             publishReadyLabel={t(dict, "dashboard.onboarding.checklist.done")}
             recommendationLabel={t(dict, "dashboard.onboarding.checklist.recommendation")}
             items={checklistItems}
@@ -206,7 +208,7 @@ export default function SpecialistOnboardingWizard({
         <div className="grid gap-freuly-6 lg:grid-cols-[1fr_360px]">
           <OnboardingServicesStep dict={dict} lang={lang} summary={servicesSummary} />
           <OnboardingChecklist
-            title={t(dict, "dashboard.onboarding.checklist.title")}
+            title={demandCopy.onboarding.checklistTitle}
             publishReadyLabel={t(dict, "dashboard.onboarding.checklist.done")}
             recommendationLabel={t(dict, "dashboard.onboarding.checklist.recommendation")}
             items={checklistItems}
@@ -224,7 +226,7 @@ export default function SpecialistOnboardingWizard({
             currentPhotoUrl={currentPhotoUrl}
           />
           <OnboardingChecklist
-            title={t(dict, "dashboard.onboarding.checklist.title")}
+            title={demandCopy.onboarding.checklistTitle}
             publishReadyLabel={t(dict, "dashboard.onboarding.checklist.done")}
             recommendationLabel={t(dict, "dashboard.onboarding.checklist.recommendation")}
             items={checklistItems}
@@ -244,7 +246,7 @@ export default function SpecialistOnboardingWizard({
             summary={reviewSummary}
           />
           <OnboardingChecklist
-            title={t(dict, "dashboard.onboarding.checklist.title")}
+            title={demandCopy.onboarding.checklistTitle}
             publishReadyLabel={t(dict, "dashboard.onboarding.checklist.done")}
             recommendationLabel={t(dict, "dashboard.onboarding.checklist.recommendation")}
             items={checklistItems}

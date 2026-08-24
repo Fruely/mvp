@@ -3,6 +3,10 @@ import {
   PLAN_PAYMENT_WEBHOOK_SELECT,
   type PlanPaymentRow,
 } from "@/lib/billing/planPaymentWebhookValidation";
+import {
+  publishSpecialistProfile,
+  type PublishSpecialistResult,
+} from "@/lib/specialistDashboard/publishSpecialist";
 
 export type PlanPaymentFulfillmentRpcOutcome =
   | "applied"
@@ -22,6 +26,11 @@ export type PlanPaymentFulfillmentResult =
   | { outcome: "validation_failed"; code: string };
 
 export type PlanPaymentLifecycleResult = "success" | "noop" | "retryable_failure" | "anomaly";
+
+type PaidProfilePublisher = (
+  supabase: SupabaseClient,
+  specialistId: string,
+) => Promise<PublishSpecialistResult>;
 
 export async function loadPlanPaymentById(
   supabase: SupabaseClient,
@@ -65,6 +74,42 @@ export async function loadPlanPaymentByStripePaymentIntentId(
   return data as PlanPaymentRow;
 }
 
+export async function publishPreparedPaidSpecialist(
+  supabase: SupabaseClient,
+  specialistId: string | null | undefined,
+  publish: PaidProfilePublisher = publishSpecialistProfile,
+): Promise<boolean> {
+  if (!specialistId) {
+    console.error("[billing/plan-payment] paid_profile_publication_missing_specialist");
+    return false;
+  }
+
+  try {
+    const result = await publish(supabase, specialistId);
+    if (!result.ok) {
+      console.error("[billing/plan-payment] paid_profile_publication_failed", {
+        specialistId,
+        status: result.status,
+        body: result.body,
+      });
+      return false;
+    }
+
+    console.info("[billing/plan-payment] paid_profile_publication_ready", {
+      specialistId,
+      status: result.status,
+      alreadyPublished: result.alreadyPublished === true,
+    });
+    return true;
+  } catch (error) {
+    console.error("[billing/plan-payment] paid_profile_publication_crashed", {
+      specialistId,
+      error,
+    });
+    return false;
+  }
+}
+
 export async function fulfillPlanPaymentEntitlement(
   supabase: SupabaseClient,
   input: {
@@ -100,25 +145,36 @@ export async function fulfillPlanPaymentEntitlement(
 
   const payload = (data ?? {}) as {
     outcome?: PlanPaymentFulfillmentRpcOutcome;
+    specialist_id?: string | null;
     period_end_at?: string | null;
     paid_at?: string | null;
   };
 
   switch (payload.outcome) {
-    case "applied":
+    case "applied": {
+      const published = await publishPreparedPaidSpecialist(supabase, payload.specialist_id);
+      if (!published) {
+        return { outcome: "retryable_failure", code: "paid_profile_publication_failed" };
+      }
       return {
         outcome: "success",
         periodEndAt: payload.period_end_at ?? null,
         paidAt: payload.paid_at ?? null,
         idempotent: false,
       };
-    case "already_applied":
+    }
+    case "already_applied": {
+      const published = await publishPreparedPaidSpecialist(supabase, payload.specialist_id);
+      if (!published) {
+        return { outcome: "retryable_failure", code: "paid_profile_publication_failed" };
+      }
       return {
         outcome: "success",
         periodEndAt: payload.period_end_at ?? null,
         paidAt: payload.paid_at ?? null,
         idempotent: true,
       };
+    }
     case "not_found":
       return { outcome: "validation_failed", code: "plan_payment_not_found" };
     case "invalid_status":

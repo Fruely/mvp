@@ -17,6 +17,10 @@ import {
 } from "@/lib/specialistLeads/session";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import type { CheckoutSessionResult } from "@/lib/billing/paymentProvider";
+import {
+  getSpecialistOnboardingGateState,
+  type SpecialistRow,
+} from "@/lib/specialists/server";
 
 export const dynamic = "force-dynamic";
 
@@ -81,12 +85,32 @@ export async function POST(request: NextRequest) {
   const service = createServiceClient();
   const { data: specialist, error: specError } = await service
     .from("specialists")
-    .select("name, email")
+    .select("id, user_id, name, email, phone, category_id, status")
     .eq("id", session.specialistId)
     .maybeSingle();
 
-  if (specError) {
+  if (specError || !specialist?.id) {
     return NextResponse.json({ error: "specialist_not_found" }, { status: 403, headers: NO_STORE });
+  }
+
+  if (!specialist.status || specialist.status === "draft") {
+    const draftSpecialist: SpecialistRow = {
+      id: String(specialist.id),
+      user_id: typeof specialist.user_id === "string" ? specialist.user_id : null,
+      first_name: typeof specialist.name === "string" ? specialist.name : null,
+      name: typeof specialist.name === "string" ? specialist.name : null,
+      email: typeof specialist.email === "string" ? specialist.email : null,
+      phone: typeof specialist.phone === "string" ? specialist.phone : null,
+      category_id: typeof specialist.category_id === "string" ? specialist.category_id : null,
+      status: typeof specialist.status === "string" ? specialist.status : "draft",
+    };
+    const gate = await getSpecialistOnboardingGateState(draftSpecialist, service);
+    if (gate.state !== "ready") {
+      return NextResponse.json(
+        { error: "profile_not_ready_for_activation" },
+        { status: 409, headers: NO_STORE },
+      );
+    }
   }
 
   console.info("[billing/checkout] requested", {
@@ -99,8 +123,8 @@ export async function POST(request: NextRequest) {
     supabase: service,
     specialistId: session.specialistId,
     userId: session.userId,
-    userEmail: specialist?.email ?? null,
-    userName: typeof specialist?.name === "string" ? specialist.name : null,
+    userEmail: specialist.email ?? null,
+    userName: typeof specialist.name === "string" ? specialist.name : null,
     planCodeRaw,
     lang,
     siteUrl: resolveSiteUrl(request),

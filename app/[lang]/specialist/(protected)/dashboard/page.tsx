@@ -9,6 +9,7 @@ import InstallFreuly from "@/components/pwa/InstallFreuly";
 import VerificationBanner from "./VerificationBanner";
 import OverviewStatsSection from "./OverviewStatsSection";
 import OverviewStatsSkeleton from "./OverviewStatsSkeleton";
+import DraftDemandChannelDashboard from "./DraftDemandChannelDashboard";
 
 export default async function SpecialistDashboardHomePage({
   params,
@@ -26,6 +27,22 @@ export default async function SpecialistDashboardHomePage({
 
   if (status === "blocked") {
     redirect(specialistLangHomePath());
+  }
+
+  const isDraft = !status || status === "draft";
+
+  if (isDraft) {
+    return (
+      <div className="space-y-freuly-8">
+        <InstallFreuly
+          lang={lang}
+          audience="specialist"
+          placement="dashboard"
+          variant="dashboard"
+        />
+        <DraftDemandChannelDashboard specialist={specialist} lang={lang} />
+      </div>
+    );
   }
 
   return (
