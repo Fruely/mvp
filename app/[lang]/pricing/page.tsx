@@ -5,7 +5,7 @@ import { getDictionary, getDictValue, t, isSupportedLang, type Lang } from "@/li
 import { PRICING_METADATA, hreflangPricing, SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 import { getOptionalAuthenticatedSpecialist } from "@/lib/specialists/optionalAuth";
 import type { PaidPlanCode } from "@/lib/billing/plans";
-import { getPublicPricingCopy } from "@/lib/pricing/publicPricingCopy";
+import { getCurrentPublicPricingCopy } from "@/lib/pricing/currentPublicPricingCopy";
 
 export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
   const lang =
@@ -102,7 +102,7 @@ function PricingPaidPlanCta({
 export default async function PricingPage({ params }: { params: { lang: string } }) {
   const lang: Lang = isSupportedLang(params.lang) ? params.lang : "ua";
   const dict = await getDictionary(lang);
-  const copy = getPublicPricingCopy(lang);
+  const copy = getCurrentPublicPricingCopy(lang);
   const { specialist, isAuthenticated } = await getOptionalAuthenticatedSpecialist();
   const hasSpecialist = Boolean(specialist?.id);
   const compareRows = asCompareRows(getDictValue(dict, "pricing.compare.rows"));
