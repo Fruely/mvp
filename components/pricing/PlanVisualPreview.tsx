@@ -1,11 +1,28 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Lang } from "@/lib/i18n";
 
 type PlanKind = "professional" | "growth";
 
-const COPY: Record<Lang, { close: string; profile: string; services: string; about: string; gallery: string; request: string; growth: string }> = {
+const OWNER_GROWTH_EXAMPLE_SLUG = "artur-niskubin";
+
+const COPY: Record<
+  Lang,
+  {
+    close: string;
+    profile: string;
+    services: string;
+    about: string;
+    gallery: string;
+    request: string;
+    growth: string;
+    liveExample: string;
+    liveNote: string;
+    openFull: string;
+  }
+> = {
   ru: {
     close: "Закрыть",
     profile: "Профиль специалиста",
@@ -13,7 +30,11 @@ const COPY: Record<Lang, { close: string; profile: string; services: string; abo
     about: "О специалисте",
     gallery: "Галерея",
     request: "Оставить заявку",
-    growth: "Расширенная профессиональная страница",
+    growth: "Пример реальной Growth Page",
+    liveExample: "Живой пример",
+    liveNote:
+      "Это реальная опубликованная Pro Page владельца Freuly. Ваши фото, тексты, услуги и структура будут зависеть от вашего предложения.",
+    openFull: "Открыть пример полностью",
   },
   ua: {
     close: "Закрити",
@@ -22,7 +43,11 @@ const COPY: Record<Lang, { close: string; profile: string; services: string; abo
     about: "Про спеціаліста",
     gallery: "Галерея",
     request: "Залишити запит",
-    growth: "Розширена професійна сторінка",
+    growth: "Приклад реальної Growth Page",
+    liveExample: "Живий приклад",
+    liveNote:
+      "Це реальна опублікована Pro Page власника Freuly. Ваші фото, тексти, послуги та структура залежатимуть від вашої пропозиції.",
+    openFull: "Відкрити приклад повністю",
   },
   de: {
     close: "Schließen",
@@ -31,7 +56,11 @@ const COPY: Record<Lang, { close: string; profile: string; services: string; abo
     about: "Über den Spezialisten",
     gallery: "Galerie",
     request: "Anfrage senden",
-    growth: "Erweiterte professionelle Seite",
+    growth: "Beispiel einer echten Growth Page",
+    liveExample: "Live-Beispiel",
+    liveNote:
+      "Dies ist die tatsächlich veröffentlichte Pro Page des Freuly-Inhabers. Ihre Fotos, Texte, Leistungen und Seitenstruktur richten sich nach Ihrem eigenen Angebot.",
+    openFull: "Beispiel vollständig öffnen",
   },
 };
 
@@ -46,6 +75,7 @@ export default function PlanVisualPreview({
 }) {
   const [open, setOpen] = useState(false);
   const copy = COPY[lang] ?? COPY.ua;
+  const ownerExamplePath = `/${lang}/specialist/${OWNER_GROWTH_EXAMPLE_SLUG}`;
 
   useEffect(() => {
     if (!open) return;
@@ -81,11 +111,11 @@ export default function PlanVisualPreview({
             if (event.target === event.currentTarget) setOpen(false);
           }}
         >
-          <div className="relative max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl sm:p-6">
-            <div className="mb-4 flex items-center justify-between gap-4">
+          <div className="relative flex max-h-[94vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between gap-4 border-b border-gray-200 px-4 py-4 sm:px-6">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-600">
-                  {plan === "growth" ? "Freuly Growth" : "Freuly Professional"}
+                  {plan === "growth" ? copy.liveExample : "Freuly Professional"}
                 </p>
                 <h2 className="mt-1 text-xl font-semibold text-gray-950">
                   {plan === "growth" ? copy.growth : copy.profile}
@@ -100,30 +130,42 @@ export default function PlanVisualPreview({
               </button>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-inner">
-              <div className="flex items-center gap-1.5 border-b border-gray-200 bg-white px-4 py-3">
-                <span className="h-2.5 w-2.5 rounded-full bg-gray-200" />
-                <span className="h-2.5 w-2.5 rounded-full bg-gray-200" />
-                <span className="h-2.5 w-2.5 rounded-full bg-gray-200" />
-                <div className="ml-3 h-6 flex-1 rounded-full bg-gray-100 px-3 text-[10px] leading-6 text-gray-400">
-                  freuly.de/specialist/example
+            {plan === "growth" ? (
+              <div className="flex min-h-0 flex-1 flex-col">
+                <div className="min-h-[560px] flex-1 bg-gray-100 sm:min-h-[680px]">
+                  <iframe
+                    src={ownerExamplePath}
+                    title={copy.growth}
+                    className="h-full min-h-[560px] w-full border-0 bg-white sm:min-h-[680px]"
+                  />
+                </div>
+                <div className="flex flex-col gap-3 border-t border-gray-200 bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                  <p className="max-w-3xl text-xs leading-relaxed text-gray-500">{copy.liveNote}</p>
+                  <Link
+                    href={ownerExamplePath}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="shrink-0 text-sm font-semibold text-indigo-700 underline decoration-indigo-200 underline-offset-4 hover:text-indigo-900"
+                  >
+                    {copy.openFull} ↗
+                  </Link>
                 </div>
               </div>
-
-              {plan === "professional" ? (
-                <ProfessionalMock copy={copy} />
-              ) : (
-                <GrowthMock copy={copy} />
-              )}
-            </div>
-
-            <p className="mt-4 text-center text-xs leading-relaxed text-gray-500">
-              {lang === "de"
-                ? "Schematisches Beispiel. Inhalte, Fotos und Texte hängen vom jeweiligen Spezialisten ab."
-                : lang === "ru"
-                  ? "Схематичный пример. Реальные фото, тексты и наполнение зависят от конкретного специалиста."
-                  : "Схематичний приклад. Реальні фото, тексти та наповнення залежать від конкретного спеціаліста."}
-            </p>
+            ) : (
+              <div className="overflow-y-auto p-4 sm:p-6">
+                <div className="overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-inner">
+                  <div className="flex items-center gap-1.5 border-b border-gray-200 bg-white px-4 py-3">
+                    <span className="h-2.5 w-2.5 rounded-full bg-gray-200" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-gray-200" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-gray-200" />
+                    <div className="ml-3 h-6 flex-1 rounded-full bg-gray-100 px-3 text-[10px] leading-6 text-gray-400">
+                      freuly.de/specialist/example
+                    </div>
+                  </div>
+                  <ProfessionalMock copy={copy} />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       ) : null}
@@ -152,7 +194,11 @@ function ProfessionalMock({ copy }: { copy: (typeof COPY)[Lang] }) {
             <div className="h-3 w-11/12 rounded bg-gray-100" />
             <div className="h-3 w-4/5 rounded bg-gray-100" />
           </div>
-          <button type="button" tabIndex={-1} className="mt-6 rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white">
+          <button
+            type="button"
+            tabIndex={-1}
+            className="mt-6 rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white"
+          >
             {copy.request}
           </button>
           <MockSection title={copy.services} rows={3} />
@@ -165,43 +211,6 @@ function ProfessionalMock({ copy }: { copy: (typeof COPY)[Lang] }) {
               ))}
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function GrowthMock({ copy }: { copy: (typeof COPY)[Lang] }) {
-  return (
-    <div className="bg-white">
-      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-800 px-6 py-10 text-white sm:px-10 sm:py-14">
-        <div className="max-w-2xl">
-          <div className="h-3 w-28 rounded bg-white/30" />
-          <div className="mt-4 h-10 w-4/5 rounded bg-white/90" />
-          <div className="mt-3 h-4 w-2/3 rounded bg-white/35" />
-          <div className="mt-6 flex gap-3">
-            <div className="h-10 w-32 rounded-full bg-white" />
-            <div className="h-10 w-28 rounded-full border border-white/30" />
-          </div>
-        </div>
-        <div className="absolute -bottom-10 right-8 hidden h-56 w-44 rounded-t-[3rem] bg-white/15 md:block" />
-      </div>
-      <div className="grid gap-8 px-6 py-8 sm:px-10 md:grid-cols-2">
-        <MockSection title={copy.about} rows={5} />
-        <div className="rounded-2xl bg-indigo-50 p-5">
-          <div className="h-3 w-28 rounded bg-indigo-200" />
-          <div className="mt-4 h-5 w-4/5 rounded bg-indigo-900/80" />
-          <div className="mt-3 h-3 w-full rounded bg-white" />
-          <div className="mt-2 h-3 w-5/6 rounded bg-white" />
-          <div className="mt-5 h-10 w-36 rounded-full bg-indigo-600" />
-        </div>
-      </div>
-      <div className="border-t border-gray-100 px-6 py-8 sm:px-10">
-        <MockSection title={copy.services} rows={4} />
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[0, 1, 2, 3].map((item) => (
-            <div key={item} className="aspect-[4/3] rounded-xl bg-gray-100" />
-          ))}
         </div>
       </div>
     </div>
