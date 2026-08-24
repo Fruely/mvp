@@ -166,11 +166,8 @@ function nodeToMd(node: Node): string {
       return inner;
     case "span": {
       const style = el.getAttribute("style") ?? "";
-      const isBold = /font-weight:\s*(bold|[7-9]00)/i.test(style);
-      const isItalic = /font-style:\s*italic/i.test(style);
-      if (isBold && isItalic) return `***${inner}***`;
-      if (isBold) return `**${inner}**`;
-      if (isItalic) return `*${inner}*`;
+      if (/font-weight:\s*(bold|[7-9]00)/i.test(style)) return `**${inner}**`;
+      if (/font-style:\s*italic/i.test(style)) return `*${inner}*`;
       return inner;
     }
     default:
@@ -210,7 +207,7 @@ export default function RichBodyEditor({ name, value, onChange }: RichBodyEditor
   }, []);
 
   const keepEditorSelection = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    // Toolbar buttons must not steal focus/selection from contentEditable before onClick.
+    // Keep the contentEditable range alive until the click handler applies formatting.
     event.preventDefault();
   }, []);
 
@@ -320,7 +317,7 @@ export default function RichBodyEditor({ name, value, onChange }: RichBodyEditor
         suppressContentEditableWarning
         onInput={syncMarkdown}
         onBlur={syncMarkdown}
-        className="min-h-[320px] w-full rounded-b-freuly-button border border-freuly-border-default bg-white p-4 text-[15px] leading-[1.7] text-freuly-text-primary focus:border-freuly-primary focus:outline-none focus:ring-1 focus:ring-freuly-primary [&_a]:font-medium [&_a]:text-freuly-primary [&_a]:underline [&_blockquote]:my-3 [&_blockquote]:border-l-[3px] [&_blockquote]:border-freuly-primary [&_blockquote]:pl-4 [&_blockquote]:text-freuly-text-secondary [&_h2]:mt-6 [&_h2]:text-[20px] [&_h2]:font-bold [&_h3]:mt-4 [&_h3]:text-[17px] [&_h3]:font-semibold [&_li]:ml-5 [&_li]:ml-5 [&_mark]:rounded-sm [&_mark]:bg-freuly-primary-light [&_mark]:px-0.5 [&_mark]:font-semibold [&_mark]:text-freuly-primary [&_ol]:list-decimal [&_ol]:pl-4 [&_p]:my-2 [&_strong]:font-bold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-4"
+        className="min-h-[320px] w-full rounded-b-freuly-button border border-freuly-border-default bg-white p-4 text-[15px] leading-[1.7] text-freuly-text-primary focus:border-freuly-primary focus:outline-none focus:ring-1 focus:ring-freuly-primary [&_a]:font-medium [&_a]:text-freuly-primary [&_a]:underline [&_blockquote]:my-3 [&_blockquote]:border-l-[3px] [&_blockquote]:border-freuly-primary [&_blockquote]:pl-4 [&_blockquote]:text-freuly-text-secondary [&_h2]:mt-6 [&_h2]:text-[20px] [&_h2]:font-bold [&_h3]:mt-4 [&_h3]:text-[17px] [&_h3]:font-semibold [&_li]:ml-5 [&_mark]:rounded-sm [&_mark]:bg-freuly-primary-light [&_mark]:px-0.5 [&_mark]:font-semibold [&_mark]:text-freuly-primary [&_ol]:list-decimal [&_ol]:pl-4 [&_p]:my-2 [&_strong]:font-bold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-4"
         data-placeholder="Начните писать статью..."
       />
       <style>{`[data-placeholder]:empty:before { content: attr(data-placeholder); color: #9b9b9b; pointer-events: none; }`}</style>
