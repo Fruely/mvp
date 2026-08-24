@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import PlanCheckoutButton from "@/components/billing/PlanCheckoutButton";
 import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
 import { Alert, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
@@ -7,6 +8,10 @@ import { getDictionary, isSupportedLang, t, type Lang } from "@/lib/i18n";
 import { PUBLIC_COMMERCIAL_PLAN_CATALOG } from "@/lib/billing/plans";
 import { isBillingPagePlanCheckoutEnabled } from "@/lib/billing/billingPageCheckoutReadiness";
 import { dashboardLinkSecondaryClass } from "@/components/dashboard/dashboardStyles";
+import {
+  getCurrentUserAndSpecialist,
+  getSpecialistOnboardingGateState,
+} from "@/lib/specialists/server";
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +22,18 @@ export default async function SpecialistDemandChannelActivationPage({
 }) {
   const resolved = await Promise.resolve(params);
   const lang: Lang = isSupportedLang(resolved.lang) ? resolved.lang : "ua";
-  const dict = await getDictionary(lang);
+  const [dict, { specialist }] = await Promise.all([
+    getDictionary(lang),
+    getCurrentUserAndSpecialist(),
+  ]);
   const copy = getDemandChannelCopy(lang);
+
+  if (!specialist.status || specialist.status === "draft") {
+    const gate = await getSpecialistOnboardingGateState(specialist);
+    if (gate.state !== "ready") {
+      redirect(`/${lang}/specialist/dashboard/onboarding`);
+    }
+  }
 
   return (
     <div className="space-y-freuly-6">
