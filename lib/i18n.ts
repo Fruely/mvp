@@ -2,7 +2,7 @@ import { applyCommercialCopyOverrides } from "@/lib/i18nCommercialOverrides";
 import { applyCommercialCopyOverridesV2 } from "@/lib/i18nCommercialOverridesV2";
 import { applyCommercialFlatOverrides } from "@/lib/i18nCommercialFlatOverrides";
 import { applyCommercialFinalOverrides } from "@/lib/i18nCommercialFinalOverrides";
-import { brandPlanText } from "@/lib/pricing/planDisplayBranding";
+import { PLAN_DISPLAY_NAMES, brandPlanText } from "@/lib/pricing/planDisplayBranding";
 
 export const SUPPORTED_LANGS = ["ua", "ru", "de"] as const;
 export type Lang = (typeof SUPPORTED_LANGS)[number];
@@ -31,6 +31,29 @@ function applyPlanBranding(value: unknown): unknown {
   return value;
 }
 
+function setDictionaryValue(dict: Dictionary, path: string, value: string): void {
+  const parts = path.split(".").filter(Boolean);
+  if (!parts.length) return;
+
+  let cursor: Record<string, unknown> = dict;
+  for (const part of parts.slice(0, -1)) {
+    const current = cursor[part];
+    if (!current || typeof current !== "object" || Array.isArray(current)) {
+      cursor[part] = {};
+    }
+    cursor = cursor[part] as Record<string, unknown>;
+  }
+  cursor[parts[parts.length - 1]] = value;
+}
+
+function enforceCommercialPlanLabels(dict: Dictionary): Dictionary {
+  setDictionaryValue(dict, "dashboard.subscriptionPage.plan.basic", PLAN_DISPLAY_NAMES.basic);
+  setDictionaryValue(dict, "dashboard.subscriptionPage.plan.premium", PLAN_DISPLAY_NAMES.premium);
+  setDictionaryValue(dict, "pricing.professional.name", PLAN_DISPLAY_NAMES.basic);
+  setDictionaryValue(dict, "pricing.growth.name", PLAN_DISPLAY_NAMES.premium);
+  return dict;
+}
+
 async function loadDictionary(lang: Lang): Promise<Dictionary> {
   let dictionary: Dictionary;
   switch (lang) {
@@ -48,7 +71,8 @@ async function loadDictionary(lang: Lang): Promise<Dictionary> {
   const commercialV2 = applyCommercialCopyOverridesV2(lang, commercial);
   const flatAligned = applyCommercialFlatOverrides(lang, commercialV2);
   const finalAligned = applyCommercialFinalOverrides(lang, flatAligned);
-  return applyPlanBranding(finalAligned) as Dictionary;
+  const branded = applyPlanBranding(finalAligned) as Dictionary;
+  return enforceCommercialPlanLabels(branded);
 }
 
 const dictionaryPromises = new Map<Lang, Promise<Dictionary>>();
