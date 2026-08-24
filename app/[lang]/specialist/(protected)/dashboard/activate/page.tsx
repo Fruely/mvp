@@ -2,12 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import PlanCheckoutButton from "@/components/billing/PlanCheckoutButton";
 import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
+import PlanVisualPreview from "@/components/pricing/PlanVisualPreview";
 import { Alert, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { getDemandChannelCopy } from "@/lib/dashboard/demandChannelCopy";
 import { getDictionary, isSupportedLang, t, type Lang } from "@/lib/i18n";
 import { PUBLIC_COMMERCIAL_PLAN_CATALOG } from "@/lib/billing/plans";
 import { isBillingPagePlanCheckoutEnabled } from "@/lib/billing/billingPageCheckoutReadiness";
 import { dashboardLinkSecondaryClass } from "@/components/dashboard/dashboardStyles";
+import { getPublicPricingCopy } from "@/lib/pricing/publicPricingCopy";
 import {
   getCurrentUserAndSpecialist,
   getSpecialistOnboardingGateState,
@@ -27,6 +29,7 @@ export default async function SpecialistDemandChannelActivationPage({
     getCurrentUserAndSpecialist(),
   ]);
   const copy = getDemandChannelCopy(lang);
+  const pricingCopy = getPublicPricingCopy(lang);
 
   if (!specialist.status || specialist.status === "draft") {
     const gate = await getSpecialistOnboardingGateState(specialist);
@@ -77,6 +80,11 @@ export default async function SpecialistDemandChannelActivationPage({
                   <p className="mt-freuly-3 flex-1 text-freuly-body-sm leading-relaxed text-freuly-text-secondary">
                     {professional ? copy.billing.professionalHint : copy.billing.growthHint}
                   </p>
+                  <PlanVisualPreview
+                    plan={professional ? "professional" : "growth"}
+                    lang={lang}
+                    label={professional ? pricingCopy.preview.professionalLabel : pricingCopy.preview.growthLabel}
+                  />
                   <div className="mt-freuly-5">
                     <PlanCheckoutButton
                       planCode={entry.code}
