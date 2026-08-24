@@ -2,6 +2,7 @@ import { applyCommercialCopyOverrides } from "@/lib/i18nCommercialOverrides";
 import { applyCommercialCopyOverridesV2 } from "@/lib/i18nCommercialOverridesV2";
 import { applyCommercialFlatOverrides } from "@/lib/i18nCommercialFlatOverrides";
 import { applyCommercialFinalOverrides } from "@/lib/i18nCommercialFinalOverrides";
+import { brandPlanText } from "@/lib/pricing/planDisplayBranding";
 
 export const SUPPORTED_LANGS = ["ua", "ru", "de"] as const;
 export type Lang = (typeof SUPPORTED_LANGS)[number];
@@ -17,6 +18,17 @@ export type Dictionary = Record<string, unknown>;
 
 export function isSupportedLang(value: string): value is Lang {
   return (SUPPORTED_LANGS as readonly string[]).includes(value);
+}
+
+function applyPlanBranding(value: unknown): unknown {
+  if (typeof value === "string") return brandPlanText(value);
+  if (Array.isArray(value)) return value.map(applyPlanBranding);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, item]) => [key, applyPlanBranding(item)]),
+    );
+  }
+  return value;
 }
 
 async function loadDictionary(lang: Lang): Promise<Dictionary> {
@@ -35,7 +47,8 @@ async function loadDictionary(lang: Lang): Promise<Dictionary> {
   const commercial = applyCommercialCopyOverrides(lang, dictionary);
   const commercialV2 = applyCommercialCopyOverridesV2(lang, commercial);
   const flatAligned = applyCommercialFlatOverrides(lang, commercialV2);
-  return applyCommercialFinalOverrides(lang, flatAligned);
+  const finalAligned = applyCommercialFinalOverrides(lang, flatAligned);
+  return applyPlanBranding(finalAligned) as Dictionary;
 }
 
 const dictionaryPromises = new Map<Lang, Promise<Dictionary>>();
