@@ -2,6 +2,7 @@ import "@/styles/globals.css";
 import type { Viewport } from "next";
 import CookieConsentBanner from "@/components/consent/CookieConsentBanner";
 import ConsentScripts from "@/components/consent/ConsentScripts";
+import AcquisitionAttributionCapture from "@/components/acquisition/AcquisitionAttributionCapture";
 import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
 import { Inter } from "next/font/google";
 import { headers } from "next/headers";
@@ -70,6 +71,7 @@ export default function RootLayout({
     <html lang={htmlLang} className={inter.variable}>
       <body className="min-h-[100dvh] font-sans text-textPrimary antialiased bg-white">
         {children}
+        <AcquisitionAttributionCapture />
         <CookieConsentBanner />
         <ConsentScripts />
         <ServiceWorkerRegister />
