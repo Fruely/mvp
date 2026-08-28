@@ -9,6 +9,10 @@ import {
 import { notify } from "@/lib/notifications/notify";
 import { CLIENT_CAMPAIGN_COOKIE_NAME } from "@/lib/clientCampaignLinks/cookie";
 import { findCampaignByIdForAttribution } from "@/lib/clientCampaignLinks/service";
+import {
+  ACQUISITION_COOKIE_NAME,
+  parseAcquisitionCookie,
+} from "@/lib/acquisition/firstTouch";
 import { SERVICE_REQUEST_SOURCE } from "@/lib/serviceRequests/constants";
 import { generateServiceRequestPublicId } from "@/lib/serviceRequests/publicId";
 import { buildOwnerTelegramTimingPayload } from "@/lib/serviceRequests/ownerTelegramTiming";
@@ -175,6 +179,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const acquisition = parseAcquisitionCookie(
+      cookies().get(ACQUISITION_COOKIE_NAME)?.value,
+    );
+
     let inserted: { public_id: string; created_at: string } | null = null;
     let creationReplay: { kind: "create" } | { kind: "replay" } = { kind: "create" };
 
@@ -206,6 +214,12 @@ export async function POST(request: NextRequest) {
         source: SERVICE_REQUEST_SOURCE,
         source_path: validated.source_path,
         client_campaign_link_id: clientCampaignLinkId,
+        acquisition_source: acquisition?.source ?? null,
+        acquisition_medium: acquisition?.medium ?? null,
+        acquisition_campaign: acquisition?.campaign ?? null,
+        acquisition_referrer: acquisition?.referrer ?? null,
+        acquisition_landing_path: acquisition?.landing_path ?? null,
+        acquisition_captured_at: acquisition?.captured_at ?? null,
         client_user_id: clientUserId,
         status: "new",
         updated_at: nowIso,
