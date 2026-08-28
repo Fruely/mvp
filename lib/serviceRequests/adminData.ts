@@ -8,6 +8,9 @@ import {
   isAllowedAdminStatus,
 } from "@/lib/serviceRequests/validation";
 
+const ACQUISITION_DETAIL_SELECT =
+  "acquisition_source, acquisition_medium, acquisition_campaign, acquisition_referrer, acquisition_landing_path, acquisition_captured_at";
+
 export type ServiceRequestListItem = {
   id: string;
   public_id: string;
@@ -28,6 +31,14 @@ export type ServiceRequestListItem = {
   status: string | null;
 };
 
+export type ServiceRequestCampaignAttribution = {
+  id: string;
+  slug: string;
+  name: string;
+  source: string | null;
+  campaign_code: string | null;
+};
+
 export type ServiceRequestDetail = ServiceRequestListItem & {
   description: string | null;
   client_name: string | null;
@@ -37,6 +48,14 @@ export type ServiceRequestDetail = ServiceRequestListItem & {
   locale: string | null;
   source: string | null;
   source_path: string | null;
+  client_campaign_link_id: string | null;
+  acquisition_source: string | null;
+  acquisition_medium: string | null;
+  acquisition_campaign: string | null;
+  acquisition_referrer: string | null;
+  acquisition_landing_path: string | null;
+  acquisition_captured_at: string | null;
+  campaign_attribution: ServiceRequestCampaignAttribution | null;
 };
 
 export async function listServiceRequestsAdmin(): Promise<ServiceRequestListItem[]> {
@@ -60,7 +79,7 @@ export async function getServiceRequestDetailAdmin(id: string): Promise<ServiceR
   const supabase = createSupabaseServerClient();
   const { data, error } = await supabase
     .from("service_requests")
-    .select(SERVICE_REQUEST_ADMIN_DETAIL_SELECT)
+    .select(`${SERVICE_REQUEST_ADMIN_DETAIL_SELECT}, ${ACQUISITION_DETAIL_SELECT}`)
     .eq("id", id)
     .maybeSingle();
 
@@ -69,7 +88,29 @@ export async function getServiceRequestDetailAdmin(id: string): Promise<ServiceR
     throw new Error("DETAIL_FAILED");
   }
 
-  return (data as ServiceRequestDetail | null) ?? null;
+  if (!data) return null;
+
+  const row = data as Omit<ServiceRequestDetail, "campaign_attribution">;
+  let campaignAttribution: ServiceRequestCampaignAttribution | null = null;
+
+  if (row.client_campaign_link_id) {
+    const { data: campaign, error: campaignError } = await supabase
+      .from("client_campaign_links")
+      .select("id, slug, name, source, campaign_code")
+      .eq("id", row.client_campaign_link_id)
+      .maybeSingle();
+
+    if (campaignError) {
+      console.error("[admin/service-requests/detail] campaign attribution fetch failed", campaignError);
+    } else if (campaign) {
+      campaignAttribution = campaign as ServiceRequestCampaignAttribution;
+    }
+  }
+
+  return {
+    ...row,
+    campaign_attribution: campaignAttribution,
+  };
 }
 
 export async function updateServiceRequestStatusAdmin(
