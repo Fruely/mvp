@@ -16,6 +16,14 @@ type Props = {
   selectedId: string | null;
 };
 
+function acquisitionChannel(detail: ServiceRequestDetail): string | null {
+  return detail.campaign_attribution?.source ?? detail.acquisition_source ?? null;
+}
+
+function acquisitionCampaign(detail: ServiceRequestDetail): string | null {
+  return detail.campaign_attribution?.campaign_code ?? detail.acquisition_campaign ?? null;
+}
+
 export default function ServiceRequestsAdminView({
   rows,
   detail,
@@ -105,8 +113,37 @@ export default function ServiceRequestsAdminView({
               <p><strong>Work format:</strong> {detail.work_format}</p>
               <p><strong>Язык:</strong> {detail.preferred_language || "—"}</p>
               <p><strong>Город / PLZ:</strong> {[detail.postal_code, detail.city].filter(Boolean).join(" ") || "—"}</p>
+
+              <div className="rounded-md border border-blue-100 bg-blue-50/60 px-3 py-3 space-y-1">
+                <p className="font-semibold text-gray-900">Канал лида</p>
+                <p><strong>Канал:</strong> {acquisitionChannel(detail) || "Не определён"}</p>
+                {detail.acquisition_medium ? (
+                  <p><strong>Medium:</strong> {detail.acquisition_medium}</p>
+                ) : null}
+                {acquisitionCampaign(detail) ? (
+                  <p><strong>Кампания:</strong> {acquisitionCampaign(detail)}</p>
+                ) : null}
+                {detail.campaign_attribution ? (
+                  <p>
+                    <strong>Campaign link:</strong>{" "}
+                    {detail.campaign_attribution.name} (/go/{detail.campaign_attribution.slug})
+                  </p>
+                ) : null}
+                {detail.acquisition_landing_path ? (
+                  <p className="break-all"><strong>Первый вход:</strong> {detail.acquisition_landing_path}</p>
+                ) : null}
+                {detail.acquisition_referrer ? (
+                  <p className="break-all"><strong>Referrer:</strong> {detail.acquisition_referrer}</p>
+                ) : null}
+                {!detail.acquisition_source && !detail.campaign_attribution ? (
+                  <p className="text-xs text-gray-500">
+                    Для старых заявок или при отсутствии согласия на аналитику канал может быть неизвестен.
+                  </p>
+                ) : null}
+              </div>
+
               <p>
-                <strong>Source:</strong> {detail.source}{" "}
+                <strong>Внутренний путь:</strong> {detail.source}{" "}
                 {detail.source_path ? `(${detail.source_path})` : ""}
               </p>
               <label className="block pt-2">
