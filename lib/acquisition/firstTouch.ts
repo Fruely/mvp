@@ -5,6 +5,10 @@ export type AcquisitionFirstTouch = {
   source: string;
   medium: string | null;
   campaign: string | null;
+  content: string | null;
+  term: string | null;
+  gclid: string | null;
+  fbclid: string | null;
   referrer: string | null;
   landing_path: string;
   captured_at: string;
@@ -13,6 +17,9 @@ export type AcquisitionFirstTouch = {
 const MAX_SOURCE = 80;
 const MAX_MEDIUM = 80;
 const MAX_CAMPAIGN = 160;
+const MAX_CONTENT = 200;
+const MAX_TERM = 300;
+const MAX_CLICK_ID = 300;
 const MAX_REFERRER = 500;
 const MAX_LANDING = 500;
 
@@ -64,12 +71,20 @@ export function buildAcquisitionFirstTouch(input: {
     const utmSource = clean(url.searchParams.get("utm_source"), MAX_SOURCE);
     const utmMedium = clean(url.searchParams.get("utm_medium"), MAX_MEDIUM);
     const utmCampaign = clean(url.searchParams.get("utm_campaign"), MAX_CAMPAIGN);
+    const utmContent = clean(url.searchParams.get("utm_content"), MAX_CONTENT);
+    const utmTerm = clean(url.searchParams.get("utm_term"), MAX_TERM);
+    const gclid = clean(url.searchParams.get("gclid"), MAX_CLICK_ID);
+    const fbclid = clean(url.searchParams.get("fbclid"), MAX_CLICK_ID);
     const landingPath = clean(`${url.pathname}${url.search}`, MAX_LANDING) ?? "/";
 
     return {
       source: (utmSource ?? classifyReferrerSource(externalReferrer)).toLowerCase(),
       medium: utmMedium,
       campaign: utmCampaign,
+      content: utmContent,
+      term: utmTerm,
+      gclid,
+      fbclid,
       referrer: externalReferrer,
       landing_path: landingPath,
       captured_at: input.capturedAt ?? new Date().toISOString(),
@@ -96,6 +111,10 @@ export function parseAcquisitionCookie(raw: string | null | undefined): Acquisit
       source: source.toLowerCase(),
       medium: clean(parsed.medium, MAX_MEDIUM),
       campaign: clean(parsed.campaign, MAX_CAMPAIGN),
+      content: clean(parsed.content, MAX_CONTENT),
+      term: clean(parsed.term, MAX_TERM),
+      gclid: clean(parsed.gclid, MAX_CLICK_ID),
+      fbclid: clean(parsed.fbclid, MAX_CLICK_ID),
       referrer: clean(parsed.referrer, MAX_REFERRER),
       landing_path: landingPath,
       captured_at: capturedAt,
