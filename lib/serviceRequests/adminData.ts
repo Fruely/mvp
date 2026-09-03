@@ -222,7 +222,10 @@ export async function getServiceRequestDetailAdmin(id: string): Promise<ServiceR
 
   if (!data) return null;
 
-  const row = data as Omit<ServiceRequestDetail, "campaign_attribution">;
+  // The select string is assembled dynamically, which exceeds Supabase's compile-time
+  // PostgREST parser inference. Runtime data is still the selected row; bridge the
+  // generated parser type through unknown after the database error/null checks above.
+  const row = data as unknown as Omit<ServiceRequestDetail, "campaign_attribution">;
   let campaignAttribution: ServiceRequestCampaignAttribution | null = null;
 
   if (row.client_campaign_link_id) {
