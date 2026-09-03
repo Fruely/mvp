@@ -69,9 +69,7 @@ async function lookupServiceRequestIdempotentReplay(
     .eq("client_idempotency_key", clientIdempotencyKey)
     .maybeSingle();
 
-  if (existingError) {
-    return { kind: "error" as const };
-  }
+  if (existingError) return { kind: "error" as const };
 
   return resolveIdempotentReplayWithOwnership(
     existingRequest
@@ -104,7 +102,6 @@ export async function POST(request: NextRequest) {
     }
 
     const clientUserId = auth.kind === "authenticated" ? auth.userId : null;
-
     const body = await request.json();
     const validated = validateServiceRequestCreate(body);
     if ("error" in validated) {
@@ -125,25 +122,21 @@ export async function POST(request: NextRequest) {
         idempotencyFingerprint,
         clientUserId,
       );
-
       if (replay.kind === "error") {
         return NextResponse.json({ error: "server_error" }, { status: 500, headers: NO_STORE });
       }
-
       if (replay.kind === "conflict") {
         return NextResponse.json(
           { error: "Idempotency key reused with different payload" },
           { status: 409, headers: NO_STORE },
         );
       }
-
       if (replay.kind === "ownership_conflict") {
         return NextResponse.json(
           { error: IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE },
           { status: 409, headers: NO_STORE },
         );
       }
-
       if (replay.kind === "replay") {
         return NextResponse.json(replay.response, { status: 200, headers: NO_STORE });
       }
@@ -171,17 +164,13 @@ export async function POST(request: NextRequest) {
     if (campaignCookie) {
       try {
         const campaign = await findCampaignByIdForAttribution(supabase, campaignCookie);
-        if (campaign) {
-          clientCampaignLinkId = campaign.id;
-        }
+        if (campaign) clientCampaignLinkId = campaign.id;
       } catch (campaignErr) {
         console.error("[service-requests/create] campaign attribution lookup failed", campaignErr);
       }
     }
 
-    const acquisition = parseAcquisitionCookie(
-      cookies().get(ACQUISITION_COOKIE_NAME)?.value,
-    );
+    const acquisition = parseAcquisitionCookie(cookies().get(ACQUISITION_COOKIE_NAME)?.value);
 
     let inserted: { public_id: string; created_at: string } | null = null;
     let creationReplay: { kind: "create" } | { kind: "replay" } = { kind: "create" };
@@ -217,6 +206,10 @@ export async function POST(request: NextRequest) {
         acquisition_source: acquisition?.source ?? null,
         acquisition_medium: acquisition?.medium ?? null,
         acquisition_campaign: acquisition?.campaign ?? null,
+        acquisition_content: acquisition?.content ?? null,
+        acquisition_term: acquisition?.term ?? null,
+        acquisition_gclid: acquisition?.gclid ?? null,
+        acquisition_fbclid: acquisition?.fbclid ?? null,
         acquisition_referrer: acquisition?.referrer ?? null,
         acquisition_landing_path: acquisition?.landing_path ?? null,
         acquisition_captured_at: acquisition?.captured_at ?? null,
@@ -255,18 +248,15 @@ export async function POST(request: NextRequest) {
           idempotencyFingerprint,
           clientUserId,
         );
-
         if (replay.kind === "replay") {
           return NextResponse.json(replay.response, { status: 200, headers: NO_STORE });
         }
-
         if (replay.kind === "conflict") {
           return NextResponse.json(
             { error: "Idempotency key reused with different payload" },
             { status: 409, headers: NO_STORE },
           );
         }
-
         if (replay.kind === "ownership_conflict") {
           return NextResponse.json(
             { error: IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE },
@@ -302,11 +292,7 @@ export async function POST(request: NextRequest) {
     }
 
     const response = NextResponse.json(
-      {
-        ok: true,
-        public_id: inserted.public_id,
-        created_at: inserted.created_at,
-      },
+      { ok: true, public_id: inserted.public_id, created_at: inserted.created_at },
       { status: 200, headers: NO_STORE },
     );
     if (clientCampaignLinkId) {
