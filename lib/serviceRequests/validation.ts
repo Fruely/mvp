@@ -24,6 +24,10 @@ export type ServiceRequestCreateInput = {
   client_email?: unknown;
   client_phone?: unknown;
   description?: unknown;
+  requested_service?: unknown;
+  subcategory_text?: unknown;
+  client_budget_text?: unknown;
+  preferred_contact_method?: unknown;
   preferred_language?: unknown;
   work_format?: unknown;
   city?: unknown;
@@ -56,6 +60,10 @@ export type ValidatedServiceRequestCreate = {
   client_email: string | null;
   client_phone: string | null;
   description: string;
+  requested_service: string | null;
+  subcategory_text: string | null;
+  client_budget_text: string | null;
+  preferred_contact_method: string | null;
   preferred_language: string;
   work_format: ServiceRequestWorkFormat;
   city: string | null;
@@ -75,6 +83,11 @@ export type ValidationError = { error: string; status: number };
 
 function str(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function limitedStr(value: unknown, max: number): string | null {
+  const valueString = str(value);
+  return valueString ? valueString.slice(0, max) : null;
 }
 
 function parseRadius(value: unknown): number | null {
@@ -97,32 +110,24 @@ export function validateServiceRequestCreate(
   if (body.specialist_id != null && String(body.specialist_id).trim()) {
     return { error: "specialist_id is not allowed", status: 400 };
   }
-
   if (body.status != null && String(body.status).trim()) {
     return { error: "status is not allowed", status: 400 };
   }
-
   if (body.public_id != null && String(body.public_id).trim()) {
     return { error: "public_id is not allowed", status: 400 };
   }
-
   if (body.client_campaign_link_id != null && String(body.client_campaign_link_id).trim()) {
     return { error: "client_campaign_link_id is not allowed", status: 400 };
   }
-
   if (body.source != null && String(body.source).trim() && String(body.source).trim() !== SERVICE_REQUEST_SOURCE) {
     return { error: "invalid source", status: 400 };
   }
 
   const client_name = str(body.client_name);
-  if (!client_name) {
-    return { error: "client_name is required", status: 400 };
-  }
+  if (!client_name) return { error: "client_name is required", status: 400 };
 
   const description = str(body.description);
-  if (!description) {
-    return { error: "description is required", status: 400 };
-  }
+  if (!description) return { error: "description is required", status: 400 };
   if (description.length > DESCRIPTION_MAX_LEN) {
     return { error: "description is too long", status: 400 };
   }
@@ -134,9 +139,7 @@ export function validateServiceRequestCreate(
   }
 
   const preferred_language = str(body.preferred_language);
-  if (!preferred_language) {
-    return { error: "preferred_language is required", status: 400 };
-  }
+  if (!preferred_language) return { error: "preferred_language is required", status: 400 };
 
   const work_formatRaw = str(body.work_format);
   if (!work_formatRaw || !SERVICE_REQUEST_WORK_FORMATS.includes(work_formatRaw as ServiceRequestWorkFormat)) {
@@ -145,9 +148,7 @@ export function validateServiceRequestCreate(
   const work_format = work_formatRaw as ServiceRequestWorkFormat;
 
   const timingResult = validateServiceTiming(body);
-  if ("error" in timingResult) {
-    return { error: timingResult.error, status: 400 };
-  }
+  if ("error" in timingResult) return { error: timingResult.error, status: 400 };
   const service_timing = timingResult;
   const legacyTiming = mapServiceTimingToLegacyUrgency(service_timing);
   const urgency = legacyTiming.urgency;
@@ -163,25 +164,31 @@ export function validateServiceRequestCreate(
   const country_code = str(body.country_code)?.toUpperCase() ?? null;
   const radius_km = parseRadius(body.radius_km);
 
-  if (work_format === "offline" || work_format === "hybrid") {
-    if (!city && !postal_code) {
-      return { error: "city or postal_code is required for offline/hybrid", status: 400 };
-    }
-  }
-
-  if (radius_km != null && radius_km < 0) {
-    return { error: "invalid radius_km", status: 400 };
+  if ((work_format === "offline" || work_format === "hybrid") && !city && !postal_code) {
+    return { error: "city or postal_code is required for offline/hybrid", status: 400 };
   }
 
   const category_id = str(body.category_id);
   const category_text = str(body.category_text);
   const source_path = str(body.source_path);
+  const requested_service = limitedStr(body.requested_service, 500);
+  const subcategory_text = limitedStr(body.subcategory_text, 300);
+  const client_budget_text = limitedStr(body.client_budget_text, 200);
+  const contactMethod = limitedStr(body.preferred_contact_method, 30);
+  const preferred_contact_method =
+    contactMethod && ["email", "phone", "telegram", "whatsapp", "any"].includes(contactMethod)
+      ? contactMethod
+      : null;
 
   return {
     client_name,
     client_email,
     client_phone,
     description,
+    requested_service,
+    subcategory_text,
+    client_budget_text,
+    preferred_contact_method,
     preferred_language,
     work_format,
     city,
