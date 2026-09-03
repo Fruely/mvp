@@ -8,6 +8,7 @@ import type { ServiceRequestDetail, ServiceRequestListItem } from "@/lib/service
 import type { ServiceRequestPromotionAdmin } from "@/lib/serviceRequests/promotionAdminData";
 import { updateServiceRequestStatusAction } from "./actions";
 import ServiceRequestPromotionBlock from "./ServiceRequestPromotionBlock";
+import DemandIntelligenceBlock from "./DemandIntelligenceBlock";
 
 type Props = {
   rows: ServiceRequestListItem[];
@@ -53,7 +54,10 @@ export default function ServiceRequestsAdminView({
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Service requests</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Service requests</h1>
+          <p className="text-sm text-gray-500 mt-1">Заявки, источник спроса, fulfillment и привлечение специалистов.</p>
+        </div>
         <button
           type="button"
           onClick={() => router.refresh()}
@@ -66,7 +70,7 @@ export default function ServiceRequestsAdminView({
       {error ? <p className="text-red-600 mb-4 text-sm">{error}</p> : null}
 
       <div className="grid lg:grid-cols-2 gap-6">
-        <div className="overflow-x-auto border rounded-lg bg-white">
+        <div className="overflow-x-auto border rounded-lg bg-white self-start">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 text-left">
               <tr>
@@ -99,7 +103,7 @@ export default function ServiceRequestsAdminView({
           {!detail ? (
             <p className="text-gray-500 text-sm">Выберите запрос в списке.</p>
           ) : (
-            <div className="space-y-3 text-sm">
+            <div className="space-y-4 text-sm">
               <h2 className="font-semibold text-lg">{detail.public_id}</h2>
               <p><strong>Имя:</strong> {detail.client_name}</p>
               <p><strong>Email:</strong> {detail.client_email || "—"}</p>
@@ -115,30 +119,22 @@ export default function ServiceRequestsAdminView({
               <p><strong>Город / PLZ:</strong> {[detail.postal_code, detail.city].filter(Boolean).join(" ") || "—"}</p>
 
               <div className="rounded-md border border-blue-100 bg-blue-50/60 px-3 py-3 space-y-1">
-                <p className="font-semibold text-gray-900">Канал лида</p>
+                <p className="font-semibold text-gray-900">Канал лида / attribution</p>
                 <p><strong>Канал:</strong> {acquisitionChannel(detail) || "Не определён"}</p>
-                {detail.acquisition_medium ? (
-                  <p><strong>Medium:</strong> {detail.acquisition_medium}</p>
-                ) : null}
-                {acquisitionCampaign(detail) ? (
-                  <p><strong>Кампания:</strong> {acquisitionCampaign(detail)}</p>
-                ) : null}
+                {detail.acquisition_medium ? <p><strong>Medium:</strong> {detail.acquisition_medium}</p> : null}
+                {acquisitionCampaign(detail) ? <p><strong>Campaign:</strong> {acquisitionCampaign(detail)}</p> : null}
+                {detail.acquisition_content ? <p><strong>Content:</strong> {detail.acquisition_content}</p> : null}
+                {detail.acquisition_term ? <p><strong>Term / keyword:</strong> {detail.acquisition_term}</p> : null}
+                {detail.acquisition_gclid ? <p className="break-all"><strong>Google click ID:</strong> {detail.acquisition_gclid}</p> : null}
+                {detail.acquisition_fbclid ? <p className="break-all"><strong>Meta click ID:</strong> {detail.acquisition_fbclid}</p> : null}
                 {detail.campaign_attribution ? (
-                  <p>
-                    <strong>Campaign link:</strong>{" "}
-                    {detail.campaign_attribution.name} (/go/{detail.campaign_attribution.slug})
-                  </p>
+                  <p><strong>Campaign link:</strong> {detail.campaign_attribution.name} (/go/{detail.campaign_attribution.slug})</p>
                 ) : null}
-                {detail.acquisition_landing_path ? (
-                  <p className="break-all"><strong>Первый вход:</strong> {detail.acquisition_landing_path}</p>
-                ) : null}
-                {detail.acquisition_referrer ? (
-                  <p className="break-all"><strong>Referrer:</strong> {detail.acquisition_referrer}</p>
-                ) : null}
+                {detail.acquisition_landing_path ? <p className="break-all"><strong>Первый вход:</strong> {detail.acquisition_landing_path}</p> : null}
+                {detail.acquisition_referrer ? <p className="break-all"><strong>Referrer:</strong> {detail.acquisition_referrer}</p> : null}
+                {detail.acquisition_captured_at ? <p><strong>First-touch captured:</strong> {new Date(detail.acquisition_captured_at).toLocaleString()}</p> : null}
                 {!detail.acquisition_source && !detail.campaign_attribution ? (
-                  <p className="text-xs text-gray-500">
-                    Для старых заявок или при отсутствии согласия на аналитику канал может быть неизвестен.
-                  </p>
+                  <p className="text-xs text-gray-500">Для старых заявок или при отсутствии согласия на аналитику канал может быть неизвестен.</p>
                 ) : null}
               </div>
 
@@ -146,6 +142,7 @@ export default function ServiceRequestsAdminView({
                 <strong>Внутренний путь:</strong> {detail.source}{" "}
                 {detail.source_path ? `(${detail.source_path})` : ""}
               </p>
+
               <label className="block pt-2">
                 <span className="font-medium">Status</span>
                 <select
@@ -154,11 +151,11 @@ export default function ServiceRequestsAdminView({
                   disabled={isPending}
                   onChange={(e) => handleStatusChange(detail.id, e.target.value)}
                 >
-                  {SERVICE_REQUEST_STATUSES.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
+                  {SERVICE_REQUEST_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </label>
+
+              <DemandIntelligenceBlock key={detail.id} detail={detail} />
 
               <ServiceRequestPromotionBlock
                 serviceRequestId={detail.id}
