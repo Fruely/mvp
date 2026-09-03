@@ -2,12 +2,29 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import {
-  FULFILLMENT_STATUSES,
-  SPECIALIST_ACQUISITION_STATUSES,
-  type ServiceRequestDetail,
-} from "@/lib/serviceRequests/adminData";
+import type { ServiceRequestDetail } from "@/lib/serviceRequests/adminData";
 import { updateServiceRequestDemandAction } from "./actions";
+
+const FULFILLMENT_STATUSES = [
+  "unassessed",
+  "existing_supply",
+  "external_search",
+  "specialist_found",
+  "matched",
+  "fulfilled",
+  "unfilled",
+] as const;
+
+const SPECIALIST_ACQUISITION_STATUSES = [
+  "not_started",
+  "prospecting",
+  "contacted",
+  "invited",
+  "registered",
+  "paid",
+  "declined",
+  "not_needed",
+] as const;
 
 type Props = { detail: ServiceRequestDetail };
 
