@@ -172,6 +172,8 @@ export default async function SpecialistsPage({
   const radiusParam = searchParams?.radius?.trim() || null;
   const isOnlineList = pageMode === "online";
   const uiLang = toUiLang(lang);
+  // --- Canonical category redirect ---
+  // Step 1: category-only (no q / place / mode) → canonical category hub path
   let canonicalCategorySlug = categorySlugForCanonicalSearch({
     category,
     q,
@@ -186,6 +188,23 @@ export default async function SpecialistsPage({
   }
   if (canonicalCategorySlug) {
     permanentRedirect(getCategoryUrl(uiLang, canonicalCategorySlug));
+  }
+
+  // Step 2: q maps to a known category but additional filters are present
+  // (mode / place / radius). Replace q with category param; preserve filters.
+  // This fixes the regression where "психолог" + online → q=психолог (text
+  // search across all categories) instead of category=psychologists + online.
+  if (q && !category) {
+    const resolvedSlug = await resolveCategoryAsciiSlug(q);
+    if (resolvedSlug) {
+      const canonicalParams = new URLSearchParams();
+      canonicalParams.set("lang", lang);
+      canonicalParams.set("category", resolvedSlug);
+      if (pageMode) canonicalParams.set("mode", pageMode);
+      if (place) canonicalParams.set("place", place);
+      if (radiusParam) canonicalParams.set("radius", radiusParam);
+      permanentRedirect(`/specialists?${canonicalParams.toString()}`);
+    }
   }
 
   const dict = await getDictionary(uiLang);

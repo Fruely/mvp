@@ -66,3 +66,33 @@ export function buildServiceSearchResultsUrl(opts: {
 
   return `/specialists?${params.toString()}`;
 }
+
+/**
+ * Build the `/specialists` results URL using a resolved category slug
+ * instead of a free-text `q`. The category is passed as `category=<slug>`,
+ * which the specialists page uses as a `category_id` filter — guaranteeing
+ * that only specialists from that category appear in the results.
+ *
+ * Format-specific params (mode / place / radius) are added as with the
+ * text-based builder so they act as additive filters on top of the category.
+ */
+export function buildServiceSearchCategoryUrl(opts: {
+  categorySlug: string;
+  language: ServiceSearchLangValue;
+  format: ServiceSearchFormat;
+  location: string;
+  radiusKm?: number | null;
+}): string {
+  const params = new URLSearchParams();
+  params.set("lang", toSearchLang(opts.language));
+  params.set("category", opts.categorySlug);
+
+  if (opts.format === "online") {
+    params.set("mode", "online");
+  } else if (opts.format === "nearby" && opts.location.trim()) {
+    params.set("place", opts.location.trim());
+    params.set("radius", String(normalizeUiRadiusKm(opts.radiusKm)));
+  }
+
+  return `/specialists?${params.toString()}`;
+}

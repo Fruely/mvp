@@ -6,10 +6,12 @@ import type { FormEvent, ReactNode, RefObject } from "react";
 import type { Lang } from "@/lib/i18n";
 import { buildCategorySearchHref } from "@/lib/search/searchContext";
 import {
+  buildServiceSearchCategoryUrl,
   buildServiceSearchResultsUrl,
   DEFAULT_SERVICE_SEARCH_RADIUS_KM,
   SERVICE_SEARCH_UI_RADII_KM,
 } from "@/lib/search/serviceSearchUrl";
+import { resolveServiceToCategory } from "@/lib/categories/resolveServiceToCategory";
 import {
   publicChoiceButtonClass,
   publicFormatChoiceClass,
@@ -480,6 +482,22 @@ export default function ServiceSearchFlow({
 
     if (state.selectedFormat === "nearby" && !state.location.trim()) {
       return null;
+    }
+
+    // When the typed text matches a known category name (exact title or
+    // singular form), build the URL with category= instead of q=.
+    const categorySlug = resolveServiceToCategory(state.service);
+    if (categorySlug) {
+      if (state.selectedFormat === "any") {
+        return buildCategorySearchHref(uiLang, categorySlug);
+      }
+      return buildServiceSearchCategoryUrl({
+        categorySlug,
+        language: state.selectedLanguage,
+        format: state.selectedFormat,
+        location: state.location,
+        radiusKm: state.radiusKm || DEFAULT_SERVICE_SEARCH_RADIUS_KM,
+      });
     }
 
     return buildServiceSearchResultsUrl({
