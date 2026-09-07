@@ -53,19 +53,19 @@ export const ABOUT_METADATA = {
 
 export const SUPPORT_METADATA = {
   ua: {
-    title: "Підтримка Freuly",
+    title: "Контакти та підтримка Freuly",
     description:
-      "Зв’яжіться з підтримкою Freuly: допомога з пошуком спеціаліста та роботою платформи. Відповідаємо зазвичай протягом 24 годин.",
+      "Контакти Freuly: телефон, email і форма звернення з питань платформи, оплати та пошуку спеціалістів.",
   },
   ru: {
-    title: "Поддержка Freuly",
+    title: "Контакты и поддержка Freuly",
     description:
-      "Свяжитесь с поддержкой Freuly: помощь с поиском специалиста и работой платформы. Отвечаем обычно в течение 24 часов.",
+      "Контакты Freuly: телефон, email и форма обращения по вопросам платформы, оплаты и поиска специалистов.",
   },
   de: {
-    title: "Freuly Support",
+    title: "Kontakt und Support | Freuly",
     description:
-      "Kontaktieren Sie den Freuly-Support: Hilfe bei der Spezialistensuche und zur Nutzung der Plattform. Antwort in der Regel innerhalb von 24 Stunden.",
+      "Freuly Kontakt: Telefon, E-Mail und Kontaktformular für Fragen zur Plattform, zu Zahlungen und zur Spezialistensuche.",
   },
 } as const;
 
