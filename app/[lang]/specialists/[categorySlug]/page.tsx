@@ -1,5 +1,5 @@
 import { notFound, permanentRedirect } from "next/navigation";
-import { isSupportedLang } from "@/lib/i18n";
+import { getDictionary, getDictValue, isSupportedLang } from "@/lib/i18n";
 import { resolveCategoryAsciiSlug } from "@/lib/categories/resolvePublicCategorySlug";
 import {
   appendPreservedQuery,
@@ -31,5 +31,14 @@ export default async function CategorySpecialistsPage({
     permanentRedirect(appendPreservedQuery(canonicalPath, query));
   }
 
-  return <CategoryHubClient params={{ lang, slug: ascii }} />;
+  const dict = await getDictionary(lang);
+  const labels = getDictValue(dict, "categories") as Record<string, unknown> | undefined;
+  const label = typeof labels?.[ascii] === "string" ? String(labels[ascii]) : ascii;
+  const heading = lang === "ru"
+    ? `${label} в Германии на вашем языке`
+    : lang === "de"
+      ? `${label} in Deutschland – in Ihrer Sprache`
+      : `${label} в Німеччині вашою мовою`;
+
+  return <CategoryHubClient params={{ lang, slug: ascii }} initialDict={dict} initialHeading={heading} />;
 }

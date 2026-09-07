@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: { lang: string } })
       languages: {
         de: `${DOMAIN}/de/${SLUG}`,
         ru: `${DOMAIN}/ru/${SLUG}`,
-        ua: `${DOMAIN}/ua/${SLUG}`,
+        uk: `${DOMAIN}/ua/${SLUG}`,
         "x-default": `${DOMAIN}/de/${SLUG}`,
       },
     },

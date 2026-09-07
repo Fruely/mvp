@@ -141,22 +141,15 @@ export async function generateMetadata({
 }: {
   searchParams: SearchParams;
 }): Promise<Metadata> {
-  const lang = searchParams?.lang?.trim() || DEFAULT_SPECIALISTS_SEARCH_LANG;
-  const place = searchParams?.place?.trim();
-  const mode = searchParams?.mode?.trim().toLowerCase();
-  if (mode === "online") {
-    return {
-      title: "Specialists · online | Freuly",
-      description: `Find specialists by language.`,
-    };
-  }
-  if (!place) {
-    return { title: "Specialists | Freuly" };
-  }
-  return {
-    title: `Specialists · ${place} | Freuly`,
-    description: `Find specialists by language and location.`,
+  const uiLang = toUiLang(searchParams?.lang?.trim() || DEFAULT_SPECIALISTS_SEARCH_LANG);
+  const copy = {
+    ru: { title: "Результаты поиска специалистов | Freuly", description: "Поиск специалистов по языку, городу и формату работы." },
+    ua: { title: "Результати пошуку спеціалістів | Freuly", description: "Пошук спеціалістів за мовою, містом і форматом роботи." },
+    de: { title: "Suchergebnisse für Spezialisten | Freuly", description: "Spezialisten nach Sprache, Ort und Arbeitsformat finden." },
   };
+  // Ad-hoc filtered results are not landing pages. Keep links crawlable;
+  // category-only requests still permanently redirect to indexable hubs.
+  return { ...copy[uiLang], robots: { index: false, follow: true } };
 }
 
 export default async function SpecialistsPage({

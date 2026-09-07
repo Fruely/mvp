@@ -6,87 +6,77 @@ import { SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 import { isAsciiPublicPath, isAsciiSlug } from "@/lib/publicUrls";
 import { isExcludedFromPublicCategoryListing } from "@/lib/categories/uncategorizedSpecialistCategory";
 
+// Always read current publication/visibility state; never freeze a build-time fallback.
+export const dynamic = "force-dynamic";
+
 const LANGS = ["ua", "ru", "de"] as const;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const lastModified = new Date();
-
   const entries: MetadataRoute.Sitemap = [];
-
-  entries.push({
-    url: SITE_DOMAIN,
-    lastModified,
-    changeFrequency: "weekly",
-    priority: 1.0,
-  });
 
   for (const lang of LANGS) {
     entries.push({
       url: `${SITE_DOMAIN}/${lang}`,
-      lastModified,
       changeFrequency: "weekly",
       priority: 1.0,
     });
 
     entries.push({
       url: `${SITE_DOMAIN}/${lang}/blog`,
-      lastModified,
       changeFrequency: "weekly",
       priority: 0.7,
     });
 
     entries.push({
+      url: `${SITE_DOMAIN}/${lang}/for-specialists`,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    });
+
+    entries.push({
       url: `${SITE_DOMAIN}/${lang}/become-specialist`,
-      lastModified,
       changeFrequency: "weekly",
       priority: 0.7,
     });
 
     entries.push({
       url: `${SITE_DOMAIN}/${lang}/about`,
-      lastModified,
       changeFrequency: "monthly",
       priority: 0.5,
     });
 
     entries.push({
       url: `${SITE_DOMAIN}/${lang}/support`,
-      lastModified,
       changeFrequency: "monthly",
       priority: 0.5,
     });
 
     entries.push({
       url: `${SITE_DOMAIN}/${lang}/pricing`,
-      lastModified,
       changeFrequency: "monthly",
       priority: 0.55,
     });
 
     entries.push({
       url: `${SITE_DOMAIN}/${lang}/specialist-rules`,
-      lastModified,
       changeFrequency: "yearly",
       priority: 0.4,
     });
 
     entries.push({
       url: `${SITE_DOMAIN}/${lang}/agb`,
-      lastModified,
       changeFrequency: "yearly",
       priority: 0.35,
     });
 
     entries.push({
       url: `${SITE_DOMAIN}/${lang}/impressum`,
-      lastModified,
       changeFrequency: "yearly",
       priority: 0.3,
     });
 
     entries.push({
       url: `${SITE_DOMAIN}/${lang}/datenschutzerklaerung`,
-      lastModified,
       changeFrequency: "yearly",
       priority: 0.3,
     });
@@ -94,7 +84,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const slug of SEO_CATEGORY_SLUGS) {
       entries.push({
         url: `${SITE_DOMAIN}/${lang}/${slug}`,
-        lastModified,
         changeFrequency: "weekly",
         priority: 0.7,
       });
@@ -102,7 +91,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // CI next build has no Supabase secrets; skip DB URLs instead of failing export.
-  // Production Vercel still has env, so the live sitemap is unchanged.
+  // Production requests read the current database using server credentials.
   let supabase;
   try {
     supabase = createSupabaseServerClient();
@@ -129,7 +118,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
       entries.push({
         url,
-        lastModified: post.updated_at ? new Date(post.updated_at) : lastModified,
+        lastModified: post.updated_at ? new Date(post.updated_at) : undefined,
         changeFrequency: "monthly",
         priority: 0.6,
       });
@@ -151,7 +140,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         if (!isAsciiPublicPath(url)) continue;
         entries.push({
           url,
-          lastModified,
           changeFrequency: "weekly",
           priority: 0.65,
         });
@@ -164,6 +152,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .select("slug, updated_at")
     .not("slug", "is", null)
     .neq("slug", "")
+    .or("is_test.is.null,is_test.eq.false")
     .eq("is_active", true)
     .eq("is_visible", true)
     .eq("billing_visibility_blocked", false)
@@ -180,7 +169,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         if (!isAsciiPublicPath(url)) continue;
         entries.push({
           url: `${SITE_DOMAIN}/${lang}/specialist/${segment}`,
-          lastModified: sp.updated_at ? new Date(sp.updated_at) : lastModified,
+          lastModified: sp.updated_at ? new Date(sp.updated_at) : undefined,
           changeFrequency: "weekly",
           priority: 0.7,
         });

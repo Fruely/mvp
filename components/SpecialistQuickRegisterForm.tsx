@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Alert, Button, Card, CardContent, CardHeader, CardTitle, Input } from "@/components/ui";
+import { Alert, Button, Card, CardContent, CardHeader,  Input } from "@/components/ui";
 import { publicPageContainerClass } from "@/components/public/publicStyles";
 import SpecialistLegalAcceptanceFields from "@/components/legal/SpecialistLegalAcceptanceFields";
 import { getSupabase } from "@/lib/supabaseClient";
@@ -133,9 +133,9 @@ export default function SpecialistQuickRegisterForm({ dict, lang }: Props) {
       <div className={publicPageContainerClass}>
         <Card padding="lg" className="mx-auto max-w-xl shadow-none">
           <CardHeader>
-            <CardTitle className="text-freuly-page-title">
+            <h1 className="text-freuly-page-title">
               {t(dict, "application.quickRegister.title", { defaultValue: "Реєстрація спеціаліста" })}
-            </CardTitle>
+            </h1>
             <p className="mt-freuly-1 text-freuly-body-sm text-freuly-text-secondary">
               {t(dict, "application.quickRegister.subtitle", {
                 defaultValue: "Мінімальні кроки: email, телефон і пароль.",
