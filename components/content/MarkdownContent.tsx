@@ -118,7 +118,7 @@ export function MarkdownContent({ source }: { source: string }) {
       const src = safeHref(imageMatch[2]);
       if (src && /^https?:\/\//i.test(src)) {
         blocks.push(
-          <figure key={`image-${index}`} className="my-8 overflow-hidden rounded-freuly-lg">
+          <figure key={`image-${index}`} className="my-7 overflow-hidden rounded-freuly-lg">
             <img src={src} alt={imageMatch[1]} className="h-auto w-full" loading="lazy" />
           </figure>,
         );
@@ -129,7 +129,7 @@ export function MarkdownContent({ source }: { source: string }) {
 
     if (line.startsWith("### ")) {
       blocks.push(
-        <h3 key={`h3-${index}`} className="mt-8 text-[20px] font-semibold text-freuly-text-primary">
+        <h3 key={`h3-${index}`} className="mb-2 mt-4 text-[20px] font-semibold leading-[1.35] text-freuly-text-primary">
           {renderInline(line.slice(4), `h3-${index}`)}
         </h3>,
       );
@@ -139,7 +139,7 @@ export function MarkdownContent({ source }: { source: string }) {
 
     if (line.startsWith("## ")) {
       blocks.push(
-        <h2 key={`h2-${index}`} className="mt-10 pt-3 text-[24px] font-bold text-freuly-text-primary">
+        <h2 key={`h2-${index}`} className="mb-3 mt-5 text-[24px] font-bold leading-[1.35] text-freuly-text-primary">
           {renderInline(line.slice(3), `h2-${index}`)}
         </h2>,
       );
@@ -149,7 +149,7 @@ export function MarkdownContent({ source }: { source: string }) {
 
     if (line.startsWith("> ")) {
       blocks.push(
-        <blockquote key={`quote-${index}`} className="my-6 border-l-[3px] border-freuly-primary pl-5 text-[16px] leading-[1.7] text-freuly-text-secondary">
+        <blockquote key={`quote-${index}`} className="my-4 border-l-[3px] border-freuly-primary pl-5 text-[16px] leading-[1.6] text-freuly-text-secondary">
           {renderInline(line.slice(2), `quote-${index}`)}
         </blockquote>,
       );
@@ -165,7 +165,7 @@ export function MarkdownContent({ source }: { source: string }) {
         index += 1;
       }
       blocks.push(
-        <ul key={`ul-block-${index}`} className="my-5 list-disc space-y-2 pl-6 text-[16px] leading-[1.7] text-freuly-text-primary marker:text-freuly-primary">
+        <ul key={`ul-block-${index}`} className="my-4 list-disc space-y-1.5 pl-6 text-[16px] leading-[1.6] text-freuly-text-primary marker:text-freuly-primary">
           {items}
         </ul>,
       );
@@ -180,7 +180,7 @@ export function MarkdownContent({ source }: { source: string }) {
         index += 1;
       }
       blocks.push(
-        <ol key={`ol-block-${index}`} className="my-5 list-decimal space-y-2 pl-6 text-[16px] leading-[1.7] text-freuly-text-primary">
+        <ol key={`ol-block-${index}`} className="my-4 list-decimal space-y-1.5 pl-6 text-[16px] leading-[1.6] text-freuly-text-primary">
           {items}
         </ol>,
       );
@@ -197,7 +197,7 @@ export function MarkdownContent({ source }: { source: string }) {
     }
 
     blocks.push(
-      <p key={`p-${index}`} className="my-5 text-[16px] leading-[1.7] text-freuly-text-primary">
+      <p key={`p-${index}`} className="mb-4 text-[16px] leading-[1.6] text-freuly-text-primary">
         {renderInline(paragraphLines.join(" "), `p-${index}`)}
       </p>,
     );
