@@ -99,8 +99,15 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
   });
 }
 
+function normalizeListSpacing(source: string): string {
+  return source
+    .replace(/\r\n/g, "\n")
+    .replace(/(^[-*]\s+.*)\n(?:[ \t]*\n)+(?=[-*]\s+)/gm, "$1\n")
+    .replace(/(^\d+\.\s+.*)\n(?:[ \t]*\n)+(?=\d+\.\s+)/gm, "$1\n");
+}
+
 export function MarkdownContent({ source }: { source: string }) {
-  const lines = source.replace(/\r\n/g, "\n").split("\n");
+  const lines = normalizeListSpacing(source).split("\n");
   const blocks: ReactNode[] = [];
   let index = 0;
 
