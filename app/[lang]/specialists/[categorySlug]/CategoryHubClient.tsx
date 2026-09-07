@@ -2,12 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
+import { t, type Dictionary, type Lang } from "@/lib/i18n";
 import { buildCategorySearchHref } from "@/lib/search/searchContext";
 import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbCode";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
-import uaDict from "@/locales/ua.json";
 import SpecialistPreviewCard from "@/components/specialist/SpecialistPreviewCard";
 import ServiceRequestCtaBlock from "@/components/serviceRequests/ServiceRequestCtaBlock";
 import { Alert, Button, Card, CardContent } from "@/components/ui";
@@ -144,12 +143,16 @@ function normalizeSpecialistPreview(input: any): SpecialistPreview | null {
   };
 }
 
-export default function CategoryHubClient({ params }: { params: { lang: string; slug: string } }) {
+export default function CategoryHubClient({ params, initialDict, initialHeading }: {
+  params: { lang: string; slug: string };
+  initialDict: Dictionary;
+  initialHeading: string;
+}) {
   const { slug } = params;
   const lang = params.lang as Lang;
   const langPrefix = `/${lang}`;
 
-  const [dict, setDict] = useState<Dictionary>(uaDict as unknown as Dictionary);
+  const dict = initialDict;
 
   const [category, setCategory] = useState<Category | null>(null);
   const [parentCategory, setParentCategory] = useState<ParentCategory | null>(null);
@@ -277,22 +280,6 @@ export default function CategoryHubClient({ params }: { params: { lang: string; 
       setLoadingSpecialists(false);
     }
   };
-
-  useEffect(() => {
-    let cancelled = false;
-
-    getDictionary(lang)
-      .then((d) => {
-        if (!cancelled) setDict(d);
-      })
-      .catch(() => {
-        if (!cancelled) setDict(uaDict as unknown as Dictionary);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [lang]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -427,6 +414,8 @@ export default function CategoryHubClient({ params }: { params: { lang: string; 
     return (
       <div className="flex min-h-[50vh] items-center justify-center bg-freuly-page">
         <div className="text-center">
+          <h1 className={publicSectionTitleClass}>{initialHeading}</h1>
+          <p className={publicSectionSubtitleClass}>{uspSubtext}</p>
           <div className="mx-auto mb-freuly-4 h-12 w-12 animate-spin rounded-full border-b-2 border-freuly-primary" />
           <p className="text-freuly-body text-freuly-text-secondary">{t(dict, "category.loading")}</p>
         </div>

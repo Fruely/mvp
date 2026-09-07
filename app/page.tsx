@@ -6,7 +6,7 @@ import LanguageBar from "@/components/LanguageBar";
 import LatestContentPostsSection from "@/components/content/LatestContentPostsSection";
 import MobileLatestPostAnnouncement from "@/components/content/MobileLatestPostAnnouncement";
 import { getDictionary, type Lang } from "@/lib/i18n";
-import { HOME_METADATA, HREFLANG_HOME, SITE_ROOT_URL } from "@/lib/seo/siteMetadata";
+import { HOME_METADATA, HREFLANG_HOME, SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 import { loadHomepageInitialData } from "@/lib/homepage/loadHomepageInitialData";
 import { serializeHomepageInitialData } from "@/lib/homepage/serializeHomepageInitialData";
 import HomeClient from "./[lang]/HomeClient";
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: HOME_METADATA[ROOT_LANG].title,
   description: HOME_METADATA[ROOT_LANG].description,
   alternates: {
-    canonical: SITE_ROOT_URL,
+    canonical: `${SITE_DOMAIN}/ru`,
     languages: HREFLANG_HOME,
   },
 };

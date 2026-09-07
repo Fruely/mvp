@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { ForSpecialistsView } from "./ForSpecialistsView";
 import { FOR_SPECIALISTS_COPY } from "./copy";
-import { isSupportedLang, langFromCookie, type Lang } from "@/lib/i18n";
+import { langFromCookie, type Lang } from "@/lib/i18n";
+
+import { SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 
 const LANG_COOKIE = "freuly_lang";
 
@@ -18,6 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: m.title,
     description: m.description,
+    alternates: { canonical: `${SITE_DOMAIN}/${lang}/for-specialists` },
   };
 }
 
