@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isValidContentSlug } from "@/lib/content/slug";
 import {
@@ -102,11 +103,22 @@ function validateTranslation(value: unknown): TranslationPayload | null {
   };
 }
 
+function getGatewayToken(): string | null {
+  const apiKey = process.env.AI_GATEWAY_API_KEY?.trim();
+  if (apiKey) return apiKey;
+
+  const requestOidcToken = headers().get("x-vercel-oidc-token")?.trim();
+  if (requestOidcToken) return requestOidcToken;
+
+  const envOidcToken = process.env.VERCEL_OIDC_TOKEN?.trim();
+  return envOidcToken || null;
+}
+
 async function translateArticle(
   source: ContentPost,
   targetLang: ContentLang,
 ): Promise<TranslationPayload> {
-  const token = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
+  const token = getGatewayToken();
   if (!token) throw new Error("CONTENT_TRANSLATION_AUTH_MISSING");
 
   const response = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
