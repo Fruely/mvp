@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { MarkdownContent } from "@/components/content/MarkdownContent";
 import { ArticleShareBlock } from "@/components/content/ArticleShareBlock";
 import { getPublishedPost } from "@/lib/content/queries";
+import { ensureArticleTranslationAction } from "@/lib/content/translationAction";
 import { isSupportedLang, type Lang } from "@/lib/i18n";
 import { SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 import type { ContentCtaType, ContentType } from "@/lib/content/types";
@@ -53,6 +54,8 @@ const CTA_LABELS: Record<Lang, Record<Exclude<ContentCtaType, "none">, string>> 
   },
 };
 
+const TRANSLATION_SOURCE_PRIORITY: Lang[] = ["ru", "ua", "de"];
+
 function formatDate(value: string | null, lang: Lang): string | null {
   if (!value) return null;
   const date = new Date(value);
@@ -76,6 +79,38 @@ function safeCtaHref(value: string | null): string | null {
 
 function articleUrl(lang: Lang, slug: string): string {
   return `${SITE_DOMAIN}/${lang}/blog/${slug}`;
+}
+
+async function getOrCreateLocalizedPost(lang: Lang, slug: string) {
+  const existing = await getPublishedPost(lang, slug);
+  if (existing) return existing;
+
+  for (const sourceLang of TRANSLATION_SOURCE_PRIORITY) {
+    if (sourceLang === lang) continue;
+
+    const source = await getPublishedPost(sourceLang, slug);
+    if (!source) continue;
+
+    const result = await ensureArticleTranslationAction({
+      sourceLang,
+      targetLang: lang,
+      slug,
+    });
+
+    if (!result.ok) {
+      console.error("[content/translation] localized route generation failed", {
+        sourceLang,
+        targetLang: lang,
+        slug,
+        error: result.error,
+      });
+      return null;
+    }
+
+    return await getPublishedPost(lang, slug);
+  }
+
+  return null;
 }
 
 export async function generateMetadata({
@@ -120,7 +155,7 @@ export default async function BlogArticlePage({
   if (!isSupportedLang(params.lang)) redirect("/ua/blog");
 
   const lang = params.lang as Lang;
-  const post = await getPublishedPost(lang, params.slug);
+  const post = await getOrCreateLocalizedPost(lang, params.slug);
   if (!post) notFound();
 
   const publishedDate = formatDate(post.published_at, lang);
