@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { assertAdminSession } from "@/lib/adminSession";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { removeOwnedContentImageByUrl } from "@/lib/content/contentImageStorage";
+import { ensureArticleTranslationAction } from "@/lib/content/translationAction";
 import { CONTENT_LANGS, CONTENT_TYPES, isContentLang } from "@/lib/content/types";
 import { isValidContentSlug } from "@/lib/content/slug";
 
@@ -28,6 +29,38 @@ function revalidateContentSurfaces(lang: string, slug: string | null, postId?: s
   if (slug) {
     revalidatePath(`/${lang}/blog/${slug}`);
   }
+}
+
+async function ensurePublishedTranslations(sourceLang: string, slug: string): Promise<void> {
+  if (!isContentLang(sourceLang)) return;
+
+  await Promise.all(
+    CONTENT_LANGS.filter((targetLang) => targetLang !== sourceLang).map(async (targetLang) => {
+      try {
+        const result = await ensureArticleTranslationAction({
+          sourceLang,
+          targetLang,
+          slug,
+        });
+
+        if (!result.ok) {
+          console.error("[admin/content] automatic translation failed", {
+            sourceLang,
+            targetLang,
+            slug,
+            error: result.error,
+          });
+        }
+      } catch (error) {
+        console.error("[admin/content] automatic translation crashed", {
+          sourceLang,
+          targetLang,
+          slug,
+          error,
+        });
+      }
+    }),
+  );
 }
 
 function text(formData: FormData, key: string): string {
@@ -155,6 +188,7 @@ export async function publishPostAction(formData: FormData): Promise<void> {
   }
   if (!data) throw new Error("PUBLISH_CONFLICT");
 
+  await ensurePublishedTranslations(payload.lang, payload.slug);
   revalidateContentSurfaces(payload.lang, payload.slug, id);
   redirect(`/admin/content/posts/${id}`);
 }
