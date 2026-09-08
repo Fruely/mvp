@@ -2,7 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getPublishedPosts } from "@/lib/content/queries";
 import { isSupportedLang, type Lang } from "@/lib/i18n";
-import type { ContentType } from "@/lib/content/types";
+import {
+  CONTENT_LANGS,
+  type ContentPostListItem,
+  type ContentType,
+} from "@/lib/content/types";
 
 const COPY: Record<Lang, { title: string; intro: string; empty: string }> = {
   ru: {
@@ -43,11 +47,42 @@ const TYPE_LABELS: Record<Lang, Record<ContentType, string>> = {
   },
 };
 
+function publishedTime(post: ContentPostListItem): number {
+  const value = post.published_at ?? post.created_at;
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+async function getJournalPosts(lang: Lang): Promise<ContentPostListItem[]> {
+  const entries = await Promise.all(
+    CONTENT_LANGS.map(async (contentLang) => {
+      const posts = await getPublishedPosts(contentLang);
+      return [contentLang, posts] as const;
+    }),
+  );
+
+  const postsByLang = Object.fromEntries(entries) as Record<Lang, ContentPostListItem[]>;
+  const selectionOrder = Array.from(new Set<Lang>([lang, ...CONTENT_LANGS]));
+  const selectedBySlug = new Map<string, ContentPostListItem>();
+
+  for (const contentLang of selectionOrder) {
+    for (const post of postsByLang[contentLang]) {
+      if (!selectedBySlug.has(post.slug)) {
+        selectedBySlug.set(post.slug, post);
+      }
+    }
+  }
+
+  return Array.from(selectedBySlug.values()).sort(
+    (a, b) => publishedTime(b) - publishedTime(a),
+  );
+}
+
 export default async function BlogPage({ params }: { params: { lang: string } }) {
   if (!isSupportedLang(params.lang)) redirect("/ua/blog");
 
   const lang = params.lang as Lang;
-  const posts = await getPublishedPosts(lang);
+  const posts = await getJournalPosts(lang);
   const copy = COPY[lang];
 
   return (
@@ -75,7 +110,7 @@ export default async function BlogPage({ params }: { params: { lang: string } })
 
             return (
               <article
-                key={post.id}
+                key={post.slug}
                 className="flex h-[360px] flex-col overflow-hidden rounded-freuly-lg border border-freuly-border-default bg-white"
               >
                 <Link href={articleHref} className="block shrink-0">
