@@ -82,10 +82,6 @@ export default function Footer(props) {
       href: `${prefix}/for-specialists`,
       label: t(dict, "footer.specialists.stories"),
     },
-    {
-      href: `${prefix}/partners`,
-      label: t(dict, "footer.specialists.resources"),
-    },
   ];
 
   const companyLinks = [
