@@ -1,0 +1,44 @@
+---
+description: Protect Freuly production-critical business flows from accidental regression
+alwaysApply: true
+---
+
+# Critical Business Flow Protection
+
+Treat the following as production-critical unless the repository proves otherwise:
+
+- specialist application/onboarding
+- email confirmation
+- `pending_review` and moderation state
+- admin approve/reject actions
+- claim-link / claim-token flow
+- password setup and first login
+- authentication and session handling
+- specialist dashboard access
+- specialist profile editing and persistence
+- specialist publication/visibility state
+- any Supabase mutation or route that changes the above states
+
+## Required behavior when a task touches a critical flow
+
+1. Trace the complete affected path before editing: UI -> route/action/API -> auth/authorization -> database mutation/query -> state transition -> redirect/navigation -> resulting UI.
+2. Identify all state transitions involved and preserve every transition not explicitly targeted by the task.
+3. State the expected blast radius and the critical flows that must remain unchanged.
+4. Do not substitute legacy handlers, old routes, old components or alternate business logic without proving they implement the current flow.
+5. Do not simplify business logic merely because a shorter implementation is possible.
+6. Do not combine a critical-flow change with unrelated cleanup.
+7. If legacy and current implementations coexist, flag the legacy implementation as a cleanup candidate; do not delete or revive it during the feature/fix task.
+
+## Verification
+
+For critical-flow changes, use an isolated branch and Preview before production merge whenever available.
+
+Before considering the task complete:
+
+- inspect the diff;
+- run relevant automated checks;
+- exercise the affected flow on Preview when possible;
+- verify that adjacent critical states still behave as before;
+- explicitly report any portion of the flow that was not verified.
+
+A successful build alone is not evidence that the business flow is correct.
