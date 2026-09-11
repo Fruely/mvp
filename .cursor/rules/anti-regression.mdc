@@ -1,0 +1,45 @@
+---
+description: Prevent regressions and unrelated rewrites in the Freuly production codebase
+alwaysApply: true
+---
+
+# Anti-Regression Rule
+
+This repository is a live production application. Preserve current production behavior unless the task explicitly requires changing it.
+
+## Source of truth
+
+- The current checked-out implementation is the source of truth.
+- `package.json` and the lockfile are the source of truth for installed framework and dependency versions.
+- Git history, deleted snippets, commented-out code, backups, old branches and legacy files are historical evidence only. Never restore or copy them into the active implementation unless explicitly asked.
+- If current code looks unusual, first determine why it exists. Do not replace it merely with a cleaner, simpler or more familiar pattern.
+
+## Before editing
+
+1. Read the complete current implementation of every file you intend to modify and its direct dependencies.
+2. Trace the behavior affected by the requested change.
+3. State the expected blast radius: files/features expected to change.
+4. Identify protected areas that must remain unchanged.
+5. Prefer the smallest possible change that satisfies the request.
+
+## Editing constraints
+
+- Do not refactor unrelated working code.
+- Do not perform opportunistic cleanup while implementing another task.
+- Do not replace working implementation with an older, simpler, experimental or draft implementation.
+- Do not introduce a new dependency when the existing stack already solves the problem without explicit approval.
+- Do not change routing, authentication, onboarding, database state transitions, publication state, translations, canonical URLs or search behavior unless the task explicitly requires it.
+- Do not add placeholder implementations or TODO-based substitutes for production behavior unless explicitly requested.
+- Explore broadly when necessary, but edit narrowly.
+
+## Verification before finishing
+
+1. Inspect the complete git diff for accidental or unrelated changes.
+2. Run the relevant existing checks (tests, type checks, pre-push checks and/or build) when the environment permits.
+3. Report exactly what changed and what was intentionally left untouched.
+4. If verification cannot be completed, say exactly what was not verified.
+5. Never claim a regression is impossible; report the evidence used to reduce the risk.
+
+## Ambiguity
+
+If two implementations appear to serve the same purpose and it is unclear which is canonical, preserve the current production path. Do not choose an implementation based on simplicity or familiarity. Flag the ambiguity instead.
