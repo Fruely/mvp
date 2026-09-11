@@ -1,0 +1,53 @@
+---
+description: Detect legacy and dead code without automatic deletion
+alwaysApply: true
+---
+
+# Safe Cleanup Rule
+
+Detection may be automatic. Deletion must never be automatic.
+
+## During normal work
+
+If code appears obsolete, duplicated, unreachable or replaced:
+- do not modify it unless cleanup is the active task;
+- report its path/symbol and why it looks obsolete;
+- identify the likely current replacement when possible;
+- report confidence (low/medium/high) and risk (low/medium/high/critical);
+- record useful candidates in `TECH_DEBT.md`.
+
+Static-analysis output is a candidate list, not proof.
+
+## Before any proposed removal
+
+Verify as applicable:
+- static and dynamic imports;
+- Next.js file-system conventions and entry points;
+- routes, layouts, middleware, route handlers and configuration;
+- string-based references;
+- Supabase/database behavior;
+- Vercel jobs or deployment configuration;
+- webhooks/external callbacks;
+- scripts, tests and fixtures;
+- the current production flow and any replacement implementation.
+
+Framework-convention files may be required even when nothing imports them directly.
+
+## Risk priority
+
+1. Critical: onboarding, auth, dashboard, moderation, claim flow, publication/business-state logic.
+2. High: Supabase mutations, API handlers, search/routing, canonical/SEO logic.
+3. Medium: duplicated helpers/components with meaningful behavior.
+4. Low: obsolete visual components/styles and clearly abandoned experiments.
+
+## Cleanup workflow
+
+For medium/high/critical candidates:
+1. investigate in a separate cleanup task;
+2. use an isolated branch;
+3. establish a behavior baseline;
+4. remove only the verified candidate after explicit approval;
+5. inspect the diff;
+6. run relevant checks/tests/build;
+7. verify affected behavior on Preview when available;
+8. do not auto-merge cleanup touching critical flows.

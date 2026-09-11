@@ -8,21 +8,20 @@ alwaysApply: true
 This repository uses Git history as the rollback mechanism.
 Do NOT preserve obsolete runtime code merely to make rollback possible.
 
+However, obsolete-looking code is not permission for automatic deletion.
+All cleanup must follow `.cursor/rules/dead-code-cleanup.mdc`.
+
 ## Canonical decisions
 
 When a new implementation has been explicitly accepted as canonical:
 
 1. Treat the canonical implementation as the only active source of truth.
-2. Remove superseded experimental, transitional, placeholder, fallback UI,
-   compatibility, and duplicate business-logic paths unless they are still
-   required by a documented production compatibility constraint.
-3. Do not keep old implementations commented out.
-4. Do not keep dead components, unused helpers, obsolete locale keys,
-   alternative rendering branches, or old feature behavior "just in case".
-5. Do not reintroduce behavior from Git history unless the user explicitly
-   requests restoration.
+2. Do not keep old implementations commented out or reintroduce behavior from Git history unless the user explicitly requests restoration.
+3. Do not create parallel helpers, fallback branches, duplicate business logic, or competing implementations when the canonical path can be extended.
+4. Superseded, experimental, transitional, placeholder, compatibility, duplicate, or dead-looking code must be reported as a cleanup candidate, not deleted automatically.
+5. Required compatibility code must be preserved until its requirement is explicitly proven obsolete.
 
-Git history is the archive. The runtime source tree is not an archive.
+Git history is the archive. The runtime source tree should converge toward one canonical implementation, but cleanup must be deliberate and verified.
 
 ## Before adding a new implementation
 
@@ -30,8 +29,8 @@ Search for an existing canonical implementation first.
 
 Prefer:
 - extending the canonical implementation;
-- replacing obsolete logic;
-- deleting superseded logic;
+- reusing existing business rules;
+- recording superseded alternatives as cleanup candidates;
 
 over:
 - creating parallel helpers;
@@ -40,72 +39,72 @@ over:
 
 ## Single source of truth
 
-Business rules that affect multiple UI surfaces must have one canonical
-derived model/helper.
+Business rules that affect multiple UI surfaces must have one canonical derived model/helper.
 
-Do not independently reproduce the same business-state interpretation in
-multiple pages/components.
+Do not independently reproduce the same business-state interpretation in multiple pages/components.
 
 When duplicate implementations are found:
 - determine which implementation is canonical;
-- migrate callers to it;
-- remove the obsolete implementation.
+- identify all callers and runtime entry points;
+- propose migration of callers if needed;
+- record the obsolete implementation as a cleanup candidate;
+- do not remove it automatically.
 
 ## Legacy code classification
 
 Whenever modifying an existing subsystem, classify relevant old code as:
 
 A. CANONICAL — keep and extend.
-B. REQUIRED COMPATIBILITY — keep, document why and under what condition it
-   may be removed.
-C. TRANSITIONAL — remove once its migration/rollout condition is complete.
-D. DEAD / SUPERSEDED — remove now.
+B. REQUIRED COMPATIBILITY — keep, document why and under what condition it may be removed.
+C. TRANSITIONAL — cleanup candidate once its migration/rollout condition is complete.
+D. DEAD / SUPERSEDED — cleanup candidate requiring verification before removal.
 
-Agents are authorized to delete C and D code as part of the task when
-references and tests confirm it is no longer required.
+Agents are NOT authorized to automatically delete C or D code.
+Detection may be automatic; deletion requires explicit approval and the safety process defined in `dead-code-cleanup.mdc`.
 
-Do not delete B code without proving that its compatibility requirement has
-ended.
+Do not delete B code without proving that its compatibility requirement has ended.
 
 ## UI experiments and placeholders
 
-Temporary UI, mock payment states, coming-soon placeholders, experimental
-flows, and transitional UX must not survive indefinitely after the real
-feature becomes canonical.
+Temporary UI, mock payment states, coming-soon placeholders, experimental flows, and transitional UX should not survive indefinitely after the real feature becomes canonical.
 
 Once the production implementation is accepted:
-- remove the temporary runtime branch;
-- remove its unused translations;
-- remove its obsolete tests;
-- replace them with regression tests for the canonical behavior.
+- identify obsolete runtime branches and related translations/tests;
+- report them as cleanup candidates;
+- replace obsolete tests with regression tests for canonical behavior when cleanup is explicitly approved;
+- do not remove anything automatically.
 
 ## Feature flags
 
-A feature flag is not permission to preserve obsolete implementations
-forever.
+A feature flag is not permission to preserve obsolete implementations forever.
 
 After rollout is accepted and rollback risk is reasonably closed:
-- remove the retired branch;
-- remove the retired flag if no longer needed;
-- preserve rollback capability through Git.
+- identify the retired branch and flag as cleanup candidates;
+- verify that no production path depends on them;
+- preserve rollback capability through Git;
+- remove only after explicit approval.
 
-## Safety before deletion
+## Safety before any proposed deletion
 
-Before deleting code:
+Before recommending code for deletion:
 1. search all references/imports;
-2. inspect runtime entry points;
-3. check tests;
-4. check locale keys/config references;
-5. run relevant tests and typecheck.
+2. inspect runtime and framework entry points;
+3. check dynamic/string-based references;
+4. check tests;
+5. check locale keys/config references;
+6. check Supabase, Vercel, cron, webhook, route, migration and deployment dependencies where relevant;
+7. establish the current baseline behavior for medium/high/critical-risk code.
 
-Deletion of obsolete code must not include unrelated cleanup.
+Cleanup must not include unrelated refactoring.
 
 ## Agent reporting
 
 When legacy code is encountered during a task, report:
-- what was canonical;
-- what was superseded;
-- what was deleted;
-- what compatibility code remains and why.
+- what appears canonical;
+- what appears superseded;
+- confidence and risk;
+- what evidence supports the classification;
+- what compatibility code remains and why;
+- what separate cleanup action is recommended.
 
-Do not preserve obsolete code solely because it may once have been useful.
+Do not claim obsolete code was removed unless the user explicitly approved that removal and the required verification was completed.
