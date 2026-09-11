@@ -1,0 +1,26 @@
+# Generated / dependency directories
+node_modules/
+.next/
+out/
+build/
+coverage/
+.vercel/
+supabase/.temp/
+
+# Generated PWA artifacts
+public/sw.js
+public/swe-worker-*.js
+
+# Local environment and editor files
+.env
+.env.*
+.DS_Store
+.vscode/
+.idea/
+
+# Obvious backup artifacts only (do not broadly ignore legacy directories until verified)
+*.bak
+*.backup
+*.old
+*.orig
+*~
