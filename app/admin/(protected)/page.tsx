@@ -49,9 +49,16 @@ export default function AdminDashboardPage() {
             <span className="font-medium text-gray-900">Specialists</span>
             <span className="text-sm text-gray-500">/admin/specialists</span>
           </Link>
+
+          <Link
+            href="/admin/telegram"
+            className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 hover:bg-gray-50"
+          >
+            <span className="font-medium text-gray-900">Telegram channel</span>
+            <span className="text-sm text-gray-500">/admin/telegram</span>
+          </Link>
         </div>
       </div>
     </div>
   );
 }
-

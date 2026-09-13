@@ -15,6 +15,10 @@
     {
       "path": "/api/cron/reconcile-specialist-access",
       "schedule": "30 2 * * *"
+    },
+    {
+      "path": "/api/cron/publish-telegram-posts",
+      "schedule": "0 * * * *"
     }
   ]
 }
