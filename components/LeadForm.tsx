@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { getDictionary, t, type Dictionary, type Lang } from "@/lib/i18n";
 import uaDict from "@/locales/ua.json";
@@ -8,6 +8,13 @@ import uaDict from "@/locales/ua.json";
 interface LeadFormProps {
   specialistId?: string;
   onSuccess?: (message: string) => void;
+}
+
+function createIdempotencyKey(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return `lead:${crypto.randomUUID()}`;
+  }
+  return `lead:${Date.now()}:${Math.random().toString(36).slice(2)}`;
 }
 
 export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
@@ -40,6 +47,11 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [hp, setHp] = useState("");
+  const idempotencyKeyRef = useRef<string | null>(null);
+
+  const resetSubmissionIdentity = () => {
+    idempotencyKeyRef.current = null;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +82,9 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
       return;
     }
 
+    const idempotencyKey = idempotencyKeyRef.current ?? createIdempotencyKey();
+    idempotencyKeyRef.current = idempotencyKey;
+
     const payload = {
       specialist_id: specialistId,
       client_name: client_name || null,
@@ -81,6 +96,7 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
       referrer:
         typeof document !== "undefined" ? document.referrer || null : null,
       hp,
+      idempotency_key: idempotencyKey,
     };
 
     try {
@@ -102,6 +118,7 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
         setEmail("");
         setPhone("");
         setMessage("");
+        resetSubmissionIdentity();
       }
     } catch {
       setStatus(`error:${t(dict, "lead.error")}`);
@@ -119,7 +136,10 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
       <input
         placeholder={t(dict, "lead.name")}
         value={client_name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={(e) => {
+          setName(e.target.value);
+          resetSubmissionIdentity();
+        }}
         required
         className="h-11 rounded-freuly-md border border-freuly-border-default bg-freuly-page px-3 text-sm text-freuly-text-primary outline-none transition placeholder:text-freuly-text-muted focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
       />
@@ -128,7 +148,10 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
         type="email"
         placeholder={t(dict, "lead.email")}
         value={client_email}
-        onChange={(e) => setEmail(e.target.value)}
+        onChange={(e) => {
+          setEmail(e.target.value);
+          resetSubmissionIdentity();
+        }}
         required
         className="h-11 rounded-freuly-md border border-freuly-border-default bg-freuly-page px-3 text-sm text-freuly-text-primary outline-none transition placeholder:text-freuly-text-muted focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
       />
@@ -138,7 +161,10 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
         type="tel"
         placeholder={t(dict, "lead.phone")}
         value={client_phone}
-        onChange={(e) => setPhone(e.target.value)}
+        onChange={(e) => {
+          setPhone(e.target.value);
+          resetSubmissionIdentity();
+        }}
         required
         className="h-11 rounded-freuly-md border border-freuly-border-default bg-freuly-page px-3 text-sm text-freuly-text-primary outline-none transition placeholder:text-freuly-text-muted focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
       />
@@ -147,7 +173,10 @@ export default function LeadForm({ specialistId, onSuccess }: LeadFormProps) {
       <textarea
         placeholder={t(dict, "lead.message")}
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        onChange={(e) => {
+          setMessage(e.target.value);
+          resetSubmissionIdentity();
+        }}
         rows={4}
         className="min-h-[80px] rounded-freuly-md border border-freuly-border-default bg-freuly-page px-3 py-2.5 text-sm text-freuly-text-primary outline-none transition placeholder:text-freuly-text-muted focus:border-freuly-primary focus:ring-2 focus:ring-freuly-primary/25"
       />
