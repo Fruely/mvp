@@ -33,12 +33,41 @@ export default function TelegramChannelPostsClient({ initialPosts }: Props) {
   const [posts, setPosts] = useState(initialPosts);
   const [title, setTitle] = useState("");
   const [bodyText, setBodyText] = useState("");
+  const [generationTopic, setGenerationTopic] = useState("");
+  const [generationContext, setGenerationContext] = useState("");
   const [scheduledAt, setScheduledAt] = useState(() =>
     toLocalInputValue(new Date(Date.now() + 60 * 60 * 1000))
   );
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [publishingId, setPublishingId] = useState<string | null>(null);
+
+  async function generateDraft() {
+    setIsGenerating(true);
+    setMessage("");
+
+    try {
+      const res = await fetch("/api/admin/telegram/channel-posts/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic: generationTopic,
+          context: generationContext,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Не удалось сгенерировать пост");
+
+      setTitle(typeof data.title === "string" ? data.title : "Сгенерированный пост");
+      setBodyText(typeof data.body_text === "string" ? data.body_text : "");
+      setMessage("Черновик сгенерирован. Проверь текст перед публикацией.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Ошибка генерации");
+    } finally {
+      setIsGenerating(false);
+    }
+  }
 
   async function createPost(status: "draft" | "scheduled") {
     setIsSaving(true);
@@ -97,6 +126,43 @@ export default function TelegramChannelPostsClient({ initialPosts }: Props) {
       <section className="rounded-lg border border-gray-200 bg-white p-4">
         <h2 className="text-base font-semibold text-gray-900">Новый пост</h2>
         <div className="mt-4 space-y-4">
+          <div className="rounded-md border border-gray-200 bg-gray-50 p-3">
+            <h3 className="text-sm font-semibold text-gray-900">AI-черновик</h3>
+            <div className="mt-3 space-y-3">
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700">Тема</span>
+                <input
+                  value={generationTopic}
+                  onChange={(event) => setGenerationTopic(event.target.value)}
+                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  placeholder="Например: шапка Instagram, почему нет заявок"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700">
+                  Контекст или пожелания
+                </span>
+                <textarea
+                  value={generationContext}
+                  onChange={(event) => setGenerationContext(event.target.value)}
+                  className="mt-1 min-h-[90px] w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  maxLength={1200}
+                  placeholder="Необязательно: что обязательно упомянуть, какую нишу взять, какой тон усилить..."
+                />
+              </label>
+
+              <button
+                type="button"
+                disabled={isGenerating}
+                onClick={() => void generateDraft()}
+                className="rounded-md border border-gray-900 bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isGenerating ? "Генерирую..." : "Сгенерировать пост"}
+              </button>
+            </div>
+          </div>
+
           <label className="block">
             <span className="text-sm font-medium text-gray-700">Заголовок для себя</span>
             <input
@@ -134,7 +200,7 @@ export default function TelegramChannelPostsClient({ initialPosts }: Props) {
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              disabled={isSaving || !bodyText.trim()}
+              disabled={isSaving || isGenerating || !bodyText.trim()}
               onClick={() => void createPost("draft")}
               className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -142,7 +208,7 @@ export default function TelegramChannelPostsClient({ initialPosts }: Props) {
             </button>
             <button
               type="button"
-              disabled={isSaving || !bodyText.trim()}
+              disabled={isSaving || isGenerating || !bodyText.trim()}
               onClick={() => void createPost("scheduled")}
               className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
