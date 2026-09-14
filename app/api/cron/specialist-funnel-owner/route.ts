@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     .from("specialist_funnel_events")
     .select("id, specialist_id, event_type, occurred_at, metadata, created_at")
     .gte("created_at", since)
-    .order("created_at", { ascending: true })
+    .order("created_at", { ascending: false })
     .limit(BATCH_SIZE);
 
   if (error) {
