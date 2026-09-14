@@ -38,7 +38,7 @@ const ruCopy: ForSpecialistsCopy = {
       "Подключение профиля стоит от 29 евро в месяц. Без комиссии с заказа: клиент пишет вам, цену и условия вы согласуете напрямую.",
   },
   illustration: {
-    alt: "Черно-белая иллюстрация про заявки для специалистов Freuly",
+    alt: "Цветная иллюстрация про заявки для специалистов Freuly",
     tags: ["реклама", "контент", "заявки"],
   },
   proof: [
@@ -115,11 +115,11 @@ const ruCopy: ForSpecialistsCopy = {
   offer: {
     title: "Что получает специалист",
     intro:
-      "Не обещание ради обещания, а коммерческая система, которую можно усиливать рекламой, SEO, контентом и локальными категориями. Цель простая: чтобы вы начали получать заявки и могли зарабатывать деньги на своей работе.",
+      "Не обещание ради обещания, а понятный путь к заявке: человек ищет услугу, находит ваш профиль, понимает предложение и связывается напрямую. Цель простая: чтобы вы начали получать заявки и могли зарабатывать деньги на своей работе.",
     bullets: [
       "Готовый профиль специалиста: услуги, цены, языки, город, фото, описание, портфолио и отзывы.",
       "Прямая ссылка, которую можно отправлять клиентам вместо длинных объяснений в мессенджерах.",
-      "Индексация и продвижение по категориям: услуги психолога, ремонт техники, репетитор, электрик, бухгалтер, переводчик, IT-помощь и другие запросы.",
+      "Клиенты находят вас по городу, языку и типу услуги: психолог, ремонт техники, репетитор, электрик, бухгалтер, переводчик, IT-помощь и другие запросы.",
       "Возможность получать обращения без комиссии и без обязанности отдавать процент с каждого заказа.",
       "Дальше мы будем усиливать продукт: больше городов, больше категорий, реклама, контент и отдельные маркетинговые пакеты для специалистов.",
     ],
@@ -171,7 +171,7 @@ const uaCopy: ForSpecialistsCopy = {
       "Підключення профілю коштує від 29 євро на місяць. Без комісії із замовлення: клієнт пише вам, ціну й умови ви узгоджуєте напряму.",
   },
   illustration: {
-    alt: "Чорно-біла ілюстрація про заявки для спеціалістів Freuly",
+    alt: "Кольорова ілюстрація про заявки для спеціалістів Freuly",
     tags: ["реклама", "контент", "заявки"],
   },
   proof: [
@@ -248,11 +248,11 @@ const uaCopy: ForSpecialistsCopy = {
   offer: {
     title: "Що отримує спеціаліст",
     intro:
-      "Не обіцянка заради обіцянки, а комерційна система, яку можна посилювати рекламою, SEO, контентом і локальними категоріями. Мета проста: щоб ви почали отримувати заявки і могли заробляти на своїй роботі.",
+      "Не обіцянка заради обіцянки, а зрозумілий шлях до заявки: людина шукає послугу, знаходить ваш профіль, розуміє пропозицію і зв’язується напряму. Мета проста: щоб ви почали отримувати заявки і могли заробляти на своїй роботі.",
     bullets: [
       "Готовий профіль спеціаліста: послуги, ціни, мови, місто, фото, опис, портфоліо та відгуки.",
       "Пряме посилання, яке можна надсилати клієнтам замість довгих пояснень у месенджерах.",
-      "Індексація та просування за категоріями: послуги психолога, ремонт техніки, репетитор, електрик, бухгалтер, перекладач, IT-допомога та інші запити.",
+      "Клієнти знаходять вас за містом, мовою і типом послуги: психолог, ремонт техніки, репетитор, електрик, бухгалтер, перекладач, IT-допомога та інші запити.",
       "Можливість отримувати звернення без комісії і без обов’язку віддавати відсоток із кожного замовлення.",
       "Далі ми посилюватимемо продукт: більше міст, більше категорій, реклама, контент і окремі маркетингові пакети для спеціалістів.",
     ],
@@ -304,7 +304,7 @@ const deCopy: ForSpecialistsCopy = {
       "Ein Profil kostet ab 29 Euro im Monat. Keine Provision vom Auftrag: Kundinnen und Kunden schreiben Ihnen direkt, Preis und Konditionen klären Sie selbst.",
   },
   illustration: {
-    alt: "Schwarz-weiße Illustration zu Kundenanfragen für Freuly-Fachkräfte",
+    alt: "Farbige Illustration zu Kundenanfragen für Freuly-Fachkräfte",
     tags: ["Werbung", "Content", "Anfragen"],
   },
   proof: [
@@ -381,11 +381,11 @@ const deCopy: ForSpecialistsCopy = {
   offer: {
     title: "Was Fachkräfte erhalten",
     intro:
-      "Kein Versprechen um des Versprechens willen, sondern ein kommerzielles System, das sich mit Werbung, SEO, Content und lokalen Kategorien verstärken lässt. Das Ziel ist einfach: dass Sie Anfragen erhalten und mit Ihrer Arbeit verdienen können.",
+      "Kein Versprechen um des Versprechens willen, sondern ein klarer Weg zur Anfrage: jemand sucht eine Leistung, findet Ihr Profil, versteht das Angebot und nimmt direkt Kontakt auf. Das Ziel ist einfach: dass Sie Anfragen erhalten und mit Ihrer Arbeit verdienen können.",
     bullets: [
       "Ein fertiges Fachkraft-Profil: Leistungen, Preise, Sprachen, Stadt, Fotos, Beschreibung, Portfolio und Bewertungen.",
       "Ein direkter Link, den Sie Kundinnen und Kunden schicken können, statt lange Erklärungen in Messengern zu tippen.",
-      "Indexierung und Sichtbarkeit nach Kategorien: Psychologie, Gerätereparatur, Nachhilfe, Elektrik, Buchhaltung, Dolmetschen, IT-Hilfe und weitere Suchen.",
+      "Kundinnen und Kunden finden Sie nach Stadt, Sprache und Leistung: Psychologie, Gerätereparatur, Nachhilfe, Elektrik, Buchhaltung, Dolmetschen, IT-Hilfe und weitere Anfragen.",
       "Anfragen ohne Provision und ohne Pflicht, einen Anteil jedes Auftrags abzugeben.",
       "Als Nächstes stärken wir das Produkt weiter: mehr Städte, mehr Kategorien, Werbung, Content und eigene Marketingpakete für Fachkräfte.",
     ],

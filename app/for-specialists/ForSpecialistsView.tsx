@@ -7,11 +7,11 @@ type Props = { lang: Lang };
 
 type IllustrationVariant = "stress" | "requests" | "flow" | "money";
 
-const illustrationPositions: Record<IllustrationVariant, string> = {
-  stress: "left top",
-  requests: "right top",
-  flow: "left bottom",
-  money: "right bottom",
+const illustrationSrc: Record<IllustrationVariant, string> = {
+  stress: "/images/for-specialists/scene-before.png",
+  requests: "/images/for-specialists/scene-requests.png",
+  flow: "/images/for-specialists/scene-flow.png",
+  money: "/images/for-specialists/scene-result.png",
 };
 
 function LeadIllustration({
@@ -28,16 +28,12 @@ function LeadIllustration({
   return (
     <div className={`relative aspect-[3/2] w-full overflow-hidden bg-gray-50 ${className}`}>
       <Image
-        src="/images/for-specialists/lead-generation-line-art.png"
+        src={illustrationSrc[variant]}
         alt={alt}
-        width={1536}
-        height={1024}
+        width={1152}
+        height={864}
         priority={priority}
-        className="h-full w-full scale-[2.05] object-cover"
-        style={{
-          objectPosition: illustrationPositions[variant],
-          transformOrigin: illustrationPositions[variant],
-        }}
+        className="h-full w-full object-cover object-center"
       />
     </div>
   );
