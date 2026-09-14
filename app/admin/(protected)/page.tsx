@@ -14,6 +14,19 @@ type FunnelStage = {
   dropFromPrevious: number;
 };
 
+type FunnelEvent = {
+  id: string;
+  specialistId: string;
+  specialistName: string | null;
+  specialistEmail: string | null;
+  eventType: string;
+  eventLabel: string;
+  occurredAt: string | null;
+  source: string | null;
+  historical: boolean;
+  approximate: boolean;
+};
+
 type AdminStats = {
   totalLeads: number;
   recentLeads: number;
@@ -34,11 +47,23 @@ const PERIODS = [
   { value: "all", label: "Всё время" },
 ] as const;
 
+function formatEventTime(value: string | null): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("ru-RU", {
+    dateStyle: "short",
+    timeStyle: "short",
+    timeZone: "Europe/Berlin",
+  }).format(date);
+}
+
 export default function AdminDashboardPage() {
   const [hasToken, setHasToken] = useState(false);
   const [token, setToken] = useState("");
   const [period, setPeriod] = useState("30");
   const [stats, setStats] = useState<AdminStats | null>(null);
+  const [events, setEvents] = useState<FunnelEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,13 +82,25 @@ export default function AdminDashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/stats?days=${encodeURIComponent(period)}`, {
-        cache: "no-store",
-        headers: { "x-admin-token": token },
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const payload = (await response.json()) as AdminStats;
-      setStats(payload);
+      const headers = { "x-admin-token": token };
+      const [statsResponse, eventsResponse] = await Promise.all([
+        fetch(`/api/admin/stats?days=${encodeURIComponent(period)}`, {
+          cache: "no-store",
+          headers,
+        }),
+        fetch(`/api/admin/funnel-events?days=${encodeURIComponent(period)}`, {
+          cache: "no-store",
+          headers,
+        }),
+      ]);
+
+      if (!statsResponse.ok) throw new Error(`Stats HTTP ${statsResponse.status}`);
+      if (!eventsResponse.ok) throw new Error(`Events HTTP ${eventsResponse.status}`);
+
+      const statsPayload = (await statsResponse.json()) as AdminStats;
+      const eventsPayload = (await eventsResponse.json()) as { events?: FunnelEvent[] };
+      setStats(statsPayload);
+      setEvents(Array.isArray(eventsPayload.events) ? eventsPayload.events : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Не удалось загрузить статистику");
     } finally {
@@ -116,7 +153,7 @@ export default function AdminDashboardPage() {
             <div>
               <h2 className="text-lg font-semibold text-gray-900">Воронка специалистов</h2>
               <p className="text-sm text-gray-500">
-                Уникальные специалисты на каждом этапе. Проценты показывают конверсию от регистрации и от предыдущего шага.
+                Уникальные специалисты на каждом этапе. Период формирует когорту по дате регистрации.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -140,7 +177,7 @@ export default function AdminDashboardPage() {
           {loading && <div className="py-10 text-center text-sm text-gray-500">Загрузка…</div>}
           {error && (
             <div className="mt-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-              Ошибка статистики: {error}. Если миграция specialist_funnel_events ещё не применена, сначала выполните SQL из manual_migrations.
+              Ошибка статистики: {error}.
             </div>
           )}
 
@@ -178,6 +215,57 @@ export default function AdminDashboardPage() {
 
           {!loading && !error && hasToken && stages.length === 0 && (
             <div className="py-10 text-center text-sm text-gray-500">Пока нет данных для выбранного периода.</div>
+          )}
+        </section>
+
+        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">События специалистов</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Реальная лента событий за выбранный период. Исторические события восстановлены из уже существовавших полей базы.
+            </p>
+          </div>
+
+          {!loading && !error && events.length > 0 && (
+            <div className="mt-5 overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                  <tr>
+                    <th className="px-3 py-3">Когда</th>
+                    <th className="px-3 py-3">Специалист</th>
+                    <th className="px-3 py-3">Событие</th>
+                    <th className="px-3 py-3">Данные</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 bg-white">
+                  {events.map((event) => (
+                    <tr key={event.id}>
+                      <td className="whitespace-nowrap px-3 py-3 text-gray-600">
+                        {formatEventTime(event.occurredAt)}
+                      </td>
+                      <td className="px-3 py-3">
+                        <div className="font-medium text-gray-900">{event.specialistName || "Без имени"}</div>
+                        {event.specialistEmail && (
+                          <div className="text-xs text-gray-500">{event.specialistEmail}</div>
+                        )}
+                      </td>
+                      <td className="px-3 py-3 font-medium text-gray-900">{event.eventLabel}</td>
+                      <td className="px-3 py-3 text-xs text-gray-500">
+                        {event.approximate
+                          ? "восстановлено, время приблизительное"
+                          : event.historical
+                            ? "восстановлено из истории"
+                            : "точное событие"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {!loading && !error && hasToken && events.length === 0 && (
+            <div className="py-10 text-center text-sm text-gray-500">Событий за выбранный период нет.</div>
           )}
         </section>
 
