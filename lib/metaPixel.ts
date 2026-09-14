@@ -1,3 +1,8 @@
+import {
+  COOKIE_CONSENT_STORAGE_KEY,
+  normalizeCookieConsent,
+} from "@/lib/consent/cookieConsent";
+
 export const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || "1403575027848112";
 
 export type MetaPixelEventParams = Record<string, string | number | boolean | null | undefined>;
@@ -19,8 +24,22 @@ declare global {
 let metaPixelInitialized = false;
 let lastTrackedPageLocation: string | null = null;
 
+export function hasMetaPixelConsent(): boolean {
+  if (typeof window === "undefined") return false;
+
+  try {
+    const raw = window.localStorage.getItem(COOKIE_CONSENT_STORAGE_KEY);
+    if (!raw) return false;
+
+    const parsed = normalizeCookieConsent(JSON.parse(raw));
+    return parsed?.analytics === true;
+  } catch {
+    return false;
+  }
+}
+
 export function ensureMetaPixel() {
-  if (!META_PIXEL_ID || typeof window === "undefined") return;
+  if (!META_PIXEL_ID || typeof window === "undefined" || !hasMetaPixelConsent()) return;
 
   if (!window.fbq) {
     const fbq = function fbq(...args: unknown[]) {
@@ -54,7 +73,7 @@ export function ensureMetaPixel() {
 }
 
 export function trackMetaPageView() {
-  if (!META_PIXEL_ID || typeof window === "undefined") return;
+  if (!META_PIXEL_ID || typeof window === "undefined" || !hasMetaPixelConsent()) return;
 
   ensureMetaPixel();
 
@@ -66,7 +85,7 @@ export function trackMetaPageView() {
 }
 
 export function trackMetaEvent(eventName: string, params?: MetaPixelEventParams) {
-  if (!META_PIXEL_ID || typeof window === "undefined") return;
+  if (!META_PIXEL_ID || typeof window === "undefined" || !hasMetaPixelConsent()) return;
 
   ensureMetaPixel();
   window.fbq?.("track", eventName, params ?? {});
