@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   COOKIE_CONSENT_CHANGE_EVENT,
   COOKIE_CONSENT_STORAGE_KEY,
   normalizeCookieConsent,
 } from "@/lib/consent/cookieConsent";
+import { ensureMetaPixel, trackMetaPageView } from "@/lib/metaPixel";
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
@@ -14,7 +16,7 @@ type ConsentState = {
 };
 
 let googleTagInitialized = false;
-let pageViewSent = false;
+let lastGooglePageLocation: string | null = null;
 
 function readConsentState(): ConsentState {
   try {
@@ -66,6 +68,21 @@ function ensureGoogleTag() {
   }
 }
 
+function trackGooglePageView() {
+  if (!GA_MEASUREMENT_ID) return;
+
+  const pageLocation = window.location.href;
+  if (lastGooglePageLocation === pageLocation) return;
+
+  window.gtag("event", "page_view", {
+    page_title: document.title,
+    page_location: pageLocation,
+    page_path: window.location.pathname,
+  });
+
+  lastGooglePageLocation = pageLocation;
+}
+
 function updateGoogleConsent(consent: ConsentState) {
   if (!GA_MEASUREMENT_ID) return;
 
@@ -77,16 +94,6 @@ function updateGoogleConsent(consent: ConsentState) {
     ad_user_data: "denied",
     ad_personalization: "denied",
   });
-
-  if (consent.analytics && !pageViewSent) {
-    window.gtag("event", "page_view", {
-      page_title: document.title,
-      page_location: window.location.href,
-      page_path: window.location.pathname,
-    });
-
-    pageViewSent = true;
-  }
 }
 
 declare global {
@@ -97,6 +104,7 @@ declare global {
 }
 
 export default function ConsentScripts() {
+  const pathname = usePathname();
   const [consent, setConsent] = useState<ConsentState>({
     analytics: false,
   });
@@ -121,7 +129,13 @@ export default function ConsentScripts() {
 
   useEffect(() => {
     updateGoogleConsent(consent);
-  }, [consent]);
+
+    if (consent.analytics) {
+      trackGooglePageView();
+      ensureMetaPixel();
+      trackMetaPageView();
+    }
+  }, [consent, pathname]);
 
   return null;
 }
