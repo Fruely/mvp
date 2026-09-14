@@ -26,7 +26,7 @@ function LeadIllustration({
   priority?: boolean;
 }) {
   return (
-    <div className={`relative aspect-[3/2] w-full overflow-hidden bg-white ${className}`}>
+    <div className={`relative aspect-[3/2] w-full overflow-hidden bg-gray-50 ${className}`}>
       <Image
         src="/images/for-specialists/lead-generation-line-art.png"
         alt={alt}
@@ -117,9 +117,6 @@ export async function ForSpecialistsView({ lang }: Props) {
         <div>
           <h2 className="text-3xl font-bold sm:text-4xl">{copy.seo.title}</h2>
           <p className="mt-5 text-lg leading-8 text-gray-700">{copy.seo.intro}</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            {copy.seo.keywords.map((word) => <span key={word} className="rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700">{word}</span>)}
-          </div>
         </div>
       </section>
 

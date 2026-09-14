@@ -14,7 +14,7 @@ export type ForSpecialistsCopy = {
   proof: readonly { value: string; title: string; body: string }[];
   problem: { title: string; intro: string; bullets: readonly string[]; caption: string };
   steps: { title: string; items: readonly { number: string; title: string; body: string }[] };
-  seo: { title: string; intro: string; keywords: readonly string[] };
+  seo: { title: string; intro: string };
   categories: { title: string; intro: string; items: readonly string[] };
   offer: { title: string; intro: string; bullets: readonly string[]; caption: string };
   faq: { title: string; items: readonly { q: string; a: string }[] };
@@ -95,21 +95,7 @@ const ruCopy: ForSpecialistsCopy = {
   seo: {
     title: "Страница работает не как визитка ради визитки, а как точка входа для заявок",
     intro:
-      "Мы сохраняем SEO-скелет: категории, города, услуги и прямые формулировки, которые люди реально набирают в поиске. Это помогает продвигать не абстрактную видимость, а понятный маршрут: поиск услуги → доверие → заявка специалисту.",
-    keywords: [
-      "найти клиентов в Германии",
-      "заявки для специалистов Германия",
-      "лидогенерация для мастеров",
-      "клиенты для психолога",
-      "репетитор онлайн Германия",
-      "мастер маникюра Дюссельдорф",
-      "IT помощь в Германии",
-      "бухгалтер на русском языке",
-      "переводчик украинский немецкий",
-      "Handwerker finden",
-      "Kunden gewinnen Deutschland",
-      "Leads für Dienstleister",
-    ],
+      "Человек ищет нужную услугу в своём городе, открывает ваш профиль, понимает предложение и связывается напрямую. Freuly помогает пройти этот путь без лишней рекламной суеты: от интереса к услуге до заявки специалисту.",
   },
   categories: {
     title: "Кому подходит Freuly.de",
@@ -242,21 +228,7 @@ const uaCopy: ForSpecialistsCopy = {
   seo: {
     title: "Сторінка працює не як візитка заради візитки, а як точка входу для заявок",
     intro:
-      "Ми зберігаємо SEO-скелет: категорії, міста, послуги та прямі формулювання, які люди реально вводять у пошук. Це допомагає просувати не абстрактну видимість, а зрозумілий маршрут: пошук послуги → довіра → заявка спеціалісту.",
-    keywords: [
-      "знайти клієнтів у Німеччині",
-      "заявки для спеціалістів Німеччина",
-      "лідогенерація для майстрів",
-      "клієнти для психолога",
-      "репетитор онлайн Німеччина",
-      "майстер манікюру Дюссельдорф",
-      "IT допомога в Німеччині",
-      "бухгалтер українською мовою",
-      "перекладач українська німецька",
-      "Handwerker finden",
-      "Kunden gewinnen Deutschland",
-      "Leads für Dienstleister",
-    ],
+      "Людина шукає потрібну послугу у своєму місті, відкриває ваш профіль, розуміє пропозицію і зв’язується напряму. Freuly допомагає пройти цей шлях без зайвої рекламної метушні: від інтересу до послуги до заявки спеціалісту.",
   },
   categories: {
     title: "Кому підходить Freuly.de",
@@ -389,21 +361,7 @@ const deCopy: ForSpecialistsCopy = {
   seo: {
     title: "Die Seite ist keine Visitenkarte um der Visitenkarte willen, sondern ein Einstieg zu Anfragen",
     intro:
-      "Wir behalten das SEO-Gerüst: Kategorien, Städte, Leistungen und Formulierungen, die Menschen wirklich suchen. So entsteht keine abstrakte Sichtbarkeit, sondern ein klarer Weg: Leistung suchen → Vertrauen → Anfrage an die Fachkraft.",
-    keywords: [
-      "Kunden gewinnen Deutschland",
-      "Anfragen für Dienstleister",
-      "Leads für Handwerker",
-      "Kunden für Psychologen",
-      "Nachhilfe online Deutschland",
-      "Nagelstudio Düsseldorf",
-      "IT Hilfe in Deutschland",
-      "Buchhaltung auf Russisch",
-      "Übersetzer Ukrainisch Deutsch",
-      "Handwerker finden",
-      "Fachkraft finden Deutschland",
-      "Leads für Dienstleister",
-    ],
+      "Jemand sucht eine Leistung in der eigenen Stadt, öffnet Ihr Profil, versteht das Angebot und nimmt direkt Kontakt auf. Freuly macht genau diesen Weg einfach: von Interesse an der Leistung bis zur Anfrage an die Fachkraft — ohne unnötigen Werbeaufwand.",
   },
   categories: {
     title: "Für wen Freuly.de geeignet ist",
