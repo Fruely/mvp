@@ -59,7 +59,7 @@ export function ensureMetaPixel() {
   }
 
   if (!metaPixelInitialized) {
-    window.fbq("init", META_PIXEL_ID);
+    window.fbq?.("init", META_PIXEL_ID);
     metaPixelInitialized = true;
   }
 
