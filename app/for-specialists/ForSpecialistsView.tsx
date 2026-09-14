@@ -1,75 +1,45 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Lang } from "@/lib/i18n";
 import { FOR_SPECIALISTS_COPY } from "./copy";
 
 type Props = { lang: Lang };
 
-type DrawingProps = { variant: "stress" | "requests" | "flow" | "money"; className?: string };
+type IllustrationVariant = "stress" | "requests" | "flow" | "money";
 
-function LineDrawing({ variant, className = "" }: DrawingProps) {
-  const common = "fill-none stroke-gray-950 stroke-[2.2]";
+const illustrationPositions: Record<IllustrationVariant, string> = {
+  stress: "left top",
+  requests: "right top",
+  flow: "left bottom",
+  money: "right bottom",
+};
 
-  if (variant === "flow") {
-    return (
-      <svg viewBox="0 0 420 260" className={className} role="img" aria-label="Путь клиента от поиска к заявке">
-        <rect x="24" y="58" width="96" height="126" rx="16" className={common} />
-        <path d="M45 88h50M45 113h62M45 138h46M45 163h55" className={common} />
-        <circle cx="50" cy="72" r="4" className={common} />
-        <path d="M132 122h54m0 0-15-14m15 14-15 14" className={common} />
-        <rect x="200" y="42" width="96" height="156" rx="18" className={common} />
-        <circle cx="248" cy="82" r="18" className={common} />
-        <path d="M224 124h48M218 145h60M226 168h44" className={common} />
-        <path d="M308 122h54m0 0-15-14m15 14-15 14" className={common} />
-        <rect x="318" y="76" width="78" height="78" rx="16" className={common} />
-        <path d="M337 106h40M337 126h26M377 146l-40-40" className={common} />
-      </svg>
-    );
-  }
-
+function LeadIllustration({
+  variant,
+  alt,
+  className = "",
+  priority = false,
+}: {
+  variant: IllustrationVariant;
+  alt: string;
+  className?: string;
+  priority?: boolean;
+}) {
   return (
-    <svg viewBox="0 0 420 260" className={className} role="img" aria-label="Иллюстрация про заявки Freuly">
-      {variant === "stress" && (
-        <>
-          <circle cx="210" cy="96" r="32" className={common} />
-          <path d="M178 160c10-34 54-34 64 0M193 91c6-8 27-8 34 0M195 108h2M224 108h2M201 123c8 6 18 6 26 0" className={common} />
-          <path d="M154 78l-48-34M264 76l50-36M142 124l-58 14M280 126l58 18" className={common} />
-          <rect x="48" y="28" width="86" height="54" rx="10" className={common} />
-          <path d="M66 64l15-14 15 9 18-25" className={common} />
-          <rect x="287" y="22" width="74" height="70" rx="10" className={common} />
-          <path d="M305 42h38M305 60h28M305 78h18" className={common} />
-          <circle cx="73" cy="154" r="17" className={common} />
-          <path d="M68 154h10M73 145v18" className={common} />
-          <circle cx="338" cy="166" r="17" className={common} />
-          <path d="M333 166h10M338 157v18" className={common} />
-        </>
-      )}
-      {variant === "requests" && (
-        <>
-          <circle cx="210" cy="112" r="35" className={common} />
-          <path d="M185 103c12-12 37-12 50 0M195 118h2M224 118h2M195 135c12 12 31 12 43 0" className={common} />
-          <path d="M175 172c14-38 56-38 70 0" className={common} />
-          <rect x="42" y="42" width="110" height="52" rx="14" className={common} />
-          <path d="M64 62h54M64 78h34M152 70l36 25" className={common} />
-          <rect x="268" y="35" width="112" height="56" rx="14" className={common} />
-          <path d="M292 56h54M292 74h38M268 72l-36 28" className={common} />
-          <rect x="62" y="148" width="108" height="56" rx="14" className={common} />
-          <path d="M86 169h52M86 187h36M170 164l30-24" className={common} />
-        </>
-      )}
-      {variant === "money" && (
-        <>
-          <circle cx="184" cy="94" r="31" className={common} />
-          <path d="M162 90c10-10 32-10 44 0M174 107h2M197 107h2M174 124c11 9 25 9 36 0" className={common} />
-          <path d="M145 172c12-42 68-42 80 0M87 206h114M113 178h74" className={common} />
-          <rect x="232" y="117" width="96" height="62" rx="12" className={common} />
-          <path d="M248 150h62" className={common} />
-          <circle cx="300" cy="202" r="18" className={common} />
-          <path d="M294 202h12M300 193v18" className={common} />
-          <path d="M260 205h-34M260 184h-23M336 202h24M336 184h14" className={common} />
-          <path d="M288 58h48M312 34v48M340 73l32-24M343 93h43" className={common} />
-        </>
-      )}
-    </svg>
+    <div className={`relative aspect-[3/2] w-full overflow-hidden bg-white ${className}`}>
+      <Image
+        src="/images/for-specialists/lead-generation-line-art.png"
+        alt={alt}
+        width={1536}
+        height={1024}
+        priority={priority}
+        className="h-full w-full scale-[2.05] object-cover"
+        style={{
+          objectPosition: illustrationPositions[variant],
+          transformOrigin: illustrationPositions[variant],
+        }}
+      />
+    </div>
   );
 }
 
@@ -81,19 +51,19 @@ export async function ForSpecialistsView({ lang }: Props) {
     <main className="bg-white text-gray-950">
       <section className="mx-auto grid max-w-7xl gap-10 px-4 pb-16 pt-20 sm:px-6 lg:grid-cols-[1.02fr_0.98fr] lg:px-8 lg:pb-24 lg:pt-24">
         <div className="flex flex-col justify-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-700">Freuly для специалистов в Германии</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-700">{copy.hero.eyebrow}</p>
           <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">{copy.hero.headline}</h1>
           <p className="mt-6 max-w-2xl text-xl leading-8 text-gray-700">{copy.hero.sub}</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href={becomeHref} className="inline-flex h-12 items-center justify-center rounded-lg bg-emerald-600 px-7 text-base font-semibold text-white shadow-sm transition hover:bg-emerald-700">{copy.hero.cta}</Link>
-            <a href="#how-it-works" className="inline-flex h-12 items-center justify-center rounded-lg border border-gray-300 px-7 text-base font-semibold text-gray-950 transition hover:border-gray-950">Как это работает</a>
+            <a href="#how-it-works" className="inline-flex h-12 items-center justify-center rounded-lg border border-gray-300 px-7 text-base font-semibold text-gray-950 transition hover:border-gray-950">{copy.hero.secondaryCta}</a>
           </div>
           <p className="mt-5 max-w-xl text-sm leading-6 text-gray-500">{copy.hero.note}</p>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 shadow-sm">
-          <LineDrawing variant="stress" className="h-auto w-full" />
+          <LeadIllustration variant="stress" alt={copy.illustration.alt} priority />
           <div className="grid grid-cols-3 gap-2 border-t border-gray-200 pt-4 text-center text-sm font-semibold text-gray-700">
-            <span>реклама</span><span>контент</span><span>заявки</span>
+            {copy.illustration.tags.map((tag) => <span key={tag}>{tag}</span>)}
           </div>
         </div>
       </section>
@@ -119,8 +89,8 @@ export async function ForSpecialistsView({ lang }: Props) {
           </div>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <LineDrawing variant="requests" className="h-auto w-full" />
-          <p className="border-t border-gray-200 pt-4 text-center text-lg font-semibold">Хватит бегать за клиентами. Начните получать заявки.</p>
+          <LeadIllustration variant="requests" alt={copy.illustration.alt} />
+          <p className="border-t border-gray-200 pt-4 text-center text-lg font-semibold">{copy.problem.caption}</p>
         </div>
       </section>
 
@@ -136,12 +106,14 @@ export async function ForSpecialistsView({ lang }: Props) {
               </div>
             ))}
           </div>
-          <Link href={becomeHref} className="mt-10 inline-flex h-12 items-center justify-center rounded-lg bg-emerald-500 px-7 text-base font-semibold text-gray-950 transition hover:bg-emerald-400">Начать принимать заявки</Link>
+          <Link href={becomeHref} className="mt-10 inline-flex h-12 items-center justify-center rounded-lg bg-emerald-500 px-7 text-base font-semibold text-gray-950 transition hover:bg-emerald-400">{copy.hero.cta}</Link>
         </div>
       </section>
 
       <section className="mx-auto grid max-w-7xl gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
-        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5"><LineDrawing variant="flow" className="h-auto w-full" /></div>
+        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
+          <LeadIllustration variant="flow" alt={copy.illustration.alt} />
+        </div>
         <div>
           <h2 className="text-3xl font-bold sm:text-4xl">{copy.seo.title}</h2>
           <p className="mt-5 text-lg leading-8 text-gray-700">{copy.seo.intro}</p>
@@ -172,8 +144,8 @@ export async function ForSpecialistsView({ lang }: Props) {
           </ul>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <LineDrawing variant="money" className="h-auto w-full" />
-          <p className="border-t border-gray-200 pt-4 text-center text-lg font-semibold">Вы зарабатываете деньги. Freuly помогает привести обращение к вам.</p>
+          <LeadIllustration variant="money" alt={copy.illustration.alt} />
+          <p className="border-t border-gray-200 pt-4 text-center text-lg font-semibold">{copy.offer.caption}</p>
         </div>
       </section>
 
