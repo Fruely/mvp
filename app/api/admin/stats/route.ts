@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
     ].filter(Boolean);
     if (baseErrors.length > 0) throw baseErrors[0];
 
-    let funnelQuery = supabase
+    const { data: funnelRows, error: funnelError } = await supabase
       .from("specialist_funnel_events")
       .select("specialist_id,event_type,occurred_at")
       .in(
@@ -75,10 +75,17 @@ export async function GET(request: NextRequest) {
         FUNNEL_STAGES.map((stage) => stage.key),
       );
 
-    if (since) funnelQuery = funnelQuery.gte("occurred_at", since);
-
-    const { data: funnelRows, error: funnelError } = await funnelQuery;
     if (funnelError) throw funnelError;
+
+    // Cohort is defined by registration date. Later milestones are counted even if
+    // they happened after the selected registration window, which is the correct
+    // conversion-funnel model and avoids >100% artifacts caused by event-date filtering.
+    const cohortIds = new Set<string>();
+    for (const row of funnelRows ?? []) {
+      if (row.event_type !== "registered" || typeof row.specialist_id !== "string") continue;
+      const occurredAt = typeof row.occurred_at === "string" ? row.occurred_at : "";
+      if (!since || (occurredAt && occurredAt >= since)) cohortIds.add(row.specialist_id);
+    }
 
     const uniqueByStage = new Map<string, Set<string>>();
     for (const stage of FUNNEL_STAGES) uniqueByStage.set(stage.key, new Set());
@@ -86,7 +93,9 @@ export async function GET(request: NextRequest) {
     for (const row of funnelRows ?? []) {
       const type = typeof row.event_type === "string" ? row.event_type : "";
       const specialistId = typeof row.specialist_id === "string" ? row.specialist_id : "";
-      if (specialistId && uniqueByStage.has(type)) uniqueByStage.get(type)!.add(specialistId);
+      if (specialistId && cohortIds.has(specialistId) && uniqueByStage.has(type)) {
+        uniqueByStage.get(type)!.add(specialistId);
+      }
     }
 
     const registeredCount = uniqueByStage.get("registered")?.size ?? 0;
@@ -115,6 +124,7 @@ export async function GET(request: NextRequest) {
         specialistFunnel: {
           days,
           since,
+          cohort: "registered_at",
           stages: funnel,
         },
       },
