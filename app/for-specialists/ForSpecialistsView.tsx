@@ -16,10 +16,12 @@ const illustrationPositions: Record<IllustrationVariant, string> = {
 
 function LeadIllustration({
   variant,
+  alt,
   className = "",
   priority = false,
 }: {
   variant: IllustrationVariant;
+  alt: string;
   className?: string;
   priority?: boolean;
 }) {
@@ -27,7 +29,7 @@ function LeadIllustration({
     <div className={`relative aspect-[3/2] w-full overflow-hidden bg-white ${className}`}>
       <Image
         src="/images/for-specialists/lead-generation-line-art.png"
-        alt="Черно-белая иллюстрация про заявки для специалистов Freuly"
+        alt={alt}
         width={1536}
         height={1024}
         priority={priority}
@@ -49,19 +51,19 @@ export async function ForSpecialistsView({ lang }: Props) {
     <main className="bg-white text-gray-950">
       <section className="mx-auto grid max-w-7xl gap-10 px-4 pb-16 pt-20 sm:px-6 lg:grid-cols-[1.02fr_0.98fr] lg:px-8 lg:pb-24 lg:pt-24">
         <div className="flex flex-col justify-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-700">Freuly для специалистов в Германии</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-700">{copy.hero.eyebrow}</p>
           <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">{copy.hero.headline}</h1>
           <p className="mt-6 max-w-2xl text-xl leading-8 text-gray-700">{copy.hero.sub}</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href={becomeHref} className="inline-flex h-12 items-center justify-center rounded-lg bg-emerald-600 px-7 text-base font-semibold text-white shadow-sm transition hover:bg-emerald-700">{copy.hero.cta}</Link>
-            <a href="#how-it-works" className="inline-flex h-12 items-center justify-center rounded-lg border border-gray-300 px-7 text-base font-semibold text-gray-950 transition hover:border-gray-950">Как это работает</a>
+            <a href="#how-it-works" className="inline-flex h-12 items-center justify-center rounded-lg border border-gray-300 px-7 text-base font-semibold text-gray-950 transition hover:border-gray-950">{copy.hero.secondaryCta}</a>
           </div>
           <p className="mt-5 max-w-xl text-sm leading-6 text-gray-500">{copy.hero.note}</p>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 shadow-sm">
-          <LeadIllustration variant="stress" priority />
+          <LeadIllustration variant="stress" alt={copy.illustration.alt} priority />
           <div className="grid grid-cols-3 gap-2 border-t border-gray-200 pt-4 text-center text-sm font-semibold text-gray-700">
-            <span>реклама</span><span>контент</span><span>заявки</span>
+            {copy.illustration.tags.map((tag) => <span key={tag}>{tag}</span>)}
           </div>
         </div>
       </section>
@@ -87,8 +89,8 @@ export async function ForSpecialistsView({ lang }: Props) {
           </div>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <LeadIllustration variant="requests" />
-          <p className="border-t border-gray-200 pt-4 text-center text-lg font-semibold">Хватит бегать за клиентами. Начните получать заявки.</p>
+          <LeadIllustration variant="requests" alt={copy.illustration.alt} />
+          <p className="border-t border-gray-200 pt-4 text-center text-lg font-semibold">{copy.problem.caption}</p>
         </div>
       </section>
 
@@ -104,13 +106,13 @@ export async function ForSpecialistsView({ lang }: Props) {
               </div>
             ))}
           </div>
-          <Link href={becomeHref} className="mt-10 inline-flex h-12 items-center justify-center rounded-lg bg-emerald-500 px-7 text-base font-semibold text-gray-950 transition hover:bg-emerald-400">Начать принимать заявки</Link>
+          <Link href={becomeHref} className="mt-10 inline-flex h-12 items-center justify-center rounded-lg bg-emerald-500 px-7 text-base font-semibold text-gray-950 transition hover:bg-emerald-400">{copy.hero.cta}</Link>
         </div>
       </section>
 
       <section className="mx-auto grid max-w-7xl gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
         <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
-          <LeadIllustration variant="flow" />
+          <LeadIllustration variant="flow" alt={copy.illustration.alt} />
         </div>
         <div>
           <h2 className="text-3xl font-bold sm:text-4xl">{copy.seo.title}</h2>
@@ -142,8 +144,8 @@ export async function ForSpecialistsView({ lang }: Props) {
           </ul>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <LeadIllustration variant="money" />
-          <p className="border-t border-gray-200 pt-4 text-center text-lg font-semibold">Вы зарабатываете деньги. Freuly помогает привести обращение к вам.</p>
+          <LeadIllustration variant="money" alt={copy.illustration.alt} />
+          <p className="border-t border-gray-200 pt-4 text-center text-lg font-semibold">{copy.offer.caption}</p>
         </div>
       </section>
 
