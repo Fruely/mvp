@@ -42,13 +42,14 @@ export function ensureMetaPixel() {
   if (!META_PIXEL_ID || typeof window === "undefined" || !hasMetaPixelConsent()) return;
 
   if (!window.fbq) {
-    const fbq = function fbq(...args: unknown[]) {
+    let fbq: NonNullable<Window["fbq"]>;
+    fbq = (...args: unknown[]) => {
       if (fbq.callMethod) {
         fbq.callMethod(...args);
       } else {
         fbq.queue?.push(args);
       }
-    } as NonNullable<Window["fbq"]>;
+    };
 
     fbq.push = fbq;
     fbq.loaded = true;
