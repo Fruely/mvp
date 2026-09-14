@@ -8,6 +8,7 @@ import { publicPageContainerClass } from "@/components/public/publicStyles";
 import SpecialistLegalAcceptanceFields from "@/components/legal/SpecialistLegalAcceptanceFields";
 import { getSupabase } from "@/lib/supabaseClient";
 import { t, type Dictionary } from "@/lib/i18n";
+import { trackSpecialistRegistrationLead } from "@/lib/metaPixel";
 
 type Props = {
   lang?: string;
@@ -116,6 +117,8 @@ export default function SpecialistQuickRegisterForm({ dict, lang }: Props) {
         router.push("/login");
         return;
       }
+
+      trackSpecialistRegistrationLead();
 
       const onboardingHref = lang
         ? `/${lang}/specialist/dashboard/onboarding?reason=incomplete_profile`
