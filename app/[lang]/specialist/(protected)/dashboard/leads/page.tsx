@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import LeadsTable from "@/components/dashboard/LeadsTable";
 import { Alert } from "@/components/ui";
 import { dashboardPageStackClass } from "@/components/dashboard/dashboardStyles";
-import { canUnlockLeadContacts } from "@/lib/billing/contactUnlockEntitlement";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
 import {
@@ -17,6 +16,7 @@ import {
   DASHBOARD_LEAD_REDACTED_SELECT,
   mapRowToDashboardLead,
 } from "@/lib/leads/contactUnlock";
+import { loadDashboardLeadAccessDecisions } from "@/lib/leadEngine/accessDecisionBatch";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
 
@@ -51,9 +51,17 @@ export default async function SpecialistDashboardLeadsPage({
   }
 
   const leads = (data ?? []).map((row) => mapRowToDashboardLead(row as Record<string, unknown>));
+  const accessDecisions = await loadDashboardLeadAccessDecisions(service, {
+    specialistId: specialist.id,
+    planStatus: plan.plan_status,
+    leads: leads.map((lead) => ({
+      id: lead.id,
+      contacts_unlocked: lead.contacts_unlocked,
+    })),
+  });
+
   const display = getSubscriptionDisplayState(plan);
   const leadsBanner = leadsSubscriptionBannerText(dict, display);
-  const canUnlockContacts = canUnlockLeadContacts(plan.plan_status);
   const billingHref = `/${lang}/specialist/dashboard/billing`;
 
   return (
@@ -65,9 +73,9 @@ export default async function SpecialistDashboardLeadsPage({
       ) : null}
       <LeadsTable
         initialLeads={leads}
+        accessDecisions={accessDecisions}
         lang={lang}
         dict={dict}
-        canUnlockContacts={canUnlockContacts}
         billingHref={billingHref}
       />
     </div>
