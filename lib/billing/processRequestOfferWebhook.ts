@@ -57,6 +57,23 @@ async function loadPayment(
   return (data as PaymentRow | null) ?? null;
 }
 
+async function markOfferPaid(
+  supabase: SupabaseClient,
+  payment: PaymentRow,
+  paidAt: string,
+): Promise<boolean> {
+  const nowIso = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("request_offers")
+    .update({ status: "paid", paid_at: paidAt, updated_at: nowIso })
+    .eq("id", payment.offer_id)
+    .eq("specialist_id", payment.specialist_id)
+    .select("id")
+    .maybeSingle();
+
+  return !error && Boolean(data?.id);
+}
+
 async function grantAccess(
   supabase: SupabaseClient,
   payment: PaymentRow,
@@ -76,7 +93,9 @@ async function grantAccess(
       existingGrant.source_payment_id === payment.id &&
       existingGrant.revoked_at == null
     ) {
-      return { outcome: "success" };
+      return (await markOfferPaid(supabase, payment, paidAt))
+        ? { outcome: "success" }
+        : { outcome: "retryable_failure" };
     }
     return { outcome: "validation_failed" };
   }
@@ -106,19 +125,17 @@ async function grantAccess(
         racedGrant?.source_payment_id === payment.id &&
         racedGrant.revoked_at == null
       ) {
-        return { outcome: "success" };
+        return (await markOfferPaid(supabase, payment, paidAt))
+          ? { outcome: "success" }
+          : { outcome: "retryable_failure" };
       }
     }
     return { outcome: "retryable_failure" };
   }
 
-  await supabase
-    .from("request_offers")
-    .update({ status: "paid", paid_at: paidAt, updated_at: nowIso })
-    .eq("id", payment.offer_id)
-    .eq("specialist_id", payment.specialist_id);
-
-  return { outcome: "success" };
+  return (await markOfferPaid(supabase, payment, paidAt))
+    ? { outcome: "success" }
+    : { outcome: "retryable_failure" };
 }
 
 async function handleSuccess(
@@ -194,7 +211,15 @@ async function handleSuccess(
 
   if (updateError) return { outcome: "retryable_failure" };
 
-  const paidPayment = (updated as PaymentRow | null) ?? (await loadPayment(supabase, payment.id));
+  let paidPayment: PaymentRow | null = updated as PaymentRow | null;
+  if (!paidPayment) {
+    try {
+      paidPayment = await loadPayment(supabase, payment.id);
+    } catch {
+      return { outcome: "retryable_failure" };
+    }
+  }
+
   if (!paidPayment || paidPayment.status !== "paid") {
     return { outcome: "retryable_failure" };
   }
