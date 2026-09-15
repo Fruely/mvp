@@ -7,7 +7,7 @@ import {
   resolveShadowLeadPrice,
 } from "@/lib/leadEngine/shadowPricing";
 import {
-  deriveUniqueShadowServiceValue,
+  deriveHighestShadowServiceValue,
   type ShadowServiceValueRow,
 } from "@/lib/leadEngine/serviceValuePolicy";
 
@@ -75,7 +75,7 @@ async function loadSpecialistPricingContext(
     };
   }
 
-  const serviceValue = deriveUniqueShadowServiceValue(
+  const serviceValue = deriveHighestShadowServiceValue(
     (services ?? []) as unknown as ShadowServiceValueRow[],
     categoryId,
   );
