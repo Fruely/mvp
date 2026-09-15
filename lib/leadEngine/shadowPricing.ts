@@ -57,7 +57,9 @@ export async function resolveShadowLeadPrice(
     return null;
   }
 
-  return resolveLeadPrice((data ?? []) as LeadPricingRule[], {
+  const rules = (data ?? []) as unknown as LeadPricingRule[];
+
+  return resolveLeadPrice(rules, {
     pricingSegment: input.pricingSegment,
     categoryId: input.categoryId ?? null,
     specialistServiceId: input.specialistServiceId ?? null,
