@@ -19,7 +19,8 @@ import {
 import {
   ensureSafePublishedPlanAccess,
   shouldRunPaidLifecycleReconcile,
-  type PublishedPlanAccessAction,
+  SPECIALIST_PLAN_ACCESS_FAILED,
+  type EnsurePublishedPlanAccessResult,
 } from "@/lib/billing/ensurePublishedPlanAccess";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 import { validatePublication } from "@/lib/dashboard/publicationValidator";
@@ -45,8 +46,16 @@ export type PublishSpecialistDependencies = {
   notifyNewSpecialist?: (args: { specialistId: string; name: string | null }) => Promise<void>;
   assignFounderBadge?: (specialistId: string) => Promise<void>;
   reconcileLifecycle?: (specialistId: string) => Promise<void>;
-  ensurePublishedPlanAccess?: (specialistId: string) => Promise<PublishedPlanAccessAction>;
+  ensurePublishedPlanAccess?: (specialistId: string) => Promise<EnsurePublishedPlanAccessResult>;
 };
+
+function planAccessFailure(): PublishSpecialistFailure {
+  return {
+    ok: false,
+    status: 500,
+    body: { error: SPECIALIST_PLAN_ACCESS_FAILED, code: SPECIALIST_PLAN_ACCESS_FAILED },
+  };
+}
 
 type SpecialistPublishRow = {
   id: string;
@@ -336,7 +345,10 @@ export async function publishSpecialistProfile(
     if (!isStoredSlugCanonical(row.slug)) {
       await ensureCanonicalSpecialistSlug(service, specialistId);
     }
-    await ensurePublishedPlanAccess(specialistId);
+    const repaired = await ensurePublishedPlanAccess(specialistId);
+    if (!repaired.ok) {
+      return planAccessFailure();
+    }
     return {
       ok: true,
       status: currentStatus ?? "published_unverified",
@@ -422,6 +434,11 @@ export async function publishSpecialistProfile(
     };
   }
 
+  const planAccess = await ensurePublishedPlanAccess(specialistId);
+  if (!planAccess.ok) {
+    return planAccessFailure();
+  }
+
   const updatePayload: Record<string, unknown> = {
     status: "published_unverified",
     is_active: true,
@@ -454,7 +471,10 @@ export async function publishSpecialistProfile(
       .eq("id", specialistId)
       .maybeSingle();
     const status = typeof current?.status === "string" ? current.status : "published_unverified";
-    await ensurePublishedPlanAccess(specialistId);
+    const repaired = await ensurePublishedPlanAccess(specialistId);
+    if (!repaired.ok) {
+      return planAccessFailure();
+    }
     return { ok: true, status, alreadyPublished: true };
   }
 
@@ -473,8 +493,7 @@ export async function publishSpecialistProfile(
     name: typeof publishedRow?.name === "string" ? publishedRow.name : row.name,
   });
   await assignFounderBadge(specialistId);
-  const planAccess = await ensurePublishedPlanAccess(specialistId);
-  if (shouldRunPaidLifecycleReconcile(planAccess)) {
+  if (shouldRunPaidLifecycleReconcile(planAccess.action)) {
     await reconcileLifecycle(specialistId);
   }
 

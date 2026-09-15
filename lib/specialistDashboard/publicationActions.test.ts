@@ -60,7 +60,11 @@ function validPublishServices(): Array<Record<string, unknown>> {
   ];
 }
 
-function createPublishMockSupabase(specialist: SpecialistState, services: Array<Record<string, unknown>>) {
+function createPublishMockSupabase(
+  specialist: SpecialistState,
+  services: Array<Record<string, unknown>>,
+  options: { planInsertError?: { code?: string; message: string } } = {},
+) {
   let updatePayload: Record<string, unknown> | null = null;
   let lastEqColumn: string | null = null;
   let planInsert: Record<string, unknown> | null = null;
@@ -85,6 +89,9 @@ function createPublishMockSupabase(specialist: SpecialistState, services: Array<
   };
   chain.insert = async (payload: Record<string, unknown> | Array<Record<string, unknown>>) => {
     if (table === "specialist_plan") {
+      if (options.planInsertError) {
+        return { error: options.planInsertError };
+      }
       planInsert = Array.isArray(payload) ? payload[0] ?? null : payload;
     }
     return { error: null };
@@ -317,7 +324,10 @@ test("publishSpecialistProfile reconciles lifecycle only for covering paid plans
     reconcileLifecycle: async () => {
       reconciled += 1;
     },
-    ensurePublishedPlanAccess: async () => ({ kind: "noop", reason: "paid_coverage" }),
+    ensurePublishedPlanAccess: async () => ({
+      ok: true,
+      action: { kind: "noop", reason: "paid_coverage" },
+    }),
   });
 
   assert.equal(result.ok, true);
@@ -343,4 +353,51 @@ test("already published specialists still get a safe inactive plan row when miss
   if (result.ok) assert.equal(result.alreadyPublished, true);
   assert.equal(mock.planInsert?.plan_status, "inactive");
   assert.equal(reconciled, 0);
+});
+
+test("missing plan insert failure fails closed and does not publish", async () => {
+  const specialist = createReadyDraftState();
+  specialist.slug = "psychologists-berlin-smoke";
+  const mock = createPublishMockSupabase(specialist, validPublishServices(), {
+    planInsertError: { message: "insert failed" },
+  });
+
+  const result = await publishSpecialistProfile(mock.service as never, SPECIALIST_ID, {
+    notifyNewSpecialist: async () => {},
+    assignFounderBadge: async () => {},
+    reconcileLifecycle: async () => {
+      throw new Error("reconcile must not run");
+    },
+  });
+
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.status, 500);
+    assert.equal(result.body.code, "specialist_plan_access_failed");
+  }
+  assert.equal(specialist.status, "draft");
+  assert.equal(specialist.is_active, false);
+  assert.equal(specialist.is_visible, false);
+  assert.equal(mock.planInsert, null);
+});
+
+test("already published repair fails closed when inactive plan cannot be materialized", async () => {
+  const specialist = createReadyDraftState();
+  specialist.status = "published_unverified";
+  specialist.slug = "psychologists-berlin-smoke";
+  const mock = createPublishMockSupabase(specialist, [], {
+    planInsertError: { message: "insert failed" },
+  });
+
+  const result = await publishSpecialistProfile(mock.service as never, SPECIALIST_ID, {
+    notifyNewSpecialist: async () => {},
+    assignFounderBadge: async () => {},
+    reconcileLifecycle: async () => {},
+  });
+
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.status, 500);
+    assert.equal(result.body.code, "specialist_plan_access_failed");
+  }
 });
