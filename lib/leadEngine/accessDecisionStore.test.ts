@@ -8,10 +8,14 @@ const offersPath = fileURLToPath(new URL("./requestOffers.ts", import.meta.url))
 const policyPath = fileURLToPath(new URL("./accessDecision.ts", import.meta.url));
 const shadowPath = fileURLToPath(new URL("./shadowPricing.ts", import.meta.url));
 
-test("direct PPL adapter never writes live price_cents or creates checkout", async () => {
+test("direct PPL adapter is read-only and uses grants as payment entitlement proof", async () => {
   const storeSrc = await readFile(storePath, "utf8");
-  assert.match(storeSrc, /paidEntitlement: false/);
-  assert.match(storeSrc, /paymentProcessing: false/);
+  assert.match(storeSrc, /request_offer_access_grants/);
+  assert.match(storeSrc, /request_offer_payments/);
+  assert.match(storeSrc, /\.is\("revoked_at", null\)/);
+  assert.match(storeSrc, /\.eq\("status", "pending"\)/);
+  assert.match(storeSrc, /paidEntitlement = Boolean\(grant\?\.id\)/);
+  assert.match(storeSrc, /paymentProcessing = Boolean\(pendingPayment\?\.id\)/);
   assert.doesNotMatch(storeSrc, /stripe/i);
   assert.doesNotMatch(storeSrc, /\.update\(/);
   assert.doesNotMatch(storeSrc, /\.insert\(/);
