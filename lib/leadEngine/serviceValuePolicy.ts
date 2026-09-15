@@ -9,7 +9,7 @@ export type ShadowServiceValueRow = {
 };
 
 export type ShadowServiceValue = {
-  specialistServiceId: string;
+  specialistServiceId: string | null;
   estimatedServiceValueMinCents: number;
   estimatedServiceValueMaxCents: number;
 };
@@ -22,48 +22,46 @@ function eurosToCents(value: number | string | null): number | null {
 }
 
 /**
- * Conservative shadow-only service value derivation for direct leads.
+ * Shadow-only pricing anchor for a generic direct lead.
  *
- * A direct lead currently does not identify the exact specialist service chosen by the
- * client. Therefore we only use service economics when there is exactly one eligible
- * active EUR fixed/range service for the specialist/category. Hourly pricing is not
- * treated as total engagement value, and multiple eligible services are intentionally
- * considered ambiguous.
+ * Direct leads currently target a specialist, not a specific listed service. For PPL
+ * pricing observation we therefore use the highest active EUR fixed/range value in the
+ * specialist's category. This intentionally estimates the commercial upside of a lead
+ * without claiming that the client selected a particular service.
+ *
+ * `specialistServiceId` stays null because this is a pricing anchor, not a selected
+ * service. Hourly pricing is not treated as total engagement value.
  */
-export function deriveUniqueShadowServiceValue(
+export function deriveHighestShadowServiceValue(
   rows: readonly ShadowServiceValueRow[],
   categoryId: string | null,
 ): ShadowServiceValue | null {
-  const candidates = rows.flatMap((row) => {
-    if (!row.is_active) return [];
-    if ((row.currency ?? "").toUpperCase() !== "EUR") return [];
-    if (row.category_id && row.category_id !== categoryId) return [];
-    if (row.pricing_type !== "fixed" && row.pricing_type !== "range") return [];
+  let highestValueCents: number | null = null;
 
-    const min = eurosToCents(row.price_from);
-    if (min == null) return [];
+  for (const row of rows) {
+    if (!row.is_active) continue;
+    if ((row.currency ?? "").toUpperCase() !== "EUR") continue;
+    if (row.category_id && row.category_id !== categoryId) continue;
+    if (row.pricing_type !== "fixed" && row.pricing_type !== "range") continue;
 
-    if (row.pricing_type === "fixed") {
-      return [
-        {
-          specialistServiceId: row.id,
-          estimatedServiceValueMinCents: min,
-          estimatedServiceValueMaxCents: min,
-        },
-      ];
+    const from = eurosToCents(row.price_from);
+    if (from == null) continue;
+
+    const candidate =
+      row.pricing_type === "range" ? eurosToCents(row.price_to) : from;
+
+    if (candidate == null || candidate < from) continue;
+
+    if (highestValueCents == null || candidate > highestValueCents) {
+      highestValueCents = candidate;
     }
+  }
 
-    const max = eurosToCents(row.price_to);
-    if (max == null || max < min) return [];
+  if (highestValueCents == null) return null;
 
-    return [
-      {
-        specialistServiceId: row.id,
-        estimatedServiceValueMinCents: min,
-        estimatedServiceValueMaxCents: max,
-      },
-    ];
-  });
-
-  return candidates.length === 1 ? candidates[0] : null;
+  return {
+    specialistServiceId: null,
+    estimatedServiceValueMinCents: highestValueCents,
+    estimatedServiceValueMaxCents: highestValueCents,
+  };
 }
