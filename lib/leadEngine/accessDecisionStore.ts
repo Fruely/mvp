@@ -10,9 +10,11 @@ import {
 
 /**
  * Thin DB adapter for direct-lead access facts.
- * Direct PPL payment/grant tables are not wired yet: paidEntitlement stays false
- * until a later activation step. Offer reads are observational and never write
- * live `price_cents`.
+ *
+ * request_offer_access_grants is the only payment entitlement proof for direct PPL.
+ * A payment row by itself never unlocks contacts. Pending payment is observational
+ * processing state only. Reads fail closed and never write live price_cents or create
+ * Checkout sessions.
  */
 export async function loadDirectLeadAccessFacts(
   supabase: SupabaseClient,
@@ -24,6 +26,8 @@ export async function loadDirectLeadAccessFacts(
   },
 ): Promise<DirectLeadAccessFacts> {
   let offer: DirectLeadAccessFacts["offer"] = null;
+  let paidEntitlement = false;
+  let paymentProcessing = false;
 
   const { data, error } = await supabase
     .from("request_offers")
@@ -45,13 +49,51 @@ export async function loadDirectLeadAccessFacts(
     );
   }
 
+  if (offer) {
+    const { data: grant, error: grantError } = await supabase
+      .from("request_offer_access_grants")
+      .select("id")
+      .eq("offer_id", offer.id)
+      .eq("specialist_id", input.specialistId)
+      .is("revoked_at", null)
+      .maybeSingle();
+
+    if (grantError) {
+      console.warn("[lead-engine/access] request_offer_access_grants read failed", {
+        code: grantError.code ?? "unknown",
+      });
+    } else {
+      paidEntitlement = Boolean(grant?.id);
+    }
+
+    if (!paidEntitlement) {
+      const { data: pendingPayment, error: paymentError } = await supabase
+        .from("request_offer_payments")
+        .select("id")
+        .eq("offer_id", offer.id)
+        .eq("specialist_id", input.specialistId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (paymentError) {
+        console.warn("[lead-engine/access] request_offer_payments read failed", {
+          code: paymentError.code ?? "unknown",
+        });
+      } else {
+        paymentProcessing = Boolean(pendingPayment?.id);
+      }
+    }
+  }
+
   return {
     leadId: input.leadId,
     specialistId: input.specialistId,
     planStatus: input.planStatus,
     contactsUnlocked: input.contactsUnlocked === true,
-    paidEntitlement: false,
-    paymentProcessing: false,
+    paidEntitlement,
+    paymentProcessing,
     offer,
     directPplCheckoutEnabled: isDirectLeadPplCheckoutEnabled(),
   };
