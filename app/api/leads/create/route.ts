@@ -10,6 +10,7 @@ import { notify } from "@/lib/notifications/notify";
 import { sendTelegramMessage } from "@/lib/telegram/sendMessage";
 import { specialistDashboardPath } from "@/lib/specialists/navigation";
 import { SPECIALIST_LEAD_TELEGRAM_TEXT } from "@/lib/leads/contactUnlock";
+import { ensureDirectLeadShadowOffer } from "@/lib/leadEngine/requestOffers";
 import {
   buildClientIdempotencyFingerprint,
   isUniqueViolation,
@@ -166,6 +167,10 @@ export async function POST(request: NextRequest) {
       }
 
       if (replay.kind === "replay") {
+        await ensureDirectLeadShadowOffer(supabase, {
+          leadId: String(replay.response.id),
+          specialistId: specialist_id,
+        });
         return Response.json({ data: replay.response }, { status: 200 });
       }
     }
@@ -284,6 +289,10 @@ export async function POST(request: NextRequest) {
         );
 
         if (replay.kind === "replay") {
+          await ensureDirectLeadShadowOffer(supabase, {
+            leadId: String(replay.response.id),
+            specialistId: specialist_id,
+          });
           return Response.json({ data: replay.response }, { status: 200 });
         }
 
@@ -304,6 +313,11 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    await ensureDirectLeadShadowOffer(supabase, {
+      leadId: String(data.id),
+      specialistId: specialist_id,
+    });
 
     const specialistName =
       typeof specRow.name === "string" && specRow.name.trim()
