@@ -32,7 +32,7 @@ function productName(lang: Lang): string {
 
 function buildUrls(input: { siteUrl: string; lang: Lang; offerId: string }) {
   const base = input.siteUrl.replace(/\/$/, "");
-  const dashboard = `${base}/${input.lang}/dashboard/leads`;
+  const dashboard = `${base}/${input.lang}/specialist/dashboard/leads`;
   return {
     successUrl: `${dashboard}?payment=success&offer=${encodeURIComponent(input.offerId)}`,
     cancelUrl: `${dashboard}?payment=cancelled&offer=${encodeURIComponent(input.offerId)}`,
