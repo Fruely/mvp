@@ -51,7 +51,7 @@ test("lead table exposes guarded purchase CTA from server decision only", async 
 
 test("post-payment UX polls server state and never trusts redirect as entitlement", async () => {
   const src = await readFile(tablePath, "utf8");
-  assert.match(src, /payment === "success"/);
+  assert.match(src, /payment !== "success" \|\| !offerId/);
   assert.match(src, /router\.refresh\(\)/);
   assert.match(src, /paymentPollCountRef\.current >= 10/);
   assert.match(src, /Контакты откроются только после подтверждения Stripe/);
