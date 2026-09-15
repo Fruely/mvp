@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { deriveUniqueShadowServiceValue } from "@/lib/leadEngine/serviceValuePolicy";
+import { deriveHighestShadowServiceValue } from "@/lib/leadEngine/serviceValuePolicy";
 
 const categoryId = "11111111-1111-1111-1111-111111111111";
 
-test("uses one active EUR fixed service", () => {
+test("uses one active EUR fixed service as a generic pricing anchor", () => {
   assert.deepEqual(
-    deriveUniqueShadowServiceValue(
+    deriveHighestShadowServiceValue(
       [
         {
           id: "22222222-2222-2222-2222-222222222222",
@@ -22,16 +22,16 @@ test("uses one active EUR fixed service", () => {
       categoryId,
     ),
     {
-      specialistServiceId: "22222222-2222-2222-2222-222222222222",
+      specialistServiceId: null,
       estimatedServiceValueMinCents: 50000,
       estimatedServiceValueMaxCents: 50000,
     },
   );
 });
 
-test("uses one active EUR range service", () => {
+test("uses the upper bound of an active EUR range service", () => {
   assert.deepEqual(
-    deriveUniqueShadowServiceValue(
+    deriveHighestShadowServiceValue(
       [
         {
           id: "33333333-3333-3333-3333-333333333333",
@@ -46,22 +46,22 @@ test("uses one active EUR range service", () => {
       categoryId,
     ),
     {
-      specialistServiceId: "33333333-3333-3333-3333-333333333333",
-      estimatedServiceValueMinCents: 40000,
+      specialistServiceId: null,
+      estimatedServiceValueMinCents: 60000,
       estimatedServiceValueMaxCents: 60000,
     },
   );
 });
 
-test("does not guess when multiple eligible services exist", () => {
-  assert.equal(
-    deriveUniqueShadowServiceValue(
+test("uses the highest eligible service value when multiple services exist", () => {
+  assert.deepEqual(
+    deriveHighestShadowServiceValue(
       [
         {
           id: "a",
           category_id: categoryId,
           pricing_type: "fixed",
-          price_from: 300,
+          price_from: 120,
           price_to: null,
           currency: "EUR",
           is_active: true,
@@ -70,7 +70,16 @@ test("does not guess when multiple eligible services exist", () => {
           id: "b",
           category_id: categoryId,
           pricing_type: "fixed",
-          price_from: 500,
+          price_from: 350,
+          price_to: null,
+          currency: "EUR",
+          is_active: true,
+        },
+        {
+          id: "c",
+          category_id: categoryId,
+          pricing_type: "fixed",
+          price_from: 1000,
           price_to: null,
           currency: "EUR",
           is_active: true,
@@ -78,13 +87,50 @@ test("does not guess when multiple eligible services exist", () => {
       ],
       categoryId,
     ),
-    null,
+    {
+      specialistServiceId: null,
+      estimatedServiceValueMinCents: 100000,
+      estimatedServiceValueMaxCents: 100000,
+    },
+  );
+});
+
+test("compares fixed values and range upper bounds", () => {
+  assert.deepEqual(
+    deriveHighestShadowServiceValue(
+      [
+        {
+          id: "fixed",
+          category_id: categoryId,
+          pricing_type: "fixed",
+          price_from: 800,
+          price_to: null,
+          currency: "EUR",
+          is_active: true,
+        },
+        {
+          id: "range",
+          category_id: categoryId,
+          pricing_type: "range",
+          price_from: 700,
+          price_to: 1200,
+          currency: "EUR",
+          is_active: true,
+        },
+      ],
+      categoryId,
+    ),
+    {
+      specialistServiceId: null,
+      estimatedServiceValueMinCents: 120000,
+      estimatedServiceValueMaxCents: 120000,
+    },
   );
 });
 
 test("ignores hourly pricing as total engagement value", () => {
   assert.equal(
-    deriveUniqueShadowServiceValue(
+    deriveHighestShadowServiceValue(
       [
         {
           id: "hourly",
@@ -102,9 +148,9 @@ test("ignores hourly pricing as total engagement value", () => {
   );
 });
 
-test("ignores inactive, non-EUR, and wrong-category services", () => {
+test("ignores inactive, non-EUR, invalid-range, and wrong-category services", () => {
   assert.equal(
-    deriveUniqueShadowServiceValue(
+    deriveHighestShadowServiceValue(
       [
         {
           id: "inactive",
@@ -122,6 +168,15 @@ test("ignores inactive, non-EUR, and wrong-category services", () => {
           price_from: 500,
           price_to: null,
           currency: "USD",
+          is_active: true,
+        },
+        {
+          id: "invalid-range",
+          category_id: categoryId,
+          pricing_type: "range",
+          price_from: 500,
+          price_to: 400,
+          currency: "EUR",
           is_active: true,
         },
         {
