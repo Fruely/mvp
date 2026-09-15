@@ -6,6 +6,10 @@ import {
   buildShadowPricingSnapshot,
   resolveShadowLeadPrice,
 } from "@/lib/leadEngine/shadowPricing";
+import {
+  deriveUniqueShadowServiceValue,
+  type ShadowServiceValueRow,
+} from "@/lib/leadEngine/serviceValuePolicy";
 
 export const LEAD_ENGINE_SHADOW_OFFERS_ENV = "LEAD_ENGINE_SHADOW_OFFERS_ENABLED";
 
@@ -21,25 +25,69 @@ export function areLeadEngineShadowOffersEnabled(): boolean {
   return process.env[LEAD_ENGINE_SHADOW_OFFERS_ENV] === "true";
 }
 
-async function resolveSpecialistCategoryId(
+async function loadSpecialistPricingContext(
   supabase: SupabaseClient,
   specialistId: string,
-): Promise<string | null> {
-  const { data, error } = await supabase
+): Promise<{
+  categoryId: string | null;
+  specialistServiceId: string | null;
+  estimatedServiceValueMinCents: number | null;
+  estimatedServiceValueMaxCents: number | null;
+}> {
+  const { data: specialist, error: specialistError } = await supabase
     .from("specialists")
     .select("category_id")
     .eq("id", specialistId)
     .maybeSingle();
 
-  if (error) {
-    console.warn("[lead-engine/request-offers] specialist category read failed", {
-      code: error.code ?? "unknown",
+  if (specialistError) {
+    console.warn("[lead-engine/request-offers] specialist pricing context read failed", {
+      code: specialistError.code ?? "unknown",
     });
-    return null;
+    return {
+      categoryId: null,
+      specialistServiceId: null,
+      estimatedServiceValueMinCents: null,
+      estimatedServiceValueMaxCents: null,
+    };
   }
 
-  const row = data as unknown as { category_id?: unknown } | null;
-  return typeof row?.category_id === "string" ? row.category_id : null;
+  const categoryId =
+    specialist && typeof specialist.category_id === "string"
+      ? specialist.category_id
+      : null;
+
+  const { data: services, error: servicesError } = await supabase
+    .from("specialist_services")
+    .select("id, category_id, pricing_type, price_from, price_to, currency, is_active")
+    .eq("specialist_id", specialistId)
+    .eq("is_active", true);
+
+  if (servicesError) {
+    console.warn("[lead-engine/request-offers] specialist service pricing read failed", {
+      code: servicesError.code ?? "unknown",
+    });
+    return {
+      categoryId,
+      specialistServiceId: null,
+      estimatedServiceValueMinCents: null,
+      estimatedServiceValueMaxCents: null,
+    };
+  }
+
+  const serviceValue = deriveUniqueShadowServiceValue(
+    (services ?? []) as unknown as ShadowServiceValueRow[],
+    categoryId,
+  );
+
+  return {
+    categoryId,
+    specialistServiceId: serviceValue?.specialistServiceId ?? null,
+    estimatedServiceValueMinCents:
+      serviceValue?.estimatedServiceValueMinCents ?? null,
+    estimatedServiceValueMaxCents:
+      serviceValue?.estimatedServiceValueMaxCents ?? null,
+  };
 }
 
 async function attachDirectLeadShadowPricing(
@@ -47,10 +95,13 @@ async function attachDirectLeadShadowPricing(
   input: { leadId: string; specialistId: string },
 ): Promise<void> {
   try {
-    const categoryId = await resolveSpecialistCategoryId(supabase, input.specialistId);
+    const context = await loadSpecialistPricingContext(supabase, input.specialistId);
     const resolved = await resolveShadowLeadPrice(supabase, {
       pricingSegment: "professional",
-      categoryId,
+      categoryId: context.categoryId,
+      specialistServiceId: context.specialistServiceId,
+      estimatedServiceValueMinCents: context.estimatedServiceValueMinCents,
+      estimatedServiceValueMaxCents: context.estimatedServiceValueMaxCents,
     });
 
     if (!resolved) return;
