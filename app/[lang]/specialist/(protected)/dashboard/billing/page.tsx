@@ -153,7 +153,7 @@ export default async function SpecialistDashboardBillingPage({
       ) : null}
 
       {isInactive ? (
-        <Alert variant="error">{t(dict, "dashboard.billingPage.inactiveNotice")}</Alert>
+        <Alert variant="info">{t(dict, "dashboard.billingPage.inactiveNotice")}</Alert>
       ) : null}
 
       {isPremiumCheckoutSuccess ? (

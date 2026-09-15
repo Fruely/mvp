@@ -5,7 +5,7 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
   ru: {
     application: {
       pricingNote:
-        "Регистрация и подготовка черновика не требуют оплаты. Публичная видимость и участие в канале клиентских заявок включаются после активации Freuly Professional или Freuly Growth.",
+        "Регистрация и подготовка черновика не требуют оплаты. После публикации подходящие заявки можно покупать отдельно. Professional или Growth включают доступ к заявкам в рамках тарифа и не являются условием участия в канале.",
     },
     pricing: {
       compare: {
@@ -28,19 +28,19 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
     },
     dashboard: {
       billingPage: {
-        title: "Оплата и активация канала заявок",
+        title: "Оплата и тарифы",
         subtitle:
-          "Здесь вы можете выбрать Professional или Growth, активировать коммерческое участие в канале клиентских заявок и управлять оплатой.",
+          "Здесь вы можете выбрать Professional или Growth, если хотите получать доступ к заявкам в рамках тарифа. Без подписки подходящие заявки можно покупать отдельно.",
         graceNotice:
           "Текущий оплаченный период требует восстановления оплаты до {{graceUntil}}. Продлите тариф, чтобы сохранить коммерческое участие в канале заявок без перерыва.",
         graceNoticeNoDays:
           "Текущий оплаченный период требует восстановления оплаты. Продлите тариф, чтобы сохранить коммерческое участие в канале заявок.",
         inactiveNotice:
-          "Коммерческое участие в канале заявок и публичная видимость сейчас не активны. После оплаты Professional или Growth доступ будет восстановлен.",
+          "Вы работаете без подписки. Подходящие заявки можно покупать отдельно. Подключите Professional или Growth, если хотите получать доступ к заявкам в рамках тарифа.",
         planPicker: {
           title: "Выберите уровень подключения",
           subtitle:
-            "Оба тарифа подключают коммерческое участие в канале клиентских заявок. Growth дополнительно включает расширенную Pro Page. Ручная упаковка предложения оплачивается отдельно.",
+            "Оба тарифа включают доступ к контактам подходящих заявок в рамках подписки. Growth дополнительно включает расширенную Pro Page. Ручная упаковка предложения оплачивается отдельно.",
           professionalHint:
             "Канал клиентских заявок, публичный профиль, самостоятельное ведение и до 5 фото в галерее.",
           growthHint:
@@ -49,11 +49,11 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
       },
       home: {
         incompleteBody:
-          "Заполните обязательные данные, чтобы подготовить черновик к активации Professional или Growth.",
+          "Заполните обязательные данные, чтобы опубликовать профиль. Подписка для публикации не требуется.",
         subscription: {
           grace: "Восстановление оплаты до",
           cta: "Статус канала и тарифа",
-          ctaChoosePlan: "Активировать канал заявок",
+          ctaChoosePlan: "Выбрать тариф",
           ctaPay: "Продлить тариф",
           ctaUrgent: "Восстановить оплату",
         },
@@ -62,18 +62,18 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
         },
       },
       introBanner:
-        "Заполните данные профиля и услуги. Для новых специалистов публичная видимость и канал клиентских заявок активируются после оплаты Professional или Growth.",
+        "Заполните данные профиля и услуги. После публикации подходящие заявки можно покупать отдельно. Professional или Growth — подписка с доступом к заявкам в рамках тарифа, а не условие участия в канале.",
       important: {
         title: "Важно",
         body:
-          "Сначала сохраните изменения. Публичная видимость нового профиля зависит от действующего Professional или Growth.",
+          "Сначала сохраните изменения. Публикация профиля не зависит от подписки Professional или Growth.",
       },
     },
   },
   ua: {
     application: {
       pricingNote:
-        "Реєстрація та підготовка чернетки не потребують оплати. Публічна видимість і участь у каналі клієнтських запитів вмикаються після активації Freuly Professional або Freuly Growth.",
+        "Реєстрація та підготовка чернетки не потребують оплати. Після публікації відповідні запити можна купувати окремо. Professional або Growth включають доступ до запитів у межах тарифу і не є умовою участі в каналі.",
     },
     pricing: {
       compare: {
@@ -96,19 +96,19 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
     },
     dashboard: {
       billingPage: {
-        title: "Оплата та активація каналу запитів",
+        title: "Оплата та тарифи",
         subtitle:
-          "Тут ви можете вибрати Professional або Growth, активувати комерційну участь у каналі клієнтських запитів та керувати оплатою.",
+          "Тут ви можете вибрати Professional або Growth, якщо хочете отримувати доступ до запитів у межах тарифу. Без підписки відповідні запити можна купувати окремо.",
         graceNotice:
           "Поточний оплачений період потребує відновлення оплати до {{graceUntil}}. Продовжте тариф, щоб зберегти комерційну участь у каналі запитів без перерви.",
         graceNoticeNoDays:
           "Поточний оплачений період потребує відновлення оплати. Продовжте тариф, щоб зберегти комерційну участь у каналі запитів.",
         inactiveNotice:
-          "Комерційна участь у каналі запитів і публічна видимість зараз не активні. Після оплати Professional або Growth доступ буде відновлено.",
+          "Ви працюєте без підписки. Відповідні запити можна купувати окремо. Підключіть Professional або Growth, якщо хочете отримувати доступ до запитів у межах тарифу.",
         planPicker: {
           title: "Оберіть рівень підключення",
           subtitle:
-            "Обидва тарифи підключають комерційну участь у каналі клієнтських запитів. Growth додатково включає розширену Pro Page. Ручне оформлення пропозиції оплачується окремо.",
+            "Обидва тарифи включають доступ до контактів відповідних запитів у межах підписки. Growth додатково включає розширену Pro Page. Ручне оформлення пропозиції оплачується окремо.",
           professionalHint:
             "Канал клієнтських запитів, публічний профіль, самостійне ведення та до 5 фото в галереї.",
           growthHint:
@@ -117,11 +117,11 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
       },
       home: {
         incompleteBody:
-          "Заповніть обов’язкові дані, щоб підготувати чернетку до активації Professional або Growth.",
+          "Заповніть обов’язкові дані, щоб опублікувати профіль. Підписка для публікації не потрібна.",
         subscription: {
           grace: "Відновлення оплати до",
           cta: "Статус каналу і тарифу",
-          ctaChoosePlan: "Активувати канал запитів",
+          ctaChoosePlan: "Обрати тариф",
           ctaPay: "Продовжити тариф",
           ctaUrgent: "Відновити оплату",
         },
@@ -130,18 +130,18 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
         },
       },
       introBanner:
-        "Заповніть дані профілю та послуги. Для нових спеціалістів публічна видимість і канал клієнтських запитів активуються після оплати Professional або Growth.",
+        "Заповніть дані профілю та послуги. Після публікації відповідні запити можна купувати окремо. Professional або Growth — підписка з доступом до запитів у межах тарифу, а не умова участі в каналі.",
       important: {
         title: "Важливо",
         body:
-          "Спочатку збережіть зміни. Публічна видимість нового профілю залежить від чинного Professional або Growth.",
+          "Спочатку збережіть зміни. Публікація профілю не залежить від підписки Professional або Growth.",
       },
     },
   },
   de: {
     application: {
       pricingNote:
-        "Registrierung und Vorbereitung des Entwurfs sind ohne Tarifzahlung möglich. Öffentliche Sichtbarkeit und die Teilnahme am Kundenanfrage-Kanal werden nach Aktivierung von Freuly Professional oder Freuly Growth freigeschaltet.",
+        "Registrierung und Vorbereitung des Entwurfs sind ohne Tarifzahlung möglich. Nach der Veröffentlichung können passende Anfragen einzeln gekauft werden. Professional oder Growth enthalten den Zugang zu Anfragen im Rahmen des Tarifs und sind keine Voraussetzung für die Teilnahme am Anfragekanal.",
     },
     pricing: {
       compare: {
@@ -164,19 +164,19 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
     },
     dashboard: {
       billingPage: {
-        title: "Zahlung und Aktivierung des Anfragekanals",
+        title: "Zahlung und Tarife",
         subtitle:
-          "Hier können Sie Professional oder Growth wählen, die kommerzielle Teilnahme am Kundenanfrage-Kanal aktivieren und Ihre Zahlung verwalten.",
+          "Wählen Sie Professional oder Growth, wenn Sie Zugang zu Anfragen im Rahmen des Tarifs erhalten möchten. Ohne Abo können passende Anfragen einzeln gekauft werden.",
         graceNotice:
           "Für den aktuellen bezahlten Zeitraum muss die Zahlung bis {{graceUntil}} wiederhergestellt werden. Verlängern Sie den Tarif, um die kommerzielle Teilnahme ohne Unterbrechung zu behalten.",
         graceNoticeNoDays:
           "Für den aktuellen bezahlten Zeitraum muss die Zahlung wiederhergestellt werden. Verlängern Sie den Tarif, um die kommerzielle Teilnahme am Anfragekanal zu behalten.",
         inactiveNotice:
-          "Kommerzielle Teilnahme am Anfragekanal und öffentliche Sichtbarkeit sind derzeit nicht aktiv. Nach Zahlung von Professional oder Growth wird der Zugang wiederhergestellt.",
+          "Sie arbeiten ohne Abo. Passende Anfragen können einzeln gekauft werden. Aktivieren Sie Professional oder Growth, wenn Sie Zugang zu Anfragen im Rahmen des Tarifs erhalten möchten.",
         planPicker: {
           title: "Verbindungsstufe wählen",
           subtitle:
-            "Beide Tarife aktivieren die kommerzielle Teilnahme am Kundenanfrage-Kanal. Growth ergänzt eine erweiterte Pro Page. Manuelle Angebotsaufbereitung wird separat berechnet.",
+            "Beide Tarife enthalten den Zugang zu Kontakten passender Anfragen im Rahmen des Abos. Growth ergänzt eine erweiterte Pro Page. Manuelle Angebotsaufbereitung wird separat berechnet.",
           professionalHint:
             "Kundenanfrage-Kanal, öffentliches Profil, eigenständige Verwaltung und bis zu 5 Galeriebilder.",
           growthHint:
@@ -185,11 +185,11 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
       },
       home: {
         incompleteBody:
-          "Vervollständigen Sie die erforderlichen Angaben, um den Entwurf für Professional oder Growth vorzubereiten.",
+          "Vervollständigen Sie die erforderlichen Angaben, um das Profil zu veröffentlichen. Ein Abo ist dafür nicht erforderlich.",
         subscription: {
           grace: "Zahlungswiederherstellung bis",
           cta: "Kanal- und Tarifstatus",
-          ctaChoosePlan: "Anfragekanal aktivieren",
+          ctaChoosePlan: "Tarif wählen",
           ctaPay: "Tarif verlängern",
           ctaUrgent: "Zahlung wiederherstellen",
         },
@@ -198,11 +198,11 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
         },
       },
       introBanner:
-        "Vervollständigen Sie Profilangaben und Leistungen. Für neue Spezialisten werden öffentliche Sichtbarkeit und Kundenanfrage-Kanal nach Zahlung von Professional oder Growth aktiviert.",
+        "Vervollständigen Sie Profilangaben und Leistungen. Nach der Veröffentlichung können passende Anfragen einzeln gekauft werden. Professional oder Growth sind ein Abo mit Zugang zu Anfragen im Rahmen des Tarifs, keine Voraussetzung für die Teilnahme am Kanal.",
       important: {
         title: "Wichtig",
         body:
-          "Speichern Sie Änderungen zuerst. Die öffentliche Sichtbarkeit eines neuen Profils setzt aktives Professional oder Growth voraus.",
+          "Speichern Sie Änderungen zuerst. Die Veröffentlichung des Profils hängt nicht von einem Professional- oder Growth-Abo ab.",
       },
     },
   },
