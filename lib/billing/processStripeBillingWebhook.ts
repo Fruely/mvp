@@ -21,6 +21,10 @@ import {
   type PlanPaymentWebhookResult,
 } from "@/lib/billing/processPlanPaymentWebhook";
 import {
+  processStripeWebhookEventForRequestOffers,
+  type RequestOfferWebhookResult,
+} from "@/lib/billing/processRequestOfferWebhook";
+import {
   processStripeWebhookEventForSubscriptions,
   shouldMarkSubscriptionBillingEventSkipped,
   shouldRetrySubscriptionBillingWebhook,
@@ -33,6 +37,7 @@ export type StripeBillingWebhookProcessResult = {
   planPayment: PlanPaymentWebhookResult;
   promoted: PromotedAccessWebhookResult;
   promotedReservation: PromotedReservationWebhookResult;
+  requestOffer: RequestOfferWebhookResult;
   subscription: SubscriptionWebhookResult;
 };
 
@@ -47,6 +52,7 @@ export async function processStripeBillingWebhook(
     supabase,
     event,
   );
+  const requestOffer = await processStripeWebhookEventForRequestOffers(supabase, event);
   const subscription = await processStripeWebhookEventForSubscriptions(supabase, event);
   return {
     eventType: event.type,
@@ -54,6 +60,7 @@ export async function processStripeBillingWebhook(
     planPayment,
     promoted,
     promotedReservation,
+    requestOffer,
     subscription,
   };
 }
@@ -64,6 +71,7 @@ export function shouldMarkBillingEventSkipped(result: StripeBillingWebhookProces
     shouldMarkPlanPaymentBillingEventSkipped(result.planPayment) &&
     shouldMarkPromotedBillingEventSkipped(result.promoted) &&
     shouldMarkPromotedReservationBillingEventSkipped(result.promotedReservation) &&
+    shouldMarkRequestOfferBillingEventSkipped(result.requestOffer) &&
     shouldMarkSubscriptionBillingEventSkipped(result.subscription)
   );
 }
@@ -87,11 +95,22 @@ export function shouldMarkPromotedBillingEventSkipped(
   );
 }
 
+export function shouldMarkRequestOfferBillingEventSkipped(
+  requestOffer: RequestOfferWebhookResult,
+): boolean {
+  return (
+    requestOffer.outcome === "ignored" ||
+    requestOffer.outcome === "pending" ||
+    requestOffer.outcome === "validation_failed"
+  );
+}
+
 export function shouldRetryBillingWebhook(result: StripeBillingWebhookProcessResult): boolean {
   return (
     shouldRetryPlanPaymentWebhook(result.planPayment) ||
     result.promoted.outcome === "retryable_failure" ||
     result.promotedReservation.outcome === "retryable_failure" ||
+    result.requestOffer.outcome === "retryable_failure" ||
     shouldRetrySubscriptionBillingWebhook(result.subscription)
   );
 }
