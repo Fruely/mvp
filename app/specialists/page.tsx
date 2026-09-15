@@ -7,11 +7,12 @@ import { normalizeSearchLangToDbCode } from "@/lib/i18n/normalizeSearchLangToDbC
 import { getDictionary, t, tCount, type Dictionary, type Lang } from "@/lib/i18n";
 import { searchSpecialists, type SpecialistResult } from "@/lib/search/specialistSearch";
 import { getSearchSuggestions } from "@/lib/search/searchSuggestions";
-import { shouldOfferOnlineFallbackForNoLocalResults } from "@/lib/search/noLocalResultsFallback";
+import { shouldOfferOnlineFallbackForNoLocalResults, shouldRetryOnlineForEmptyCategorySearch } from "@/lib/search/noLocalResultsFallback";
 import { parseSearchContext, searchContextToAssistedPrefill } from "@/lib/search/searchContext";
 import { assistedPrefillToRequestHref } from "@/lib/serviceRequests/requestServiceHref";
 import { categorySlugForCanonicalSearch, getCategoryUrl, getSpecialistUrl } from "@/lib/publicUrls";
 import { resolveCategoryAsciiSlug } from "@/lib/categories/resolvePublicCategorySlug";
+import { resolveSpecialistsUiLang, type SpecialistsUiLang } from "@/lib/search/specialistsUiLang";
 import ServiceRequestCtaBlock from "@/components/serviceRequests/ServiceRequestCtaBlock";
 import AssistedMatchingContinuation from "@/components/public/AssistedMatchingContinuation";
 import SpecialistResultCard from "@/components/public/SpecialistResultCard";
@@ -22,23 +23,11 @@ export const dynamic = "force-dynamic";
 /** Used when `lang` query param is missing (e.g. `/specialists?mode=online`). */
 const DEFAULT_SPECIALISTS_SEARCH_LANG = DEFAULT_LANG;
 
-const UI_LANGS = ["ua", "ru", "de"] as const;
-type UiLang = (typeof UI_LANGS)[number];
-
-function toUiLang(lang: string): UiLang {
-  const lower = lang.toLowerCase();
-  if (lower === "de") return "de";
-  if (lower === "ru") return "ru";
-  if (lower === "ua" || lower === "uk") return "ua";
-  return DEFAULT_LANG;
-}
-
-function serviceSearchHref(uiLang: UiLang): string {
-  return `/${uiLang}/service-search`;
-}
+type UiLang = SpecialistsUiLang;
 
 type SearchParams = {
   lang?: string;
+  ui?: string;
   place?: string;
   q?: string;
   category?: string;
@@ -46,8 +35,14 @@ type SearchParams = {
   radius?: string;
 };
 
+function preserveUiParam(params: URLSearchParams, ui: string | null | undefined) {
+  const value = ui?.trim();
+  if (value) params.set("ui", value);
+}
+
 function buildSpecialistsRouteTarget(sp: SearchParams): string {
   const params = new URLSearchParams();
+  preserveUiParam(params, sp.ui);
   if (sp.lang?.trim()) params.set("lang", sp.lang.trim());
   if (sp.place?.trim()) params.set("place", sp.place.trim());
   if (sp.q?.trim()) params.set("q", sp.q.trim());
@@ -58,6 +53,17 @@ function buildSpecialistsRouteTarget(sp: SearchParams): string {
   return qs ? `/specialists?${qs}` : "/specialists";
 }
 
+function serviceSearchHref(uiLang: UiLang): string {
+  return `/${uiLang}/service-search`;
+}
+
+function pageUiLang(sp: SearchParams): UiLang {
+  return resolveSpecialistsUiLang({
+    uiParam: sp.ui,
+    queryLang: sp.lang?.trim() || DEFAULT_SPECIALISTS_SEARCH_LANG,
+  });
+}
+
 /**
  * Query-based link for a related search; keeps mode=online / place when
  * present, and preserves radius when the search was a local (place) search.
@@ -65,9 +71,15 @@ function buildSpecialistsRouteTarget(sp: SearchParams): string {
 function buildSuggestionHref(
   lang: string,
   query: string,
-  opts: { mode?: string | null; place?: string | null; radius?: string | null }
+  opts: {
+    mode?: string | null;
+    place?: string | null;
+    radius?: string | null;
+    ui?: string | null;
+  }
 ): string {
   const params = new URLSearchParams();
+  preserveUiParam(params, opts.ui);
   params.set("lang", lang);
   params.set("q", query);
   if (opts.mode === "online") params.set("mode", "online");
@@ -141,7 +153,7 @@ export async function generateMetadata({
 }: {
   searchParams: SearchParams;
 }): Promise<Metadata> {
-  const uiLang = toUiLang(searchParams?.lang?.trim() || DEFAULT_SPECIALISTS_SEARCH_LANG);
+  const uiLang = pageUiLang(searchParams ?? {});
   const copy = {
     ru: { title: "Результаты поиска специалистов | Freuly", description: "Поиск специалистов по языку, городу и формату работы." },
     ua: { title: "Результати пошуку спеціалістів | Freuly", description: "Пошук спеціалістів за мовою, містом і форматом роботи." },
@@ -163,8 +175,8 @@ export default async function SpecialistsPage({
   const category = searchParams?.category?.trim() || null;
   const pageMode = searchParams?.mode?.trim().toLowerCase() || null;
   const radiusParam = searchParams?.radius?.trim() || null;
-  const isOnlineList = pageMode === "online";
-  const uiLang = toUiLang(lang);
+  const requestedOnline = pageMode === "online";
+  const uiLang = pageUiLang(searchParams);
   // --- Canonical category redirect ---
   // Step 1: category-only (no q / place / mode) → canonical category hub path
   let canonicalCategorySlug = categorySlugForCanonicalSearch({
@@ -191,6 +203,7 @@ export default async function SpecialistsPage({
     const resolvedSlug = await resolveCategoryAsciiSlug(q);
     if (resolvedSlug) {
       const canonicalParams = new URLSearchParams();
+      preserveUiParam(canonicalParams, searchParams.ui);
       canonicalParams.set("lang", lang);
       canonicalParams.set("category", resolvedSlug);
       if (pageMode) canonicalParams.set("mode", pageMode);
@@ -209,7 +222,7 @@ export default async function SpecialistsPage({
     redirect(serviceSearchHref(uiLang));
   }
 
-  if (!isOnlineList && !place && !q && !category) {
+  if (!requestedOnline && !place && !q && !category) {
     redirect(serviceSearchHref(uiLang));
   }
 
@@ -220,20 +233,50 @@ export default async function SpecialistsPage({
       lang,
       category,
       q,
-      mode: isOnlineList ? "online" : null,
-      place: isOnlineList ? null : place,
+      mode: requestedOnline ? "online" : null,
+      place: requestedOnline ? null : place,
       // Radius only matters for local (place) searches; ignored by online/all.
-      radius: isOnlineList ? null : radiusParam ? Number(radiusParam) : null,
+      radius: requestedOnline ? null : radiusParam ? Number(radiusParam) : null,
     });
   } catch (error) {
     console.error("[specialists/page] searchSpecialists failed:", error);
     result = { data: [] };
   }
 
-  const specialists: SpecialistResult[] = Array.isArray(result.data) ? result.data : [];
-  const searchRadius = result.radius;
+  let specialists: SpecialistResult[] = Array.isArray(result.data) ? result.data : [];
+  let empty = specialists.length === 0;
+  let isOnlineList = requestedOnline;
 
-  const empty = specialists.length === 0;
+  if (
+    shouldRetryOnlineForEmptyCategorySearch({
+      empty,
+      category,
+      isOnlineList: requestedOnline,
+      fallback: result.fallback,
+    })
+  ) {
+    try {
+      const onlineRetry = await searchSpecialists({
+        lang,
+        category,
+        q: null,
+        mode: "online",
+        place: null,
+        radius: null,
+      });
+      const retryRows = Array.isArray(onlineRetry.data) ? onlineRetry.data : [];
+      if (retryRows.length > 0) {
+        result = onlineRetry;
+        specialists = retryRows;
+        empty = false;
+        isOnlineList = true;
+      }
+    } catch (error) {
+      console.error("[specialists/page] online category retry failed:", error);
+    }
+  }
+
+  const searchRadius = result.radius;
 
   if (empty) {
     logZeroResultsSpecialistsPage({
@@ -254,6 +297,7 @@ export default async function SpecialistsPage({
       });
       if (offerOnlineFallback) {
         const onlineParams = new URLSearchParams();
+        preserveUiParam(onlineParams, searchParams.ui);
         onlineParams.set("mode", "online");
         onlineParams.set("lang", lang);
         if (category) onlineParams.set("category", category);
@@ -291,6 +335,7 @@ export default async function SpecialistsPage({
                       mode: pageMode,
                       place,
                       radius: radiusParam,
+                      ui: searchParams.ui,
                     })}
                     className="inline-block rounded-full border border-freuly-border-default px-4 py-2 text-sm font-medium text-freuly-text-secondary transition hover:border-freuly-primary/40 hover:bg-freuly-primary-light"
                   >

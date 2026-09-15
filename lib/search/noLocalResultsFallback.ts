@@ -19,3 +19,20 @@ export function shouldOfferOnlineFallbackForNoLocalResults(params: {
   if (radius) return false;
   return true;
 }
+
+/**
+ * Nearby category search can return zero rows when every published specialist
+ * in that category is online-only. Retry the same category as online instead
+ * of sending the user back to the Wizard / assisted-matching flow.
+ */
+export function shouldRetryOnlineForEmptyCategorySearch(params: {
+  empty: boolean;
+  category?: string | null;
+  isOnlineList: boolean;
+  fallback?: string | null;
+}): boolean {
+  if (!params.empty) return false;
+  if (!params.category?.trim()) return false;
+  if (params.isOnlineList) return false;
+  return params.fallback === "no_local_results";
+}

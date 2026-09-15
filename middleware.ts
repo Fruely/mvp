@@ -148,8 +148,13 @@ export function middleware(request: NextRequest) {
   // chrome matches results. Must run before `/specialist*` skip below.
   if (pathname === "/specialists" || pathname.startsWith("/specialists/")) {
     const qLang = searchParams.get("lang");
+    const uiParam = searchParams.get("ui");
     const cookieLang = request.cookies.get(LANG_COOKIE)?.value;
-    const uiLang: Lang = resolveSpecialistsMiddlewareLang({ queryLang: qLang, cookieLang });
+    const uiLang: Lang = resolveSpecialistsMiddlewareLang({
+      uiParam,
+      queryLang: qLang,
+      cookieLang,
+    });
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set(HTML_LANG_HEADER, uiLang === "ua" ? "uk" : uiLang);
     requestHeaders.set(PATHNAME_HEADER, pathname);

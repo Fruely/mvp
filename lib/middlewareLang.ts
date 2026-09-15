@@ -15,12 +15,14 @@ export function resolveAppShellLang(cookieLang: string | undefined | null): Lang
   return langFromCookie(cookieLang);
 }
 
-/** Unprefixed `/specialists` UI lang: query → cookie → default ru. */
+/** Unprefixed `/specialists` UI lang: `ui` → `lang` (uk→ua) → cookie → default ru. */
 export function resolveSpecialistsMiddlewareLang(input: {
+  uiParam?: string | null;
   queryLang?: string | null;
   cookieLang?: string | null;
 }): Lang {
   return resolveSpecialistsUiLang({
+    uiParam: input.uiParam,
     queryLang: input.queryLang,
     cookieLang: input.cookieLang,
   });

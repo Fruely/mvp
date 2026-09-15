@@ -19,6 +19,7 @@ export default function HomeServiceSearchSection({
     <ServiceSearchFlow
       variant="home"
       text={SERVICE_SEARCH_FLOW_TEXT[lang]}
+      uiLang={lang}
       defaultLanguage={lang}
       initialLocation={placeFromUrl}
       className={className}

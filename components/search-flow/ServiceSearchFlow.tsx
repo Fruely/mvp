@@ -65,6 +65,7 @@ type ServiceSearchFlowVariant = "page" | "home";
 type ServiceSearchFlowProps = {
   text: ServiceSearchFlowText;
   variant?: ServiceSearchFlowVariant;
+  uiLang?: Lang;
   defaultLanguage?: LanguageOption["value"];
   initialLocation?: string;
   className?: string;
@@ -391,12 +392,13 @@ function PopularCategories({
 export default function ServiceSearchFlow({
   text,
   variant = "page",
+  uiLang: uiLangProp,
   defaultLanguage,
   initialLocation = "",
   className = "",
 }: ServiceSearchFlowProps) {
   const router = useRouter();
-  const uiLang = (defaultLanguage ?? "ru") as Lang;
+  const uiLang = (uiLangProp ?? defaultLanguage ?? "ru") as Lang;
   const isHomeVariant = variant === "home";
   const [step, setStep] = useState<Step>("service");
   const [service, setService] = useState("");
@@ -497,6 +499,7 @@ export default function ServiceSearchFlow({
         format: state.selectedFormat,
         location: state.location,
         radiusKm: state.radiusKm || DEFAULT_SERVICE_SEARCH_RADIUS_KM,
+        uiLang,
       });
     }
 
@@ -506,6 +509,7 @@ export default function ServiceSearchFlow({
       format: state.selectedFormat,
       location: state.location,
       radiusKm: state.radiusKm || DEFAULT_SERVICE_SEARCH_RADIUS_KM,
+      uiLang,
     });
   }
 

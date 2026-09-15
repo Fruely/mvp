@@ -46,14 +46,25 @@ export function normalizeUiRadiusKm(value: unknown): number {
  * Build the `/specialists` results URL from the flow selections.
  * `radius` is attached only for the `nearby` format (needs a location).
  */
+function applyUiLangParam(
+  params: URLSearchParams,
+  uiLang: ServiceSearchLangValue | null | undefined
+): void {
+  if (uiLang === "ua" || uiLang === "ru" || uiLang === "de") {
+    params.set("ui", uiLang);
+  }
+}
+
 export function buildServiceSearchResultsUrl(opts: {
   service: string;
   language: ServiceSearchLangValue;
   format: ServiceSearchFormat;
   location: string;
   radiusKm?: number | null;
+  uiLang?: ServiceSearchLangValue | null;
 }): string {
   const params = new URLSearchParams();
+  applyUiLangParam(params, opts.uiLang);
   params.set("lang", toSearchLang(opts.language));
   params.set("q", opts.service.trim());
 
@@ -82,8 +93,10 @@ export function buildServiceSearchCategoryUrl(opts: {
   format: ServiceSearchFormat;
   location: string;
   radiusKm?: number | null;
+  uiLang?: ServiceSearchLangValue | null;
 }): string {
   const params = new URLSearchParams();
+  applyUiLangParam(params, opts.uiLang);
   params.set("lang", toSearchLang(opts.language));
   params.set("category", opts.categorySlug);
 
