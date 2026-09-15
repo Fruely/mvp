@@ -41,7 +41,8 @@ test("specialist leads routes enforce bearer auth and ownership scoping", async 
   assert.match(serviceSrc, /currentStatus === nextStatus/);
   assert.match(serviceSrc, /didPersistFirstUnlock/);
   assert.match(serviceSrc, /ContactUnlockEntitlementError/);
-  assert.match(serviceSrc, /canUnlockLeadContacts/);
+  assert.match(serviceSrc, /canRealizeDirectLeadContactUnlock/);
+  assert.match(serviceSrc, /resolveDirectLeadAccessDecision/);
   assert.match(serviceSrc, /update\(\{ status: nextStatus \}\)/);
   assert.match(unlockRoute, /CONTACT_UNLOCK_REQUIRES_ACTIVE_PLAN/);
   assert.match(unlockRoute, /isContactUnlockEntitlementError/);

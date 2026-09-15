@@ -18,6 +18,16 @@ test("buildDirectLeadOfferIdempotencyKey is stable for the same lead and special
   );
 });
 
+test("buildDirectLeadShadowOffer does not attach a client-selected specialist_service_id", () => {
+  const offer = buildDirectLeadShadowOffer({
+    leadId: "11111111-1111-1111-1111-111111111111",
+    specialistId: "22222222-2222-2222-2222-222222222222",
+  });
+
+  assert.equal("specialist_service_id" in offer, false);
+  assert.equal(offer.price_cents, null);
+});
+
 test("buildDirectLeadShadowOffer preserves current production economics", () => {
   const offer = buildDirectLeadShadowOffer({
     leadId: "11111111-1111-1111-1111-111111111111",

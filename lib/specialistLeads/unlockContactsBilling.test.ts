@@ -39,22 +39,25 @@ function lockedRow(overrides: Record<string, unknown> = {}) {
   };
 }
 
-test("unlock service gates first unlock on canUnlockLeadContacts before mutation", async () => {
+test("unlock service gates first unlock on access decision before mutation", async () => {
   const src = await readFile(servicePath, "utf8");
   const start = src.indexOf("export async function unlockSpecialistLeadContacts");
   const end = src.indexOf("export async function", start + 1);
   const unlockFn = end === -1 ? src.slice(start) : src.slice(start, end);
 
   const alreadyUnlocked = unlockFn.indexOf("if (mapped.contacts_unlocked)");
-  const entitlement = unlockFn.indexOf("canUnlockLeadContacts");
+  const entitlement = unlockFn.indexOf("canRealizeDirectLeadContactUnlock");
   const persist = unlockFn.indexOf("contact_unlocked_at: nowIso");
 
   assert.ok(alreadyUnlocked >= 0);
   assert.ok(entitlement > alreadyUnlocked);
   assert.ok(persist > entitlement);
+  assert.match(unlockFn, /resolveDirectLeadAccessDecision/);
   assert.match(unlockFn, /ContactUnlockEntitlementError/);
   assert.match(unlockFn, /from\("specialist_plan"\)/);
   assert.match(unlockFn, /\.is\("contact_unlocked_at", null\)/);
+  assert.doesNotMatch(unlockFn, /searchParams/);
+  assert.doesNotMatch(unlockFn, /shadow_price_cents/);
 });
 
 test("unlock route maps entitlement error to 403 CONTACT_UNLOCK_REQUIRES_ACTIVE_PLAN", async () => {
@@ -65,6 +68,8 @@ test("unlock route maps entitlement error to 403 CONTACT_UNLOCK_REQUIRES_ACTIVE_
     /error: CONTACT_UNLOCK_REQUIRES_ACTIVE_PLAN[\s\S]*status: 403/,
   );
   assert.doesNotMatch(src, /error: CONTACT_UNLOCK_REQUIRES_ACTIVE_PLAN[\s\S]*status: 200/);
+  assert.doesNotMatch(src, /searchParams/);
+  assert.doesNotMatch(src, /request\.nextUrl/);
 });
 
 test("status update never writes contact_unlocked_at", async () => {

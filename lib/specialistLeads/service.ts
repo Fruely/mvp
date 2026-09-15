@@ -1,9 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { ContactUnlockEntitlementError } from "@/lib/billing/contactUnlockEntitlement";
 import {
-  canUnlockLeadContacts,
-  ContactUnlockEntitlementError,
-} from "@/lib/billing/contactUnlockEntitlement";
+  canRealizeDirectLeadContactUnlock,
+  resolveDirectLeadAccessDecision,
+} from "@/lib/leadEngine/accessDecision";
+import { loadDirectLeadAccessFacts } from "@/lib/leadEngine/accessDecisionStore";
 import {
   DASHBOARD_LEAD_FULL_SELECT,
   mapRowToDashboardLead,
@@ -226,7 +228,14 @@ export async function unlockSpecialistLeadContacts(
   }
 
   const planStatus = typeof plan?.plan_status === "string" ? plan.plan_status : null;
-  if (!canUnlockLeadContacts(planStatus)) {
+  const accessFacts = await loadDirectLeadAccessFacts(service, {
+    leadId,
+    specialistId,
+    planStatus,
+    contactsUnlocked: false,
+  });
+  const accessDecision = resolveDirectLeadAccessDecision(accessFacts);
+  if (!canRealizeDirectLeadContactUnlock(accessDecision)) {
     throw new ContactUnlockEntitlementError();
   }
 
