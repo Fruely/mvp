@@ -106,20 +106,26 @@ export async function ensureDirectLeadShadowOffer(
   supabase: SupabaseClient,
   input: { leadId: string; specialistId: string },
 ): Promise<EnsureDirectLeadOfferResult> {
-  const payload = buildDirectLeadShadowOffer(input);
+  try {
+    const payload = buildDirectLeadShadowOffer(input);
+    const { error } = await supabase.from("request_offers").insert(payload);
 
-  const { error } = await supabase.from("request_offers").insert(payload);
+    if (!error) {
+      return { ok: true, kind: "created" };
+    }
 
-  if (!error) {
-    return { ok: true, kind: "created" };
+    if (isUniqueViolation(error)) {
+      return { ok: true, kind: "existing" };
+    }
+
+    console.warn("[lead-engine/request-offers] shadow direct offer write failed", {
+      code: error.code ?? "unknown",
+    });
+    return { ok: false, kind: "shadow_write_failed" };
+  } catch (error) {
+    console.warn("[lead-engine/request-offers] shadow direct offer write threw", {
+      name: error instanceof Error ? error.name : "unknown",
+    });
+    return { ok: false, kind: "shadow_write_failed" };
   }
-
-  if (isUniqueViolation(error)) {
-    return { ok: true, kind: "existing" };
-  }
-
-  console.warn("[lead-engine/request-offers] shadow direct offer write failed", {
-    code: error.code ?? "unknown",
-  });
-  return { ok: false, kind: "shadow_write_failed" };
 }
