@@ -127,7 +127,7 @@ test("missing/unknown plan status preserves current production semantics", () =>
   );
 });
 
-test("already-unlocked inactive lead stays unlocked as manual_grant", () => {
+test("already-unlocked contact is existing_unlock when persisted source is unknown", () => {
   const decision = resolveDirectLeadAccessDecision(
     facts({
       planStatus: "inactive",
@@ -135,7 +135,18 @@ test("already-unlocked inactive lead stays unlocked as manual_grant", () => {
       paidEntitlement: false,
     }),
   );
-  assert.deepEqual(decision, { state: "unlocked", source: "manual_grant" });
+  assert.deepEqual(decision, { state: "unlocked", source: "existing_unlock" });
+});
+
+test("already-unlocked contact does not infer source from current plan status", () => {
+  const decision = resolveDirectLeadAccessDecision(
+    facts({
+      planStatus: "active",
+      contactsUnlocked: true,
+      paidEntitlement: false,
+    }),
+  );
+  assert.deepEqual(decision, { state: "unlocked", source: "existing_unlock" });
 });
 
 test("processing payment is not contact entitlement", () => {
@@ -147,6 +158,31 @@ test("processing payment is not contact entitlement", () => {
   );
   assert.deepEqual(decision, { state: "processing", offerId: OFFER_ID });
   assert.equal(canRealizeDirectLeadContactUnlock(decision), false);
+});
+
+test("active subscription + paymentProcessing=true => unlocked/subscription", () => {
+  const decision = resolveDirectLeadAccessDecision(
+    facts({
+      planStatus: "active",
+      paymentProcessing: true,
+    }),
+  );
+  assert.deepEqual(decision, { state: "unlocked", source: "subscription" });
+});
+
+test("grace and missing plan still unlock over payment processing", () => {
+  assert.deepEqual(
+    resolveDirectLeadAccessDecision(
+      facts({ planStatus: "grace", paymentProcessing: true }),
+    ),
+    { state: "unlocked", source: "subscription" },
+  );
+  assert.deepEqual(
+    resolveDirectLeadAccessDecision(
+      facts({ planStatus: null, paymentProcessing: true }),
+    ),
+    { state: "unlocked", source: "subscription" },
+  );
 });
 
 test("direct PPL checkout remains locked until the feature flag is on", () => {

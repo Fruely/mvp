@@ -10,7 +10,11 @@ import { canUnlockLeadContacts } from "@/lib/billing/contactUnlockEntitlement";
 export const LEAD_ENGINE_DIRECT_PPL_CHECKOUT_ENV =
   "LEAD_ENGINE_DIRECT_PPL_CHECKOUT_ENABLED";
 
-export type LeadAccessUnlockSource = "subscription" | "payment" | "manual_grant";
+export type LeadAccessUnlockSource =
+  | "subscription"
+  | "payment"
+  | "manual_grant"
+  | "existing_unlock";
 
 export type DirectLeadLockedReason =
   | "direct_ppl_disabled"
@@ -154,10 +158,9 @@ function sanitizeFacts(input: DirectLeadAccessFacts): DirectLeadAccessFacts {
   };
 }
 
-function unlockedSource(facts: DirectLeadAccessFacts): LeadAccessUnlockSource {
+function persistedUnlockSource(facts: DirectLeadAccessFacts): LeadAccessUnlockSource {
   if (facts.paidEntitlement) return "payment";
-  if (canUnlockLeadContacts(facts.planStatus)) return "subscription";
-  return "manual_grant";
+  return "existing_unlock";
 }
 
 function lockedWithoutCheckout(
@@ -186,11 +189,17 @@ export function resolveDirectLeadAccessDecision(
   }
 
   if (facts.contactsUnlocked) {
-    return { state: "unlocked", source: unlockedSource(facts) };
+    return { state: "unlocked", source: persistedUnlockSource(facts) };
   }
 
+  // Paid grant, then subscription, then processing. Current plan status is not a
+  // historical unlock source.
   if (facts.paidEntitlement) {
     return { state: "unlocked", source: "payment" };
+  }
+
+  if (canUnlockLeadContacts(facts.planStatus)) {
+    return { state: "unlocked", source: "subscription" };
   }
 
   if (facts.paymentProcessing) {
@@ -198,10 +207,6 @@ export function resolveDirectLeadAccessDecision(
       state: "processing",
       offerId: facts.offer?.id ?? facts.leadId,
     };
-  }
-
-  if (canUnlockLeadContacts(facts.planStatus)) {
-    return { state: "unlocked", source: "subscription" };
   }
 
   if (isClosedOffer(facts.offer)) {
