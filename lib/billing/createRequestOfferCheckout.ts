@@ -7,6 +7,7 @@ import { isRequestOfferCheckoutReady } from "@/lib/billing/requestOfferCheckoutR
 import { getStripeClient } from "@/lib/billing/stripeClient";
 import { resolveSpecialistEntitlements } from "@/lib/billing/planEntitlements";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
+import { materializeDirectPplOffer } from "@/lib/leadEngine/materializeDirectPplOffer";
 
 const PURPOSE = "request_offer_access";
 
@@ -38,12 +39,6 @@ function buildUrls(input: { siteUrl: string; lang: Lang; offerId: string }) {
   };
 }
 
-function livePriceCents(value: unknown): number | null {
-  return typeof value === "number" && Number.isInteger(value) && value > 0
-    ? value
-    : null;
-}
-
 export async function createRequestOfferCheckout(input: {
   supabase: SupabaseClient;
   specialistId: string;
@@ -59,31 +54,19 @@ export async function createRequestOfferCheckout(input: {
   const stripe = getStripeClient();
   if (!stripe) return { ok: false, reason: "payments_unavailable" };
 
-  const { data: offerRow, error: offerError } = await input.supabase
+  const { data: offerIdentity, error: offerError } = await input.supabase
     .from("request_offers")
-    .select(
-      "id, request_kind, specialist_id, status, billing_model, price_cents, currency",
-    )
+    .select("id, request_kind, specialist_id, status")
     .eq("id", input.offerId)
     .eq("specialist_id", input.specialistId)
     .eq("request_kind", "direct_lead")
     .maybeSingle();
 
   if (offerError) return { ok: false, reason: "db_error" };
-  if (!offerRow || offerRow.specialist_id !== input.specialistId) {
+  if (!offerIdentity || offerIdentity.specialist_id !== input.specialistId) {
     return { ok: false, reason: "not_eligible" };
   }
-  if (["declined", "expired"].includes(String(offerRow.status))) {
-    return { ok: false, reason: "offer_unavailable" };
-  }
-
-  const priceCents = livePriceCents(offerRow.price_cents);
-  const currency = typeof offerRow.currency === "string" ? offerRow.currency : "";
-  if (
-    offerRow.billing_model !== "pay_per_lead" ||
-    priceCents === null ||
-    currency !== "eur"
-  ) {
+  if (["declined", "expired"].includes(String(offerIdentity.status))) {
     return { ok: false, reason: "offer_unavailable" };
   }
 
@@ -103,6 +86,24 @@ export async function createRequestOfferCheckout(input: {
   if (entitlements.effectivePaidPlan !== null) {
     return { ok: false, reason: "subscription_access" };
   }
+
+  const materialized = await materializeDirectPplOffer(input.supabase, {
+    offerId: input.offerId,
+    specialistId: input.specialistId,
+  });
+
+  if (!materialized.ok) {
+    if (materialized.reason === "db_error") {
+      return { ok: false, reason: "db_error" };
+    }
+    if (materialized.reason === "offer_not_found") {
+      return { ok: false, reason: "not_eligible" };
+    }
+    return { ok: false, reason: "offer_unavailable" };
+  }
+
+  const priceCents = materialized.priceCents;
+  const currency = materialized.currency;
 
   const nowIso = new Date().toISOString();
   const { data: payment, error: paymentError } = await input.supabase
