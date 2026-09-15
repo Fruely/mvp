@@ -5,9 +5,18 @@
  * but with category rows built from static locale data instead of a DB query.
  * This ensures the wizard generates `category=<slug>` URLs directly, without
  * needing a server roundtrip or a 308 redirect.
+ *
+ * It also falls back to the shared free-text synonym dictionary when the
+ * phrase maps unambiguously to exactly one category (for example
+ * "коучинг" / "coach" / "coaching" -> "coaches"). This keeps the wizard
+ * category routing aligned with the server search behavior.
  */
 import { matchCategoryAsciiSlug, type CategorySlugRow } from "./matchCategoryAsciiSlug";
 import { isAsciiSlug } from "@/lib/publicUrls";
+import {
+  normalizeSearchQuery,
+  resolveCategorySlugsFromQuery,
+} from "@/lib/search/searchSynonyms";
 import ruLocale from "@/locales/ru.json";
 import uaLocale from "@/locales/ua.json";
 import deLocale from "@/locales/de.json";
@@ -49,15 +58,28 @@ function getCategoryRows(): CategorySlugRow[] {
 
 /**
  * Resolve a user-typed service string to a canonical category slug.
- * Returns `null` when the text is free-form (not a known category name).
+ * Returns `null` when the text is free-form or maps to multiple categories.
  *
- * Matching rules (same as server-side `matchCategoryAsciiSlug`):
+ * Matching rules:
  *  1. Exact ASCII slug
  *  2. Exact localized title (case-insensitive)
- *  3. Near-match — singular forms ("психолог" → "Психологи")
+ *  3. Near-match — singular forms ("психолог" -> "Психологи")
+ *  4. Shared search synonyms when exactly one category is implied
  */
 export function resolveServiceToCategory(service: string): string | null {
   const trimmed = service.trim();
   if (!trimmed) return null;
-  return matchCategoryAsciiSlug(trimmed, getCategoryRows());
+
+  const directMatch = matchCategoryAsciiSlug(trimmed, getCategoryRows());
+  if (directMatch) return directMatch;
+
+  const normalized = normalizeSearchQuery(trimmed);
+  if (!normalized) return null;
+
+  const synonymSlugs = resolveCategorySlugsFromQuery(normalized).filter(
+    (slug) => !EXCLUDED_SLUGS.has(slug) && isAsciiSlug(slug),
+  );
+  const uniqueSlugs = Array.from(new Set(synonymSlugs));
+
+  return uniqueSlugs.length === 1 ? uniqueSlugs[0] : null;
 }
