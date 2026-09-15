@@ -191,3 +191,26 @@ test("unsafe specialist fields fail contract guard", () => {
 
   assert.throws(() => assertClientSafeCapabilitiesDto(dto), /unsafe specialist field/);
 });
+
+test("published listing remains public when billing_visibility_blocked is false", () => {
+  const row = mapSpecialistOverview({
+    row: {
+      id: "spec-ppl",
+      slug: "ppl-only",
+      name: "PPL",
+      status: "published_unverified",
+      is_active: true,
+      is_visible: true,
+      billing_visibility_blocked: false,
+      is_test: false,
+    },
+    city: "Berlin",
+    categoryLabel: "Coaching",
+    gate: { state: "published", publicationReady: true },
+    planCode: "starter",
+    planStatus: "inactive",
+  });
+  assert.equal(row.public_profile_available, true);
+  assert.equal(row.can_unlock_contacts, false);
+  assert.equal(row.billing_access_state, "inactive");
+});

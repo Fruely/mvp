@@ -16,6 +16,11 @@ import {
   reconcileSpecialistAccess,
   isLifecycleReconciliationEnabled,
 } from "@/lib/billing/specialistAccessLifecycle";
+import {
+  ensureSafePublishedPlanAccess,
+  shouldRunPaidLifecycleReconcile,
+  type PublishedPlanAccessAction,
+} from "@/lib/billing/ensurePublishedPlanAccess";
 import { UNCATEGORIZED_SPECIALIST_CATEGORY_SLUG } from "@/lib/categories/uncategorizedSpecialistCategory";
 import { validatePublication } from "@/lib/dashboard/publicationValidator";
 import { loadSpecialistGeoSnapshot } from "@/lib/specialists/publicationGeography";
@@ -40,6 +45,7 @@ export type PublishSpecialistDependencies = {
   notifyNewSpecialist?: (args: { specialistId: string; name: string | null }) => Promise<void>;
   assignFounderBadge?: (specialistId: string) => Promise<void>;
   reconcileLifecycle?: (specialistId: string) => Promise<void>;
+  ensurePublishedPlanAccess?: (specialistId: string) => Promise<PublishedPlanAccessAction>;
 };
 
 type SpecialistPublishRow = {
@@ -306,6 +312,11 @@ export async function publishSpecialistProfile(
         console.error("[specialistDashboard/publish] lifecycle enrollment failed", err);
       }
     });
+
+  const ensurePublishedPlanAccess =
+    deps.ensurePublishedPlanAccess ??
+    ((id: string) => ensureSafePublishedPlanAccess(service, id));
+
   const { data: specialist, error: specialistError } = await service
     .from("specialists")
     .select(
@@ -325,6 +336,7 @@ export async function publishSpecialistProfile(
     if (!isStoredSlugCanonical(row.slug)) {
       await ensureCanonicalSpecialistSlug(service, specialistId);
     }
+    await ensurePublishedPlanAccess(specialistId);
     return {
       ok: true,
       status: currentStatus ?? "published_unverified",
@@ -442,6 +454,7 @@ export async function publishSpecialistProfile(
       .eq("id", specialistId)
       .maybeSingle();
     const status = typeof current?.status === "string" ? current.status : "published_unverified";
+    await ensurePublishedPlanAccess(specialistId);
     return { ok: true, status, alreadyPublished: true };
   }
 
@@ -460,7 +473,10 @@ export async function publishSpecialistProfile(
     name: typeof publishedRow?.name === "string" ? publishedRow.name : row.name,
   });
   await assignFounderBadge(specialistId);
-  await reconcileLifecycle(specialistId);
+  const planAccess = await ensurePublishedPlanAccess(specialistId);
+  if (shouldRunPaidLifecycleReconcile(planAccess)) {
+    await reconcileLifecycle(specialistId);
+  }
 
   const status = typeof updated.status === "string" ? updated.status : "published_unverified";
   return { ok: true, status };

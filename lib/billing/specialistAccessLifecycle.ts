@@ -6,7 +6,9 @@ import { deactivatePaidProEntitlement } from "@/lib/specialists/proPage/syncPaid
  *
  * Calls the `reconcile_specialist_access` RPC which determines the lifecycle
  * state (active / grace / inactive) from the plan_payments ledger and syncs
- * `specialist_plan.plan_status` and `specialists.billing_visibility_blocked`.
+ * `specialist_plan.plan_status`. Inactive subscription is lead-access state,
+ * not a public listing hide. `billing_visibility_blocked` is cleared on
+ * reconcile so it is not derived from "no active subscription".
  *
  * Never touches `specialists.is_visible` — admin/moderation ownership preserved.
  * Safe to call for any lifecycle event: refund, natural expiry, initial grace,

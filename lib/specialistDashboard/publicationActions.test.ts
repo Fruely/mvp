@@ -46,9 +46,24 @@ function createReadyDraftState(): SpecialistState {
   };
 }
 
+function validPublishServices(): Array<Record<string, unknown>> {
+  return [
+    {
+      title: "Session",
+      price_from: 50,
+      price_to: 50,
+      pricing_type: "fixed",
+      price_comment: null,
+      pricing_exception: false,
+      is_active: true,
+    },
+  ];
+}
+
 function createPublishMockSupabase(specialist: SpecialistState, services: Array<Record<string, unknown>>) {
   let updatePayload: Record<string, unknown> | null = null;
   let lastEqColumn: string | null = null;
+  let planInsert: Record<string, unknown> | null = null;
   const category = { id: CATEGORY_ID, parent_id: "parent-id", slug: "psychologists" };
 
   const chain: Record<string, unknown> = {};
@@ -62,12 +77,27 @@ function createPublishMockSupabase(specialist: SpecialistState, services: Array<
   chain.not = self;
   chain.ilike = self;
   chain.update = (payload: Record<string, unknown>) => {
+    if (table === "specialist_plan") {
+      return chain;
+    }
     updatePayload = payload;
     return chain;
   };
-  chain.insert = async () => ({ error: null });
+  chain.insert = async (payload: Record<string, unknown> | Array<Record<string, unknown>>) => {
+    if (table === "specialist_plan") {
+      planInsert = Array.isArray(payload) ? payload[0] ?? null : payload;
+    }
+    return { error: null };
+  };
   chain.upsert = async () => ({ error: null });
   chain.rpc = async () => ({ error: null });
+  chain.then = (onFulfilled: (value: unknown) => unknown, onRejected?: (reason: unknown) => unknown) => {
+    const result =
+      table === "specialist_services"
+        ? { data: services, error: null }
+        : { data: null, error: null };
+    return Promise.resolve(result).then(onFulfilled, onRejected);
+  };
   chain.maybeSingle = async () => {
     if (updatePayload) {
       if (isPublishedSpecialistStatus(specialist.status)) {
@@ -93,6 +123,9 @@ function createPublishMockSupabase(specialist: SpecialistState, services: Array<
 
   return {
     specialist,
+    get planInsert() {
+      return planInsert;
+    },
     service: {
       from(name: string) {
         table = name;
@@ -224,4 +257,90 @@ test("unpublishSpecialistProfile protects moderated statuses", async () => {
       assert.equal(result.body.code, "unpublish_not_allowed");
     }
   }
+});
+
+test("publishSpecialistProfile succeeds without paid subscription and materializes inactive plan", async () => {
+  const specialist = createReadyDraftState();
+  specialist.slug = "psychologists-berlin-smoke";
+  const mock = createPublishMockSupabase(specialist, validPublishServices());
+  let reconciled = 0;
+
+  const result = await publishSpecialistProfile(mock.service as never, SPECIALIST_ID, {
+    notifyNewSpecialist: async () => {},
+    assignFounderBadge: async () => {},
+    reconcileLifecycle: async () => {
+      reconciled += 1;
+    },
+  });
+
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.status, "published_unverified");
+    assert.equal(result.alreadyPublished, undefined);
+  }
+  assert.equal(specialist.status, "published_unverified");
+  assert.equal(specialist.is_active, true);
+  assert.equal(specialist.is_visible, true);
+  assert.equal(mock.planInsert?.plan_code, "starter");
+  assert.equal(mock.planInsert?.plan_status, "inactive");
+  assert.equal("lifecycle_enrolled_at" in (mock.planInsert ?? {}), false);
+  assert.equal(reconciled, 0);
+});
+
+test("publishSpecialistProfile still rejects incomplete profiles after dropping paid gate", async () => {
+  const specialist = createReadyDraftState();
+  specialist.name = "";
+  const { service } = createPublishMockSupabase(specialist, validPublishServices());
+
+  const result = await publishSpecialistProfile(service as never, SPECIALIST_ID, {
+    notifyNewSpecialist: async () => {},
+    assignFounderBadge: async () => {},
+    reconcileLifecycle: async () => {},
+  });
+
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.status, 400);
+    assert.equal(result.body.code, "name_required");
+  }
+});
+
+test("publishSpecialistProfile reconciles lifecycle only for covering paid plans", async () => {
+  const specialist = createReadyDraftState();
+  specialist.slug = "psychologists-berlin-smoke";
+  const { service } = createPublishMockSupabase(specialist, validPublishServices());
+  let reconciled = 0;
+
+  const result = await publishSpecialistProfile(service as never, SPECIALIST_ID, {
+    notifyNewSpecialist: async () => {},
+    assignFounderBadge: async () => {},
+    reconcileLifecycle: async () => {
+      reconciled += 1;
+    },
+    ensurePublishedPlanAccess: async () => ({ kind: "noop", reason: "paid_coverage" }),
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(reconciled, 1);
+});
+
+test("already published specialists still get a safe inactive plan row when missing", async () => {
+  const specialist = createReadyDraftState();
+  specialist.status = "published_unverified";
+  specialist.slug = "psychologists-berlin-smoke";
+  const mock = createPublishMockSupabase(specialist, []);
+  let reconciled = 0;
+
+  const result = await publishSpecialistProfile(mock.service as never, SPECIALIST_ID, {
+    notifyNewSpecialist: async () => {},
+    assignFounderBadge: async () => {},
+    reconcileLifecycle: async () => {
+      reconciled += 1;
+    },
+  });
+
+  assert.equal(result.ok, true);
+  if (result.ok) assert.equal(result.alreadyPublished, true);
+  assert.equal(mock.planInsert?.plan_status, "inactive");
+  assert.equal(reconciled, 0);
 });

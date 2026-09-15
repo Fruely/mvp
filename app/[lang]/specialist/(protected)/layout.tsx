@@ -14,7 +14,11 @@ function isOnboardingAllowedPath(pathname: string, lang: Lang): boolean {
     pathname === `${dashboardBase}/settings` ||
     pathname.startsWith(`${dashboardBase}/settings/`) ||
     pathname === `${dashboardBase}/requests/promoted` ||
-    pathname.startsWith(`${dashboardBase}/requests/promoted/`)
+    pathname.startsWith(`${dashboardBase}/requests/promoted/`) ||
+    pathname === `${dashboardBase}/activate` ||
+    pathname.startsWith(`${dashboardBase}/activate/`) ||
+    pathname === `${dashboardBase}/billing` ||
+    pathname.startsWith(`${dashboardBase}/billing/`)
   ) {
     return true;
   }

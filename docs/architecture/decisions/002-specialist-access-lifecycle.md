@@ -62,7 +62,21 @@ conditions AND:
 `billing_visibility_blocked = false`
 
 During `active` and valid `grace`, billing visibility is not blocked.
-After transition to `inactive`, billing visibility is blocked.
+As of 2026-09-15, transition to `inactive` must not set
+`billing_visibility_blocked` (see addendum below). Search, sitemap, and
+direct-lead targeting still honor the flag if it is explicitly true.
+
+## Addendum 2026-09-15: listing/entitlement split
+
+Public listing eligibility is no longer derived from subscription lifecycle.
+
+- `inactive` means no covering subscription and no new contact unlock.
+- `inactive` does not set `billing_visibility_blocked`.
+- `billing_visibility_blocked` is retained as an explicit block flag, not as
+  "no active Professional/Growth subscription".
+- PPL-only published specialists keep a `specialist_plan` row with
+  `plan_status = inactive` so missing-plan / `early_access` fallback cannot
+  grant contact access.
 
 The specialist account and profile data are not automatically deleted.
 The dashboard remains available so the specialist can pay and reactivate.
