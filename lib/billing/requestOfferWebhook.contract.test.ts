@@ -46,6 +46,8 @@ test("refund and dispute revoke only the matching payment grant", async () => {
   const src = await readFile(processorPath, "utf8");
   assert.match(src, /charge\.refunded/);
   assert.match(src, /charge\.dispute\.created/);
+  assert.match(src, /dispute\.payment_intent/);
+  assert.match(src, /loadPaymentByStripeRefs\(supabase, \{ paymentIntentId, chargeId \}\)/);
   assert.match(src, /status: targetStatus/);
   assert.match(src, /payment_refunded/);
   assert.match(src, /payment_disputed/);
