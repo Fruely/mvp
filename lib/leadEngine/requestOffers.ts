@@ -21,13 +21,36 @@ export function areLeadEngineShadowOffersEnabled(): boolean {
   return process.env[LEAD_ENGINE_SHADOW_OFFERS_ENV] === "true";
 }
 
+async function resolveSpecialistCategoryId(
+  supabase: SupabaseClient,
+  specialistId: string,
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("specialists")
+    .select("category_id")
+    .eq("id", specialistId)
+    .maybeSingle();
+
+  if (error) {
+    console.warn("[lead-engine/request-offers] specialist category read failed", {
+      code: error.code ?? "unknown",
+    });
+    return null;
+  }
+
+  const row = data as unknown as { category_id?: unknown } | null;
+  return typeof row?.category_id === "string" ? row.category_id : null;
+}
+
 async function attachDirectLeadShadowPricing(
   supabase: SupabaseClient,
   input: { leadId: string; specialistId: string },
 ): Promise<void> {
   try {
+    const categoryId = await resolveSpecialistCategoryId(supabase, input.specialistId);
     const resolved = await resolveShadowLeadPrice(supabase, {
       pricingSegment: "professional",
+      categoryId,
     });
 
     if (!resolved) return;
