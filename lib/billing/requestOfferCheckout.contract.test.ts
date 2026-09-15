@@ -29,10 +29,13 @@ test("route accepts no client-authoritative price or specialist identity", async
   assert.match(src, /\.eq\("user_id", user\.id\)/);
 });
 
-test("creator resolves price from server offer and blocks subscription double-charge", async () => {
+test("creator requires live PPL snapshot and blocks subscription double-charge", async () => {
   const src = await readFile(creatorPath, "utf8");
   assert.match(src, /\.eq\("specialist_id", input\.specialistId\)/);
-  assert.match(src, /resolveDirectLeadPurchasePrice\(offer\)/);
+  assert.match(src, /billing_model/);
+  assert.match(src, /offerRow\.billing_model !== "pay_per_lead"/);
+  assert.match(src, /price_cents/);
+  assert.doesNotMatch(src, /shadow_price_cents/);
   assert.match(src, /effectivePaidPlan !== null/);
   assert.match(src, /request_offer_access_grants/);
   assert.match(src, /request_offer_payments/);
