@@ -226,7 +226,7 @@ async function revokeAccessForPayment(
   kind: "refund" | "dispute",
   chargeId: string | null,
 ): Promise<RequestOfferWebhookResult> {
-  if (!['paid', 'refunded', 'disputed'].includes(payment.status)) {
+  if (!["paid", "refunded", "disputed"].includes(payment.status)) {
     return { outcome: "validation_failed" };
   }
 
@@ -289,10 +289,13 @@ async function handleDispute(
   supabase: SupabaseClient,
   dispute: Stripe.Dispute,
 ): Promise<RequestOfferWebhookResult> {
+  const paymentIntentId = stripeId(
+    dispute.payment_intent as Stripe.PaymentIntent | string | null,
+  );
   const chargeId = stripeId(dispute.charge as Stripe.Charge | string | null);
   let payment: PaymentRow | null;
   try {
-    payment = await loadPaymentByStripeRefs(supabase, { chargeId });
+    payment = await loadPaymentByStripeRefs(supabase, { paymentIntentId, chargeId });
   } catch {
     return { outcome: "retryable_failure" };
   }
