@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { DashboardLead } from "@/lib/dashboard/getDashboardData";
+import type { DashboardLeadAccessDecisionMap } from "@/lib/leadEngine/accessDecisionBatch";
+import type { LeadAccessDecision } from "@/lib/leadEngine/accessDecision";
 import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
 import {
   dashboardEmptyStateClass,
@@ -32,6 +34,94 @@ function localeTag(lang: Lang): string {
   return "uk-UA";
 }
 
+function moneyLabel(priceCents: number, currency: string, lang: Lang): string {
+  return new Intl.NumberFormat(localeTag(lang), {
+    style: "currency",
+    currency: currency.toUpperCase(),
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(priceCents / 100);
+}
+
+function commercialCopy(
+  decision: LeadAccessDecision | undefined,
+  lang: Lang,
+): { title: string; detail?: string } | null {
+  if (!decision) return null;
+
+  if (decision.state === "unlocked") {
+    if (decision.source === "subscription") {
+      return {
+        title:
+          lang === "de"
+            ? "Im Abo enthalten"
+            : lang === "ru"
+              ? "Включено в подписку"
+              : "Включено в підписку",
+      };
+    }
+    if (decision.source === "payment") {
+      return {
+        title:
+          lang === "de"
+            ? "Lead bezahlt"
+            : lang === "ru"
+              ? "Заявка оплачена"
+              : "Заявку оплачено",
+      };
+    }
+    return null;
+  }
+
+  if (decision.state === "processing") {
+    return {
+      title:
+        lang === "de"
+          ? "Zahlung wird verarbeitet"
+          : lang === "ru"
+            ? "Платёж обрабатывается"
+            : "Платіж обробляється",
+    };
+  }
+
+  if (decision.state === "locked" && decision.priceCents && decision.currency) {
+    const price = moneyLabel(decision.priceCents, decision.currency, lang);
+    return {
+      title:
+        lang === "de"
+          ? `Lead-Preis: ${price}`
+          : lang === "ru"
+            ? `Стоимость заявки: ${price}`
+            : `Вартість заявки: ${price}`,
+      detail:
+        decision.canPurchase
+          ? lang === "de"
+            ? "Pay-per-Lead ist verfügbar."
+            : lang === "ru"
+              ? "Доступна покупка этой заявки."
+              : "Доступна купівля цієї заявки."
+          : lang === "de"
+            ? "Pay-per-Lead wird schrittweise aktiviert."
+            : lang === "ru"
+              ? "Оплата за отдельную заявку подключается поэтапно."
+              : "Оплата за окрему заявку підключається поетапно.",
+    };
+  }
+
+  if (decision.state === "unavailable") {
+    return {
+      title:
+        lang === "de"
+          ? "Nicht verfügbar"
+          : lang === "ru"
+            ? "Недоступно"
+            : "Недоступно",
+    };
+  }
+
+  return null;
+}
+
 type UnlockResponse = {
   item?: {
     id: string;
@@ -46,15 +136,15 @@ type UnlockResponse = {
 
 export default function LeadsTable({
   initialLeads,
+  accessDecisions,
   lang,
   dict,
-  canUnlockContacts,
   billingHref,
 }: {
   initialLeads: DashboardLead[];
+  accessDecisions: DashboardLeadAccessDecisionMap;
   lang: Lang;
   dict: Dictionary;
-  canUnlockContacts: boolean;
   billingHref: string;
 }) {
   const [leads, setLeads] = useState<DashboardLead[]>(initialLeads);
@@ -214,6 +304,14 @@ export default function LeadsTable({
                   ? new Date(lead.created_at).toLocaleString(localeTag(lang))
                   : "—";
                 const sourceLabel = lead.source?.trim() || null;
+                const decision = accessDecisions[lead.id];
+                const commercial = commercialCopy(decision, lang);
+                const canUnlockThisLead = decision?.state === "unlocked";
+                const needsSubscriptionFallback =
+                  decision?.state === "locked" &&
+                  !decision.canPurchase &&
+                  decision.reason === "subscription_required" &&
+                  !decision.priceCents;
 
                 return (
                   <tr key={lead.id} className={dashboardTableRowClass}>
@@ -245,12 +343,20 @@ export default function LeadsTable({
                         </div>
                       ) : (
                         <div className="space-y-2">
-                          <p className="text-xs leading-relaxed text-freuly-text-muted">
-                            {canUnlockContacts
-                              ? t(dict, "dashboard.leads.contactsProtectedHint")
-                              : t(dict, "dashboard.leads.unlockRequiresPlan")}
-                          </p>
-                          {canUnlockContacts ? (
+                          {commercial ? (
+                            <div className="space-y-1">
+                              <p className="text-xs font-medium text-freuly-text-primary">{commercial.title}</p>
+                              {commercial.detail ? (
+                                <p className="text-xs leading-relaxed text-freuly-text-muted">{commercial.detail}</p>
+                              ) : null}
+                            </div>
+                          ) : (
+                            <p className="text-xs leading-relaxed text-freuly-text-muted">
+                              {t(dict, "dashboard.leads.unlockRequiresPlan")}
+                            </p>
+                          )}
+
+                          {canUnlockThisLead ? (
                             <Button
                               type="button"
                               className="min-h-9 h-9 px-3 text-xs"
@@ -259,11 +365,11 @@ export default function LeadsTable({
                             >
                               {t(dict, "dashboard.leads.unlockCta")}
                             </Button>
-                          ) : (
+                          ) : needsSubscriptionFallback ? (
                             <Link href={billingHref} className={`${dashboardLinkSecondaryClass} !min-h-9 h-9 !px-3 !text-xs`}>
                               {t(dict, "dashboard.leads.unlockRequiresPlanCta")}
                             </Link>
-                          )}
+                          ) : null}
                         </div>
                       )}
                     </td>
