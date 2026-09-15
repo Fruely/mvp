@@ -7,10 +7,6 @@ import { isRequestOfferCheckoutReady } from "@/lib/billing/requestOfferCheckoutR
 import { getStripeClient } from "@/lib/billing/stripeClient";
 import { resolveSpecialistEntitlements } from "@/lib/billing/planEntitlements";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
-import {
-  mapDirectLeadOfferRow,
-  resolveDirectLeadPurchasePrice,
-} from "@/lib/leadEngine/accessDecision";
 
 const PURPOSE = "request_offer_access";
 
@@ -42,6 +38,12 @@ function buildUrls(input: { siteUrl: string; lang: Lang; offerId: string }) {
   };
 }
 
+function livePriceCents(value: unknown): number | null {
+  return typeof value === "number" && Number.isInteger(value) && value > 0
+    ? value
+    : null;
+}
+
 export async function createRequestOfferCheckout(input: {
   supabase: SupabaseClient;
   specialistId: string;
@@ -60,7 +62,7 @@ export async function createRequestOfferCheckout(input: {
   const { data: offerRow, error: offerError } = await input.supabase
     .from("request_offers")
     .select(
-      "id, request_kind, specialist_id, status, price_cents, currency, shadow_price_cents",
+      "id, request_kind, specialist_id, status, billing_model, price_cents, currency",
     )
     .eq("id", input.offerId)
     .eq("specialist_id", input.specialistId)
@@ -72,6 +74,16 @@ export async function createRequestOfferCheckout(input: {
     return { ok: false, reason: "not_eligible" };
   }
   if (["declined", "expired"].includes(String(offerRow.status))) {
+    return { ok: false, reason: "offer_unavailable" };
+  }
+
+  const priceCents = livePriceCents(offerRow.price_cents);
+  const currency = typeof offerRow.currency === "string" ? offerRow.currency : "";
+  if (
+    offerRow.billing_model !== "pay_per_lead" ||
+    priceCents === null ||
+    currency !== "eur"
+  ) {
     return { ok: false, reason: "offer_unavailable" };
   }
 
@@ -92,10 +104,6 @@ export async function createRequestOfferCheckout(input: {
     return { ok: false, reason: "subscription_access" };
   }
 
-  const offer = mapDirectLeadOfferRow(offerRow as Record<string, unknown>);
-  const purchase = resolveDirectLeadPurchasePrice(offer);
-  if (!purchase) return { ok: false, reason: "offer_unavailable" };
-
   const nowIso = new Date().toISOString();
   const { data: payment, error: paymentError } = await input.supabase
     .from("request_offer_payments")
@@ -103,8 +111,8 @@ export async function createRequestOfferCheckout(input: {
       offer_id: input.offerId,
       specialist_id: input.specialistId,
       user_id: input.userId,
-      amount_cents: purchase.priceCents,
-      currency: purchase.currency,
+      amount_cents: priceCents,
+      currency,
       status: "pending",
       created_at: nowIso,
       updated_at: nowIso,
@@ -129,8 +137,8 @@ export async function createRequestOfferCheckout(input: {
         {
           quantity: 1,
           price_data: {
-            currency: purchase.currency,
-            unit_amount: purchase.priceCents,
+            currency,
+            unit_amount: priceCents,
             product_data: { name: productName(input.lang) },
           },
         },
