@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { DashboardLead } from "@/lib/dashboard/getDashboardData";
 import type { DashboardLeadAccessDecisionMap } from "@/lib/leadEngine/accessDecisionBatch";
 import type { LeadAccessDecision } from "@/lib/leadEngine/accessDecision";
@@ -122,6 +123,30 @@ function commercialCopy(
   return null;
 }
 
+function buyLabel(decision: LeadAccessDecision, lang: Lang): string {
+  if (decision.state !== "locked" || !decision.canPurchase) return "";
+  const price = moneyLabel(decision.priceCents, decision.currency, lang);
+  if (lang === "de") return `Lead kaufen – ${price}`;
+  if (lang === "ru") return `Купить заявку — ${price}`;
+  return `Купити заявку — ${price}`;
+}
+
+function paymentMessage(kind: "checking" | "cancelled" | "delayed", lang: Lang): string {
+  if (kind === "cancelled") {
+    if (lang === "de") return "Die Zahlung wurde abgebrochen.";
+    if (lang === "ru") return "Оплата отменена.";
+    return "Оплату скасовано.";
+  }
+  if (kind === "delayed") {
+    if (lang === "de") return "Die Zahlung wird noch bestätigt. Bitte aktualisieren Sie die Seite später erneut.";
+    if (lang === "ru") return "Платёж ещё подтверждается. Обновите страницу немного позже.";
+    return "Платіж ще підтверджується. Оновіть сторінку трохи пізніше.";
+  }
+  if (lang === "de") return "Zahlung wird bestätigt. Die Kontakte werden erst nach der Stripe-Bestätigung freigeschaltet.";
+  if (lang === "ru") return "Проверяем оплату. Контакты откроются только после подтверждения Stripe.";
+  return "Перевіряємо оплату. Контакти відкриються лише після підтвердження Stripe.";
+}
+
 type UnlockResponse = {
   item?: {
     id: string;
@@ -131,6 +156,11 @@ type UnlockResponse = {
     client_phone: string | null;
     message: string | null;
   };
+  error?: string;
+};
+
+type CheckoutResponse = {
+  checkout_url?: string;
   error?: string;
 };
 
@@ -147,6 +177,8 @@ export default function LeadsTable({
   dict: Dictionary;
   billingHref: string;
 }) {
+  const router = useRouter();
+  const paymentPollCountRef = useRef(0);
   const [leads, setLeads] = useState<DashboardLead[]>(initialLeads);
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "all">("all");
   const [visibleCount, setVisibleCount] = useState(20);
@@ -160,6 +192,104 @@ export default function LeadsTable({
 
   const visibleLeads = filteredLeads.slice(0, visibleCount);
   const hasMore = filteredLeads.length > visibleCount;
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get("payment");
+    const offerId = params.get("offer")?.trim() || null;
+    if (!payment) return;
+
+    const cleanHref = `/${lang}/specialist/dashboard/leads`;
+
+    if (payment === "cancelled") {
+      setToast({ kind: "error", text: paymentMessage("cancelled", lang) });
+      router.replace(cleanHref);
+      return;
+    }
+
+    if (payment !== "success" || !offerId) return;
+
+    const matchingDecision = Object.values(accessDecisions).find((decision) => {
+      if (decision.state === "locked" || decision.state === "processing") {
+        return decision.offerId === offerId;
+      }
+      return false;
+    });
+
+    if (!matchingDecision) {
+      setToast({ kind: "success", text: t(dict, "dashboard.leads.unlockSuccess") });
+      router.replace(cleanHref);
+      return;
+    }
+
+    if (paymentPollCountRef.current >= 10) {
+      setToast({ kind: "error", text: paymentMessage("delayed", lang) });
+      router.replace(cleanHref);
+      return;
+    }
+
+    setToast({ kind: "success", text: paymentMessage("checking", lang) });
+    const timer = window.setTimeout(() => {
+      paymentPollCountRef.current += 1;
+      router.refresh();
+    }, 1500);
+
+    return () => window.clearTimeout(timer);
+  }, [accessDecisions, dict, lang, router]);
+
+  async function buyLead(leadId: string, offerId: string) {
+    setToast(null);
+    setUpdatingById((prev) => ({ ...prev, [leadId]: true }));
+
+    try {
+      const response = await fetch("/api/billing/request-offers/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ offer_id: offerId, lang }),
+      });
+      const result = (await response.json().catch(() => ({}))) as CheckoutResponse;
+
+      if (response.status === 409 && (result.error === "already_has_access" || result.error === "subscription_access")) {
+        router.refresh();
+        throw new Error(
+          lang === "de"
+            ? "Der Zugriff ist bereits verfügbar. Die Seite wird aktualisiert."
+            : lang === "ru"
+              ? "Доступ уже доступен. Обновляем страницу."
+              : "Доступ уже доступний. Оновлюємо сторінку.",
+        );
+      }
+
+      if (!response.ok || !result.checkout_url) {
+        throw new Error(
+          lang === "de"
+            ? "Die Zahlung konnte nicht gestartet werden."
+            : lang === "ru"
+              ? "Не удалось запустить оплату заявки."
+              : "Не вдалося запустити оплату заявки.",
+        );
+      }
+
+      window.location.assign(result.checkout_url);
+    } catch (error) {
+      setToast({
+        kind: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : lang === "de"
+              ? "Die Zahlung konnte nicht gestartet werden."
+              : lang === "ru"
+                ? "Не удалось запустить оплату заявки."
+                : "Не вдалося запустити оплату заявки.",
+      });
+      setUpdatingById((prev) => {
+        const next = { ...prev };
+        delete next[leadId];
+        return next;
+      });
+    }
+  }
 
   async function unlockContacts(leadId: string) {
     setToast(null);
@@ -307,6 +437,7 @@ export default function LeadsTable({
                 const decision = accessDecisions[lead.id];
                 const commercial = commercialCopy(decision, lang);
                 const canUnlockThisLead = decision?.state === "unlocked";
+                const canBuyThisLead = decision?.state === "locked" && decision.canPurchase;
                 const needsSubscriptionFallback =
                   decision?.state === "locked" &&
                   !decision.canPurchase &&
@@ -364,6 +495,15 @@ export default function LeadsTable({
                               onClick={() => void unlockContacts(lead.id)}
                             >
                               {t(dict, "dashboard.leads.unlockCta")}
+                            </Button>
+                          ) : canBuyThisLead ? (
+                            <Button
+                              type="button"
+                              className="min-h-9 h-9 px-3 text-xs"
+                              disabled={Boolean(updatingById[lead.id])}
+                              onClick={() => void buyLead(lead.id, decision.offerId)}
+                            >
+                              {buyLabel(decision, lang)}
                             </Button>
                           ) : needsSubscriptionFallback ? (
                             <Link href={billingHref} className={`${dashboardLinkSecondaryClass} !min-h-9 h-9 !px-3 !text-xs`}>

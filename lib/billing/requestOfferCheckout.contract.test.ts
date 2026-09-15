@@ -61,6 +61,14 @@ test("materialization copies shadow snapshot into immutable live commercial fiel
   assert.match(src, /\.is\("price_cents", null\)/);
 });
 
+test("checkout returns to the canonical specialist leads dashboard", async () => {
+  const src = await readFile(creatorPath, "utf8");
+  assert.match(src, /\$\{base\}\/\$\{input\.lang\}\/specialist\/dashboard\/leads/);
+  assert.match(src, /payment=success/);
+  assert.match(src, /payment=cancelled/);
+  assert.doesNotMatch(src, /\$\{input\.lang\}\/dashboard\/leads/);
+});
+
 test("success redirect is not treated as payment entitlement", async () => {
   const src = await readFile(creatorPath, "utf8");
   assert.match(src, /status: "pending"/);
