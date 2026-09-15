@@ -6,6 +6,8 @@ import {
 } from "@/components/dashboard/dashboardStyles";
 import type { SpecialistRow } from "@/lib/specialists/server";
 import { getSpecialistOnboardingGateState } from "@/lib/specialists/server";
+import { getDemandChannelCopy } from "@/lib/dashboard/demandChannelCopy";
+import PublishWithoutSubscriptionButton from "@/components/dashboard/onboarding/PublishWithoutSubscriptionButton";
 
 type Copy = {
   title: string;
@@ -87,6 +89,7 @@ export default async function DraftDemandChannelDashboard({
   lang: string;
 }) {
   const copy = copyFor(lang);
+  const demandCopy = getDemandChannelCopy(lang);
   const gate = await getSpecialistOnboardingGateState(specialist);
   const ready = gate.state === "ready";
   const onboardingHref = `/${lang}/specialist/dashboard/onboarding`;
@@ -120,8 +123,15 @@ export default async function DraftDemandChannelDashboard({
         <CardFooter>
           {ready ? (
             <>
-              <Link href={activateHref} className={dashboardLinkPrimaryClass}>
-                {copy.activate}
+              <PublishWithoutSubscriptionButton
+                lang={lang}
+                enabled={ready}
+                publishLabel={demandCopy.onboarding.publishWithoutSubscription}
+                publishingLabel={demandCopy.onboarding.publishingWithoutSubscription}
+                errorLabel={demandCopy.onboarding.publishFailed}
+              />
+              <Link href={activateHref} className={dashboardLinkSecondaryClass}>
+                {demandCopy.onboarding.connectSubscription}
               </Link>
               <Link href={reviewHref} className={dashboardLinkSecondaryClass}>
                 {copy.editLater}

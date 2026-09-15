@@ -20,6 +20,10 @@ export type DemandChannelCopy = {
     reviewNotReadyBody: string;
     finishSetup: string;
     finishingSetup: string;
+    publishWithoutSubscription: string;
+    publishingWithoutSubscription: string;
+    connectSubscription: string;
+    publishFailed: string;
     draftUntilPaid: string;
     decideLater: string;
     checklistTitle: string;
@@ -58,8 +62,12 @@ const COPY: Record<DemandChannelLang, DemandChannelCopy> = {
       reviewReadyBody: "Freuly уже понимает, какие услуги, языки и формат работы вам подходят. Подписка Professional или Growth не обязательна для участия в канале заявок — это способ получать доступ к заявкам в рамках тарифа.",
       reviewNotReadyTitle: "Нужно уточнить параметры",
       reviewNotReadyBody: "Заполните обязательные пункты — без них Freuly не сможет надёжно сопоставлять ваш профиль с клиентскими запросами.",
-      finishSetup: "Перейти к тарифам",
-      finishingSetup: "Переходим к тарифам…",
+      finishSetup: "Подключить подписку",
+      finishingSetup: "Публикуем профиль…",
+      publishWithoutSubscription: "Опубликовать профиль без подписки",
+      publishingWithoutSubscription: "Публикуем профиль…",
+      connectSubscription: "Подключить подписку",
+      publishFailed: "Не удалось опубликовать профиль. Попробуйте ещё раз.",
       draftUntilPaid: "Вы работаете без подписки. Подходящие заявки можно покупать отдельно. Подключите Professional или Growth, если хотите получать доступ к заявкам в рамках тарифа.",
       decideLater: "Решу позже — сохранить черновик",
       checklistTitle: "Готовность к заявкам"
@@ -96,8 +104,12 @@ const COPY: Record<DemandChannelLang, DemandChannelCopy> = {
       reviewReadyBody: "Freuly вже розуміє, які послуги, мови та формат роботи вам підходять. Підписка Professional або Growth не обов’язкова для участі в каналі заявок — це спосіб отримувати доступ до запитів у межах тарифу.",
       reviewNotReadyTitle: "Потрібно уточнити параметри",
       reviewNotReadyBody: "Заповніть обов’язкові пункти — без них Freuly не зможе надійно зіставляти ваш профіль із клієнтськими запитами.",
-      finishSetup: "Перейти до тарифів",
-      finishingSetup: "Переходимо до тарифів…",
+      finishSetup: "Підключити підписку",
+      finishingSetup: "Публікуємо профіль…",
+      publishWithoutSubscription: "Опублікувати профіль без підписки",
+      publishingWithoutSubscription: "Публікуємо профіль…",
+      connectSubscription: "Підключити підписку",
+      publishFailed: "Не вдалося опублікувати профіль. Спробуйте ще раз.",
       draftUntilPaid: "Ви працюєте без підписки. Відповідні запити можна купувати окремо. Підключіть Professional або Growth, якщо хочете отримувати доступ до запитів у межах тарифу.",
       decideLater: "Вирішу пізніше — зберегти чернетку",
       checklistTitle: "Готовність до заявок"
@@ -134,8 +146,12 @@ const COPY: Record<DemandChannelLang, DemandChannelCopy> = {
       reviewReadyBody: "Freuly kennt nun Ihre Leistungen, Sprachen und Ihr Arbeitsformat. Professional oder Growth sind keine Voraussetzung für die Teilnahme am Anfragekanal — so erhalten Sie Zugang zu Anfragen im Rahmen des Tarifs.",
       reviewNotReadyTitle: "Einige Angaben fehlen noch",
       reviewNotReadyBody: "Vervollständigen Sie die Pflichtangaben — ohne sie kann Freuly Ihr Profil nicht zuverlässig mit Kundenanfragen abgleichen.",
-      finishSetup: "Zu den Tarifen",
-      finishingSetup: "Weiter zu den Tarifen…",
+      finishSetup: "Abo wählen",
+      finishingSetup: "Profil wird veröffentlicht…",
+      publishWithoutSubscription: "Profil ohne Abo veröffentlichen",
+      publishingWithoutSubscription: "Profil wird veröffentlicht…",
+      connectSubscription: "Abo wählen",
+      publishFailed: "Das Profil konnte nicht veröffentlicht werden. Bitte versuchen Sie es erneut.",
       draftUntilPaid: "Sie arbeiten ohne Abo. Passende Anfragen können einzeln gekauft werden. Aktivieren Sie Professional oder Growth, wenn Sie Zugang zu Anfragen im Rahmen des Tarifs erhalten möchten.",
       decideLater: "Später entscheiden — Entwurf speichern",
       checklistTitle: "Bereit für Anfragen"
@@ -180,6 +196,10 @@ function brandDemandCopy(copy: DemandChannelCopy): DemandChannelCopy {
       reviewNotReadyBody: brandPlanText(copy.onboarding.reviewNotReadyBody),
       finishSetup: brandPlanText(copy.onboarding.finishSetup),
       finishingSetup: brandPlanText(copy.onboarding.finishingSetup),
+      publishWithoutSubscription: brandPlanText(copy.onboarding.publishWithoutSubscription),
+      publishingWithoutSubscription: brandPlanText(copy.onboarding.publishingWithoutSubscription),
+      connectSubscription: brandPlanText(copy.onboarding.connectSubscription),
+      publishFailed: brandPlanText(copy.onboarding.publishFailed),
       draftUntilPaid: brandPlanText(copy.onboarding.draftUntilPaid),
       decideLater: brandPlanText(copy.onboarding.decideLater),
       checklistTitle: brandPlanText(copy.onboarding.checklistTitle),
