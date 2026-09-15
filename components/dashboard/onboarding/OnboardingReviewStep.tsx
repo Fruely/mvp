@@ -4,9 +4,10 @@ import Link from "next/link";
 import { t, type Dictionary } from "@/lib/i18n";
 import { getDemandChannelCopy } from "@/lib/dashboard/demandChannelCopy";
 import type { PublicationIssue, PublicationRecommendation } from "@/lib/dashboard/publicationValidator";
-import { Alert, Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { Alert, Badge, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { dashboardLinkSecondaryClass } from "@/components/dashboard/dashboardStyles";
 import { onboardingChecklistItemClass } from "./onboardingStyles";
+import PublishWithoutSubscriptionButton from "./PublishWithoutSubscriptionButton";
 
 export type OnboardingReviewSummary = {
   publishReady: boolean;
@@ -166,8 +167,15 @@ export default function OnboardingReviewStep({
 
         {publishReady ? (
           <div className="mt-freuly-5 space-y-freuly-3">
-            <Link href={activationHref} className="inline-flex w-full sm:w-auto">
-              <Button type="button" className="w-full sm:w-auto">{demandCopy.onboarding.finishSetup}</Button>
+            <PublishWithoutSubscriptionButton
+              lang={lang}
+              enabled={publishReady}
+              publishLabel={demandCopy.onboarding.publishWithoutSubscription}
+              publishingLabel={demandCopy.onboarding.publishingWithoutSubscription}
+              errorLabel={demandCopy.onboarding.publishFailed}
+            />
+            <Link href={activationHref} className={`${dashboardLinkSecondaryClass} sm:w-auto`}>
+              {demandCopy.onboarding.connectSubscription}
             </Link>
             <p className="text-freuly-helper leading-relaxed text-freuly-text-muted">
               {demandCopy.onboarding.draftUntilPaid}

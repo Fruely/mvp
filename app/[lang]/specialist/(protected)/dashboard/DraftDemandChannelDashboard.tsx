@@ -6,6 +6,8 @@ import {
 } from "@/components/dashboard/dashboardStyles";
 import type { SpecialistRow } from "@/lib/specialists/server";
 import { getSpecialistOnboardingGateState } from "@/lib/specialists/server";
+import { getDemandChannelCopy } from "@/lib/dashboard/demandChannelCopy";
+import PublishWithoutSubscriptionButton from "@/components/dashboard/onboarding/PublishWithoutSubscriptionButton";
 
 type Copy = {
   title: string;
@@ -27,50 +29,50 @@ type Copy = {
 const COPY: Record<"ru" | "ua" | "de", Copy> = {
   ru: {
     title: "Ваш канал клиентских заявок",
-    subtitle: "Здесь видно, готов ли профиль к активации и участвуете ли вы в коммерческом канале Freuly.",
+    subtitle: "Здесь видно, готов ли профиль к публикации. Подписка не обязательна для участия в канале заявок.",
     draftBadge: "Черновик",
-    readyBadge: "Готов к активации",
-    channelOff: "Канал не активирован",
+    readyBadge: "Готов к публикации",
+    channelOff: "Профиль не опубликован",
     draftTitle: "Завершите настройку",
-    draftBody: "Профиль сохранён как черновик и не виден клиентам. Заполните обязательные параметры, чтобы подготовить его к активации.",
-    readyTitle: "Всё готово — осталось активировать канал",
-    readyBody: "Параметры для подбора заявок настроены. До оплаты профиль остаётся невидимым и не участвует в получении клиентских запросов.",
+    draftBody: "Профиль сохранён как черновик и не виден клиентам. Заполните обязательные параметры, чтобы подготовить его к публикации.",
+    readyTitle: "Профиль готов — публикация не требует подписки",
+    readyBody: "Параметры для подбора заявок настроены. После публикации подходящие заявки можно покупать отдельно. Professional или Growth дают доступ к заявкам в рамках тарифа.",
     visibilityTitle: "Что происходит сейчас",
-    visibilityBody: "Ваши данные сохранены. Профиль не опубликован, не показывается клиентам и не участвует в распределении заявок. Вы можете вернуться к нему в любое время.",
+    visibilityBody: "Профиль ещё не опубликован, поэтому не показывается клиентам и не участвует в распределении заявок. Публикация не требует оплаты тарифа.",
     continueSetup: "Продолжить настройку",
-    activate: "Активировать канал заявок",
+    activate: "Перейти к тарифам",
     editLater: "Вернуться к настройке",
   },
   ua: {
     title: "Ваш канал клієнтських заявок",
-    subtitle: "Тут видно, чи готовий профіль до активації та чи берете ви участь у комерційному каналі Freuly.",
+    subtitle: "Тут видно, чи готовий профіль до публікації. Підписка не обов’язкова для участі в каналі заявок.",
     draftBadge: "Чернетка",
-    readyBadge: "Готовий до активації",
-    channelOff: "Канал не активовано",
+    readyBadge: "Готовий до публікації",
+    channelOff: "Профіль не опубліковано",
     draftTitle: "Завершіть налаштування",
-    draftBody: "Профіль збережено як чернетку й він не видимий клієнтам. Заповніть обов’язкові параметри, щоб підготувати його до активації.",
-    readyTitle: "Усе готово — залишилося активувати канал",
-    readyBody: "Параметри для підбору заявок налаштовані. До оплати профіль залишається невидимим і не бере участі в отриманні клієнтських запитів.",
+    draftBody: "Профіль збережено як чернетку й він не видимий клієнтам. Заповніть обов’язкові параметри, щоб підготувати його до публікації.",
+    readyTitle: "Профіль готовий — публікація не потребує підписки",
+    readyBody: "Параметри для підбору заявок налаштовані. Після публікації відповідні запити можна купувати окремо. Professional або Growth дають доступ до запитів у межах тарифу.",
     visibilityTitle: "Що відбувається зараз",
-    visibilityBody: "Ваші дані збережені. Профіль не опублікований, не показується клієнтам і не бере участі в розподілі заявок. Ви можете повернутися до нього будь-коли.",
+    visibilityBody: "Профіль ще не опубліковано, тому він не показується клієнтам і не бере участі в розподілі заявок. Публікація не потребує оплати тарифу.",
     continueSetup: "Продовжити налаштування",
-    activate: "Активувати канал заявок",
+    activate: "Перейти до тарифів",
     editLater: "Повернутися до налаштування",
   },
   de: {
     title: "Ihr Kanal für Kundenanfragen",
-    subtitle: "Hier sehen Sie, ob Ihr Profil zur Aktivierung bereit ist und ob Sie am kommerziellen Freuly-Anfragekanal teilnehmen.",
+    subtitle: "Hier sehen Sie, ob Ihr Profil zur Veröffentlichung bereit ist. Ein Abo ist keine Voraussetzung für die Teilnahme am Anfragekanal.",
     draftBadge: "Entwurf",
-    readyBadge: "Bereit zur Aktivierung",
-    channelOff: "Anfragekanal nicht aktiviert",
+    readyBadge: "Bereit zur Veröffentlichung",
+    channelOff: "Profil nicht veröffentlicht",
     draftTitle: "Einrichtung abschließen",
-    draftBody: "Ihr Profil ist als Entwurf gespeichert und für Kunden nicht sichtbar. Vervollständigen Sie die Pflichtangaben, um es für die Aktivierung vorzubereiten.",
-    readyTitle: "Alles bereit — jetzt den Anfragekanal aktivieren",
-    readyBody: "Die Matching-Angaben sind eingerichtet. Bis zur Zahlung bleibt das Profil unsichtbar und nimmt nicht an Kundenanfragen teil.",
+    draftBody: "Ihr Profil ist als Entwurf gespeichert und für Kunden nicht sichtbar. Vervollständigen Sie die Pflichtangaben, um es für die Veröffentlichung vorzubereiten.",
+    readyTitle: "Profil bereit — Veröffentlichung ohne Abo möglich",
+    readyBody: "Die Matching-Angaben sind eingerichtet. Nach der Veröffentlichung können passende Anfragen einzeln gekauft werden. Professional oder Growth geben Zugang zu Anfragen im Rahmen des Tarifs.",
     visibilityTitle: "Aktueller Status",
-    visibilityBody: "Ihre Daten sind gespeichert. Das Profil ist nicht veröffentlicht, für Kunden nicht sichtbar und nimmt nicht an der Verteilung von Anfragen teil. Sie können jederzeit zurückkehren.",
+    visibilityBody: "Das Profil ist noch nicht veröffentlicht, daher für Kunden unsichtbar und nimmt nicht an der Verteilung von Anfragen teil. Die Veröffentlichung erfordert keine Tarifzahlung.",
     continueSetup: "Einrichtung fortsetzen",
-    activate: "Anfragekanal aktivieren",
+    activate: "Zu den Tarifen",
     editLater: "Zur Einrichtung zurückkehren",
   },
 };
@@ -87,6 +89,7 @@ export default async function DraftDemandChannelDashboard({
   lang: string;
 }) {
   const copy = copyFor(lang);
+  const demandCopy = getDemandChannelCopy(lang);
   const gate = await getSpecialistOnboardingGateState(specialist);
   const ready = gate.state === "ready";
   const onboardingHref = `/${lang}/specialist/dashboard/onboarding`;
@@ -120,8 +123,15 @@ export default async function DraftDemandChannelDashboard({
         <CardFooter>
           {ready ? (
             <>
-              <Link href={activateHref} className={dashboardLinkPrimaryClass}>
-                {copy.activate}
+              <PublishWithoutSubscriptionButton
+                lang={lang}
+                enabled={ready}
+                publishLabel={demandCopy.onboarding.publishWithoutSubscription}
+                publishingLabel={demandCopy.onboarding.publishingWithoutSubscription}
+                errorLabel={demandCopy.onboarding.publishFailed}
+              />
+              <Link href={activateHref} className={dashboardLinkSecondaryClass}>
+                {demandCopy.onboarding.connectSubscription}
               </Link>
               <Link href={reviewHref} className={dashboardLinkSecondaryClass}>
                 {copy.editLater}

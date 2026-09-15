@@ -7,7 +7,7 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
       kicker: "Специалистам",
       title: "Подключите канал клиентских заявок Freuly",
       subtitle:
-        "Professional подключает коммерческое участие в канале заявок. Growth добавляет расширенную Pro Page. Заполнение и профессиональная упаковка предложения доступны как отдельные услуги.",
+        "Professional включает доступ к заявкам в рамках тарифа. Growth добавляет расширенную Pro Page. Заполнение и профессиональная упаковка предложения доступны как отдельные услуги.",
     },
     growth: {
       name: "Freuly Growth",
@@ -31,7 +31,7 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
       kicker: "Спеціалістам",
       title: "Підключіть канал клієнтських запитів Freuly",
       subtitle:
-        "Professional підключає комерційну участь у каналі запитів. Growth додає розширену Pro Page. Заповнення та професійне оформлення пропозиції доступні як окремі послуги.",
+        "Professional включає доступ до запитів у межах тарифу. Growth додає розширену Pro Page. Заповнення та професійне оформлення пропозиції доступні як окремі послуги.",
     },
     growth: {
       name: "Freuly Growth",
@@ -55,7 +55,7 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
       kicker: "Für Spezialisten",
       title: "Aktivieren Sie Ihren Kanal für Kundenanfragen bei Freuly",
       subtitle:
-        "Professional aktiviert die kommerzielle Teilnahme am Anfragekanal. Growth ergänzt eine erweiterte Pro Page. Profilbefüllung und professionelle Angebotsaufbereitung sind separate Zusatzleistungen.",
+        "Professional enthält den Zugang zu Anfragen im Rahmen des Tarifs. Growth ergänzt eine erweiterte Pro Page. Profilbefüllung und professionelle Angebotsaufbereitung sind separate Zusatzleistungen.",
     },
     growth: {
       name: "Freuly Growth",
@@ -80,15 +80,15 @@ const CURRENT_FAQ: Record<Lang, PublicPricingCopy["faq"]> = {
   ru: [
     {
       q: "Можно ли сначала заполнить профиль и решить позже?",
-      a: "Да. Данные сохраняются как невидимый черновик. Пока тариф не оплачен, профиль не публикуется и не участвует в получении клиентских заявок.",
+      a: "Да. Данные сохраняются как черновик, пока профиль не опубликован. Публикация не требует оплаты тарифа. После публикации подходящие заявки можно покупать отдельно.",
     },
     {
       q: "Когда профиль становится видимым клиентам?",
-      a: "После успешной оплаты Freuly Professional или Freuly Growth и завершения автоматической публикации профиля.",
+      a: "После публикации заполненного профиля. Подписка Professional или Growth для публикации не требуется.",
     },
     {
       q: "Что происходит, если я не активирую тариф сразу?",
-      a: "Черновик остаётся сохранённым и невидимым. Вы можете вернуться к нему позже и активировать Professional или Growth, когда будете готовы.",
+      a: "После публикации вы работаете без подписки: подходящие заявки можно покупать отдельно. Подключите Professional или Growth, если хотите получать доступ к заявкам в рамках тарифа.",
     },
     {
       q: "Продлевается ли тариф автоматически?",
@@ -96,7 +96,7 @@ const CURRENT_FAQ: Record<Lang, PublicPricingCopy["faq"]> = {
     },
     {
       q: "Чем Professional отличается от Growth?",
-      a: "Оба тарифа подключают коммерческое участие в канале заявок. Growth дополнительно даёт расширенную Pro Page и увеличенную галерею. Профессиональная упаковка предложения оплачивается отдельно.",
+      a: "Оба тарифа включают доступ к контактам заявок в рамках подписки. Growth дополнительно даёт расширенную Pro Page и увеличенную галерею. Профессиональная упаковка предложения оплачивается отдельно.",
     },
     {
       q: "Может ли Freuly помочь заполнить или упаковать профиль?",
@@ -110,15 +110,15 @@ const CURRENT_FAQ: Record<Lang, PublicPricingCopy["faq"]> = {
   ua: [
     {
       q: "Чи можна спочатку заповнити профіль і вирішити пізніше?",
-      a: "Так. Дані зберігаються як невидима чернетка. Поки тариф не оплачено, профіль не публікується і не бере участі в отриманні клієнтських запитів.",
+      a: "Так. Дані зберігаються як чернетка, поки профіль не опубліковано. Публікація не потребує оплати тарифу. Після публікації відповідні запити можна купувати окремо.",
     },
     {
       q: "Коли профіль стає видимим клієнтам?",
-      a: "Після успішної оплати Freuly Professional або Freuly Growth та завершення автоматичної публікації профілю.",
+      a: "Після публікації заповненого профілю. Підписка Professional або Growth для публікації не потрібна.",
     },
     {
       q: "Що відбувається, якщо я не активую тариф одразу?",
-      a: "Чернетка залишається збереженою та невидимою. Ви можете повернутися до неї пізніше й активувати Professional або Growth, коли будете готові.",
+      a: "Після публікації ви працюєте без підписки: відповідні запити можна купувати окремо. Підключіть Professional або Growth, якщо хочете отримувати доступ до запитів у межах тарифу.",
     },
     {
       q: "Чи продовжується тариф автоматично?",
@@ -126,7 +126,7 @@ const CURRENT_FAQ: Record<Lang, PublicPricingCopy["faq"]> = {
     },
     {
       q: "Чим Professional відрізняється від Growth?",
-      a: "Обидва тарифи підключають комерційну участь у каналі запитів. Growth додатково дає розширену Pro Page та збільшену галерею. Професійне оформлення пропозиції оплачується окремо.",
+      a: "Обидва тарифи включають доступ до контактів запитів у межах підписки. Growth додатково дає розширену Pro Page та збільшену галерею. Професійне оформлення пропозиції оплачується окремо.",
     },
     {
       q: "Чи може Freuly допомогти заповнити або професійно оформити профіль?",
@@ -140,15 +140,15 @@ const CURRENT_FAQ: Record<Lang, PublicPricingCopy["faq"]> = {
   de: [
     {
       q: "Kann ich mein Profil zuerst ausfüllen und später entscheiden?",
-      a: "Ja. Die Daten bleiben als nicht sichtbarer Entwurf gespeichert. Solange kein Tarif bezahlt ist, wird das Profil nicht veröffentlicht und nimmt nicht am Kundenanfrage-Kanal teil.",
+      a: "Ja. Die Daten bleiben als Entwurf gespeichert, solange das Profil nicht veröffentlicht ist. Die Veröffentlichung erfordert keine Tarifzahlung. Nach der Veröffentlichung können passende Anfragen einzeln gekauft werden.",
     },
     {
       q: "Wann wird mein Profil für Kunden sichtbar?",
-      a: "Nach erfolgreicher Zahlung von Freuly Professional oder Freuly Growth und der anschließenden automatischen Veröffentlichung des Profils.",
+      a: "Nach Veröffentlichung eines vollständigen Profils. Ein Professional- oder Growth-Abo ist dafür nicht erforderlich.",
     },
     {
       q: "Was passiert, wenn ich den Tarif nicht sofort aktiviere?",
-      a: "Der Entwurf bleibt gespeichert und nicht sichtbar. Sie können später zurückkehren und Professional oder Growth aktivieren, sobald Sie bereit sind.",
+      a: "Nach der Veröffentlichung arbeiten Sie ohne Abo: passende Anfragen können einzeln gekauft werden. Aktivieren Sie Professional oder Growth, wenn Sie Zugang zu Anfragen im Rahmen des Tarifs erhalten möchten.",
     },
     {
       q: "Verlängert sich der Tarif automatisch?",
@@ -156,7 +156,7 @@ const CURRENT_FAQ: Record<Lang, PublicPricingCopy["faq"]> = {
     },
     {
       q: "Was ist der Unterschied zwischen Professional und Growth?",
-      a: "Beide Tarife aktivieren die kommerzielle Teilnahme am Anfragekanal. Growth ergänzt eine erweiterte Pro Page und eine größere Galerie. Die professionelle Aufbereitung des Angebots ist eine separate Zusatzleistung.",
+      a: "Beide Tarife enthalten den Zugang zu Anfragekontakten im Rahmen des Abos. Growth ergänzt eine erweiterte Pro Page und eine größere Galerie. Die professionelle Aufbereitung des Angebots ist eine separate Zusatzleistung.",
     },
     {
       q: "Kann Freuly mein Profil ausfüllen oder mein Angebot professionell aufbereiten?",

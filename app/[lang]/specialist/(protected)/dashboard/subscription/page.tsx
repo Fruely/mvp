@@ -26,7 +26,8 @@ function subscriptionStatusBadgeVariant(planStatus: string): BadgeVariant {
   if (planStatus === "early_access" || planStatus === "trialing") return "success";
   if (planStatus === "active") return "info";
   if (planStatus === "grace" || planStatus === "grace_period") return "warning";
-  if (planStatus === "expired" || planStatus === "inactive") return "error";
+  if (planStatus === "expired") return "error";
+  if (planStatus === "inactive") return "info";
   if (planStatus === "cancelled") return "neutral";
   return "neutral";
 }

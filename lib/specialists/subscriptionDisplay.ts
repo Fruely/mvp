@@ -63,8 +63,9 @@ function severityForPhase(phase: SubscriptionPhase): SubscriptionSeverity {
       return "warning";
     case "expired":
     case "cancelled":
-    case "inactive":
       return "danger";
+    case "inactive":
+      return "info";
     default:
       return "neutral";
   }
@@ -134,7 +135,7 @@ export function pickDashboardSubscriptionNotice(
 }
 
 export function leadsBannerSeverity(display: SubscriptionDisplayState): SubscriptionSeverity {
-  if (display.phase === "inactive") return "danger";
+  if (display.phase === "inactive") return "info";
   if (display.isExpired) return "danger";
   if (display.isInGracePeriod || display.isExpiringSoon) return "warning";
   return "info";
@@ -179,7 +180,7 @@ export function dashboardNoticeTitleBody(
       return {
         title: t(dict, "dashboard.subscriptionNotice.inactiveTitle"),
         body: t(dict, "dashboard.subscriptionNotice.inactiveBody"),
-        severity: "danger",
+        severity: "info",
       };
     case "expired":
       return {

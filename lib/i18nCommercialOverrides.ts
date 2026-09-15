@@ -8,31 +8,31 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
         kicker: "Специалистам",
         title: "Подключите канал клиентских заявок Freuly",
         subtitle:
-          "Professional подключает коммерческое участие в канале заявок. Growth добавляет расширенную профессиональную страницу и редакторскую упаковку.",
+          "Professional включает доступ к заявкам в рамках тарифа. Growth добавляет расширенную профессиональную страницу и редакторскую упаковку.",
       },
       notice: {
         title: "Как начинается работа с Freuly",
         lead:
-          "Зарегистрируйтесь и подготовьте профиль как черновик. Публичная видимость и участие в получении клиентских заявок включаются только после оплаты Professional или Growth.",
+          "Зарегистрируйтесь и подготовьте профиль. После публикации подходящие заявки можно покупать отдельно. Professional или Growth включают доступ к заявкам в рамках тарифа и не являются условием участия в канале.",
         points: [
-          "До оплаты профиль сохраняется как невидимый черновик.",
+          "Неполный профиль сохраняется как черновик и не виден клиентам.",
           "Черновик можно редактировать и оставить на потом без обязательств.",
-          "После успешной оплаты профиль публикуется и канал клиентских заявок активируется.",
+          "После публикации вы можете получать подходящие заявки без подписки и покупать их отдельно.",
           "Каждый оплаченный период завершается автоматически; следующий месяц подключается вручную через checkout.",
         ],
       },
       faq: [
         {
           q: "Можно ли сначала заполнить профиль и решить позже?",
-          a: "Да. Данные сохраняются как черновик. Пока тариф не оплачен, профиль не публикуется и не участвует в получении клиентских заявок.",
+          a: "Да. Данные сохраняются как черновик, пока профиль не опубликован. Публикация не требует оплаты тарифа. После публикации подходящие заявки можно покупать отдельно.",
         },
         {
           q: "Когда профиль становится видимым клиентам?",
-          a: "После успешной оплаты Freuly Professional или Freuly Growth и автоматической публикации профиля.",
+          a: "После публикации заполненного профиля. Подписка Professional или Growth для публикации не требуется.",
         },
         {
           q: "Есть ли бесплатный период публичного размещения?",
-          a: "Нет. Бесплатно можно подготовить только невидимый черновик. Публичное размещение и коммерческое участие в канале заявок начинаются после оплаты.",
+          a: "Нет. Бесплатно можно подготовить черновик и опубликовать профиль. Подписка Professional или Growth включает доступ к заявкам в рамках тарифа; без неё подходящие заявки можно покупать отдельно.",
         },
         {
           q: "Продлевается ли подписка автоматически?",
@@ -51,20 +51,20 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
         },
         context: {
           earlyAccess:
-            "Для ранее подключённых специалистов может действовать переходный режим по индивидуальным условиям. Для новых специалистов публичный профиль и канал заявок активируются после оплаты Professional или Growth.",
+            "Для ранее подключённых специалистов может действовать переходный режим по индивидуальным условиям. Для новых специалистов подписка не обязательна: после публикации подходящие заявки можно покупать отдельно.",
           general:
-            "Публичный профиль и коммерческое участие в канале клиентских заявок работают при действующем Professional или Growth. Автоматического повторного списания нет.",
+            "Подписка Professional или Growth включает доступ к контактам подходящих заявок в рамках тарифа. Без подписки профиль может быть опубликован, а подходящие заявки можно покупать отдельно. Автоматического повторного списания нет.",
         },
       },
       subscriptionNotice: {
         earlyAccessTitle: "Переходный режим",
         earlyAccessBody:
           "Для вашего ранее созданного аккаунта действует переходный режим. Он не является общедоступным бесплатным тарифом для новых специалистов.",
-        inactiveTitle: "Канал заявок не активирован",
+        inactiveTitle: "Вы работаете без подписки",
         inactiveBody:
-          "Публичная видимость и коммерческое участие в канале заявок сейчас не активны. Подключите Professional или Growth.",
+          "Вы работаете без подписки. Подходящие заявки можно покупать отдельно. Подключите Professional или Growth, если хотите получать доступ к заявкам в рамках тарифа.",
         leadsInactive:
-          "Коммерческое участие в канале заявок не активно. Подключите Professional или Growth, чтобы получать новые подходящие запросы.",
+          "Вы работаете без подписки. Подходящие заявки можно покупать отдельно. Подключите Professional или Growth, если хотите получать доступ к заявкам в рамках тарифа.",
         graceTitle: "Нужно восстановить оплату",
         graceBody:
           "Оплата требует восстановления. До завершения периода осталось дней: {{days}}. Продлите тариф, чтобы сохранить коммерческий доступ без перерыва.",
@@ -77,7 +77,7 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
       },
       leads: {
         unlockRequiresPlan:
-          "Чтобы открыть контакты, нужен действующий Professional или Growth либо активный период восстановления оплаты.",
+          "Контакты этой заявки закрыты. Их можно открыть покупкой отдельно или в рамках тарифа Professional или Growth.",
       },
     },
   },
@@ -87,31 +87,31 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
         kicker: "Спеціалістам",
         title: "Підключіть канал клієнтських запитів Freuly",
         subtitle:
-          "Professional підключає комерційну участь у каналі запитів. Growth додає розширену професійну сторінку та редакторське оформлення.",
+          "Professional включає доступ до запитів у межах тарифу. Growth додає розширену професійну сторінку та редакторське оформлення.",
       },
       notice: {
         title: "Як починається робота з Freuly",
         lead:
-          "Зареєструйтеся та підготуйте профіль як чернетку. Публічна видимість і участь в отриманні клієнтських запитів вмикаються лише після оплати Professional або Growth.",
+          "Зареєструйтеся та підготуйте профіль. Після публікації відповідні запити можна купувати окремо. Professional або Growth включають доступ до запитів у межах тарифу і не є умовою участі в каналі.",
         points: [
-          "До оплати профіль зберігається як невидима чернетка.",
+          "Неповний профіль зберігається як чернетка і не видимий клієнтам.",
           "Чернетку можна редагувати та залишити на потім без зобов’язань.",
-          "Після успішної оплати профіль публікується, а канал клієнтських запитів активується.",
+          "Після публікації ви можете отримувати відповідні запити без підписки і купувати їх окремо.",
           "Кожен оплачений період завершується автоматично; наступний місяць підключається вручну через checkout.",
         ],
       },
       faq: [
         {
           q: "Чи можна спочатку заповнити профіль і вирішити пізніше?",
-          a: "Так. Дані зберігаються як чернетка. Поки тариф не оплачено, профіль не публікується і не бере участі в отриманні клієнтських запитів.",
+          a: "Так. Дані зберігаються як чернетка, поки профіль не опубліковано. Публікація не потребує оплати тарифу. Після публікації відповідні запити можна купувати окремо.",
         },
         {
           q: "Коли профіль стає видимим клієнтам?",
-          a: "Після успішної оплати Freuly Professional або Freuly Growth та автоматичної публікації профілю.",
+          a: "Після публікації заповненого профілю. Підписка Professional або Growth для публікації не потрібна.",
         },
         {
           q: "Чи є безкоштовний період публічного розміщення?",
-          a: "Ні. Безкоштовно можна підготувати лише невидиму чернетку. Публічне розміщення і комерційна участь у каналі запитів починаються після оплати.",
+          a: "Ні. Безкоштовно можна підготувати чернетку і опублікувати профіль. Підписка Professional або Growth включає доступ до запитів у межах тарифу; без неї відповідні запити можна купувати окремо.",
         },
         {
           q: "Чи продовжується підписка автоматично?",
@@ -130,20 +130,20 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
         },
         context: {
           earlyAccess:
-            "Для раніше підключених спеціалістів може діяти перехідний режим за індивідуальними умовами. Для нових спеціалістів публічний профіль і канал запитів активуються після оплати Professional або Growth.",
+            "Для раніше підключених спеціалістів може діяти перехідний режим за індивідуальними умовами. Для нових спеціалістів підписка не обов’язкова: після публікації відповідні запити можна купувати окремо.",
           general:
-            "Публічний профіль і комерційна участь у каналі клієнтських запитів працюють за чинного Professional або Growth. Автоматичного повторного списання немає.",
+            "Підписка Professional або Growth включає доступ до контактів відповідних запитів у межах тарифу. Без підписки профіль може бути опублікований, а відповідні запити можна купувати окремо. Автоматичного повторного списання немає.",
         },
       },
       subscriptionNotice: {
         earlyAccessTitle: "Перехідний режим",
         earlyAccessBody:
           "Для вашого раніше створеного акаунта діє перехідний режим. Він не є загальнодоступним безкоштовним тарифом для нових спеціалістів.",
-        inactiveTitle: "Канал запитів не активовано",
+        inactiveTitle: "Ви працюєте без підписки",
         inactiveBody:
-          "Публічна видимість і комерційна участь у каналі запитів зараз не активні. Підключіть Professional або Growth.",
+          "Ви працюєте без підписки. Відповідні запити можна купувати окремо. Підключіть Professional або Growth, якщо хочете отримувати доступ до запитів у межах тарифу.",
         leadsInactive:
-          "Комерційна участь у каналі запитів не активна. Підключіть Professional або Growth, щоб отримувати нові відповідні запити.",
+          "Ви працюєте без підписки. Відповідні запити можна купувати окремо. Підключіть Professional або Growth, якщо хочете отримувати доступ до запитів у межах тарифу.",
         graceTitle: "Потрібно відновити оплату",
         graceBody:
           "Оплата потребує відновлення. До завершення періоду залишилося днів: {{days}}. Продовжте тариф, щоб зберегти комерційний доступ без перерви.",
@@ -156,7 +156,7 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
       },
       leads: {
         unlockRequiresPlan:
-          "Щоб відкрити контакти, потрібен чинний Professional або Growth або активний період відновлення оплати.",
+          "Контакти цього запиту закриті. Їх можна відкрити покупкою окремо або в межах тарифу Professional або Growth.",
       },
     },
   },
@@ -166,31 +166,31 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
         kicker: "Für Spezialisten",
         title: "Aktivieren Sie Ihren Kanal für Kundenanfragen bei Freuly",
         subtitle:
-          "Professional aktiviert die kommerzielle Teilnahme am Anfragekanal. Growth ergänzt eine erweiterte professionelle Seite und redaktionelle Aufbereitung.",
+          "Professional enthält den Zugang zu Anfragen im Rahmen des Tarifs. Growth ergänzt eine erweiterte professionelle Seite und redaktionelle Aufbereitung.",
       },
       notice: {
         title: "So starten Sie mit Freuly",
         lead:
-          "Registrieren Sie sich und bereiten Sie Ihr Profil als Entwurf vor. Öffentliche Sichtbarkeit und die Teilnahme an Kundenanfragen werden erst nach der Zahlung von Professional oder Growth aktiviert.",
+          "Registrieren Sie sich und bereiten Sie Ihr Profil vor. Nach der Veröffentlichung können passende Anfragen einzeln gekauft werden. Professional oder Growth enthalten den Zugang zu Anfragen im Rahmen des Tarifs und sind keine Voraussetzung für die Teilnahme am Kanal.",
         points: [
-          "Vor der Zahlung bleibt das Profil ein nicht sichtbarer Entwurf.",
+          "Ein unvollständiges Profil bleibt als Entwurf gespeichert und für Kunden unsichtbar.",
           "Der Entwurf kann bearbeitet und ohne Verpflichtung für später gespeichert werden.",
-          "Nach erfolgreicher Zahlung wird das Profil veröffentlicht und der Kundenanfrage-Kanal aktiviert.",
+          "Nach der Veröffentlichung können Sie passende Anfragen ohne Abo erhalten und einzeln kaufen.",
           "Jeder bezahlte Zeitraum endet automatisch; der nächste Monat wird manuell im Checkout aktiviert.",
         ],
       },
       faq: [
         {
           q: "Kann ich mein Profil zuerst ausfüllen und später entscheiden?",
-          a: "Ja. Die Daten bleiben als Entwurf gespeichert. Solange kein Tarif bezahlt ist, wird das Profil nicht veröffentlicht und nimmt nicht am Kundenanfrage-Kanal teil.",
+          a: "Ja. Die Daten bleiben als Entwurf gespeichert, solange das Profil nicht veröffentlicht ist. Die Veröffentlichung erfordert keine Tarifzahlung. Nach der Veröffentlichung können passende Anfragen einzeln gekauft werden.",
         },
         {
           q: "Wann wird mein Profil für Kunden sichtbar?",
-          a: "Nach erfolgreicher Zahlung von Freuly Professional oder Freuly Growth und der automatischen Veröffentlichung des Profils.",
+          a: "Nach Veröffentlichung eines vollständigen Profils. Ein Professional- oder Growth-Abo ist dafür nicht erforderlich.",
         },
         {
           q: "Gibt es eine kostenlose Phase für die öffentliche Veröffentlichung?",
-          a: "Nein. Kostenlos kann nur ein nicht sichtbarer Entwurf vorbereitet werden. Öffentliche Sichtbarkeit und kommerzielle Teilnahme am Anfragekanal beginnen nach der Zahlung.",
+          a: "Nein. Kostenlos können Sie einen Entwurf vorbereiten und das Profil veröffentlichen. Professional oder Growth enthalten den Zugang zu Anfragen im Rahmen des Tarifs; ohne Abo können passende Anfragen einzeln gekauft werden.",
         },
         {
           q: "Verlängert sich das Abonnement automatisch?",
@@ -209,20 +209,20 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
         },
         context: {
           earlyAccess:
-            "Für bereits früher verbundene Spezialisten kann ein individueller Übergangsmodus gelten. Für neue Spezialisten werden öffentliches Profil und Anfragekanal erst nach Zahlung von Professional oder Growth aktiviert.",
+            "Für bereits früher verbundene Spezialisten kann ein individueller Übergangsmodus gelten. Für neue Spezialisten ist kein Abo erforderlich: nach der Veröffentlichung können passende Anfragen einzeln gekauft werden.",
           general:
-            "Öffentliches Profil und kommerzielle Teilnahme am Kundenanfrage-Kanal gelten bei aktivem Professional oder Growth. Es gibt keine automatische wiederkehrende Abbuchung.",
+            "Professional oder Growth enthalten den Zugang zu Kontakten passender Anfragen im Rahmen des Tarifs. Ohne Abo kann das Profil veröffentlicht werden, und passende Anfragen können einzeln gekauft werden. Es gibt keine automatische wiederkehrende Abbuchung.",
         },
       },
       subscriptionNotice: {
         earlyAccessTitle: "Übergangsmodus",
         earlyAccessBody:
           "Für Ihr bereits früher erstelltes Konto gilt ein Übergangsmodus. Dies ist kein allgemein verfügbarer kostenloser Tarif für neue Spezialisten.",
-        inactiveTitle: "Anfragekanal nicht aktiviert",
+        inactiveTitle: "Sie arbeiten ohne Abo",
         inactiveBody:
-          "Öffentliche Sichtbarkeit und kommerzielle Teilnahme am Anfragekanal sind derzeit nicht aktiv. Aktivieren Sie Professional oder Growth.",
+          "Sie arbeiten ohne Abo. Passende Anfragen können einzeln gekauft werden. Aktivieren Sie Professional oder Growth, wenn Sie Zugang zu Anfragen im Rahmen des Tarifs erhalten möchten.",
         leadsInactive:
-          "Die kommerzielle Teilnahme am Anfragekanal ist nicht aktiv. Aktivieren Sie Professional oder Growth, um neue passende Anfragen zu erhalten.",
+          "Sie arbeiten ohne Abo. Passende Anfragen können einzeln gekauft werden. Aktivieren Sie Professional oder Growth, wenn Sie Zugang zu Anfragen im Rahmen des Tarifs erhalten möchten.",
         graceTitle: "Zahlung muss wiederhergestellt werden",
         graceBody:
           "Die Zahlung muss wiederhergestellt werden. Verbleibende Tage: {{days}}. Verlängern Sie den Tarif, um den kommerziellen Zugang ohne Unterbrechung zu erhalten.",
@@ -235,7 +235,7 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
       },
       leads: {
         unlockRequiresPlan:
-          "Zum Öffnen der Kontaktdaten ist ein aktiver Professional- oder Growth-Tarif oder eine aktive Zahlungswiederherstellung erforderlich.",
+          "Die Kontakte dieser Anfrage sind gesperrt. Sie können einzeln gekauft oder im Rahmen von Professional oder Growth freigeschaltet werden.",
       },
     },
   },
