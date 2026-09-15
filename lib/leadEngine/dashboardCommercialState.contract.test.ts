@@ -33,13 +33,27 @@ test("dashboard page passes server-resolved decisions to client table", async ()
   assert.doesNotMatch(src, /canUnlockContacts=/);
 });
 
-test("lead table exposes commercial metadata without direct checkout call", async () => {
+test("lead table exposes guarded purchase CTA from server decision only", async () => {
   const src = await readFile(tablePath, "utf8");
   assert.match(src, /Стоимость заявки/);
   assert.match(src, /Включено в подписку/);
   assert.match(src, /Платёж обрабатывается/);
   assert.match(src, /decision\?\.state === "unlocked"/);
-  assert.doesNotMatch(src, /request-offers\/checkout/);
-  assert.doesNotMatch(src, /checkout_url/);
+  assert.match(src, /decision\?\.state === "locked" && decision\.canPurchase/);
+  assert.match(src, /request-offers\/checkout/);
+  assert.match(src, /JSON\.stringify\(\{ offer_id: offerId, lang \}\)/);
+  assert.match(src, /checkout_url/);
+  assert.doesNotMatch(src, /price_cents/);
+  assert.doesNotMatch(src, /amount_cents/);
+  assert.doesNotMatch(src, /specialist_id/);
   assert.doesNotMatch(src, /LEAD_ENGINE_DIRECT_PPL_CHECKOUT_ENABLED/);
+});
+
+test("post-payment UX polls server state and never trusts redirect as entitlement", async () => {
+  const src = await readFile(tablePath, "utf8");
+  assert.match(src, /payment === "success"/);
+  assert.match(src, /router\.refresh\(\)/);
+  assert.match(src, /paymentPollCountRef\.current >= 10/);
+  assert.match(src, /Контакты откроются только после подтверждения Stripe/);
+  assert.doesNotMatch(src, /payment === "success"[\s\S]{0,300}contacts_unlocked: true/);
 });
