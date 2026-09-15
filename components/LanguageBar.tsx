@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { SUPPORTED_LANGS, type Lang } from "@/lib/i18n";
 import { isPrivateDashboardPath } from "@/lib/dashboard/isPrivateDashboardPath";
+import { coerceSpecialistsUiLang } from "@/lib/search/specialistsUiLang";
 
 /** Same name as server routes and middleware (`middleware.ts`). */
 const LANG_COOKIE = "freuly_lang";
@@ -51,8 +52,9 @@ export default function LanguageBar({ serverLang }: LanguageBarProps) {
   const isSpecialistsSearch =
     pathname === "/specialists" || pathname.startsWith("/specialists/");
   const queryLang = searchParams?.get("lang");
+  const uiParam = searchParams?.get("ui");
   const specialistsQueryLang =
-    queryLang === "ua" || queryLang === "ru" || queryLang === "de" ? queryLang : null;
+    coerceSpecialistsUiLang(uiParam) ?? coerceSpecialistsUiLang(queryLang);
   const activeLang = hasPrefix
     ? pathLang
     : specialistsQueryLang ?? serverLang ?? pathLang;
@@ -61,7 +63,7 @@ export default function LanguageBar({ serverLang }: LanguageBarProps) {
   const langHref = (code: Lang) => {
     if (isSpecialistsSearch) {
       const params = new URLSearchParams(qs);
-      params.set("lang", code);
+      params.set("ui", code);
       const query = params.toString();
       return query ? `${pathname}?${query}` : pathname;
     }

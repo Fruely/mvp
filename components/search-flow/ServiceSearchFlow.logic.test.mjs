@@ -115,9 +115,11 @@ test("final submit builds expected /specialists URL for nearby", () => {
     format: "nearby",
     location: "Bonn",
     radiusKm: 30,
+    uiLang: "ru",
   });
   assert.ok(url?.startsWith("/specialists?"));
   const params = new URLSearchParams(url.split("?")[1]);
+  assert.equal(params.get("ui"), "ru");
   assert.equal(params.get("lang"), "ru");
   assert.equal(params.get("place"), "Bonn");
   assert.equal(params.get("radius"), "30");
@@ -130,8 +132,10 @@ test("final submit builds expected /specialists URL for online", () => {
     format: "online",
     location: "",
     radiusKm: 30,
+    uiLang: "ua",
   });
   const params = new URLSearchParams(url.split("?")[1]);
+  assert.equal(params.get("ui"), "ua");
   assert.equal(params.get("lang"), "uk");
   assert.equal(params.get("place"), null);
 });
@@ -162,6 +166,11 @@ test("popular category chips navigate via canonical category URLs", () => {
   assert.equal(buildCategorySearchHref("ru", psychologists.slug), "/ru/specialists/psychologists");
   assert.equal(buildCategorySearchHref("ua", psychologists.slug), "/ua/specialists/psychologists");
   assert.equal(buildCategorySearchHref("de", psychologists.slug), "/de/specialists/psychologists");
+});
+
+test("wizard uses uiLang prop for category and results URLs", () => {
+  assert.match(flowSrc, /uiLang: uiLangProp/);
+  assert.match(flowSrc, /uiLang,/);
 });
 
 test("free-text service search keeps query URL with Unicode q", () => {

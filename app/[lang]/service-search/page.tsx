@@ -22,5 +22,11 @@ export default function ServiceSearchPage({
 }) {
   const lang: Lang = isSupportedLang(params.lang) ? params.lang : "ua";
 
-  return <ServiceSearchFlow text={SERVICE_SEARCH_FLOW_TEXT[lang]} />;
+  return (
+    <ServiceSearchFlow
+      text={SERVICE_SEARCH_FLOW_TEXT[lang]}
+      uiLang={lang}
+      defaultLanguage={lang}
+    />
+  );
 }
