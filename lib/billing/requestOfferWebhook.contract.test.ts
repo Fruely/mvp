@@ -10,7 +10,7 @@ const aggregatePath = fileURLToPath(
   new URL("./processStripeBillingWebhook.ts", import.meta.url),
 );
 
-test("direct offer webhook only trusts Stripe success events with request-offer purpose", async () => {
+test("direct offer webhook trusts Stripe success events with request-offer purpose", async () => {
   const src = await readFile(processorPath, "utf8");
   assert.match(src, /checkout\.session\.completed/);
   assert.match(src, /checkout\.session\.async_payment_succeeded/);
@@ -40,6 +40,24 @@ test("grant fulfillment is idempotent and repairs offer paid state on retry", as
   assert.match(src, /grantInsertError\.code === "23505"/);
   assert.match(src, /markOfferPaid/);
   assert.match(src, /status: "paid", paid_at: paidAt/);
+});
+
+test("refund and dispute revoke only the matching payment grant", async () => {
+  const src = await readFile(processorPath, "utf8");
+  assert.match(src, /charge\.refunded/);
+  assert.match(src, /charge\.dispute\.created/);
+  assert.match(src, /status: targetStatus/);
+  assert.match(src, /payment_refunded/);
+  assert.match(src, /payment_disputed/);
+  assert.match(src, /grant\.source_payment_id !== payment\.id/);
+  assert.match(src, /revoked_at: nowIso/);
+  assert.match(src, /revoke_reason: revokeReason/);
+});
+
+test("repeated reversal events are idempotent", async () => {
+  const src = await readFile(processorPath, "utf8");
+  assert.match(src, /if \(grant\.revoked_at\) return \{ outcome: "success" \}/);
+  assert.match(src, /payment\.status !== targetStatus/);
 });
 
 test("aggregate billing webhook participates in retry and skipped semantics", async () => {
