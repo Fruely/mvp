@@ -4,7 +4,7 @@ import test from "node:test";
 import {
   buildDirectLeadOfferIdempotencyKey,
   buildDirectLeadShadowOffer,
-} from "@/lib/leadEngine/requestOffers";
+} from "@/lib/leadEngine/requestOfferPolicy";
 
 test("buildDirectLeadOfferIdempotencyKey is stable for the same lead and specialist", () => {
   const input = {
