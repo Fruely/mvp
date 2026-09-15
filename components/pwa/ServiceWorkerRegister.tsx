@@ -1,19 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
+import { SW_SKIP_WAITING_MESSAGE } from "@/lib/pwa/serviceWorkerUpdate";
 
 /**
- * Minimal, conservative service worker registration for the PWA Foundation stage.
+ * Registers the production service worker and activates a waiting update.
  *
- * - Registers only in production (SW is disabled at build time in dev anyway).
- * - Runs in an effect, so it never blocks rendering.
- * - Registers a single worker on scope "/".
- * - Detects a new worker version (installing -> installed, or an already-waiting
- *   worker) WITHOUT auto-reloading the page and WITHOUT unconditional skipWaiting.
- * - Logs only non-sensitive messages (never cookies, tokens or personal data).
- *
- * Next stage: surface a user-facing update prompt that, on explicit user consent,
- * messages the waiting worker to activate. Not implemented here on purpose.
+ * Returning Safari/Chrome tabs that already had an older worker must not keep
+ * running a stale Wizard/search bundle after deploy. The new worker skip-waits
+ * itself; this page also messages a waiting worker and reloads once after
+ * `controllerchange` when a worker was already in control.
  */
 export default function ServiceWorkerRegister() {
   useEffect(() => {
@@ -22,42 +18,60 @@ export default function ServiceWorkerRegister() {
     if (!("serviceWorker" in navigator)) return;
 
     let cancelled = false;
+    let reloading = false;
+    let registration: ServiceWorkerRegistration | null = null;
+    const hadController = Boolean(navigator.serviceWorker.controller);
 
-    const notifyUpdateAvailable = () => {
-      // Placeholder for the future update prompt. Intentionally no reload here.
-      console.info("[pwa] A new version is available and waiting to activate.");
+    const activateWaiting = (worker: ServiceWorker | null) => {
+      if (!worker) return;
+      worker.postMessage(SW_SKIP_WAITING_MESSAGE);
     };
 
     const watchInstalling = (worker: ServiceWorker | null) => {
       if (!worker) return;
       worker.addEventListener("statechange", () => {
-        if (worker.state === "installed" && navigator.serviceWorker.controller) {
-          notifyUpdateAvailable();
+        if (worker.state === "installed") {
+          activateWaiting(worker);
         }
       });
     };
 
+    const onControllerChange = () => {
+      if (!hadController || reloading || cancelled) return;
+      reloading = true;
+      window.location.reload();
+    };
+
+    const checkForUpdate = () => {
+      void registration?.update().catch(() => {});
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") checkForUpdate();
+    };
+
+    if (hadController) {
+      navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
+    }
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("pageshow", checkForUpdate);
+
     const register = async () => {
       try {
-        const registration = await navigator.serviceWorker.register("/sw.js", {
+        registration = await navigator.serviceWorker.register("/sw.js", {
           scope: "/",
         });
         if (cancelled) return;
 
-        // Case 1: a new worker is already waiting (e.g. detected on a later visit).
-        if (registration.waiting && navigator.serviceWorker.controller) {
-          notifyUpdateAvailable();
-        }
-
-        // Case 2: a worker is mid-install right now.
+        activateWaiting(registration.waiting);
         watchInstalling(registration.installing);
 
-        // Case 3: a new worker starts installing after registration.
         registration.addEventListener("updatefound", () => {
-          watchInstalling(registration.installing);
+          watchInstalling(registration?.installing ?? null);
         });
+
+        checkForUpdate();
       } catch {
-        // Registration failures are non-fatal for the existing site.
         console.warn("[pwa] Service worker registration failed.");
       }
     };
@@ -66,6 +80,9 @@ export default function ServiceWorkerRegister() {
 
     return () => {
       cancelled = true;
+      navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("pageshow", checkForUpdate);
     };
   }, []);
 
