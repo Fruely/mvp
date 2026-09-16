@@ -29,6 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: `${t(dict, "login.title")} | Freuly`,
     description: t(dict, "login.subtitle"),
+    robots: { index: false, follow: true },
   };
 }
 
