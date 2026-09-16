@@ -9,7 +9,7 @@ import {
   dashboardPageStackClass,
 } from "@/components/dashboard/dashboardStyles";
 import { Alert, Badge, Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui";
-import { getDictionary, isSupportedLang, t, type Dictionary, type Lang } from "@/lib/i18n";
+import { getDictionary, resolveRouteLang, t, type Dictionary, type Lang } from "@/lib/i18n";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { getSpecialistPlanForDashboard } from "@/lib/specialists/subscription";
@@ -74,7 +74,7 @@ export default async function SpecialistDashboardBillingPage({
 }) {
   const resolved = await Promise.resolve(params);
   const resolvedSearch = await Promise.resolve(searchParams);
-  const lang: Lang = isSupportedLang(resolved.lang) ? resolved.lang : "ua";
+  const lang: Lang = resolveRouteLang(resolved.lang);
 
   const [{ specialist }, dict] = await Promise.all([
     getCurrentUserAndSpecialist(),

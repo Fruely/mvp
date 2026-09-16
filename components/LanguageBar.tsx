@@ -70,6 +70,9 @@ export default function LanguageBar({ serverLang }: LanguageBarProps) {
     if (hasPrefix) {
       return `/${code}${rest === "/" ? "" : rest}${suffix}`;
     }
+    if (isPrivateDashboardPath(pathname)) {
+      return `/${code}${pathname}${suffix}`;
+    }
     return `/${code}${suffix}`;
   };
 

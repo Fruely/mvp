@@ -5,7 +5,7 @@ import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
 import { dashboardPageStackClass } from "@/components/dashboard/dashboardStyles";
 import ChangePasswordForm from "@/components/dashboard/settings/ChangePasswordForm";
 import { Card, CardContent, CardHeader, CardTitle, Input } from "@/components/ui";
-import { getDictionary, isSupportedLang, t } from "@/lib/i18n";
+import { getDictionary, resolveRouteLang, t } from "@/lib/i18n";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 
@@ -15,7 +15,7 @@ export default async function SpecialistDashboardSettingsPage({
   params: { lang: string } | Promise<{ lang: string }>;
 }) {
   const resolved = await Promise.resolve(params);
-  const lang = isSupportedLang(resolved.lang) ? resolved.lang : "ru";
+  const lang = resolveRouteLang(resolved.lang);
   const dict = await getDictionary(lang);
   const { user, specialist } = await getCurrentUserAndSpecialist();
 

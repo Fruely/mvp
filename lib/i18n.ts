@@ -20,6 +20,17 @@ export function isSupportedLang(value: string): value is Lang {
   return (SUPPORTED_LANGS as readonly string[]).includes(value);
 }
 
+/**
+ * UI locale from a route `[lang]` segment (or equivalent).
+ * Never infers language from specialist profile/service languages.
+ * Unknown values fall back to DEFAULT_LANG (`ru`), not `ua`.
+ */
+export function resolveRouteLang(value: unknown): Lang {
+  if (typeof value !== "string") return DEFAULT_LANG;
+  const lower = value.trim().toLowerCase();
+  return isSupportedLang(lower) ? lower : DEFAULT_LANG;
+}
+
 function applyPlanBranding(value: unknown): unknown {
   if (typeof value === "string") return brandPlanText(value);
   if (Array.isArray(value)) return value.map(applyPlanBranding);

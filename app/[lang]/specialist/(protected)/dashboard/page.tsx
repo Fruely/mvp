@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
-import { getDictionary, isSupportedLang, t } from "@/lib/i18n";
+import { getDictionary, resolveRouteLang, t } from "@/lib/i18n";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import InstallFreuly from "@/components/pwa/InstallFreuly";
 import VerificationBanner from "./VerificationBanner";
@@ -17,7 +17,7 @@ export default async function SpecialistDashboardHomePage({
   params: { lang: string } | Promise<{ lang: string }>;
 }) {
   const resolved = await Promise.resolve(params);
-  const lang = isSupportedLang(resolved.lang) ? resolved.lang : "ru";
+  const lang = resolveRouteLang(resolved.lang);
   const [{ specialist }, dict] = await Promise.all([
     getCurrentUserAndSpecialist(),
     getDictionary(lang),

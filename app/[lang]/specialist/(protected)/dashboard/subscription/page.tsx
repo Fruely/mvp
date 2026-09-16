@@ -18,7 +18,7 @@ import {
 } from "@/lib/specialists/subscriptionDisplay";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
-import { getDictionary, isSupportedLang, t, type Dictionary, type Lang } from "@/lib/i18n";
+import { getDictionary, resolveRouteLang, t, type Dictionary, type Lang } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -69,7 +69,7 @@ export default async function SpecialistDashboardSubscriptionPage({
   params: { lang: string } | Promise<{ lang: string }>;
 }) {
   const resolved = await Promise.resolve(params);
-  const lang: Lang = isSupportedLang(resolved.lang) ? resolved.lang : "ua";
+  const lang: Lang = resolveRouteLang(resolved.lang);
 
   const [{ specialist }, dict] = await Promise.all([
     getCurrentUserAndSpecialist(),

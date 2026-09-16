@@ -1,4 +1,5 @@
 import type { PaidPlanCode } from "./plans";
+import { resolveRouteLang } from "@/lib/i18n";
 
 export const CHECKOUT_RETURN_TARGETS = ["web", "native"] as const;
 export type CheckoutReturnTarget = (typeof CHECKOUT_RETURN_TARGETS)[number];
@@ -74,7 +75,7 @@ export function buildTrustedPlanPaymentCheckoutUrls(input: {
     };
   }
 
-  const lang = input.lang.trim() || "ua";
+  const lang = resolveRouteLang(input.lang);
   const billingPath = `/${lang}/specialist/dashboard/billing`;
   return {
     successUrl: `${base}${billingPath}?checkout=success&plan=${plan}`,
@@ -93,7 +94,7 @@ export function buildTrustedLegacyBillingCheckoutUrls(input: {
   }
 
   const base = input.siteUrl.replace(/\/+$/, "");
-  const lang = input.lang.trim() || "ua";
+  const lang = resolveRouteLang(input.lang);
   const billingPath = `/${lang}/specialist/dashboard/billing`;
   const plan = encodeURIComponent(input.planCode);
 

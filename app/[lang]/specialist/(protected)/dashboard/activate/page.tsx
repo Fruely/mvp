@@ -5,7 +5,7 @@ import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
 import PlanVisualPreview from "@/components/pricing/PlanVisualPreview";
 import { Alert, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { getDemandChannelCopy } from "@/lib/dashboard/demandChannelCopy";
-import { getDictionary, isSupportedLang, t, type Lang } from "@/lib/i18n";
+import { getDictionary, resolveRouteLang, t, type Lang } from "@/lib/i18n";
 import { PUBLIC_COMMERCIAL_PLAN_CATALOG } from "@/lib/billing/plans";
 import { isBillingPagePlanCheckoutEnabled } from "@/lib/billing/billingPageCheckoutReadiness";
 import { dashboardLinkSecondaryClass } from "@/components/dashboard/dashboardStyles";
@@ -24,7 +24,7 @@ export default async function SpecialistDemandChannelActivationPage({
   params: { lang: string } | Promise<{ lang: string }>;
 }) {
   const resolved = await Promise.resolve(params);
-  const lang: Lang = isSupportedLang(resolved.lang) ? resolved.lang : "ua";
+  const lang: Lang = resolveRouteLang(resolved.lang);
   const [dict, { specialist }] = await Promise.all([
     getDictionary(lang),
     getCurrentUserAndSpecialist(),

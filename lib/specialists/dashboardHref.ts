@@ -1,13 +1,11 @@
-import { isSupportedLang, type Lang } from "@/lib/i18n";
-
-const DEFAULT_LANG: Lang = "ua";
+import { DEFAULT_LANG, resolveRouteLang } from "@/lib/i18n";
 
 export function specialistDashboardHref(lang?: string | null): string {
-  const l = lang && isSupportedLang(lang) ? lang : DEFAULT_LANG;
+  const l = resolveRouteLang(lang);
   return `/${l}/specialist/dashboard`;
 }
 
-/** Client-only: uses `freuly_lang` cookie, falls back to ua */
+/** Client-only: uses `freuly_lang` cookie, falls back to DEFAULT_LANG (`ru`) */
 export function specialistDashboardHrefClient(): string {
   if (typeof document === "undefined") {
     return specialistDashboardHref(DEFAULT_LANG);

@@ -43,6 +43,7 @@ test("creator blocks subscription double-charge before PPL materialization", asy
   assert.match(src, /request_offer_access_grants/);
   assert.match(src, /request_offer_payments/);
   assert.match(src, /stripe\.checkout\.sessions\.create/);
+  assert.match(src, /locale: stripeCheckoutLocale\(input\.lang\)/);
   assert.doesNotMatch(src, /input\.price/i);
   assert.doesNotMatch(src, /input\.amount/i);
 });

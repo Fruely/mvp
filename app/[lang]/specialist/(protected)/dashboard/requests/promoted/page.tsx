@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import PromotedRequestPageView from "@/components/serviceRequests/PromotedRequestPageView";
-import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
+import { getDictionary, resolveRouteLang, type Lang } from "@/lib/i18n";
 import { loadPromotedRequestPageData } from "@/lib/serviceRequests/promotedRequestPageData";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
@@ -14,7 +14,7 @@ export default async function SpecialistPromotedRequestPage({
   params: { lang: string } | Promise<{ lang: string }>;
 }) {
   const resolved = await Promise.resolve(params);
-  const lang: Lang = isSupportedLang(resolved.lang) ? resolved.lang : "ua";
+  const lang: Lang = resolveRouteLang(resolved.lang);
   const dict = await getDictionary(lang);
 
   const { user, specialist } = await getCurrentUserAndSpecialist();
