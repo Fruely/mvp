@@ -5,6 +5,8 @@ import {
   hreflangCategory,
   toPublicCategorySlug,
 } from "@/lib/publicUrls";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getPublicSpecialistCountsByServiceCategory } from "@/lib/specialists/publicCategoryCounts";
 
 function titleCaseSlug(slug: string): string {
   return slug
@@ -12,6 +14,28 @@ function titleCaseSlug(slug: string): string {
     .filter(Boolean)
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
+}
+
+async function hasPublicSpecialists(slug: string): Promise<boolean | null> {
+  try {
+    const supabase = createSupabaseServerClient();
+    const { data: category, error } = await supabase
+      .from("categories")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (error) throw error;
+    const categoryId = typeof category?.id === "string" ? category.id : "";
+    if (!categoryId) return false;
+
+    const counts = await getPublicSpecialistCountsByServiceCategory(supabase, [categoryId]);
+    return (counts.get(categoryId) ?? 0) > 0;
+  } catch (error) {
+    // Fail open on transient backend errors so a temporary DB issue never emits noindex.
+    console.error("[category metadata] public specialist count unavailable", error);
+    return null;
+  }
 }
 
 export async function generateMetadata({
@@ -38,10 +62,15 @@ export async function generateMetadata({
 
   const canonical = categoryCanonicalUrl(lang, slug);
   const languages = hreflangCategory(slug);
+  const publicInventory = await hasPublicSpecialists(slug);
 
   return {
     title: t(dict, "category.metaTitle").replace(/\{\{\s*name\s*\}\}/g, label),
     description: t(dict, "category.metaDescription").replace(/\{\{\s*name\s*\}\}/g, label),
+    robots:
+      publicInventory === false
+        ? { index: false, follow: true }
+        : { index: true, follow: true },
     alternates: {
       canonical,
       languages,

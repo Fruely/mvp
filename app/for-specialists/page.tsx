@@ -20,6 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: m.title,
     description: m.description,
+    robots: { index: false, follow: true },
     alternates: { canonical: `${SITE_DOMAIN}/${lang}/for-specialists` },
   };
 }
