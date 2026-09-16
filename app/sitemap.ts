@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { SEO_CATEGORY_SLUGS } from "@/content/seo/categories";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
+import { getPublicSpecialistCountsByServiceCategory } from "@/lib/specialists/publicCategoryCounts";
 import { SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 import { isAsciiPublicPath, isAsciiSlug } from "@/lib/publicUrls";
 import { isExcludedFromPublicCategoryListing } from "@/lib/categories/uncategorizedSpecialistCategory";
@@ -127,14 +128,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const { data: categories } = await supabase
     .from("categories")
-    .select("slug")
+    .select("id, slug")
     .not("slug", "is", null)
     .neq("slug", "");
 
   if (categories) {
+    const categoryIds = categories
+      .map((row) => (typeof row.id === "string" ? row.id : ""))
+      .filter(Boolean);
+
+    let publicCounts = new Map<string, number>();
+    try {
+      publicCounts = await getPublicSpecialistCountsByServiceCategory(supabase, categoryIds);
+    } catch (error) {
+      console.error("[sitemap] public category counts unavailable", error);
+    }
+
     for (const row of categories) {
+      const id = typeof row.id === "string" ? row.id : "";
       const slug = typeof row.slug === "string" ? row.slug.trim() : "";
-      if (!isAsciiSlug(slug) || isExcludedFromPublicCategoryListing(slug)) continue;
+      if (!id || !isAsciiSlug(slug) || isExcludedFromPublicCategoryListing(slug)) continue;
+      if ((publicCounts.get(id) ?? 0) < 1) continue;
+
       for (const lang of LANGS) {
         const url = `${SITE_DOMAIN}/${lang}/specialists/${slug}`;
         if (!isAsciiPublicPath(url)) continue;
