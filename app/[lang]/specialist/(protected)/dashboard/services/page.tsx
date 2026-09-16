@@ -8,7 +8,7 @@ import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
 import type { SpecialistService } from "@/lib/dashboard/services";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
-import { getDictionary, isSupportedLang, t } from "@/lib/i18n";
+import { getDictionary, resolveRouteLang, t } from "@/lib/i18n";
 
 export default async function SpecialistDashboardServicesPage({
   params,
@@ -19,7 +19,7 @@ export default async function SpecialistDashboardServicesPage({
 }) {
   const resolved = await Promise.resolve(params);
   const resolvedSearch = await Promise.resolve(searchParams ?? {});
-  const lang = isSupportedLang(resolved.lang) ? resolved.lang : "ru";
+  const lang = resolveRouteLang(resolved.lang);
   const fromRaw = resolvedSearch.from;
   const fromParam = Array.isArray(fromRaw) ? fromRaw[0] : fromRaw;
   const showOnboardingReturn = fromParam === "onboarding";

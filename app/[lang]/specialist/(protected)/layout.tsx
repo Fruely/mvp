@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getDashboardContext } from "@/lib/dashboard/getDashboardContext";
 import DashboardShell from "@/components/dashboard/DashboardShell";
-import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
+import { getDictionary, resolveRouteLang, type Lang } from "@/lib/i18n";
 
 function isOnboardingAllowedPath(pathname: string, lang: Lang): boolean {
   const dashboardBase = `/${lang}/specialist/dashboard`;
@@ -33,7 +33,7 @@ export default async function SpecialistProtectedLayout({
   params: { lang: string } | Promise<{ lang: string }>;
 }) {
   const resolved = await Promise.resolve(params);
-  const lang: Lang = isSupportedLang(resolved.lang) ? resolved.lang : "ua";
+  const lang: Lang = resolveRouteLang(resolved.lang);
   const [ctx, dict] = await Promise.all([getDashboardContext(), getDictionary(lang)]);
   const { specialist, gate, plan } = ctx;
   const pathname = headers().get("x-freuly-pathname") || "";

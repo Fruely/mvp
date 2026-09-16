@@ -41,7 +41,7 @@ test("lead table exposes guarded purchase CTA from server decision only", async 
   assert.match(src, /decision\?\.state === "unlocked"/);
   assert.match(src, /decision\?\.state === "locked" && decision\.canPurchase/);
   assert.match(src, /request-offers\/checkout/);
-  assert.match(src, /JSON\.stringify\(\{ offer_id: offerId, lang \}\)/);
+  assert.match(src, /JSON\.stringify\(\{ offer_id: offerId, lang: uiLang \}\)/);
   assert.match(src, /checkout_url/);
   assert.doesNotMatch(src, /price_cents/);
   assert.doesNotMatch(src, /amount_cents/);

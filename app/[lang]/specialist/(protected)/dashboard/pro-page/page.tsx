@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import ProPageEditorClient from "@/components/specialist/pro/ProPageEditorClient";
-import { getDictionary, isSupportedLang } from "@/lib/i18n";
+import { getDictionary, resolveRouteLang } from "@/lib/i18n";
 import { loadSpecialistProPageEditor } from "@/lib/specialists/proPage/loadSpecialistProPageEditor";
 import { requireProPageEditorAccessForSpecialist } from "@/lib/specialists/proPage/requireProPageEditorAccess";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
@@ -15,7 +15,7 @@ export default async function SpecialistProPageEditorPage({
   params: { lang: string } | Promise<{ lang: string }>;
 }) {
   const resolved = await Promise.resolve(params);
-  const lang = isSupportedLang(resolved.lang) ? resolved.lang : "ru";
+  const lang = resolveRouteLang(resolved.lang);
   const [{ specialist }, dict] = await Promise.all([
     getCurrentUserAndSpecialist(),
     getDictionary(lang),

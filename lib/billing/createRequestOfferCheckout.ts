@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Lang } from "@/lib/i18n";
+import { stripeCheckoutLocale } from "@/lib/dashboard/directPplBuyCopy";
 import { getOrCreateStripeCustomerForSpecialist } from "@/lib/billing/billingCustomers";
 import { isRequestOfferCheckoutReady } from "@/lib/billing/requestOfferCheckoutReadiness";
 import { getStripeClient } from "@/lib/billing/stripeClient";
@@ -26,8 +27,8 @@ export type RequestOfferCheckoutResult =
 
 function productName(lang: Lang): string {
   if (lang === "de") return "Freuly Lead-Zugang";
-  if (lang === "ru") return "Доступ к заявке Freuly";
-  return "Доступ до заявки Freuly";
+  if (lang === "ua") return "Доступ до заявки Freuly";
+  return "Доступ к заявке Freuly";
 }
 
 function buildUrls(input: { siteUrl: string; lang: Lang; offerId: string }) {
@@ -134,6 +135,7 @@ export async function createRequestOfferCheckout(input: {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       customer: customerId,
+      locale: stripeCheckoutLocale(input.lang),
       line_items: [
         {
           quantity: 1,

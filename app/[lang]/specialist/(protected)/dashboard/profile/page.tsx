@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
 import { notify } from "@/lib/notifications/notify";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
-import { getDictionary, isSupportedLang, type Dictionary } from "@/lib/i18n";
+import { getDictionary, resolveRouteLang, type Dictionary } from "@/lib/i18n";
 import SpecialistDashboardEditor from "../SpecialistDashboardEditor";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
 import VerificationBanner from "../VerificationBanner";
@@ -19,7 +19,7 @@ export default async function SpecialistDashboardProfilePage({
   params: { lang: string } | Promise<{ lang: string }>;
 }) {
   const resolved = await Promise.resolve(params);
-  const lang = isSupportedLang(resolved.lang) ? resolved.lang : "ru";
+  const lang = resolveRouteLang(resolved.lang);
   const [{ specialist }, dict] = await Promise.all([
     getCurrentUserAndSpecialist(),
     getDictionary(lang),

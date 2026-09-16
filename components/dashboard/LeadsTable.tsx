@@ -16,7 +16,8 @@ import {
 } from "@/components/dashboard/dashboardStyles";
 import { Alert, Badge, Button, Card, Select, type BadgeVariant } from "@/components/ui";
 import { CONTACT_UNLOCK_REQUIRES_ACTIVE_PLAN } from "@/lib/billing/contactUnlockEntitlement";
-import { t, type Dictionary, type Lang } from "@/lib/i18n";
+import { directPplBuyLabel } from "@/lib/dashboard/directPplBuyCopy";
+import { resolveRouteLang, t, type Dictionary, type Lang } from "@/lib/i18n";
 
 const ALLOWED_STATUSES = ["new", "accepted", "contacted", "closed"] as const;
 type LeadStatus = (typeof ALLOWED_STATUSES)[number];
@@ -125,10 +126,9 @@ function commercialCopy(
 
 function buyLabel(decision: LeadAccessDecision, lang: Lang): string {
   if (decision.state !== "locked" || !decision.canPurchase) return "";
-  const price = moneyLabel(decision.priceCents, decision.currency, lang);
-  if (lang === "de") return `Lead kaufen – ${price}`;
-  if (lang === "ru") return `Купить заявку — ${price}`;
-  return `Купити заявку — ${price}`;
+  const uiLang = resolveRouteLang(lang);
+  const price = moneyLabel(decision.priceCents, decision.currency, uiLang);
+  return directPplBuyLabel(uiLang, price);
 }
 
 function paymentMessage(kind: "checking" | "cancelled" | "delayed", lang: Lang): string {
@@ -177,6 +177,7 @@ export default function LeadsTable({
   dict: Dictionary;
   billingHref: string;
 }) {
+  const uiLang = resolveRouteLang(lang);
   const router = useRouter();
   const paymentPollCountRef = useRef(0);
   const [leads, setLeads] = useState<DashboardLead[]>(initialLeads);
@@ -199,10 +200,10 @@ export default function LeadsTable({
     const offerId = params.get("offer")?.trim() || null;
     if (!payment) return;
 
-    const cleanHref = `/${lang}/specialist/dashboard/leads`;
+    const cleanHref = `/${uiLang}/specialist/dashboard/leads`;
 
     if (payment === "cancelled") {
-      setToast({ kind: "error", text: paymentMessage("cancelled", lang) });
+      setToast({ kind: "error", text: paymentMessage("cancelled", uiLang) });
       router.replace(cleanHref);
       return;
     }
@@ -223,19 +224,19 @@ export default function LeadsTable({
     }
 
     if (paymentPollCountRef.current >= 10) {
-      setToast({ kind: "error", text: paymentMessage("delayed", lang) });
+      setToast({ kind: "error", text: paymentMessage("delayed", uiLang) });
       router.replace(cleanHref);
       return;
     }
 
-    setToast({ kind: "success", text: paymentMessage("checking", lang) });
+    setToast({ kind: "success", text: paymentMessage("checking", uiLang) });
     const timer = window.setTimeout(() => {
       paymentPollCountRef.current += 1;
       router.refresh();
     }, 1500);
 
     return () => window.clearTimeout(timer);
-  }, [accessDecisions, dict, lang, router]);
+  }, [accessDecisions, dict, lang, router, uiLang]);
 
   async function buyLead(leadId: string, offerId: string) {
     setToast(null);
@@ -245,16 +246,16 @@ export default function LeadsTable({
       const response = await fetch("/api/billing/request-offers/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ offer_id: offerId, lang }),
+        body: JSON.stringify({ offer_id: offerId, lang: uiLang }),
       });
       const result = (await response.json().catch(() => ({}))) as CheckoutResponse;
 
       if (response.status === 409 && (result.error === "already_has_access" || result.error === "subscription_access")) {
         router.refresh();
         throw new Error(
-          lang === "de"
+          uiLang === "de"
             ? "Der Zugriff ist bereits verfügbar. Die Seite wird aktualisiert."
-            : lang === "ru"
+            : uiLang === "ru"
               ? "Доступ уже доступен. Обновляем страницу."
               : "Доступ уже доступний. Оновлюємо сторінку.",
         );
@@ -262,9 +263,9 @@ export default function LeadsTable({
 
       if (!response.ok || !result.checkout_url) {
         throw new Error(
-          lang === "de"
+          uiLang === "de"
             ? "Die Zahlung konnte nicht gestartet werden."
-            : lang === "ru"
+            : uiLang === "ru"
               ? "Не удалось запустить оплату заявки."
               : "Не вдалося запустити оплату заявки.",
         );
@@ -277,9 +278,9 @@ export default function LeadsTable({
         text:
           error instanceof Error
             ? error.message
-            : lang === "de"
+            : uiLang === "de"
               ? "Die Zahlung konnte nicht gestartet werden."
-              : lang === "ru"
+              : uiLang === "ru"
                 ? "Не удалось запустить оплату заявки."
                 : "Не вдалося запустити оплату заявки.",
       });
@@ -431,11 +432,11 @@ export default function LeadsTable({
                   ? (lead.status as LeadStatus)
                   : "new";
                 const dateLabel = lead.created_at
-                  ? new Date(lead.created_at).toLocaleString(localeTag(lang))
+                  ? new Date(lead.created_at).toLocaleString(localeTag(uiLang))
                   : "—";
                 const sourceLabel = lead.source?.trim() || null;
                 const decision = accessDecisions[lead.id];
-                const commercial = commercialCopy(decision, lang);
+                const commercial = commercialCopy(decision, uiLang);
                 const canUnlockThisLead = decision?.state === "unlocked";
                 const canBuyThisLead = decision?.state === "locked" && decision.canPurchase;
                 const needsSubscriptionFallback =
@@ -503,7 +504,7 @@ export default function LeadsTable({
                               disabled={Boolean(updatingById[lead.id])}
                               onClick={() => void buyLead(lead.id, decision.offerId)}
                             >
-                              {buyLabel(decision, lang)}
+                              {buyLabel(decision, uiLang)}
                             </Button>
                           ) : needsSubscriptionFallback ? (
                             <Link href={billingHref} className={`${dashboardLinkSecondaryClass} !min-h-9 h-9 !px-3 !text-xs`}>

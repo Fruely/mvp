@@ -11,7 +11,7 @@ import {
   needsServiceRadius,
   validatePublication,
 } from "@/lib/dashboard/publicationValidator";
-import { getDictionary, isSupportedLang, t, type Dictionary } from "@/lib/i18n";
+import { getDictionary, resolveRouteLang, t, type Dictionary } from "@/lib/i18n";
 import {
   GERMANY_COUNTRY_CODE,
   areValidCoordinates,
@@ -49,7 +49,7 @@ export default async function SpecialistDashboardOnboardingPage({
 }) {
   const resolvedParams = await Promise.resolve(params);
   const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
-  const lang = isSupportedLang(resolvedParams.lang) ? resolvedParams.lang : "ru";
+  const lang = resolveRouteLang(resolvedParams.lang);
   const requestedStep = normalizeStep(resolvedSearchParams.step);
   const showIncompleteProfileGateNotice = hasReason(
     resolvedSearchParams.reason,

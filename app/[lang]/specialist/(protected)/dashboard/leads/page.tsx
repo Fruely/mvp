@@ -18,7 +18,7 @@ import {
 } from "@/lib/leads/contactUnlock";
 import { loadDashboardLeadAccessDecisions } from "@/lib/leadEngine/accessDecisionBatch";
 import { specialistLangHomePath } from "@/lib/specialists/navigation";
-import { getDictionary, isSupportedLang, type Lang } from "@/lib/i18n";
+import { getDictionary, resolveRouteLang, type Lang } from "@/lib/i18n";
 
 export default async function SpecialistDashboardLeadsPage({
   params,
@@ -26,7 +26,7 @@ export default async function SpecialistDashboardLeadsPage({
   params: { lang: string } | Promise<{ lang: string }>;
 }) {
   const resolved = await Promise.resolve(params);
-  const lang: Lang = isSupportedLang(resolved.lang) ? resolved.lang : "ua";
+  const lang: Lang = resolveRouteLang(resolved.lang);
   const [{ specialist }, dict] = await Promise.all([
     getCurrentUserAndSpecialist(),
     getDictionary(lang),

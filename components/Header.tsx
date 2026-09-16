@@ -8,12 +8,7 @@ import FreulyLogo from "@/components/brand/FreulyLogo";
 import { publicLinkPrimaryClass } from "@/components/public/publicStyles";
 import { isPrivateDashboardPath } from "@/lib/dashboard/isPrivateDashboardPath";
 
-const fallbackDict: Dictionary = {
-  "header.nav.pricing": "Тарифи",
-  "header.nav.partners": "Партнерам",
-  "header.cabinet": "Кабінет",
-  "header.joinButton": "Приєднатися до Freuly",
-};
+const fallbackDict: Dictionary = {};
 
 type HeaderProps = {
   lang: string;

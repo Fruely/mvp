@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
 import { dashboardPageStackClass } from "@/components/dashboard/dashboardStyles";
 import { Badge, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
-import { isSupportedLang } from "@/lib/i18n";
+import { resolveRouteLang } from "@/lib/i18n";
 import {
   VIDEO_GUIDE_EMBED_URL,
   VIDEO_GUIDE_ITEMS,
@@ -54,7 +54,7 @@ export default async function SpecialistDashboardVideoGuidePage({
   params: { lang: string } | Promise<{ lang: string }>;
 }) {
   const resolvedParams = await Promise.resolve(params);
-  const lang = isSupportedLang(resolvedParams.lang) ? resolvedParams.lang : "ru";
+  const lang = resolveRouteLang(resolvedParams.lang);
   const activeLang = lang as "ru" | "ua" | "de";
 
   const pageTitleByLang: Record<"ru" | "ua" | "de", string> = {

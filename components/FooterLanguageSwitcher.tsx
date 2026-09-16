@@ -48,6 +48,9 @@ export default function FooterLanguageSwitcher({ lang, labels }: Props) {
     if (hasPrefix) {
       return `/${code}${rest === "/" ? "" : rest}${suffix}`;
     }
+    if (isPrivateDashboardPath(pathname)) {
+      return `/${code}${pathname}${suffix}`;
+    }
     return `/${code}${suffix}`;
   };
 
