@@ -36,7 +36,8 @@ test("public live demand feed never selects client contact fields or description
   assert.match(publicFeedSource, /public_title, public_summary/);
   assert.match(publicFeedSource, /\.eq\("status", "published"\)/);
   assert.match(publicFeedSource, /\.is\("closed_at", null\)/);
-  assert.match(publicFeedSource, /published_at, locale/);
+  assert.match(publicFeedSource, /localized_copy/);
+  assert.match(publicFeedSource, /PROMOTION_PUBLIC_SELECT_WITHOUT_LOCALIZED_COPY|WITHOUT_LOCALIZED_COPY|without localized_copy|fallbackPromotionRows/);
   assert.doesNotMatch(publicFeedSource, /\.eq\("locale", lang\)/);
   assert.match(publicFeedSource, /category_id, category_text/);
   assert.doesNotMatch(publicFeedSource, /client_name/);
@@ -44,5 +45,6 @@ test("public live demand feed never selects client contact fields or description
   assert.doesNotMatch(publicFeedSource, /client_phone/);
   assert.doesNotMatch(publicFeedSource, /\.select\([^\n]*description/);
   assert.match(publicFeedSource, /ACTIVE_REQUEST_STATUSES/);
-  assert.match(publicFeedSource, /MAX_AGE_HOURS = 72/);
+  assert.match(publicFeedSource, /MAX_AGE_HOURS = LIVE_DEMAND_MAX_AGE_HOURS/);
+  assert.match(publicFeedSource, /LIVE_DEMAND_MAX_AGE_HOURS/);
 });

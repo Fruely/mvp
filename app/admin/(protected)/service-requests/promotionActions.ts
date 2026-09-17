@@ -27,7 +27,12 @@ function revalidateAdminServiceRequests() {
 
 export async function savePromotionDraftAction(
   serviceRequestId: string,
-  input: { locale: string; public_title: string; public_summary: string },
+  input: {
+    locale: string;
+    public_title: string;
+    public_summary: string;
+    copies?: Record<string, { title?: string; summary?: string }>;
+  },
 ): Promise<PromotionActionResult> {
   try {
     const promotion = await savePromotionDraftAdmin(serviceRequestId, input);

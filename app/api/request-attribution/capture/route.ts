@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   }
 
   const promotion = await getPublishedPromotionForCapture(publicToken);
-  if (!promotion || promotion.locale !== lang) {
+  if (!promotion) {
     return new NextResponse(null, { status: 404 });
   }
 

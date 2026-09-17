@@ -4,11 +4,13 @@ import {
   PROMOTION_TITLE_MAX_LEN,
   type PromotionLocale,
 } from "./promotionConstants";
+import { parseLocalizedCopy, seedLocalizedCopy } from "./localizedPublicCopy";
 
 export type PromotionDraftInput = {
   locale?: unknown;
   public_title?: unknown;
   public_summary?: unknown;
+  copies?: unknown;
   public_token?: unknown;
   status?: unknown;
   service_request_id?: unknown;
@@ -18,6 +20,7 @@ export type ValidatedPromotionDraft = {
   locale: PromotionLocale;
   public_title: string;
   public_summary: string;
+  localized_copy: ReturnType<typeof parseLocalizedCopy>;
 };
 
 export type PromotionValidationError = { error: string };
@@ -50,7 +53,9 @@ export function validatePromotionDraftInput(
     return { error: "invalid locale" };
   }
 
-  const public_title = str(body.public_title);
+  const parsedCopies = parseLocalizedCopy(body.copies);
+  const sourceCopy = parsedCopies[localeRaw];
+  const public_title = str(sourceCopy?.title) ?? str(body.public_title);
   if (!public_title) {
     return { error: "public_title is required" };
   }
@@ -58,7 +63,7 @@ export function validatePromotionDraftInput(
     return { error: "public_title is too long" };
   }
 
-  const public_summary = str(body.public_summary);
+  const public_summary = str(sourceCopy?.summary) ?? str(body.public_summary);
   if (!public_summary) {
     return { error: "public_summary is required" };
   }
@@ -66,7 +71,28 @@ export function validatePromotionDraftInput(
     return { error: "public_summary is too long" };
   }
 
-  return { locale: localeRaw, public_title, public_summary };
+  for (const locale of PROMOTION_LOCALES) {
+    const copy = parsedCopies[locale];
+    if (!copy) continue;
+    if (copy.title.length > PROMOTION_TITLE_MAX_LEN) {
+      return { error: "public_title is too long" };
+    }
+    if (copy.summary.length > PROMOTION_SUMMARY_MAX_LEN) {
+      return { error: "public_summary is too long" };
+    }
+  }
+
+  return {
+    locale: localeRaw,
+    public_title,
+    public_summary,
+    localized_copy: seedLocalizedCopy({
+      locale: localeRaw,
+      title: public_title,
+      summary: public_summary,
+      existing: parsedCopies,
+    }),
+  };
 }
 
 export function isPublishedPromotionVisible(row: {

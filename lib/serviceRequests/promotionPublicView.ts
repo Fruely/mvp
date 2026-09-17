@@ -2,6 +2,7 @@ import "server-only";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { formatServiceTimingDisplay } from "@/lib/serviceRequests/serviceTiming";
+import { isPromotionLocale, resolvePublicCardCopy } from "./localizedPublicCopy";
 import { getPublishedPromotionForCapture } from "./promotionPublicData";
 
 /** Safe service_request fields for public promoted preview — no PII. */
@@ -29,9 +30,26 @@ function buildLocationLabel(city: string | null, postal_code: string | null): st
 
 export async function getPublishedPromotionPublicView(
   publicToken: string,
+  pageLang?: string,
 ): Promise<PublishedPromotionPublicView | null> {
   const promotion = await getPublishedPromotionForCapture(publicToken);
   if (!promotion) return null;
+
+  const locale =
+    pageLang && isPromotionLocale(pageLang)
+      ? pageLang
+      : isPromotionLocale(promotion.locale)
+        ? promotion.locale
+        : "ru";
+  const copy = resolvePublicCardCopy({
+    lang: locale,
+    publicTitle: promotion.public_title,
+    publicSummary: promotion.public_summary,
+    localizedCopy: promotion.localized_copy,
+    sourceLocale: promotion.locale,
+  });
+
+  const { localized_copy: _localizedCopy, ...safePromotion } = promotion;
 
   const supabase = createSupabaseServerClient();
   const { data: promoRow } = await supabase
@@ -42,7 +60,9 @@ export async function getPublishedPromotionPublicView(
 
   if (!promoRow?.service_request_id) {
     return {
-      ...promotion,
+      ...safePromotion,
+      public_title: copy.title,
+      public_summary: copy.summary,
       public_token: publicToken.trim(),
       when_label: null,
       work_format: null,
@@ -57,13 +77,10 @@ export async function getPublishedPromotionPublicView(
     .eq("id", promoRow.service_request_id)
     .maybeSingle();
 
-  const locale =
-    promotion.locale === "de" || promotion.locale === "ua" || promotion.locale === "ru"
-      ? promotion.locale
-      : "ru";
-
   return {
-    ...promotion,
+    ...safePromotion,
+    public_title: copy.title,
+    public_summary: copy.summary,
     public_token: (promoRow.public_token as string) ?? publicToken.trim(),
     when_label: requestRow
       ? formatServiceTimingDisplay(requestRow, locale)

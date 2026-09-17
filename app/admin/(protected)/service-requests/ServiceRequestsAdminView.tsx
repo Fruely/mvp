@@ -160,7 +160,7 @@ export default function ServiceRequestsAdminView({
               <ServiceRequestPromotionBlock
                 serviceRequestId={detail.id}
                 initialPromotion={promotion}
-                defaultLocale={detail.locale || "ru"}
+                defaultLocale={detail.preferred_language || detail.locale || "ru"}
               />
             </div>
           )}

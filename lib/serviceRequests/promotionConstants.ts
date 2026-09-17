@@ -11,9 +11,14 @@ export const PROMOTION_SUMMARY_MAX_LEN = 4000;
 
 /** Whitelist for public server reads — no join with service_requests. */
 export const PROMOTION_PUBLIC_SELECT =
+  "public_title, public_summary, locale, localized_copy, published_at, status, closed_at";
+
+/** Required compatibility until 2026-09-17 localized_copy is applied in production. */
+export const PROMOTION_PUBLIC_SELECT_WITHOUT_LOCALIZED_COPY =
   "public_title, public_summary, locale, published_at, status, closed_at";
 
 export const PROMOTION_CAPTURE_SELECT = `id, ${PROMOTION_PUBLIC_SELECT}`;
+export const PROMOTION_CAPTURE_SELECT_WITHOUT_LOCALIZED_COPY = `id, ${PROMOTION_PUBLIC_SELECT_WITHOUT_LOCALIZED_COPY}`;
 
 export const PROMOTION_ADMIN_SELECT =
-  "id, service_request_id, public_token, locale, public_title, public_summary, status, created_at, updated_at, published_at, closed_at";
+  "id, service_request_id, public_token, locale, public_title, public_summary, localized_copy, status, created_at, updated_at, published_at, closed_at";
