@@ -15,10 +15,15 @@ export default async function LangLayout({
 }) {
   const resolved = await Promise.resolve(params);
   const lang: Lang = resolveRouteLang(resolved.lang);
+  const pathname = headers().get("x-freuly-pathname") || "";
+
   if (!isSupportedLang(typeof resolved.lang === "string" ? resolved.lang : "")) {
-    const pathname = headers().get("x-freuly-pathname") || "";
     const rest = pathname.split("/").filter(Boolean).slice(1).join("/");
     redirect(`/${lang}${rest ? `/${rest}` : ""}`);
+  }
+
+  if (pathname === `/${lang}/request`) {
+    return <div className="min-h-[100dvh] bg-freuly-page">{children}</div>;
   }
 
   let dict;

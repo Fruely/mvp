@@ -10,6 +10,7 @@ import { getCategoryTitle } from "@/lib/getCategoryTitle";
 import { toCategoryTitleLang } from "@/lib/i18n/toCategoryTitleLang";
 import InstallFreuly from "@/components/pwa/InstallFreuly";
 import HomeServiceSearchSection from "@/components/home/HomeServiceSearchSection";
+import LiveRequestDrum from "@/components/home/LiveRequestDrum";
 import VariantCCategoryIcon from "@/components/home/variantC/VariantCCategoryIcon";
 import VariantCSpecialistCard from "@/components/home/variantC/VariantCSpecialistCard";
 import VariantCHowItWorksSteps from "@/components/home/variantC/VariantCHowItWorksSteps";
@@ -165,6 +166,15 @@ export default function HomeClient({
             </p>
           </div>
 
+          <div className="mt-8 flex justify-center">
+            <Link
+              href={`/${lang}/request`}
+              className="inline-flex min-h-12 items-center justify-center rounded-xl bg-freuly-primary px-7 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-freuly-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-freuly-primary"
+            >
+              {t(dict, "home.variantC.hero.requestCta")}
+            </Link>
+          </div>
+
           <div className="mx-auto mt-8 w-full max-w-xl text-left md:hidden">
             <InstallFreuly
               lang={lang}
@@ -185,9 +195,12 @@ export default function HomeClient({
             }
           >
             <div id="home-service-search">
+              <p className="mb-3 text-center text-sm font-medium text-freuly-text-secondary">
+                {t(dict, "home.variantC.hero.searchAlternative")}
+              </p>
               <HomeServiceSearchSection
                 lang={lang}
-                className="mx-auto mt-10 max-w-[820px]"
+                className="mx-auto mt-4 max-w-[820px]"
               />
             </div>
           </Suspense>
@@ -228,6 +241,8 @@ export default function HomeClient({
           </div>
         </div>
       </section>
+
+      <LiveRequestDrum lang={lang} />
 
       {/* Categories */}
       <section className="bg-white px-freuly-4 py-16 sm:px-freuly-6 sm:py-20 lg:px-16 lg:py-24">

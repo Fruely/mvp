@@ -1,32 +1,44 @@
-import { redirect } from "next/navigation";
-import { isSupportedLang } from "@/lib/i18n";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import ClientDemandEntry from "@/components/serviceRequests/ClientDemandEntry";
+import { isSupportedLang, type Lang } from "@/lib/i18n";
 
-function toQueryString(searchParams: Record<string, string | string[] | undefined>) {
-  const query = new URLSearchParams();
+export const dynamic = "force-dynamic";
 
-  for (const [key, value] of Object.entries(searchParams)) {
-    if (typeof value === "string") {
-      query.append(key, value);
-      continue;
-    }
+const TITLE: Record<Lang, string> = {
+  ru: "Поставить задачу | Freuly",
+  ua: "Поставити завдання | Freuly",
+  de: "Aufgabe stellen | Freuly",
+};
 
-    if (Array.isArray(value)) {
-      for (const item of value) query.append(key, item);
-    }
+const DESCRIPTION: Record<Lang, string> = {
+  ru: "Опишите задачу — Freuly подберёт подходящего специалиста.",
+  ua: "Опишіть завдання — Freuly підбере відповідного спеціаліста.",
+  de: "Beschreiben Sie Ihre Aufgabe – Freuly findet eine passende Fachkraft.",
+};
+
+export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
+  if (!isSupportedLang(params.lang)) {
+    return { robots: { index: false, follow: false } };
   }
-
-  const serialized = query.toString();
-  return serialized ? `?${serialized}` : "";
+  const lang = params.lang as Lang;
+  return {
+    title: TITLE[lang],
+    description: DESCRIPTION[lang],
+    robots: { index: false, follow: false },
+  };
 }
 
-export default function RequestPage({
-  params,
-  searchParams,
-}: {
-  params: { lang: string };
-  searchParams: Record<string, string | string[] | undefined>;
-}) {
-  const lang = isSupportedLang(params.lang) ? params.lang : "ua";
+export default function ClientRequestEntryPage({ params }: { params: { lang: string } }) {
+  if (!isSupportedLang(params.lang)) notFound();
+  const lang = params.lang as Lang;
 
-  redirect(`/${lang}/request-service${toQueryString(searchParams)}`);
+  return (
+    <main className="min-h-[100dvh] bg-[#f8f7f5] px-freuly-4 py-8 sm:px-freuly-6 sm:py-12">
+      <div className="mx-auto mb-8 flex max-w-2xl items-center justify-center">
+        <div className="text-2xl font-black tracking-tight text-freuly-text-primary">Freuly</div>
+      </div>
+      <ClientDemandEntry lang={lang} />
+    </main>
+  );
 }
