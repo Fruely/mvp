@@ -2,10 +2,7 @@ import "server-only";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { assertAdminSession } from "@/lib/adminSession";
-import {
-  PROMOTION_ADMIN_SELECT,
-  type PromotionStatus,
-} from "./promotionConstants";
+import { PROMOTION_ADMIN_SELECT, PROMOTION_LOCALES, type PromotionStatus } from "./promotionConstants";
 import { buildPublicPromotionAcceptUrl, buildPublicPromotionUrl } from "./promotionUrl";
 import {
   generatePromotionPublicToken,
@@ -15,6 +12,8 @@ import {
   validatePromotionDraftInput,
   type ValidatedPromotionDraft,
 } from "./promotionValidation";
+import { parseLocalizedCopy, isPromotionLocale, type LocalizedPublicCopy } from "./localizedPublicCopy";
+import { prepareLocalizedCopiesForPublish } from "./translatePublicCopy";
 
 export type ServiceRequestPromotionAdmin = {
   id: string;
@@ -23,6 +22,7 @@ export type ServiceRequestPromotionAdmin = {
   locale: string;
   public_title: string;
   public_summary: string;
+  localized_copy: LocalizedPublicCopy;
   status: PromotionStatus;
   created_at: string;
   updated_at: string;
@@ -30,6 +30,8 @@ export type ServiceRequestPromotionAdmin = {
   closed_at: string | null;
   public_url: string | null;
   accept_url: string | null;
+  public_urls: Record<(typeof PROMOTION_LOCALES)[number], string> | null;
+  accept_urls: Record<(typeof PROMOTION_LOCALES)[number], string> | null;
 };
 
 const TOKEN_INSERT_MAX_RETRIES = 5;
@@ -69,6 +71,7 @@ async function insertPromotionWithToken(
         locale: draft.locale,
         public_title: draft.public_title,
         public_summary: draft.public_summary,
+        localized_copy: draft.localized_copy,
         status: "draft",
         created_at: nowIso,
         updated_at: nowIso,
@@ -95,12 +98,29 @@ async function insertPromotionWithToken(
   throw new Error("TOKEN_GENERATION_FAILED");
 }
 
-function mapPromotionAdminRow(row: ServiceRequestPromotionAdmin): ServiceRequestPromotionAdmin {
+function mapPromotionAdminRow(row: Omit<ServiceRequestPromotionAdmin, "public_url" | "accept_url" | "public_urls" | "accept_urls" | "localized_copy"> & { localized_copy?: unknown }): ServiceRequestPromotionAdmin {
   const published = row.status === "published";
+  const public_urls = published
+    ? {
+        ru: buildPublicPromotionUrl("ru", row.public_token),
+        ua: buildPublicPromotionUrl("ua", row.public_token),
+        de: buildPublicPromotionUrl("de", row.public_token),
+      }
+    : null;
+  const accept_urls = published
+    ? {
+        ru: buildPublicPromotionAcceptUrl("ru", row.public_token),
+        ua: buildPublicPromotionAcceptUrl("ua", row.public_token),
+        de: buildPublicPromotionAcceptUrl("de", row.public_token),
+      }
+    : null;
   return {
     ...row,
-    public_url: published ? buildPublicPromotionUrl(row.locale, row.public_token) : null,
-    accept_url: published ? buildPublicPromotionAcceptUrl(row.locale, row.public_token) : null,
+    localized_copy: parseLocalizedCopy(row.localized_copy),
+    public_url: public_urls ? public_urls.ru : null,
+    accept_url: accept_urls ? accept_urls.ru : null,
+    public_urls,
+    accept_urls,
   };
 }
 
@@ -153,6 +173,7 @@ export async function savePromotionDraftAdmin(
       locale: validated.locale,
       public_title: validated.public_title,
       public_summary: validated.public_summary,
+      localized_copy: validated.localized_copy,
       updated_at: nowIso,
     })
     .eq("service_request_id", serviceRequestId)
@@ -178,22 +199,29 @@ export async function publishPromotionAdmin(
     throw new Error("NOT_FOUND");
   }
 
-  if (
-    existing.status === "published" &&
-    existing.published_at &&
-    !existing.closed_at
-  ) {
-    return existing;
+  if (!isPromotionLocale(existing.locale)) {
+    throw new Error("INVALID_INPUT");
   }
 
   const draftCheck = validatePromotionDraftInput({
     locale: existing.locale,
     public_title: existing.public_title,
     public_summary: existing.public_summary,
+    copies: existing.localized_copy,
   });
   if ("error" in draftCheck) {
     throw new Error("INVALID_INPUT");
   }
+
+  const localized_copy = await prepareLocalizedCopiesForPublish({
+    sourceLocale: existing.locale,
+    title: existing.public_title,
+    summary: existing.public_summary,
+    existing: existing.localized_copy,
+  });
+
+  const alreadyPublished =
+    existing.status === "published" && existing.published_at && !existing.closed_at;
 
   const supabase = createSupabaseServerClient();
   const nowIso = new Date().toISOString();
@@ -201,8 +229,9 @@ export async function publishPromotionAdmin(
     .from("service_request_promotions")
     .update({
       status: "published",
-      published_at: nowIso,
+      published_at: alreadyPublished ? existing.published_at : nowIso,
       closed_at: null,
+      localized_copy,
       updated_at: nowIso,
     })
     .eq("service_request_id", serviceRequestId)

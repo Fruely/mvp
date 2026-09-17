@@ -72,7 +72,7 @@ export async function createPromotedReservationCheckout(input: {
   }
 
   const promotion = await getPublishedPromotionForCapture(input.publicToken);
-  if (!promotion || promotion.locale !== input.lang) {
+  if (!promotion) {
     return { ok: false, reason: "not_found" };
   }
 

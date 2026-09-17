@@ -44,8 +44,8 @@ export default async function PromotedRequestAcceptPage({
   }
 
   const lang = params.lang as Lang;
-  const view = await getPublishedPromotionPublicView(params.public_token);
-  if (!view || view.locale !== lang) {
+  const view = await getPublishedPromotionPublicView(params.public_token, lang);
+  if (!view) {
     notFound();
   }
 

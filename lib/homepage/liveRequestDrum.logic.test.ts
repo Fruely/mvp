@@ -9,8 +9,7 @@ const source = fs.readFileSync(
 );
 
 test("live request drum uses the existing public promotion path, not a parallel marketplace", () => {
-  assert.match(source, /requestPromotionPath/);
-  assert.match(source, /cardLinkLang/);
+  assert.match(source, /requestPromotionPath\(lang, item\.id\)/);
   assert.match(source, /become-specialist/);
   assert.match(source, /\/login\?next=/);
   assert.doesNotMatch(source, /request=\$\{encodeURIComponent/);

@@ -47,9 +47,9 @@ export default async function PublicPromotionPage({
   }
 
   const lang = params.lang as Lang;
-  const view = await getPublishedPromotionPublicView(params.public_token);
+  const view = await getPublishedPromotionPublicView(params.public_token, lang);
 
-  if (!view || view.locale !== lang) {
+  if (!view) {
     notFound();
   }
 
