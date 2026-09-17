@@ -40,7 +40,7 @@ const COPY: Record<
   },
 };
 
-type RecentRequest = {
+export type RecentRequest = {
   id: string;
   title: string;
   summary: string;
@@ -49,6 +49,11 @@ type RecentRequest = {
   work_format: string | null;
   city: string | null;
   postal_code: string | null;
+};
+
+type Props = {
+  lang: Lang;
+  previewItems?: RecentRequest[];
 };
 
 function localeFor(lang: Lang): string {
@@ -98,13 +103,20 @@ function placeLabel(item: RecentRequest): string | null {
   return [item.postal_code, item.city].filter(Boolean).join(" ") || null;
 }
 
-export default function LiveRequestDrum({ lang }: { lang: Lang }) {
+export default function LiveRequestDrum({ lang, previewItems }: Props) {
   const copy = COPY[lang];
-  const [items, setItems] = useState<RecentRequest[]>([]);
+  const isPreview = Boolean(previewItems);
+  const [items, setItems] = useState<RecentRequest[]>(previewItems ?? []);
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
 
   useEffect(() => {
+    if (previewItems) {
+      setItems(previewItems);
+      setActive(0);
+      return;
+    }
+
     let cancelled = false;
 
     async function load() {
@@ -129,7 +141,7 @@ export default function LiveRequestDrum({ lang }: { lang: Lang }) {
       cancelled = true;
       window.clearInterval(refreshTimer);
     };
-  }, [lang]);
+  }, [lang, previewItems]);
 
   useEffect(() => {
     if (paused || items.length <= 1 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -159,6 +171,11 @@ export default function LiveRequestDrum({ lang }: { lang: Lang }) {
     >
       <div className="mx-auto w-full max-w-[980px]">
         <div className="mb-7 text-center">
+          {isPreview ? (
+            <p className="mx-auto mb-4 w-fit rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
+              Предпросмотр · тестовые данные не опубликованы
+            </p>
+          ) : null}
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-freuly-primary">
             {copy.eyebrow}
           </p>
