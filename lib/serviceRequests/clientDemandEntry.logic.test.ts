@@ -32,14 +32,15 @@ test("request entry is a dedicated page, not a redirect to the old full form", (
 });
 
 test("public live demand feed never selects client contact fields or description", () => {
-  const selectCall = publicFeedSource.match(/\.select\("([^"]+)"\)/)?.[1] ?? "";
-  assert.ok(selectCall.includes("public_id"));
-  assert.ok(selectCall.includes("category_id"));
-  assert.ok(selectCall.includes("preferred_language"));
-  assert.ok(!selectCall.includes("client_name"));
-  assert.ok(!selectCall.includes("client_email"));
-  assert.ok(!selectCall.includes("client_phone"));
-  assert.ok(!selectCall.includes("description"));
-  assert.match(publicFeedSource, /ACTIVE_STATUSES/);
+  assert.match(publicFeedSource, /from\("service_request_promotions"\)/);
+  assert.match(publicFeedSource, /public_title, public_summary/);
+  assert.match(publicFeedSource, /\.eq\("status", "published"\)/);
+  assert.match(publicFeedSource, /\.is\("closed_at", null\)/);
+  assert.match(publicFeedSource, /\.eq\("locale", lang\)/);
+  assert.doesNotMatch(publicFeedSource, /client_name/);
+  assert.doesNotMatch(publicFeedSource, /client_email/);
+  assert.doesNotMatch(publicFeedSource, /client_phone/);
+  assert.doesNotMatch(publicFeedSource, /\.select\([^\n]*description/);
+  assert.match(publicFeedSource, /ACTIVE_REQUEST_STATUSES/);
   assert.match(publicFeedSource, /MAX_AGE_HOURS = 72/);
 });
