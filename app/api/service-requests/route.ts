@@ -12,6 +12,8 @@ import { findCampaignByIdForAttribution } from "@/lib/clientCampaignLinks/servic
 import {
   ACQUISITION_COOKIE_NAME,
   parseAcquisitionCookie,
+  parseAcquisitionSnapshot,
+  pickAcquisitionForServiceRequest,
 } from "@/lib/acquisition/firstTouch";
 import { SERVICE_REQUEST_SOURCE } from "@/lib/serviceRequests/constants";
 import { generateServiceRequestPublicId } from "@/lib/serviceRequests/publicId";
@@ -170,7 +172,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const acquisition = parseAcquisitionCookie(cookies().get(ACQUISITION_COOKIE_NAME)?.value);
+    const cookieAcquisition = parseAcquisitionCookie(cookies().get(ACQUISITION_COOKIE_NAME)?.value);
+    const bodyAcquisition = parseAcquisitionSnapshot(
+      body && typeof body === "object" ? (body as { acquisition?: unknown }).acquisition : null,
+    );
+    const acquisition = pickAcquisitionForServiceRequest(bodyAcquisition, cookieAcquisition);
 
     let inserted: { public_id: string; created_at: string } | null = null;
     let creationReplay: { kind: "create" } | { kind: "replay" } = { kind: "create" };

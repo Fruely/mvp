@@ -1,6 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import {
+  PAID_REQUEST_LANGS,
+  PAID_REQUEST_UTM_DEFAULTS,
+  PAID_REQUEST_UTM_KEYS,
+  buildPaidRequestUrl,
+  type PaidRequestUtm,
+} from "@/lib/serviceRequests/paidRequestEntry";
 
 const marketingLinks = [
   {
@@ -26,9 +33,70 @@ const marketingLinks = [
   },
 ] as const;
 
+const UTM_FIELD_LABELS: Record<(typeof PAID_REQUEST_UTM_KEYS)[number], string> = {
+  utm_source: "utm_source",
+  utm_medium: "utm_medium",
+  utm_campaign: "utm_campaign",
+  utm_content: "utm_content",
+  utm_term: "utm_term",
+};
+
+function LinkRow({
+  label,
+  url,
+  copiedUrl,
+  onCopy,
+}: {
+  label: string;
+  url: string;
+  copiedUrl: string | null;
+  onCopy: (url: string) => void;
+}) {
+  return (
+    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <h3 className="text-sm font-semibold text-gray-900">{label}</h3>
+        <span className="rounded-full bg-white px-2 py-1 text-xs font-medium text-gray-500">
+          {url.includes("/find") ? "Search" : "Request"}
+        </span>
+      </div>
+      <p className="break-all rounded-md bg-white px-3 py-2 font-mono text-sm text-gray-700 ring-1 ring-gray-200">
+        {url}
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => onCopy(url)}
+          className="rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-gray-700"
+        >
+          {copiedUrl === url ? "Скопировано" : "Копировать"}
+        </button>
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+        >
+          Открыть
+        </a>
+      </div>
+    </div>
+  );
+}
+
 export default function MarketingLinksPage() {
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [utm, setUtm] = useState<PaidRequestUtm>({ ...PAID_REQUEST_UTM_DEFAULTS, utm_campaign: "" });
+
+  const campaignUrls = useMemo(
+    () =>
+      PAID_REQUEST_LANGS.map((lang) => ({
+        lang: lang.toUpperCase(),
+        url: buildPaidRequestUrl(lang, utm, "https://freuly.de"),
+      })),
+    [utm],
+  );
 
   async function copyUrl(url: string) {
     setError(null);
@@ -41,39 +109,6 @@ export default function MarketingLinksPage() {
     } catch {
       setError("Не удалось скопировать ссылку.");
     }
-  }
-
-  function LinkRow({ label, url }: { label: string; url: string }) {
-    return (
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <h3 className="text-sm font-semibold text-gray-900">{label}</h3>
-          <span className="rounded-full bg-white px-2 py-1 text-xs font-medium text-gray-500">
-            {url.endsWith("/find") ? "Search" : "Request"}
-          </span>
-        </div>
-        <p className="break-all rounded-md bg-white px-3 py-2 font-mono text-sm text-gray-700 ring-1 ring-gray-200">
-          {url}
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => copyUrl(url)}
-            className="rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-gray-700"
-          >
-            {copiedUrl === url ? "Скопировано" : "Копировать"}
-          </button>
-          <a
-            href={url}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
-          >
-            Открыть
-          </a>
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -93,6 +128,38 @@ export default function MarketingLinksPage() {
           </div>
         ) : null}
 
+        <section className="mb-8 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-bold text-gray-900">Рекламные ссылки на заявку</h2>
+          <p className="mt-1 text-sm text-gray-600">
+            Пользователь сразу попадает на первый шаг формы. UTM сохраняются до отправки заявки.
+            Язык заявки клиент выбирает отдельно и он не зависит от языка рекламной ссылки.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {PAID_REQUEST_UTM_KEYS.map((key) => (
+              <label key={key} className="block text-sm">
+                <span className="font-medium text-gray-700">{UTM_FIELD_LABELS[key]}</span>
+                <input
+                  value={utm[key] ?? ""}
+                  onChange={(event) => setUtm((current) => ({ ...current, [key]: event.target.value }))}
+                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 font-mono text-sm"
+                  placeholder={key === "utm_campaign" ? "lead_form_sept" : undefined}
+                />
+              </label>
+            ))}
+          </div>
+          <div className="mt-4 space-y-3">
+            {campaignUrls.map((item) => (
+              <LinkRow
+                key={item.lang}
+                label={`${item.lang} · рекламная заявка`}
+                url={item.url}
+                copiedUrl={copiedUrl}
+                onCopy={copyUrl}
+              />
+            ))}
+          </div>
+        </section>
+
         <div className="grid gap-6 lg:grid-cols-3">
           {marketingLinks.map((group) => (
             <section key={group.lang} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
@@ -103,8 +170,8 @@ export default function MarketingLinksPage() {
                 </span>
               </div>
               <div className="space-y-4">
-                <LinkRow label={group.searchLabel} url={group.searchUrl} />
-                <LinkRow label={group.requestLabel} url={group.requestUrl} />
+                <LinkRow label={group.searchLabel} url={group.searchUrl} copiedUrl={copiedUrl} onCopy={copyUrl} />
+                <LinkRow label={group.requestLabel} url={group.requestUrl} copiedUrl={copiedUrl} onCopy={copyUrl} />
               </div>
             </section>
           ))}

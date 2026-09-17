@@ -1,11 +1,15 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui";
 import { privacyPath } from "@/lib/legal/paths";
 import type { Lang } from "@/lib/i18n";
 import { publicCardClass, publicFieldClass, publicLinkSecondaryClass } from "@/components/public/publicStyles";
+import {
+  buildAcquisitionFirstTouch,
+  type AcquisitionFirstTouch,
+} from "@/lib/acquisition/firstTouch";
 
 type WorkFormat = "online" | "offline" | "hybrid";
 
@@ -22,6 +26,8 @@ type Copy = {
   formatHybrid: string;
   cityLabel: string;
   cityPlaceholder: string;
+  postalLabel: string;
+  postalPlaceholder: string;
   contactTitle: string;
   nameLabel: string;
   emailLabel: string;
@@ -36,6 +42,7 @@ type Copy = {
   privacyAfter: string;
   requiredTask: string;
   requiredLocation: string;
+  requiredPostal: string;
   requiredName: string;
   requiredContact: string;
   submitFailed: string;
@@ -49,17 +56,19 @@ type Copy = {
 const COPY: Record<Lang, Copy> = {
   ru: {
     eyebrow: "Freuly · подбор специалиста",
-    title: "Расскажите, что вам нужно решить",
-    subtitle: "Опишите задачу своими словами. Мы подберём подходящего специалиста под вашу ситуацию.",
-    taskLabel: "Что нужно сделать?",
+    title: "Какая услуга вам нужна?",
+    subtitle: "",
+    taskLabel: "Опишите, какая помощь вам нужна, своими словами",
     taskPlaceholder: "Например: нужна помощь с налоговой декларацией, не работает домашняя сеть, ищу психолога для подростка…",
     languageTitle: "На каком языке вам удобнее общаться со специалистом?",
     formatTitle: "Как вам удобнее получить услугу?",
     formatOnline: "Онлайн",
     formatOffline: "На месте",
     formatHybrid: "Неважно",
-    cityLabel: "Где нужна услуга?",
-    cityPlaceholder: "Город или индекс",
+    cityLabel: "Город",
+    cityPlaceholder: "Например: Köln",
+    postalLabel: "Почтовый индекс (PLZ)",
+    postalPlaceholder: "50667",
     contactTitle: "Куда сообщить результат подбора?",
     nameLabel: "Как к вам обращаться?",
     emailLabel: "Email",
@@ -73,7 +82,8 @@ const COPY: Record<Lang, Copy> = {
     privacyLink: "политике конфиденциальности",
     privacyAfter: ".",
     requiredTask: "Опишите задачу хотя бы одним предложением.",
-    requiredLocation: "Укажите город или индекс для услуги на месте.",
+    requiredLocation: "Укажите город для услуги на месте.",
+    requiredPostal: "Укажите почтовый индекс (PLZ) для услуги на месте.",
     requiredName: "Укажите, как к вам обращаться.",
     requiredContact: "Укажите email или телефон.",
     submitFailed: "Не удалось отправить задачу. Попробуйте ещё раз.",
@@ -85,17 +95,19 @@ const COPY: Record<Lang, Copy> = {
   },
   ua: {
     eyebrow: "Freuly · підбір спеціаліста",
-    title: "Розкажіть, що вам потрібно вирішити",
-    subtitle: "Опишіть завдання своїми словами. Ми підберемо відповідного спеціаліста під вашу ситуацію.",
-    taskLabel: "Що потрібно зробити?",
+    title: "Яка послуга вам потрібна?",
+    subtitle: "",
+    taskLabel: "Опишіть, яка допомога вам потрібна, своїми словами",
     taskPlaceholder: "Наприклад: потрібна допомога з податковою декларацією, не працює домашня мережа, шукаю психолога для підлітка…",
     languageTitle: "Якою мовою вам зручніше спілкуватися зі спеціалістом?",
     formatTitle: "Як вам зручніше отримати послугу?",
     formatOnline: "Онлайн",
     formatOffline: "На місці",
     formatHybrid: "Неважливо",
-    cityLabel: "Де потрібна послуга?",
-    cityPlaceholder: "Місто або індекс",
+    cityLabel: "Місто",
+    cityPlaceholder: "Наприклад: Köln",
+    postalLabel: "Поштовий індекс (PLZ)",
+    postalPlaceholder: "50667",
     contactTitle: "Куди повідомити результат підбору?",
     nameLabel: "Як до вас звертатися?",
     emailLabel: "Email",
@@ -109,7 +121,8 @@ const COPY: Record<Lang, Copy> = {
     privacyLink: "політики конфіденційності",
     privacyAfter: ".",
     requiredTask: "Опишіть завдання хоча б одним реченням.",
-    requiredLocation: "Вкажіть місто або індекс для послуги на місці.",
+    requiredLocation: "Вкажіть місто для послуги на місці.",
+    requiredPostal: "Вкажіть поштовий індекс (PLZ) для послуги на місці.",
     requiredName: "Вкажіть, як до вас звертатися.",
     requiredContact: "Вкажіть email або телефон.",
     submitFailed: "Не вдалося надіслати завдання. Спробуйте ще раз.",
@@ -121,17 +134,19 @@ const COPY: Record<Lang, Copy> = {
   },
   de: {
     eyebrow: "Freuly · passende Fachkraft",
-    title: "Beschreiben Sie, was Sie lösen möchten",
-    subtitle: "Beschreiben Sie Ihre Aufgabe in eigenen Worten. Wir finden eine passende Fachkraft für Ihre Situation.",
-    taskLabel: "Was soll erledigt werden?",
+    title: "Welche Leistung brauchen Sie?",
+    subtitle: "",
+    taskLabel: "Beschreiben Sie in eigenen Worten, welche Hilfe Sie brauchen",
     taskPlaceholder: "Zum Beispiel: Hilfe mit der Steuererklärung, Heimnetzwerk funktioniert nicht, Psychologe für einen Jugendlichen gesucht…",
     languageTitle: "In welcher Sprache möchten Sie mit der Fachkraft sprechen?",
     formatTitle: "Wie möchten Sie die Leistung erhalten?",
     formatOnline: "Online",
     formatOffline: "Vor Ort",
     formatHybrid: "Beides möglich",
-    cityLabel: "Wo wird die Leistung benötigt?",
-    cityPlaceholder: "Stadt oder PLZ",
+    cityLabel: "Stadt",
+    cityPlaceholder: "z. B. Köln",
+    postalLabel: "Postleitzahl (PLZ)",
+    postalPlaceholder: "50667",
     contactTitle: "Wohin dürfen wir das Ergebnis der Vermittlung senden?",
     nameLabel: "Wie dürfen wir Sie ansprechen?",
     emailLabel: "E-Mail",
@@ -145,7 +160,8 @@ const COPY: Record<Lang, Copy> = {
     privacyLink: "Datenschutzerklärung",
     privacyAfter: " zu.",
     requiredTask: "Beschreiben Sie die Aufgabe mindestens in einem Satz.",
-    requiredLocation: "Bitte Stadt oder PLZ für eine Vor-Ort-Leistung angeben.",
+    requiredLocation: "Bitte die Stadt für eine Vor-Ort-Leistung angeben.",
+    requiredPostal: "Bitte die Postleitzahl (PLZ) für eine Vor-Ort-Leistung angeben.",
     requiredName: "Bitte geben Sie an, wie wir Sie ansprechen dürfen.",
     requiredContact: "Bitte E-Mail oder Telefonnummer angeben.",
     submitFailed: "Die Aufgabe konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
@@ -172,7 +188,8 @@ export default function ClientDemandEntry({ lang }: { lang: Lang }) {
   const [description, setDescription] = useState("");
   const [preferredLanguage, setPreferredLanguage] = useState<Lang>(lang);
   const [workFormat, setWorkFormat] = useState<WorkFormat>("online");
-  const [location, setLocation] = useState("");
+  const [city, setCity] = useState("");
+  const [postalCode, setPostalCode] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -181,8 +198,19 @@ export default function ClientDemandEntry({ lang }: { lang: Lang }) {
   const [error, setError] = useState<string | null>(null);
   const [publicId, setPublicId] = useState<string | null>(null);
   const idempotencyKey = useRef<string | null>(null);
+  const acquisitionRef = useRef<AcquisitionFirstTouch | null>(null);
+
+  useEffect(() => {
+    if (acquisitionRef.current) return;
+    acquisitionRef.current = buildAcquisitionFirstTouch({
+      href: window.location.href,
+      referrer: document.referrer,
+      ownHostname: window.location.hostname,
+    });
+  }, []);
 
   const needsLocation = workFormat === "offline" || workFormat === "hybrid";
+  const needsPostal = workFormat === "offline";
   const progress = useMemo(() => Math.round((step / 4) * 100), [step]);
 
   function nextFromTask() {
@@ -195,8 +223,12 @@ export default function ClientDemandEntry({ lang }: { lang: Lang }) {
   }
 
   function nextFromFormat() {
-    if (needsLocation && !location.trim()) {
+    if (needsLocation && !city.trim()) {
       setError(copy.requiredLocation);
+      return;
+    }
+    if (needsPostal && !postalCode.trim()) {
+      setError(copy.requiredPostal);
       return;
     }
     setError(null);
@@ -229,8 +261,8 @@ export default function ClientDemandEntry({ lang }: { lang: Lang }) {
         description: description.trim(),
         preferred_language: preferredLanguage,
         work_format: workFormat,
-        city: needsLocation ? location.trim() : null,
-        postal_code: null,
+        city: needsLocation ? city.trim() : null,
+        postal_code: needsPostal ? postalCode.trim() : null,
         country_code: "DE",
         radius_km: null,
         service_timing_type: "flexible_period",
@@ -244,6 +276,7 @@ export default function ClientDemandEntry({ lang }: { lang: Lang }) {
         category_text: null,
         source_path: `/${lang}/request`,
         idempotency_key: idempotencyKey.current,
+        acquisition: acquisitionRef.current,
         hp,
       };
 
@@ -283,11 +316,13 @@ export default function ClientDemandEntry({ lang }: { lang: Lang }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl">
+    <div className="mx-auto w-full max-w-2xl overflow-x-hidden">
       <div className="mb-8 text-center">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-freuly-primary">{copy.eyebrow}</p>
         <h1 className="mt-3 text-3xl font-bold leading-tight text-freuly-text-primary sm:text-4xl">{copy.title}</h1>
-        <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-freuly-text-secondary">{copy.subtitle}</p>
+        {copy.subtitle ? (
+          <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-freuly-text-secondary">{copy.subtitle}</p>
+        ) : null}
       </div>
 
       <div className={`p-6 sm:p-8 ${publicCardClass}`}>
@@ -318,11 +353,11 @@ export default function ClientDemandEntry({ lang }: { lang: Lang }) {
               <label className="mb-2 block text-lg font-semibold text-freuly-text-primary">{copy.taskLabel}</label>
               <textarea
                 autoFocus
-                rows={6}
+                rows={8}
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
                 placeholder={copy.taskPlaceholder}
-                className={publicFieldClass}
+                className={`${publicFieldClass} min-h-[180px] w-full max-w-full`}
               />
             </div>
             <Button type="button" className="w-full" onClick={nextFromTask}>{copy.continue}</Button>
@@ -362,9 +397,17 @@ export default function ClientDemandEntry({ lang }: { lang: Lang }) {
               ))}
             </div>
             {needsLocation ? (
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-freuly-text-primary">{copy.cityLabel}</label>
-                <input value={location} onChange={(event) => setLocation(event.target.value)} placeholder={copy.cityPlaceholder} className={publicFieldClass} />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-freuly-text-primary">{copy.cityLabel}</label>
+                  <input value={city} onChange={(event) => setCity(event.target.value)} placeholder={copy.cityPlaceholder} className={`${publicFieldClass} w-full max-w-full`} autoComplete="address-level2" />
+                </div>
+                {needsPostal ? (
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-freuly-text-primary">{copy.postalLabel}</label>
+                    <input value={postalCode} onChange={(event) => setPostalCode(event.target.value)} placeholder={copy.postalPlaceholder} className={`${publicFieldClass} w-full max-w-full`} inputMode="numeric" autoComplete="postal-code" />
+                  </div>
+                ) : null}
               </div>
             ) : null}
             <Button type="button" className="w-full" onClick={nextFromFormat}>{copy.continue}</Button>
@@ -375,6 +418,15 @@ export default function ClientDemandEntry({ lang }: { lang: Lang }) {
         {step === 4 ? (
           <div className="space-y-5">
             <h2 className="text-xl font-bold text-freuly-text-primary">{copy.contactTitle}</h2>
+            <div className="rounded-2xl bg-freuly-page px-4 py-3 text-sm text-freuly-text-secondary">
+              <p className="whitespace-pre-wrap break-words font-medium text-freuly-text-primary">{description.trim()}</p>
+              <p className="mt-2">
+                {preferredLanguage.toUpperCase()}
+                {" · "}
+                {workFormat === "online" ? copy.formatOnline : workFormat === "offline" ? copy.formatOffline : copy.formatHybrid}
+                {needsLocation ? ` · ${[postalCode.trim(), city.trim()].filter(Boolean).join(" ")}` : ""}
+              </p>
+            </div>
             <div>
               <label className="mb-2 block text-sm font-semibold text-freuly-text-primary">{copy.nameLabel}</label>
               <input value={name} onChange={(event) => setName(event.target.value)} className={publicFieldClass} autoComplete="name" />

@@ -34,7 +34,7 @@ export default function ClientRequestEntryPage({ params }: { params: { lang: str
   const lang = params.lang as Lang;
 
   return (
-    <main className="min-h-[100dvh] bg-[#f8f7f5] px-freuly-4 py-8 sm:px-freuly-6 sm:py-12">
+    <main className="min-h-[100dvh] overflow-x-hidden bg-[#f8f7f5] px-freuly-4 py-8 sm:px-freuly-6 sm:py-12">
       <div className="mx-auto mb-8 flex max-w-2xl items-center justify-center">
         <div className="text-2xl font-black tracking-tight text-freuly-text-primary">Freuly</div>
       </div>
