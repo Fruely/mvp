@@ -58,6 +58,12 @@ export default async function AdminProtectedLayout({
               Service requests
             </Link>
             <Link
+              href="/admin/service-requests/live-preview"
+              className="block px-4 py-2 pl-7 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md transition"
+            >
+              ↳ Demand drum preview
+            </Link>
+            <Link
               href="/admin/specialists"
               className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition"
             >
