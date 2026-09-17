@@ -13,6 +13,7 @@ import {
   buildPromotedAcceptUrl,
   getPublishedPromotionPublicView,
 } from "@/lib/serviceRequests/promotionPublicView";
+import { createSupabaseServerComponentClient } from "@/lib/supabase/auth-server";
 
 export const dynamic = "force-dynamic";
 
@@ -83,6 +84,12 @@ export default async function PublicPromotionPage({
     : null;
 
   const acceptHref = buildPromotedAcceptUrl(lang, params.public_token);
+  const loginHref = `/login?next=${encodeURIComponent(acceptHref)}`;
+
+  const auth = createSupabaseServerComponentClient();
+  const {
+    data: { user },
+  } = await auth.auth.getUser();
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
@@ -125,7 +132,31 @@ export default async function PublicPromotionPage({
           ) : null}
         </dl>
 
-        <section className="border-t pt-6">
+        <section className="border-t pt-6 space-y-4">
+          {user ? null : (
+            <div className="rounded-xl border border-freuly-primary/25 bg-freuly-primary-light px-4 py-4">
+              <p className="text-sm font-semibold text-freuly-text-primary">
+                {t(dict, "serviceRequestPromotion.signupCta.title")}
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-freuly-text-secondary">
+                {t(dict, "serviceRequestPromotion.signupCta.body")}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-3">
+                <Link
+                  href={loginHref}
+                  className="text-sm font-semibold text-freuly-primary hover:underline"
+                >
+                  {t(dict, "login.signIn")}
+                </Link>
+                <Link
+                  href={`/${lang}/become-specialist`}
+                  className="text-sm font-semibold text-freuly-primary hover:underline"
+                >
+                  {t(dict, "serviceRequestPromotion.signupCta.button")}
+                </Link>
+              </div>
+            </div>
+          )}
           <Link
             href={acceptHref}
             className="inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 sm:w-auto"

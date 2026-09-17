@@ -1,44 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import type { Lang } from "@/lib/i18n";
-
-const COPY: Record<
-  Lang,
-  {
-    eyebrow: string;
-    title: string;
-    subtitle: string;
-    online: string;
-    offline: string;
-    hybrid: string;
-  }
-> = {
-  ru: {
-    eyebrow: "Живой спрос",
-    title: "Сейчас ищут на Freuly",
-    subtitle: "Реальные опубликованные запросы клиентов без имён и контактных данных.",
-    online: "онлайн",
-    offline: "на месте",
-    hybrid: "онлайн или на месте",
-  },
-  ua: {
-    eyebrow: "Живий попит",
-    title: "Зараз шукають на Freuly",
-    subtitle: "Реальні опубліковані запити клієнтів без імен і контактних даних.",
-    online: "онлайн",
-    offline: "на місці",
-    hybrid: "онлайн або на місці",
-  },
-  de: {
-    eyebrow: "Live-Nachfrage",
-    title: "Das wird gerade auf Freuly gesucht",
-    subtitle: "Echte veröffentlichte Kundenanfragen ohne Namen oder Kontaktdaten.",
-    online: "online",
-    offline: "vor Ort",
-    hybrid: "online oder vor Ort",
-  },
-};
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { Dictionary, Lang } from "@/lib/i18n";
+import { t } from "@/lib/i18n";
+import {
+  circularDistance,
+  drumCardAccent,
+  drumCardTransform,
+  drumSlotStyle,
+} from "@/lib/homepage/liveRequestDrumLayout";
+import { requestPromotionPath } from "@/lib/serviceRequests/promotionUrl";
 
 export type RecentRequest = {
   id: string;
@@ -49,10 +21,12 @@ export type RecentRequest = {
   work_format: string | null;
   city: string | null;
   postal_code: string | null;
+  category?: string | null;
 };
 
 type Props = {
   lang: Lang;
+  dict?: Dictionary;
   previewItems?: RecentRequest[];
 };
 
@@ -72,12 +46,10 @@ function relativeLabel(createdAt: string, lang: Lang): string {
   return formatter.format(-Math.floor(diffMinutes / 60), "hour");
 }
 
-function formatLabel(value: string | null, lang: Lang): string | null {
-  if (!value) return null;
-  const copy = COPY[lang];
-  if (value === "online") return copy.online;
-  if (value === "offline") return copy.offline;
-  if (value === "hybrid") return copy.hybrid;
+function formatLabel(value: string | null, dict: Dictionary): string | null {
+  if (value === "online") return t(dict, "home.variantC.liveDemand.online", { defaultValue: "онлайн" });
+  if (value === "offline") return t(dict, "home.variantC.liveDemand.offline", { defaultValue: "на месте" });
+  if (value === "hybrid") return t(dict, "home.variantC.liveDemand.hybrid", { defaultValue: "онлайн или на месте" });
   return null;
 }
 
@@ -91,24 +63,29 @@ function languageLabel(value: string | null, lang: Lang): string | null {
   return labels[lang][value] ?? null;
 }
 
-function circularDistance(index: number, active: number, total: number): number {
-  let distance = index - active;
-  if (distance > total / 2) distance -= total;
-  if (distance < -total / 2) distance += total;
-  return distance;
-}
-
 function placeLabel(item: RecentRequest): string | null {
   if (item.work_format === "online") return null;
   return [item.postal_code, item.city].filter(Boolean).join(" ") || null;
 }
 
-export default function LiveRequestDrum({ lang, previewItems }: Props) {
-  const copy = COPY[lang];
+export default function LiveRequestDrum({ lang, dict = {}, previewItems }: Props) {
   const isPreview = Boolean(previewItems);
   const [items, setItems] = useState<RecentRequest[]>(previewItems ?? []);
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const itemsRef = useRef(items);
+  const activeRef = useRef(active);
+  itemsRef.current = items;
+  activeRef.current = active;
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReducedMotion(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
 
   useEffect(() => {
     if (previewItems) {
@@ -128,8 +105,10 @@ export default function LiveRequestDrum({ lang, previewItems }: Props) {
         const payload = (await response.json()) as { items?: RecentRequest[] };
         if (cancelled) return;
         const next = Array.isArray(payload.items) ? payload.items.filter((item) => item?.id) : [];
+        const currentId = itemsRef.current[activeRef.current]?.id;
+        const nextActive = currentId ? next.findIndex((item) => item.id === currentId) : 0;
         setItems(next);
-        setActive(0);
+        setActive(nextActive >= 0 ? nextActive : 0);
       } catch {
         if (!cancelled) setItems([]);
       }
@@ -144,14 +123,12 @@ export default function LiveRequestDrum({ lang, previewItems }: Props) {
   }, [lang, previewItems]);
 
   useEffect(() => {
-    if (paused || items.length <= 1 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return;
-    }
+    if (paused || reducedMotion || items.length <= 1) return;
     const timer = window.setInterval(() => {
       setActive((current) => (current + 1) % items.length);
-    }, 4200);
+    }, 5200);
     return () => window.clearInterval(timer);
-  }, [items.length, paused]);
+  }, [items.length, paused, reducedMotion]);
 
   const visible = useMemo(
     () =>
@@ -164,81 +141,113 @@ export default function LiveRequestDrum({ lang, previewItems }: Props) {
 
   if (items.length === 0) return null;
 
+  const registerHref = `/${lang}/become-specialist`;
+  const loginHref = `/login?next=${encodeURIComponent(`/${lang}/specialist/dashboard`)}`;
+  const registerHint = t(dict, "home.variantC.liveDemand.registerHint", {
+    defaultValue: "Нет регистрации? Зарегистрируйтесь — это займёт пару минут.",
+  });
+  const registerCta = t(dict, "home.variantC.liveDemand.registerCta", {
+    defaultValue: "Зарегистрируйтесь",
+  });
+
   return (
     <section
-      className="bg-[#eaf6f5] px-freuly-4 py-14 sm:px-freuly-6 sm:py-16 lg:px-16 lg:py-20"
+      className="bg-[#f8f7f5] px-freuly-4 py-14 sm:px-freuly-6 sm:py-16 lg:px-16 lg:py-20"
       aria-labelledby="live-request-drum-title"
     >
-      <div className="mx-auto w-full max-w-[980px]">
-        <div className="mb-7 text-center">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 lg:flex-row lg:items-center lg:gap-8 xl:gap-12">
+        <div className="w-full max-w-xl shrink-0 lg:max-w-[520px]">
           {isPreview ? (
-            <p className="mx-auto mb-4 w-fit rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
+            <p className="mb-4 w-fit rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
               Предпросмотр · тестовые данные не опубликованы
             </p>
           ) : null}
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-freuly-primary">
-            {copy.eyebrow}
-          </p>
           <h2
             id="live-request-drum-title"
-            className="mt-2 text-2xl font-bold text-freuly-text-primary sm:text-3xl"
+            className="text-[1.375rem] font-semibold leading-tight text-freuly-text-primary sm:text-[22px]"
           >
-            {copy.title}
+            {t(dict, "home.variantC.liveDemand.sectionTitle", {
+              defaultValue: "Живые запросы клиентов Freuly",
+            })}
           </h2>
-          <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-freuly-text-secondary">
-            {copy.subtitle}
+          <p className="mt-7 text-xs font-bold uppercase tracking-[0.08em] text-freuly-primary">
+            {t(dict, "home.variantC.liveDemand.eyebrow", { defaultValue: "ХОТИТЕ ПОЛУЧАТЬ ЗАЯВКИ?" })}
+          </p>
+          <p className="mt-2.5 text-[1.75rem] font-bold leading-[1.15] text-freuly-text-primary sm:text-[36px] sm:leading-[1.17]">
+            {t(dict, "home.variantC.liveDemand.title", { defaultValue: "Получите заявку прямо сейчас" })}
+          </p>
+          <p className="mt-4 max-w-[480px] text-base leading-6 text-freuly-text-secondary">
+            {t(dict, "home.variantC.liveDemand.subtitle", {
+              defaultValue:
+                "Нажмите на подходящую карточку и перейдите по ссылке. Так вы получите доступ к заявке клиента.",
+            })}
+          </p>
+          <p className="mt-6 inline-flex w-full max-w-[500px] items-center gap-3 rounded-xl border border-freuly-primary bg-[#e0f9f8] px-4 py-3.5 text-sm font-semibold text-freuly-primary">
+            <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-freuly-primary" aria-hidden />
+            {t(dict, "home.variantC.liveDemand.warning", {
+              defaultValue: "Только для зарегистрированных специалистов",
+            })}
+          </p>
+          <p className="mt-4 max-w-[480px] text-sm leading-[22px] text-freuly-text-secondary">
+            {registerHint.includes(registerCta) ? (
+              <>
+                {registerHint.slice(0, registerHint.indexOf(registerCta))}
+                <Link href={registerHref} className="font-semibold text-freuly-primary hover:text-freuly-primary-hover">
+                  {registerCta}
+                </Link>
+                {registerHint.slice(registerHint.indexOf(registerCta) + registerCta.length)}
+              </>
+            ) : (
+              <Link href={registerHref} className="font-semibold text-freuly-primary hover:text-freuly-primary-hover">
+                {registerHint}
+              </Link>
+            )}
+          </p>
+          <p className="mt-2">
+            <Link href={loginHref} className="text-sm font-semibold text-freuly-primary hover:text-freuly-primary-hover">
+              {t(dict, "home.variantC.liveDemand.loginCta", { defaultValue: "Войти" })}
+            </Link>
           </p>
         </div>
 
         <div
-          className="relative mx-auto h-[292px] max-w-3xl overflow-hidden rounded-[28px] border border-white/80 bg-white/70 shadow-sm [perspective:1000px]"
+          className="relative mx-auto h-[300px] w-full min-w-0 max-w-[720px] overflow-hidden [perspective:1100px] [transform-style:preserve-3d] sm:h-[320px] lg:mx-0 lg:flex-1"
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
           onFocusCapture={() => setPaused(true)}
           onBlurCapture={() => setPaused(false)}
         >
-          <div
-            className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-freuly-primary/10 to-transparent"
-            aria-hidden
-          />
           {visible.map(({ item, distance }) => {
+            const style = drumSlotStyle(distance, { reducedMotion });
+            if (!style) return null;
             const abs = Math.abs(distance);
-            if (abs > 2) return null;
             const meta = [
-              formatLabel(item.work_format, lang),
-              placeLabel(item),
+              placeLabel(item) || formatLabel(item.work_format, dict),
               languageLabel(item.preferred_language, lang),
             ]
               .filter(Boolean)
               .join(" · ");
-            const y = distance * 86;
-            const rotateX = distance * -20;
-            const scale = distance === 0 ? 1 : 0.93;
-            const opacity = abs === 0 ? 1 : abs === 1 ? 0.62 : 0.24;
+            const href = isPreview ? null : requestPromotionPath(lang, item.id);
+            const accent = drumCardAccent(item.category || item.id);
+            const ariaLabel = t(dict, "home.variantC.liveDemand.cardAria", {
+              defaultValue: "Открыть запрос: {{title}}",
+            }).replace("{{title}}", item.title);
 
-            return (
-              <article
-                key={item.id}
-                className="absolute left-1/2 top-1/2 w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 rounded-2xl border border-freuly-border-default bg-white px-5 py-4 shadow-sm transition-[transform,opacity] duration-700 ease-out sm:px-6"
-                style={{
-                  transform: `translate(-50%, calc(-50% + ${y}px)) rotateX(${rotateX}deg) scale(${scale})`,
-                  opacity,
-                  zIndex: 10 - abs,
-                }}
-                aria-hidden={abs !== 0}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <h3 className="truncate text-base font-bold text-freuly-text-primary sm:text-lg">
-                      {item.title}
-                    </h3>
-                    {meta ? (
-                      <p className="mt-1 truncate text-sm font-medium text-freuly-primary/90">{meta}</p>
-                    ) : null}
-                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-freuly-text-secondary">
-                      {item.summary}
-                    </p>
-                  </div>
+            const card = (
+              <>
+                <span
+                  className="absolute bottom-4 left-0 top-4 w-[5px] rounded-r-[3px]"
+                  style={{ backgroundColor: accent }}
+                  aria-hidden
+                />
+                <div className="flex items-start justify-between gap-3 pl-1">
+                  {item.category ? (
+                    <span className="inline-flex max-w-[70%] truncate rounded-full bg-[#e0f9f8] px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-freuly-primary">
+                      {item.category}
+                    </span>
+                  ) : (
+                    <span />
+                  )}
                   <time
                     dateTime={item.created_at}
                     className="shrink-0 text-xs font-medium text-freuly-text-muted"
@@ -247,17 +256,52 @@ export default function LiveRequestDrum({ lang, previewItems }: Props) {
                     {relativeLabel(item.created_at, lang)}
                   </time>
                 </div>
+                <h3 className="mt-3 truncate text-[17px] font-bold text-freuly-text-primary">{item.title}</h3>
+                <p className="mt-1 line-clamp-1 text-sm leading-snug text-freuly-text-secondary">{item.summary}</p>
+                {meta ? (
+                  <p className="mt-2 truncate text-xs font-semibold text-freuly-primary">{meta}</p>
+                ) : null}
+              </>
+            );
+
+            const className =
+              "live-request-drum-card absolute left-1/2 top-1/2 overflow-hidden rounded-2xl border border-freuly-border-default bg-white px-5 py-4 transition-[transform,opacity] duration-1000 ease-in-out sm:px-6";
+            const motionStyle = {
+              width: `${style.widthPercent}%`,
+              maxWidth: "640px",
+              transform: drumCardTransform(style),
+              opacity: style.opacity,
+              zIndex: style.zIndex,
+              boxShadow: abs === 0 ? "0 14px 28px rgba(0,46,46,0.12)" : "0 6px 12px rgba(0,46,46,0.04)",
+            };
+
+            if (href) {
+              return (
+                <Link
+                  key={item.id}
+                  href={href}
+                  className={`${className} ${abs === 0 ? "pointer-events-auto" : "pointer-events-none lg:pointer-events-auto"}`}
+                  style={motionStyle}
+                  tabIndex={abs === 0 ? 0 : -1}
+                  aria-hidden={abs !== 0}
+                  aria-label={ariaLabel}
+                >
+                  {card}
+                </Link>
+              );
+            }
+
+            return (
+              <article
+                key={item.id}
+                className={className}
+                style={motionStyle}
+                aria-hidden={abs !== 0}
+              >
+                {card}
               </article>
             );
           })}
-          <div
-            className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white via-white/70 to-transparent"
-            aria-hidden
-          />
-          <div
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/70 to-transparent"
-            aria-hidden
-          />
         </div>
       </div>
     </section>

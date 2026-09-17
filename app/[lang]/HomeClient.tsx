@@ -242,7 +242,7 @@ export default function HomeClient({
         </div>
       </section>
 
-      <LiveRequestDrum lang={lang} />
+      <LiveRequestDrum lang={lang} dict={dict} />
 
       {/* Categories */}
       <section className="bg-white px-freuly-4 py-16 sm:px-freuly-6 sm:py-20 lg:px-16 lg:py-24">

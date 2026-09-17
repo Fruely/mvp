@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { publicCategoryLabel } from "@/lib/homepage/liveDemandCategory";
 import { isSupportedLang, type Lang } from "@/lib/i18n";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -24,6 +25,17 @@ type RequestRow = {
   work_format: string | null;
   city: string | null;
   postal_code: string | null;
+  category_id: string | null;
+  category_text: string | null;
+};
+
+type CategoryRow = {
+  id: string;
+  slug: string | null;
+  title: string | null;
+  title_ru: string | null;
+  title_de: string | null;
+  title_ua: string | null;
 };
 
 function stringOrNull(value: unknown): string | null {
@@ -83,7 +95,7 @@ export async function GET(request: NextRequest) {
 
     const { data: requestRows, error: requestError } = await supabase
       .from("service_requests")
-      .select("id, created_at, preferred_language, work_format, city, postal_code")
+      .select("id, created_at, preferred_language, work_format, city, postal_code, category_id, category_text")
       .in("id", requestIds)
       .in("status", [...ACTIVE_REQUEST_STATUSES])
       .gte("created_at", since);
@@ -98,10 +110,34 @@ export async function GET(request: NextRequest) {
       requestById.set(row.id, row);
     }
 
+    const categoryIds = Array.from(
+      new Set(
+        Array.from(requestById.values())
+          .map((row) => stringOrNull(row.category_id))
+          .filter((value): value is string => Boolean(value)),
+      ),
+    );
+
+    const categoryById = new Map<string, CategoryRow>();
+    if (categoryIds.length > 0) {
+      const { data: categoryRows, error: categoryError } = await supabase
+        .from("categories")
+        .select("id, slug, title, title_ru, title_de, title_ua")
+        .in("id", categoryIds);
+      if (categoryError) {
+        console.error("[public/recent-service-requests] category query failed", categoryError);
+      } else {
+        for (const row of (categoryRows ?? []) as CategoryRow[]) {
+          categoryById.set(row.id, row);
+        }
+      }
+    }
+
     const items = promotions
       .map((promotion) => {
         const source = requestById.get(promotion.service_request_id);
         if (!source) return null;
+        const categoryId = stringOrNull(source.category_id);
         return {
           id: promotion.public_token,
           title: promotion.public_title.trim(),
@@ -111,6 +147,11 @@ export async function GET(request: NextRequest) {
           work_format: stringOrNull(source.work_format),
           city: stringOrNull(source.city),
           postal_code: stringOrNull(source.postal_code),
+          category: publicCategoryLabel({
+            lang,
+            categoryText: stringOrNull(source.category_text),
+            category: categoryId ? categoryById.get(categoryId) ?? null : null,
+          }),
         };
       })
       .filter((item): item is NonNullable<typeof item> => Boolean(item?.id && item.title && item.summary))
