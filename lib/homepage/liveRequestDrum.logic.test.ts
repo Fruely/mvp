@@ -8,14 +8,15 @@ const source = fs.readFileSync(
   "utf8",
 );
 
-test("live request drum routes specialist interest into specialist onboarding", () => {
-  assert.match(source, /\/become-specialist\?source=live-requests/);
-  assert.match(source, /request=\$\{encodeURIComponent\(item\.id\)\}/);
+test("live request drum stays a social-proof surface, not an open marketplace", () => {
+  assert.match(source, /<article/);
+  assert.doesNotMatch(source, /become-specialist/);
+  assert.doesNotMatch(source, /request=\$\{encodeURIComponent/);
 });
 
 test("live request drum presents demand as social proof, not a public contact marketplace", () => {
-  assert.match(source, /Контактные данные здесь не публикуются/);
-  assert.match(source, /Получать такие заявки/);
+  assert.match(source, /без имён и контактных данных/);
+  assert.match(source, /item\.summary/);
   assert.doesNotMatch(source, /client_email/);
   assert.doesNotMatch(source, /client_phone/);
   assert.doesNotMatch(source, /description/);
