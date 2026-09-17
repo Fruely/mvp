@@ -37,6 +37,7 @@ test("public live demand feed never selects client contact fields or description
   assert.match(publicFeedSource, /\.eq\("status", "published"\)/);
   assert.match(publicFeedSource, /\.is\("closed_at", null\)/);
   assert.match(publicFeedSource, /\.eq\("locale", lang\)/);
+  assert.match(publicFeedSource, /category_id, category_text/);
   assert.doesNotMatch(publicFeedSource, /client_name/);
   assert.doesNotMatch(publicFeedSource, /client_email/);
   assert.doesNotMatch(publicFeedSource, /client_phone/);

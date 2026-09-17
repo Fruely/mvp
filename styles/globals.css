@@ -144,7 +144,9 @@ h3 {
 
 @media (prefers-reduced-motion: reduce) {
   .star-map-pulse,
-  .star-map-marker-enter {
+  .star-map-marker-enter,
+  .live-request-drum-card {
     animation: none !important;
+    transition: none !important;
   }
 }
