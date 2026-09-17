@@ -16,6 +16,7 @@ type PromotionRow = {
   public_title: string;
   public_summary: string;
   published_at: string;
+  locale: string;
 };
 
 type RequestRow = {
@@ -63,11 +64,11 @@ export async function GET(request: NextRequest) {
 
     // Only explicitly published, manually anonymized copy may reach this feed.
     // Raw descriptions and client contacts never leave service_requests.
+    // Do not filter by promotion locale: a RU homepage must still show a UA card.
     const { data: promotionRows, error: promotionError } = await supabase
       .from("service_request_promotions")
-      .select("service_request_id, public_token, public_title, public_summary, published_at")
+      .select("service_request_id, public_token, public_title, public_summary, published_at, locale")
       .eq("status", "published")
-      .eq("locale", lang)
       .is("closed_at", null)
       .not("published_at", "is", null)
       .order("published_at", { ascending: false })
@@ -143,6 +144,7 @@ export async function GET(request: NextRequest) {
           title: promotion.public_title.trim(),
           summary: publicSummary(promotion.public_summary),
           created_at: source.created_at,
+          locale: isSupportedLang(promotion.locale) ? promotion.locale : lang,
           preferred_language: stringOrNull(source.preferred_language),
           work_format: stringOrNull(source.work_format),
           city: stringOrNull(source.city),

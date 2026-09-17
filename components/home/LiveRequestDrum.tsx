@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Dictionary, Lang } from "@/lib/i18n";
-import { t } from "@/lib/i18n";
+import { isSupportedLang, t, type Dictionary, type Lang } from "@/lib/i18n";
 import {
   circularDistance,
   drumCardAccent,
@@ -17,12 +16,17 @@ export type RecentRequest = {
   title: string;
   summary: string;
   created_at: string;
+  locale?: string | null;
   preferred_language: string | null;
   work_format: string | null;
   city: string | null;
   postal_code: string | null;
   category?: string | null;
 };
+
+function cardLinkLang(homepageLang: Lang, item: RecentRequest): Lang {
+  return item.locale && isSupportedLang(item.locale) ? item.locale : homepageLang;
+}
 
 type Props = {
   lang: Lang;
@@ -227,7 +231,7 @@ export default function LiveRequestDrum({ lang, dict = {}, previewItems }: Props
             ]
               .filter(Boolean)
               .join(" · ");
-            const href = isPreview ? null : requestPromotionPath(lang, item.id);
+            const href = isPreview ? null : requestPromotionPath(cardLinkLang(lang, item), item.id);
             const accent = drumCardAccent(item.category || item.id);
             const ariaLabel = t(dict, "home.variantC.liveDemand.cardAria", {
               defaultValue: "Открыть запрос: {{title}}",
