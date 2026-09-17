@@ -23,7 +23,7 @@ export default async function LangLayout({
   }
 
   if (pathname === `/${lang}/request`) {
-    return <div className="min-h-[100dvh] bg-freuly-page">{children}</div>;
+    return <div className="min-h-[100dvh] overflow-x-hidden bg-freuly-page">{children}</div>;
   }
 
   let dict;

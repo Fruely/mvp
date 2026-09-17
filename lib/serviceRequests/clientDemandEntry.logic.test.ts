@@ -12,6 +12,22 @@ const requestPageSource = fs.readFileSync(
   path.join(root, "app/[lang]/request/page.tsx"),
   "utf8",
 );
+const langLayoutSource = fs.readFileSync(
+  path.join(root, "app/[lang]/layout.tsx"),
+  "utf8",
+);
+const homeSource = fs.readFileSync(
+  path.join(root, "app/[lang]/HomeClient.tsx"),
+  "utf8",
+);
+const createRouteSource = fs.readFileSync(
+  path.join(root, "app/api/service-requests/route.ts"),
+  "utf8",
+);
+const marketingLinksSource = fs.readFileSync(
+  path.join(root, "app/admin/(protected)/marketing-links/page.tsx"),
+  "utf8",
+);
 const publicFeedSource = fs.readFileSync(
   path.join(root, "app/api/public/recent-service-requests/route.ts"),
   "utf8",
@@ -29,6 +45,71 @@ test("request entry is a dedicated page, not a redirect to the old full form", (
   assert.match(requestPageSource, /ClientDemandEntry/);
   assert.doesNotMatch(requestPageSource, /request-service/);
   assert.match(requestPageSource, /index:\s*false/);
+  assert.doesNotMatch(requestPageSource, /redirect\(/);
+  assert.doesNotMatch(requestPageSource, /HomeClient|LiveRequestDrum/);
+});
+
+test("RU/UA/DE paid request landing opens the first form step copy", () => {
+  assert.match(entrySource, /useState\(1\)/);
+  assert.match(entrySource, /title: "Какая услуга вам нужна\?"/);
+  assert.match(entrySource, /title: "Яка послуга вам потрібна\?"/);
+  assert.match(entrySource, /title: "Welche Leistung brauchen Sie\?"/);
+  assert.match(entrySource, /taskLabel: "Опишите, какая помощь вам нужна, своими словами"/);
+  assert.match(entrySource, /taskLabel: "Опишіть, яка допомога вам потрібна, своїми словами"/);
+  assert.match(entrySource, /taskLabel: "Beschreiben Sie in eigenen Worten, welche Hilfe Sie brauchen"/);
+  assert.match(entrySource, /\{step === 1 \?/);
+  assert.match(entrySource, /\{copy\.continue\}/);
+});
+
+test("paid request landing strips homepage chrome and avoids horizontal overflow", () => {
+  assert.match(langLayoutSource, /pathname === `\/\$\{lang\}\/request`/);
+  assert.match(langLayoutSource, /overflow-x-hidden bg-freuly-page/);
+  assert.doesNotMatch(
+    langLayoutSource.slice(
+      langLayoutSource.indexOf("pathname === `/${lang}/request`"),
+      langLayoutSource.indexOf("pathname === `/${lang}/request`") + 250,
+    ),
+    /<Header|<Footer|<LanguageBar/,
+  );
+  assert.match(requestPageSource, /overflow-x-hidden/);
+  assert.match(entrySource, /overflow-x-hidden/);
+  assert.doesNotMatch(entrySource, /specialist search|LiveRequestDrum|home\.variantC/);
+});
+
+test("homepage request CTA still uses the same /{lang}/request entry", () => {
+  assert.match(homeSource, /href=\{`\/\$\{lang\}\/request`\}/);
+  assert.match(homeSource, /home\.variantC\.hero\.requestCta/);
+});
+
+test("client can submit without signing in and keeps preferred language separate from UI locale", () => {
+  assert.doesNotMatch(entrySource, /supabase\.auth|signIn|getSession|requireAuth/);
+  assert.doesNotMatch(requestPageSource, /createSupabaseServerClient|getSession|redirect\("\/login/);
+  assert.match(createRouteSource, /auth\.kind === "authenticated" \? auth\.userId : null/);
+  assert.match(entrySource, /preferred_language:\s*preferredLanguage/);
+  assert.match(entrySource, /locale:\s*lang/);
+  assert.match(entrySource, /useState<Lang>\(lang\)/);
+});
+
+test("UTM snapshot is captured on landing and sent through every step until insert", () => {
+  assert.match(entrySource, /buildAcquisitionFirstTouch/);
+  assert.match(entrySource, /window\.location\.href/);
+  assert.match(entrySource, /acquisition:\s*acquisitionRef\.current/);
+  assert.match(createRouteSource, /pickAcquisitionForServiceRequest/);
+  assert.match(createRouteSource, /\.from\("service_requests"\)/);
+  assert.match(createRouteSource, /acquisition_source:\s*acquisition\?\.source/);
+  assert.match(createRouteSource, /acquisition_medium:\s*acquisition\?\.medium/);
+  assert.match(createRouteSource, /acquisition_campaign:\s*acquisition\?\.campaign/);
+  assert.match(createRouteSource, /acquisition_content:\s*acquisition\?\.content/);
+  assert.match(createRouteSource, /acquisition_term:\s*acquisition\?\.term/);
+  assert.match(createRouteSource, /acquisition_landing_path:\s*acquisition\?\.landing_path/);
+});
+
+test("admin marketing links copy RU/UA/DE paid request URLs with campaign UTM", () => {
+  assert.match(marketingLinksSource, /https:\/\/freuly\.de\/ru\/request/);
+  assert.match(marketingLinksSource, /https:\/\/freuly\.de\/ua\/request/);
+  assert.match(marketingLinksSource, /https:\/\/freuly\.de\/de\/request/);
+  assert.match(marketingLinksSource, /buildPaidRequestUrl/);
+  assert.match(marketingLinksSource, /utm_campaign/);
 });
 
 test("public live demand feed never selects client contact fields or description", () => {

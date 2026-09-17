@@ -98,28 +98,45 @@ export function serializeAcquisitionCookie(value: AcquisitionFirstTouch): string
   return encodeURIComponent(JSON.stringify(value));
 }
 
+export function parseAcquisitionSnapshot(value: unknown): AcquisitionFirstTouch | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const parsed = value as Record<string, unknown>;
+  const source = clean(parsed.source, MAX_SOURCE);
+  const landingPath = clean(parsed.landing_path, MAX_LANDING);
+  const capturedAt = clean(parsed.captured_at, 64);
+  if (!source || !landingPath || !capturedAt) return null;
+
+  return {
+    source: source.toLowerCase(),
+    medium: clean(parsed.medium, MAX_MEDIUM),
+    campaign: clean(parsed.campaign, MAX_CAMPAIGN),
+    content: clean(parsed.content, MAX_CONTENT),
+    term: clean(parsed.term, MAX_TERM),
+    gclid: clean(parsed.gclid, MAX_CLICK_ID),
+    fbclid: clean(parsed.fbclid, MAX_CLICK_ID),
+    referrer: clean(parsed.referrer, MAX_REFERRER),
+    landing_path: landingPath,
+    captured_at: capturedAt,
+  };
+}
+
 export function parseAcquisitionCookie(raw: string | null | undefined): AcquisitionFirstTouch | null {
   if (!raw) return null;
   try {
-    const parsed = JSON.parse(decodeURIComponent(raw)) as Record<string, unknown>;
-    const source = clean(parsed.source, MAX_SOURCE);
-    const landingPath = clean(parsed.landing_path, MAX_LANDING);
-    const capturedAt = clean(parsed.captured_at, 64);
-    if (!source || !landingPath || !capturedAt) return null;
-
-    return {
-      source: source.toLowerCase(),
-      medium: clean(parsed.medium, MAX_MEDIUM),
-      campaign: clean(parsed.campaign, MAX_CAMPAIGN),
-      content: clean(parsed.content, MAX_CONTENT),
-      term: clean(parsed.term, MAX_TERM),
-      gclid: clean(parsed.gclid, MAX_CLICK_ID),
-      fbclid: clean(parsed.fbclid, MAX_CLICK_ID),
-      referrer: clean(parsed.referrer, MAX_REFERRER),
-      landing_path: landingPath,
-      captured_at: capturedAt,
-    };
+    return parseAcquisitionSnapshot(JSON.parse(decodeURIComponent(raw)));
   } catch {
     return null;
   }
+}
+
+export function acquisitionSnapshotHasUtm(touch: AcquisitionFirstTouch): boolean {
+  return /[?&](utm_|gclid=|fbclid=)/i.test(touch.landing_path);
+}
+
+export function pickAcquisitionForServiceRequest(
+  body: AcquisitionFirstTouch | null,
+  cookie: AcquisitionFirstTouch | null,
+): AcquisitionFirstTouch | null {
+  if (body && acquisitionSnapshotHasUtm(body)) return body;
+  return cookie ?? body;
 }
