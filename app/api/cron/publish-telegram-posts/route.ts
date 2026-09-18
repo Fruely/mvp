@@ -1,7 +1,10 @@
 import { NextRequest } from "next/server";
 import { jsonNoStore } from "@/lib/api/response";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { sendTelegramChannelPost } from "@/lib/telegram/channelPosts";
+import {
+  normalizeTelegramChannelCta,
+  sendTelegramChannelPost,
+} from "@/lib/telegram/channelPosts";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +20,7 @@ export async function GET(request: NextRequest) {
 
   const { data: posts, error } = await supabase
     .from("telegram_channel_posts")
-    .select("id, body_text")
+    .select("id, body_text, cta_label, cta_url")
     .eq("status", "scheduled")
     .lte("scheduled_at", now)
     .order("scheduled_at", { ascending: true })
@@ -32,7 +35,8 @@ export async function GET(request: NextRequest) {
   let failed = 0;
 
   for (const post of posts ?? []) {
-    const result = await sendTelegramChannelPost(String(post.body_text ?? ""));
+    const cta = normalizeTelegramChannelCta(post.cta_label, post.cta_url);
+    const result = await sendTelegramChannelPost(String(post.body_text ?? ""), cta);
     const updatedAt = new Date().toISOString();
 
     if (result.ok) {
