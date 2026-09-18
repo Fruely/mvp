@@ -167,6 +167,10 @@ export async function savePromotionDraftAdmin(
     return insertPromotionWithToken(serviceRequestId, validated);
   }
 
+  if (existing.status === "closed") {
+    throw new Error("INVALID_INPUT");
+  }
+
   const { data, error } = await supabase
     .from("service_request_promotions")
     .update({
@@ -174,6 +178,9 @@ export async function savePromotionDraftAdmin(
       public_title: validated.public_title,
       public_summary: validated.public_summary,
       localized_copy: validated.localized_copy,
+      status: "draft",
+      published_at: null,
+      closed_at: null,
       updated_at: nowIso,
     })
     .eq("service_request_id", serviceRequestId)

@@ -1,7 +1,12 @@
 import "server-only";
 
-import { type PromotionLocale } from "./promotionConstants";
-import { fillMissingLocalizedCopies, type PublicCopyFields } from "./localizedPublicCopy";
+import {
+  PROMOTION_LOCALES,
+  PROMOTION_SUMMARY_MAX_LEN,
+  PROMOTION_TITLE_MAX_LEN,
+  type PromotionLocale,
+} from "./promotionConstants";
+import type { LocalizedPublicCopy, PublicCopyFields } from "./localizedPublicCopy";
 
 const LANGUAGE_NAMES: Record<PromotionLocale, string> = {
   ru: "Russian",
@@ -24,14 +29,19 @@ type ChatResponse = {
   };
 };
 
+function cleanText(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
+}
+
 function parseCopyPayload(raw: string | null | undefined): PublicCopyFields | null {
   if (!raw?.trim()) return null;
   try {
     const parsed = JSON.parse(raw) as Record<string, unknown>;
-    const title = typeof parsed.title === "string" ? parsed.title.replace(/\s+/g, " ").trim() : "";
-    const summary =
-      typeof parsed.summary === "string" ? parsed.summary.replace(/\s+/g, " ").trim() : "";
+    const title = typeof parsed.title === "string" ? cleanText(parsed.title) : "";
+    const summary = typeof parsed.summary === "string" ? cleanText(parsed.summary) : "";
     if (!title || !summary) return null;
+    if (title.length > PROMOTION_TITLE_MAX_LEN) return null;
+    if (summary.length > PROMOTION_SUMMARY_MAX_LEN) return null;
     return { title, summary };
   } catch {
     return null;
@@ -97,7 +107,7 @@ export async function translatePublicCopyPair(
               `Translate title and summary from ${LANGUAGE_NAMES[sourceLocale]} into ${LANGUAGE_NAMES[targetLocale]}.`,
               "Translate only the supplied public_title and public_summary.",
               "Do not invent client contacts, names, phones, emails, or extra facts.",
-              "Keep Freuly unchanged. Return JSON {\"title\":\"...\",\"summary\":\"...\"} only.",
+              'Keep Freuly unchanged. Return JSON {"title":"...","summary":"..."} only.',
             ].join(" "),
           },
           {
@@ -135,9 +145,24 @@ export async function prepareLocalizedCopiesForPublish(args: {
   title: string;
   summary: string;
   existing?: unknown;
-}) {
-  return fillMissingLocalizedCopies({
-    ...args,
-    translate: translatePublicCopyPair,
-  });
+}): Promise<LocalizedPublicCopy> {
+  const source: PublicCopyFields = {
+    title: cleanText(args.title),
+    summary: cleanText(args.summary),
+  };
+
+  const localized: LocalizedPublicCopy = {
+    [args.sourceLocale]: source,
+  };
+
+  for (const locale of PROMOTION_LOCALES) {
+    if (locale === args.sourceLocale) continue;
+    const translated = await translatePublicCopyPair(args.sourceLocale, locale, source);
+    if (!translated) {
+      throw new Error("TRANSLATION_FAILED");
+    }
+    localized[locale] = translated;
+  }
+
+  return localized;
 }
