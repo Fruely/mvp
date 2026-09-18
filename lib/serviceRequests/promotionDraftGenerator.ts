@@ -103,6 +103,15 @@ function sanitizeFreeText(value: string | null | undefined): string | null {
   return sanitized || null;
 }
 
+function containsObviousContactInfo(value: string): boolean {
+  return (
+    /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i.test(value) ||
+    /(?:https?:\/\/|www\.)\S+/i.test(value) ||
+    /(^|\s)@[A-Za-z0-9_]{3,}/.test(value) ||
+    /\+?\d[\d\s()./-]{6,}\d/.test(value)
+  );
+}
+
 function parseGeneratedDraft(raw: string | null | undefined): Pick<GeneratedPromotionDraft, "title" | "summary"> | null {
   if (!raw?.trim()) return null;
 
@@ -116,6 +125,7 @@ function parseGeneratedDraft(raw: string | null | undefined): Pick<GeneratedProm
     if (!title || !summary) return null;
     if (title.length > PROMOTION_TITLE_MAX_LEN) return null;
     if (summary.length > PROMOTION_SUMMARY_MAX_LEN) return null;
+    if (containsObviousContactInfo(`${title} ${summary}`)) return null;
 
     return { title, summary };
   } catch {
@@ -151,10 +161,12 @@ function aiAuth(): { token: string; endpoint: string; model: string } | null {
 
   const openai = process.env.OPENAI_API_KEY?.trim();
   if (openai) {
+    const configuredModel =
+      process.env.PROMOTION_COPY_MODEL || process.env.CONTENT_TRANSLATION_MODEL || "gpt-4o-mini";
     return {
       token: openai,
       endpoint: OPENAI_CHAT_URL,
-      model: process.env.PROMOTION_COPY_MODEL || "gpt-4o-mini",
+      model: configuredModel.startsWith("openai/") ? configuredModel.slice("openai/".length) : configuredModel,
     };
   }
 
