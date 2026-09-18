@@ -2,7 +2,10 @@ import { NextRequest } from "next/server";
 import { requireAdminToken } from "@/lib/adminApiAuth";
 import { jsonNoStore } from "@/lib/api/response";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { sendTelegramChannelPost } from "@/lib/telegram/channelPosts";
+import {
+  normalizeTelegramChannelCta,
+  sendTelegramChannelPost,
+} from "@/lib/telegram/channelPosts";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +27,7 @@ export async function POST(
   const supabase = createSupabaseServerClient();
   const { data: post, error: loadError } = await supabase
     .from("telegram_channel_posts")
-    .select("id, body_text, status")
+    .select("id, body_text, cta_label, cta_url, status")
     .eq("id", id)
     .maybeSingle();
 
@@ -39,7 +42,8 @@ export async function POST(
     return jsonNoStore({ error: "Post is already published" }, { status: 409 });
   }
 
-  const result = await sendTelegramChannelPost(String(post.body_text ?? ""));
+  const cta = normalizeTelegramChannelCta(post.cta_label, post.cta_url);
+  const result = await sendTelegramChannelPost(String(post.body_text ?? ""), cta);
   if (!result.ok) {
     await supabase
       .from("telegram_channel_posts")
@@ -64,7 +68,7 @@ export async function POST(
     })
     .eq("id", id)
     .select(
-      "id, title, body_text, status, scheduled_at, published_at, telegram_message_id, error_message, created_at, updated_at"
+      "id, title, body_text, cta_label, cta_url, status, scheduled_at, published_at, telegram_message_id, error_message, created_at, updated_at"
     )
     .single();
 
