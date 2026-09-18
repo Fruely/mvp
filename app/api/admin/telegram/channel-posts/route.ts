@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdminToken } from "@/lib/adminApiAuth";
 import { jsonNoStore } from "@/lib/api/response";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { normalizeTelegramChannelText } from "@/lib/telegram/channelPosts";
+import {
+  normalizeTelegramChannelCta,
+  normalizeTelegramChannelText,
+} from "@/lib/telegram/channelPosts";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +33,7 @@ export async function GET(request: NextRequest) {
   const { data, error } = await supabase
     .from("telegram_channel_posts")
     .select(
-      "id, title, body_text, status, scheduled_at, published_at, telegram_message_id, error_message, created_at, updated_at"
+      "id, title, body_text, cta_label, cta_url, status, scheduled_at, published_at, telegram_message_id, error_message, created_at, updated_at"
     )
     .order("created_at", { ascending: false })
     .limit(100);
@@ -68,6 +71,17 @@ export async function POST(request: NextRequest) {
       : null;
   const status = parseStatus(body.status);
   const scheduledAt = parseScheduledAt(body.scheduled_at);
+  const wantsCta = body.cta_enabled === true;
+  const cta = wantsCta
+    ? normalizeTelegramChannelCta(body.cta_label, body.cta_url)
+    : null;
+
+  if (wantsCta && !cta) {
+    return jsonNoStore(
+      { error: "Button text and a valid HTTP(S) URL are required" },
+      { status: 400 }
+    );
+  }
 
   if (status === "scheduled" && !scheduledAt) {
     return jsonNoStore(
@@ -82,11 +96,13 @@ export async function POST(request: NextRequest) {
     .insert({
       title,
       body_text: bodyText,
+      cta_label: cta?.label ?? null,
+      cta_url: cta?.url ?? null,
       status,
       scheduled_at: scheduledAt,
     })
     .select(
-      "id, title, body_text, status, scheduled_at, published_at, telegram_message_id, error_message, created_at, updated_at"
+      "id, title, body_text, cta_label, cta_url, status, scheduled_at, published_at, telegram_message_id, error_message, created_at, updated_at"
     )
     .single();
 

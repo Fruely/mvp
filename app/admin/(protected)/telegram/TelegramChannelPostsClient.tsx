@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 
+const DEFAULT_CTA_LABEL = "Найти специалиста бесплатно";
+const DEFAULT_CTA_URL =
+  "https://freuly.de/ru/request?utm_source=freuly_telegram&utm_medium=organic_social&utm_campaign=channel_posts&utm_content=inline_button";
+
 type TelegramChannelPost = {
   id: string;
   title: string | null;
   body_text: string;
+  cta_label: string | null;
+  cta_url: string | null;
   status: string;
   scheduled_at: string | null;
   published_at: string | null;
@@ -29,10 +35,22 @@ function toLocalInputValue(value: Date): string {
   return new Date(value.getTime() - offsetMs).toISOString().slice(0, 16);
 }
 
+function isValidHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
 export default function TelegramChannelPostsClient({ initialPosts }: Props) {
   const [posts, setPosts] = useState(initialPosts);
   const [title, setTitle] = useState("");
   const [bodyText, setBodyText] = useState("");
+  const [ctaEnabled, setCtaEnabled] = useState(true);
+  const [ctaLabel, setCtaLabel] = useState(DEFAULT_CTA_LABEL);
+  const [ctaUrl, setCtaUrl] = useState(DEFAULT_CTA_URL);
   const [generationTopic, setGenerationTopic] = useState("");
   const [generationContext, setGenerationContext] = useState("");
   const [scheduledAt, setScheduledAt] = useState(() =>
@@ -42,6 +60,8 @@ export default function TelegramChannelPostsClient({ initialPosts }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [publishingId, setPublishingId] = useState<string | null>(null);
+  const ctaIsValid =
+    !ctaEnabled || (Boolean(ctaLabel.trim()) && isValidHttpUrl(ctaUrl));
 
   async function generateDraft() {
     setIsGenerating(true);
@@ -80,6 +100,9 @@ export default function TelegramChannelPostsClient({ initialPosts }: Props) {
         body: JSON.stringify({
           title,
           body_text: bodyText,
+          cta_enabled: ctaEnabled,
+          cta_label: ctaEnabled ? ctaLabel : null,
+          cta_url: ctaEnabled ? ctaUrl : null,
           status,
           scheduled_at:
             status === "scheduled" ? new Date(scheduledAt).toISOString() : null,
@@ -173,6 +196,64 @@ export default function TelegramChannelPostsClient({ initialPosts }: Props) {
             />
           </label>
 
+          <div className="rounded-md border border-gray-200 bg-gray-50 p-3">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={ctaEnabled}
+                onChange={(event) => setCtaEnabled(event.target.checked)}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <span className="text-sm font-semibold text-gray-900">
+                Добавить кнопку под постом
+              </span>
+            </label>
+
+            {ctaEnabled ? (
+              <div className="mt-3 space-y-3">
+                <label className="block">
+                  <span className="text-sm font-medium text-gray-700">Текст кнопки</span>
+                  <input
+                    value={ctaLabel}
+                    onChange={(event) => setCtaLabel(event.target.value)}
+                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    maxLength={64}
+                    placeholder={DEFAULT_CTA_LABEL}
+                  />
+                  <span className="mt-1 block text-xs text-gray-500">
+                    {ctaLabel.trim().length}/64
+                  </span>
+                </label>
+
+                <label className="block">
+                  <span className="text-sm font-medium text-gray-700">Ссылка кнопки</span>
+                  <input
+                    type="url"
+                    value={ctaUrl}
+                    onChange={(event) => setCtaUrl(event.target.value)}
+                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    maxLength={2048}
+                    placeholder="https://freuly.de/..."
+                  />
+                </label>
+
+                {ctaLabel.trim() && isValidHttpUrl(ctaUrl) ? (
+                  <div>
+                    <p className="mb-1 text-xs font-medium text-gray-500">Предпросмотр</p>
+                    <a
+                      href={ctaUrl.trim()}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block rounded-md bg-sky-600 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-sky-700"
+                    >
+                      {ctaLabel.trim()}
+                    </a>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+
           <label className="block">
             <span className="text-sm font-medium text-gray-700">Текст поста</span>
             <textarea
@@ -200,7 +281,12 @@ export default function TelegramChannelPostsClient({ initialPosts }: Props) {
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              disabled={isSaving || isGenerating || !bodyText.trim()}
+              disabled={
+                isSaving ||
+                isGenerating ||
+                !bodyText.trim() ||
+                !ctaIsValid
+              }
               onClick={() => void createPost("draft")}
               className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -208,7 +294,12 @@ export default function TelegramChannelPostsClient({ initialPosts }: Props) {
             </button>
             <button
               type="button"
-              disabled={isSaving || isGenerating || !bodyText.trim()}
+              disabled={
+                isSaving ||
+                isGenerating ||
+                !bodyText.trim() ||
+                !ctaIsValid
+              }
               onClick={() => void createPost("scheduled")}
               className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -253,6 +344,16 @@ export default function TelegramChannelPostsClient({ initialPosts }: Props) {
                 <p className="mt-3 line-clamp-4 whitespace-pre-wrap text-sm text-gray-700">
                   {post.body_text}
                 </p>
+                {post.cta_label && post.cta_url ? (
+                  <a
+                    href={post.cta_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-3 block rounded-md bg-sky-600 px-3 py-2 text-center text-xs font-semibold text-white hover:bg-sky-700"
+                  >
+                    {post.cta_label}
+                  </a>
+                ) : null}
                 <div className="mt-3 space-y-1 text-xs text-gray-500">
                   <p>Запланировано: {formatDateTime(post.scheduled_at)}</p>
                   <p>Опубликовано: {formatDateTime(post.published_at)}</p>

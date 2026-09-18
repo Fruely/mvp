@@ -4,6 +4,11 @@ export type TelegramChannelPostSendResult =
   | { ok: true; messageId: number | null }
   | { ok: false; error: string };
 
+export type TelegramChannelPostCta = {
+  label: string;
+  url: string;
+};
+
 function getTelegramConfig(): { token: string; channelId: string } | null {
   const token = process.env.TELEGRAM_BOT_TOKEN?.trim();
   const channelId = process.env.TELEGRAM_CHANNEL_ID?.trim();
@@ -30,8 +35,39 @@ export function normalizeTelegramChannelText(value: unknown): string | null {
   return text;
 }
 
+export function normalizeTelegramChannelCta(
+  labelValue: unknown,
+  urlValue: unknown
+): TelegramChannelPostCta | null {
+  if (typeof labelValue !== "string" || typeof urlValue !== "string") return null;
+
+  const label = labelValue.trim();
+  const url = urlValue.trim();
+  if (!label || label.length > 64 || !url || url.length > 2048) return null;
+
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return null;
+  } catch {
+    return null;
+  }
+
+  return { label, url };
+}
+
+export function buildTelegramChannelReplyMarkup(
+  cta: TelegramChannelPostCta | null
+): { inline_keyboard: Array<Array<{ text: string; url: string }>> } | undefined {
+  if (!cta) return undefined;
+
+  return {
+    inline_keyboard: [[{ text: cta.label, url: cta.url }]],
+  };
+}
+
 export async function sendTelegramChannelPost(
-  text: string
+  text: string,
+  cta: TelegramChannelPostCta | null = null
 ): Promise<TelegramChannelPostSendResult> {
   const config = getTelegramConfig();
   if (!config) {
@@ -49,6 +85,7 @@ export async function sendTelegramChannelPost(
         chat_id: config.channelId,
         text,
         disable_web_page_preview: false,
+        reply_markup: buildTelegramChannelReplyMarkup(cta),
       }),
     });
 

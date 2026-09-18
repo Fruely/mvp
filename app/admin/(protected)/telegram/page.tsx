@@ -6,6 +6,8 @@ type TelegramChannelPost = {
   id: string;
   title: string | null;
   body_text: string;
+  cta_label: string | null;
+  cta_url: string | null;
   status: string;
   scheduled_at: string | null;
   published_at: string | null;
@@ -22,7 +24,7 @@ export default async function AdminTelegramPage() {
     const { data } = await supabase
       .from("telegram_channel_posts")
       .select(
-        "id, title, body_text, status, scheduled_at, published_at, telegram_message_id, error_message, created_at"
+        "id, title, body_text, cta_label, cta_url, status, scheduled_at, published_at, telegram_message_id, error_message, created_at"
       )
       .order("created_at", { ascending: false })
       .limit(100);
