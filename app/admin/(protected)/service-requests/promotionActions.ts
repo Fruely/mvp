@@ -7,22 +7,47 @@ import {
   savePromotionDraftAdmin,
   type ServiceRequestPromotionAdmin,
 } from "@/lib/serviceRequests/promotionAdminData";
+import {
+  generatePromotionDraftAdmin,
+  type GeneratedPromotionDraft,
+} from "@/lib/serviceRequests/promotionDraftGenerator";
 
 export type PromotionActionResult =
   | { ok: true; promotion: ServiceRequestPromotionAdmin }
   | { ok: false; error: string };
 
-function mapError(err: unknown): PromotionActionResult {
+export type GeneratePromotionDraftActionResult =
+  | { ok: true; draft: GeneratedPromotionDraft }
+  | { ok: false; error: string };
+
+function errorCode(err: unknown): string {
   const message = err instanceof Error ? err.message : "UNKNOWN";
-  if (message === "UNAUTHORIZED") return { ok: false, error: "unauthorized" };
-  if (message === "NOT_FOUND") return { ok: false, error: "not_found" };
-  if (message === "INVALID_INPUT") return { ok: false, error: "invalid_input" };
-  if (message === "ALREADY_EXISTS") return { ok: false, error: "already_exists" };
-  return { ok: false, error: "server_error" };
+  if (message === "UNAUTHORIZED") return "unauthorized";
+  if (message === "NOT_FOUND") return "not_found";
+  if (message === "INVALID_INPUT") return "invalid_input";
+  if (message === "ALREADY_EXISTS") return "already_exists";
+  if (message === "TRANSLATION_FAILED") return "translation_failed";
+  if (message.startsWith("PROMOTION_GENERATION_")) return "generation_failed";
+  return "server_error";
+}
+
+function mapError(err: unknown): PromotionActionResult {
+  return { ok: false, error: errorCode(err) };
 }
 
 function revalidateAdminServiceRequests() {
   revalidatePath("/admin/service-requests");
+}
+
+export async function generatePromotionDraftAction(
+  serviceRequestId: string,
+): Promise<GeneratePromotionDraftActionResult> {
+  try {
+    const draft = await generatePromotionDraftAdmin(serviceRequestId);
+    return { ok: true, draft };
+  } catch (err) {
+    return { ok: false, error: errorCode(err) };
+  }
 }
 
 export async function savePromotionDraftAction(
@@ -31,7 +56,6 @@ export async function savePromotionDraftAction(
     locale: string;
     public_title: string;
     public_summary: string;
-    copies?: Record<string, { title?: string; summary?: string }>;
   },
 ): Promise<PromotionActionResult> {
   try {
