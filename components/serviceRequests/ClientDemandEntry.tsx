@@ -17,6 +17,7 @@ type Copy = {
   eyebrow: string;
   title: string;
   subtitle: string;
+  benefits: readonly [string, string, string];
   taskLabel: string;
   taskPlaceholder: string;
   languageTitle: string;
@@ -55,10 +56,11 @@ type Copy = {
 
 const COPY: Record<Lang, Copy> = {
   ru: {
-    eyebrow: "Freuly · подбор специалиста",
-    title: "Какая услуга вам нужна?",
-    subtitle: "",
-    taskLabel: "Опишите, какая помощь вам нужна, своими словами",
+    eyebrow: "Бесплатный подбор специалиста",
+    title: "Найдём специалиста в Германии, который говорит на вашем языке",
+    subtitle: "Опишите задачу — Freuly подберёт подходящего специалиста онлайн или рядом с вами.",
+    benefits: ["Бесплатно", "Без регистрации", "1–2 минуты"],
+    taskLabel: "Какая услуга вам нужна?",
     taskPlaceholder: "Например: нужна помощь с налоговой декларацией, не работает домашняя сеть, ищу психолога для подростка…",
     languageTitle: "На каком языке вам удобнее общаться со специалистом?",
     formatTitle: "Как вам удобнее получить услугу?",
@@ -94,10 +96,11 @@ const COPY: Record<Lang, Copy> = {
     step: "Шаг",
   },
   ua: {
-    eyebrow: "Freuly · підбір спеціаліста",
-    title: "Яка послуга вам потрібна?",
-    subtitle: "",
-    taskLabel: "Опишіть, яка допомога вам потрібна, своїми словами",
+    eyebrow: "Безкоштовний підбір спеціаліста",
+    title: "Знайдемо спеціаліста в Німеччині, який говорить вашою мовою",
+    subtitle: "Опишіть завдання — Freuly підбере відповідного спеціаліста онлайн або поруч із вами.",
+    benefits: ["Безкоштовно", "Без реєстрації", "1–2 хвилини"],
+    taskLabel: "Яка послуга вам потрібна?",
     taskPlaceholder: "Наприклад: потрібна допомога з податковою декларацією, не працює домашня мережа, шукаю психолога для підлітка…",
     languageTitle: "Якою мовою вам зручніше спілкуватися зі спеціалістом?",
     formatTitle: "Як вам зручніше отримати послугу?",
@@ -133,10 +136,11 @@ const COPY: Record<Lang, Copy> = {
     step: "Крок",
   },
   de: {
-    eyebrow: "Freuly · passende Fachkraft",
-    title: "Welche Leistung brauchen Sie?",
-    subtitle: "",
-    taskLabel: "Beschreiben Sie in eigenen Worten, welche Hilfe Sie brauchen",
+    eyebrow: "Kostenlose Fachkraftsuche",
+    title: "Wir finden eine passende Fachkraft in Deutschland, die Ihre Sprache spricht",
+    subtitle: "Beschreiben Sie Ihre Aufgabe — Freuly sucht online oder in Ihrer Nähe nach einer passenden Fachkraft.",
+    benefits: ["Kostenlos", "Ohne Anmeldung", "1–2 Minuten"],
+    taskLabel: "Welche Leistung brauchen Sie?",
     taskPlaceholder: "Zum Beispiel: Hilfe mit der Steuererklärung, Heimnetzwerk funktioniert nicht, Psychologe für einen Jugendlichen gesucht…",
     languageTitle: "In welcher Sprache möchten Sie mit der Fachkraft sprechen?",
     formatTitle: "Wie möchten Sie die Leistung erhalten?",
@@ -317,13 +321,21 @@ export default function ClientDemandEntry({ lang }: { lang: Lang }) {
 
   return (
     <div className="mx-auto w-full max-w-2xl overflow-x-hidden">
-      <div className="mb-8 text-center">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-freuly-primary">{copy.eyebrow}</p>
-        <h1 className="mt-3 text-3xl font-bold leading-tight text-freuly-text-primary sm:text-4xl">{copy.title}</h1>
-        {copy.subtitle ? (
-          <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-freuly-text-secondary">{copy.subtitle}</p>
-        ) : null}
-      </div>
+      {step === 1 ? (
+        <div className="mb-6 text-center sm:mb-8">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-freuly-primary">{copy.eyebrow}</p>
+          <h1 className="mt-3 text-2xl font-bold leading-tight text-freuly-text-primary sm:text-4xl">{copy.title}</h1>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-freuly-text-secondary sm:text-base">{copy.subtitle}</p>
+          <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-medium text-freuly-text-secondary">
+            {copy.benefits.map((benefit) => (
+              <li key={benefit} className="inline-flex items-center gap-1.5">
+                <span aria-hidden className="text-freuly-primary">✓</span>
+                {benefit}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       <div className={`p-6 sm:p-8 ${publicCardClass}`}>
         <div className="mb-7">

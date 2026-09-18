@@ -8,6 +8,7 @@ import {
   buildPaidRequestUrl,
   type PaidRequestUtm,
 } from "@/lib/serviceRequests/paidRequestEntry";
+import { NEMETSKIE_MUSLI_SHORT_URL } from "@/lib/serviceRequests/paidRequestShortLinks";
 
 const marketingLinks = [
   {
@@ -148,6 +149,12 @@ export default function MarketingLinksPage() {
             ))}
           </div>
           <div className="mt-4 space-y-3">
+            <LinkRow
+              label="Немецкие мюсли · короткая ссылка"
+              url={NEMETSKIE_MUSLI_SHORT_URL}
+              copiedUrl={copiedUrl}
+              onCopy={copyUrl}
+            />
             {campaignUrls.map((item) => (
               <LinkRow
                 key={item.lang}

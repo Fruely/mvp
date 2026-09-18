@@ -28,6 +28,14 @@ const marketingLinksSource = fs.readFileSync(
   path.join(root, "app/admin/(protected)/marketing-links/page.tsx"),
   "utf8",
 );
+const shortLinkRouteSource = fs.readFileSync(
+  path.join(root, "app/go/muesli/route.ts"),
+  "utf8",
+);
+const shortLinksSource = fs.readFileSync(
+  path.join(root, "lib/serviceRequests/paidRequestShortLinks.ts"),
+  "utf8",
+);
 const publicFeedSource = fs.readFileSync(
   path.join(root, "app/api/public/recent-service-requests/route.ts"),
   "utf8",
@@ -51,12 +59,15 @@ test("request entry is a dedicated page, not a redirect to the old full form", (
 
 test("RU/UA/DE paid request landing opens the first form step copy", () => {
   assert.match(entrySource, /useState\(1\)/);
-  assert.match(entrySource, /title: "Какая услуга вам нужна\?"/);
-  assert.match(entrySource, /title: "Яка послуга вам потрібна\?"/);
-  assert.match(entrySource, /title: "Welche Leistung brauchen Sie\?"/);
-  assert.match(entrySource, /taskLabel: "Опишите, какая помощь вам нужна, своими словами"/);
-  assert.match(entrySource, /taskLabel: "Опишіть, яка допомога вам потрібна, своїми словами"/);
-  assert.match(entrySource, /taskLabel: "Beschreiben Sie in eigenen Worten, welche Hilfe Sie brauchen"/);
+  assert.match(entrySource, /title: "Найдём специалиста в Германии, который говорит на вашем языке"/);
+  assert.match(entrySource, /title: "Знайдемо спеціаліста в Німеччині, який говорить вашою мовою"/);
+  assert.match(entrySource, /title: "Wir finden eine passende Fachkraft in Deutschland, die Ihre Sprache spricht"/);
+  assert.match(entrySource, /taskLabel: "Какая услуга вам нужна\?"/);
+  assert.match(entrySource, /taskLabel: "Яка послуга вам потрібна\?"/);
+  assert.match(entrySource, /taskLabel: "Welche Leistung brauchen Sie\?"/);
+  assert.match(entrySource, /Без регистрации/);
+  assert.match(entrySource, /Без реєстрації/);
+  assert.match(entrySource, /Ohne Anmeldung/);
   assert.match(entrySource, /\{step === 1 \?/);
   assert.match(entrySource, /\{copy\.continue\}/);
 });
@@ -110,6 +121,16 @@ test("admin marketing links copy RU/UA/DE paid request URLs with campaign UTM", 
   assert.match(marketingLinksSource, /https:\/\/freuly\.de\/de\/request/);
   assert.match(marketingLinksSource, /buildPaidRequestUrl/);
   assert.match(marketingLinksSource, /utm_campaign/);
+  assert.match(marketingLinksSource, /NEMETSKIE_MUSLI_SHORT_URL/);
+});
+
+test("Nemetskie Musli short URL redirects to the RU paid request landing with attribution", () => {
+  assert.match(shortLinkRouteSource, /buildPaidRequestPath\("ru", NEMETSKIE_MUSLI_UTM\)/);
+  assert.match(shortLinkRouteSource, /NextResponse\.redirect\(destination, \{ status: 307 \}\)/);
+  assert.match(shortLinksSource, /NEMETSKIE_MUSLI_SHORT_PATH = "\/go\/muesli"/);
+  assert.match(shortLinksSource, /utm_source: "nemetskie_musli"/);
+  assert.match(shortLinksSource, /utm_medium: "telegram"/);
+  assert.match(shortLinksSource, /utm_campaign: "client_demand_launch"/);
 });
 
 test("public live demand feed never selects client contact fields or description", () => {
