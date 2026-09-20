@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   buildAcquisitionFirstTouch,
+  classifyReferrerSource,
+  isAiAcquisitionSource,
   parseAcquisitionSnapshot,
   serializeAcquisitionCookie,
   parseAcquisitionCookie,
@@ -53,4 +55,46 @@ test("acquisition snapshot survives serialize/parse like a cookie kept across fo
   const roundTrip = parseAcquisitionCookie(serializeAcquisitionCookie(original));
   assert.deepEqual(roundTrip, original);
   assert.deepEqual(parseAcquisitionSnapshot(original), original);
+});
+
+test("known AI referrers are classified as dedicated acquisition sources", () => {
+  assert.equal(classifyReferrerSource("https://chatgpt.com/c/abc"), "chatgpt");
+  assert.equal(classifyReferrerSource("https://chat.openai.com/c/legacy"), "chatgpt");
+  assert.equal(classifyReferrerSource("https://gemini.google.com/app/abc"), "gemini");
+  assert.equal(classifyReferrerSource("https://claude.ai/chat/abc"), "claude");
+  assert.equal(classifyReferrerSource("https://www.perplexity.ai/search/abc"), "perplexity");
+  assert.equal(classifyReferrerSource("https://copilot.microsoft.com/"), "copilot");
+  assert.equal(classifyReferrerSource("https://grok.com/"), "grok");
+  assert.equal(classifyReferrerSource("https://poe.com/"), "poe");
+});
+
+test("Gemini is classified before the broad google.com rule", () => {
+  assert.equal(classifyReferrerSource("https://gemini.google.com/"), "gemini");
+  assert.equal(classifyReferrerSource("https://www.google.com/search?q=freuly"), "google");
+});
+
+test("AI referral survives the normal first-touch capture path", () => {
+  const touch = buildAcquisitionFirstTouch({
+    href: "https://freuly.de/ru/request",
+    referrer: "https://chatgpt.com/",
+    capturedAt: "2026-09-20T18:00:00.000Z",
+  });
+
+  assert.ok(touch);
+  assert.equal(touch.source, "chatgpt");
+  assert.equal(isAiAcquisitionSource(touch.source), true);
+  assert.equal(touch.referrer, "https://chatgpt.com/");
+});
+
+test("explicit AI UTM sources can be identified even when referrer is unavailable", () => {
+  const touch = buildAcquisitionFirstTouch({
+    href: "https://freuly.de/de/request?utm_source=perplexity&utm_medium=ai_referral",
+    capturedAt: "2026-09-20T18:00:00.000Z",
+  });
+
+  assert.ok(touch);
+  assert.equal(touch.source, "perplexity");
+  assert.equal(touch.medium, "ai_referral");
+  assert.equal(isAiAcquisitionSource(touch.source), true);
+  assert.equal(isAiAcquisitionSource("google"), false);
 });
