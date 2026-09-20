@@ -17,14 +17,14 @@ type Props = {
 
 function getRegistrationCommercialHint(lang?: string) {
   if (lang === "de") {
-    return "Mit der Registrierung wird zunächst ein nicht öffentlich sichtbarer Entwurf angelegt. Öffentliche Sichtbarkeit und die Teilnahme am Kundenanfrage-Kanal werden erst nach der Aktivierung von Freuly Professional oder Freuly Growth freigeschaltet. Es gibt keine automatische wiederkehrende Abbuchung.";
+    return "Die Registrierung ist kostenlos. Vervollständigen und veröffentlichen Sie Ihr Basisprofil ohne Pflicht-Abo. Passende Kundenanfragen können anschließend einzeln freigeschaltet oder im Rahmen von Freuly Professional bzw. Freuly Growth genutzt werden. Es gibt keine automatische wiederkehrende Abbuchung.";
   }
 
   if (lang === "ua") {
-    return "Після реєстрації спочатку створюється непублічна чернетка. Публічна видимість і участь у каналі клієнтських запитів вмикаються після активації Freuly Professional або Freuly Growth. Автоматичного повторного списання немає.";
+    return "Реєстрація безкоштовна. Заповніть і опублікуйте базовий профіль без обов’язкової підписки. Відповідні клієнтські запити потім можна відкривати окремо або отримувати доступ до них у межах Freuly Professional чи Freuly Growth. Автоматичного повторного списання немає.";
   }
 
-  return "После регистрации сначала создаётся непубличный черновик. Публичная видимость и участие в канале клиентских заявок включаются после активации Freuly Professional или Freuly Growth. Автоматического повторного списания нет.";
+  return "Регистрация бесплатна. Заполните и опубликуйте базовый профиль без обязательной подписки. Подходящие клиентские заявки затем можно открывать отдельно или получать доступ к ним в рамках Freuly Professional или Freuly Growth. Автоматического повторного списания нет.";
 }
 
 export default function SpecialistQuickRegisterForm({ dict, lang }: Props) {
