@@ -209,6 +209,10 @@ test("SendMessage get specialist delegates only public lookup", async () => {
     };
   };
   assert.equal(body.result.message.parts[0].data.action, "get_specialist");
+  assert.equal(
+    (body.result.message as { contextId: string }).contextId,
+    "freuly-context:msg-2",
+  );
 });
 
 test("A2A rejects text-only and write actions rather than inventing behavior", async () => {
