@@ -215,7 +215,8 @@ export function buildFreulyReadOnlyOpenApiDocument() {
         SpecialistSummary: specialistSummarySchema,
       },
     },
-    "x-freuly-capability-core-version": FREULY_CAPABILITY_CORE.schema_version,\n    "x-freuly-agent-api-version": "v1",
+    "x-freuly-capability-core-version": FREULY_CAPABILITY_CORE.schema_version,
+    "x-freuly-agent-api-version": "v1",
     "x-agent-safety": {
       readOnly: true,
       writeCapabilitiesAdvertised: false,
