@@ -1,4 +1,5 @@
 import { verifyAgentCredentialHash } from "./credentials";
+import { clientScopesAreKnown } from "./scopes";
 
 export const AGENT_CLIENT_TYPES = [
   "consumer_agent",
@@ -104,6 +105,8 @@ export function authenticateAgentCredentialRecord(input: {
   }
 
   const scopes = normalizedScopes(client.scopes);
+  if (!clientScopesAreKnown(scopes)) return { kind: "invalid" };
+
   const missingScopes = missingAgentScopes(
     scopes,
     input.requiredScopes ?? [],

@@ -1,6 +1,12 @@
 import "server-only";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  sanitizeAgentAuditMetadata,
+  type AgentAuditMetadata,
+} from "./auditMetadata";
+
+export type { AgentAuditMetadata } from "./auditMetadata";
 
 export type AgentAuditOutcome =
   | "allowed"
@@ -20,7 +26,7 @@ export type AgentApiAuditEvent = {
   method: string;
   outcome: AgentAuditOutcome;
   httpStatus: number;
-  metadata?: Record<string, string | number | boolean | null>;
+  metadata?: AgentAuditMetadata;
 };
 
 function clean(value: string | null | undefined, max: number): string | null {
@@ -42,7 +48,7 @@ export async function recordAgentApiAuditEvent(
       method: clean(event.method, 16) ?? "UNKNOWN",
       outcome: event.outcome,
       http_status: event.httpStatus,
-      metadata: event.metadata ?? {},
+      metadata: sanitizeAgentAuditMetadata(event.metadata),
     });
     if (error) {
       console.error("[agent-auth] audit insert failed", {
@@ -52,6 +58,7 @@ export async function recordAgentApiAuditEvent(
   } catch (error) {
     // Audit logging must not leak credential material or turn a successful
     // user-authorized action into a retryable duplicate.
-    console.error("[agent-auth] audit write failed", error);
+    const name = error instanceof Error ? error.name : "unknown";
+    console.error("[agent-auth] audit write failed", { name });
   }
 }

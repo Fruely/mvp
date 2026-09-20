@@ -16,6 +16,15 @@ export {
   resolveAgentCredential,
 } from "./resolve";
 export { recordAgentApiAuditEvent } from "./audit";
+export {
+  AGENT_AUDIT_METADATA_ALLOWED_KEYS,
+  sanitizeAgentAuditMetadata,
+} from "./auditMetadata";
+export {
+  clientScopesAreKnown,
+  isKnownAgentScope,
+  listCapabilityCoreScopes,
+} from "./scopes";
 export type {
   AgentClientRecord,
   AgentClientType,
@@ -24,5 +33,6 @@ export type {
 } from "./policy";
 export type {
   AgentApiAuditEvent,
+  AgentAuditMetadata,
   AgentAuditOutcome,
 } from "./audit";

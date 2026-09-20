@@ -174,6 +174,22 @@ test("invalid expiry and unknown client type fail closed", () => {
   assert.deepEqual(unknownType, { kind: "invalid" });
 });
 
+test("unknown scopes fail closed instead of being treated as grants", () => {
+  const base = fixture();
+  const decision = authenticateAgentCredentialRecord({
+    rawCredential: base.generated.raw,
+    pepper: PEPPER,
+    credential: base.credential,
+    client: {
+      ...base.client,
+      scopes: ["requests:create", "admin:all"],
+    },
+    requiredScopes: ["requests:create"],
+    now: NOW,
+  });
+  assert.deepEqual(decision, { kind: "invalid" });
+});
+
 test("missing records are invalid and never treated as anonymous success", () => {
   const base = fixture();
 
