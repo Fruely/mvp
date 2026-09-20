@@ -34,7 +34,6 @@ function jsonResponse(body: unknown, status = 200, headers?: Record<string, stri
 }
 
 async function getSpecialistFromPublicApi(
-  request: NextRequest,
   input: { specialistId: string; language: string | null },
 ): Promise<McpSpecialistLookupResult> {
   const url = new URL(
@@ -113,7 +112,7 @@ export async function POST(request: NextRequest) {
 
   const dispatched = await dispatchFreulyMcpRequest(validation.request, {
     searchSpecialists,
-    getSpecialist: (input) => getSpecialistFromPublicApi(request, input),
+    getSpecialist: getSpecialistFromPublicApi,
   });
 
   return jsonResponse(dispatched.body, dispatched.status, {
