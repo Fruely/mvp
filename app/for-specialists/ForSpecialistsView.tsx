@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Lang } from "@/lib/i18n";
-import { CURRENT_CURRENT_FOR_SPECIALISTS_COPY } from "./currentCopy";
+import { CURRENT_FOR_SPECIALISTS_COPY } from "./currentCopy";
 
 type Props = { lang: Lang };
 
