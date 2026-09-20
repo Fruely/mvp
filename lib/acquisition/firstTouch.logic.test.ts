@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   buildAcquisitionFirstTouch,
   classifyReferrerSource,
+  deriveAcquisitionMetadata,
   isAiAcquisitionSource,
   parseAcquisitionSnapshot,
   serializeAcquisitionCookie,
@@ -97,4 +98,51 @@ test("explicit AI UTM sources can be identified even when referrer is unavailabl
   assert.equal(touch.medium, "ai_referral");
   assert.equal(isAiAcquisitionSource(touch.source), true);
   assert.equal(isAiAcquisitionSource("google"), false);
+});
+
+
+test("AI referral metadata is high confidence when referrer identifies the provider", () => {
+  const touch = buildAcquisitionFirstTouch({
+    href: "https://freuly.de/ru/request",
+    referrer: "https://chatgpt.com/c/abc",
+    capturedAt: "2026-09-20T18:00:00.000Z",
+  });
+
+  assert.ok(touch);
+  assert.deepEqual(deriveAcquisitionMetadata(touch), {
+    acquisition_channel: "ai",
+    ai_provider: "chatgpt",
+    ai_interaction_type: "ai_referral",
+    attribution_confidence: "high",
+  });
+});
+
+test("AI UTM without referrer is medium confidence and cannot self-assert ai_agent", () => {
+  const touch = buildAcquisitionFirstTouch({
+    href: "https://freuly.de/de/request?utm_source=claude&utm_medium=ai_agent",
+    capturedAt: "2026-09-20T18:00:00.000Z",
+  });
+
+  assert.ok(touch);
+  assert.deepEqual(deriveAcquisitionMetadata(touch), {
+    acquisition_channel: "ai",
+    ai_provider: "claude",
+    ai_interaction_type: "ai_referral",
+    attribution_confidence: "medium",
+  });
+});
+
+test("non-AI acquisition does not fabricate AI metadata", () => {
+  const touch = buildAcquisitionFirstTouch({
+    href: "https://freuly.de/ru/request?utm_source=meta&utm_medium=paid_social",
+    capturedAt: "2026-09-20T18:00:00.000Z",
+  });
+
+  assert.ok(touch);
+  assert.deepEqual(deriveAcquisitionMetadata(touch), {
+    acquisition_channel: null,
+    ai_provider: null,
+    ai_interaction_type: null,
+    attribution_confidence: null,
+  });
 });
