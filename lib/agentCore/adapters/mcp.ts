@@ -317,7 +317,9 @@ function completeResult(id: JsonRpcId, result: Record<string, unknown>) {
 
 function toolResult(id: JsonRpcId, value: unknown, isError = false) {
   const text =
-    typeof value === "string" ? value : JSON.stringify(value);
+    typeof value === "string"
+      ? value
+      : JSON.stringify(value) ?? String(value);
   return completeResult(id, {
     content: [{ type: "text", text }],
     ...(isError ? { isError: true } : { isError: false }),
