@@ -6,6 +6,7 @@ import { buildFreulyReadOnlyOpenApiDocument } from "./openapi.ts";
 test("ARD manifest advertises a real read-only OpenAPI artifact", () => {
   const manifest = buildFreulyArdManifest();
   const entry = manifest.entries[0];
+  const a2aEntry = manifest.entries[1];
 
   assert.equal(entry.identifier, "urn:air:freuly.de:api:specialist-search");
   assert.equal(entry.type, "application/openapi+json");
@@ -13,14 +14,19 @@ test("ARD manifest advertises a real read-only OpenAPI artifact", () => {
   assert.ok(entry.representativeQueries.length >= 2);
   assert.ok(entry.representativeQueries.length <= 5);
   assert.deepEqual(entry.capabilities, ["search_specialists", "get_specialist"]);
+  assert.equal(a2aEntry.identifier, "urn:air:freuly.de:a2a:read");
+  assert.equal(a2aEntry.url, "https://freuly.de/.well-known/agent-card.json");
+  assert.equal(a2aEntry.metadata.protocolVersion, "1.0");
+  assert.equal(a2aEntry.metadata.protocolBinding, "JSONRPC");
+  assert.equal(a2aEntry.metadata.readOnly, true);
 });
 
-test("public discovery beacon does not claim unimplemented write or A2A execution", () => {
+test("public discovery beacon does not claim unimplemented write execution", () => {
   const manifest = JSON.stringify(buildFreulyArdManifest());
 
   assert.equal(manifest.includes("create_service_request"), false);
   assert.equal(manifest.includes("express_interest"), false);
-  assert.equal(manifest.includes("application/a2a-agent-card+json"), false);
+  assert.equal(manifest.includes("accept_match"), false);
 });
 
 test("OpenAPI discovery document maps only existing public read operations", () => {
