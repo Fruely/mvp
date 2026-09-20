@@ -7,6 +7,13 @@ function replaceNumberedSection(raw: string, sectionNumber: number, nextSectionN
   return raw.replace(pattern, replacement.trim());
 }
 
+function bumpRulesVersion(raw: string) {
+  return raw
+    .replace("Version 2.1 — August 2026", "Version 2.2 — September 2026")
+    .replace("Версия 2.1 — август 2026", "Версия 2.2 — сентябрь 2026")
+    .replace("Версія 2.1 — серпень 2026", "Версія 2.2 — вересень 2026");
+}
+
 const SECTION_9: Record<LegalPublicLang, string> = {
   de: `## 9. Keine Erfolgsgarantie
 
@@ -31,7 +38,8 @@ export function applyPublicSpecialistRulesAmendments(
   raw: string,
 ): string {
   if (slug !== "specialist-rules") return raw;
-  let result = replaceNumberedSection(raw, 9, 10, SECTION_9[lang]);
+  let result = bumpRulesVersion(raw);
+  result = replaceNumberedSection(result, 9, 10, SECTION_9[lang]);
   result = result.replace(
     /(## (?:Заключительное положение|Заключне положення|Schlussbestimmung)\s*\n(?:\s*<!--[^>]+-->\s*\n)?)[\s\S]*$/,
     `$1${CLOSE[lang]}\n`,
