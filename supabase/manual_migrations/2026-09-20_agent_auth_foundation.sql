@@ -170,7 +170,7 @@ REVOKE ALL ON SEQUENCE public.agent_api_audit_events_id_seq FROM anon, authentic
 
 GRANT ALL ON TABLE public.agent_clients TO service_role;
 GRANT ALL ON TABLE public.agent_credentials TO service_role;
-GRANT ALL ON TABLE public.agent_api_audit_events TO service_role;
+GRANT SELECT, INSERT ON TABLE public.agent_api_audit_events TO service_role;
 GRANT USAGE, SELECT ON SEQUENCE public.agent_api_audit_events_id_seq TO service_role;
 
 COMMIT;
