@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ForSpecialistsView } from "@/app/for-specialists/ForSpecialistsView";
-import { FOR_SPECIALISTS_COPY } from "@/app/for-specialists/copy";
+import { CURRENT_CURRENT_FOR_SPECIALISTS_COPY } from "@/app/for-specialists/currentCopy";
 import { isSupportedLang, type Lang } from "@/lib/i18n";
 
 import { SITE_DOMAIN } from "@/lib/seo/siteMetadata";
@@ -9,7 +9,7 @@ import { SITE_DOMAIN } from "@/lib/seo/siteMetadata";
 export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
   const lang =
     params.lang === "ua" || params.lang === "ru" || params.lang === "de" ? params.lang : "ua";
-  const m = FOR_SPECIALISTS_COPY[lang].meta;
+  const m = CURRENT_FOR_SPECIALISTS_COPY[lang].meta;
   return {
     title: m.title,
     description: m.description,
