@@ -28,7 +28,9 @@ misleading operator flows.
 ### 2. Canonical commission source
 
 Partner commission is created automatically from the **first eligible paid monthly
-Stripe subscription invoice** via:
+Professional/Growth Stripe tariff invoice/payment** after a referred specialist has
+registered. Registration and publication of the free base profile are not commission
+events.
 
 `processStripeBillingWebhook` → `processStripeWebhookEventForPartners` →
 `handleStripeInvoicePaidForPartnerCommission` → `createCommissionFromStripeInvoice`.
@@ -37,7 +39,8 @@ Commission is **not** created from:
 
 - `subscription.created` / `subscription.updated`
 - `checkout.session.completed` alone
-- €10 promoted request payment
+- any pay-per-lead / one-off request-access payment (direct or promoted)
+- free specialist registration or base-profile publication
 - promoted subscription credit consumption
 - partner Freuly credit application
 - 7-day publication or grace-period lifecycle events
