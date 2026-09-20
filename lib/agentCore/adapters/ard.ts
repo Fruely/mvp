@@ -60,6 +60,37 @@ export function buildFreulyArdManifest() {
       },
       {
         "@context": ARD_CONTEXT,
+        identifier: "urn:air:freuly.de:mcp:read",
+        displayName: "Freuly MCP Read Server",
+        type: "application/json",
+        url: `${DOMAIN}/api/mcp`,
+        description:
+          "Stateless MCP 2026-07-28 endpoint exposing read-only Freuly specialist discovery tools.",
+        tags: [
+          "MCP",
+          "Germany",
+          "services",
+          "specialists",
+          "marketplace",
+          "multilingual",
+        ],
+        capabilities: ["search_specialists", "get_specialist"],
+        representativeQueries: queries,
+        version: FREULY_CAPABILITY_CORE.schema_version,
+        metadata: {
+          market: "DE",
+          readOnly: true,
+          transport: "streamable-http",
+          protocolVersion: "2026-07-28",
+          languages: FREULY_CAPABILITY_CORE.service.languages.join(","),
+        },
+        trustManifest: {
+          identity: DOMAIN,
+          identityType: "https",
+        },
+      },
+      {
+        "@context": ARD_CONTEXT,
         identifier: "urn:air:freuly.de:a2a:read",
         displayName: "Freuly A2A Read Agent",
         type: "application/json",
