@@ -5,10 +5,12 @@ import { getPartnerAgreement } from "@/content/partners/agreementContent";
 import { getPartnerAgreementV10 } from "@/content/partners/agreementContentV10";
 import { getPartnerAgreementV11 } from "@/content/partners/agreementContentV11";
 import { getPartnerAgreementV12 } from "@/content/partners/agreementContentV12";
+import { getPartnerAgreementV13 } from "@/content/partners/agreementContentV13";
 import {
   PARTNER_AGREEMENT_INTERMEDIATE_VERSION,
   PARTNER_AGREEMENT_LEGACY_VERSION,
   PARTNER_AGREEMENT_PREVIOUS_VERSION,
+  PARTNER_AGREEMENT_PREVIOUS_V13_VERSION,
 } from "@/content/partners/agreementMeta";
 import { getFreulyPublicIdentity, formatFreulyWidnr } from "@/lib/legal/freulyIdentity";
 import { resolveAgreementVersion } from "@/lib/partners/agreementHash";
@@ -58,6 +60,9 @@ function agreementForVersion(lang: Lang, version: string) {
   }
   if (resolved === PARTNER_AGREEMENT_PREVIOUS_VERSION) {
     return getPartnerAgreementV12(lang);
+  }
+  if (resolved === PARTNER_AGREEMENT_PREVIOUS_V13_VERSION) {
+    return getPartnerAgreementV13(lang);
   }
   return getPartnerAgreement(lang);
 }
