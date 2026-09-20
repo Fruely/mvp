@@ -23,19 +23,33 @@ test("public discovery beacon does not claim unimplemented write or A2A executio
   assert.equal(manifest.includes("application/a2a-agent-card+json"), false);
 });
 
-test("OpenAPI discovery document maps only existing public read operations", () => {
+test("OpenAPI discovery document advertises the stable versioned agent read API", () => {
   const document = buildFreulyReadOnlyOpenApiDocument();
   const paths = Object.keys(document.paths);
 
   assert.deepEqual(paths.sort(), [
-    "/api/specialists/{id}",
-    "/api/specialists/search",
+    "/api/v1/agent/specialists",
+    "/api/v1/agent/specialists/{id}",
   ]);
 
-  assert.equal(document.paths["/api/specialists/search"].get.operationId, "search_specialists");
-  assert.equal(document.paths["/api/specialists/{id}"].get.operationId, "get_specialist");
+  assert.equal(
+    document.paths["/api/v1/agent/specialists"].get.operationId,
+    "search_specialists",
+  );
+  assert.equal(
+    document.paths["/api/v1/agent/specialists/{id}"].get.operationId,
+    "get_specialist",
+  );
+  assert.equal(document["x-freuly-agent-api-version"], "v1");
   assert.equal(document["x-agent-safety"].readOnly, true);
   assert.equal(document["x-agent-safety"].writeCapabilitiesAdvertised, false);
+});
+
+test("OpenAPI document does not leak legacy internal specialist route names", () => {
+  const serialized = JSON.stringify(buildFreulyReadOnlyOpenApiDocument());
+
+  assert.equal(serialized.includes('"/api/specialists/search"'), false);
+  assert.equal(serialized.includes('"/api/specialists/{id}"'), false);
 });
 
 test("OpenAPI document contains no write HTTP methods", () => {
