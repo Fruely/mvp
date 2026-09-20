@@ -11,6 +11,7 @@ import { CLIENT_CAMPAIGN_COOKIE_NAME } from "@/lib/clientCampaignLinks/cookie";
 import { findCampaignByIdForAttribution } from "@/lib/clientCampaignLinks/service";
 import {
   ACQUISITION_COOKIE_NAME,
+  deriveAcquisitionMetadata,
   parseAcquisitionCookie,
   parseAcquisitionSnapshot,
   pickAcquisitionForServiceRequest,
@@ -177,6 +178,7 @@ export async function POST(request: NextRequest) {
       body && typeof body === "object" ? (body as { acquisition?: unknown }).acquisition : null,
     );
     const acquisition = pickAcquisitionForServiceRequest(bodyAcquisition, cookieAcquisition);
+    const acquisitionMetadata = deriveAcquisitionMetadata(acquisition);
 
     let inserted: { public_id: string; created_at: string } | null = null;
     let creationReplay: { kind: "create" } | { kind: "replay" } = { kind: "create" };
@@ -219,6 +221,10 @@ export async function POST(request: NextRequest) {
         acquisition_referrer: acquisition?.referrer ?? null,
         acquisition_landing_path: acquisition?.landing_path ?? null,
         acquisition_captured_at: acquisition?.captured_at ?? null,
+        acquisition_channel: acquisitionMetadata.acquisition_channel,
+        ai_provider: acquisitionMetadata.ai_provider,
+        ai_interaction_type: acquisitionMetadata.ai_interaction_type,
+        acquisition_attribution_confidence: acquisitionMetadata.attribution_confidence,
         client_user_id: clientUserId,
         status: "new",
         updated_at: nowIso,
