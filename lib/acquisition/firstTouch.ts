@@ -1,6 +1,18 @@
 export const ACQUISITION_COOKIE_NAME = "freuly_acquisition_v1";
 export const ACQUISITION_COOKIE_MAX_AGE_SECONDS = 90 * 24 * 60 * 60;
 
+export const AI_ACQUISITION_SOURCES = [
+  "chatgpt",
+  "gemini",
+  "claude",
+  "perplexity",
+  "copilot",
+  "grok",
+  "poe",
+] as const;
+
+export type AiAcquisitionSource = (typeof AI_ACQUISITION_SOURCES)[number];
+
 export type AcquisitionFirstTouch = {
   source: string;
   medium: string | null;
@@ -30,10 +42,33 @@ function clean(value: unknown, max: number): string | null {
   return normalized.slice(0, max);
 }
 
+function hostMatches(host: string, domain: string): boolean {
+  return host === domain || host.endsWith(`.${domain}`);
+}
+
+export function isAiAcquisitionSource(
+  source: string | null | undefined,
+): source is AiAcquisitionSource {
+  if (!source) return false;
+  const normalized = source.trim().toLowerCase();
+  return (AI_ACQUISITION_SOURCES as readonly string[]).includes(normalized);
+}
+
 export function classifyReferrerSource(referrer: string | null): string {
   if (!referrer) return "direct";
   try {
     const host = new URL(referrer).hostname.toLowerCase().replace(/^www\./, "");
+
+    // AI referrals must be checked before broad search-engine domains.
+    // Example: gemini.google.com would otherwise be classified as plain Google.
+    if (hostMatches(host, "chatgpt.com") || host === "chat.openai.com") return "chatgpt";
+    if (host === "gemini.google.com") return "gemini";
+    if (hostMatches(host, "claude.ai")) return "claude";
+    if (hostMatches(host, "perplexity.ai")) return "perplexity";
+    if (host === "copilot.microsoft.com") return "copilot";
+    if (hostMatches(host, "grok.com")) return "grok";
+    if (hostMatches(host, "poe.com")) return "poe";
+
     if (host === "google.com" || host.endsWith(".google.com")) return "google";
     if (host === "threads.net" || host.endsWith(".threads.net")) return "threads";
     if (host === "instagram.com" || host.endsWith(".instagram.com")) return "instagram";
