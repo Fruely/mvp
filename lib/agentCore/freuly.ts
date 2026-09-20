@@ -165,6 +165,10 @@ export const FREULY_CAPABILITY_CORE: CapabilityCore = {
       side_effects: false,
       auth_profile: "verified_agent",
       required_scopes: ["requests:read"],
+      consent: {
+        required: true,
+        type: "explicit_user_authorization",
+      },
       personal_data: {
         input: "minimal",
         output: "minimal",
@@ -347,6 +351,10 @@ export const FREULY_CAPABILITY_CORE: CapabilityCore = {
       side_effects: false,
       auth_profile: "verified_agent",
       required_scopes: ["matches:read"],
+      consent: {
+        required: true,
+        type: "explicit_user_authorization",
+      },
       personal_data: {
         input: "minimal",
         output: "minimal",

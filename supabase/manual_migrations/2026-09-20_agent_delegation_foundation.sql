@@ -8,13 +8,19 @@
 -- - a delegation is bound to exactly one agent_client and one Freuly user
 -- - browser roles receive no direct Data API access
 -- - service-side code must verify BOTH agent scopes and this delegation
+-- - runtime lifecycle is revoke/expire, never physical DELETE of consent history
+-- - FKs are RESTRICT so deleting a client or user cannot wipe audit-able consent
+--
+-- Privilege model:
+-- Supabase service_role typically has BYPASSRLS. Table GRANTs still apply.
+-- service_role receives SELECT/INSERT/UPDATE only. Application code must not DELETE.
 
 BEGIN;
 
 CREATE TABLE IF NOT EXISTS public.agent_delegations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  agent_client_id uuid NOT NULL REFERENCES public.agent_clients (id) ON DELETE CASCADE,
-  user_id uuid NOT NULL REFERENCES auth.users (id) ON DELETE CASCADE,
+  agent_client_id uuid NOT NULL REFERENCES public.agent_clients (id) ON DELETE RESTRICT,
+  user_id uuid NOT NULL REFERENCES auth.users (id) ON DELETE RESTRICT,
   status text NOT NULL DEFAULT 'active',
   allowed_capabilities text[] NOT NULL,
   consent_version text NOT NULL,
@@ -64,7 +70,9 @@ CREATE INDEX IF NOT EXISTS idx_agent_delegations_active_expiry
   WHERE status = 'active' AND expires_at IS NOT NULL;
 
 COMMENT ON TABLE public.agent_delegations IS
-  'Explicit user authorization for an external Agent API principal. Application authorization must also verify the agent credential and required server-authoritative scope.';
+  'Explicit user authorization for an external Agent API principal. Runtime lifecycle is revoke/expire; rows are retained for consent audit. Application authorization must also verify the agent credential and required server-authoritative scope.';
+COMMENT ON COLUMN public.agent_delegations.status IS
+  'active or revoked. Application code must not DELETE this row.';
 COMMENT ON COLUMN public.agent_delegations.allowed_capabilities IS
   'Exact user-delegatable Capability Core operations authorized by this consent record.';
 COMMENT ON COLUMN public.agent_delegations.consent_version IS
@@ -75,6 +83,7 @@ COMMENT ON COLUMN public.agent_delegations.purpose IS
 ALTER TABLE public.agent_delegations ENABLE ROW LEVEL SECURITY;
 
 REVOKE ALL ON TABLE public.agent_delegations FROM anon, authenticated;
-GRANT ALL ON TABLE public.agent_delegations TO service_role;
+GRANT SELECT, INSERT, UPDATE ON TABLE public.agent_delegations TO service_role;
+REVOKE DELETE ON TABLE public.agent_delegations FROM service_role;
 
 COMMIT;
