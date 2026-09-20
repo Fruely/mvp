@@ -9,6 +9,25 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
       subtitle:
         "Professional включает доступ к заявкам в рамках тарифа. Growth добавляет расширенную Pro Page. Заполнение и профессиональная упаковка предложения доступны как отдельные услуги.",
     },
+    professional: {
+      name: "Freuly Professional",
+      price: "29 € / месяц",
+      description:
+        "Для специалиста, которому удобнее получать доступ к подходящим клиентским заявкам в рамках тарифа вместо отдельных покупок.",
+      features: [
+        "доступ к контактам подходящих заявок в рамках оплаченного периода",
+        "публичный профессиональный профиль без дополнительной платы за публикацию",
+        "услуги и цены",
+        "до 5 фотографий в галерее (аватар отдельно)",
+        "языки, формат работы, город и радиус",
+        "отображение в категориях и поиске Freuly",
+        "уведомления о подходящих заявках",
+        "Telegram-уведомления при подключении",
+        "самостоятельное редактирование профиля",
+      ],
+    },
+    disclaimer:
+      "Регистрация и публикация базового профиля не требуют тарифа. Оплата Professional или Growth даёт доступ к контактам подходящих заявок в рамках оплаченного периода и дополнительным функциям тарифа. Автоматического повторного списания нет. Freuly не гарантирует конкретное количество просмотров, заявок, заказов или доход.",
     growth: {
       name: "Freuly Growth",
       price: "59 € / месяц",
@@ -33,6 +52,25 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
       subtitle:
         "Professional включає доступ до запитів у межах тарифу. Growth додає розширену Pro Page. Заповнення та професійне оформлення пропозиції доступні як окремі послуги.",
     },
+    professional: {
+      name: "Freuly Professional",
+      price: "29 € / місяць",
+      description:
+        "Для спеціаліста, якому зручніше отримувати доступ до відповідних клієнтських запитів у межах тарифу замість окремих покупок.",
+      features: [
+        "доступ до контактів відповідних запитів у межах оплаченого періоду",
+        "публічний професійний профіль без додаткової плати за публікацію",
+        "послуги та ціни",
+        "до 5 фотографій у галереї (аватар окремо)",
+        "мови, формат роботи, місто та радіус",
+        "відображення в категоріях і пошуку Freuly",
+        "сповіщення про відповідні запити",
+        "Telegram-сповіщення після підключення",
+        "самостійне редагування профілю",
+      ],
+    },
+    disclaimer:
+      "Реєстрація та публікація базового профілю не потребують тарифу. Оплата Professional або Growth дає доступ до контактів відповідних запитів у межах оплаченого періоду та додаткових функцій тарифу. Автоматичного повторного списання немає. Freuly не гарантує конкретну кількість переглядів, запитів, замовлень або доходу.",
     growth: {
       name: "Freuly Growth",
       price: "59 € / місяць",
@@ -57,6 +95,25 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
       subtitle:
         "Professional enthält den Zugang zu Anfragen im Rahmen des Tarifs. Growth ergänzt eine erweiterte Pro Page. Profilbefüllung und professionelle Angebotsaufbereitung sind separate Zusatzleistungen.",
     },
+    professional: {
+      name: "Freuly Professional",
+      price: "29 € / Monat",
+      description:
+        "Für Spezialisten, die passende Kundenanfragen lieber im Tarif statt über einzelne Käufe freischalten möchten.",
+      features: [
+        "Zugang zu Kontakten passender Anfragen im bezahlten Zeitraum",
+        "öffentliches professionelles Profil ohne zusätzliche Veröffentlichungsgebühr",
+        "Leistungen und Preise",
+        "bis zu 5 Galeriebilder (Avatar separat)",
+        "Sprachen, Arbeitsformat, Ort und Radius",
+        "Sichtbarkeit in Kategorien und Freuly-Suche",
+        "Benachrichtigungen zu passenden Anfragen",
+        "Telegram-Benachrichtigungen nach Verbindung",
+        "eigenständige Profilbearbeitung",
+      ],
+    },
+    disclaimer:
+      "Registrierung und Veröffentlichung des Basisprofils erfordern keinen Tarif. Professional oder Growth geben Zugang zu Kontakten passender Anfragen im bezahlten Zeitraum und zu den zusätzlichen Tarif-Funktionen. Es gibt keine automatische wiederkehrende Abbuchung. Freuly garantiert keine bestimmte Anzahl von Aufrufen, Anfragen, Aufträgen oder Umsätzen.",
     growth: {
       name: "Freuly Growth",
       price: "59 € / Monat",
