@@ -140,19 +140,41 @@ function jsonRpcResult(id: JsonRpcId, result: unknown) {
   };
 }
 
-function a2aErrorData(type: string, details?: Record<string, unknown>) {
+function errorInfo(
+  reason: string,
+  metadata?: Record<string, string>,
+) {
   return [
     {
-      "@type": `type.googleapis.com/lf.a2a.v1.${type}`,
-      ...(details ?? {}),
+      "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+      reason,
+      domain: "a2a-protocol.org",
+      ...(metadata ? { metadata } : {}),
+    },
+  ];
+}
+
+function badRequest(detail: string) {
+  return [
+    {
+      "@type": "type.googleapis.com/google.rpc.BadRequest",
+      fieldViolations: [
+        {
+          field: "request",
+          description: detail,
+        },
+      ],
     },
   ];
 }
 
 function taskNotFound(id: JsonRpcId, taskId: string) {
-  return jsonRpcError(id, -32001, "Task not found", a2aErrorData("TaskNotFoundError", {
-    taskId,
-  }));
+  return jsonRpcError(
+    id,
+    -32001,
+    "Task not found",
+    errorInfo("TASK_NOT_FOUND", { taskId }),
+  );
 }
 
 function unsupported(id: JsonRpcId, operation: string) {
@@ -160,7 +182,7 @@ function unsupported(id: JsonRpcId, operation: string) {
     id,
     -32004,
     "This operation is not supported",
-    a2aErrorData("UnsupportedOperationError", { operation }),
+    errorInfo("UNSUPPORTED_OPERATION", { operation }),
   );
 }
 
@@ -169,7 +191,7 @@ function pushUnsupported(id: JsonRpcId) {
     id,
     -32003,
     "Push Notification is not supported",
-    a2aErrorData("PushNotificationNotSupportedError"),
+    errorInfo("PUSH_NOTIFICATION_NOT_SUPPORTED"),
   );
 }
 
@@ -178,7 +200,7 @@ function extendedCardNotConfigured(id: JsonRpcId) {
     id,
     -32007,
     "Extended Agent Card is not configured",
-    a2aErrorData("ExtendedAgentCardNotConfiguredError"),
+    errorInfo("EXTENDED_AGENT_CARD_NOT_CONFIGURED"),
   );
 }
 
@@ -198,9 +220,9 @@ export function validateFreulyA2AVersion(
       id,
       -32009,
       "Version not supported",
-      a2aErrorData("VersionNotSupportedError", {
-        requestedVersion: requested || null,
-        supportedVersions: [FREULY_A2A_PROTOCOL_VERSION],
+      errorInfo("VERSION_NOT_SUPPORTED", {
+        requestedVersion: requested || "",
+        supportedVersions: FREULY_A2A_PROTOCOL_VERSION,
       }),
     ),
   };
@@ -471,18 +493,14 @@ async function handleSendMessage(
 ) {
   const parsed = extractAction(request.params);
   if ("error" in parsed) {
-    return jsonRpcError(request.id, -32602, "Invalid params", {
-      detail: parsed.error,
-    });
+    return jsonRpcError(request.id, -32602, "Invalid params", badRequest(parsed.error));
   }
 
   try {
     if (parsed.action.action === "search_specialists") {
       const input = parseSearchInput(parsed.action.input);
       if ("error" in input) {
-        return jsonRpcError(request.id, -32602, "Invalid params", {
-          detail: input.error,
-        });
+        return jsonRpcError(request.id, -32602, "Invalid params", badRequest(input.error));
       }
       const result = await deps.searchSpecialists(input.input);
       return jsonRpcResult(
@@ -509,7 +527,7 @@ async function handleSendMessage(
           request.id,
           -32602,
           "Invalid params",
-          { detail: result.message },
+          badRequest(result.message),
         );
       }
       return jsonRpcError(request.id, -32603, "Internal error");
@@ -547,9 +565,12 @@ export async function dispatchFreulyA2ARequest(
     case "SubscribeToTask": {
       const taskId = taskIdFromParams(request.params);
       if (!taskId) {
-        return jsonRpcError(request.id, -32602, "Invalid params", {
-          detail: "params.id is required",
-        });
+        return jsonRpcError(
+          request.id,
+          -32602,
+          "Invalid params",
+          badRequest("params.id is required"),
+        );
       }
       return taskNotFound(request.id, taskId);
     }
