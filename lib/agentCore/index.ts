@@ -11,6 +11,15 @@ export {
   dispatchFreulyMcpRequest,
   validateFreulyMcpHttpRequest,
 } from "./adapters/mcp";
+export {
+  FREULY_A2A_AGENT_CARD_PATH,
+  FREULY_A2A_ENDPOINT,
+  FREULY_A2A_PROTOCOL_VERSION,
+  buildFreulyA2AAgentCard,
+  dispatchFreulyA2ARequest,
+  parseFreulyA2AJsonRpc,
+  validateFreulyA2AVersion,
+} from "./adapters/a2a";
 export type {
   AgentAudience,
   AuthProfile,

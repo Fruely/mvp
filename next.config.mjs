@@ -38,6 +38,10 @@ const nextConfig = {
         source: "/.well-known/openapi.json",
         destination: "/api/agent-discovery/openapi",
       },
+      {
+        source: "/.well-known/agent-card.json",
+        destination: "/api/agent-discovery/a2a-card",
+      },
     ];
   },
   async redirects() {
