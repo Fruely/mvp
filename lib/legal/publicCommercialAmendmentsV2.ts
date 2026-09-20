@@ -7,6 +7,13 @@ function replaceSection(raw: string, sectionNumber: number, nextSectionNumber: n
   return raw.replace(pattern, replacement.trim());
 }
 
+function bumpFreeEntryVersion(raw: string) {
+  return raw
+    .replace("Version 1.2 — August 2026", "Version 1.3 — September 2026")
+    .replace("Версия 1.2 — август 2026", "Версия 1.3 — сентябрь 2026")
+    .replace("Версія 1.2 — серпень 2026", "Версія 1.3 — вересень 2026");
+}
+
 const SECTION_9: Record<LegalPublicLang, string> = {
   de: `## § 9 Entwurf, Veröffentlichung, Sichtbarkeit und Anfragezugang
 
@@ -115,7 +122,8 @@ export function applyPublicCommercialAmendmentsV2(
   raw: string,
 ): string {
   if (slug !== "agb") return raw;
-  let result = replaceSection(raw, 9, 10, SECTION_9[lang]);
+  let result = bumpFreeEntryVersion(raw);
+  result = replaceSection(result, 9, 10, SECTION_9[lang]);
   result = replaceSection(result, 11, 12, SECTION_11[lang]);
   return result;
 }
