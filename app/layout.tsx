@@ -69,6 +69,10 @@ export default function RootLayout({
 
   return (
     <html lang={htmlLang} className={inter.variable}>
+      <head>
+        <link rel="ard" href="https://freuly.de/.well-known/ard.json" />
+        <link rel="ai-catalog" href="https://freuly.de/.well-known/ai-catalog.json" />
+      </head>
       <body className="min-h-[100dvh] font-sans text-textPrimary antialiased bg-white">
         {children}
         <AcquisitionAttributionCapture />

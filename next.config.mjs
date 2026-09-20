@@ -24,6 +24,22 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: "/.well-known/ard.json",
+        destination: "/api/agent-discovery/ard",
+      },
+      {
+        source: "/.well-known/ai-catalog.json",
+        destination: "/api/agent-discovery/ard",
+      },
+      {
+        source: "/.well-known/openapi.json",
+        destination: "/api/agent-discovery/openapi",
+      },
+    ];
+  },
   async redirects() {
     return [
       {
