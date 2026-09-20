@@ -35,13 +35,24 @@ test("agent auth tables are service-role only with RLS enabled", () => {
         `REVOKE ALL ON TABLE public\\.${table} FROM anon, authenticated`,
       ),
     );
-    assert.match(
-      migration,
-      new RegExp(
-        `GRANT ALL ON TABLE public\\.${table} TO service_role`,
-      ),
-    );
   }
+
+  assert.match(
+    migration,
+    /GRANT ALL ON TABLE public\.agent_clients TO service_role/,
+  );
+  assert.match(
+    migration,
+    /GRANT ALL ON TABLE public\.agent_credentials TO service_role/,
+  );
+  assert.match(
+    migration,
+    /GRANT SELECT, INSERT ON TABLE public\.agent_api_audit_events TO service_role/,
+  );
+  assert.doesNotMatch(
+    migration,
+    /GRANT ALL ON TABLE public\.agent_api_audit_events TO service_role/,
+  );
 });
 
 test("credential schema supports rotation and revocation without changing agent identity", () => {
