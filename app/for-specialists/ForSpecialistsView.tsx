@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Lang } from "@/lib/i18n";
-import { FOR_SPECIALISTS_COPY } from "./copy";
+import { CURRENT_CURRENT_FOR_SPECIALISTS_COPY } from "./currentCopy";
 
 type Props = { lang: Lang };
 
@@ -40,7 +40,7 @@ function LeadIllustration({
 }
 
 export async function ForSpecialistsView({ lang }: Props) {
-  const copy = FOR_SPECIALISTS_COPY[lang];
+  const copy = CURRENT_FOR_SPECIALISTS_COPY[lang];
   const becomeHref = `/${lang}/become-specialist`;
 
   return (
