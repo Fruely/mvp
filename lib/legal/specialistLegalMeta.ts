@@ -4,14 +4,14 @@
  */
 
 export const SPECIALIST_AGB_VERSION =
-  process.env.SPECIALIST_AGB_VERSION || process.env.TERMS_VERSION || "1.0";
+  process.env.SPECIALIST_AGB_VERSION || process.env.TERMS_VERSION || "1.3";
 
-export const SPECIALIST_AGB_EFFECTIVE_DATE = "2026-08-09";
+export const SPECIALIST_AGB_EFFECTIVE_DATE = "2026-09-20";
 
 export const SPECIALIST_AGB_DOCUMENT_ID = "freuly-specialist-agb";
 
 export const SPECIALIST_RULES_VERSION =
-  process.env.SPECIALIST_RULES_VERSION || "2.1";
+  process.env.SPECIALIST_RULES_VERSION || "2.2";
 
 export function getSpecialistRulesVersion(): string {
   return SPECIALIST_RULES_VERSION;
