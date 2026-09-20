@@ -6,6 +6,7 @@ import { buildFreulyReadOnlyOpenApiDocument } from "./openapi.ts";
 test("ARD manifest advertises a real read-only OpenAPI artifact", () => {
   const manifest = buildFreulyArdManifest();
   const entry = manifest.entries[0];
+  const mcpEntry = manifest.entries[1];
 
   assert.equal(entry.identifier, "urn:air:freuly.de:api:specialist-search");
   assert.equal(entry.type, "application/openapi+json");
@@ -13,6 +14,11 @@ test("ARD manifest advertises a real read-only OpenAPI artifact", () => {
   assert.ok(entry.representativeQueries.length >= 2);
   assert.ok(entry.representativeQueries.length <= 5);
   assert.deepEqual(entry.capabilities, ["search_specialists", "get_specialist"]);
+  assert.equal(mcpEntry.identifier, "urn:air:freuly.de:mcp:read");
+  assert.equal(mcpEntry.url, "https://freuly.de/api/mcp");
+  assert.equal(mcpEntry.metadata.transport, "streamable-http");
+  assert.equal(mcpEntry.metadata.protocolVersion, "2026-07-28");
+  assert.equal(mcpEntry.metadata.readOnly, true);
 });
 
 test("public discovery beacon does not claim unimplemented write or A2A execution", () => {
