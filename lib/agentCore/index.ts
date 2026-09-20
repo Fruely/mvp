@@ -4,6 +4,14 @@ export { validateCapabilityCore } from "./validate";
 export { buildFreulyArdManifest } from "./adapters/ard";
 export { buildFreulyReadOnlyOpenApiDocument } from "./adapters/openapi";
 export {
+  FREULY_MCP_ENDPOINT,
+  FREULY_MCP_PROTOCOL_VERSION,
+  buildFreulyMcpDiscoverResult,
+  buildFreulyMcpToolCatalog,
+  dispatchFreulyMcpRequest,
+  validateFreulyMcpHttpRequest,
+} from "./adapters/mcp";
+export {
   FREULY_A2A_AGENT_CARD_PATH,
   FREULY_A2A_ENDPOINT,
   FREULY_A2A_PROTOCOL_VERSION,
