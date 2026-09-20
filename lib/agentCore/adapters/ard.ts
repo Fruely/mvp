@@ -58,6 +58,39 @@ export function buildFreulyArdManifest() {
           identityType: "https",
         },
       },
+      {
+        "@context": ARD_CONTEXT,
+        identifier: "urn:air:freuly.de:a2a:read",
+        displayName: "Freuly A2A Read Agent",
+        type: "application/json",
+        url: `${DOMAIN}/.well-known/agent-card.json`,
+        description:
+          "A2A 1.0 read-only agent for public Freuly specialist discovery in Germany.",
+        tags: [
+          "A2A",
+          "Germany",
+          "services",
+          "specialists",
+          "marketplace",
+          "multilingual",
+        ],
+        capabilities: ["search_specialists", "get_specialist"],
+        representativeQueries: queries,
+        version: FREULY_CAPABILITY_CORE.schema_version,
+        metadata: {
+          market: "DE",
+          readOnly: true,
+          protocolVersion: "1.0",
+          protocolBinding: "JSONRPC",
+          agentCard: `${DOMAIN}/.well-known/agent-card.json`,
+          endpoint: `${DOMAIN}/api/a2a`,
+          languages: FREULY_CAPABILITY_CORE.service.languages.join(","),
+        },
+        trustManifest: {
+          identity: DOMAIN,
+          identityType: "https",
+        },
+      },
     ],
   };
 }
