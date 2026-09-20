@@ -45,11 +45,11 @@ export function buildFreulyReadOnlyOpenApiDocument() {
       title: "Freuly Agent Read API",
       version: FREULY_CAPABILITY_CORE.schema_version,
       description:
-        "Read-only machine interface for discovering public service professionals available through Freuly in Germany. Write actions are intentionally not advertised in this version.",
+        "Stable v1 read-only machine interface for discovering public service professionals available through Freuly in Germany. Write actions are intentionally not advertised in this version.",
     },
     servers: [{ url: DOMAIN }],
     paths: {
-      "/api/specialists/search": {
+      "/api/v1/agent/specialists": {
         get: {
           operationId: searchCapability.id,
           summary: searchCapability.description,
@@ -137,7 +137,7 @@ export function buildFreulyReadOnlyOpenApiDocument() {
           "x-representative-intents": searchCapability.representative_intents,
         },
       },
-      "/api/specialists/{id}": {
+      "/api/v1/agent/specialists/{id}": {
         get: {
           operationId: specialistCapability.id,
           summary: specialistCapability.description,
@@ -216,6 +216,7 @@ export function buildFreulyReadOnlyOpenApiDocument() {
       },
     },
     "x-freuly-capability-core-version": FREULY_CAPABILITY_CORE.schema_version,
+    "x-freuly-agent-api-version": "v1",
     "x-agent-safety": {
       readOnly: true,
       writeCapabilitiesAdvertised: false,
