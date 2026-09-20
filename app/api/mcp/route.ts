@@ -39,7 +39,7 @@ async function getSpecialistFromPublicApi(
 ): Promise<McpSpecialistLookupResult> {
   const url = new URL(
     `/api/specialists/${encodeURIComponent(input.specialistId)}`,
-    request.nextUrl.origin,
+    "https://freuly.de",
   );
   if (input.language) url.searchParams.set("lang", input.language);
 
