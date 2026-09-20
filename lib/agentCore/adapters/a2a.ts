@@ -468,9 +468,12 @@ function directAgentMessage(
   action: string,
   result: unknown,
 ) {
+  const responseContextId = contextId ?? `freuly-context:${sourceMessageId}`;
+
   return {
     message: {
       messageId: `freuly:${sourceMessageId}`,
+      contextId: responseContextId,
       role: "ROLE_AGENT",
       parts: [
         {
@@ -482,7 +485,6 @@ function directAgentMessage(
           mediaType: "application/json",
         },
       ],
-      ...(contextId ? { contextId } : {}),
     },
   };
 }
