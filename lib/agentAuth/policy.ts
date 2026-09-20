@@ -81,13 +81,16 @@ export function authenticateAgentCredentialRecord(input: {
     return { kind: "invalid" };
   }
   if (client.status !== "active") return { kind: "invalid" };
+  if (!(AGENT_CLIENT_TYPES as readonly string[]).includes(client.client_type)) {
+    return { kind: "invalid" };
+  }
 
   const now = input.now ?? new Date();
-  if (
-    credential.expires_at &&
-    new Date(credential.expires_at).getTime() <= now.getTime()
-  ) {
-    return { kind: "invalid" };
+  if (credential.expires_at) {
+    const expiresAt = new Date(credential.expires_at).getTime();
+    if (!Number.isFinite(expiresAt) || expiresAt <= now.getTime()) {
+      return { kind: "invalid" };
+    }
   }
 
   if (
