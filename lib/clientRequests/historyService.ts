@@ -15,6 +15,8 @@ import {
   type HistoryCursor,
 } from "@/lib/clientRequests/historyMapper";
 
+export type { ClientRequestHistoryDetail, ClientRequestHistoryItem };
+
 const LEAD_HISTORY_SELECT =
   "id, created_at, status, message, specialists(id, name, slug, categories(title))";
 
