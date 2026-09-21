@@ -4,6 +4,7 @@ import { requireAdminToken } from '@/lib/adminApiAuth';
 import { notify } from '@/lib/notifications/notify';
 import { sendEmail } from '@/lib/email';
 import crypto from 'crypto';
+import { SPECIALIST_AGB_VERSION, getSpecialistRulesVersion } from '@/lib/legal/specialistLegalMeta';
 
 export async function POST(request: NextRequest) {
   const authResponse = requireAdminToken(request);
@@ -155,6 +156,8 @@ export async function POST(request: NextRequest) {
       avatar_url: string | null;
       terms_accepted_at?: string | null;
       terms_version?: string | null;
+      specialist_rules_accepted_at?: string | null;
+      specialist_rules_version?: string | null;
       status: string;
     };
 
@@ -251,7 +254,9 @@ export async function POST(request: NextRequest) {
         is_active: false,
         is_visible: false,
         terms_accepted_at: app.terms_accepted_at || null,
-        terms_version: app.terms_version || '1.0',
+        terms_version: app.terms_version || SPECIALIST_AGB_VERSION,
+        specialist_rules_accepted_at: app.specialist_rules_accepted_at || app.terms_accepted_at || null,
+        specialist_rules_version: app.specialist_rules_version || getSpecialistRulesVersion(),
       })
       .select()
       .single();
