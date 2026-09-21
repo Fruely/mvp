@@ -10,13 +10,13 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
       subtitle: SPECIALIST_FREE_ENTRY_LINE.ru,
     },
     notice: {
-      title: "Профиль бесплатно — платите только за доступ к заявкам",
+      title: "Как начинается работа с Freuly",
       lead: SPECIALIST_FREE_ENTRY_LINE.ru,
       points: [
-        "Неполный профиль сохраняется как черновик и не виден клиентам.",
-        "После публикации базовый профиль остаётся видимым без обязательной подписки.",
-        ONE_OFF_REQUEST_ACCESS_LINE.ru,
-        "Professional — 29 €/мес., Growth — 59 €/мес.; оба тарифа дают доступ к подходящим заявкам в рамках оплаченного периода.",
+        "Бесплатный профиль нужен, чтобы клиенты могли найти и выбрать вас, а Freuly — сопоставлять ваш профиль с подходящими запросами. Вы сначала видите спрос и безопасное превью заявки без контактов клиента.",
+        "Разовая заявка — от 20 €. Купить её может зарегистрированный специалист, которому Freuly предложил этот запрос. Подписка не нужна; оплата открывает контакт только по выбранной заявке.",
+        "Professional — 29 €/мес. В оплаченный период вы не платите отдельно за каждую подходящую заявку, которую Freuly предлагает вам. Фиксированного лимита заявок нет, но их количество зависит от реального спроса и совпадения с вашим профилем.",
+        "Growth — 59 €/мес. Доступ к заявкам работает по той же логике, дополнительно вы получаете расширенную Pro Page и больше возможностей презентации.",
         "Автоматического повторного списания нет: следующий период подключается вручную.",
       ],
     },
@@ -24,7 +24,7 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
       name: "Freuly Professional",
       price: "29 € / месяц",
       description:
-        "Для специалиста, которому удобнее получать доступ к подходящим клиентским заявкам в рамках тарифа вместо отдельных покупок.",
+        "Для регулярной работы с заявками: 29 €/мес. и без отдельной оплаты за каждую подходящую заявку, предложенную вам Freuly в оплаченный период. Количество заявок зависит от спроса и совпадения с профилем.",
       features: [
         "доступ к контактам подходящих заявок в рамках оплаченного периода",
         "публичный профиль (бесплатная публикация)",
@@ -66,7 +66,7 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
       name: "Freuly Professional",
       price: "29 € / місяць",
       description:
-        "Для спеціаліста, якому зручніше отримувати доступ до відповідних клієнтських запитів у межах тарифу замість окремих покупок.",
+        "Для регулярної роботи із запитами: 29 €/міс. і без окремої оплати за кожен відповідний запит, запропонований вам Freuly в оплачений період. Кількість запитів залежить від попиту та збігу з профілем.",
       features: [
         "доступ до контактів відповідних запитів у межах оплаченого періоду",
         "публічний профіль (безкоштовна публікація)",
@@ -108,7 +108,7 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
       name: "Freuly Professional",
       price: "29 € / Monat",
       description:
-        "Für Spezialisten, die passende Kundenanfragen lieber im Tarif statt über einzelne Käufe freischalten möchten.",
+        "Für regelmäßige Nutzung: 29 €/Monat und keine separate Zahlung für jede passende Anfrage, die Freuly Ihnen im bezahlten Zeitraum anbietet. Die Anzahl hängt von Nachfrage und Matching ab.",
       features: [
         "Zugang zu Kontakten passender Anfragen im bezahlten Zeitraum",
         "öffentliches Profil (kostenlose Veröffentlichung)",
