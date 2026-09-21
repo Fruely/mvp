@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { AGENT_USER_CONSENT_VERSION } from "./consentContract.ts";
 import {
   authorizeAgentDelegation,
   isUserDelegatableCapability,
@@ -17,7 +18,7 @@ function record(
     user_id: "33333333-3333-4333-8333-333333333333",
     status: "active",
     allowed_capabilities: ["create_service_request", "get_service_request"],
-    consent_version: "1.0",
+    consent_version: AGENT_USER_CONSENT_VERSION,
     purpose: "Find a suitable specialist",
     granted_at: "2026-09-20T19:00:00.000Z",
     expires_at: "2026-09-21T20:00:00.000Z",
@@ -88,6 +89,29 @@ test("valid delegation still forbids capabilities the user did not grant", () =>
     kind: "forbidden",
     capability: "cancel_service_request",
   });
+});
+
+test("authorization requires the current server-authoritative consent version", () => {
+  const current = authorizeAgentDelegation({
+    delegation: record(),
+    agentClientId: "22222222-2222-4222-8222-222222222222",
+    capability: "create_service_request",
+    now: NOW,
+  });
+  assert.equal(current.kind, "authorized");
+
+  for (const version of ["1.0", "agent-delegation-v2", "unknown", "", "   "]) {
+    const result = authorizeAgentDelegation({
+      delegation: record({ consent_version: version }),
+      agentClientId: "22222222-2222-4222-8222-222222222222",
+      capability: "create_service_request",
+      now: NOW,
+    });
+    assert.deepEqual(result, {
+      kind: "invalid",
+      reason: "invalid_consent_version",
+    });
+  }
 });
 
 test("provider-side lead capabilities are not user-delegatable", () => {

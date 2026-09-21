@@ -1,3 +1,4 @@
+import { AGENT_USER_CONSENT_VERSION } from "./consentContract";
 import {
   USER_DELEGATABLE_CAPABILITIES,
   type AgentDelegationDecision,
@@ -74,7 +75,11 @@ export function authorizeAgentDelegation(input: {
   }
 
   const consentVersion = delegation.consent_version.trim();
-  if (!consentVersion || consentVersion.length > 64) {
+  if (
+    !consentVersion ||
+    consentVersion.length > 64 ||
+    consentVersion !== AGENT_USER_CONSENT_VERSION
+  ) {
     return { kind: "invalid", reason: "invalid_consent_version" };
   }
 

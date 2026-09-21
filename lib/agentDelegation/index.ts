@@ -1,6 +1,11 @@
 export {
   USER_DELEGATABLE_CAPABILITIES,
 } from "./types";
+export { AGENT_USER_CONSENT_VERSION } from "./consentContract";
+export {
+  ENABLED_USER_DELEGATION_CAPABILITIES,
+  isEnabledUserDelegationCapability,
+} from "./consent";
 export {
   authorizeAgentDelegation,
   isUserDelegatableCapability,

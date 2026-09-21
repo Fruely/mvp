@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { AgentIdentity } from "../agentAuth/policy.ts";
 import { FREULY_CAPABILITY_CORE } from "../agentCore/freuly.ts";
+import { AGENT_USER_CONSENT_VERSION } from "../agentDelegation/consentContract.ts";
+import { authorizeAgentDelegation } from "../agentDelegation/policy.ts";
 import type { AuthorizedAgentDelegation } from "../agentDelegation/types.ts";
 import {
   auditDescriptorForAuthorization,
@@ -153,6 +155,74 @@ test("business agent may use an explicit delegation for a specific user", () => 
   });
 
   assert.equal(decision.kind, "authorized");
+});
+
+test("create_service_request Agent authorization rejects stale consent version", async () => {
+  const now = new Date("2026-09-20T20:00:00.000Z");
+  const stored = {
+    id: "11111111-1111-4111-8111-111111111111",
+    agent_client_id: "client-1",
+    user_id: "user-1",
+    status: "active" as const,
+    allowed_capabilities: ["create_service_request"],
+    consent_version: AGENT_USER_CONSENT_VERSION,
+    purpose: "Find a specialist",
+    granted_at: "2026-09-20T19:00:00.000Z",
+    expires_at: "2026-09-21T20:00:00.000Z",
+    revoked_at: null,
+  };
+
+  const current = authorizeAgentDelegation({
+    delegation: stored,
+    agentClientId: "client-1",
+    capability: "create_service_request",
+    now,
+  });
+  assert.equal(current.kind, "authorized");
+
+  const stale = authorizeAgentDelegation({
+    delegation: { ...stored, consent_version: "1.0" },
+    agentClientId: "client-1",
+    capability: "create_service_request",
+    now,
+  });
+  assert.deepEqual(stale, {
+    kind: "invalid",
+    reason: "invalid_consent_version",
+  });
+
+  const decision = decideDelegatedAgentAuthorization({
+    capabilityId: "create_service_request",
+    capability: capability("create_service_request"),
+    auth: { kind: "authenticated", identity: identity() },
+    delegation: stale,
+  });
+  assert.deepEqual(decision, {
+    kind: "forbidden",
+    reason: "invalid_delegation",
+    delegationReason: "invalid_consent_version",
+  });
+
+  const result = await runDelegatedAuthorization({
+    request: new Request("https://freuly.de/api/v1/agent/service-requests", {
+      method: "POST",
+    }),
+    capabilityId: "create_service_request",
+    deps: {
+      resolveCredential: async () => ({
+        kind: "authenticated",
+        identity: identity(),
+      }),
+      resolveDelegation: async () => stale,
+      markCredentialUsed: async () => {},
+      recordAudit: async () => {},
+    },
+  });
+  assert.deepEqual(result, {
+    kind: "forbidden",
+    reason: "invalid_delegation",
+    delegationReason: "invalid_consent_version",
+  });
 });
 
 test("revoked or expired delegation is forbidden", () => {
