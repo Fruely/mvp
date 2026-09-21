@@ -24,6 +24,10 @@ const createRouteSource = fs.readFileSync(
   path.join(root, "app/api/service-requests/route.ts"),
   "utf8",
 );
+const createServiceSource = fs.readFileSync(
+  path.join(root, "lib/serviceRequests/createServiceRequest.ts"),
+  "utf8",
+);
 const marketingLinksSource = fs.readFileSync(
   path.join(root, "app/admin/(protected)/marketing-links/page.tsx"),
   "utf8",
@@ -106,13 +110,15 @@ test("UTM snapshot is captured on landing and sent through every step until inse
   assert.match(entrySource, /window\.location\.href/);
   assert.match(entrySource, /acquisition:\s*acquisitionRef\.current/);
   assert.match(createRouteSource, /pickAcquisitionForServiceRequest/);
-  assert.match(createRouteSource, /\.from\("service_requests"\)/);
-  assert.match(createRouteSource, /acquisition_source:\s*acquisition\?\.source/);
-  assert.match(createRouteSource, /acquisition_medium:\s*acquisition\?\.medium/);
-  assert.match(createRouteSource, /acquisition_campaign:\s*acquisition\?\.campaign/);
-  assert.match(createRouteSource, /acquisition_content:\s*acquisition\?\.content/);
-  assert.match(createRouteSource, /acquisition_term:\s*acquisition\?\.term/);
-  assert.match(createRouteSource, /acquisition_landing_path:\s*acquisition\?\.landing_path/);
+  assert.match(createRouteSource, /persistNewServiceRequest/);
+  assert.match(createRouteSource, /acquisition,/);
+  assert.match(createServiceSource, /\.from\("service_requests"\)/);
+  assert.match(createServiceSource, /acquisition_source:\s*acquisition\?\.source/);
+  assert.match(createServiceSource, /acquisition_medium:\s*acquisition\?\.medium/);
+  assert.match(createServiceSource, /acquisition_campaign:\s*acquisition\?\.campaign/);
+  assert.match(createServiceSource, /acquisition_content:\s*acquisition\?\.content/);
+  assert.match(createServiceSource, /acquisition_term:\s*acquisition\?\.term/);
+  assert.match(createServiceSource, /acquisition_landing_path:\s*acquisition\?\.landing_path/);
 });
 
 test("admin marketing links copy RU/UA/DE paid request URLs with campaign UTM", () => {

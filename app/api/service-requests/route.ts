@@ -15,85 +15,44 @@ import {
   parseAcquisitionSnapshot,
   pickAcquisitionForServiceRequest,
 } from "@/lib/acquisition/firstTouch";
-import { SERVICE_REQUEST_SOURCE } from "@/lib/serviceRequests/constants";
-import { generateServiceRequestPublicId } from "@/lib/serviceRequests/publicId";
-import { buildOwnerTelegramTimingPayload } from "@/lib/serviceRequests/ownerTelegramTiming";
 import { validateServiceRequestCreate } from "@/lib/serviceRequests/validation";
-import {
-  buildClientIdempotencyFingerprint,
-  isUniqueViolation,
-  normalizeClientIdempotencyKey,
-} from "@/lib/mutations/clientIdempotency";
+import { normalizeClientIdempotencyKey } from "@/lib/mutations/clientIdempotency";
+import { resolveBearerAuthUser } from "@/lib/auth/resolveBearerAuthUser";
 import {
   IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE,
-  resolveIdempotentReplayWithOwnership,
-  shouldRunCreationSideEffectsWithOwnership,
-} from "@/lib/mutations/idempotencyOwnership";
-import { resolveBearerAuthUser } from "@/lib/auth/resolveBearerAuthUser";
+  buildServiceRequestIdempotencyFingerprint,
+  lookupServiceRequestIdempotentReplay,
+  notifyIfServiceRequestCreated,
+  persistNewServiceRequest,
+} from "@/lib/serviceRequests/demandService";
 
 export const dynamic = "force-dynamic";
 
 const NO_STORE = { "Cache-Control": "no-store" };
 
-function buildServiceRequestIdempotencyPayload(
-  validated: Exclude<ReturnType<typeof validateServiceRequestCreate>, { error: string }>,
+function jsonResult(
+  result: { kind: "replayed" | "created"; public_id: string; created_at: string },
 ) {
-  return {
-    client_name: validated.client_name,
-    client_email: validated.client_email,
-    client_phone: validated.client_phone,
-    category_id: validated.category_id,
-    category_text: validated.category_text,
-    description: validated.description,
-    preferred_language: validated.preferred_language,
-    work_format: validated.work_format,
-    city: validated.city,
-    postal_code: validated.postal_code,
-    country_code: validated.country_code,
-    radius_km: validated.radius_km,
-    urgency: validated.urgency,
-    desired_date: validated.desired_date,
-    service_timing: validated.service_timing,
-    locale: validated.locale,
-    source_path: validated.source_path,
-  };
+  return NextResponse.json(
+    { ok: true, public_id: result.public_id, created_at: result.created_at },
+    { status: 200, headers: NO_STORE },
+  );
 }
 
-async function lookupServiceRequestIdempotentReplay(
-  supabase: ReturnType<typeof createSupabaseServerClient>,
-  clientIdempotencyKey: string,
-  idempotencyFingerprint: string,
-  clientUserId: string | null,
-) {
-  const { data: existingRequest, error: existingError } = await supabase
-    .from("service_requests")
-    .select("public_id, created_at, client_idempotency_fingerprint, client_user_id")
-    .eq("client_idempotency_key", clientIdempotencyKey)
-    .maybeSingle();
-
-  if (existingError) return { kind: "error" as const };
-
-  return resolveIdempotentReplayWithOwnership(
-    existingRequest
-      ? {
-          fingerprint:
-            typeof existingRequest.client_idempotency_fingerprint === "string"
-              ? existingRequest.client_idempotency_fingerprint
-              : null,
-          client_user_id:
-            typeof existingRequest.client_user_id === "string"
-              ? existingRequest.client_user_id
-              : null,
-          response: {
-            ok: true,
-            public_id: existingRequest.public_id,
-            created_at: existingRequest.created_at,
-          },
-        }
-      : null,
-    idempotencyFingerprint,
-    clientUserId,
-  );
+function mapCreateFailure(result: { kind: "conflict" | "ownership_conflict" | "error" }) {
+  if (result.kind === "conflict") {
+    return NextResponse.json(
+      { error: "Idempotency key reused with different payload" },
+      { status: 409, headers: NO_STORE },
+    );
+  }
+  if (result.kind === "ownership_conflict") {
+    return NextResponse.json(
+      { error: IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE },
+      { status: 409, headers: NO_STORE },
+    );
+  }
+  return NextResponse.json({ error: "server_error" }, { status: 500, headers: NO_STORE });
 }
 
 export async function POST(request: NextRequest) {
@@ -111,11 +70,8 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createSupabaseServerClient();
-    const nowIso = new Date().toISOString();
     const clientIdempotencyKey = normalizeClientIdempotencyKey(body.idempotency_key);
-    const idempotencyFingerprint = buildClientIdempotencyFingerprint(
-      buildServiceRequestIdempotencyPayload(validated),
-    );
+    const idempotencyFingerprint = buildServiceRequestIdempotencyFingerprint(validated);
 
     if (clientIdempotencyKey) {
       const replay = await lookupServiceRequestIdempotentReplay(
@@ -128,16 +84,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "server_error" }, { status: 500, headers: NO_STORE });
       }
       if (replay.kind === "conflict") {
-        return NextResponse.json(
-          { error: "Idempotency key reused with different payload" },
-          { status: 409, headers: NO_STORE },
-        );
+        return mapCreateFailure({ kind: "conflict" });
       }
       if (replay.kind === "ownership_conflict") {
-        return NextResponse.json(
-          { error: IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE },
-          { status: 409, headers: NO_STORE },
-        );
+        return mapCreateFailure({ kind: "ownership_conflict" });
       }
       if (replay.kind === "replay") {
         return NextResponse.json(replay.response, { status: 200, headers: NO_STORE });
@@ -178,129 +128,26 @@ export async function POST(request: NextRequest) {
     );
     const acquisition = pickAcquisitionForServiceRequest(bodyAcquisition, cookieAcquisition);
 
-    let inserted: { public_id: string; created_at: string } | null = null;
-    let creationReplay: { kind: "create" } | { kind: "replay" } = { kind: "create" };
+    const result = await persistNewServiceRequest({
+      supabase,
+      validated,
+      clientUserId,
+      idempotencyKey: clientIdempotencyKey,
+      acquisition,
+      clientCampaignLinkId,
+    });
 
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      const public_id = generateServiceRequestPublicId();
-      const row = {
-        public_id,
-        client_name: validated.client_name,
-        client_email: validated.client_email,
-        client_phone: validated.client_phone,
-        category_id: validated.category_id,
-        category_text: validated.category_text,
-        description: validated.description,
-        preferred_language: validated.preferred_language,
-        work_format: validated.work_format,
-        city: validated.city,
-        postal_code: validated.postal_code,
-        country_code: validated.country_code,
-        radius_km: validated.radius_km,
-        urgency: validated.urgency,
-        desired_date: validated.desired_date,
-        service_timing_type: validated.service_timing.service_timing_type,
-        service_timing_date: validated.service_timing.service_timing_date,
-        service_timing_time: validated.service_timing.service_timing_time,
-        service_timing_date_end: validated.service_timing.service_timing_date_end,
-        service_timing_period: validated.service_timing.service_timing_period,
-        service_timing_note: validated.service_timing.service_timing_note,
-        locale: validated.locale,
-        source: SERVICE_REQUEST_SOURCE,
-        source_path: validated.source_path,
-        client_campaign_link_id: clientCampaignLinkId,
-        acquisition_source: acquisition?.source ?? null,
-        acquisition_medium: acquisition?.medium ?? null,
-        acquisition_campaign: acquisition?.campaign ?? null,
-        acquisition_content: acquisition?.content ?? null,
-        acquisition_term: acquisition?.term ?? null,
-        acquisition_gclid: acquisition?.gclid ?? null,
-        acquisition_fbclid: acquisition?.fbclid ?? null,
-        acquisition_referrer: acquisition?.referrer ?? null,
-        acquisition_landing_path: acquisition?.landing_path ?? null,
-        acquisition_captured_at: acquisition?.captured_at ?? null,
-        client_user_id: clientUserId,
-        status: "new",
-        updated_at: nowIso,
-        ...(clientIdempotencyKey
-          ? {
-              client_idempotency_key: clientIdempotencyKey,
-              client_idempotency_fingerprint: idempotencyFingerprint,
-            }
-          : {}),
-      };
-
-      const { data, error } = await supabase
-        .from("service_requests")
-        .insert(row)
-        .select("public_id, created_at")
-        .single();
-
-      if (!error && data) {
-        inserted = data as { public_id: string; created_at: string };
-        creationReplay = { kind: "create" };
-        break;
-      }
-
-      if (!isUniqueViolation(error)) {
-        console.error("[service-requests/create] insert failed", error);
-        return NextResponse.json({ error: "server_error" }, { status: 500, headers: NO_STORE });
-      }
-
-      if (clientIdempotencyKey) {
-        const replay = await lookupServiceRequestIdempotentReplay(
-          supabase,
-          clientIdempotencyKey,
-          idempotencyFingerprint,
-          clientUserId,
-        );
-        if (replay.kind === "replay") {
-          return NextResponse.json(replay.response, { status: 200, headers: NO_STORE });
-        }
-        if (replay.kind === "conflict") {
-          return NextResponse.json(
-            { error: "Idempotency key reused with different payload" },
-            { status: 409, headers: NO_STORE },
-          );
-        }
-        if (replay.kind === "ownership_conflict") {
-          return NextResponse.json(
-            { error: IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE },
-            { status: 409, headers: NO_STORE },
-          );
-        }
-      }
+    if (result.kind === "conflict" || result.kind === "ownership_conflict" || result.kind === "error") {
+      return mapCreateFailure(result);
     }
 
-    if (!inserted) {
-      console.error("[service-requests/create] public_id collision retries exhausted");
-      return NextResponse.json({ error: "server_error" }, { status: 500, headers: NO_STORE });
+    try {
+      await notifyIfServiceRequestCreated(result, validated, notify);
+    } catch (notifyErr) {
+      console.error("[service-requests/create] owner notification failed", notifyErr);
     }
 
-    if (shouldRunCreationSideEffectsWithOwnership(creationReplay)) {
-      try {
-        const timingPayload = buildOwnerTelegramTimingPayload(validated);
-        await notify("NEW_SERVICE_REQUEST", {
-          public_id: inserted.public_id,
-          category_text: validated.category_text,
-          preferred_language: validated.preferred_language,
-          work_format: validated.work_format,
-          city: validated.city,
-          postal_code: validated.postal_code,
-          when_label: timingPayload.when_label,
-          urgency: timingPayload.urgency,
-          created_at: inserted.created_at,
-          locale: validated.locale,
-        });
-      } catch (notifyErr) {
-        console.error("[service-requests/create] owner notification failed", notifyErr);
-      }
-    }
-
-    const response = NextResponse.json(
-      { ok: true, public_id: inserted.public_id, created_at: inserted.created_at },
-      { status: 200, headers: NO_STORE },
-    );
+    const response = jsonResult(result);
     if (clientCampaignLinkId) {
       response.cookies.set(CLIENT_CAMPAIGN_COOKIE_NAME, "", {
         path: "/",
