@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { ForSpecialistsView } from "./ForSpecialistsView";
-import { FOR_SPECIALISTS_COPY } from "./copy";
+import { CURRENT_FOR_SPECIALISTS_COPY } from "./currentCopy";
 import { langFromCookie, type Lang } from "@/lib/i18n";
 
 import { SITE_DOMAIN } from "@/lib/seo/siteMetadata";
@@ -16,7 +16,7 @@ async function resolveLang(): Promise<Lang> {
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await resolveLang();
-  const m = FOR_SPECIALISTS_COPY[lang].meta;
+  const m = CURRENT_FOR_SPECIALISTS_COPY[lang].meta;
   return {
     title: m.title,
     description: m.description,
