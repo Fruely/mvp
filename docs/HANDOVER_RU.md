@@ -218,7 +218,7 @@
 ### Прочее
 
 - **`CRON_SECRET`** — авторизация cron route (`Bearer`).
-- **`TERMS_VERSION`**, **`SPECIALIST_RULES_VERSION`** — версии соглашений.
+- Версии AGB, правил специалистов и партнёрских условий зафиксированы в коде как юридические canonical values; не переопределять их через environment variables.
 - **`CATEGORY_MIN_SPECIALISTS`**, **`NEXT_PUBLIC_CATEGORY_MIN_COUNT`** — пороги для категорий.
 - **`DEV_ACCESS_KEY`** — опциональный доступ в dev через middleware.
 - **`NEW_SPECIALIST_FUNNEL_ENABLED`**, **`NEW_SPECIALIST_DASHBOARD_ENABLED`**, **`FEATURED_HOME_BLOCK_ENABLED`**, **`PROGRAMMATIC_SEO_ENABLED`** — фичефлаги (`lib/featureFlags.ts`).
