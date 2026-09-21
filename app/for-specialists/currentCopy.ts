@@ -1,5 +1,6 @@
 import type { Lang } from "@/lib/i18n";
 import { FOR_SPECIALISTS_COPY, type ForSpecialistsCopy } from "./copy";
+import { ONE_OFF_REQUEST_ACCESS_LINE, SPECIALIST_FREE_ENTRY_LINE } from "@/lib/commercial/freeEntryPositioning";
 
 /**
  * Current commercial positioning for the free-entry model.
@@ -21,8 +22,7 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
         "Опубликуйте профиль на Freuly без обязательной подписки. Клиенты смогут найти и выбрать вас. Когда появляется подходящая заявка, откройте её отдельно или подключите Professional с доступом к заявкам в рамках тарифа.",
       cta: "Создать профиль бесплатно",
       secondaryCta: "Как это работает",
-      note:
-        "Регистрация и публикация профиля бесплатны. Контакты клиента — платная функция: отдельная заявка или тариф Professional/Growth. Freuly не берёт комиссию с вашего заказа.",
+      note: SPECIALIST_FREE_ENTRY_LINE.ru,
     },
     proof: [
       {
@@ -31,9 +31,9 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
         body: "Заполните профиль и станьте видимы клиентам без обязательной подписки.",
       },
       {
-        value: "2 варианта",
-        title: "доступа к заявкам",
-        body: "Открывайте конкретные заявки отдельно или подключайте тариф с доступом к заявкам в рамках оплаченного периода.",
+        value: "5 минут",
+        title: "до старта профиля",
+        body: "Профиль бесплатный, готов за 5 минут: заполните основные данные и опубликуйте его для клиентов.",
       },
       {
         value: "0%",
@@ -77,7 +77,7 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
         "Публичный профиль специалиста: услуги, цены, языки, город, фото, описание и доступные подтверждающие материалы.",
         "Поиск по категории, языку, формату и локации помогает клиентам находить подходящие профили.",
         "Уведомления о подходящих обращениях и безопасное превью до открытия контакта.",
-        "Разовый доступ к конкретной заявке без обязательства покупать месячный тариф.",
+        ONE_OFF_REQUEST_ACCESS_LINE.ru,
         "Professional/Growth — альтернатива разовым покупкам: доступ к заявкам в рамках тарифа плюс дополнительные возможности представления профиля.",
         "0% комиссии с договора между вами и клиентом.",
       ],
@@ -92,7 +92,7 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
         },
         {
           q: "За что тогда платит специалист?",
-          a: "Платная часть — доступ к контактам подходящих клиентских заявок. Конкретную заявку можно открыть отдельно или получать доступ к заявкам в рамках Professional/Growth.",
+          a: `Платная часть — доступ к контактам подходящих клиентских заявок. ${ONE_OFF_REQUEST_ACCESS_LINE.ru} Professional/Growth дают доступ к заявкам в рамках тарифа.`,
         },
         {
           q: "Обязательно ли покупать тариф 29 €?",
@@ -124,8 +124,7 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
         "Опублікуйте профіль на Freuly без обов’язкової підписки. Клієнти зможуть знайти й обрати вас. Коли з’являється відповідний запит, відкрийте його окремо або підключіть Professional з доступом до запитів у межах тарифу.",
       cta: "Створити профіль безкоштовно",
       secondaryCta: "Як це працює",
-      note:
-        "Реєстрація та публікація профілю безкоштовні. Контакти клієнта — платна функція: окремий запит або тариф Professional/Growth. Freuly не бере комісію із вашого замовлення.",
+      note: SPECIALIST_FREE_ENTRY_LINE.ua,
     },
     proof: [
       {
@@ -134,9 +133,9 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
         body: "Заповніть профіль і станьте видимими клієнтам без обов’язкової підписки.",
       },
       {
-        value: "2 варіанти",
-        title: "доступу до запитів",
-        body: "Відкривайте конкретні запити окремо або підключайте тариф із доступом до запитів у межах оплаченого періоду.",
+        value: "5 хвилин",
+        title: "до старту профілю",
+        body: "Профіль безкоштовний і готовий за 5 хвилин: заповніть основні дані та опублікуйте його для клієнтів.",
       },
       {
         value: "0%",
@@ -180,7 +179,7 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
         "Публічний профіль спеціаліста: послуги, ціни, мови, місто, фото, опис і доступні підтверджувальні матеріали.",
         "Пошук за категорією, мовою, форматом і локацією допомагає клієнтам знаходити відповідні профілі.",
         "Сповіщення про відповідні звернення та безпечне прев’ю до відкриття контакту.",
-        "Разовий доступ до конкретного запиту без обов’язку купувати місячний тариф.",
+        ONE_OFF_REQUEST_ACCESS_LINE.ua,
         "Professional/Growth — альтернатива разовим покупкам: доступ до запитів у межах тарифу плюс додаткові можливості представлення профілю.",
         "0% комісії з договору між вами та клієнтом.",
       ],
@@ -195,7 +194,7 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
         },
         {
           q: "За що тоді платить спеціаліст?",
-          a: "Платна частина — доступ до контактів відповідних клієнтських запитів. Конкретний запит можна відкрити окремо або отримувати доступ до запитів у межах Professional/Growth.",
+          a: `Платна частина — доступ до контактів відповідних клієнтських запитів. ${ONE_OFF_REQUEST_ACCESS_LINE.ua} Professional/Growth дають доступ до запитів у межах тарифу.`,
         },
         {
           q: "Чи обов’язково купувати тариф 29 €?",
@@ -227,8 +226,7 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
         "Veröffentlichen Sie Ihr Profil ohne Pflicht-Abo. Kunden können Sie finden und auswählen. Bei einer passenden Anfrage schalten Sie den Kontakt einzeln frei oder nutzen Professional mit Anfragezugang im Tarif.",
       cta: "Kostenloses Profil erstellen",
       secondaryCta: "So funktioniert es",
-      note:
-        "Registrierung und Profilveröffentlichung sind kostenlos. Kundenkontakte sind kostenpflichtig: einzelne Anfrage oder Professional/Growth. Freuly erhebt keine Provision auf Ihren Auftrag.",
+      note: SPECIALIST_FREE_ENTRY_LINE.de,
     },
     proof: [
       {
@@ -237,9 +235,9 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
         body: "Vervollständigen Sie Ihr Profil und werden Sie ohne Pflicht-Abo für Kunden sichtbar.",
       },
       {
-        value: "2 Wege",
-        title: "zum Anfragezugang",
-        body: "Schalten Sie einzelne Anfragen frei oder nutzen Sie einen Tarif mit Anfragezugang im bezahlten Zeitraum.",
+        value: "5 Minuten",
+        title: "bis zum Profilstart",
+        body: "Das Profil ist kostenlos und in etwa 5 Minuten startklar: Basisdaten ausfüllen und für Kunden veröffentlichen.",
       },
       {
         value: "0%",
@@ -283,7 +281,7 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
         "Öffentliches Spezialistenprofil mit Leistungen, Preisen, Sprachen, Ort, Fotos, Beschreibung und verfügbaren Nachweisen.",
         "Suche nach Kategorie, Sprache, Arbeitsformat und Ort.",
         "Benachrichtigungen zu passenden Anfragen und datensparsame Vorschau vor Kontaktfreigabe.",
-        "Einmaliger Zugang zu einer konkreten Anfrage ohne Pflicht zum Monatstarif.",
+        ONE_OFF_REQUEST_ACCESS_LINE.de,
         "Professional/Growth als Alternative zu Einzelkäufen: Anfragezugang im Tarif plus zusätzliche Präsentationsfunktionen.",
         "0% Provision auf den Vertrag zwischen Ihnen und dem Kunden.",
       ],
@@ -298,7 +296,7 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
         },
         {
           q: "Wofür zahlt ein Spezialist dann?",
-          a: "Kostenpflichtig ist der Zugang zu Kontaktdaten passender Kundenanfragen. Eine konkrete Anfrage kann einzeln oder im Rahmen von Professional/Growth freigeschaltet werden.",
+          a: `Kostenpflichtig ist der Zugang zu Kontaktdaten passender Kundenanfragen. ${ONE_OFF_REQUEST_ACCESS_LINE.de} Professional/Growth geben Anfragezugang im Tarif.`,
         },
         {
           q: "Ist Professional für 29 € verpflichtend?",
