@@ -9,7 +9,7 @@ import {
 } from "@/lib/serviceRequests/validation";
 
 const ACQUISITION_DETAIL_SELECT =
-  "acquisition_source, acquisition_medium, acquisition_campaign, acquisition_content, acquisition_term, acquisition_gclid, acquisition_fbclid, acquisition_referrer, acquisition_landing_path, acquisition_captured_at";
+  "acquisition_source, acquisition_medium, acquisition_campaign, acquisition_content, acquisition_term, acquisition_gclid, acquisition_fbclid, acquisition_referrer, acquisition_landing_path, acquisition_captured_at, acquisition_channel, ai_provider, ai_interaction_type, acquisition_attribution_confidence";
 
 const DEMAND_DETAIL_SELECT = [
   "subcategory_text",
@@ -108,6 +108,10 @@ export type ServiceRequestDetail = ServiceRequestListItem & {
   acquisition_referrer: string | null;
   acquisition_landing_path: string | null;
   acquisition_captured_at: string | null;
+  acquisition_channel: string | null;
+  ai_provider: string | null;
+  ai_interaction_type: string | null;
+  acquisition_attribution_confidence: string | null;
   subcategory_text: string | null;
   requested_service: string | null;
   client_budget_text: string | null;

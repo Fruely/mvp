@@ -13,6 +13,16 @@ export const AI_ACQUISITION_SOURCES = [
 
 export type AiAcquisitionSource = (typeof AI_ACQUISITION_SOURCES)[number];
 
+export type AiInteractionType = "ai_referral" | "ai_agent";
+export type AttributionConfidence = "high" | "medium" | "low";
+
+export type AcquisitionDerivedMetadata = {
+  acquisition_channel: "ai" | null;
+  ai_provider: AiAcquisitionSource | null;
+  ai_interaction_type: AiInteractionType | null;
+  attribution_confidence: AttributionConfidence | null;
+};
+
 export type AcquisitionFirstTouch = {
   source: string;
   medium: string | null;
@@ -162,6 +172,33 @@ export function parseAcquisitionCookie(raw: string | null | undefined): Acquisit
   } catch {
     return null;
   }
+}
+
+export function deriveAcquisitionMetadata(
+  touch: AcquisitionFirstTouch | null,
+): AcquisitionDerivedMetadata {
+  if (!touch || !isAiAcquisitionSource(touch.source)) {
+    return {
+      acquisition_channel: null,
+      ai_provider: null,
+      ai_interaction_type: null,
+      attribution_confidence: null,
+    };
+  }
+
+  const referrerSource = touch.referrer ? classifyReferrerSource(touch.referrer) : null;
+  const confidence: AttributionConfidence =
+    referrerSource === touch.source ? "high" : "medium";
+
+  // Browser acquisition can prove an AI referral, but not a programmatic
+  // agent action. ai_agent is reserved for the future authenticated Agent API,
+  // where the server can establish agent identity rather than trusting UTM/body data.
+  return {
+    acquisition_channel: "ai",
+    ai_provider: touch.source,
+    ai_interaction_type: "ai_referral",
+    attribution_confidence: confidence,
+  };
 }
 
 export function acquisitionSnapshotHasUtm(touch: AcquisitionFirstTouch): boolean {

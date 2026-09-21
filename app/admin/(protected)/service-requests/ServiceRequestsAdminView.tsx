@@ -133,6 +133,16 @@ export default function ServiceRequestsAdminView({
                 {detail.acquisition_landing_path ? <p className="break-all"><strong>Первый вход:</strong> {detail.acquisition_landing_path}</p> : null}
                 {detail.acquisition_referrer ? <p className="break-all"><strong>Referrer:</strong> {detail.acquisition_referrer}</p> : null}
                 {detail.acquisition_captured_at ? <p><strong>First-touch captured:</strong> {new Date(detail.acquisition_captured_at).toLocaleString()}</p> : null}
+                {detail.acquisition_channel === "ai" ? (
+                  <p>
+                    <strong>AI attribution:</strong>{" "}
+                    {detail.ai_provider ?? "unknown"}
+                    {detail.ai_interaction_type ? ` · ${detail.ai_interaction_type}` : ""}
+                    {detail.acquisition_attribution_confidence
+                      ? ` · confidence: ${detail.acquisition_attribution_confidence}`
+                      : ""}
+                  </p>
+                ) : null}
                 {!detail.acquisition_source && !detail.campaign_attribution ? (
                   <p className="text-xs text-gray-500">Для старых заявок или при отсутствии согласия на аналитику канал может быть неизвестен.</p>
                 ) : null}
