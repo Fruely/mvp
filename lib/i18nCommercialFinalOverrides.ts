@@ -1,8 +1,11 @@
+import { SPECIALIST_FREE_ENTRY_LINE } from "@/lib/commercial/freeEntryPositioning";
+
 type CommercialLang = "ua" | "ru" | "de";
 type Dict = Record<string, unknown>;
 
 const FLAT: Record<CommercialLang, Record<string, string>> = {
   ru: {
+    "home.variantC.promo.specialist.body": SPECIALIST_FREE_ENTRY_LINE.ru,
     "dashboard.subscriptionPage.label.graceUntil": "Восстановление оплаты до",
     "dashboard.subscriptionPage.status.early_access": "Переходный доступ",
     "dashboard.subscriptionPage.status.trialing": "Переходный доступ",
@@ -52,6 +55,7 @@ const FLAT: Record<CommercialLang, Record<string, string>> = {
     "dashboard.readiness.allReady": "Черновик готов к публикации",
   },
   ua: {
+    "home.variantC.promo.specialist.body": SPECIALIST_FREE_ENTRY_LINE.ua,
     "dashboard.subscriptionPage.label.graceUntil": "Відновлення оплати до",
     "dashboard.subscriptionPage.status.early_access": "Перехідний доступ",
     "dashboard.subscriptionPage.status.trialing": "Перехідний доступ",
@@ -101,6 +105,7 @@ const FLAT: Record<CommercialLang, Record<string, string>> = {
     "dashboard.readiness.allReady": "Чернетка готова до публікації",
   },
   de: {
+    "home.variantC.promo.specialist.body": SPECIALIST_FREE_ENTRY_LINE.de,
     "dashboard.subscriptionPage.label.graceUntil": "Zahlungswiederherstellung bis",
     "dashboard.subscriptionPage.status.early_access": "Übergangszugang",
     "dashboard.subscriptionPage.status.trialing": "Übergangszugang",
