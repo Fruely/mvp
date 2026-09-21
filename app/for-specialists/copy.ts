@@ -25,7 +25,7 @@ const ruCopy: ForSpecialistsCopy = {
   meta: {
     title: "Получайте заявки от клиентов в Германии — Freuly для специалистов",
     description:
-      "Freuly помогает специалистам в Германии получать заявки и целевые обращения клиентов: профиль, локальный поиск, категории услуг, города и продвижение от 29 евро в месяц.",
+      "Бесплатно создайте и опубликуйте профиль на Freuly. Доступ к клиентским заявкам оплачивается отдельно за заявку или через Professional/Growth.",
   },
   hero: {
     eyebrow: "Freuly для специалистов в Германии",
@@ -35,7 +35,7 @@ const ruCopy: ForSpecialistsCopy = {
     cta: "Начать принимать заявки",
     secondaryCta: "Как это работает",
     note:
-      "Подключение профиля стоит от 29 евро в месяц. Без комиссии с заказа: клиент пишет вам, цену и условия вы согласуете напрямую.",
+      "Регистрация и публикация профиля — бесплатно. Платите только за доступ к заявкам: разово или по подписке от 29€/мес.",
   },
   illustration: {
     alt: "Цветная иллюстрация про заявки для специалистов Freuly",
@@ -43,9 +43,9 @@ const ruCopy: ForSpecialistsCopy = {
   },
   proof: [
     {
-      value: "от 29 €",
-      title: "в месяц за профиль",
-      body: "Маленький бюджет вместо расходов на таргетолога, тесты рекламных кабинетов и ежедневную гонку за охватами.",
+      value: "0 €",
+      title: "за профиль",
+      body: "Регистрация и публикация профиля бесплатны. Платная часть начинается с доступа к клиентским заявкам.",
     },
     {
       value: "0%",
@@ -55,7 +55,7 @@ const ruCopy: ForSpecialistsCopy = {
     {
       value: "5 минут",
       title: "до старта профиля",
-      body: "Имя, город, языки, категория, услуги и цены — и у клиента уже есть понятная точка входа к вам.",
+      body: "Профиль бесплатный, готов за 5 минут: имя, город, языки, категория, услуги и цены — и клиент уже может вас найти.",
     },
   ],
   problem: {
@@ -158,7 +158,7 @@ const uaCopy: ForSpecialistsCopy = {
   meta: {
     title: "Отримуйте заявки від клієнтів у Німеччині — Freuly для спеціалістів",
     description:
-      "Freuly допомагає спеціалістам у Німеччині отримувати заявки та цільові звернення клієнтів: профіль, локальний пошук, категорії послуг, міста та просування від 29 євро на місяць.",
+      "Безкоштовно створіть і опублікуйте профіль на Freuly. Доступ до клієнтських запитів оплачується окремо за запит або через Professional/Growth.",
   },
   hero: {
     eyebrow: "Freuly для спеціалістів у Німеччині",
@@ -168,7 +168,7 @@ const uaCopy: ForSpecialistsCopy = {
     cta: "Почати приймати заявки",
     secondaryCta: "Як це працює",
     note:
-      "Підключення профілю коштує від 29 євро на місяць. Без комісії із замовлення: клієнт пише вам, ціну й умови ви узгоджуєте напряму.",
+      "Реєстрація та публікація профілю — безкоштовно. Платіть лише за доступ до запитів: разово або за підпискою від 29 €/міс.",
   },
   illustration: {
     alt: "Кольорова ілюстрація про заявки для спеціалістів Freuly",
@@ -176,9 +176,9 @@ const uaCopy: ForSpecialistsCopy = {
   },
   proof: [
     {
-      value: "від 29 €",
-      title: "на місяць за профіль",
-      body: "Невеликий бюджет замість витрат на таргетолога, тести рекламних кабінетів і щоденну гонитву за охопленнями.",
+      value: "0 €",
+      title: "за профіль",
+      body: "Реєстрація та публікація профілю безкоштовні. Платна частина починається з доступу до клієнтських запитів.",
     },
     {
       value: "0%",
@@ -188,7 +188,7 @@ const uaCopy: ForSpecialistsCopy = {
     {
       value: "5 хвилин",
       title: "до старту профілю",
-      body: "Ім’я, місто, мови, категорія, послуги та ціни — і в клієнта вже є зрозуміла точка входу до вас.",
+      body: "Профіль безкоштовний і готовий за 5 хвилин: ім’я, місто, мови, категорія, послуги та ціни — і клієнт уже може вас знайти.",
     },
   ],
   problem: {
@@ -291,7 +291,7 @@ const deCopy: ForSpecialistsCopy = {
   meta: {
     title: "Anfragen von Kundinnen und Kunden in Deutschland erhalten — Freuly für Fachkräfte",
     description:
-      "Freuly hilft Fachkräften in Deutschland, Anfragen und gezielte Kundenanfragen zu erhalten: Profil, lokale Suche, Leistungskategorien, Städte und Sichtbarkeit ab 29 Euro im Monat.",
+      "Erstellen und veröffentlichen Sie Ihr Profil auf Freuly kostenlos. Der Zugang zu Kundenanfragen wird einzeln pro Anfrage oder über Professional/Growth bezahlt.",
   },
   hero: {
     eyebrow: "Freuly für Fachkräfte in Deutschland",
@@ -301,7 +301,7 @@ const deCopy: ForSpecialistsCopy = {
     cta: "Anfragen annehmen",
     secondaryCta: "So funktioniert es",
     note:
-      "Ein Profil kostet ab 29 Euro im Monat. Keine Provision vom Auftrag: Kundinnen und Kunden schreiben Ihnen direkt, Preis und Konditionen klären Sie selbst.",
+      "Registrierung und Profilveröffentlichung sind kostenlos. Sie zahlen nur für den Zugang zu Anfragen: einzeln oder per Tarif ab 29 €/Monat.",
   },
   illustration: {
     alt: "Farbige Illustration zu Kundenanfragen für Freuly-Fachkräfte",
@@ -309,8 +309,8 @@ const deCopy: ForSpecialistsCopy = {
   },
   proof: [
     {
-      value: "ab 29 €",
-      title: "pro Monat für das Profil",
+      value: "0 €",
+      title: "für das Profil",
       body: "Ein kleines Budget statt Ausgaben für Media-Einkauf, Tests in Werbekonten und die tägliche Jagd nach Reichweite.",
     },
     {
@@ -321,7 +321,7 @@ const deCopy: ForSpecialistsCopy = {
     {
       value: "5 Minuten",
       title: "bis zum Start des Profils",
-      body: "Name, Stadt, Sprachen, Kategorie, Leistungen und Preise — und Kundinnen und Kunden haben bereits einen klaren Weg zu Ihnen.",
+      body: "Das Profil ist kostenlos und in etwa 5 Minuten startklar: Name, Stadt, Sprachen, Kategorie, Leistungen und Preise — und Kunden können Sie bereits finden.",
     },
   ],
   problem: {
