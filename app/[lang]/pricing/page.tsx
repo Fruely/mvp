@@ -25,6 +25,44 @@ export async function generateMetadata({ params }: { params: { lang: string } })
 
 type CompareRow = { label: string; professional: string; growth: string };
 
+function freeEntryCtaCopy(lang: Lang) {
+  if (lang === "de") {
+    return {
+      draftTitle: "Ihr kostenloses Profil ist bereits gespeichert.",
+      draftBody: "Sie können die Tarifseite in Ruhe ansehen und danach jederzeit zur Profilerstellung zurückkehren. Für die Veröffentlichung des Basisprofils ist kein Tarif erforderlich.",
+      draftPrimary: "Kostenloses Profil fortsetzen",
+      draftSecondary: "Zum Fachkräfte-Konto",
+      guestTitle: "Noch kein Fachkräfte-Konto?",
+      guestBody: "Erstellen und veröffentlichen Sie Ihr Basisprofil kostenlos. Einen Tarif wählen Sie erst, wenn Sie Anfragezugang im Tarif möchten.",
+      guestPrimary: "Kostenloses Profil erstellen",
+      guestSecondary: "Bereits registriert? Anmelden",
+    };
+  }
+  if (lang === "ua") {
+    return {
+      draftTitle: "Ваш безкоштовний профіль уже збережено.",
+      draftBody: "Ви можете спокійно переглянути тарифи й у будь-який момент повернутися до профілю. Для публікації базового профілю тариф не потрібен.",
+      draftPrimary: "Продовжити безкоштовний профіль",
+      draftSecondary: "До кабінету спеціаліста",
+      guestTitle: "Ще немає акаунта спеціаліста?",
+      guestBody: "Створіть і опублікуйте базовий профіль безкоштовно. Тариф можна обрати пізніше, якщо потрібен доступ до запитів у межах тарифу.",
+      guestPrimary: "Створити безкоштовний профіль",
+      guestSecondary: "Вже зареєстровані? Увійти",
+    };
+  }
+  return {
+    draftTitle: "Ваш бесплатный профиль уже сохранён.",
+    draftBody: "Вы можете спокойно посмотреть тарифы и в любой момент вернуться к профилю. Для публикации базового профиля тариф не нужен.",
+    draftPrimary: "Продолжить бесплатный профиль",
+    draftSecondary: "В кабинет специалиста",
+    guestTitle: "Ещё нет аккаунта специалиста?",
+    guestBody: "Создайте и опубликуйте базовый профиль бесплатно. Тариф можно выбрать позже, если нужен доступ к заявкам в рамках тарифа.",
+    guestPrimary: "Создать бесплатный профиль",
+    guestSecondary: "Уже зарегистрированы? Войти",
+  };
+}
+
+
 function asCompareRows(value: unknown): CompareRow[] {
   if (!Array.isArray(value)) return [];
   return value
@@ -107,6 +145,8 @@ export default async function PricingPage({ params }: { params: { lang: string }
   const copy = getCurrentPublicPricingCopy(lang);
   const { specialist, isAuthenticated } = await getOptionalAuthenticatedSpecialist();
   const hasSpecialist = Boolean(specialist?.id);
+  const specialistIsDraft = Boolean(hasSpecialist && (!specialist?.status || specialist.status === "draft"));
+  const entryCta = freeEntryCtaCopy(lang);
   const compareRows = asCompareRows(getDictValue(dict, "pricing.compare.rows"));
 
   return (
@@ -122,6 +162,46 @@ export default async function PricingPage({ params }: { params: { lang: string }
           {brandPlanText(copy.hero.subtitle)}
         </p>
       </section>
+
+      {specialistIsDraft ? (
+        <section className="mx-auto mt-8 max-w-3xl rounded-2xl border border-emerald-200/80 bg-emerald-50/60 p-5 sm:p-6">
+          <h2 className="text-lg font-semibold text-gray-900">{entryCta.draftTitle}</h2>
+          <p className="mt-2 text-base leading-relaxed text-gray-700">{entryCta.draftBody}</p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              href={`/${lang}/specialist/dashboard/onboarding`}
+              className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+            >
+              {entryCta.draftPrimary}
+            </Link>
+            <Link
+              href={`/${lang}/specialist/dashboard`}
+              className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 shadow-sm transition hover:border-gray-300 hover:bg-gray-50"
+            >
+              {entryCta.draftSecondary}
+            </Link>
+          </div>
+        </section>
+      ) : !isAuthenticated ? (
+        <section className="mx-auto mt-8 max-w-3xl rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+          <h2 className="text-lg font-semibold text-gray-900">{entryCta.guestTitle}</h2>
+          <p className="mt-2 text-base leading-relaxed text-gray-600">{entryCta.guestBody}</p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              href={`/${lang}/become-specialist`}
+              className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+            >
+              {entryCta.guestPrimary}
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 shadow-sm transition hover:border-gray-300 hover:bg-gray-50"
+            >
+              {entryCta.guestSecondary}
+            </Link>
+          </div>
+        </section>
+      ) : null}
 
       <section className="mx-auto mt-10 max-w-3xl">
         <div className="rounded-2xl border border-indigo-100/90 bg-white/90 p-6 shadow-sm shadow-indigo-100/40 backdrop-blur-sm sm:p-8">
