@@ -39,6 +39,34 @@ test("non-RFC3339 or timezone-less expiry values are rejected", () => {
   }
 });
 
+test("invalid calendar dates are rejected before Date.parse can normalize them", () => {
+  for (const value of [
+    "2026-02-29T00:00:00Z",
+    "2026-02-30T00:00:00Z",
+    "2026-02-31T00:00:00Z",
+    "2026-04-31T00:00:00Z",
+    "2026-06-31T00:00:00Z",
+    "2026-11-31T00:00:00Z",
+  ]) {
+    assert.equal(parseRfc3339Timestamp(value), null, value);
+  }
+});
+
+test("valid month lengths and Gregorian leap days are accepted", () => {
+  assert.equal(
+    parseRfc3339Timestamp("2028-02-29T00:00:00Z"),
+    "2028-02-29T00:00:00.000Z",
+  );
+  assert.equal(
+    parseRfc3339Timestamp("2026-04-30T23:59:59Z"),
+    "2026-04-30T23:59:59.000Z",
+  );
+  assert.equal(
+    parseRfc3339Timestamp("2026-12-31T23:59:59Z"),
+    "2026-12-31T23:59:59.000Z",
+  );
+});
+
 test("issue input accepts canonical future RFC3339 and rejects loose dates", () => {
   assert.deepEqual(
     parseIssueAgentCredentialInput(
