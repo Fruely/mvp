@@ -14,7 +14,7 @@ export const SPECIALIST_FREE_ENTRY_LINE: Record<Lang, string> = {
 export const ONE_OFF_REQUEST_ACCESS_FROM_EUR = 20;
 
 export const ONE_OFF_REQUEST_ACCESS_LINE: Record<Lang, string> = {
-  ru: `Разовый доступ к заявке — от ${ONE_OFF_REQUEST_ACCESS_FROM_EUR} €. Точная цена конкретной заявки показывается до оплаты.`,
-  ua: `Разовий доступ до запиту — від ${ONE_OFF_REQUEST_ACCESS_FROM_EUR} €. Точна ціна конкретного запиту показується до оплати.`,
-  de: `Einzelzugang zu einer Anfrage — ab ${ONE_OFF_REQUEST_ACCESS_FROM_EUR} €. Der genaue Preis der konkreten Anfrage wird vor der Zahlung angezeigt.`,
+  ru: `Разовый доступ к конкретной заявке для зарегистрированного специалиста — от ${ONE_OFF_REQUEST_ACCESS_FROM_EUR} €. Точная цена показывается до оплаты.`,
+  ua: `Разовий доступ до конкретного запиту для зареєстрованого спеціаліста — від ${ONE_OFF_REQUEST_ACCESS_FROM_EUR} €. Точна ціна показується до оплати.`,
+  de: `Einzelzugang zu einer konkreten Anfrage für registrierte Spezialisten — ab ${ONE_OFF_REQUEST_ACCESS_FROM_EUR} €. Der genaue Preis wird vor der Zahlung angezeigt.`,
 };
