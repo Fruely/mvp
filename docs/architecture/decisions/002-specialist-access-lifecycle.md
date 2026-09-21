@@ -5,16 +5,18 @@ Date: 2026-08-07
 
 ## Context
 
-Paid plan identity, payment state, public visibility and grace-period access
-must not be represented as one overloaded subscription status.
+Paid plan identity, payment state, public profile visibility and contact-access
+entitlement must not be represented as one overloaded subscription status.
 
-Different events can remove valid paid coverage:
-- natural paid-period expiry;
-- non-renewal;
-- full refund;
-- first publication before the first payment.
+The current product model separates three concerns:
+- public base-profile publication, which does not require a paid tariff;
+- tariff entitlement (Professional / Growth), which can grant contact access
+  during the paid coverage period;
+- one-off paid request entitlement (pay-per-lead), which grants access only to
+  the specific request offer.
 
-They must resolve through one consistent access lifecycle.
+Expiry, non-renewal and refund therefore affect paid entitlement, not the basic
+right of an otherwise eligible profile to remain publicly listed.
 
 ## Decision
 
@@ -23,8 +25,9 @@ The canonical specialist access lifecycle is:
 - `active` — valid paid coverage exists.
 - `grace` — valid paid coverage does not exist, but temporary access remains
   until `grace_until`.
-- `inactive` — grace has ended without valid paid coverage; billing blocks
-  public visibility.
+- `inactive` — grace has ended without valid paid coverage; no new
+  subscription-based contact unlock is available. Public listing is not
+  blocked merely because the tariff is inactive.
 
 The commercial plan and lifecycle are separate concepts.
 `plan_code` may retain the relevant or most recent commercial plan
@@ -41,9 +44,8 @@ Standard grace duration is 7 days.
   when no other valid paid coverage remains, grace begins at `refunded_at`.
   A refunded user does not retain the remainder of the refunded monthly
   paid period.
-- Initial publication after lifecycle enrollment:
-  one initial grace period may be granted before first payment.
-  Republishing must not reset it.
+- Initial publication does not require paid coverage and therefore does not
+  create a subscription grace period.
 
 Partial refunds do not alter lifecycle access.
 
@@ -61,16 +63,17 @@ Public specialist surfaces require the normal publication/activity/visibility
 conditions AND:
 `billing_visibility_blocked = false`
 
-During `active` and valid `grace`, billing visibility is not blocked.
-As of 2026-09-15, transition to `inactive` must not set
-`billing_visibility_blocked` (see addendum below). Search, sitemap, and
-direct-lead targeting still honor the flag if it is explicitly true.
+Subscription lifecycle must not set `billing_visibility_blocked` merely
+because paid coverage ends. Search, sitemap, and direct-lead targeting still
+honor the flag if it is explicitly true for a separate moderation or
+operational reason.
 
 ## Addendum 2026-09-15: listing/entitlement split
 
 Public listing eligibility is no longer derived from subscription lifecycle.
 
-- `inactive` means no covering subscription and no new contact unlock.
+- `inactive` means no covering subscription entitlement. It does not prevent
+  a valid pay-per-lead purchase for a specific request offer.
 - `inactive` does not set `billing_visibility_blocked`.
 - `billing_visibility_blocked` is retained as an explicit block flag, not as
   "no active Professional/Growth subscription".
@@ -88,9 +91,14 @@ New reveal of locked lead contacts is a billing-gated mutation, not a UI decisio
 Canonical helper: `lib/billing/contactUnlockEntitlement.ts`
 (`canUnlockLeadContacts` / `resolveBillingAccessState`).
 
-- `active` (including `early_access` / `trialing` / missing plan row): may unlock
-- `grace` (`grace` / `grace_period`, 7 days): may unlock
-- `inactive` (`inactive` / `expired` / `cancelled`): may not newly unlock
+- `active`: subscription entitlement may unlock contacts covered by the tariff.
+- `grace` (`grace` / `grace_period`): subscription entitlement may remain valid
+  according to the current grace policy.
+- `inactive` / `expired` / `cancelled`: no new subscription-based unlock.
+  A specific request may still be unlocked through a valid paid request
+  entitlement when pay-per-lead is available.
+- `early_access`, `trialing` and missing-plan fallbacks are legacy/transition
+  concerns and must not silently grant current free users paid contact access.
 
 Previously unlocked contacts (`contact_unlocked_at` set) stay readable after
 billing becomes inactive. Lead status changes (`accepted` / `contacted` /
@@ -122,7 +130,7 @@ Legacy migration/enrollment behavior must be explicit and rollout-safe.
 
 The following must not be reintroduced without an explicit product decision:
 
-- permanent public Starter/free fallback after grace;
+- tying public base-profile visibility to paid subscription coverage;
 - using a refunded monthly `expires_at` as continued paid access;
 - treating `basic` as a free Starter plan;
 - independent UI lifecycle interpretations;
