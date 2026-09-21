@@ -9,7 +9,7 @@ import { getDictionary, resolveRouteLang, t, type Lang } from "@/lib/i18n";
 import { PUBLIC_COMMERCIAL_PLAN_CATALOG } from "@/lib/billing/plans";
 import { isBillingPagePlanCheckoutEnabled } from "@/lib/billing/billingPageCheckoutReadiness";
 import { dashboardLinkSecondaryClass } from "@/components/dashboard/dashboardStyles";
-import { getPublicPricingCopy } from "@/lib/pricing/publicPricingCopy";
+import { getCurrentPublicPricingCopy } from "@/lib/pricing/currentPublicPricingCopy";
 import { brandPlanText, PLAN_DISPLAY_NAMES } from "@/lib/pricing/planDisplayBranding";
 import {
   getCurrentUserAndSpecialist,
@@ -30,7 +30,7 @@ export default async function SpecialistDemandChannelActivationPage({
     getCurrentUserAndSpecialist(),
   ]);
   const copy = getDemandChannelCopy(lang);
-  const pricingCopy = getPublicPricingCopy(lang);
+  const pricingCopy = getCurrentPublicPricingCopy(lang);
 
   if (!specialist.status || specialist.status === "draft") {
     const gate = await getSpecialistOnboardingGateState(specialist);
