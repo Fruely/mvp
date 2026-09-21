@@ -363,7 +363,6 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ADMIN_API_TOKEN=your_admin_token
-TERMS_VERSION=1.3
 ```
 
 ### На сервере
