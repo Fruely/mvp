@@ -117,7 +117,7 @@ const ruCopy: ForSpecialistsCopy = {
     intro:
       "Не обещание ради обещания, а понятный путь к заявке: человек ищет услугу, находит ваш профиль, понимает предложение и связывается напрямую. Цель простая: чтобы вы начали получать заявки и могли зарабатывать деньги на своей работе.",
     bullets: [
-      "Готовый профиль специалиста: услуги, цены, языки, город, фото, описание, портфолио и отзывы.",
+      "Готовый профиль специалиста: услуги, цены, языки, город, фото, описание и доступные подтверждающие материалы.",
       "Прямая ссылка, которую можно отправлять клиентам вместо длинных объяснений в мессенджерах.",
       "Клиенты находят вас по городу, языку и типу услуги: психолог, ремонт техники, репетитор, электрик, бухгалтер, переводчик, IT-помощь и другие запросы.",
       "Возможность получать обращения без комиссии и без обязанности отдавать процент с каждого заказа.",
@@ -250,7 +250,7 @@ const uaCopy: ForSpecialistsCopy = {
     intro:
       "Не обіцянка заради обіцянки, а зрозумілий шлях до заявки: людина шукає послугу, знаходить ваш профіль, розуміє пропозицію і зв’язується напряму. Мета проста: щоб ви почали отримувати заявки і могли заробляти на своїй роботі.",
     bullets: [
-      "Готовий профіль спеціаліста: послуги, ціни, мови, місто, фото, опис, портфоліо та відгуки.",
+      "Готовий профіль спеціаліста: послуги, ціни, мови, місто, фото, опис і доступні підтверджувальні матеріали.",
       "Пряме посилання, яке можна надсилати клієнтам замість довгих пояснень у месенджерах.",
       "Клієнти знаходять вас за містом, мовою і типом послуги: психолог, ремонт техніки, репетитор, електрик, бухгалтер, перекладач, IT-допомога та інші запити.",
       "Можливість отримувати звернення без комісії і без обов’язку віддавати відсоток із кожного замовлення.",
@@ -311,7 +311,7 @@ const deCopy: ForSpecialistsCopy = {
     {
       value: "0 €",
       title: "für das Profil",
-      body: "Ein kleines Budget statt Ausgaben für Media-Einkauf, Tests in Werbekonten und die tägliche Jagd nach Reichweite.",
+      body: "Registrierung und Veröffentlichung des Profils sind kostenlos. Kostenpflichtig ist erst der Zugang zu Kundenanfragen.",
     },
     {
       value: "0%",
@@ -383,7 +383,7 @@ const deCopy: ForSpecialistsCopy = {
     intro:
       "Kein Versprechen um des Versprechens willen, sondern ein klarer Weg zur Anfrage: jemand sucht eine Leistung, findet Ihr Profil, versteht das Angebot und nimmt direkt Kontakt auf. Das Ziel ist einfach: dass Sie Anfragen erhalten und mit Ihrer Arbeit verdienen können.",
     bullets: [
-      "Ein fertiges Fachkraft-Profil: Leistungen, Preise, Sprachen, Stadt, Fotos, Beschreibung, Portfolio und Bewertungen.",
+      "Ein fertiges Fachkraft-Profil mit Leistungen, Preisen, Sprachen, Ort, Fotos, Beschreibung und verfügbaren Nachweisen.",
       "Ein direkter Link, den Sie Kundinnen und Kunden schicken können, statt lange Erklärungen in Messengern zu tippen.",
       "Kundinnen und Kunden finden Sie nach Stadt, Sprache und Leistung: Psychologie, Gerätereparatur, Nachhilfe, Elektrik, Buchhaltung, Dolmetschen, IT-Hilfe und weitere Anfragen.",
       "Anfragen ohne Provision und ohne Pflicht, einen Anteil jedes Auftrags abzugeben.",
