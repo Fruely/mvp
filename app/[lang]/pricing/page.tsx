@@ -125,9 +125,9 @@ export default async function PricingPage({ params }: { params: { lang: string }
 
       <section className="mx-auto mt-10 max-w-3xl">
         <div className="rounded-2xl border border-indigo-100/90 bg-white/90 p-6 shadow-sm shadow-indigo-100/40 backdrop-blur-sm sm:p-8">
-          <h2 className="text-lg font-semibold text-gray-900">{brandPlanText(copy.notice.title)}</h2>
-          <p className="mt-2 text-sm leading-relaxed text-gray-600">{brandPlanText(copy.notice.lead)}</p>
-          <ul className="mt-4 space-y-2 text-sm leading-relaxed text-gray-700">
+          <h2 className="text-xl font-semibold text-gray-900">{brandPlanText(copy.notice.title)}</h2>
+          <p className="mt-3 text-base leading-relaxed text-gray-600">{brandPlanText(copy.notice.lead)}</p>
+          <ul className="mt-5 space-y-3 text-base leading-relaxed text-gray-700">
             {brandPlanTexts(copy.notice.points).map((point) => (
               <li key={point} className="flex gap-2">
                 <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-indigo-400" aria-hidden />
