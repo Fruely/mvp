@@ -1,36 +1,14 @@
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { register } from "node:module";
 import test from "node:test";
 import { harness, resetHarness } from "./serviceRequests.harness.mjs";
 import { resetCookieJar } from "./testMocks/next-cookies.mjs";
 
-const CREATE_ROUTE = new URL("../../app/api/service-requests/route.ts", import.meta.url).href;
+register(new URL("./demandRoute.contract.hooks.mjs", import.meta.url).href);
 
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    if (specifier === "./constants" && context.parentURL?.includes("validation.ts")) {
-      return { url: new URL("./constants.ts", import.meta.url).href, shortCircuit: true };
-    }
-    const map = {
-      "@/lib/supabase/server": new URL("./testMocks/service-server.mjs", import.meta.url).href,
-      "@/lib/rate-limit/shared": new URL("./testMocks/rate-limit.mjs", import.meta.url).href,
-      "@/lib/notifications/notify": new URL("./testMocks/notify.mjs", import.meta.url).href,
-      "@/lib/adminApiAuth": new URL("./testMocks/adminApiAuth.mjs", import.meta.url).href,
-      "@/lib/serviceRequests/constants": new URL("./constants.ts", import.meta.url).href,
-      "@/lib/serviceRequests/publicId": new URL("./publicId.ts", import.meta.url).href,
-      "@/lib/serviceRequests/validation": new URL("./validation.ts", import.meta.url).href,
-      "@/lib/auth/resolveBearerAuthUser": new URL("./testMocks/resolveBearerAuthUser.mjs", import.meta.url).href,
-      "@/lib/clientCampaignLinks/service": new URL("./testMocks/clientCampaignService.mjs", import.meta.url).href,
-      "server-only": new URL("./testMocks/server-only.mjs", import.meta.url).href,
-      "next/headers": new URL("./testMocks/next-cookies.mjs", import.meta.url).href,
-      "next/server": new URL("../leads/testMocks/next-server.mjs", import.meta.url).href,
-    };
-    if (map[specifier]) return { url: map[specifier], shortCircuit: true };
-    return nextResolve(specifier, context);
-  },
-});
-
-const { POST: createPost } = await import(CREATE_ROUTE);
+const { POST: createPost } = await import(
+  new URL("../../app/api/service-requests/route.ts", import.meta.url).href
+);
 
 const validBody = {
   client_name: "Anna",
