@@ -1,3 +1,5 @@
+import { PARTNER_AGREEMENT_VERSION as CANONICAL_PARTNER_AGREEMENT_VERSION } from "@/content/partners/agreementMeta";
+
 /**
  * Partner payout / Stripe Connect live mode.
  * Keep false until Freuly Stripe Connect + platform bank account are ready.
@@ -6,8 +8,7 @@ export const partnerPayoutsEnabled = process.env.PARTNER_PAYOUTS_ENABLED === "tr
 
 /**
  * Version written on accept (`partners.agreement_version`).
- * Default MUST stay in sync with `PARTNER_AGREEMENT_VERSION` in
- * `content/partners/agreementMeta.ts` (canonical document version).
+ * This is deliberately sourced from the canonical legal metadata so a stale
+ * hosting environment variable cannot record acceptance of an obsolete version.
  */
-export const PARTNER_AGREEMENT_VERSION =
-  process.env.PARTNER_AGREEMENT_VERSION?.trim() || "1.4";
+export const PARTNER_AGREEMENT_VERSION = CANONICAL_PARTNER_AGREEMENT_VERSION;
