@@ -3,6 +3,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
+  directPplPendingCutoffIso,
   isDirectLeadPplCheckoutEnabled,
   mapDirectLeadOfferRow,
   type DirectLeadAccessFacts,
@@ -73,6 +74,7 @@ export async function loadDirectLeadAccessFacts(
         .eq("offer_id", offer.id)
         .eq("specialist_id", input.specialistId)
         .eq("status", "pending")
+        .gte("created_at", directPplPendingCutoffIso())
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
