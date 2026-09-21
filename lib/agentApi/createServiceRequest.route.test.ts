@@ -8,6 +8,7 @@ import { buildFreulyArdManifest } from "../agentCore/adapters/ard.ts";
 import { buildFreulyMcpToolCatalog } from "../agentCore/adapters/mcp.ts";
 import { buildFreulyReadOnlyOpenApiDocument } from "../agentCore/adapters/openapi.ts";
 import { harness, resetHarness } from "../serviceRequests/serviceRequests.harness.mjs";
+import { deriveAgentCreateServiceRequestStorageKey } from "./idempotencyKey.ts";
 import {
   agentHarness,
   authorizedBusiness,
@@ -73,7 +74,9 @@ function agentRequest(options = {}) {
       options.idempotencyKey ?? IDEMPOTENCY_KEY,
     );
   }
-  headers.set("Content-Type", "application/json");
+  if (options.contentType !== null) {
+    headers.set("Content-Type", options.contentType ?? "application/json");
+  }
   for (const [key, value] of Object.entries(options.headers ?? {})) {
     headers.set(key, value);
   }
@@ -291,6 +294,12 @@ test("successful create returns public request_id and created_at", async () => {
   assert.equal(harness.notifyCalls.length, 1);
   assert.equal(harness.notifyCalls[0].eventType, "NEW_SERVICE_REQUEST");
   assert.equal(agentHarness.rateLimitCalls[0].identifier, "client-consumer-1");
+  const storageKey = deriveAgentCreateServiceRequestStorageKey({
+    agentClientId: "client-consumer-1",
+    externalKey: IDEMPOTENCY_KEY,
+  });
+  assert.equal(harness.rows[0].client_idempotency_key, storageKey);
+  assert.notEqual(harness.rows[0].client_idempotency_key, IDEMPOTENCY_KEY);
 });
 
 test("replay same key and payload returns the same identity", async () => {
@@ -317,6 +326,109 @@ test("same key with different payload -> 409", async () => {
   );
   assert.equal(conflict.status, 409);
   assert.equal(harness.rows.length, 1);
+});
+
+test("different agentClientId with the same external key creates independently", async () => {
+  authorizeConsumer();
+  const first = await agentCreatePost(agentRequest());
+  const firstJson = await first.json();
+  assert.equal(first.status, 200);
+
+  agentHarness.auth = authorizedConsumer({
+    identity: {
+      clientId: "client-consumer-2",
+      credentialId: "cred-consumer-2",
+    },
+  });
+  agentHarness.delegation = authorizedDelegation({
+    agentClientId: "client-consumer-2",
+  });
+  const second = await agentCreatePost(agentRequest());
+  const secondJson = await second.json();
+  assert.equal(second.status, 200);
+  assert.notEqual(secondJson.request_id, firstJson.request_id);
+  assert.equal(harness.rows.length, 2);
+  assert.equal(harness.notifyCalls.length, 2);
+  assert.notEqual(
+    harness.rows[0].client_idempotency_key,
+    harness.rows[1].client_idempotency_key,
+  );
+  assert.notEqual(harness.rows[0].client_idempotency_key, IDEMPOTENCY_KEY);
+  assert.notEqual(harness.rows[1].client_idempotency_key, IDEMPOTENCY_KEY);
+});
+
+test("human row with the raw external Idempotency-Key does not collide", async () => {
+  harness.rows.push({
+    id: "human-row",
+    public_id: "REQ-20260921-HUMAN1",
+    created_at: "2026-09-21T10:00:00.000Z",
+    status: "new",
+    client_user_id: "user-owner-1",
+    client_idempotency_key: IDEMPOTENCY_KEY,
+    client_idempotency_fingerprint: "human-fingerprint",
+  });
+  authorizeConsumer();
+  const res = await agentCreatePost(agentRequest());
+  const json = await res.json();
+  assert.equal(res.status, 200);
+  assert.notEqual(json.request_id, "REQ-20260921-HUMAN1");
+  assert.equal(harness.rows.length, 2);
+  assert.equal(
+    harness.rows.some((row) => row.client_idempotency_key === IDEMPOTENCY_KEY),
+    true,
+  );
+  assert.equal(
+    harness.rows.some((row) => row.client_idempotency_key === IDEMPOTENCY_KEY && row.public_id === json.request_id),
+    false,
+  );
+});
+
+test("same business agent cannot reuse the key for another delegated user", async () => {
+  authorizeBusiness({ userId: "user-owner-1" });
+  const first = await agentCreatePost(agentRequest());
+  assert.equal(first.status, 200);
+
+  authorizeBusiness({ userId: "user-other-2" });
+  const conflict = await agentCreatePost(agentRequest());
+  const json = await conflict.json();
+  assert.equal(conflict.status, 409);
+  assert.equal(json.error, "Idempotency key unavailable for current auth context");
+  assert.equal(harness.rows.length, 1);
+  assert.equal(harness.notifyCalls.length, 1);
+});
+
+test("missing Content-Type -> 415", async () => {
+  authorizeConsumer();
+  const res = await agentCreatePost(agentRequest({ contentType: null }));
+  const json = await res.json();
+  assert.equal(res.status, 415);
+  assert.equal(json.error, "application/json required");
+  assert.equal(res.headers.get("Cache-Control"), "no-store");
+  assert.equal(harness.rows.length, 0);
+});
+
+test("text/plain Content-Type -> 415", async () => {
+  authorizeConsumer();
+  const res = await agentCreatePost(agentRequest({ contentType: "text/plain" }));
+  assert.equal(res.status, 415);
+  assert.equal((await res.json()).error, "application/json required");
+});
+
+test("application/json Content-Type is accepted", async () => {
+  authorizeConsumer();
+  const res = await agentCreatePost(
+    agentRequest({ contentType: "application/json" }),
+  );
+  assert.equal(res.status, 200);
+});
+
+test("application/json; charset=utf-8 is accepted", async () => {
+  authorizeConsumer();
+  const res = await agentCreatePost(
+    agentRequest({ contentType: "application/json; charset=utf-8" }),
+  );
+  assert.equal(res.status, 200);
+  assert.equal((await res.json()).ok, true);
 });
 
 test("replay sends no second notification", async () => {
@@ -352,6 +464,13 @@ test("response has no PII or internal ids", async () => {
   assert.equal(serialized.includes(SECRET_EMAIL), false);
   assert.equal(serialized.includes(SECRET_PHONE), false);
   assert.equal(serialized.includes("user-owner-1"), false);
+  assert.equal(serialized.includes(IDEMPOTENCY_KEY), false);
+  const storageKey = deriveAgentCreateServiceRequestStorageKey({
+    agentClientId: "client-consumer-1",
+    externalKey: IDEMPOTENCY_KEY,
+  });
+  assert.ok(storageKey);
+  assert.equal(serialized.includes(storageKey), false);
   assert.equal(
     serialized.includes("11111111-2222-3333-4444-555555555555"),
     false,
@@ -386,6 +505,16 @@ test("audit does not contain Authorization, credential, delegation payload, or c
   assert.equal(blob.includes("Need bookkeeping help"), false);
   assert.equal(blob.includes("allowedCapabilities"), false);
   assert.equal(blob.includes(IDEMPOTENCY_KEY), false);
+  const storageKey = deriveAgentCreateServiceRequestStorageKey({
+    agentClientId: "client-consumer-1",
+    externalKey: IDEMPOTENCY_KEY,
+  });
+  assert.ok(storageKey);
+  assert.equal(blob.includes(storageKey), false);
+  const serializedResponse = JSON.stringify(
+    agentHarness.auditEvents.find((event) => event.outcome === "success"),
+  );
+  assert.equal(serializedResponse.includes(storageKey), false);
   const success = agentHarness.auditEvents.find(
     (event) => event.outcome === "success",
   );

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { deriveAgentCreateServiceRequestStorageKey } from "@/lib/agentApi/idempotencyKey";
+import { isAgentJsonContentType } from "@/lib/agentApi/jsonContentType";
 import { parseAgentCreateServiceRequestInput } from "@/lib/agentApi/serviceRequestInput";
 import { recordAgentApiAuditEvent } from "@/lib/agentAuth/audit";
 import type { AgentAuditMetadata } from "@/lib/agentAuth/auditMetadata";
@@ -118,8 +120,8 @@ export async function POST(request: NextRequest) {
       return json({ error: "Idempotency-Key is required" }, 400);
     }
 
-    const clientIdempotencyKey = normalizeClientIdempotencyKey(idempotencyHeader);
-    if (!clientIdempotencyKey) {
+    const externalIdempotencyKey = normalizeClientIdempotencyKey(idempotencyHeader);
+    if (!externalIdempotencyKey) {
       await recordOperationOutcome({
         agentClientId,
         credentialId,
@@ -128,6 +130,32 @@ export async function POST(request: NextRequest) {
         reason: "invalid_idempotency_key",
       });
       return json({ error: "invalid Idempotency-Key" }, 400);
+    }
+
+    const storageIdempotencyKey = deriveAgentCreateServiceRequestStorageKey({
+      agentClientId,
+      externalKey: externalIdempotencyKey,
+    });
+    if (!storageIdempotencyKey) {
+      await recordOperationOutcome({
+        agentClientId,
+        credentialId,
+        outcome: "error",
+        httpStatus: 500,
+        reason: "idempotency_namespace_failed",
+      });
+      return json({ error: "server_error" }, 500);
+    }
+
+    if (!isAgentJsonContentType(request.headers.get("content-type"))) {
+      await recordOperationOutcome({
+        agentClientId,
+        credentialId,
+        outcome: "validation_error",
+        httpStatus: 415,
+        reason: "unsupported_media_type",
+      });
+      return json({ error: "application/json required" }, 415);
     }
 
     let body: unknown;
@@ -161,7 +189,7 @@ export async function POST(request: NextRequest) {
       buildServiceRequestIdempotencyFingerprint(validated);
     const replay = await lookupServiceRequestIdempotentReplay(
       supabase,
-      clientIdempotencyKey,
+      storageIdempotencyKey,
       idempotencyFingerprint,
       clientUserId,
     );
@@ -252,7 +280,7 @@ export async function POST(request: NextRequest) {
       supabase,
       validated,
       clientUserId,
-      idempotencyKey: clientIdempotencyKey,
+      idempotencyKey: storageIdempotencyKey,
     });
 
     if (result.kind === "conflict") {
