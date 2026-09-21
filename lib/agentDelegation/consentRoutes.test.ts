@@ -173,6 +173,18 @@ test("user can create, list and revoke only their own delegations", async () => 
   assert.equal(consentHarness.deleteCalls.length, 0);
 });
 
+test("second create while an effectively active grant exists returns 409", async () => {
+  authUser();
+  const client = seedClient();
+  const first = await createPost(request(createBody(client.id)));
+  const second = await createPost(request(createBody(client.id)));
+  const secondJson = await second.json();
+  assert.equal(first.status, 201);
+  assert.equal(second.status, 409);
+  assert.equal(secondJson.error, "active_delegation_exists");
+  assert.equal(consentHarness.delegations.length, 1);
+});
+
 test("user_id injection and unknown fields are rejected", async () => {
   authUser();
   const client = seedClient();

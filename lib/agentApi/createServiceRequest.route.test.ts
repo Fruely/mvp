@@ -155,6 +155,17 @@ test("revoked or expired delegation -> 403", async () => {
   assert.equal((await agentCreatePost(agentRequest())).status, 403);
 });
 
+test("stale consent version -> 403", async () => {
+  agentHarness.auth = authorizedConsumer();
+  agentHarness.delegation = {
+    kind: "invalid",
+    reason: "invalid_consent_version",
+  };
+  const res = await agentCreatePost(agentRequest());
+  assert.equal(res.status, 403);
+  assert.equal(harness.rows.length, 0);
+});
+
 test("capability absent from delegation -> 403", async () => {
   agentHarness.auth = authorizedConsumer();
   agentHarness.delegation = { kind: "forbidden", capability: "create_service_request" };

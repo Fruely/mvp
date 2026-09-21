@@ -9,6 +9,7 @@ import {
   consentHarness,
   resetConsentHarness,
   seedClient,
+  seedDelegation,
 } from "./consentHarness.mjs";
 import { AGENT_USER_CONSENT_VERSION } from "./consent.ts";
 
@@ -318,6 +319,172 @@ test("list returns only the caller's rows with effective expired status, newest 
     JSON.stringify(listed.value),
     /credential_hash|raw_credential|key_prefix|pepper|owner_user_id/,
   );
+});
+
+test("second create for the same user and agent is rejected while the first is effectively active", async () => {
+  const client = seedClient();
+  const first = await createUserDelegation(
+    supabase(),
+    USER_ID,
+    createBody(client.id),
+    deps(),
+  );
+  const second = await createUserDelegation(
+    supabase(),
+    USER_ID,
+    createBody(client.id),
+    deps(),
+  );
+  assert.equal(first.kind, "ok");
+  assert.deepEqual(second, {
+    kind: "conflict",
+    error: "active_delegation_exists",
+    status: 409,
+  });
+  assert.equal(consentHarness.delegations.length, 1);
+});
+
+test("another user may independently consent to the same business_agent", async () => {
+  const client = seedClient();
+  const first = await createUserDelegation(
+    supabase(),
+    USER_ID,
+    createBody(client.id),
+    deps(),
+  );
+  const other = await createUserDelegation(
+    supabase(),
+    OTHER_ID,
+    createBody(client.id),
+    deps(),
+  );
+  assert.equal(first.kind, "ok");
+  assert.equal(other.kind, "ok");
+  assert.equal(consentHarness.delegations.length, 2);
+  assert.equal(consentHarness.delegations[0].user_id, USER_ID);
+  assert.equal(consentHarness.delegations[1].user_id, OTHER_ID);
+});
+
+test("same user may consent to another agent", async () => {
+  const firstClient = seedClient();
+  const secondClient = seedClient({ name: "Second agent" });
+  const first = await createUserDelegation(
+    supabase(),
+    USER_ID,
+    createBody(firstClient.id),
+    deps(),
+  );
+  const second = await createUserDelegation(
+    supabase(),
+    USER_ID,
+    createBody(secondClient.id),
+    deps(),
+  );
+  assert.equal(first.kind, "ok");
+  assert.equal(second.kind, "ok");
+  assert.equal(consentHarness.delegations.length, 2);
+});
+
+test("expired previous delegation does not block a new grant", async () => {
+  const client = seedClient();
+  consentHarness.nowIso = "2026-09-21T18:00:00.000Z";
+  const expired = await createUserDelegation(
+    supabase(),
+    USER_ID,
+    createBody(client.id, { expires_at: "2026-09-21T19:00:00.000Z" }),
+    { now: () => new Date("2026-09-21T18:00:00.000Z") },
+  );
+  consentHarness.nowIso = "2026-09-21T20:05:00.000Z";
+  const created = await createUserDelegation(
+    supabase(),
+    USER_ID,
+    createBody(client.id),
+    deps(),
+  );
+  assert.equal(expired.kind, "ok");
+  assert.equal(created.kind, "ok");
+  assert.equal(consentHarness.delegations.length, 2);
+  assert.equal(consentHarness.delegations[0].status, "active");
+  assert.equal(consentHarness.delegations[1].status, "active");
+});
+
+test("revoke of either duplicate active grant revokes all for that user and agent", async () => {
+  const client = seedClient();
+  const otherAgent = seedClient({ name: "Other agent" });
+  const first = seedDelegation({
+    agent_client_id: client.id,
+    user_id: USER_ID,
+  });
+  const second = seedDelegation({
+    agent_client_id: client.id,
+    user_id: USER_ID,
+  });
+  const otherUser = seedDelegation({
+    agent_client_id: client.id,
+    user_id: OTHER_ID,
+  });
+  const otherGrant = seedDelegation({
+    agent_client_id: otherAgent.id,
+    user_id: USER_ID,
+  });
+
+  const revoked = await revokeUserDelegation(
+    supabase(),
+    USER_ID,
+    second.id,
+    {},
+    deps(),
+  );
+  assert.equal(revoked.kind, "ok");
+  if (revoked.kind === "ok") {
+    assert.equal(revoked.value.delegation_id, second.id);
+    assert.equal(revoked.value.status, "revoked");
+  }
+
+  const firstRow = consentHarness.delegations.find((row) => row.id === first.id);
+  const secondRow = consentHarness.delegations.find((row) => row.id === second.id);
+  const otherUserRow = consentHarness.delegations.find(
+    (row) => row.id === otherUser.id,
+  );
+  const otherGrantRow = consentHarness.delegations.find(
+    (row) => row.id === otherGrant.id,
+  );
+  assert.equal(firstRow?.status, "revoked");
+  assert.equal(secondRow?.status, "revoked");
+  assert.equal(otherUserRow?.status, "active");
+  assert.equal(otherGrantRow?.status, "active");
+  assert.equal(consentHarness.deleteCalls.length, 0);
+
+  for (const row of [firstRow, secondRow]) {
+    const decision = authorizeAgentDelegation({
+      delegation: row,
+      agentClientId: client.id,
+      capability: "create_service_request",
+      now: NOW,
+    });
+    assert.deepEqual(decision, { kind: "invalid", reason: "inactive" });
+  }
+
+  const otherDecision = authorizeAgentDelegation({
+    delegation: otherUserRow,
+    agentClientId: client.id,
+    capability: "create_service_request",
+    now: NOW,
+  });
+  assert.equal(otherDecision.kind, "authorized");
+});
+
+test("list fails closed when referenced agent_client metadata is missing", async () => {
+  seedDelegation({
+    agent_client_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    user_id: USER_ID,
+  });
+  const listed = await listUserDelegations(supabase(), USER_ID, deps());
+  assert.deepEqual(listed, {
+    kind: "error",
+    error: "server_error",
+    status: 500,
+  });
 });
 
 test("revoke is owner-scoped, idempotent, and rejected by authorization policy", async () => {

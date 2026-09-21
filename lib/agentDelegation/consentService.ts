@@ -226,6 +226,24 @@ export async function createUserDelegation(
     }
   }
 
+  const now = nowOf(deps)();
+  const { data: existingRows, error: existingError } = await supabase
+    .from("agent_delegations")
+    .select(DELEGATION_SAFE_SELECT)
+    .eq("user_id", userId)
+    .eq("agent_client_id", parsed.agentClientId)
+    .eq("status", "active");
+
+  if (existingError) return fail("error", "server_error", 500);
+  const effectivelyActive = (Array.isArray(existingRows) ? existingRows : []).some(
+    (raw) =>
+      effectiveDelegationStatus(asDelegation(raw as Record<string, unknown>), now) ===
+      "active",
+  );
+  if (effectivelyActive) {
+    return fail("conflict", "active_delegation_exists", 409);
+  }
+
   const { data, error } = await supabase
     .from("agent_delegations")
     .insert({
@@ -288,26 +306,26 @@ export async function listUserDelegations(
   }
 
   const now = nowOf(deps)();
-  return {
-    kind: "ok",
-    value: rows.map((raw) => {
-      const row = asDelegation(raw as Record<string, unknown>);
-      const client = clients.get(row.agent_client_id);
-      return {
-        delegation_id: row.id,
-        agent_client_id: row.agent_client_id,
-        agent: client
-          ? safeAgent(client)
-          : { name: "", client_type: "business_agent", provider: null },
-        status: effectiveDelegationStatus(row, now),
-        allowed_capabilities: row.allowed_capabilities,
-        consent_version: row.consent_version,
-        granted_at: row.granted_at,
-        expires_at: row.expires_at,
-        revoked_at: row.revoked_at,
-      };
-    }),
-  };
+  const listed: SafeListedDelegation[] = [];
+  for (const raw of rows) {
+    const row = asDelegation(raw as Record<string, unknown>);
+    const client = clients.get(row.agent_client_id);
+    if (!client) {
+      return fail("error", "server_error", 500);
+    }
+    listed.push({
+      delegation_id: row.id,
+      agent_client_id: row.agent_client_id,
+      agent: safeAgent(client),
+      status: effectiveDelegationStatus(row, now),
+      allowed_capabilities: row.allowed_capabilities,
+      consent_version: row.consent_version,
+      granted_at: row.granted_at,
+      expires_at: row.expires_at,
+      revoked_at: row.revoked_at,
+    });
+  }
+  return { kind: "ok", value: listed };
 }
 
 export async function revokeUserDelegation(
@@ -338,40 +356,38 @@ export async function revokeUserDelegation(
   if (!existing) return fail("not_found", "delegation not found", 404);
 
   const row = asDelegation(existing as Record<string, unknown>);
-  if (row.status === "revoked" && row.revoked_at) {
-    return {
-      kind: "ok",
-      value: {
-        delegation_id: row.id,
-        agent_client_id: row.agent_client_id,
-        status: "revoked",
-        revoked_at: row.revoked_at,
-      },
-    };
-  }
-
   const revokedAt = nowOf(deps)().toISOString();
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("agent_delegations")
     .update({
       status: "revoked",
       revoked_at: revokedAt,
       updated_at: revokedAt,
     })
+    .eq("user_id", userId)
+    .eq("agent_client_id", row.agent_client_id)
+    .eq("status", "active");
+
+  if (error) return fail("error", "server_error", 500);
+
+  const { data: refreshed, error: refreshError } = await supabase
+    .from("agent_delegations")
+    .select(DELEGATION_SAFE_SELECT)
     .eq("id", delegationId)
     .eq("user_id", userId)
-    .select(DELEGATION_SAFE_SELECT)
     .maybeSingle();
 
-  if (error || !data) return fail("error", "server_error", 500);
-  const updated = asDelegation(data as Record<string, unknown>);
+  if (refreshError || !refreshed) return fail("error", "server_error", 500);
+  const updated = asDelegation(refreshed as Record<string, unknown>);
   return {
     kind: "ok",
     value: {
       delegation_id: updated.id,
       agent_client_id: updated.agent_client_id,
       status: "revoked",
-      revoked_at: updated.revoked_at ?? revokedAt,
+      revoked_at:
+        updated.revoked_at ??
+        (row.status === "revoked" && row.revoked_at ? row.revoked_at : revokedAt),
     },
   };
 }

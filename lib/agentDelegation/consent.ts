@@ -3,19 +3,23 @@ import { FREULY_CAPABILITY_CORE } from "@/lib/agentCore/freuly";
 import type { CapabilityDefinition } from "@/lib/agentCore/types";
 import type { UserDelegatableCapability } from "./types";
 
+export { AGENT_USER_CONSENT_VERSION } from "./consentContract";
+
 /**
  * Existing invariants this consent API must preserve:
  * - USER_DELEGATABLE_CAPABILITIES is the DB/foundation vocabulary and includes
  *   capabilities that are not live yet. Runtime consent must not grant them.
  * - authorizeAgentDelegation() checks the stored row only (same agent, active,
- *   capability set, expiry). Client type, owner binding and scopes are enforced
- *   here at grant time and again by runDelegatedAuthorization at Agent write.
+ *   current consent version, capability set, expiry). Client type, owner binding
+ *   and scopes are enforced here at grant time and again by
+ *   runDelegatedAuthorization at Agent write.
  * - Admin provisioning issues principals/credentials. It must never manufacture
  *   user consent. These routes authenticate only via resolveBearerAuthUser.
  * - agent_delegations is revoke/expire only. No DELETE. user_id is never taken
  *   from a request body.
+ * - Agent actions accept only AGENT_USER_CONSENT_VERSION. A version bump
+ *   requires revoke + new consent; old rows are not migrated.
  */
-export const AGENT_USER_CONSENT_VERSION = "agent-delegation-v1";
 
 export const ENABLED_USER_DELEGATION_CAPABILITIES = [
   "create_service_request",

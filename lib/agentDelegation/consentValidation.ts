@@ -1,6 +1,6 @@
 import { parseRfc3339Timestamp } from "@/lib/rfc3339";
+import { AGENT_USER_CONSENT_VERSION } from "./consentContract";
 import {
-  AGENT_USER_CONSENT_VERSION,
   isEnabledUserDelegationCapability,
   type EnabledUserDelegationCapability,
 } from "./consent";
