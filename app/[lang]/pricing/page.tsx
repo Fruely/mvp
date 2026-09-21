@@ -39,7 +39,7 @@ function asCompareRows(value: unknown): CompareRow[] {
 
 function FeatureList({ items }: { items: string[] }) {
   return (
-    <ul className="mt-6 flex flex-1 flex-col gap-2.5 text-sm leading-snug text-gray-600">
+    <ul className="mt-6 flex flex-1 flex-col gap-2.5 text-sm leading-relaxed text-gray-600 lg:text-base">
       {brandPlanTexts(items).map((line) => (
         <li key={line} className="flex gap-2.5">
           <span className="mt-0.5 shrink-0 text-indigo-500" aria-hidden>
@@ -125,9 +125,9 @@ export default async function PricingPage({ params }: { params: { lang: string }
 
       <section className="mx-auto mt-10 max-w-3xl">
         <div className="rounded-2xl border border-indigo-100/90 bg-white/90 p-6 shadow-sm shadow-indigo-100/40 backdrop-blur-sm sm:p-8">
-          <h2 className="text-xl font-semibold text-gray-900">{brandPlanText(copy.notice.title)}</h2>
-          <p className="mt-3 text-base leading-relaxed text-gray-600">{brandPlanText(copy.notice.lead)}</p>
-          <ul className="mt-5 space-y-3 text-base leading-relaxed text-gray-700">
+          <h2 className="text-xl font-semibold text-gray-900 lg:text-2xl">{brandPlanText(copy.notice.title)}</h2>
+          <p className="mt-3 text-base leading-relaxed text-gray-600 lg:text-lg">{brandPlanText(copy.notice.lead)}</p>
+          <ul className="mt-5 space-y-3 text-base leading-relaxed text-gray-700 lg:text-lg">
             {brandPlanTexts(copy.notice.points).map((point) => (
               <li key={point} className="flex gap-2">
                 <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-indigo-400" aria-hidden />
@@ -145,7 +145,7 @@ export default async function PricingPage({ params }: { params: { lang: string }
             <p className="mt-3 text-3xl font-semibold tracking-tight text-gray-900">
               {copy.professional.price}
             </p>
-            <p className="mt-4 text-sm leading-relaxed text-gray-600">{brandPlanText(copy.professional.description)}</p>
+            <p className="mt-4 text-sm leading-relaxed text-gray-600 lg:text-base">{brandPlanText(copy.professional.description)}</p>
             <FeatureList items={copy.professional.features} />
             <PlanVisualPreview plan="professional" lang={lang} label={brandPlanText(copy.preview.professionalLabel)} />
             <div className="mt-8">
@@ -165,7 +165,7 @@ export default async function PricingPage({ params }: { params: { lang: string }
             </p>
             <h2 className="text-lg font-semibold text-gray-900">{brandPlanText(copy.growth.name)}</h2>
             <p className="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{copy.growth.price}</p>
-            <p className="mt-4 text-sm leading-relaxed text-gray-600">{brandPlanText(copy.growth.description)}</p>
+            <p className="mt-4 text-sm leading-relaxed text-gray-600 lg:text-base">{brandPlanText(copy.growth.description)}</p>
             <FeatureList items={copy.growth.features} />
             <PlanVisualPreview plan="growth" lang={lang} label={brandPlanText(copy.preview.growthLabel)} />
             <div className="mt-8">
@@ -218,8 +218,8 @@ export default async function PricingPage({ params }: { params: { lang: string }
         <dl className="mt-6 space-y-6 border-t border-gray-200/80">
           {copy.faq.map((item) => (
             <div key={item.q} className="border-b border-gray-100 pb-6 pt-6 first:pt-6 last:border-0">
-              <dt className="font-medium text-gray-900">{brandPlanText(item.q)}</dt>
-              <dd className="mt-2 text-sm leading-relaxed text-gray-600">{brandPlanText(item.a)}</dd>
+              <dt className="font-medium text-gray-900 lg:text-lg">{brandPlanText(item.q)}</dt>
+              <dd className="mt-2 text-sm leading-relaxed text-gray-600 lg:text-base">{brandPlanText(item.a)}</dd>
             </div>
           ))}
         </dl>
