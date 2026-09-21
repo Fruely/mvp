@@ -6,6 +6,11 @@ export const SPECIALIST_FREE_ENTRY_LINE: Record<Lang, string> = {
   de: "Registrierung und Profilveröffentlichung sind kostenlos. Sie zahlen nur für den Zugang zu Anfragen: einzeln oder per Tarif ab 29 €/Monat.",
 };
 
+/**
+ * Public starting price for direct pay-per-lead access.
+ * The exact offer price remains server-authoritative and is shown before checkout.
+ * Keep this in sync with the lowest currently offered professional pricing rule.
+ */
 export const ONE_OFF_REQUEST_ACCESS_FROM_EUR = 20;
 
 export const ONE_OFF_REQUEST_ACCESS_LINE: Record<Lang, string> = {
