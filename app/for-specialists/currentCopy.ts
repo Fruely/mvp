@@ -27,8 +27,8 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
     proof: [
       {
         value: "0 €",
-        title: "за регистрацию и публикацию",
-        body: "Заполните профиль и станьте видимы клиентам без обязательной подписки.",
+        title: "за профиль",
+        body: "Профиль — бесплатно. Доступ к заявкам — отдельно за заявку или по тарифу от 29 €/мес.",
       },
       {
         value: "5 минут",
@@ -137,8 +137,8 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
     proof: [
       {
         value: "0 €",
-        title: "за реєстрацію та публікацію",
-        body: "Заповніть профіль і станьте видимими клієнтам без обов’язкової підписки.",
+        title: "за профіль",
+        body: "Профіль — безкоштовно. Доступ до запитів — окремо за запит або за тарифом від 29 €/міс.",
       },
       {
         value: "5 хвилин",
@@ -247,8 +247,8 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
     proof: [
       {
         value: "0 €",
-        title: "für Registrierung und Veröffentlichung",
-        body: "Vervollständigen Sie Ihr Profil und werden Sie ohne Pflicht-Abo für Kunden sichtbar.",
+        title: "für das Profil",
+        body: "Profil kostenlos. Anfragezugang einzeln pro Anfrage oder per Tarif ab 29 €/Monat.",
       },
       {
         value: "5 Minuten",
