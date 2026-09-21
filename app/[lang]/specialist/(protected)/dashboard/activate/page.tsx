@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import PlanCheckoutButton from "@/components/billing/PlanCheckoutButton";
 import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
 import PlanVisualPreview from "@/components/pricing/PlanVisualPreview";
+import PublishWithoutSubscriptionButton from "@/components/dashboard/onboarding/PublishWithoutSubscriptionButton";
 import { Alert, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { getDemandChannelCopy } from "@/lib/dashboard/demandChannelCopy";
 import { getDictionary, resolveRouteLang, t, type Lang } from "@/lib/i18n";
@@ -32,11 +33,15 @@ export default async function SpecialistDemandChannelActivationPage({
   const copy = getDemandChannelCopy(lang);
   const pricingCopy = getPublicPricingCopy(lang);
 
-  if (!specialist.status || specialist.status === "draft") {
+  const isDraft = !specialist.status || specialist.status === "draft";
+  let draftReady = false;
+
+  if (isDraft) {
     const gate = await getSpecialistOnboardingGateState(specialist);
     if (gate.state !== "ready") {
       redirect(`/${lang}/specialist/dashboard/onboarding`);
     }
+    draftReady = true;
   }
 
   return (
@@ -52,6 +57,34 @@ export default async function SpecialistDemandChannelActivationPage({
       </Alert>
 
       <Alert variant="warning">{brandPlanText(copy.billing.draftNotice)}</Alert>
+
+      {draftReady ? (
+        <Card className="border-freuly-primary/25 bg-freuly-primary-light/20">
+          <CardHeader>
+            <CardTitle>{brandPlanText(copy.onboarding.publishWithoutSubscription)}</CardTitle>
+            <p className="mt-freuly-2 max-w-3xl text-freuly-body text-freuly-text-secondary">
+              {brandPlanText(copy.onboarding.reviewReadyBody)}
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap items-start gap-freuly-3">
+              <PublishWithoutSubscriptionButton
+                lang={lang}
+                enabled={draftReady}
+                publishLabel={copy.onboarding.publishWithoutSubscription}
+                publishingLabel={copy.onboarding.publishingWithoutSubscription}
+                errorLabel={copy.onboarding.publishFailed}
+              />
+              <Link
+                href={`/${lang}/specialist/dashboard/onboarding?step=review`}
+                className={dashboardLinkSecondaryClass}
+              >
+                {brandPlanText(copy.onboarding.decideLater)}
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Card>
         <CardHeader>
