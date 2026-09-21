@@ -32,6 +32,12 @@ export default async function SpecialistDemandChannelActivationPage({
   ]);
   const copy = getDemandChannelCopy(lang);
   const pricingCopy = getPublicPricingCopy(lang);
+  const backToFreePublishLabel =
+    lang === "de"
+      ? "Zur kostenlosen Veröffentlichung zurück"
+      : lang === "ua"
+        ? "Повернутися до безкоштовної публікації"
+        : "Вернуться к бесплатной публикации";
 
   const isDraft = !specialist.status || specialist.status === "draft";
   let draftReady = false;
@@ -79,7 +85,7 @@ export default async function SpecialistDemandChannelActivationPage({
                 href={`/${lang}/specialist/dashboard/onboarding?step=review`}
                 className={dashboardLinkSecondaryClass}
               >
-                {brandPlanText(copy.onboarding.decideLater)}
+                {backToFreePublishLabel}
               </Link>
             </div>
           </CardContent>
