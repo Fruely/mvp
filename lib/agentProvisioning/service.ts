@@ -52,6 +52,17 @@ export type DisabledAgentClient = {
   updated_at: string;
 };
 
+export type SafeAgentCredentialMetadata = {
+  credential_id: string;
+  agent_client_id: string;
+  key_prefix: string;
+  status: "active" | "revoked";
+  expires_at: string | null;
+  last_used_at: string | null;
+  created_at: string;
+  revoked_at: string | null;
+};
+
 export type ProvisioningFailure = {
   kind: "validation_error" | "not_found" | "conflict" | "unavailable" | "error";
   error: string;
@@ -69,6 +80,9 @@ export type AgentProvisioningDependencies = {
 
 const CLIENT_SAFE_SELECT =
   "id, name, client_type, provider, status, scopes, owner_user_id, specialist_id, created_at";
+
+const CREDENTIAL_METADATA_SELECT =
+  "id, agent_client_id, key_prefix, status, expires_at, last_used_at, created_at, revoked_at";
 
 function fail(
   kind: ProvisioningFailure["kind"],
@@ -278,6 +292,63 @@ export async function revokeAgentCredential(
       status: "revoked",
       revoked_at: String(data.revoked_at ?? revokedAt),
     },
+  };
+}
+
+function asCredentialMetadata(
+  row: Record<string, unknown>,
+): SafeAgentCredentialMetadata {
+  return {
+    credential_id: String(row.id),
+    agent_client_id: String(row.agent_client_id),
+    key_prefix: String(row.key_prefix),
+    status: row.status === "revoked" ? "revoked" : "active",
+    expires_at: typeof row.expires_at === "string" ? row.expires_at : null,
+    last_used_at: typeof row.last_used_at === "string" ? row.last_used_at : null,
+    created_at: String(row.created_at),
+    revoked_at: typeof row.revoked_at === "string" ? row.revoked_at : null,
+  };
+}
+
+/**
+ * Metadata-only listing for operational recovery. Issuance is intentionally
+ * non-replayable: if the 201 is lost, GET this list, identify the unknown
+ * credential by created_at/key_prefix, revoke it, then issue a replacement.
+ * Never returns raw_credential, credential_hash, or pepper.
+ */
+export async function listAgentCredentials(
+  supabase: SupabaseClient,
+  agentClientIdRaw: string,
+): Promise<ProvisioningResult<SafeAgentCredentialMetadata[]>> {
+  const agentClientId = normalizeAgentProvisioningUuid(
+    agentClientIdRaw,
+    "agent_client_id",
+  );
+  if (!agentClientId) return fail("validation_error", "agent_client_id must be a uuid", 400);
+  if (typeof agentClientId === "object") {
+    return fail("validation_error", agentClientId.error, agentClientId.status);
+  }
+
+  const { data: client, error: clientError } = await supabase
+    .from("agent_clients")
+    .select("id")
+    .eq("id", agentClientId)
+    .maybeSingle();
+
+  if (clientError) return fail("error", "server_error", 500);
+  if (!client) return fail("not_found", "agent_client not found", 404);
+
+  const { data, error } = await supabase
+    .from("agent_credentials")
+    .select(CREDENTIAL_METADATA_SELECT)
+    .eq("agent_client_id", agentClientId)
+    .order("created_at", { ascending: false });
+
+  if (error) return fail("error", "server_error", 500);
+  const rows = Array.isArray(data) ? data : [];
+  return {
+    kind: "ok",
+    value: rows.map((row) => asCredentialMetadata(row as Record<string, unknown>)),
   };
 }
 

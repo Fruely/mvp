@@ -18,6 +18,7 @@ const {
   createAgentClient,
   disableAgentClient,
   issueAgentCredential,
+  listAgentCredentials,
   revokeAgentCredential,
 } = await import("./service.ts");
 
@@ -232,6 +233,17 @@ test("optional future expiry is accepted; past and invalid expiry are rejected",
     assert.equal(future.value.expires_at, FUTURE_ISO);
   }
 
+  const offset = await issueAgentCredential(
+    supabase(),
+    created.value.id,
+    { expires_at: "2026-12-01T01:00:00+01:00" },
+    deps(),
+  );
+  assert.equal(offset.kind, "ok");
+  if (offset.kind === "ok") {
+    assert.equal(offset.value.expires_at, "2026-12-01T00:00:00.000Z");
+  }
+
   const past = await issueAgentCredential(
     supabase(),
     created.value.id,
@@ -248,6 +260,22 @@ test("optional future expiry is accepted; past and invalid expiry are rejected",
     deps(),
   );
   assert.equal(invalid.kind, "validation_error");
+
+  const dateOnly = await issueAgentCredential(
+    supabase(),
+    created.value.id,
+    { expires_at: "2026-12-01" },
+    deps(),
+  );
+  assert.equal(dateOnly.kind, "validation_error");
+
+  const naive = await issueAgentCredential(
+    supabase(),
+    created.value.id,
+    { expires_at: "2026-12-01T00:00:00" },
+    deps(),
+  );
+  assert.equal(naive.kind, "validation_error");
 });
 
 test("unique prefix/hash collisions retry a bounded number of times", async () => {
@@ -379,6 +407,47 @@ test("disable is idempotent and leaves historical credentials intact", async () 
     now: NOW,
   });
   assert.deepEqual(decision, { kind: "invalid" });
+});
+
+test("lists only safe credential metadata for one client, including revoked rows", async () => {
+  const first = await createAgentClient(supabase(), consumerBody({ name: "First" }));
+  const second = await createAgentClient(supabase(), consumerBody({
+    name: "Second",
+    client_type: "business_agent",
+  }));
+  assert.equal(first.kind, "ok");
+  assert.equal(second.kind, "ok");
+  if (first.kind !== "ok" || second.kind !== "ok") return;
+
+  const older = await issueAgentCredential(supabase(), first.value.id, {}, deps());
+  provisioningHarness.nowIso = "2026-09-21T19:00:00.000Z";
+  const newer = await issueAgentCredential(supabase(), first.value.id, {}, deps());
+  const other = await issueAgentCredential(supabase(), second.value.id, {}, deps());
+  assert.equal(older.kind, "ok");
+  assert.equal(newer.kind, "ok");
+  assert.equal(other.kind, "ok");
+  if (older.kind !== "ok" || newer.kind !== "ok") return;
+
+  await revokeAgentCredential(supabase(), older.value.credential_id, {}, deps());
+
+  const listed = await listAgentCredentials(supabase(), first.value.id);
+  assert.equal(listed.kind, "ok");
+  if (listed.kind !== "ok") return;
+  assert.equal(listed.value.length, 2);
+  assert.deepEqual(
+    listed.value.map((row) => row.credential_id),
+    [newer.value.credential_id, older.value.credential_id],
+  );
+  assert.equal(listed.value[0].status, "active");
+  assert.equal(listed.value[0].key_prefix, newer.value.key_prefix);
+  assert.equal(listed.value[0].last_used_at, null);
+  assert.equal(listed.value[1].status, "revoked");
+  assert.equal(listed.value[1].revoked_at, NOW.toISOString());
+  assert.equal(
+    listed.value.some((row) => row.agent_client_id !== first.value.id),
+    false,
+  );
+  assert.doesNotMatch(JSON.stringify(listed.value), /credential_hash|raw_credential|pepper/i);
 });
 
 test("unknown JSON fields are rejected and status/metadata cannot be planted", async () => {

@@ -33,6 +33,10 @@ export type ParsedIssueCredential = {
   expiresAt: string | null;
 };
 
+// RFC3339 / ISO-8601 timestamp with a required timezone: Z or ±HH:MM.
+const RFC3339_TIMESTAMP_PATTERN =
+  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,9}))?(Z|[+-]\d{2}:\d{2})$/;
+
 function err(error: string, status = 400): ProvisioningValidationError {
   return { error, status };
 }
@@ -144,17 +148,43 @@ export function parseIssueAgentCredentialInput(
     return { expiresAt: null };
   }
   if (typeof record.expires_at !== "string") {
-    return err("expires_at must be an ISO timestamp");
+    return err("expires_at must be an RFC3339 timestamp");
   }
-  const trimmed = record.expires_at.trim();
-  const parsed = Date.parse(trimmed);
-  if (!Number.isFinite(parsed)) {
-    return err("expires_at must be an ISO timestamp");
+  const expiresAt = parseRfc3339Timestamp(record.expires_at);
+  if (!expiresAt) {
+    return err("expires_at must be an RFC3339 timestamp");
   }
-  if (parsed <= now.getTime()) {
+  if (Date.parse(expiresAt) <= now.getTime()) {
     return err("expires_at must be in the future");
   }
-  return { expiresAt: new Date(parsed).toISOString() };
+  return { expiresAt };
+}
+
+export function parseRfc3339Timestamp(value: string): string | null {
+  const trimmed = value.trim();
+  const match = trimmed.match(RFC3339_TIMESTAMP_PATTERN);
+  if (!match) return null;
+
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const hour = Number(match[4]);
+  const minute = Number(match[5]);
+  const second = Number(match[6]);
+  const offset = match[8];
+
+  if (month < 1 || month > 12) return null;
+  if (day < 1 || day > 31) return null;
+  if (hour > 23 || minute > 59 || second > 60) return null;
+
+  if (offset !== "Z") {
+    const offsetHour = Number(offset.slice(1, 3));
+    const offsetMinute = Number(offset.slice(4, 6));
+    if (offsetHour > 23 || offsetMinute > 59) return null;
+  }
+
+  const parsed = Date.parse(trimmed);
+  if (!Number.isFinite(parsed)) return null;
+  return new Date(parsed).toISOString();
 }
 
 export function parseEmptyPatchBody(

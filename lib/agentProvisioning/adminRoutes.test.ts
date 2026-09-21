@@ -18,7 +18,10 @@ register(new URL("./adminRoutes.hooks.mjs", import.meta.url).href);
 const { POST: createClientPost } = await import(
   new URL("../../app/api/admin/agents/clients/route.ts", import.meta.url).href
 );
-const { POST: issueCredentialPost } = await import(
+const {
+  GET: listCredentialsGet,
+  POST: issueCredentialPost,
+} = await import(
   new URL(
     "../../app/api/admin/agents/clients/[id]/credentials/route.ts",
     import.meta.url,
@@ -126,6 +129,13 @@ test("unauthenticated admin routes are rejected", async () => {
     { params: { id: "11111111-1111-4111-8111-000000000001" } },
   );
   assert.equal(disable.status, 401);
+
+  const list = await listCredentialsGet(
+    adminRequest({}, { token: null }),
+    { params: { id: "11111111-1111-4111-8111-000000000001" } },
+  );
+  assert.equal(list.status, 401);
+  assert.equal(cacheControl(list), "no-store");
   assert.equal(provisioningHarness.clients.length, 0);
 });
 
@@ -219,6 +229,18 @@ test("optional future expiry is accepted over HTTP; past expiry is rejected", as
     { params: { id: created.json.data.id } },
   );
   assert.equal(past.status, 400);
+
+  const dateOnly = await issueCredentialPost(
+    adminRequest({ expires_at: "2026-12-01" }),
+    { params: { id: created.json.data.id } },
+  );
+  assert.equal(dateOnly.status, 400);
+
+  const naive = await issueCredentialPost(
+    adminRequest({ expires_at: "2026-12-01T00:00:00" }),
+    { params: { id: created.json.data.id } },
+  );
+  assert.equal(naive.status, 400);
 });
 
 test("revoke and disable are idempotent and return only safe status data", async () => {
@@ -255,6 +277,60 @@ test("revoke and disable are idempotent and return only safe status data", async
   assert.equal(disableJson.data.status, "disabled");
   assert.equal(provisioningHarness.credentials.length, 1);
   assert.equal(provisioningHarness.credentials[0].status, "revoked");
+  assert.equal(provisioningHarness.deleteCalls.length, 0);
+});
+
+test("GET credential metadata is admin-only, no-store, and never returns secrets", async () => {
+  const first = await createConsumer();
+  const second = await createClientPost(
+    adminRequest({
+      name: "Other agent",
+      client_type: "business_agent",
+      scopes: ["requests:create"],
+    }),
+  );
+  const secondJson = await second.json();
+
+  const issued = await issueCredentialPost(adminRequest({}), {
+    params: { id: first.json.data.id },
+  });
+  const issuedJson = await issued.json();
+  const other = await issueCredentialPost(adminRequest({}), {
+    params: { id: secondJson.data.id },
+  });
+  assert.equal(other.status, 201);
+
+  const listed = await listCredentialsGet(adminRequest({}), {
+    params: { id: first.json.data.id },
+  });
+  const listedJson = await listed.json();
+  assert.equal(listed.status, 200);
+  assert.equal(cacheControl(listed), "no-store");
+  assert.equal(listedJson.data.length, 1);
+  assert.equal(listedJson.data[0].credential_id, issuedJson.data.credential_id);
+  assert.equal(listedJson.data[0].agent_client_id, first.json.data.id);
+  assert.equal(listedJson.data[0].key_prefix, issuedJson.data.key_prefix);
+  assert.equal(listedJson.data[0].status, "active");
+  assert.equal(listedJson.data[0].created_at != null, true);
+  assert.equal(listedJson.data[0].expires_at, null);
+  assert.equal(listedJson.data[0].last_used_at, null);
+  assert.equal(listedJson.data[0].revoked_at, null);
+  assert.equal(listedJson.data[0].raw_credential, undefined);
+  assert.equal(listedJson.data[0].credential_hash, undefined);
+  assert.doesNotMatch(JSON.stringify(listedJson), /raw_credential|credential_hash|pepper|AGENT_API_KEY_PEPPER/i);
+
+  const revoked = await revokeCredentialPatch(adminRequest({}), {
+    params: { id: issuedJson.data.credential_id },
+  });
+  assert.equal(revoked.status, 200);
+  const afterRevoke = await listCredentialsGet(adminRequest({}), {
+    params: { id: first.json.data.id },
+  });
+  const afterRevokeJson = await afterRevoke.json();
+  assert.equal(afterRevokeJson.data.length, 1);
+  assert.equal(afterRevokeJson.data[0].status, "revoked");
+  assert.ok(afterRevokeJson.data[0].revoked_at);
+  assert.equal(afterRevokeJson.data[0].raw_credential, undefined);
   assert.equal(provisioningHarness.deleteCalls.length, 0);
 });
 
