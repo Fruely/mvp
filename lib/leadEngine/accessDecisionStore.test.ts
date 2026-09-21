@@ -14,6 +14,7 @@ test("direct PPL adapter is read-only and uses grants as payment entitlement pro
   assert.match(storeSrc, /request_offer_payments/);
   assert.match(storeSrc, /\.is\("revoked_at", null\)/);
   assert.match(storeSrc, /\.eq\("status", "pending"\)/);
+  assert.match(storeSrc, /\.gte\("created_at", directPplPendingCutoffIso\(\)\)/);
   assert.match(storeSrc, /paidEntitlement = Boolean\(grant\?\.id\)/);
   assert.match(storeSrc, /paymentProcessing = Boolean\(pendingPayment\?\.id\)/);
   assert.doesNotMatch(storeSrc, /stripe/i);
