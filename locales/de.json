@@ -470,7 +470,7 @@
     "message": "Nachricht",
     "submit": "Anfrage senden",
     "sending": "Wird gesendet...",
-    "success": "Ihre Anfrage wurde an den Spezialisten gesendet. Sobald der Spezialist den Erhalt bestätigt, werden wir Sie benachrichtigen.",
+    "success": "Ihre Anfrage wurde an den ausgewählten Spezialisten gesendet. Er erhält eine Benachrichtigung über Ihre Anfrage.",
     "error": "Fehler beim Senden",
     "noSpecialist": "Spezialist konnte nicht bestimmt werden",
     "nameRequired": "Bitte geben Sie Ihren Namen ein",
@@ -924,8 +924,8 @@
   "dashboard.subscriptionPage.context.bulletNotify": "Es gibt keine überraschenden Abbuchungen über die Plattform — wichtige Änderungen kündigen wir frühzeitig an.",
   "dashboard.subscriptionPage.faq.title": "Häufige Fragen",
   "dashboard.subscriptionPage.faq.contactsQ": "Warum können Kontaktdaten in einer Anfrage ausgeblendet sein?",
-  "dashboard.subscriptionPage.faq.contactsA": "Ist der Planstatus «Abgelaufen», werden E-Mail und Telefonnummer des Kunden in der Anfragenliste ausgeblendet, bis der Zugang wiederhergestellt ist. Schreiben Sie dem Support — wir helfen beim nächsten Schritt.",
-  "dashboard.subscriptionPage.faq.leadsA": "Die Anfragen selbst bleiben sichtbar: Datum, Nachricht und Statusbearbeitung.",
+  "dashboard.subscriptionPage.faq.contactsA": "Kundenkontakte werden nur bei gültigem Zugangsrecht freigeschaltet: über Professional / Growth oder durch den einmaligen Kauf der konkreten Anfrage, sofern diese Option verfügbar ist.",
+  "dashboard.subscriptionPage.faq.leadsA": "Ohne Tarif bleibt das Profil veröffentlicht. Passende Anfragen können in datensparsamer Vorschau angezeigt werden; der Kontakt wird einzeln oder im Rahmen des Tarifs freigeschaltet.",
   "dashboard.subscriptionPage.cta.support": "Support kontaktieren",
   "dashboard.subscriptionPage.cta.viewPlans": "Alle Tarife",
   "dashboard.subscriptionPage.cta.manageBilling": "Zahlung und Tarifwahl",
@@ -933,9 +933,9 @@
   "dashboard.subscriptionPage.link.billingStub": "Informationen zu Zahlung und Rechnungen",
   "dashboard.billingPage.kicker": "Spezialistenbereich",
   "dashboard.billingPage.title": "Zahlung und Rechnungen",
-  "dashboard.billingPage.subtitle": "Hier können Sie einen Tarif auswählen, Ihre Platzierung bezahlen und den Zugang zu den kostenpflichtigen Funktionen von Freuly verwalten.",
-  "dashboard.billingPage.graceNotice": "Die Zahlung für den aktuellen Tarif fehlt. Das Profil bleibt bis {{graceUntil}} aktiv. Zahlen Sie bis zu diesem Datum, um Ihre Platzierung ohne Unterbrechung zu behalten.",
-  "dashboard.billingPage.graceNoticeNoDays": "Die Zahlung für den aktuellen Tarif fehlt. Bitte zahlen Sie, um Ihre Platzierung zu behalten.",
+  "dashboard.billingPage.subtitle": "Hier können Sie Professional oder Growth für Anfragezugang im Tarif aktivieren. Ohne Tarif können verfügbare Anfragen einzeln gekauft werden; die Veröffentlichung des Basisprofils ist kostenlos.",
+  "dashboard.billingPage.graceNotice": "Der Tarifzugang befindet sich bis {{graceUntil}} in der Zahlungswiederherstellung. Verlängern Sie den Tarif, um den enthaltenen Zugang zu Anfragekontakten zu behalten.",
+  "dashboard.billingPage.graceNoticeNoDays": "Für den Tarifzugang muss die Zahlung wiederhergestellt werden. Verlängern Sie den Tarif, um den enthaltenen Zugang zu Anfragekontakten zu behalten.",
   "dashboard.billingPage.inactiveNotice": "Sie arbeiten ohne Abo. Passende Anfragen können einzeln gekauft werden. Aktivieren Sie Professional oder Growth, wenn Sie Zugang zu Anfragen im Rahmen des Tarifs erhalten möchten.",
   "dashboard.billingPage.lastPlanLabel": "Letzter Tarif:",
   "dashboard.billingPage.currentPlanLabel": "Aktuell:",
@@ -1409,26 +1409,26 @@
   },
   "pricing": {
     "hero": {
-      "kicker": "Für Fachkräfte",
-      "title": "Wählen Sie Ihr Entwicklungsformat auf Freuly",
-      "subtitle": "Führen Sie Ihr Profil selbstständig oder überlassen Sie Freuly die redaktionelle und SEO-Aufbereitung."
+      "kicker": "Für Spezialisten",
+      "title": "Profil kostenlos. Anfragezugang nach Wahl",
+      "subtitle": "Veröffentlichen Sie Ihr Basisprofil ohne Pflicht-Abo. Einzelne Anfragen können separat freigeschaltet oder über Professional / Growth genutzt werden."
     },
     "notice": {
       "title": "Kostenloses Profil und Anfragezugang",
-      "lead": "Registrierung, Profilerstellung und Vorschau sind kostenlos — auch vor der öffentlichen Veröffentlichung.",
+      "lead": "Registrierung, Profilbefüllung und Veröffentlichung des Basisprofils sind kostenlos. Kostenpflichtig sind der Zugang zu Kundenkontakten und zusätzliche Tariffunktionen.",
       "points": [
-        "Registrierung und Profilerstellung sind kostenlos.",
-        "Ausgangsdaten und Vorschau können vor der Veröffentlichung vorbereitet werden.",
-        "Die Veröffentlichung eines vollständigen Basisprofils ist kostenlos und nicht auf eine Testphase begrenzt.",
-        "Danach ist Freuly Professional oder Freuly Growth erforderlich.",
-        "Jeder bezahlte Zeitraum endet automatisch; für einen weiteren Monat ist eine manuelle Verlängerung im Checkout erforderlich.",
-        "Tarifgebundener Kontaktzugang gilt bis zum Ende des bezahlten Zeitraums; das Basisprofil bleibt veröffentlicht."
+        "Registrierung und Profilbefüllung sind kostenlos.",
+        "Ein vollständiges Basisprofil kann ohne Professional oder Growth veröffentlicht werden.",
+        "Kunden können das veröffentlichte Profil finden und auswählen.",
+        "Ohne Tarif kann eine verfügbare Kundenanfrage einzeln freigeschaltet werden.",
+        "Professional und Growth geben Anfragezugang während des bezahlten Zeitraums.",
+        "Es gibt keine automatische wiederkehrende Abbuchung; der nächste Zeitraum wird manuell aktiviert."
       ]
     },
     "professional": {
       "name": "Freuly Professional",
       "price": "29 € / Monat",
-      "description": "Für Fachkräfte, die ihr öffentliches Profil auf Freuly selbstständig pflegen.",
+      "description": "Für Spezialisten, die passende Kundenanfragen lieber im Tarif statt über einzelne Käufe freischalten möchten.",
       "features": [
         "öffentliches Profil",
         "Leistungen und Preise",
@@ -1545,63 +1545,31 @@
     "faqTitle": "Häufige Fragen",
     "faq": [
       {
-        "q": "Kann ich mein Profil kostenlos ausfüllen?",
-        "a": "Ja. Registrierung, Profilerstellung und Vorbereitung vor der Veröffentlichung sind kostenlos."
+        "q": "Kann ich mein Profil kostenlos veröffentlichen?",
+        "a": "Ja. Registrierung, Profilbefüllung und Veröffentlichung des Basisprofils erfordern weder Professional noch Growth."
       },
       {
-        "q": "Wann beginnt die Testphase?",
-        "a": "Nach der ersten öffentlichen Veröffentlichung Ihres Profils auf Freuly."
+        "q": "Wofür zahlt ein Spezialist?",
+        "a": "Für den Zugang zu Kontakten passender Kundenanfragen: einzeln für eine konkrete Anfrage oder im Rahmen von Professional / Growth."
       },
       {
-        "q": "Wie lange dauert die Testphase?",
-        "a": "7 Kalendertage nach der ersten öffentlichen Veröffentlichung."
+        "q": "Was passiert ohne Tarif?",
+        "a": "Das Profil bleibt veröffentlicht. Passende Anfragen können einzeln freigeschaltet werden, sofern diese Option verfügbar ist."
       },
       {
-        "q": "Was passiert nach der Testphase?",
-        "a": "Für die weitere öffentliche Präsenz benötigen Sie Freuly Professional oder Freuly Growth."
-      },
-      {
-        "q": "Verlängert sich das Abo automatisch?",
-        "a": "Nein. Jeder bezahlte Zeitraum endet automatisch. Für einen weiteren Monat ist eine manuelle Verlängerung im Checkout erforderlich."
-      },
-      {
-        "q": "Wie kann ich kündigen?",
-        "a": "Über den Billing-Bereich im Dashboard oder über den Support gemäß den Zahlungsbedingungen."
+        "q": "Verlängert sich der Tarif automatisch?",
+        "a": "Nein. Jeder bezahlte Zeitraum endet automatisch. Der nächste Zeitraum wird manuell über den Checkout aktiviert."
       },
       {
         "q": "Worin unterscheiden sich Professional und Growth?",
-        "a": "Professional ist eigenständiges Profil-Management mit bis zu 5 Bildern. Growth ergänzt professionelle Aufbereitung, erweiterte Seite und bis zu 15 Bilder."
+        "a": "Beide Tarife enthalten Anfragezugang während des bezahlten Zeitraums. Growth ergänzt eine erweiterte Pro Page und eine größere Galerie."
       },
       {
-        "q": "Was ist in der Profilaufbereitung enthalten?",
-        "a": "Redaktionelle Arbeit, SEO-Text, Struktur bis zu 5 Leistungen, Visual-Empfehlungen, ein Startpost und eine Korrekturrunde."
-      },
-      {
-        "q": "Wie viele Fotos sind möglich?",
-        "a": "Freuly Professional: bis zu 5 Galeriebilder. Freuly Growth: bis zu 15. Der Avatar zählt nicht zum Limit."
-      },
-      {
-        "q": "Ist dauerhaftes Social-Media-Management enthalten?",
-        "a": "Nein. Growth enthält einen Startpost, aber kein laufendes Social-Media-Management."
-      },
-      {
-        "q": "Kann ich Branding oder Produktentwicklung separat buchen?",
-        "a": "Nicht im Tarif enthalten. Zusätzliche Marketingleistungen werden separat vereinbart."
-      },
-      {
-        "q": "Garantiert SEO Kunden oder Rankings?",
-        "a": "Nein. SEO verbessert Struktur und Verständlichkeit, aber Freuly garantiert keine Rankings, Views, Anfragen oder Umsatz."
-      },
-      {
-        "q": "Was passiert mit Fotos bei Wechsel zu Professional?",
-        "a": "Fotos werden nicht gelöscht. Öffentlich werden die ersten 5 in fester Reihenfolge gezeigt; der Rest bleibt gespeichert."
-      },
-      {
-        "q": "Kann ich Growth später erneut aktivieren?",
-        "a": "Ja. Danach sind wieder bis zu 15 Bilder sichtbar — ohne erneuten Upload."
+        "q": "Garantiert Freuly Kunden oder Anfragen?",
+        "a": "Nein. Freuly gewinnt und verteilt Kundennachfrage, garantiert aber keine bestimmte Anzahl von Anfragen, Kunden, Aufträgen oder Umsätzen."
       }
     ],
-    "disclaimer": "Das Abo bezahlt den Zugang zu Plattformfunktionen und öffentlicher Präsenz. Freuly garantiert keine Views, Anfragen, Aufträge oder Umsatz. Growth umfasst begrenzte Erstaufbereitung; zusätzliche Marketingleistungen werden separat vereinbart. Es erfolgt keine automatische wiederkehrende Abbuchung; der nächste Zeitraum wird manuell erworben.",
+    "disclaimer": "Registrierung und Veröffentlichung des Basisprofils sind kostenlos. Professional und Growth bezahlen den Zugang zu Kontakten passender Anfragen im Tarif sowie zusätzliche Funktionen. Einzelzugang zu einer konkreten Anfrage kann separat kostenpflichtig sein. Freuly garantiert keine Views, Anfragen, Aufträge oder Umsätze. Es gibt keine automatische wiederkehrende Abbuchung.",
     "cta": {
       "choosePlan": "Tarif wählen",
       "loginToChoose": "Anmelden, um Tarif zu wählen",
@@ -1614,10 +1582,10 @@
       "title": "Verdienen Sie gemeinsam mit Freuly",
       "subtitle": "Ein neuer Spezialist kann sich kostenlos registrieren und sein Basisprofil veröffentlichen. Aktiviert ein von Ihnen vermittelter Spezialist erstmals Professional oder Growth, erhalten Sie eine einmalige Vergütung.",
       "howTitle": "So funktioniert es",
-      "howSteps": "Registrieren oder anmelden und die Partnerprogramm-Bedingungen akzeptieren.|Sie werden automatisch aktiv und erhalten sofort Ihren persönlichen Referral-Link.|Teilen Sie den Link mit Freunden, Bekannten, Kollegen oder Ihrer Community.|Ein neuer Spezialist registriert sich über Ihren Link und bezahlt erstmals einen monatlichen Tarif.|Ihre Vergütung ist 14 Tage pending und wird danach bestätigt.|Danach wählen Sie: Auszahlung in Geld oder Guthaben für Ihr Freuly-Abo.",
+      "howSteps": "Registrieren oder anmelden und die Partnerprogramm-Bedingungen akzeptieren.|Persönlichen Referral-Link erhalten und mit Ihrer Zielgruppe teilen.|Ein neuer Spezialist registriert sich über den Link und kann sein Basisprofil kostenlos veröffentlichen.|Bezahlt dieser Spezialist erstmals einen monatlichen Professional- oder Growth-Tarif, entsteht die Partnervergütung.|Die Vergütung bleibt 14 Tage pending und wird danach bei erfüllten Bedingungen bestätigt.|Danach ist eine Auszahlung oder Freuly-Guthaben nach den Programmregeln möglich.",
       "rewardTitle": "Vergütung",
-      "rewardBody": "Sie erhalten eine einmalige Vergütung in Höhe des ersten bezahlten monatlichen Tarifs des vermittelten Spezialisten, berechnet aus dem von Freuly tatsächlich vereinnahmten Betrag nach Abzug gesetzlich geschuldeter Umsatzsteuer (falls anwendbar) und der tatsächlichen Transaktionsgebühr des Zahlungsdienstleisters.",
-      "rewardNote": "Kostenlose Registrierung und Profilveröffentlichung sowie einzelne Anfragekäufe lösen für sich allein keine Partnervergütung aus.",
+      "rewardBody": "Die Vergütung entsteht einmalig aus der ersten qualifizierenden monatlichen Zahlung für Professional oder Growth des vermittelten Spezialisten und wird aus dem von Freuly tatsächlich erhaltenen Betrag nach anwendbarer Umsatzsteuer und tatsächlicher Zahlungsgebühr berechnet.",
+      "rewardNote": "Kostenlose Registrierung und Profilveröffentlichung sowie der Einzelkauf einer Anfrage lösen für sich allein keine Partnervergütung aus.",
       "audienceTitle": "Für wen",
       "audienceItems": "Privatpersonen|Videoblogger|Telegram-Kanäle|Community-Admins|thematische Medien|Leitpersonen lokaler und beruflicher Communities",
       "faqTitle": "Häufige Fragen",
@@ -1658,7 +1626,7 @@
       "q2": "Kostet die Teilnahme etwas?",
       "a2": "Nein. Die Teilnahme am Partnerprogramm ist kostenlos.",
       "q3": "Wofür gibt es eine Vergütung?",
-      "a3": "Für die erste erfolgreiche monatliche Tarifzahlung eines neuen Spezialisten über Ihren persönlichen Link — nach der 14-Tage-Validierung.",
+      "a3": "Für die erste erfolgreiche qualifizierende monatliche Zahlung für Professional oder Growth eines neuen Spezialisten über Ihren Referral-Link — nach 14-tägiger Prüfung. Kostenlose Profilveröffentlichung und einzelne Anfragekäufe lösen keine Vergütung aus.",
       "q4": "Muss ich für die spätere Arbeit der Fachkraft haften?",
       "a4": "Nein. Sie haften nicht für die Qualität der Leistungen auf der Plattform.",
       "q5": "Wie werden Klicks und Registrierungen gezählt?",
