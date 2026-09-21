@@ -22,27 +22,30 @@ Freuly already contains two complementary contact-access mechanisms:
 
 The Lead Engine should therefore **not create a third request system**. Phase 1 should unify commercial offer/distribution and entitlement decisions across the two existing request origins.
 
-## Current AS-IS flows
+## Current implemented flows
 
 ### A. Direct lead
 
 Client selects specialist
 → `POST /api/leads/create`
 → `leads` row
+→ idempotent `request_offers` direct-selection row
 → specialist notification / Telegram
 → dashboard shows redacted lead
-→ specialist requests contact unlock
-→ runtime checks `specialist_plan.plan_status`
-→ if allowed, sets `contact_unlocked_at`
-→ PII becomes visible.
+→ access resolver checks:
+   - persisted `contact_unlocked_at`;
+   - paid request-offer grant;
+   - Professional/Growth entitlement;
+   - otherwise, when direct PPL checkout is enabled, the server-authoritative request-offer price
+→ specialist either unlocks through tariff entitlement or buys the concrete request
+→ webhook-confirmed payment creates `request_offer_access_grants`
+→ only then can `contact_unlocked_at` be realized and PII become visible.
 
-Important current invariant:
+Current invariant:
 
 `lead PII visible = contact_unlocked_at exists`
 
-This is already a good privacy boundary and should be preserved.
-
-Current gap: direct leads have no pay-per-lead route. A specialist without subscription cannot buy that direct lead under the desired commercial model.
+Pay-per-lead for direct leads is implemented behind `LEAD_ENGINE_DIRECT_PPL_CHECKOUT_ENABLED`. Checkout materializes the shadow pricing snapshot server-side before creating Stripe Checkout; the browser never supplies the price.
 
 ### B. Promoted/open request
 
@@ -103,13 +106,13 @@ The rule must apply regardless of request origin:
 
 A direct client selection gives the specialist **first right to the opportunity**, not a free entitlement.
 
-## Proposed new central entity: `request_offers`
+## Central entity: `request_offers`
 
 `request_offers` should represent one commercial offer of one client request/lead to one specialist.
 
 It must not replace `leads` or `service_requests`.
 
-Suggested columns:
+Implemented shape (kept here as the architectural contract):
 
 ```text
 id uuid PK
