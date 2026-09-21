@@ -10,19 +10,19 @@ export const revalidate = 0;
 export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
   const byLang = {
     ua: {
-      title: "Подати заявку як спеціаліст | Freuly",
+      title: "Створити безкоштовний профіль спеціаліста | Freuly",
       description:
-        "Подайте заявку як спеціаліст на платформі Freuly. B2B-платформа для реальних спеціалістів.",
+        "Зареєструйтеся та опублікуйте базовий профіль спеціаліста на Freuly безкоштовно. Платний доступ потрібен лише для контактів клієнтських запитів або функцій тарифу.",
     },
     ru: {
-      title: "Подать заявку как специалист | Freuly",
+      title: "Создать бесплатный профиль специалиста | Freuly",
       description:
-        "Подайте заявку как специалист на платформе Freuly. B2B-платформа для реальных специалистов.",
+        "Зарегистрируйтесь и опубликуйте базовый профиль специалиста на Freuly бесплатно. Платный доступ нужен только для контактов клиентских заявок или функций тарифа.",
     },
     de: {
-      title: "Als Spezialist bewerben | Freuly",
+      title: "Kostenloses Spezialistenprofil erstellen | Freuly",
       description:
-        "Bewerben Sie sich als Spezialist auf der Freuly-Plattform. B2B-Plattform für echte Fachkräfte.",
+        "Registrieren und veröffentlichen Sie Ihr Basisprofil auf Freuly kostenlos. Kostenpflichtig sind nur Kundenkontakt-Zugänge oder zusätzliche Tariffunktionen.",
     },
   } as const;
 

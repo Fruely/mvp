@@ -9,9 +9,12 @@ const FLAT: Record<CommercialLang, Record<string, string>> = {
     "dashboard.subscriptionPage.status.grace": "Восстановление оплаты",
     "dashboard.subscriptionPage.status.grace_period": "Восстановление оплаты",
     "dashboard.subscriptionPage.context.earlyAccess": "Для ранее подключённых специалистов может действовать индивидуальный переходный режим. Для новых специалистов подписка не обязательна: после публикации подходящие заявки можно покупать отдельно.",
-    "dashboard.subscriptionPage.context.general": "Подписка Professional или Growth включает доступ к контактам подходящих заявок в рамках тарифа. Без подписки профиль может быть опубликован, а подходящие заявки можно покупать отдельно. Автоматического повторного списания нет.",
-    "dashboard.billingPage.graceNotice": "Текущий оплаченный период требует восстановления оплаты до {{graceUntil}}. Продлите тариф, чтобы сохранить коммерческое участие в канале заявок без перерыва.",
-    "dashboard.billingPage.graceNoticeNoDays": "Текущий оплаченный период требует восстановления оплаты. Продлите тариф, чтобы сохранить коммерческое участие в канале заявок.",
+    "dashboard.subscriptionPage.context.general": "Professional или Growth включают доступ к контактам подходящих заявок в рамках оплаченного периода. Без тарифа профиль остаётся опубликованным, а доступные заявки можно покупать отдельно. Автоматического повторного списания нет.",
+    "dashboard.subscriptionPage.faq.contactsA": "Контакты клиента открываются только при наличии действующего права доступа: через Professional/Growth либо после разовой оплаты конкретной заявки, если такой вариант доступен.",
+    "dashboard.subscriptionPage.faq.leadsA": "Без тарифа профиль остаётся опубликованным. Подходящие заявки могут отображаться в обезличенном виде; доступ к контакту открывается отдельно или в рамках тарифа.",
+    "dashboard.billingPage.subtitle": "Здесь можно подключить Professional или Growth для доступа к заявкам в рамках тарифа. Без подписки подходящие заявки можно покупать отдельно; публикация базового профиля бесплатна.",
+    "dashboard.billingPage.graceNotice": "Текущий тарифный доступ действует в режиме восстановления оплаты до {{graceUntil}}. Продлите тариф, чтобы сохранить включённый в него доступ к контактам заявок без перерыва.",
+    "dashboard.billingPage.graceNoticeNoDays": "Текущий тарифный доступ требует восстановления оплаты. Продлите тариф, чтобы сохранить включённый в него доступ к контактам заявок.",
     "dashboard.billingPage.inactiveNotice": "Вы работаете без подписки. Подходящие заявки можно покупать отдельно. Подключите Professional или Growth, если хотите получать доступ к заявкам в рамках тарифа.",
     "dashboard.introBanner": "Заполните данные профиля и услуги. После публикации подходящие заявки можно покупать отдельно. Professional или Growth — подписка с доступом к заявкам в рамках тарифа, а не условие участия в канале.",
     "dashboard.important.body": "Сначала сохраните изменения. Публикация профиля не зависит от подписки Professional или Growth.",
@@ -55,9 +58,12 @@ const FLAT: Record<CommercialLang, Record<string, string>> = {
     "dashboard.subscriptionPage.status.grace": "Відновлення оплати",
     "dashboard.subscriptionPage.status.grace_period": "Відновлення оплати",
     "dashboard.subscriptionPage.context.earlyAccess": "Для раніше підключених спеціалістів може діяти індивідуальний перехідний режим. Для нових спеціалістів підписка не обов’язкова: після публікації відповідні запити можна купувати окремо.",
-    "dashboard.subscriptionPage.context.general": "Підписка Professional або Growth включає доступ до контактів відповідних запитів у межах тарифу. Без підписки профіль може бути опублікований, а відповідні запити можна купувати окремо. Автоматичного повторного списання немає.",
-    "dashboard.billingPage.graceNotice": "Поточний оплачений період потребує відновлення оплати до {{graceUntil}}. Продовжте тариф, щоб зберегти комерційну участь у каналі запитів без перерви.",
-    "dashboard.billingPage.graceNoticeNoDays": "Поточний оплачений період потребує відновлення оплати. Продовжте тариф, щоб зберегти комерційну участь у каналі запитів.",
+    "dashboard.subscriptionPage.context.general": "Professional або Growth включають доступ до контактів відповідних запитів у межах оплаченого періоду. Без тарифу профіль залишається опублікованим, а доступні запити можна купувати окремо. Автоматичного повторного списання немає.",
+    "dashboard.subscriptionPage.faq.contactsA": "Контакти клієнта відкриваються лише за наявності чинного права доступу: через Professional/Growth або після разової оплати конкретного запиту, якщо такий варіант доступний.",
+    "dashboard.subscriptionPage.faq.leadsA": "Без тарифу профіль залишається опублікованим. Відповідні запити можуть показуватися в знеособленому вигляді; доступ до контакту відкривається окремо або в межах тарифу.",
+    "dashboard.billingPage.subtitle": "Тут можна підключити Professional або Growth для доступу до запитів у межах тарифу. Без підписки відповідні запити можна купувати окремо; публікація базового профілю безкоштовна.",
+    "dashboard.billingPage.graceNotice": "Поточний тарифний доступ діє в режимі відновлення оплати до {{graceUntil}}. Продовжте тариф, щоб без перерви зберегти включений до нього доступ до контактів запитів.",
+    "dashboard.billingPage.graceNoticeNoDays": "Поточний тарифний доступ потребує відновлення оплати. Продовжте тариф, щоб зберегти включений до нього доступ до контактів запитів.",
     "dashboard.billingPage.inactiveNotice": "Ви працюєте без підписки. Відповідні запити можна купувати окремо. Підключіть Professional або Growth, якщо хочете отримувати доступ до запитів у межах тарифу.",
     "dashboard.introBanner": "Заповніть дані профілю та послуги. Після публікації відповідні запити можна купувати окремо. Professional або Growth — підписка з доступом до запитів у межах тарифу, а не умова участі в каналі.",
     "dashboard.important.body": "Спочатку збережіть зміни. Публікація профілю не залежить від підписки Professional або Growth.",
@@ -101,9 +107,12 @@ const FLAT: Record<CommercialLang, Record<string, string>> = {
     "dashboard.subscriptionPage.status.grace": "Zahlungswiederherstellung",
     "dashboard.subscriptionPage.status.grace_period": "Zahlungswiederherstellung",
     "dashboard.subscriptionPage.context.earlyAccess": "Für bereits früher verbundene Spezialisten kann ein individueller Übergangsmodus gelten. Für neue Spezialisten ist kein Abo erforderlich: nach der Veröffentlichung können passende Anfragen einzeln gekauft werden.",
-    "dashboard.subscriptionPage.context.general": "Professional oder Growth enthalten den Zugang zu Kontakten passender Anfragen im Rahmen des Tarifs. Ohne Abo kann das Profil veröffentlicht werden, und passende Anfragen können einzeln gekauft werden. Es gibt keine automatische wiederkehrende Abbuchung.",
-    "dashboard.billingPage.graceNotice": "Für den aktuellen bezahlten Zeitraum muss die Zahlung bis {{graceUntil}} wiederhergestellt werden. Verlängern Sie den Tarif, um die kommerzielle Teilnahme ohne Unterbrechung zu behalten.",
-    "dashboard.billingPage.graceNoticeNoDays": "Für den aktuellen bezahlten Zeitraum muss die Zahlung wiederhergestellt werden. Verlängern Sie den Tarif, um die kommerzielle Teilnahme am Anfragekanal zu behalten.",
+    "dashboard.subscriptionPage.context.general": "Professional oder Growth enthalten den Zugang zu Kontakten passender Anfragen während des bezahlten Zeitraums. Ohne Tarif bleibt das Profil veröffentlicht; verfügbare Anfragen können einzeln gekauft werden. Es gibt keine automatische wiederkehrende Abbuchung.",
+    "dashboard.subscriptionPage.faq.contactsA": "Kundenkontakte werden nur bei gültigem Zugangsrecht freigeschaltet: über Professional/Growth oder durch den einmaligen Kauf der konkreten Anfrage, sofern diese Option angeboten wird.",
+    "dashboard.subscriptionPage.faq.leadsA": "Ohne Tarif bleibt das Profil veröffentlicht. Passende Anfragen können in datensparsamer Vorschau angezeigt werden; Kontaktdaten werden einzeln oder im Rahmen des Tarifs freigeschaltet.",
+    "dashboard.billingPage.subtitle": "Hier können Sie Professional oder Growth für Anfragezugang im Tarif aktivieren. Ohne Abo können passende Anfragen einzeln gekauft werden; die Veröffentlichung des Basisprofils ist kostenlos.",
+    "dashboard.billingPage.graceNotice": "Der aktuelle Tarifzugang befindet sich bis {{graceUntil}} in der Zahlungswiederherstellung. Verlängern Sie den Tarif, um den enthaltenen Zugang zu Anfragekontakten ohne Unterbrechung zu behalten.",
+    "dashboard.billingPage.graceNoticeNoDays": "Für den aktuellen Tarifzugang muss die Zahlung wiederhergestellt werden. Verlängern Sie den Tarif, um den enthaltenen Zugang zu Anfragekontakten zu behalten.",
     "dashboard.billingPage.inactiveNotice": "Sie arbeiten ohne Abo. Passende Anfragen können einzeln gekauft werden. Aktivieren Sie Professional oder Growth, wenn Sie Zugang zu Anfragen im Rahmen des Tarifs erhalten möchten.",
     "dashboard.introBanner": "Vervollständigen Sie Profilangaben und Leistungen. Nach der Veröffentlichung können passende Anfragen einzeln gekauft werden. Professional oder Growth sind ein Abo mit Zugang zu Anfragen im Rahmen des Tarifs, keine Voraussetzung für die Teilnahme am Kanal.",
     "dashboard.important.body": "Speichern Sie Änderungen zuerst. Die Veröffentlichung des Profils hängt nicht von einem Professional- oder Growth-Abo ab.",
@@ -160,6 +169,57 @@ const SPECIALIST_RULES: Record<CommercialLang, Dict> = {
   },
 };
 
+const PARTNER: Record<CommercialLang, Dict> = {
+  ru: {
+    public: {
+      subtitle:
+        "Специалист регистрируется и публикует базовый профиль бесплатно. Если привлечённый вами новый специалист позже впервые подключит платный месячный Professional или Growth, вы получите одноразовое вознаграждение.",
+      howSteps:
+        "Зарегистрируйтесь или войдите и примите Условия партнёрской программы.|Получите персональную referral-ссылку и делитесь ею с вашей аудиторией.|Новый специалист регистрируется по ссылке и может бесплатно опубликовать базовый профиль.|Если этот специалист впервые активирует платный месячный Professional или Growth, возникает партнёрское вознаграждение.|Вознаграждение 14 дней находится в статусе pending, затем подтверждается при выполнении условий.|После подтверждения доступна денежная выплата или Freuly-кредит по правилам программы.",
+      rewardBody:
+        "Вознаграждение начисляется один раз с первой квалифицирующей оплаты месячного Professional или Growth привлечённым специалистом и рассчитывается из фактически полученной Freuly суммы после применимого НДС и фактической комиссии платёжного провайдера.",
+      rewardNote:
+        "Бесплатная регистрация и публикация профиля сами по себе не создают вознаграждение. Разовая покупка отдельной клиентской заявки также не считается квалифицирующей оплатой партнёрской программы.",
+    },
+    faq: {
+      a3:
+        "За первую успешную квалифицирующую оплату месячного Professional или Growth новым специалистом по вашей referral-ссылке — после 14-дневной проверки. Бесплатная публикация профиля и разовые покупки заявок вознаграждение не создают.",
+    },
+  },
+  ua: {
+    public: {
+      subtitle:
+        "Спеціаліст реєструється та публікує базовий профіль безкоштовно. Якщо залучений вами новий спеціаліст пізніше вперше підключить платний місячний Professional або Growth, ви отримаєте одноразову винагороду.",
+      howSteps:
+        "Зареєструйтеся або увійдіть і прийміть Умови партнерської програми.|Отримайте персональне referral-посилання та діліться ним зі своєю аудиторією.|Новий спеціаліст реєструється за посиланням і може безкоштовно опублікувати базовий профіль.|Якщо цей спеціаліст уперше активує платний місячний Professional або Growth, виникає партнерська винагорода.|Винагорода 14 днів перебуває у статусі pending, потім підтверджується за виконання умов.|Після підтвердження доступна грошова виплата або Freuly-кредит за правилами програми.",
+      rewardBody:
+        "Винагорода нараховується один раз із першої кваліфікуючої оплати місячного Professional або Growth залученим спеціалістом і розраховується з фактично отриманої Freuly суми після застосовного ПДВ та фактичної комісії платіжного провайдера.",
+      rewardNote:
+        "Безкоштовна реєстрація та публікація профілю самі по собі не створюють винагороду. Разова купівля окремого клієнтського запиту також не вважається кваліфікуючою оплатою партнерської програми.",
+    },
+    faq: {
+      a3:
+        "За першу успішну кваліфікуючу оплату місячного Professional або Growth новим спеціалістом за вашим referral-посиланням — після 14-денної перевірки. Безкоштовна публікація профілю та разові покупки запитів винагороду не створюють.",
+    },
+  },
+  de: {
+    public: {
+      subtitle:
+        "Der Spezialist registriert sich und veröffentlicht sein Basisprofil kostenlos. Aktiviert ein von Ihnen vermittelter neuer Spezialist später erstmals einen bezahlten monatlichen Professional- oder Growth-Tarif, erhalten Sie eine einmalige Vergütung.",
+      howSteps:
+        "Registrieren oder anmelden und die Partnerprogramm-Bedingungen akzeptieren.|Persönlichen Referral-Link erhalten und mit Ihrer Zielgruppe teilen.|Ein neuer Spezialist registriert sich über den Link und kann sein Basisprofil kostenlos veröffentlichen.|Aktiviert dieser Spezialist erstmals einen bezahlten monatlichen Professional- oder Growth-Tarif, entsteht die Partnervergütung.|Die Vergütung bleibt 14 Tage pending und wird danach bei erfüllten Bedingungen bestätigt.|Danach ist eine Auszahlung oder Freuly-Guthaben nach den Programmregeln möglich.",
+      rewardBody:
+        "Die Vergütung entsteht einmalig aus der ersten qualifizierenden monatlichen Zahlung für Professional oder Growth des vermittelten Spezialisten und wird aus dem von Freuly tatsächlich erhaltenen Betrag nach anwendbarer Umsatzsteuer und tatsächlicher Zahlungsgebühr berechnet.",
+      rewardNote:
+        "Kostenlose Registrierung und Profilveröffentlichung allein erzeugen keine Vergütung. Auch der einmalige Kauf einer einzelnen Kundenanfrage gilt nicht als qualifizierende Partnerzahlung.",
+    },
+    faq: {
+      a3:
+        "Für die erste erfolgreiche qualifizierende monatliche Zahlung für Professional oder Growth eines neuen Spezialisten über Ihren Referral-Link — nach 14-tägiger Prüfung. Kostenlose Profilveröffentlichung und einzelne Anfragekäufe lösen keine Vergütung aus.",
+    },
+  },
+};
+
 function isPlainObject(value: unknown): value is Dict {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
@@ -178,5 +238,8 @@ function merge(target: Dict, patch: Dict): Dict {
 
 export function applyCommercialFinalOverrides(lang: CommercialLang, dictionary: Dict): Dict {
   const withFlat = { ...dictionary, ...FLAT[lang] };
-  return merge(withFlat, { specialistRules: SPECIALIST_RULES[lang] });
+  return merge(withFlat, {
+    specialistRules: SPECIALIST_RULES[lang],
+    partner: PARTNER[lang],
+  });
 }

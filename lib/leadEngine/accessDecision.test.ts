@@ -4,6 +4,7 @@ import test from "node:test";
 import { canUnlockLeadContacts } from "@/lib/billing/contactUnlockEntitlement";
 import {
   canRealizeDirectLeadContactUnlock,
+  directPplPendingCutoffIso,
   isDirectLeadPplCheckoutEnabled,
   mapDirectLeadOfferRow,
   resolveDirectLeadAccessDecision,
@@ -266,5 +267,14 @@ test("missing identity is unavailable", () => {
   assert.deepEqual(
     resolveDirectLeadAccessDecision(facts({ leadId: null })),
     { state: "unavailable", reason: "missing_identity" },
+  );
+});
+
+
+test("pending processing cutoff is 30 minutes before now", () => {
+  const now = new Date("2026-09-21T10:00:00.000Z");
+  assert.equal(
+    directPplPendingCutoffIso(now),
+    "2026-09-21T09:30:00.000Z",
   );
 });

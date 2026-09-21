@@ -10,6 +10,12 @@ import { canUnlockLeadContacts } from "@/lib/billing/contactUnlockEntitlement";
 export const LEAD_ENGINE_DIRECT_PPL_CHECKOUT_ENV =
   "LEAD_ENGINE_DIRECT_PPL_CHECKOUT_ENABLED";
 
+export const DIRECT_PPL_PENDING_PROCESSING_WINDOW_MS = 30 * 60 * 1000;
+
+export function directPplPendingCutoffIso(now = new Date()): string {
+  return new Date(now.getTime() - DIRECT_PPL_PENDING_PROCESSING_WINDOW_MS).toISOString();
+}
+
 export type LeadAccessUnlockSource =
   | "subscription"
   | "payment"

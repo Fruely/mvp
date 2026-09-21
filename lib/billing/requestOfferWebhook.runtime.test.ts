@@ -203,3 +203,55 @@ test("unpaid checkout session never creates an access grant", async () => {
   assert.equal(tables.request_offer_access_grants.length, 0);
   assert.equal(tables.request_offers[0].status, "offered");
 });
+
+
+test("expired checkout session marks pending request-offer payment expired without granting access", async () => {
+  const tables: Tables = {
+    request_offer_payments: [
+      {
+        id: "pay_expired",
+        offer_id: "offer_expired",
+        specialist_id: "specialist_expired",
+        amount_cents: 2500,
+        currency: "EUR",
+        status: "pending",
+        stripe_checkout_session_id: "cs_expired_1",
+        stripe_payment_intent_id: null,
+        stripe_charge_id: null,
+      },
+    ],
+    request_offer_access_grants: [],
+    request_offers: [
+      {
+        id: "offer_expired",
+        specialist_id: "specialist_expired",
+        status: "offered",
+        paid_at: null,
+      },
+    ],
+  };
+
+  const event = {
+    type: "checkout.session.expired",
+    data: {
+      object: {
+        id: "cs_expired_1",
+        metadata: {
+          purpose: "request_offer_access",
+          payment_id: "pay_expired",
+        },
+      },
+    },
+  } as unknown as Stripe.Event;
+
+  const result = await processStripeWebhookEventForRequestOffers(
+    createFakeSupabase(tables),
+    event,
+  );
+
+  assert.deepEqual(result, { outcome: "success" });
+  assert.equal(tables.request_offer_payments[0].status, "expired");
+  assert.ok(tables.request_offer_payments[0].expired_at);
+  assert.equal(tables.request_offer_access_grants.length, 0);
+  assert.equal(tables.request_offers[0].status, "offered");
+});

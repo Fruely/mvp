@@ -122,30 +122,30 @@ export const AGB_BLOCKS = [
     "Freuly прагне забезпечити стабільну доступність, але не гарантує безперервну роботу. Обслуговування, збої третіх сторін або форс-мажор можуть тимчасово обмежити використання."
   ),
 
-  h2("§ 9 Abonnement-Lebenszyklus und Kulanzzeiträume", "§ 9 Жизненный цикл подписки и льготные периоды", "§ 9 Життєвий цикл підписки та пільгові періоди"),
+  h2("§ 9 Profilveröffentlichung und Tarifzugang", "§ 9 Публикация профиля и тарифный доступ", "§ 9 Публікація профілю та тарифний доступ"),
   p(
     "agb-09-01",
-    "Nach der ersten Veröffentlichung eines Profils ohne laufende bezahlte Tarifdeckung gewährt Freuly einen Kulanzzeitraum von 7 Kalendertagen. Dies ist kein kostenloses Testabonnement, sondern eine begrenzte Übergangsfrist, in der das Profil öffentlich sichtbar bleiben kann, sofern keine anderen Gründe für eine Einschränkung vorliegen.",
-    "После первой публикации профиля без действующего оплаченного тарифа Freuly предоставляет льготный период 7 календарных дней. Это не бесплатная пробная подписка, а ограниченный переходный срок, в течение которого профиль может оставаться публично видимым, если нет иных оснований для ограничения.",
-    "Після першої публікації профілю без діючого оплаченого тарифу Freuly надає пільговий період 7 календарних днів. Це не безкоштовна пробна підписка, а обмежений перехідний строк, протягом якого профіль може залишатися публічно видимим, якщо немає інших підстав для обмеження."
+    "Ein vollständig ausgefülltes Basisprofil kann nach den Plattformregeln ohne kostenpflichtigen Tarif veröffentlicht werden. Die kostenlose Profilveröffentlichung umfasst keinen kostenlosen Zugang zu Kontaktdaten von Kundenanfragen.",
+    "Полностью заполненный базовый профиль может быть опубликован по правилам платформы без платного тарифа. Бесплатная публикация профиля не включает бесплатный доступ к контактным данным клиентских заявок.",
+    "Повністю заповнений базовий профіль може бути опублікований за правилами платформи без платного тарифу. Безкоштовна публікація профілю не включає безкоштовний доступ до контактних даних клієнтських запитів."
   ),
   p(
     "agb-09-02",
-    "Während eines aktiven, bezahlten Abonnementzeitraums ist der Tarif gemäß dem gewählten Plan aktiv. Nach natürlichem Ablauf eines bezahlten Zeitraums ohne rechtzeitige manuelle Verlängerung kann Freuly einen weiteren Kulanzzeitraum von 7 Kalendertagen einräumen.",
-    "В течение активного оплаченного периода подписки тариф действует согласно выбранному плану. После естественного окончания оплаченного периода без своевременного ручного продления Freuly может предоставить дополнительный льготный период 7 календарных дней.",
-    "Протягом активного оплаченого періоду підписки тариф діє згідно з обраним планом. Після природного завершення оплаченого періоду без своєчасного ручного продовження Freuly може надати додатковий пільговий період 7 календарних днів."
+    "Während eines aktiven bezahlten Professional- oder Growth-Zeitraums gelten die im Tarif beschriebenen Anfragezugangs- und Zusatzfunktionen. Nach Ablauf ohne erneuten manuellen Checkout endet der Tarifzugang; die kostenlose Veröffentlichung des Basisprofils bleibt davon grundsätzlich unberührt.",
+    "В течение активного оплаченного периода Professional или Growth действуют предусмотренные тарифом права доступа к заявкам и дополнительные функции. После окончания периода без нового ручного checkout тарифный доступ прекращается; бесплатная публикация базового профиля сама по себе от этого не прекращается.",
+    "Протягом активного оплаченого періоду Professional або Growth діють передбачені тарифом права доступу до запитів і додаткові функції. Після завершення періоду без нового ручного checkout тарифний доступ припиняється; безкоштовна публікація базового профілю сама по собі через це не припиняється."
   ),
   p(
     "agb-09-03",
-    "Bei Rückerstattung oder Stornierung einer Abo-Zahlung kann Freuly einen Kulanzzeitraum von 7 Kalendertagen ab dem wirksamen Zeitpunkt der Rückerstattung oder Stornierung gewähren. Der Spezialist wird im Dashboard über Kulanzzeiträume und deren Enddatum informiert.",
-    "При возмещении или отмене платежа по подписке Freuly может предоставить льготный период 7 календарных дней с момента вступления возмещения или отмены в силу. Специалист информируется в личном кабинете о льготных периодах и дате их окончания.",
-    "За відшкодування або скасування платежу за підписку Freuly може надати пільговий період 7 календарних днів з моменту набрання відшкодування або скасування чинності. Спеціаліст інформується в особистому кабінеті про пільгові періоди та дату їх завершення."
+    "Bei Erstattung, Rückabwicklung oder Ablauf eines Tarifzeitraums kann der tarifgebundene Anfragezugang nach der geltenden Billing- und Grace-Policy eingeschränkt werden. Bereits rechtmäßig erworbene Einzelzugänge werden nach ihrer jeweiligen Zugangs- und Erstattungsregel behandelt.",
+    "При возврате, отмене или завершении тарифного периода доступ к заявкам в рамках тарифа может быть ограничен в соответствии с действующей billing/grace-политикой. Уже законно приобретённый разовый доступ к заявке регулируется собственными условиями доступа и возврата.",
+    "За повернення, скасування або завершення тарифного періоду доступ до запитів у межах тарифу може бути обмежений відповідно до чинної billing/grace-політики. Уже правомірно придбаний разовий доступ до запиту регулюється власними умовами доступу та повернення."
   ),
   p(
     "agb-09-04",
-    "Nach Ablauf eines Kulanzzeitraums ohne erfolgreiche Zahlung für einen laufenden Tarif kann Freuly die öffentliche Sichtbarkeit des Profils sperren oder einschränken. Das Dashboard kann weiterhin zugänglich bleiben, soweit technisch und rechtlich zulässig.",
-    "После окончания льготного периода без успешной оплаты текущего тарифа Freuly может заблокировать или ограничить публичную видимость профиля. Личный кабинет может оставаться доступным, если это технически и юридически допустимо.",
-    "Після завершення пільгового періоду без успішної оплати поточного тарифу Freuly може заблокувати або обмежити публічну видимість профілю. Особистий кабінет може залишатися доступним, якщо це технічно та юридично допустимо."
+    "Das Ende eines Tarifzugangs sperrt nicht allein wegen fehlender Zahlung die öffentliche Sichtbarkeit des kostenlosen Basisprofils. Freuly kann Profile aus anderen sachlichen Gründen nach AGB und Spezialisten-Regeln einschränken oder sperren.",
+    "Окончание тарифного доступа само по себе не является основанием скрывать бесплатный базовый профиль из-за отсутствия оплаты. Freuly может ограничить или заблокировать профиль по иным объективным основаниям согласно AGB и Правилам для специалистов.",
+    "Завершення тарифного доступу саме по собі не є підставою приховувати безкоштовний базовий профіль через відсутність оплати. Freuly може обмежити або заблокувати профіль з інших об’єктивних підстав згідно з AGB і Правилами для спеціалістів."
   ),
 
   h2("§ 10 Support", "§ 10 Поддержка", "§ 10 Підтримка"),
@@ -179,9 +179,9 @@ export const AGB_BLOCKS = [
   ),
   p(
     "agb-12-02",
-    "Zahlungen erfolgen über den im Checkout angegebenen Zahlungsdienstleister. Der Spezialist ist dafür verantwortlich, vor Ablauf des laufenden Zeitraums oder des Kulanzzeitraums rechtzeitig manuell zu verlängern, wenn er die öffentliche Sichtbarkeit und Tarifleistungen fortsetzen möchte.",
-    "Платежи осуществляются через платёжного провайдера, указанного при оформлении заказа. Специалист сам отвечает за своевременное ручное продление до окончания текущего периода или льготного периода, если он хочет сохранить публичную видимость и услуги тарифа.",
-    "Платежі здійснюються через платіжного провайдера, зазначеного під час оформлення замовлення. Спеціаліст сам відповідає за своєчасне ручне продовження до завершення поточного періоду або пільгового періоду, якщо він хоче зберегти публічну видимість і послуги тарифу."
+    "Zahlungen erfolgen über den im Checkout angegebenen Zahlungsdienstleister. Der Spezialist verlängert einen Tarif manuell, wenn er die tarifgebundenen Anfragezugangs- und Zusatzfunktionen nach Ablauf des laufenden Zeitraums fortsetzen möchte.",
+    "Платежи осуществляются через платёжного провайдера, указанного при оформлении заказа. Специалист вручную продлевает тариф, если после окончания текущего периода хочет сохранить доступ к заявкам и дополнительным функциям, включённым в тариф.",
+    "Платежі здійснюються через платіжного провайдера, зазначеного під час оформлення замовлення. Спеціаліст вручну продовжує тариф, якщо після завершення поточного періоду хоче зберегти доступ до запитів і додаткових функцій, включених до тарифу."
   ),
 
   h2("§ 13 Kündigung durch den Spezialisten", "§ 13 Расторжение специалистом", "§ 13 Розірвання спеціалістом"),

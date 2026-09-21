@@ -14,6 +14,7 @@ test("direct offer webhook trusts Stripe success events with request-offer purpo
   const src = await readFile(processorPath, "utf8");
   assert.match(src, /checkout\.session\.completed/);
   assert.match(src, /checkout\.session\.async_payment_succeeded/);
+  assert.match(src, /checkout\.session\.expired/);
   assert.match(src, /metadata\.purpose !== PURPOSE/);
   assert.match(src, /payment_status !== "paid"/);
 });
@@ -68,4 +69,12 @@ test("aggregate billing webhook participates in retry and skipped semantics", as
   assert.match(src, /requestOffer: RequestOfferWebhookResult/);
   assert.match(src, /result\.requestOffer\.outcome === "retryable_failure"/);
   assert.match(src, /shouldMarkRequestOfferBillingEventSkipped/);
+});
+
+
+test("expired checkout attempts are terminalized without granting access", async () => {
+  const src = await readFile(processorPath, "utf8");
+  assert.match(src, /status: "expired"/);
+  assert.match(src, /expired_at: nowIso/);
+  assert.match(src, /payment\.status !== "pending"/);
 });

@@ -11,9 +11,9 @@ export const PARTNERPROGRAMM_BLOCKS = [
   {
     type: "p",
     id: "pp-meta-01",
-    de: "Version 1.2 — August 2026. Anbieter: " + OPERATOR.de,
-    ru: "Версия 1.2 — август 2026 г. Поставщик: " + OPERATOR.ru,
-    ua: "Версія 1.2 — серпень 2026 р. Постачальник: " + OPERATOR.ua,
+    de: "Version 1.4 — September 2026. Anbieter: " + OPERATOR.de,
+    ru: "Версия 1.4 — сентябрь 2026 г. Поставщик: " + OPERATOR.ru,
+    ua: "Версія 1.4 — вересень 2026 р. Постачальник: " + OPERATOR.ua,
   },
   {
     type: "h2",
@@ -84,9 +84,9 @@ export const PARTNERPROGRAMM_BLOCKS = [
   {
     type: "p",
     id: "pp-04-01",
-    de: "Eine Vergütung entsteht nur für einen neuen Spezialisten, der über die Referral-Attribution des Partners gekommen ist, erstmals als Spezialist registriert wurde, erstmals ein kostenpflichtiges Abonnement abgeschlossen hat und die erste erfolgreiche Zahlung geleistet hat.",
-    ru: "Вознаграждение возникает только за нового специалиста, который пришёл через referral-атрибуцию партнёра, впервые зарегистрировался как специалист, впервые оформил платную подписку и совершил первый успешный платёж.",
-    ua: "Винагорода виникає лише за нового спеціаліста, який прийшов через referral-атрибуцію партнера, вперше зареєструвався як спеціаліст, вперше оформив платну підписку та здійснив перший успішний платіж.",
+    de: "Die kostenlose Registrierung und Veröffentlichung eines Basisprofils löst keine Vergütung aus. Eine Vergütung entsteht nur für einen neuen Spezialisten, der über die Referral-Attribution des Partners gekommen ist, erstmals als Spezialist registriert wurde, erstmals einen kostenpflichtigen monatlichen Freuly-Professional- oder Freuly-Growth-Tarif aktiviert hat und die erste erfolgreiche qualifizierende Tarifzahlung geleistet hat.",
+    ru: "Бесплатная регистрация и публикация базового профиля не создают вознаграждение. Вознаграждение возникает только за нового специалиста, который пришёл через referral-атрибуцию партнёра, впервые зарегистрировался как специалист, впервые активировал платный месячный Freuly Professional или Freuly Growth и совершил первый успешный квалифицирующий тарифный платёж.",
+    ua: "Безкоштовна реєстрація та публікація базового профілю не створюють винагороду. Винагорода виникає лише за нового спеціаліста, який прийшов через referral-атрибуцію партнера, вперше зареєструвався як спеціаліст, уперше активував платний місячний Freuly Professional або Freuly Growth і здійснив перший успішний кваліфікуючий тарифний платіж.",
   },
   {
     type: "p",
@@ -94,6 +94,13 @@ export const PARTNERPROGRAMM_BLOCKS = [
     de: "Pro Spezialist kann höchstens eine Referral-Vergütung entstehen. Keine neue Vergütung entsteht durch Verlängerungen, Upgrades, Downgrades oder erneute Registrierungen.",
     ru: "За одного специалиста может возникнуть не более одного referral-вознаграждения. Новое вознаграждение не возникает за продления, апгрейды, даунгрейды или повторные регистрации.",
     ua: "За одного спеціаліста може виникнути не більше одного referral-винагороди. Нова винагорода не виникає за поновлення, апгрейди, даунгрейди або повторні реєстрації.",
+  },
+  {
+    type: "p",
+    id: "pp-04-03",
+    de: "Ein einmaliger kostenpflichtiger Zugang zu einer einzelnen Kundenanfrage ist keine qualifizierende Tarifzahlung im Sinne des Partnerprogramms und löst keine Partnervergütung aus.",
+    ru: "Разовый платный доступ к отдельной клиентской заявке не является квалифицирующей тарифной оплатой партнёрской программы и не создаёт партнёрского вознаграждения.",
+    ua: "Разовий платний доступ до окремого клієнтського запиту не є кваліфікуючою тарифною оплатою партнерської програми й не створює партнерської винагороди.",
   },
   {
     type: "h2",

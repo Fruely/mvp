@@ -7,22 +7,29 @@ function replaceNumberedSection(raw: string, sectionNumber: number, nextSectionN
   return raw.replace(pattern, replacement.trim());
 }
 
+function bumpRulesVersion(raw: string) {
+  return raw
+    .replace("Version 2.1 — August 2026", "Version 2.2 — September 2026")
+    .replace("Версия 2.1 — август 2026", "Версия 2.2 — сентябрь 2026")
+    .replace("Версія 2.1 — серпень 2026", "Версія 2.2 — вересень 2026");
+}
+
 const SECTION_9: Record<LegalPublicLang, string> = {
   de: `## 9. Keine Erfolgsgarantie
 
-Freuly stellt die vereinbarten Plattformfunktionen bereit und betreibt einen Kanal zur Gewinnung und Zuordnung von Kundenanfragen. Freuly garantiert jedoch weder eine bestimmte Anzahl oder Qualität von Anfragen noch Kunden, Vertragsabschlüsse, Umsatz oder einen konkreten wirtschaftlichen Erfolg. Die Zahlung eines Tarifs ist keine Zahlung für eine garantierte Zahl von Leads, sondern für die im jeweiligen Tarif beschriebenen Plattformfunktionen und die kommerzielle Teilnahme am Anfragekanal.`,
+Freuly stellt die vereinbarten Plattformfunktionen bereit und betreibt einen Kanal zur Gewinnung und Zuordnung von Kundenanfragen. Die Veröffentlichung des Basisprofils erfordert keinen kostenpflichtigen Tarif. Kostenpflichtig können der Zugang zu einer konkreten Anfrage und/oder Funktionen von Professional oder Growth sein. Freuly garantiert weder eine bestimmte Anzahl oder Qualität von Anfragen noch Kunden, Vertragsabschlüsse, Umsatz oder einen konkreten wirtschaftlichen Erfolg. Zahlungen betreffen den beschriebenen Zugang bzw. die Plattformfunktionen und nicht eine garantierte Zahl von Leads. Spezialisten sollen auf erhaltene Anfragen verantwortungsvoll reagieren: eine passende Anfrage freischalten, eine unpassende Anfrage zeitnah ablehnen oder ihren Status auf andere Weise kennzeichnen, soweit die jeweilige Funktion verfügbar ist.`,
   ru: `## 9. Отсутствие гарантий результата
 
-Freuly предоставляет согласованные функции платформы и развивает канал привлечения и распределения клиентских заявок. При этом Freuly не гарантирует определённое количество или качество заявок, клиентов, заключённых договоров, доход или иной конкретный коммерческий результат. Оплата тарифа не является оплатой гарантированного количества лидов, а оплачивает описанные в соответствующем тарифе функции платформы и коммерческое участие в канале заявок.`,
+Freuly предоставляет согласованные функции платформы и развивает канал привлечения и распределения клиентских заявок. Публикация базового профиля не требует платного тарифа. Платными могут быть доступ к конкретной заявке и/или функции Professional или Growth. Freuly не гарантирует определённое количество или качество заявок, клиентов, заключённых договоров, доход или иной конкретный коммерческий результат. Оплата относится к описанному доступу или функциям платформы, а не к гарантированному количеству лидов. Специалист обязан добросовестно реагировать на полученные запросы: открыть подходящую заявку, своевременно отказаться от неподходящей либо иным способом обозначить её статус, если такая функция доступна.`,
   ua: `## 9. Відсутність гарантій результату
 
-Freuly надає погоджені функції платформи та розвиває канал залучення й розподілу клієнтських запитів. Водночас Freuly не гарантує певну кількість або якість запитів, клієнтів, укладених договорів, дохід чи інший конкретний комерційний результат. Оплата тарифу не є оплатою гарантованої кількості лідів, а оплачує описані у відповідному тарифі функції платформи та комерційну участь у каналі запитів.`,
+Freuly надає погоджені функції платформи та розвиває канал залучення й розподілу клієнтських запитів. Публікація базового профілю не потребує платного тарифу. Платними можуть бути доступ до конкретного запиту та/або функції Professional чи Growth. Freuly не гарантує певну кількість або якість запитів, клієнтів, укладених договорів, дохід чи інший конкретний комерційний результат. Оплата стосується описаного доступу або функцій платформи, а не гарантованої кількості лідів. Спеціаліст має добросовісно реагувати на отримані запити: відкрити відповідний запит, своєчасно відмовитися від невідповідного або іншим способом позначити його статус, якщо така функція доступна.`,
 };
 
 const CLOSE: Record<LegalPublicLang, string> = {
-  de: "Mit der Registrierung und Annahme dieser Regeln bestätigt der Spezialist, dass er diese Regeln versteht, akzeptiert und einhalten wird. Die öffentliche Veröffentlichung eines neuen Profils erfolgt nach Maßgabe der jeweils geltenden Tarif- und Veröffentlichungsbedingungen.",
-  ru: "Регистрируясь и принимая настоящие Правила, специалист подтверждает, что понимает, принимает и будет их соблюдать. Публичная публикация нового профиля осуществляется в соответствии с действующими условиями тарифа и публикации.",
-  ua: "Реєструючись і приймаючи ці Правила, спеціаліст підтверджує, що розуміє, приймає та дотримуватиметься їх. Публічна публікація нового профілю здійснюється відповідно до чинних умов тарифу та публікації.",
+  de: "Mit der Registrierung und Annahme dieser Regeln bestätigt der Spezialist, dass er diese Regeln versteht, akzeptiert und einhalten wird. Ein vollständiges Basisprofil kann nach den geltenden Veröffentlichungsregeln ohne kostenpflichtigen Tarif veröffentlicht werden; kostenpflichtiger Anfragezugang und Tariffunktionen richten sich nach den jeweils angezeigten Bedingungen.",
+  ru: "Регистрируясь и принимая настоящие Правила, специалист подтверждает, что понимает, принимает и будет их соблюдать. Полностью заполненный базовый профиль может быть опубликован по действующим правилам публикации без платного тарифа; платный доступ к заявкам и функции тарифов регулируются условиями, показанными перед соответствующей покупкой.",
+  ua: "Реєструючись і приймаючи ці Правила, спеціаліст підтверджує, що розуміє, приймає та дотримуватиметься їх. Повністю заповнений базовий профіль може бути опублікований за чинними правилами публікації без платного тарифу; платний доступ до запитів і функції тарифів регулюються умовами, показаними перед відповідною покупкою.",
 };
 
 export function applyPublicSpecialistRulesAmendments(
@@ -31,7 +38,8 @@ export function applyPublicSpecialistRulesAmendments(
   raw: string,
 ): string {
   if (slug !== "specialist-rules") return raw;
-  let result = replaceNumberedSection(raw, 9, 10, SECTION_9[lang]);
+  let result = bumpRulesVersion(raw);
+  result = replaceNumberedSection(result, 9, 10, SECTION_9[lang]);
   result = result.replace(
     /(## (?:Заключительное положение|Заключне положення|Schlussbestimmung)\s*\n(?:\s*<!--[^>]+-->\s*\n)?)[\s\S]*$/,
     `$1${CLOSE[lang]}\n`,

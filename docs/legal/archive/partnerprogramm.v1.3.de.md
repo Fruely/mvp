@@ -1,7 +1,7 @@
 # Partnerprogramm-Bedingungen Freuly
 
 <!-- legal-section: pp-meta-01 -->
-Version 1.4 — September 2026. Anbieter: Natalia Sheshenia, handelnd unter der Geschäftsbezeichnung Sheshenia – Freuly, Hofolper Straße 46, 57399 Kirchhundem, Deutschland. E-Mail: freuly.de@gmail.com. Telefon: +49 160 92686432. USt-IdNr.: DE464033560. W-IdNr.: DE464033560-00001.
+Version 1.3 — August 2026. Anbieter: Natalia Sheshenia, handelnd unter der Geschäftsbezeichnung Sheshenia – Freuly, Hofolper Straße 46, 57399 Kirchhundem, Deutschland. E-Mail: freuly.de@gmail.com. Telefon: +49 160 92686432. USt-IdNr.: DE464033560. W-IdNr.: DE464033560-00001.
 
 ## § 1 Anbieter und Geltungsbereich
 
@@ -33,10 +33,10 @@ Für die Speicherung des Referral-Cookies ist die Einwilligung des Nutzers in di
 ## § 4 Qualifizierte Empfehlung
 
 <!-- legal-section: pp-04-01 -->
-Die Registrierung und Veröffentlichung eines Basisprofils durch den vermittelten Spezialisten ist kostenlos und löst für sich allein keine Vergütung aus. Eine Vergütung entsteht nur für einen neuen Spezialisten, der über die Referral-Attribution des Partners gekommen ist, erstmals als Spezialist registriert wurde, erstmals einen kostenpflichtigen monatlichen Freuly-Professional- oder Freuly-Growth-Tarif aktiviert hat, die erste erfolgreiche qualifizierende Tarifzahlung geleistet hat und dessen Empfehlung nicht gegen diese Bedingungen verstößt.
+Eine Vergütung entsteht nur für einen neuen Spezialisten, der über die Referral-Attribution des Partners gekommen ist, erstmals als Spezialist registriert wurde, erstmals ein kostenpflichtiges monatliches Abonnement abgeschlossen hat, die erste erfolgreiche qualifizierende Zahlung geleistet hat und dessen Empfehlung nicht gegen diese Bedingungen verstößt.
 
 <!-- legal-section: pp-04-02 -->
-Pro Spezialist kann höchstens eine Referral-Vergütung entstehen. Keine neue Vergütung entsteht durch Verlängerungen, Folgemonate, Upgrades, Downgrades, erneute Registrierungen, spätere Rückkehr desselben Spezialisten oder sonstige Folgekäufe.\n\n<!-- legal-section: pp-04-03 -->\nEin einmaliger kostenpflichtiger Zugang zu einer einzelnen Kundenanfrage (Pay-per-Lead / Einzelzugang) ist keine qualifizierende Tarifzahlung im Sinne dieses Partnerprogramms und löst keine Partnervergütung aus.
+Pro Spezialist kann höchstens eine Referral-Vergütung entstehen. Keine neue Vergütung entsteht durch Verlängerungen, Folgemonate, Upgrades, Downgrades, erneute Registrierungen, spätere Rückkehr desselben Spezialisten oder sonstige Folgekäufe.
 
 ## § 5 Höhe der Vergütung
 

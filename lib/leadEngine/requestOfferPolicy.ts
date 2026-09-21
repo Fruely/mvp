@@ -56,10 +56,15 @@ export function buildDirectLeadOfferIdempotencyKey(input: {
 }
 
 /**
- * Phase-1 shadow payload only.
- * Current direct-lead production access is subscription-gated, so shadow rows snapshot
- * billing_model=subscription until the new commercial choice model is introduced.
- * price_cents deliberately remains NULL: dynamic pricing is not live yet.
+ * Initial direct-selection offer.
+ *
+ * New offers are created with a subscription billing snapshot and a separate shadow
+ * price. When an eligible specialist without tariff access chooses pay-per-lead,
+ * server-side checkout materializes that shadow snapshot into immutable live
+ * pay_per_lead fields before Stripe Checkout is created.
+ *
+ * price_cents remains NULL until that materialization step; the browser never chooses
+ * the commercial price.
  */
 export function buildDirectLeadShadowOffer(input: {
   leadId: string;

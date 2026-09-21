@@ -9,9 +9,9 @@ export const SPECIALIST_RULES_BLOCKS = [
   {
     type: "p",
     id: "sr-meta-01",
-    de: "Version 2.1 — August 2026. Code of Conduct für Spezialistinnen und Spezialisten auf der Plattform Freuly.",
-    ru: "Версия 2.1 — август 2026 г. Кодекс поведения для специалистов на платформе Freuly.",
-    ua: "Версія 2.1 — серпень 2026 р. Кодекс поведінки для спеціалістів на платформі Freuly.",
+    de: "Version 2.2 — September 2026. Code of Conduct für Spezialistinnen und Spezialisten auf der Plattform Freuly.",
+    ru: "Версия 2.2 — сентябрь 2026 г. Кодекс поведения для специалистов на платформе Freuly.",
+    ua: "Версія 2.2 — вересень 2026 р. Кодекс поведінки для спеціалістів на платформі Freuly.",
   },
   {
     type: "h2",
@@ -139,9 +139,9 @@ export const SPECIALIST_RULES_BLOCKS = [
   {
     type: "p",
     id: "sr-09-01",
-    de: "Freuly garantiert nicht den Erhalt von Anfragen, die Gewinnung von Kundinnen und Kunden, Einkommenshöhe, Umsatzvolumen oder konkrete Erfolge bei der Profilförderung. Die Plattform stellt einen Profileintrag und Anfragevermittlung bereit, garantiert jedoch weder deren Menge noch Qualität oder erfolgreiche Geschäftsabschlüsse.",
-    ru: "Freuly не гарантирует получение запросов, привлечение клиентов, уровень дохода, объём выручки или конкретные результаты продвижения профиля. Платформа предоставляет размещение профиля и передачу запросов, но не гарантирует их количество, качество или успешные сделки.",
-    ua: "Freuly не гарантує отримання запитів, залучення клієнтів, рівень доходу, обсяг виручки або конкретні результати просування профілю. Платформа надає розміщення профілю та передачу запитів, але не гарантує їх кількість, якість або успішні угоди.",
+    de: "Die Veröffentlichung des Basisprofils erfordert keinen kostenpflichtigen Tarif. Kostenpflichtig können der Zugang zu einer konkreten Kundenanfrage und/oder Funktionen von Professional oder Growth sein. Freuly garantiert weder die Zahl oder Qualität von Anfragen noch Kunden, Vertragsabschlüsse, Umsatz oder einen bestimmten wirtschaftlichen Erfolg. Spezialisten sollen auf erhaltene Anfragen verantwortungsvoll reagieren und eine unpassende Anfrage zeitnah ablehnen, soweit diese Funktion verfügbar ist.",
+    ru: "Публикация базового профиля не требует платного тарифа. Платными могут быть доступ к конкретной клиентской заявке и/или функции Professional или Growth. Freuly не гарантирует количество или качество заявок, клиентов, заключённых договоров, доход или иной конкретный коммерческий результат. Специалист должен добросовестно реагировать на полученные обращения и своевременно отказываться от неподходящей заявки, если такая функция доступна.",
+    ua: "Публікація базового профілю не потребує платного тарифу. Платними можуть бути доступ до конкретного клієнтського запиту та/або функції Professional чи Growth. Freuly не гарантує кількість або якість запитів, клієнтів, укладених договорів, дохід чи інший конкретний комерційний результат. Спеціаліст має добросовісно реагувати на отримані звернення та своєчасно відмовлятися від невідповідного запиту, якщо така функція доступна.",
   },
   {
     type: "h2",
