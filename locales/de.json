@@ -1414,15 +1414,15 @@
       "subtitle": "Führen Sie Ihr Profil selbstständig oder überlassen Sie Freuly die redaktionelle und SEO-Aufbereitung."
     },
     "notice": {
-      "title": "Profilvorbereitung und Testphase",
+      "title": "Kostenloses Profil und Anfragezugang",
       "lead": "Registrierung, Profilerstellung und Vorschau sind kostenlos — auch vor der öffentlichen Veröffentlichung.",
       "points": [
         "Registrierung und Profilerstellung sind kostenlos.",
         "Ausgangsdaten und Vorschau können vor der Veröffentlichung vorbereitet werden.",
-        "Nach der ersten öffentlichen Veröffentlichung gilt eine 7-tägige Testphase.",
+        "Die Veröffentlichung eines vollständigen Basisprofils ist kostenlos und nicht auf eine Testphase begrenzt.",
         "Danach ist Freuly Professional oder Freuly Growth erforderlich.",
         "Jeder bezahlte Zeitraum endet automatisch; für einen weiteren Monat ist eine manuelle Verlängerung im Checkout erforderlich.",
-        "Bezahlter Zugang gilt bis zum Ende des bezahlten Zeitraums."
+        "Tarifgebundener Kontaktzugang gilt bis zum Ende des bezahlten Zeitraums; das Basisprofil bleibt veröffentlicht."
       ]
     },
     "professional": {
@@ -1612,12 +1612,12 @@
   "partner": {
     "public": {
       "title": "Verdienen Sie gemeinsam mit Freuly",
-      "subtitle": "Registrieren Sie sich im Partnerprogramm, akzeptieren Sie die Bedingungen und teilen Sie Ihren persönlichen Referral-Link. Nach der ersten monatlichen Tarifzahlung eines neuen Spezialisten erhalten Sie eine einmalige Vergütung.",
+      "subtitle": "Ein neuer Spezialist kann sich kostenlos registrieren und sein Basisprofil veröffentlichen. Aktiviert ein von Ihnen vermittelter Spezialist erstmals Professional oder Growth, erhalten Sie eine einmalige Vergütung.",
       "howTitle": "So funktioniert es",
       "howSteps": "Registrieren oder anmelden und die Partnerprogramm-Bedingungen akzeptieren.|Sie werden automatisch aktiv und erhalten sofort Ihren persönlichen Referral-Link.|Teilen Sie den Link mit Freunden, Bekannten, Kollegen oder Ihrer Community.|Ein neuer Spezialist registriert sich über Ihren Link und bezahlt erstmals einen monatlichen Tarif.|Ihre Vergütung ist 14 Tage pending und wird danach bestätigt.|Danach wählen Sie: Auszahlung in Geld oder Guthaben für Ihr Freuly-Abo.",
       "rewardTitle": "Vergütung",
       "rewardBody": "Sie erhalten eine einmalige Vergütung in Höhe des ersten bezahlten monatlichen Tarifs des vermittelten Spezialisten, berechnet aus dem von Freuly tatsächlich vereinnahmten Betrag nach Abzug gesetzlich geschuldeter Umsatzsteuer (falls anwendbar) und der tatsächlichen Transaktionsgebühr des Zahlungsdienstleisters.",
-      "rewardNote": "Die genaue Höhe hängt vom gewählten Tarif ab. Details stehen in den Partnerprogramm-Bedingungen.",
+      "rewardNote": "Kostenlose Registrierung und Profilveröffentlichung sowie einzelne Anfragekäufe lösen für sich allein keine Partnervergütung aus.",
       "audienceTitle": "Für wen",
       "audienceItems": "Privatpersonen|Videoblogger|Telegram-Kanäle|Community-Admins|thematische Medien|Leitpersonen lokaler und beruflicher Communities",
       "faqTitle": "Häufige Fragen",
