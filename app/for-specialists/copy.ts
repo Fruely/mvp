@@ -25,7 +25,7 @@ const ruCopy: ForSpecialistsCopy = {
   meta: {
     title: "Получайте заявки от клиентов в Германии — Freuly для специалистов",
     description:
-      "Freuly помогает специалистам в Германии получать заявки и целевые обращения клиентов: профиль, локальный поиск, категории услуг, города и продвижение от 29 евро в месяц.",
+      "Бесплатно создайте и опубликуйте профиль на Freuly. Доступ к клиентским заявкам оплачивается отдельно за заявку или через Professional/Growth.",
   },
   hero: {
     eyebrow: "Freuly для специалистов в Германии",
@@ -158,7 +158,7 @@ const uaCopy: ForSpecialistsCopy = {
   meta: {
     title: "Отримуйте заявки від клієнтів у Німеччині — Freuly для спеціалістів",
     description:
-      "Freuly допомагає спеціалістам у Німеччині отримувати заявки та цільові звернення клієнтів: профіль, локальний пошук, категорії послуг, міста та просування від 29 євро на місяць.",
+      "Безкоштовно створіть і опублікуйте профіль на Freuly. Доступ до клієнтських запитів оплачується окремо за запит або через Professional/Growth.",
   },
   hero: {
     eyebrow: "Freuly для спеціалістів у Німеччині",
@@ -291,7 +291,7 @@ const deCopy: ForSpecialistsCopy = {
   meta: {
     title: "Anfragen von Kundinnen und Kunden in Deutschland erhalten — Freuly für Fachkräfte",
     description:
-      "Freuly hilft Fachkräften in Deutschland, Anfragen und gezielte Kundenanfragen zu erhalten: Profil, lokale Suche, Leistungskategorien, Städte und Sichtbarkeit ab 29 Euro im Monat.",
+      "Erstellen und veröffentlichen Sie Ihr Profil auf Freuly kostenlos. Der Zugang zu Kundenanfragen wird einzeln pro Anfrage oder über Professional/Growth bezahlt.",
   },
   hero: {
     eyebrow: "Freuly für Fachkräfte in Deutschland",
@@ -301,7 +301,7 @@ const deCopy: ForSpecialistsCopy = {
     cta: "Anfragen annehmen",
     secondaryCta: "So funktioniert es",
     note:
-      "Ein Profil kostet ab 29 Euro im Monat. Keine Provision vom Auftrag: Kundinnen und Kunden schreiben Ihnen direkt, Preis und Konditionen klären Sie selbst.",
+      "Registrierung und Profilveröffentlichung sind kostenlos. Sie zahlen nur für den Zugang zu Anfragen: einzeln oder per Tarif ab 29 €/Monat.",
   },
   illustration: {
     alt: "Farbige Illustration zu Kundenanfragen für Freuly-Fachkräfte",
@@ -321,7 +321,7 @@ const deCopy: ForSpecialistsCopy = {
     {
       value: "5 Minuten",
       title: "bis zum Start des Profils",
-      body: "Name, Stadt, Sprachen, Kategorie, Leistungen und Preise — und Kundinnen und Kunden haben bereits einen klaren Weg zu Ihnen.",
+      body: "Das Profil ist kostenlos und in etwa 5 Minuten startklar: Name, Stadt, Sprachen, Kategorie, Leistungen und Preise — und Kunden können Sie bereits finden.",
     },
   ],
   problem: {
