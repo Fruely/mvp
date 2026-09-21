@@ -19,7 +19,7 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
       eyebrow: "Freuly для специалистов в Германии",
       headline: "Создайте профиль бесплатно. Платите только за доступ к клиентскому спросу",
       sub:
-        "Опубликуйте профиль на Freuly без обязательной подписки. Клиенты смогут найти и выбрать вас. Когда появляется подходящая заявка, откройте её отдельно или подключите Professional с доступом к заявкам в рамках тарифа.",
+        "Бесплатный профиль нужен, чтобы клиенты могли найти и выбрать вас, а Freuly — понимать, какие запросы вам подходят. Когда появляется интересная заявка, вы сами решаете: открыть её разово от 20 € или использовать Professional за 29 €/мес.",
       cta: "Создать профиль бесплатно",
       secondaryCta: "Как это работает",
       note: SPECIALIST_FREE_ENTRY_LINE.ru,
@@ -48,19 +48,19 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
           number: "01",
           title: "Создайте профиль бесплатно",
           body:
-            "Укажите услуги, цены, языки, город или онлайн-формат, добавьте фото и описание. После публикации профиль доступен клиентам без обязательной подписки.",
+            "Профиль делает вас видимым в поиске Freuly и даёт системе данные для подбора релевантных запросов: услуги, цены, языки, город или онлайн-формат.",
         },
         {
           number: "02",
-          title: "Клиент находит и выбирает вас",
+          title: "Смотрите подходящие запросы",
           body:
-            "Человек ищет услугу по языку, категории и локации, изучает профиль и может отправить запрос именно вам. Freuly также может предложить подходящий запрос по совпадению.",
+            "Если клиент выбрал вас или Freuly нашёл совпадение, вы получаете безопасное превью заявки без контактов клиента. На этом этапе платить не нужно.",
         },
         {
           number: "03",
-          title: "Решите, нужен ли вам контакт",
+          title: "Выберите способ открыть контакт",
           body:
-            "Вы видите безопасное превью запроса. Контакт можно открыть отдельной оплатой либо в рамках Professional/Growth. Договор и оплату вашей услуги вы согласуете с клиентом напрямую.",
+            "Разовый доступ к конкретной заявке — от 20 € и доступен зарегистрированному специалисту. Professional за 29 €/мес. даёт доступ к предложенным вам подходящим заявкам в оплаченный период без отдельной оплаты за каждую. Количество заявок зависит от реального спроса и совпадения с профилем.",
         },
       ],
     },
@@ -87,8 +87,16 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
       title: "Частые вопросы",
       items: [
         {
+          q: "Зачем мне бесплатный профиль, если контакты заявок платные?",
+          a: "Профиль нужен не только для размещения. Клиенты могут найти и выбрать вас напрямую, а Freuly использует услуги, языки, формат работы и географию профиля, чтобы предлагать вам релевантные заявки. Так вы можете сначала увидеть спрос на свои услуги и только потом решать, нужен ли платный доступ к конкретному контакту.",
+        },
+        {
           q: "Нужно ли платить, чтобы опубликовать профиль?",
           a: "Нет. Регистрация, заполнение и публикация базового профиля не требуют Professional или Growth.",
+        },
+        {
+          q: "Можно ли купить одну заявку без регистрации?",
+          a: "Нет. Доступ к заявкам предоставляется зарегистрированным специалистам. Профиль нужен, чтобы Freuly понимал вашу специализацию и мог предложить вам подходящий запрос, а клиентские контакты не продавались случайным пользователям.",
         },
         {
           q: "За что тогда платит специалист?",
@@ -96,7 +104,11 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
         },
         {
           q: "Обязательно ли покупать тариф 29 €?",
-          a: "Нет. Professional — это вариант для специалиста, которому удобнее доступ к заявкам в рамках тарифа. Без подписки подходящие заявки можно покупать отдельно.",
+          a: "Нет. Если заявки нужны эпизодически, можно открывать конкретные подходящие обращения разово от 20 €. Professional — вариант для регулярной работы: в оплаченный период вы не платите отдельно за каждую подходящую заявку, предложенную вам Freuly.",
+        },
+        {
+          q: "Сколько заявок входит в Professional?",
+          a: "Фиксированного лимита вида «5 или 10 заявок в месяц» нет. В рамках оплаченного периода Professional открывает контакты подходящих заявок, которые Freuly предлагает именно вам, без отдельной оплаты за каждую. При этом Freuly не гарантирует определённое количество заявок: оно зависит от спроса, вашей категории, языка, географии и других параметров совпадения.",
         },
         {
           q: "Вы гарантируете клиентов?",
@@ -129,7 +141,7 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
       eyebrow: "Freuly для спеціалістів у Німеччині",
       headline: "Створіть профіль безкоштовно. Платіть лише за доступ до клієнтського попиту",
       sub:
-        "Опублікуйте профіль на Freuly без обов’язкової підписки. Клієнти зможуть знайти й обрати вас. Коли з’являється відповідний запит, відкрийте його окремо або підключіть Professional з доступом до запитів у межах тарифу.",
+        "Безкоштовний профіль потрібен, щоб клієнти могли знайти й обрати вас, а Freuly — розуміти, які запити вам підходять. Коли з’являється цікавий запит, ви самі вирішуєте: відкрити його разово від 20 € або використовувати Professional за 29 €/міс.",
       cta: "Створити профіль безкоштовно",
       secondaryCta: "Як це працює",
       note: SPECIALIST_FREE_ENTRY_LINE.ua,
@@ -158,19 +170,19 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
           number: "01",
           title: "Створіть профіль безкоштовно",
           body:
-            "Вкажіть послуги, ціни, мови, місто або онлайн-формат, додайте фото й опис. Після публікації профіль доступний клієнтам без обов’язкової підписки.",
+            "Профіль робить вас видимими в пошуку Freuly і дає системі дані для підбору релевантних запитів: послуги, ціни, мови, місто або онлайн-формат.",
         },
         {
           number: "02",
-          title: "Клієнт знаходить і обирає вас",
+          title: "Переглядайте відповідні запити",
           body:
-            "Людина шукає послугу за мовою, категорією та локацією, переглядає профіль і може надіслати запит саме вам. Freuly також може запропонувати відповідний запит за збігом.",
+            "Якщо клієнт обрав вас або Freuly знайшов збіг, ви отримуєте безпечне прев’ю запиту без контактів клієнта. На цьому етапі платити не потрібно.",
         },
         {
           number: "03",
-          title: "Вирішіть, чи потрібен вам контакт",
+          title: "Оберіть спосіб відкрити контакт",
           body:
-            "Ви бачите безпечне прев’ю запиту. Контакт можна відкрити окремою оплатою або в межах Professional/Growth. Договір та оплату вашої послуги ви узгоджуєте з клієнтом напряму.",
+            "Разовий доступ до конкретного запиту — від 20 € і доступний зареєстрованому спеціалісту. Professional за 29 €/міс. дає доступ до запропонованих вам відповідних запитів в оплачений період без окремої оплати за кожен. Кількість запитів залежить від реального попиту та збігу з профілем.",
         },
       ],
     },
@@ -197,8 +209,16 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
       title: "Поширені запитання",
       items: [
         {
+          q: "Навіщо мені безкоштовний профіль, якщо контакти запитів платні?",
+          a: "Профіль потрібен не лише для розміщення. Клієнти можуть знайти й обрати вас напряму, а Freuly використовує послуги, мови, формат роботи та географію профілю, щоб пропонувати вам релевантні запити. Так ви можете спочатку побачити попит на свої послуги і лише потім вирішувати, чи потрібен платний доступ до конкретного контакту.",
+        },
+        {
           q: "Чи потрібно платити, щоб опублікувати профіль?",
           a: "Ні. Реєстрація, заповнення та публікація базового профілю не потребують Professional або Growth.",
+        },
+        {
+          q: "Чи можна купити один запит без реєстрації?",
+          a: "Ні. Доступ до запитів надається зареєстрованим спеціалістам. Профіль потрібен, щоб Freuly розумів вашу спеціалізацію та міг запропонувати відповідний запит, а контакти клієнтів не продавалися випадковим користувачам.",
         },
         {
           q: "За що тоді платить спеціаліст?",
@@ -206,7 +226,11 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
         },
         {
           q: "Чи обов’язково купувати тариф 29 €?",
-          a: "Ні. Professional — це варіант для спеціаліста, якому зручніший доступ до запитів у межах тарифу. Без підписки відповідні запити можна купувати окремо.",
+          a: "Ні. Якщо запити потрібні епізодично, можна відкривати конкретні відповідні звернення разово від 20 €. Professional — варіант для регулярної роботи: в оплачений період ви не платите окремо за кожен відповідний запит, запропонований вам Freuly.",
+        },
+        {
+          q: "Скільки запитів входить у Professional?",
+          a: "Фіксованого ліміту на кшталт «5 або 10 запитів на місяць» немає. У межах оплаченого періоду Professional відкриває контакти відповідних запитів, які Freuly пропонує саме вам, без окремої оплати за кожен. Водночас Freuly не гарантує певної кількості запитів: вона залежить від попиту, категорії, мови, географії та інших параметрів збігу.",
         },
         {
           q: "Ви гарантуєте клієнтів?",
@@ -239,7 +263,7 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
       eyebrow: "Freuly für Spezialisten in Deutschland",
       headline: "Profil kostenlos veröffentlichen. Für Zugang zu Kundennachfrage zahlen",
       sub:
-        "Veröffentlichen Sie Ihr Profil ohne Pflicht-Abo. Kunden können Sie finden und auswählen. Bei einer passenden Anfrage schalten Sie den Kontakt einzeln frei oder nutzen Professional mit Anfragezugang im Tarif.",
+        "Das kostenlose Profil sorgt dafür, dass Kunden Sie finden und auswählen können und Freuly passende Anfragen zuordnen kann. Bei einer interessanten Anfrage entscheiden Sie selbst: einmalig ab 20 € freischalten oder Professional für 29 €/Monat nutzen.",
       cta: "Kostenloses Profil erstellen",
       secondaryCta: "So funktioniert es",
       note: SPECIALIST_FREE_ENTRY_LINE.de,
@@ -268,19 +292,19 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
           number: "01",
           title: "Profil kostenlos erstellen",
           body:
-            "Leistungen, Preise, Sprachen, Ort oder Online-Format, Fotos und Beschreibung eintragen. Nach der Veröffentlichung ist das Profil ohne Pflicht-Abo für Kunden sichtbar.",
+            "Das Profil macht Sie in der Freuly-Suche sichtbar und liefert die Angaben für passendes Matching: Leistungen, Preise, Sprachen, Ort oder Online-Format.",
         },
         {
           number: "02",
-          title: "Kunden finden und wählen Sie",
+          title: "Passende Anfragen ansehen",
           body:
-            "Kunden suchen nach Sprache, Kategorie und Ort, prüfen Ihr Profil und können eine Anfrage direkt an Sie senden. Freuly kann Ihnen außerdem passende Anfragen zuordnen.",
+            "Wenn ein Kunde Sie auswählt oder Freuly eine Übereinstimmung findet, sehen Sie eine datensparsame Vorschau ohne Kundenkontakt. Bis hierhin ist keine Zahlung nötig.",
         },
         {
           number: "03",
-          title: "Über Kontaktzugang entscheiden",
+          title: "Zugangsmodell wählen",
           body:
-            "Sie sehen eine datenschutzgerechte Vorschau. Den Kontakt schalten Sie einzeln oder über Professional/Growth frei. Vertrag und Bezahlung Ihrer Leistung vereinbaren Sie direkt mit dem Kunden.",
+            "Einzelzugang zu einer konkreten Anfrage gibt es ab 20 € für registrierte Spezialisten. Professional für 29 €/Monat gibt im bezahlten Zeitraum Zugang zu den Ihnen angebotenen passenden Anfragen ohne separate Zahlung pro Anfrage. Die Anzahl hängt von realer Nachfrage und Matching ab.",
         },
       ],
     },
@@ -307,8 +331,16 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
       title: "Häufige Fragen",
       items: [
         {
+          q: "Warum brauche ich ein kostenloses Profil, wenn Anfragekontakte kostenpflichtig sind?",
+          a: "Das Profil ist nicht nur ein Eintrag. Kunden können Sie direkt finden und auswählen, und Freuly nutzt Leistungen, Sprachen, Arbeitsformat und Region für das Matching relevanter Anfragen. So können Sie zunächst Nachfrage sehen und erst dann über kostenpflichtigen Kontaktzugang entscheiden.",
+        },
+        {
           q: "Muss ich für die Profilveröffentlichung zahlen?",
           a: "Nein. Registrierung, Profilbefüllung und Veröffentlichung des Basisprofils erfordern weder Professional noch Growth.",
+        },
+        {
+          q: "Kann ich eine einzelne Anfrage ohne Registrierung kaufen?",
+          a: "Nein. Anfragezugang ist für registrierte Spezialisten vorgesehen. Das Profil ermöglicht Freuly, Ihre Spezialisierung zu prüfen und passende Anfragen zuzuordnen; Kundendaten werden nicht an beliebige Nutzer verkauft.",
         },
         {
           q: "Wofür zahlt ein Spezialist dann?",
@@ -316,7 +348,11 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
         },
         {
           q: "Ist Professional für 29 € verpflichtend?",
-          a: "Nein. Professional ist eine Option für Anfragezugang im Tarif. Ohne Abo können passende Anfragen einzeln gekauft werden.",
+          a: "Nein. Wenn Sie nur gelegentlich eine Anfrage öffnen möchten, können passende Kontakte einzeln ab 20 € freigeschaltet werden. Professional ist für regelmäßige Nutzung gedacht: Im bezahlten Zeitraum zahlen Sie nicht separat für jede passende Anfrage, die Freuly Ihnen anbietet.",
+        },
+        {
+          q: "Wie viele Anfragen sind in Professional enthalten?",
+          a: "Es gibt kein festes Kontingent wie 5 oder 10 Anfragen pro Monat. Professional öffnet im bezahlten Zeitraum die Kontakte passender Anfragen, die Freuly Ihnen anbietet, ohne Einzelzahlung pro Anfrage. Freuly garantiert jedoch keine bestimmte Anzahl; sie hängt von Nachfrage, Kategorie, Sprache, Region und weiteren Matching-Faktoren ab.",
         },
         {
           q: "Garantiert Freuly Kunden?",
