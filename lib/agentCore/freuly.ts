@@ -119,15 +119,27 @@ export const FREULY_CAPABILITY_CORE: CapabilityCore = {
       ],
       input_schema: objectSchema(
         {
-          category: { type: "string" },
-          language: { type: "string" },
+          category: { type: "string", minLength: 1 },
+          language: { enum: ["de", "ru", "uk"] },
           work_format: { enum: ["online", "offline", "hybrid"] },
-          location: { type: ["string", "null"] },
-          budget_max: { type: ["number", "null"], minimum: 0 },
+          city: { type: ["string", "null"] },
+          postal_code: { type: ["string", "null"] },
           request_text: { type: "string", minLength: 1 },
-          user_contact: { type: "object" },
+          locale: { enum: ["ua", "ru", "de"] },
+          user_contact: {
+            ...objectSchema(
+              {
+                name: { type: "string", minLength: 1 },
+                email: { type: ["string", "null"] },
+                phone: { type: ["string", "null"] },
+              },
+              ["name"],
+            ),
+            description:
+              "Contact for the authorized user. name is required. At least one of email or phone is required.",
+          },
         },
-        ["category", "language", "request_text", "user_contact"],
+        ["category", "language", "work_format", "request_text", "user_contact"],
       ),
       output_entity: "service_request",
       side_effects: true,

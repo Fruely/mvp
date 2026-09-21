@@ -50,3 +50,45 @@ test("JSON Schema exposes the canonical v1 contract", () => {
   assert.equal(CAPABILITY_CORE_JSON_SCHEMA.properties.schema_version.type, "string");
   assert.equal(CAPABILITY_CORE_JSON_SCHEMA.properties.capabilities.type, "array");
 });
+
+test("create_service_request input is explicit and persistable", () => {
+  const capability = FREULY_CAPABILITY_CORE.capabilities.find(
+    (item) => item.id === "create_service_request",
+  );
+  assert.ok(capability);
+  const schema = capability.input_schema as {
+    required?: string[];
+    properties?: Record<string, unknown>;
+  };
+  const properties = schema.properties ?? {};
+
+  assert.equal("location" in properties, false);
+  assert.equal("budget_max" in properties, false);
+  assert.deepEqual(schema.required, [
+    "category",
+    "language",
+    "work_format",
+    "request_text",
+    "user_contact",
+  ]);
+  assert.deepEqual(
+    (properties.language as { enum?: string[] }).enum,
+    ["de", "ru", "uk"],
+  );
+  assert.deepEqual(
+    (properties.work_format as { enum?: string[] }).enum,
+    ["online", "offline", "hybrid"],
+  );
+  assert.ok("city" in properties);
+  assert.ok("postal_code" in properties);
+  const contact = properties.user_contact as {
+    additionalProperties?: boolean;
+    required?: string[];
+    properties?: Record<string, unknown>;
+  };
+  assert.equal(contact.additionalProperties, false);
+  assert.deepEqual(contact.required, ["name"]);
+  assert.ok(contact.properties?.name);
+  assert.ok(contact.properties?.email);
+  assert.ok(contact.properties?.phone);
+});
