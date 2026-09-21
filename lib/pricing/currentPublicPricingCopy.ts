@@ -1,13 +1,24 @@
 import type { Lang } from "@/lib/i18n";
 import { getPublicPricingCopy, type PublicPricingCopy } from "@/lib/pricing/publicPricingCopy";
+import { ONE_OFF_REQUEST_ACCESS_LINE, SPECIALIST_FREE_ENTRY_LINE } from "@/lib/commercial/freeEntryPositioning";
 
 const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
   ru: {
     hero: {
       kicker: "Специалистам",
       title: "Подключите канал клиентских заявок Freuly",
-      subtitle:
-        "Professional включает доступ к заявкам в рамках тарифа. Growth добавляет расширенную Pro Page. Заполнение и профессиональная упаковка предложения доступны как отдельные услуги.",
+      subtitle: SPECIALIST_FREE_ENTRY_LINE.ru,
+    },
+    notice: {
+      title: "Профиль бесплатно — платите только за доступ к заявкам",
+      lead: SPECIALIST_FREE_ENTRY_LINE.ru,
+      points: [
+        "Неполный профиль сохраняется как черновик и не виден клиентам.",
+        "После публикации базовый профиль остаётся видимым без обязательной подписки.",
+        ONE_OFF_REQUEST_ACCESS_LINE.ru,
+        "Professional — 29 €/мес., Growth — 59 €/мес.; оба тарифа дают доступ к подходящим заявкам в рамках оплаченного периода.",
+        "Автоматического повторного списания нет: следующий период подключается вручную.",
+      ],
     },
     professional: {
       name: "Freuly Professional",
@@ -16,7 +27,7 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
         "Для специалиста, которому удобнее получать доступ к подходящим клиентским заявкам в рамках тарифа вместо отдельных покупок.",
       features: [
         "доступ к контактам подходящих заявок в рамках оплаченного периода",
-        "публичный профессиональный профиль без дополнительной платы за публикацию",
+        "публичный профиль (бесплатная публикация)",
         "услуги и цены",
         "до 5 фотографий в галерее (аватар отдельно)",
         "языки, формат работы, город и радиус",
@@ -27,7 +38,7 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
       ],
     },
     disclaimer:
-      "Регистрация и публикация базового профиля не требуют тарифа. Оплата Professional или Growth даёт доступ к контактам подходящих заявок в рамках оплаченного периода и дополнительным функциям тарифа. Автоматического повторного списания нет. Freuly не гарантирует конкретное количество просмотров, заявок, заказов или доход.",
+      `${SPECIALIST_FREE_ENTRY_LINE.ru} ${ONE_OFF_REQUEST_ACCESS_LINE.ru} Автоматического повторного списания нет. Freuly не гарантирует конкретное количество просмотров, заявок, заказов или доход.`,
     growth: {
       name: "Freuly Growth",
       price: "59 € / месяц",
@@ -49,8 +60,18 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
     hero: {
       kicker: "Спеціалістам",
       title: "Підключіть канал клієнтських запитів Freuly",
-      subtitle:
-        "Professional включає доступ до запитів у межах тарифу. Growth додає розширену Pro Page. Заповнення та професійне оформлення пропозиції доступні як окремі послуги.",
+      subtitle: SPECIALIST_FREE_ENTRY_LINE.ua,
+    },
+    notice: {
+      title: "Профіль безкоштовно — платіть лише за доступ до запитів",
+      lead: SPECIALIST_FREE_ENTRY_LINE.ua,
+      points: [
+        "Неповний профіль зберігається як чернетка і не видимий клієнтам.",
+        "Після публікації базовий профіль залишається видимим без обов’язкової підписки.",
+        ONE_OFF_REQUEST_ACCESS_LINE.ua,
+        "Professional — 29 €/міс., Growth — 59 €/міс.; обидва тарифи дають доступ до відповідних запитів у межах оплаченого періоду.",
+        "Автоматичного повторного списання немає: наступний період підключається вручну.",
+      ],
     },
     professional: {
       name: "Freuly Professional",
@@ -59,7 +80,7 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
         "Для спеціаліста, якому зручніше отримувати доступ до відповідних клієнтських запитів у межах тарифу замість окремих покупок.",
       features: [
         "доступ до контактів відповідних запитів у межах оплаченого періоду",
-        "публічний професійний профіль без додаткової плати за публікацію",
+        "публічний профіль (безкоштовна публікація)",
         "послуги та ціни",
         "до 5 фотографій у галереї (аватар окремо)",
         "мови, формат роботи, місто та радіус",
@@ -70,7 +91,7 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
       ],
     },
     disclaimer:
-      "Реєстрація та публікація базового профілю не потребують тарифу. Оплата Professional або Growth дає доступ до контактів відповідних запитів у межах оплаченого періоду та додаткових функцій тарифу. Автоматичного повторного списання немає. Freuly не гарантує конкретну кількість переглядів, запитів, замовлень або доходу.",
+      `${SPECIALIST_FREE_ENTRY_LINE.ua} ${ONE_OFF_REQUEST_ACCESS_LINE.ua} Автоматичного повторного списання немає. Freuly не гарантує конкретну кількість переглядів, запитів, замовлень або доходу.`,
     growth: {
       name: "Freuly Growth",
       price: "59 € / місяць",
@@ -92,8 +113,18 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
     hero: {
       kicker: "Für Spezialisten",
       title: "Aktivieren Sie Ihren Kanal für Kundenanfragen bei Freuly",
-      subtitle:
-        "Professional enthält den Zugang zu Anfragen im Rahmen des Tarifs. Growth ergänzt eine erweiterte Pro Page. Profilbefüllung und professionelle Angebotsaufbereitung sind separate Zusatzleistungen.",
+      subtitle: SPECIALIST_FREE_ENTRY_LINE.de,
+    },
+    notice: {
+      title: "Profil kostenlos — zahlen Sie nur für Anfragezugang",
+      lead: SPECIALIST_FREE_ENTRY_LINE.de,
+      points: [
+        "Ein unvollständiges Profil bleibt als Entwurf gespeichert und ist für Kunden nicht sichtbar.",
+        "Nach der Veröffentlichung bleibt das Basisprofil ohne Pflicht-Tarif sichtbar.",
+        ONE_OFF_REQUEST_ACCESS_LINE.de,
+        "Professional kostet 29 €/Monat, Growth 59 €/Monat; beide Tarife geben Anfragezugang im bezahlten Zeitraum.",
+        "Es gibt keine automatische wiederkehrende Abbuchung; der nächste Zeitraum wird manuell aktiviert.",
+      ],
     },
     professional: {
       name: "Freuly Professional",
@@ -102,7 +133,7 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
         "Für Spezialisten, die passende Kundenanfragen lieber im Tarif statt über einzelne Käufe freischalten möchten.",
       features: [
         "Zugang zu Kontakten passender Anfragen im bezahlten Zeitraum",
-        "öffentliches professionelles Profil ohne zusätzliche Veröffentlichungsgebühr",
+        "öffentliches Profil (kostenlose Veröffentlichung)",
         "Leistungen und Preise",
         "bis zu 5 Galeriebilder (Avatar separat)",
         "Sprachen, Arbeitsformat, Ort und Radius",
@@ -113,7 +144,7 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
       ],
     },
     disclaimer:
-      "Registrierung und Veröffentlichung des Basisprofils erfordern keinen Tarif. Professional oder Growth geben Zugang zu Kontakten passender Anfragen im bezahlten Zeitraum und zu den zusätzlichen Tarif-Funktionen. Es gibt keine automatische wiederkehrende Abbuchung. Freuly garantiert keine bestimmte Anzahl von Aufrufen, Anfragen, Aufträgen oder Umsätzen.",
+      `${SPECIALIST_FREE_ENTRY_LINE.de} ${ONE_OFF_REQUEST_ACCESS_LINE.de} Es gibt keine automatische wiederkehrende Abbuchung. Freuly garantiert keine bestimmte Anzahl von Aufrufen, Anfragen, Aufträgen oder Umsätzen.`,
     growth: {
       name: "Freuly Growth",
       price: "59 € / Monat",
@@ -138,6 +169,10 @@ const CURRENT_FAQ: Record<Lang, PublicPricingCopy["faq"]> = {
     {
       q: "Можно ли сначала заполнить профиль и решить позже?",
       a: "Да. Данные сохраняются как черновик, пока профиль не опубликован. Публикация не требует оплаты тарифа. После публикации подходящие заявки можно покупать отдельно.",
+    },
+    {
+      q: "Сколько стоит открыть одну заявку без подписки?",
+      a: ONE_OFF_REQUEST_ACCESS_LINE.ru,
     },
     {
       q: "Когда профиль становится видимым клиентам?",
@@ -170,6 +205,10 @@ const CURRENT_FAQ: Record<Lang, PublicPricingCopy["faq"]> = {
       a: "Так. Дані зберігаються як чернетка, поки профіль не опубліковано. Публікація не потребує оплати тарифу. Після публікації відповідні запити можна купувати окремо.",
     },
     {
+      q: "Скільки коштує відкрити один запит без підписки?",
+      a: ONE_OFF_REQUEST_ACCESS_LINE.ua,
+    },
+    {
       q: "Коли профіль стає видимим клієнтам?",
       a: "Після публікації заповненого профілю. Підписка Professional або Growth для публікації не потрібна.",
     },
@@ -198,6 +237,10 @@ const CURRENT_FAQ: Record<Lang, PublicPricingCopy["faq"]> = {
     {
       q: "Kann ich mein Profil zuerst ausfüllen und später entscheiden?",
       a: "Ja. Die Daten bleiben als Entwurf gespeichert, solange das Profil nicht veröffentlicht ist. Die Veröffentlichung erfordert keine Tarifzahlung. Nach der Veröffentlichung können passende Anfragen einzeln gekauft werden.",
+    },
+    {
+      q: "Was kostet der Einzelzugang zu einer Anfrage ohne Tarif?",
+      a: ONE_OFF_REQUEST_ACCESS_LINE.de,
     },
     {
       q: "Wann wird mein Profil für Kunden sichtbar?",
