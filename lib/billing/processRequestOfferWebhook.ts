@@ -17,6 +17,7 @@ const SUCCESS_EVENTS = new Set([
   "checkout.session.completed",
   "checkout.session.async_payment_succeeded",
 ]);
+const EXPIRED_EVENT = "checkout.session.expired";
 const REFUND_EVENT = "charge.refunded";
 const DISPUTE_EVENT = "charge.dispute.created";
 
@@ -269,6 +270,42 @@ async function revokeAccessForPayment(
   return revokeError ? { outcome: "retryable_failure" } : { outcome: "success" };
 }
 
+
+async function handleExpired(
+  supabase: SupabaseClient,
+  session: Stripe.Checkout.Session,
+): Promise<RequestOfferWebhookResult> {
+  const paymentId = metadataPaymentId(session.metadata);
+  if (!paymentId) return { outcome: "ignored" };
+
+  let payment: PaymentRow | null;
+  try {
+    payment = await loadPayment(supabase, paymentId);
+  } catch {
+    return { outcome: "retryable_failure" };
+  }
+  if (!payment) return { outcome: "validation_failed" };
+  if (!payment.stripe_checkout_session_id || payment.stripe_checkout_session_id !== session.id) {
+    return { outcome: "validation_failed" };
+  }
+
+  if (payment.status === "expired") return { outcome: "success" };
+  if (payment.status !== "pending") return { outcome: "ignored" };
+
+  const nowIso = new Date().toISOString();
+  const { error } = await supabase
+    .from("request_offer_payments")
+    .update({
+      status: "expired",
+      expired_at: nowIso,
+      updated_at: nowIso,
+    })
+    .eq("id", payment.id)
+    .eq("status", "pending");
+
+  return error ? { outcome: "retryable_failure" } : { outcome: "success" };
+}
+
 async function handleChargeRefunded(
   supabase: SupabaseClient,
   charge: Stripe.Charge,
@@ -311,6 +348,11 @@ export async function processStripeWebhookEventForRequestOffers(
     const session = event.data.object as Stripe.Checkout.Session;
     if (!metadataPaymentId(session.metadata)) return { outcome: "ignored" };
     return handleSuccess(supabase, session);
+  }
+  if (event.type === EXPIRED_EVENT) {
+    const session = event.data.object as Stripe.Checkout.Session;
+    if (!metadataPaymentId(session.metadata)) return { outcome: "ignored" };
+    return handleExpired(supabase, session);
   }
   if (event.type === REFUND_EVENT) {
     return handleChargeRefunded(supabase, event.data.object as Stripe.Charge);
