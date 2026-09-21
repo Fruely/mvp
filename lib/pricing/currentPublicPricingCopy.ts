@@ -62,6 +62,17 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
       title: "Підключіть канал клієнтських запитів Freuly",
       subtitle: SPECIALIST_FREE_ENTRY_LINE.ua,
     },
+    notice: {
+      title: "Як починається робота з Freuly",
+      lead: SPECIALIST_FREE_ENTRY_LINE.ua,
+      points: [
+        "Безкоштовний профіль потрібен, щоб клієнти могли знайти й обрати вас, а Freuly — зіставляти ваш профіль із відповідними запитами. Спочатку ви бачите попит і безпечне прев’ю без контактів клієнта.",
+        "Разовий запит — від 20 €. Купити його може зареєстрований спеціаліст, якому Freuly запропонував цей запит. Підписка не потрібна; оплата відкриває контакт лише за вибраним запитом.",
+        "Professional — 29 €/міс. В оплачений період ви не платите окремо за кожен відповідний запит, який Freuly пропонує вам. Фіксованого ліміту запитів немає, але їх кількість залежить від реального попиту та збігу з профілем.",
+        "Growth — 59 €/міс. Доступ до запитів працює за тією самою логікою, додатково ви отримуєте розширену Pro Page і більше можливостей презентації.",
+        "Автоматичного повторного списання немає: наступний період підключається вручну.",
+      ],
+    },
     professional: {
       name: "Freuly Professional",
       price: "29 € / місяць",
@@ -103,6 +114,17 @@ const CURRENT_COPY: Record<Lang, Partial<PublicPricingCopy>> = {
       kicker: "Für Spezialisten",
       title: "Aktivieren Sie Ihren Kanal für Kundenanfragen bei Freuly",
       subtitle: SPECIALIST_FREE_ENTRY_LINE.de,
+    },
+    notice: {
+      title: "So starten Sie mit Freuly",
+      lead: SPECIALIST_FREE_ENTRY_LINE.de,
+      points: [
+        "Das kostenlose Profil sorgt dafür, dass Kunden Sie finden und auswählen können und Freuly passende Anfragen zuordnet. Sie sehen zunächst Nachfrage und eine datensparsame Vorschau ohne Kundenkontakt.",
+        "Einzelzugang — ab 20 €. Kaufen kann eine registrierte Fachkraft, der Freuly diese konkrete Anfrage angeboten hat. Kein Abo nötig; die Zahlung öffnet nur den Kontakt dieser Anfrage.",
+        "Professional — 29 €/Monat. Im bezahlten Zeitraum zahlen Sie nicht separat für jede passende Anfrage, die Freuly Ihnen anbietet. Es gibt kein festes Anfragekontingent; die Anzahl hängt von realer Nachfrage und Matching ab.",
+        "Growth — 59 €/Monat. Der Anfragezugang funktioniert nach derselben Logik; zusätzlich erhalten Sie eine erweiterte Pro Page und mehr Präsentationsmöglichkeiten.",
+        "Es gibt keine automatische wiederkehrende Abbuchung; der nächste Zeitraum wird manuell aktiviert.",
+      ],
     },
     professional: {
       name: "Freuly Professional",
@@ -149,8 +171,20 @@ const CURRENT_FAQ: Record<Lang, PublicPricingCopy["faq"]> = {
       a: "Да. Данные сохраняются как черновик, пока профиль не опубликован. Публикация не требует оплаты тарифа. После публикации подходящие заявки можно покупать отдельно.",
     },
     {
+      q: "Зачем нужен бесплатный профиль?",
+      a: "Чтобы клиенты могли найти и выбрать вас, а Freuly — сопоставлять профиль с подходящими заявками. Вы можете увидеть спрос и превью релевантных запросов до решения об оплате контакта.",
+    },
+    {
       q: "Сколько стоит открыть одну заявку без подписки?",
       a: ONE_OFF_REQUEST_ACCESS_LINE.ru,
+    },
+    {
+      q: "Можно ли купить заявку без регистрации?",
+      a: "Нет. Разовый доступ предназначен для зарегистрированного специалиста, которому Freuly предложил конкретную подходящую заявку. Это помогает не передавать клиентские контакты случайным пользователям.",
+    },
+    {
+      q: "Сколько заявок входит в Professional?",
+      a: "Фиксированного лимита нет. В оплаченный период Professional даёт доступ к контактам подходящих заявок, которые Freuly предлагает именно вам, без отдельной оплаты за каждую. Количество зависит от реального спроса и совпадения с профилем и не гарантируется.",
     },
     {
       q: "Когда профиль становится видимым клиентам?",
@@ -183,8 +217,20 @@ const CURRENT_FAQ: Record<Lang, PublicPricingCopy["faq"]> = {
       a: "Так. Дані зберігаються як чернетка, поки профіль не опубліковано. Публікація не потребує оплати тарифу. Після публікації відповідні запити можна купувати окремо.",
     },
     {
+      q: "Навіщо потрібен безкоштовний профіль?",
+      a: "Щоб клієнти могли знайти й обрати вас, а Freuly — зіставляти профіль із відповідними запитами. Ви можете побачити попит і прев’ю релевантних запитів до рішення про оплату контакту.",
+    },
+    {
       q: "Скільки коштує відкрити один запит без підписки?",
       a: ONE_OFF_REQUEST_ACCESS_LINE.ua,
+    },
+    {
+      q: "Чи можна купити запит без реєстрації?",
+      a: "Ні. Разовий доступ призначений для зареєстрованого спеціаліста, якому Freuly запропонував конкретний відповідний запит. Це допомагає не передавати контакти клієнтів випадковим користувачам.",
+    },
+    {
+      q: "Скільки запитів входить у Professional?",
+      a: "Фіксованого ліміту немає. В оплачений період Professional дає доступ до контактів відповідних запитів, які Freuly пропонує саме вам, без окремої оплати за кожен. Кількість залежить від реального попиту та збігу з профілем і не гарантується.",
     },
     {
       q: "Коли профіль стає видимим клієнтам?",
@@ -217,8 +263,20 @@ const CURRENT_FAQ: Record<Lang, PublicPricingCopy["faq"]> = {
       a: "Ja. Die Daten bleiben als Entwurf gespeichert, solange das Profil nicht veröffentlicht ist. Die Veröffentlichung erfordert keine Tarifzahlung. Nach der Veröffentlichung können passende Anfragen einzeln gekauft werden.",
     },
     {
+      q: "Wozu dient das kostenlose Profil?",
+      a: "Damit Kunden Sie finden und auswählen können und Freuly Ihr Profil mit passenden Anfragen abgleichen kann. Sie können Nachfrage und eine Vorschau relevanter Anfragen sehen, bevor Sie über kostenpflichtigen Kontaktzugang entscheiden.",
+    },
+    {
       q: "Was kostet der Einzelzugang zu einer Anfrage ohne Tarif?",
       a: ONE_OFF_REQUEST_ACCESS_LINE.de,
+    },
+    {
+      q: "Kann ich eine Anfrage ohne Registrierung kaufen?",
+      a: "Nein. Einzelzugang ist für registrierte Spezialisten vorgesehen, denen Freuly eine konkrete passende Anfrage angeboten hat. So werden Kundendaten nicht an beliebige Nutzer weitergegeben.",
+    },
+    {
+      q: "Wie viele Anfragen sind in Professional enthalten?",
+      a: "Es gibt kein festes Kontingent. Im bezahlten Zeitraum gibt Professional Zugang zu passenden Anfragen, die Freuly Ihnen anbietet, ohne separate Zahlung pro Anfrage. Die Anzahl hängt von realer Nachfrage und Matching ab und wird nicht garantiert.",
     },
     {
       q: "Wann wird mein Profil für Kunden sichtbar?",
