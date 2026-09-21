@@ -102,6 +102,14 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
           q: "Вы гарантируете клиентов?",
           a: "Нет. Freuly привлекает и распределяет клиентский спрос, но решение клиента зависит от услуги, цены, профиля, доступности, скорости ответа и других факторов.",
         },
+        {
+          q: "Почему это выгоднее, чем самому запускать рекламу?",
+          a: "Самостоятельная реклама и тесты могут требовать сотен евро ещё до первой заявки. На Freuly профиль публикуется бесплатно; отдельную заявку можно открыть от 20 €, Professional стоит 29 €/мес., Growth — 59 €/мес.",
+        },
+        {
+          q: "Если у меня уже есть Instagram, Telegram или сарафан, зачем мне Freuly?",
+          a: "Соцсети работают на вашу аудиторию, а Freuly закрывает другой сценарий: человек уже ищет услугу по категории, языку и локации. Это дополнительный канал, а не замена вашим собственным каналам.",
+        },
       ],
     },
     finalCta: {
@@ -204,6 +212,14 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
           q: "Ви гарантуєте клієнтів?",
           a: "Ні. Freuly залучає та розподіляє клієнтський попит, але рішення клієнта залежить від послуги, ціни, профілю, доступності, швидкості відповіді та інших факторів.",
         },
+        {
+          q: "Чому це може бути вигідніше, ніж самостійно запускати рекламу?",
+          a: "Самостійна реклама й тести можуть потребувати сотень євро ще до першого запиту. На Freuly профіль публікується безкоштовно; окремий запит можна відкрити від 20 €, Professional коштує 29 €/міс., Growth — 59 €/міс.",
+        },
+        {
+          q: "Якщо в мене вже є Instagram, Telegram або рекомендації, навіщо Freuly?",
+          a: "Соцмережі працюють на вашу аудиторію, а Freuly закриває інший сценарій: людина вже шукає послугу за категорією, мовою та локацією. Це додатковий канал, а не заміна вашим власним каналам.",
+        },
       ],
     },
     finalCta: {
@@ -305,6 +321,14 @@ const OVERRIDES: Record<Lang, Partial<ForSpecialistsCopy>> = {
         {
           q: "Garantiert Freuly Kunden?",
           a: "Nein. Freuly gewinnt und verteilt Kundennachfrage; die Entscheidung des Kunden hängt zusätzlich von Leistung, Preis, Profil, Verfügbarkeit und Reaktionsgeschwindigkeit ab.",
+        },
+        {
+          q: "Warum kann das günstiger sein als eigene Werbung?",
+          a: "Eigene Kampagnen und Tests können schon vor der ersten Anfrage mehrere hundert Euro kosten. Bei Freuly ist die Profilveröffentlichung kostenlos; einzelne Anfragen gibt es ab 20 €, Professional kostet 29 €/Monat und Growth 59 €/Monat.",
+        },
+        {
+          q: "Warum Freuly, wenn ich schon Instagram, Telegram oder Empfehlungen habe?",
+          a: "Eigene Kanäle erreichen vor allem Ihr bestehendes Publikum. Freuly ergänzt den Moment, in dem jemand bereits nach einer Leistung, Sprache und Region sucht. Es ist ein zusätzlicher Kanal, kein Ersatz.",
         },
       ],
     },
