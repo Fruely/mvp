@@ -16,6 +16,79 @@ const BUCKET_AVATARS = "specialist-avatars";
 const BUCKET_VERIFICATION = "verification_docs";
 const BUCKET_PROOFS = "specialist-proofs";
 
+// These tables intentionally retain commercial history and have RESTRICT foreign keys.
+// Check them before removing any Storage object. Keep this list in sync with new
+// RESTRICT references to specialists and auth.users.
+const SPECIALIST_DELETE_BLOCKERS = [
+  "billing_subscriptions",
+  "partner_commissions",
+  "promoted_request_access_grants",
+  "promoted_request_payments",
+  "promoted_request_subscription_credits",
+  "request_offer_access_grants",
+  "request_offer_payments",
+] as const;
+
+const AUTH_DELETE_BLOCKERS = [
+  "agent_delegations",
+  "profiles",
+  "user_roles",
+] as const;
+
+async function findDeleteBlockers(
+  admin: SupabaseClient,
+  specialistId: string,
+  userId: string | null,
+  deleteAuthUser: boolean
+): Promise<string[]> {
+  const blockers: string[] = [];
+  for (const table of SPECIALIST_DELETE_BLOCKERS) {
+    const { data, error } = await admin
+      .from(table)
+      .select("id")
+      .eq("specialist_id", specialistId)
+      .limit(1);
+    if (error) throw new Error(`preflight ${table}: ${error.message}`);
+    if (data?.length) blockers.push(table);
+  }
+  // Expired checkout attempts and untouched offers can be removed by the RPC.
+  // Any payment evidence, live checkout, or interacted offer must be retained.
+  const { data: planPayments, error: planError } = await admin
+    .from("plan_payments")
+    .select("status, paid_at, stripe_payment_intent_id, stripe_charge_id, entitlement_applied_at")
+    .eq("specialist_id", specialistId)
+    .limit(1000);
+  if (planError) throw new Error(`preflight plan_payments: ${planError.message}`);
+  if (planPayments?.length === 1000 || planPayments?.some((payment) =>
+    !(["failed", "expired"].includes(payment.status) &&
+      !payment.paid_at && !payment.stripe_payment_intent_id &&
+      !payment.stripe_charge_id && !payment.entitlement_applied_at)
+  )) blockers.push("plan_payments");
+
+  const { data: offers, error: offersError } = await admin
+    .from("request_offers")
+    .select("status, viewed_at, accepted_at, paid_at, contacted_at, outcome_at")
+    .eq("specialist_id", specialistId)
+    .limit(1000);
+  if (offersError) throw new Error(`preflight request_offers: ${offersError.message}`);
+  if (offers?.length === 1000 || offers?.some((offer) =>
+    offer.status !== "offered" || offer.viewed_at || offer.accepted_at ||
+    offer.paid_at || offer.contacted_at || offer.outcome_at
+  )) blockers.push("request_offers");
+  if (deleteAuthUser && userId) {
+    for (const table of AUTH_DELETE_BLOCKERS) {
+      const { data, error } = await admin
+        .from(table)
+        .select("*")
+        .eq("user_id", userId)
+        .limit(1);
+      if (error) throw new Error(`preflight ${table}: ${error.message}`);
+      if (data?.length) blockers.push(table);
+    }
+  }
+  return blockers;
+}
+
 type Payload = {
   specialist_id?: string;
   delete_auth_user?: boolean;
@@ -179,6 +252,32 @@ Deno.serve(async (req: Request) => {
     if (!spec) {
       return jsonResponse({ ok: false, error: "SPECIALIST_NOT_FOUND" }, 404, req);
     }
+    if (deleteAuthUser && !spec.user_id) {
+      return jsonResponse(
+        { ok: false, error: "Не найден ID учётной записи Auth; удаление остановлено до очистки файлов." },
+        409,
+        req
+      );
+    }
+
+    const blockers = await findDeleteBlockers(
+      admin,
+      specialistId,
+      spec.user_id as string | null,
+      deleteAuthUser
+    );
+    if (blockers.length) {
+      return jsonResponse(
+        {
+          ok: false,
+          code: "DELETE_BLOCKED_BY_HISTORY",
+          error: `Удаление заблокировано связанными записями (${blockers.join(", ")}). Данные и файлы не удалены.`,
+          blockers,
+        },
+        409,
+        req
+      );
+    }
 
     const emailLower =
       typeof spec.email === "string" ? spec.email.trim().toLowerCase() : "";
@@ -235,7 +334,9 @@ Deno.serve(async (req: Request) => {
         return jsonResponse(
           {
             ok: false,
+            code: "AUTH_DELETE_FAILED_AFTER_PROFILE_REMOVAL",
             error: `Specialist deleted but auth user delete failed: ${delUserErr.message}`,
+            user_id: spec.user_id,
           },
           500,
           req
