@@ -33,6 +33,7 @@ Do not create a third request system.
 | Layer | Existing implementation | Readiness for the new product |
 |---|---|---:|
 | Client demand | Public and Bearer create API, idempotency, ownership, history, detail, cancellation, structured timing/location/language | High |
+| Demand acquisition | Consent-aware first-touch attribution for UTM/referrer/landing path, `gclid`/`fbclid`, paid campaign links and Telegram CTA links | High |
 | Specialist supply | Profile, services, media, language, work format, PLZ, coordinates, service radius, publication lifecycle | High |
 | Native backend contract | Bearer auth for profile, services, media, leads; client request ownership/history; billing plan/history and native checkout return | High |
 | Search | Language, category, free-text synonyms, service/profile text, online mode, city/PLZ and dual-radius local search | High |
@@ -86,6 +87,37 @@ category/service ontology should remain internal for matching, pricing,
 compliance and analytics. Native can expose one free-text field while the server
 normalizes the text into the existing taxonomy.
 
+### 6. External demand is part of the network, not a separate marketplace
+
+Freuly should accept client demand from the Native app, paid advertising,
+organic/SEO traffic, Threads/social referrals and the owned Telegram channel.
+Every completed intent becomes the same canonical `service_request` and enters
+the same matching lifecycle. The acquisition channel is metadata, not a second
+request model.
+
+The repository already captures consent-aware first-touch attribution including
+source, medium, campaign, content, term, referrer, landing path, `gclid` and
+`fbclid`. The Telegram channel admin also defaults its CTA to the localized
+request flow with explicit UTM values. This is enough to connect advertising and
+organic demand to the Match Engine without building a parallel ingestion stack.
+
+The product loop should be:
+
+1. Ads, organic content, SEO, social and Telegram send a client to a localized
+   request/deep-link entry.
+2. Freuly captures allowed first-touch data and persists one `service_request`.
+3. The Match Engine creates private, PII-free specialist opportunities.
+4. Native push or the existing connected Telegram bot alerts eligible
+   specialists.
+5. Claim/billing unlocks direct contact; Freuly does not become a chat CRM.
+6. Funnel reporting joins source → request → match → claim → paid/fulfilled.
+
+For supply gaps, Freuly may create an anonymized channel draft such as “looking
+for a Russian-speaking electrician in Berlin,” but publication must stay
+approved/moderated. Client contact data and third-party posts must never be
+republished automatically. Supabase remains the source of truth; external
+channels are acquisition and delivery edges.
+
 ## Implemented in this branch
 
 The first additive vertical slice introduces shadow automatic distribution:
@@ -111,6 +143,14 @@ or change production behaviour until explicitly enabled.
 - Return anonymized request details only.
 - Add viewed/declined lifecycle mutations with ownership checks.
 - Reuse current billing access resolver rather than duplicating plan logic.
+
+### Slice 2b — external demand loop
+
+- Keep `/api/service-requests` as the canonical web/Native write path.
+- Preserve first-touch source data from paid and organic entries.
+- Add source-to-outcome reporting for request, matched, claimed and fulfilled.
+- Generate moderated, anonymized Telegram drafts only for unfilled demand gaps.
+- Use deep links back into the exact Native request/opportunity when available.
 
 ### Slice 3 — atomic response/claim
 
@@ -161,4 +201,3 @@ complexity without price discovery.
 - Duplicate create, duplicate push and concurrent claim scenarios covered.
 - Legal review for paid leads and regulated/sensitive service categories before
   broad rollout.
-
