@@ -25,6 +25,7 @@ import {
   notifyIfServiceRequestCreated,
   persistNewServiceRequest,
 } from "@/lib/serviceRequests/demandService";
+import { ensureServiceRequestMatchOffers } from "@/lib/leadEngine/serviceRequestMatchOffers";
 
 export const dynamic = "force-dynamic";
 
@@ -145,6 +146,15 @@ export async function POST(request: NextRequest) {
       await notifyIfServiceRequestCreated(result, validated, notify);
     } catch (notifyErr) {
       console.error("[service-requests/create] owner notification failed", notifyErr);
+    }
+
+    if (result.kind === "created") {
+      // Shadow/fail-open: request creation must never depend on matching rollout.
+      await ensureServiceRequestMatchOffers({
+        supabase,
+        publicId: result.public_id,
+        validated,
+      });
     }
 
     const response = jsonResult(result);
