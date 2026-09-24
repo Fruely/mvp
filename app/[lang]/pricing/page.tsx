@@ -25,6 +25,44 @@ export async function generateMetadata({ params }: { params: { lang: string } })
 
 type CompareRow = { label: string; professional: string; growth: string };
 
+function freeEntryCtaCopy(lang: Lang) {
+  if (lang === "de") {
+    return {
+      draftTitle: "Ihr kostenloses Profil ist bereits gespeichert.",
+      draftBody: "Sie können die Tarifseite in Ruhe ansehen und danach jederzeit zur Profilerstellung zurückkehren. Für die Veröffentlichung des Basisprofils ist kein Tarif erforderlich.",
+      draftPrimary: "Kostenloses Profil fortsetzen",
+      draftSecondary: "Zum Fachkräfte-Konto",
+      guestTitle: "Noch kein Fachkräfte-Konto?",
+      guestBody: "Erstellen und veröffentlichen Sie Ihr Basisprofil kostenlos. Einen Tarif wählen Sie erst, wenn Sie Anfragezugang im Tarif möchten.",
+      guestPrimary: "Kostenloses Profil erstellen",
+      guestSecondary: "Bereits registriert? Anmelden",
+    };
+  }
+  if (lang === "ua") {
+    return {
+      draftTitle: "Ваш безкоштовний профіль уже збережено.",
+      draftBody: "Ви можете спокійно переглянути тарифи й у будь-який момент повернутися до профілю. Для публікації базового профілю тариф не потрібен.",
+      draftPrimary: "Продовжити безкоштовний профіль",
+      draftSecondary: "До кабінету спеціаліста",
+      guestTitle: "Ще немає акаунта спеціаліста?",
+      guestBody: "Створіть і опублікуйте базовий профіль безкоштовно. Тариф можна обрати пізніше, якщо потрібен доступ до запитів у межах тарифу.",
+      guestPrimary: "Створити безкоштовний профіль",
+      guestSecondary: "Вже зареєстровані? Увійти",
+    };
+  }
+  return {
+    draftTitle: "Ваш бесплатный профиль уже сохранён.",
+    draftBody: "Вы можете спокойно посмотреть тарифы и в любой момент вернуться к профилю. Для публикации базового профиля тариф не нужен.",
+    draftPrimary: "Продолжить бесплатный профиль",
+    draftSecondary: "В кабинет специалиста",
+    guestTitle: "Ещё нет аккаунта специалиста?",
+    guestBody: "Создайте и опубликуйте базовый профиль бесплатно. Тариф можно выбрать позже, если нужен доступ к заявкам в рамках тарифа.",
+    guestPrimary: "Создать бесплатный профиль",
+    guestSecondary: "Уже зарегистрированы? Войти",
+  };
+}
+
+
 function asCompareRows(value: unknown): CompareRow[] {
   if (!Array.isArray(value)) return [];
   return value
@@ -39,7 +77,7 @@ function asCompareRows(value: unknown): CompareRow[] {
 
 function FeatureList({ items }: { items: string[] }) {
   return (
-    <ul className="mt-6 flex flex-1 flex-col gap-2.5 text-sm leading-snug text-gray-600">
+    <ul className="mt-6 flex flex-1 flex-col gap-2.5 text-sm leading-relaxed text-gray-600 lg:text-base">
       {brandPlanTexts(items).map((line) => (
         <li key={line} className="flex gap-2.5">
           <span className="mt-0.5 shrink-0 text-indigo-500" aria-hidden>
@@ -107,6 +145,8 @@ export default async function PricingPage({ params }: { params: { lang: string }
   const copy = getCurrentPublicPricingCopy(lang);
   const { specialist, isAuthenticated } = await getOptionalAuthenticatedSpecialist();
   const hasSpecialist = Boolean(specialist?.id);
+  const specialistIsDraft = Boolean(hasSpecialist && (!specialist?.status || specialist.status === "draft"));
+  const entryCta = freeEntryCtaCopy(lang);
   const compareRows = asCompareRows(getDictValue(dict, "pricing.compare.rows"));
 
   return (
@@ -123,11 +163,51 @@ export default async function PricingPage({ params }: { params: { lang: string }
         </p>
       </section>
 
+      {specialistIsDraft ? (
+        <section className="mx-auto mt-8 max-w-3xl rounded-2xl border border-emerald-200/80 bg-emerald-50/60 p-5 sm:p-6">
+          <h2 className="text-lg font-semibold text-gray-900">{entryCta.draftTitle}</h2>
+          <p className="mt-2 text-base leading-relaxed text-gray-700">{entryCta.draftBody}</p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              href={`/${lang}/specialist/dashboard/onboarding`}
+              className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+            >
+              {entryCta.draftPrimary}
+            </Link>
+            <Link
+              href={`/${lang}/specialist/dashboard`}
+              className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 shadow-sm transition hover:border-gray-300 hover:bg-gray-50"
+            >
+              {entryCta.draftSecondary}
+            </Link>
+          </div>
+        </section>
+      ) : !isAuthenticated ? (
+        <section className="mx-auto mt-8 max-w-3xl rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+          <h2 className="text-lg font-semibold text-gray-900">{entryCta.guestTitle}</h2>
+          <p className="mt-2 text-base leading-relaxed text-gray-600">{entryCta.guestBody}</p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              href={`/${lang}/become-specialist`}
+              className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+            >
+              {entryCta.guestPrimary}
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 shadow-sm transition hover:border-gray-300 hover:bg-gray-50"
+            >
+              {entryCta.guestSecondary}
+            </Link>
+          </div>
+        </section>
+      ) : null}
+
       <section className="mx-auto mt-10 max-w-3xl">
         <div className="rounded-2xl border border-indigo-100/90 bg-white/90 p-6 shadow-sm shadow-indigo-100/40 backdrop-blur-sm sm:p-8">
-          <h2 className="text-lg font-semibold text-gray-900">{brandPlanText(copy.notice.title)}</h2>
-          <p className="mt-2 text-sm leading-relaxed text-gray-600">{brandPlanText(copy.notice.lead)}</p>
-          <ul className="mt-4 space-y-2 text-sm leading-relaxed text-gray-700">
+          <h2 className="text-xl font-semibold text-gray-900 lg:text-2xl">{brandPlanText(copy.notice.title)}</h2>
+          <p className="mt-3 text-base leading-relaxed text-gray-600 lg:text-lg">{brandPlanText(copy.notice.lead)}</p>
+          <ul className="mt-5 space-y-3 text-base leading-relaxed text-gray-700 lg:text-lg">
             {brandPlanTexts(copy.notice.points).map((point) => (
               <li key={point} className="flex gap-2">
                 <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-indigo-400" aria-hidden />
@@ -145,7 +225,7 @@ export default async function PricingPage({ params }: { params: { lang: string }
             <p className="mt-3 text-3xl font-semibold tracking-tight text-gray-900">
               {copy.professional.price}
             </p>
-            <p className="mt-4 text-sm leading-relaxed text-gray-600">{brandPlanText(copy.professional.description)}</p>
+            <p className="mt-4 text-sm leading-relaxed text-gray-600 lg:text-base">{brandPlanText(copy.professional.description)}</p>
             <FeatureList items={copy.professional.features} />
             <PlanVisualPreview plan="professional" lang={lang} label={brandPlanText(copy.preview.professionalLabel)} />
             <div className="mt-8">
@@ -165,7 +245,7 @@ export default async function PricingPage({ params }: { params: { lang: string }
             </p>
             <h2 className="text-lg font-semibold text-gray-900">{brandPlanText(copy.growth.name)}</h2>
             <p className="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{copy.growth.price}</p>
-            <p className="mt-4 text-sm leading-relaxed text-gray-600">{brandPlanText(copy.growth.description)}</p>
+            <p className="mt-4 text-sm leading-relaxed text-gray-600 lg:text-base">{brandPlanText(copy.growth.description)}</p>
             <FeatureList items={copy.growth.features} />
             <PlanVisualPreview plan="growth" lang={lang} label={brandPlanText(copy.preview.growthLabel)} />
             <div className="mt-8">
@@ -218,8 +298,8 @@ export default async function PricingPage({ params }: { params: { lang: string }
         <dl className="mt-6 space-y-6 border-t border-gray-200/80">
           {copy.faq.map((item) => (
             <div key={item.q} className="border-b border-gray-100 pb-6 pt-6 first:pt-6 last:border-0">
-              <dt className="font-medium text-gray-900">{brandPlanText(item.q)}</dt>
-              <dd className="mt-2 text-sm leading-relaxed text-gray-600">{brandPlanText(item.a)}</dd>
+              <dt className="font-medium text-gray-900 lg:text-lg">{brandPlanText(item.q)}</dt>
+              <dd className="mt-2 text-sm leading-relaxed text-gray-600 lg:text-base">{brandPlanText(item.a)}</dd>
             </div>
           ))}
         </dl>
