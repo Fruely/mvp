@@ -71,13 +71,17 @@ export default async function PromotedRequestAcceptPage({
       .maybeSingle();
 
     if (specialist?.id) {
-      await tryBindPromotionAttributionFromCookie({
+      const binding = await tryBindPromotionAttributionFromCookie({
         cookieRaw: attributionCookie,
         userId: user.id,
         specialistId: specialist.id,
         supabase: service,
       });
-      redirect(`/${lang}/specialist/dashboard/requests/promoted`);
+      // A dashboard specialist may enter from “Заявки для вас” without an attribution cookie.
+      // Only the legacy attribution flow redirects to the bound promoted-request page.
+      if (binding.status === "bound" || binding.status === "duplicate") {
+        redirect(`/${lang}/specialist/dashboard/requests/promoted`);
+      }
     }
   }
 

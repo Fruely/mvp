@@ -1406,6 +1406,25 @@
       "selectFile": "Bitte wählen Sie eine Datei zum Hochladen.",
       "uploadFailed": "Dokument konnte nicht hochgeladen werden.",
       "uploadSuccess": "Dokument hochgeladen. Überprüfungsstatus aktualisiert."
+    },
+    "sidebar": {
+      "nav": {
+        "forYou": "Anfragen für Sie"
+      }
+    },
+    "forYou": {
+      "kicker": "Für Fachkräfte",
+      "title": "Anfragen für Sie",
+      "subtitle": "Veröffentlichte Anfragen, die zu Ihrem Profil passen.",
+      "paidOnly": "Dieser Bereich ist für Fachkräfte mit einem aktiven Freuly-Pro-Tarif verfügbar.",
+      "subscriptionCta": "Tarife ansehen",
+      "emptyTitle": "Noch keine passenden neuen Anfragen",
+      "emptyBody": "Hier erscheinen neue veröffentlichte Anfragen, sobald sie zu Ihrem Profil passen.",
+      "open": "Anfrage öffnen",
+      "language": "Sprache",
+      "location": "Ort",
+      "format": "Format",
+      "published": "Veröffentlicht"
     }
   },
   "pricing": {
