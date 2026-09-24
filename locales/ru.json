@@ -1750,5 +1750,26 @@
   "dashboard.gallery.hiddenByPlan": "На текущем тарифе публично показываются первые {{visible}} фото. В галерее сохранено {{stored}} — удалите лишние или подключите Freuly Growth.",
   "dashboard.gallery.upgradeToGrowth": "Подключить Freuly Growth для до 15 фото",
   "dashboard.billingPage.planPicker.professionalHint": "Самостоятельное ведение профиля, до 5 фото в галерее.",
-  "dashboard.billingPage.planPicker.growthHint": "Профессиональная упаковка и до 15 фото в галерее."
+  "dashboard.billingPage.planPicker.growthHint": "Профессиональная упаковка и до 15 фото в галерее.",
+  "dashboard": {
+    "sidebar": {
+      "nav": {
+        "forYou": "Заявки для вас"
+      }
+    },
+    "forYou": {
+      "kicker": "Для специалистов",
+      "title": "Заявки для вас",
+      "subtitle": "Опубликованные запросы, которые подходят вашему профилю.",
+      "paidOnly": "Раздел доступен специалистам с активным тарифом Freuly Pro.",
+      "subscriptionCta": "Посмотреть тарифы",
+      "emptyTitle": "Подходящих новых заявок пока нет",
+      "emptyBody": "Мы покажем здесь новые опубликованные запросы, когда они совпадут с вашим профилем.",
+      "open": "Открыть заявку",
+      "language": "Язык",
+      "location": "Место",
+      "format": "Формат",
+      "published": "Опубликовано"
+    }
+  }
 }
