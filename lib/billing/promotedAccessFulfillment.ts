@@ -1,8 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   PROMOTED_ACCESS_CURRENCY,
-  PROMOTED_SUBSCRIPTION_CREDIT_CENTS,
-  PROMOTED_SUBSCRIPTION_CREDIT_DAYS,
   PROMOTED_ACCESS_GRANT_WEBHOOK_SELECT,
   PROMOTED_PAYMENT_WEBHOOK_SELECT,
 } from "@/lib/billing/promotedAccessConstants";
@@ -12,11 +10,6 @@ export type PromotedFulfillmentResult =
   | "success"
   | "retryable_failure"
   | "conflict_revoked_grant";
-
-function addDaysIso(iso: string, days: number): string {
-  const ms = new Date(iso).getTime() + days * 24 * 60 * 60 * 1000;
-  return new Date(ms).toISOString();
-}
 
 export async function loadPromotedPaymentById(
   supabase: SupabaseClient,
@@ -156,48 +149,6 @@ async function ensureAccessGrant(
   return "ok";
 }
 
-async function ensureSubscriptionCredit(
-  supabase: SupabaseClient,
-  payment: PromotedPaymentRow,
-  paidAt: string,
-): Promise<"ok" | "retryable_failure"> {
-  const { data: byPayment } = await supabase
-    .from("promoted_request_subscription_credits")
-    .select("id")
-    .eq("source_payment_id", payment.id)
-    .maybeSingle();
-
-  if (byPayment?.id) return "ok";
-
-  const { data: bySpecialist } = await supabase
-    .from("promoted_request_subscription_credits")
-    .select("id")
-    .eq("specialist_id", payment.specialist_id)
-    .maybeSingle();
-
-  if (bySpecialist?.id) return "ok";
-
-  const ts = new Date().toISOString();
-  const eligibleUntil = addDaysIso(paidAt, PROMOTED_SUBSCRIPTION_CREDIT_DAYS);
-
-  const { error } = await supabase.from("promoted_request_subscription_credits").insert({
-    specialist_id: payment.specialist_id,
-    source_payment_id: payment.id,
-    credit_cents: PROMOTED_SUBSCRIPTION_CREDIT_CENTS,
-    currency: PROMOTED_ACCESS_CURRENCY,
-    eligible_until: eligibleUntil,
-    consumed_at: null,
-    consumed_checkout_session_id: null,
-    consumed_plan_code: null,
-    created_at: ts,
-    updated_at: ts,
-  });
-
-  if (error?.code === "23505") return "ok";
-  if (error) return "retryable_failure";
-  return "ok";
-}
-
 export async function fulfillPromotedPaymentSuccess(
   supabase: SupabaseClient,
   payment: PromotedPaymentRow,
@@ -232,11 +183,6 @@ export async function fulfillPromotedPaymentSuccess(
     return "conflict_revoked_grant";
   }
 
-  const creditResult = await ensureSubscriptionCredit(supabase, payment, input.paidAt);
-  if (creditResult === "retryable_failure") {
-    console.info("[billing/promoted-access] promoted_db_error");
-    return "retryable_failure";
-  }
 
   console.info("[billing/promoted-access] promoted_payment_paid");
   return "success";
