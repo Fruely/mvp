@@ -151,15 +151,17 @@ export default async function PromotedRequestAcceptPage({
             dict={dict}
             publicToken={params.public_token}
           />
-          <p className="text-xs text-gray-600">
-            {t(dict, "serviceRequestPromotion.accept.registerHint")}{" "}
+          <div className="border-t border-emerald-100 pt-4">
+            <p className="mb-3 text-sm text-gray-700">
+              {t(dict, "serviceRequestPromotion.accept.registerHint")}
+            </p>
             <Link
-              href={`/${lang}/become-specialist`}
-              className="font-semibold text-emerald-700 hover:underline"
+              href={`/${lang}/pricing`}
+              className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-emerald-600 bg-white px-6 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50"
             >
-              {t(dict, "serviceRequestPromotion.signupCta.button")}
+              {t(dict, "serviceRequestPromotion.accept.planCta")}
             </Link>
-          </p>
+          </div>
         </section>
       </article>
     </div>
