@@ -29,6 +29,9 @@ type Props = {
   previewItems?: RecentRequest[];
 };
 
+const AUTO_ROTATE_MS = 4200;
+const MANUAL_ROTATE_PAUSE_MS = 8000;
+
 function localeFor(lang: Lang): string {
   if (lang === "ua") return "uk-UA";
   if (lang === "de") return "de-DE";
@@ -67,14 +70,38 @@ function placeLabel(item: RecentRequest): string | null {
   return [item.postal_code, item.city].filter(Boolean).join(" ") || null;
 }
 
+function controlLabels(lang: Lang) {
+  if (lang === "ua") {
+    return {
+      group: "Керування барабаном заявок",
+      previous: "Попередня заявка",
+      next: "Наступна заявка",
+    };
+  }
+  if (lang === "de") {
+    return {
+      group: "Anfragen-Karussell steuern",
+      previous: "Vorherige Anfrage",
+      next: "Nächste Anfrage",
+    };
+  }
+  return {
+    group: "Управление барабаном заявок",
+    previous: "Предыдущая заявка",
+    next: "Следующая заявка",
+  };
+}
+
 export default function LiveRequestDrum({ lang, dict = {}, previewItems }: Props) {
   const isPreview = Boolean(previewItems);
   const [items, setItems] = useState<RecentRequest[]>(previewItems ?? []);
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [manualPaused, setManualPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const itemsRef = useRef(items);
   const activeRef = useRef(active);
+  const manualResumeTimerRef = useRef<number | null>(null);
   itemsRef.current = items;
   activeRef.current = active;
 
@@ -122,12 +149,33 @@ export default function LiveRequestDrum({ lang, dict = {}, previewItems }: Props
   }, [lang, previewItems]);
 
   useEffect(() => {
-    if (paused || reducedMotion || items.length <= 1) return;
+    if (paused || manualPaused || reducedMotion || items.length <= 1) return;
     const timer = window.setInterval(() => {
       setActive((current) => (current + 1) % items.length);
-    }, 5200);
+    }, AUTO_ROTATE_MS);
     return () => window.clearInterval(timer);
-  }, [items.length, paused, reducedMotion]);
+  }, [items.length, manualPaused, paused, reducedMotion]);
+
+  useEffect(
+    () => () => {
+      if (manualResumeTimerRef.current !== null) {
+        window.clearTimeout(manualResumeTimerRef.current);
+      }
+    },
+    [],
+  );
+
+  function rotateManually(direction: -1 | 1) {
+    setActive((current) => (current + direction + items.length) % items.length);
+    setManualPaused(true);
+    if (manualResumeTimerRef.current !== null) {
+      window.clearTimeout(manualResumeTimerRef.current);
+    }
+    manualResumeTimerRef.current = window.setTimeout(() => {
+      setManualPaused(false);
+      manualResumeTimerRef.current = null;
+    }, MANUAL_ROTATE_PAUSE_MS);
+  }
 
   const visible = useMemo(
     () =>
@@ -142,6 +190,7 @@ export default function LiveRequestDrum({ lang, dict = {}, previewItems }: Props
 
   const registerHref = `/${lang}/become-specialist`;
   const loginHref = `/login?next=${encodeURIComponent(`/${lang}/specialist/dashboard`)}`;
+  const controls = controlLabels(lang);
   const registerHint = t(dict, "home.variantC.liveDemand.registerHint", {
     defaultValue: "Нет регистрации? Зарегистрируйтесь — это займёт пару минут.",
   });
@@ -209,14 +258,15 @@ export default function LiveRequestDrum({ lang, dict = {}, previewItems }: Props
           </p>
         </div>
 
-        <div
-          className="relative mx-auto h-[300px] w-full min-w-0 max-w-[720px] overflow-hidden [perspective:1100px] [transform-style:preserve-3d] sm:h-[320px] lg:mx-0 lg:flex-1"
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-          onFocusCapture={() => setPaused(true)}
-          onBlurCapture={() => setPaused(false)}
-        >
-          {visible.map(({ item, distance }) => {
+        <div className="mx-auto flex w-full min-w-0 max-w-[780px] items-center gap-2 sm:gap-3 lg:mx-0 lg:flex-1">
+          <div
+            className="relative h-[300px] min-w-0 flex-1 overflow-hidden [perspective:1100px] [transform-style:preserve-3d] sm:h-[320px]"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+            onFocusCapture={() => setPaused(true)}
+            onBlurCapture={() => setPaused(false)}
+          >
+            {visible.map(({ item, distance }) => {
             const style = drumSlotStyle(distance, { reducedMotion });
             if (!style) return null;
             const abs = Math.abs(distance);
@@ -300,7 +350,66 @@ export default function LiveRequestDrum({ lang, dict = {}, previewItems }: Props
                 {card}
               </article>
             );
-          })}
+            })}
+          </div>
+
+          {items.length > 1 ? (
+            <div
+              className="flex shrink-0 flex-col items-center gap-2"
+              role="group"
+              aria-label={controls.group}
+            >
+              <button
+                type="button"
+                onClick={() => rotateManually(-1)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-freuly-border-default bg-white text-freuly-primary shadow-[0_6px_18px_rgba(0,46,46,0.08)] transition-[transform,background-color,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-freuly-primary hover:bg-[#e0f9f8] hover:shadow-[0_8px_22px_rgba(0,46,46,0.13)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-freuly-primary focus-visible:ring-offset-2 active:translate-y-0 sm:h-12 sm:w-12"
+                aria-label={controls.previous}
+                title={controls.previous}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m6 15 6-6 6 6" />
+                </svg>
+              </button>
+
+              <span
+                className="min-w-10 text-center text-[11px] font-semibold tabular-nums text-freuly-text-muted"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                {active + 1} / {items.length}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => rotateManually(1)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-freuly-border-default bg-white text-freuly-primary shadow-[0_6px_18px_rgba(0,46,46,0.08)] transition-[transform,background-color,border-color,box-shadow] duration-200 hover:translate-y-0.5 hover:border-freuly-primary hover:bg-[#e0f9f8] hover:shadow-[0_8px_22px_rgba(0,46,46,0.13)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-freuly-primary focus-visible:ring-offset-2 active:translate-y-0 sm:h-12 sm:w-12"
+                aria-label={controls.next}
+                title={controls.next}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
     </section>
