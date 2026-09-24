@@ -14,6 +14,7 @@ import {
 } from "./promotionValidation";
 import { parseLocalizedCopy, isPromotionLocale, type LocalizedPublicCopy } from "./localizedPublicCopy";
 import { prepareLocalizedCopiesForPublish } from "./translatePublicCopy";
+import { notifyMatchingSpecialistsAboutPromotion } from "./notifyMatchingSpecialists";
 
 export type ServiceRequestPromotionAdmin = {
   id: string;
@@ -250,7 +251,21 @@ export async function publishPromotionAdmin(
     throw new Error("PUBLISH_FAILED");
   }
 
-  return mapPromotionAdminRow(data as ServiceRequestPromotionAdmin);
+  const published = mapPromotionAdminRow(data as ServiceRequestPromotionAdmin);
+  if (!alreadyPublished) {
+    void notifyMatchingSpecialistsAboutPromotion({
+      serviceRequestId,
+      publicToken: published.public_token,
+      title: published.public_title,
+      summary: published.public_summary,
+      city: null,
+      workFormat: null,
+      preferredLanguage: null,
+    }).catch((error) => {
+      console.error("[promotion/admin] specialist notification failed", error);
+    });
+  }
+  return published;
 }
 
 export async function closePromotionAdmin(
