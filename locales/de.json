@@ -193,24 +193,25 @@
     "notFound": "Anfrage nicht verfügbar",
     "accept": {
       "pageTitle": "Anfrage annehmen | Freuly",
-      "cta": "Anfrage annehmen",
+      "cta": "Anfrage für 20 € erhalten",
       "backToPreview": "← Zur Anfrage",
       "when": "Wann",
       "where": "Wo",
       "language": "Sprache",
       "format": "Format",
-      "reservationTitle": "Anfrage-Reservierung",
-      "reservationBody": "Anfrage-Reservierung — 10 €. Nach der Zahlung haben Sie 72 Stunden, um Ihre Freuly-Fachkraft-Registrierung abzuschließen. Wenn Sie die Registrierung innerhalb von 72 Stunden abschließen, werden 10 € vollständig auf Ihr Abonnement angerechnet. Wird die Registrierung nicht innerhalb von 72 Stunden abgeschlossen, verfällt die Reservierung.",
-      "reservationNonRefund": "Die gezahlte Reservierungsgebühr wird nicht erstattet, wenn die Registrierung nicht fristgerecht abgeschlossen wird.",
-      "paymentPendingRegistration": "Zahlung erhalten. Schließen Sie die Fachkraft-Registrierung innerhalb von 72 Stunden ab, um Zugang zur Anfrage und die 10-€-Gutschrift zu erhalten.",
+      "reservationTitle": "Diese Anfrage erhalten",
+      "reservationBody": "Einmaliger Zugang zu dieser konkreten Anfrage — 20 €. Schließen Sie nach der Zahlung innerhalb von 72 Stunden Ihre Freuly-Spezialistenregistrierung ab, um den Kundenkontakt freizuschalten. Dies ist ein Einzelkauf ohne Abonnement.",
+      "reservationNonRefund": "Alternative: Freuly Professional ab 29 € / Monat — Zugang zu passenden Anfragen im bezahlten Zeitraum.",
+      "paymentPendingRegistration": "Zahlung erhalten. Schließen Sie Ihre Spezialistenregistrierung innerhalb von 72 Stunden ab, um diese Anfrage freizuschalten.",
       "paymentCancelled": "Zahlung abgebrochen. Sie können es erneut versuchen.",
-      "registerHint": "Nach der Zahlung",
+      "registerHint": "Oder wählen Sie Freuly Professional ab 29 € / Monat.",
       "checkout": {
         "loading": "Zahlung wird vorbereitet…",
         "redirecting": "Weiterleitung zur Zahlung…",
         "unavailable": "Zahlung vorübergehend nicht verfügbar.",
         "genericError": "Zahlung konnte nicht gestartet werden. Bitte später erneut versuchen."
-      }
+      },
+      "planCta": "Tarif ab 29 €/Monat wählen"
     },
     "admin": {
       "sectionTitle": "Öffentliche Veröffentlichung",
