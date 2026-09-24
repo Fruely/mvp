@@ -1,4 +1,4 @@
-export const PROMOTED_ACCESS_AMOUNT_CENTS = 1000;
+export const PROMOTED_ACCESS_AMOUNT_CENTS = 2000;
 export const PROMOTED_ACCESS_CURRENCY = "eur";
 export const PROMOTED_ACCESS_PURPOSE = "promoted_request_access";
 
