@@ -82,6 +82,17 @@ function buildNavItems(lang: string, dict: Dictionary, isPublished: boolean): Na
     ),
   },
   {
+    label: t(dict, "dashboard.sidebar.nav.forYou", { defaultValue: "Заявки для вас" }),
+    href: `${base}/requests/for-you`,
+    disabled: lock,
+    lockedUntilPublished: lock,
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 opacity-80" aria-hidden>
+        <path d="M5 5h14v14H5V5zm3 3v2h8V8H8zm0 4v2h5v-2H8z" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
     label: t(dict, "dashboard.sidebar.nav.subscription"),
     href: `${base}/subscription`,
     disabled: lock,
