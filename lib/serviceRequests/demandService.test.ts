@@ -17,7 +17,11 @@ import {
 } from "./createServiceRequest.ts";
 import { cancelOwnedServiceRequest, getOwnedServiceRequest } from "./ownedServiceRequest.ts";
 import { createMockServiceClient, harness, resetHarness } from "./serviceRequests.harness.mjs";
-import type { ValidatedServiceRequestCreate } from "./validation.ts";
+import {
+  validateServiceRequestCreate,
+  type ServiceRequestCreateInput,
+  type ValidatedServiceRequestCreate,
+} from "./validation.ts";
 
 const OWNER_ID = "user-owner-1";
 const OTHER_ID = "user-other-2";
@@ -57,6 +61,24 @@ const validated: ValidatedServiceRequestCreate = {
 
 function client() {
   return createMockServiceClient();
+}
+
+/** Body a Web form has always sent: no normalized demand fields at all. */
+const LEGACY_WEB_BODY: ServiceRequestCreateInput = {
+  client_name: "Anna Client",
+  client_email: "anna@example.com",
+  description: "Need help with tax filing in Berlin.",
+  preferred_language: "ru",
+  work_format: "online",
+  service_timing_type: "asap",
+  locale: "ru",
+  hp: "",
+};
+
+function validatedFrom(body: ServiceRequestCreateInput): ValidatedServiceRequestCreate {
+  const result = validateServiceRequestCreate(body);
+  if ("error" in result) throw new Error(`unexpected validation error: ${result.error}`);
+  return result;
 }
 
 async function create(overrides: Record<string, unknown> = {}) {
@@ -114,6 +136,168 @@ test("authenticated create binds client_user_id", async () => {
   const result = await create({ clientUserId: OWNER_ID });
   assert.equal(result.kind, "created");
   assert.equal(harness.rows[0].client_user_id, OWNER_ID);
+});
+
+test("validated normalized demand fields reach the inserted row", async () => {
+  const result = await create({
+    validated: validatedFrom({
+      ...LEGACY_WEB_BODY,
+      client_phone: "+4915112345678",
+      requested_service: "Установка розеток",
+      subcategory_text: "Электрика в квартире",
+      client_budget_text: "до 200 евро",
+      preferred_contact_method: "phone",
+    }),
+  });
+
+  assert.equal(result.kind, "created");
+  assert.equal(harness.rows[0].requested_service, "Установка розеток");
+  assert.equal(harness.rows[0].subcategory_text, "Электрика в квартире");
+  assert.equal(harness.rows[0].client_budget_text, "до 200 евро");
+  assert.equal(harness.rows[0].preferred_contact_method, "phone");
+});
+
+test("null normalized demand fields remain allowed", async () => {
+  const result = await create();
+
+  assert.equal(result.kind, "created");
+  assert.equal(harness.rows[0].requested_service, null);
+  assert.equal(harness.rows[0].subcategory_text, null);
+  assert.equal(harness.rows[0].client_budget_text, null);
+  assert.equal(harness.rows[0].preferred_contact_method, null);
+});
+
+test("a legacy Web body without the normalized fields still creates a request", async () => {
+  const legacy = validatedFrom(LEGACY_WEB_BODY);
+  assert.equal(legacy.requested_service, null);
+  assert.equal(legacy.subcategory_text, null);
+  assert.equal(legacy.client_budget_text, null);
+  assert.equal(legacy.preferred_contact_method, null);
+
+  const result = await create({ validated: legacy });
+
+  assert.equal(result.kind, "created");
+  assert.equal(harness.rows.length, 1);
+  assert.equal(harness.rows[0].description, "Need help with tax filing in Berlin.");
+});
+
+test("the create result contract is unchanged by the added fields", async () => {
+  const result = await create({
+    validated: validatedFrom({ ...LEGACY_WEB_BODY, requested_service: "Электрик" }),
+  });
+
+  assert.deepEqual(Object.keys(result).sort(), ["created_at", "kind", "public_id"]);
+  assert.equal(result.kind, "created");
+});
+
+test("normalized demand fields stay outside the idempotency fingerprint", async () => {
+  const base = validatedFrom(LEGACY_WEB_BODY);
+  const withDemand: ValidatedServiceRequestCreate = {
+    ...base,
+    requested_service: "Электрик",
+    subcategory_text: "Розетки",
+    client_budget_text: "200 EUR",
+    preferred_contact_method: "phone",
+  };
+
+  assert.equal(
+    buildServiceRequestIdempotencyFingerprint(base),
+    buildServiceRequestIdempotencyFingerprint(withDemand),
+  );
+
+  // A row created before the fields existed still replays afterwards.
+  const first = await create({ validated: base, idempotencyKey: IDEMPOTENCY_KEY });
+  const replay = await create({ validated: withDemand, idempotencyKey: IDEMPOTENCY_KEY });
+
+  assert.equal(first.kind, "created");
+  assert.equal(replay.kind, "replayed");
+  assert.equal(harness.rows.length, 1);
+});
+
+test("existing timing fields and legacy urgency are untouched", async () => {
+  const validatedTiming = validatedFrom({
+    ...LEGACY_WEB_BODY,
+    service_timing_type: "exact_datetime",
+    service_timing_date: "2026-10-12",
+    service_timing_time: "18:00",
+    service_timing_note: "Только после 18:00",
+    requested_service: "Электрик",
+  });
+
+  await create({ validated: validatedTiming });
+  const row = harness.rows[0];
+
+  assert.equal(row.service_timing_type, "exact_datetime");
+  assert.equal(row.service_timing_date, "2026-10-12");
+  assert.equal(row.service_timing_time, "18:00");
+  assert.equal(row.service_timing_note, "Только после 18:00");
+  assert.equal(row.service_timing_date_end, null);
+  assert.equal(row.urgency, validatedTiming.urgency);
+  assert.equal(row.desired_date, validatedTiming.desired_date);
+  assert.ok(row.urgency);
+});
+
+test("the Native payload shape is still accepted end to end", async () => {
+  const nativeValidated = validatedFrom({
+    client_name: "Olena",
+    client_email: "olena@example.test",
+    client_phone: null,
+    description: "Потрібен електрик у Берліні, розетки в дитячій.",
+    preferred_language: "ru",
+    work_format: "offline",
+    city: "Berlin",
+    postal_code: null,
+    country_code: null,
+    radius_km: 25,
+    service_timing_type: "asap",
+    service_timing_date: null,
+    service_timing_time: null,
+    service_timing_date_end: null,
+    service_timing_period: null,
+    service_timing_note: null,
+    locale: "ua",
+    category_id: null,
+    category_text: "Электрика",
+    requested_service: "Установка розеток",
+    client_budget_text: "до 200 евро",
+    source_path: "/search?q=elektriker",
+    hp: "",
+  });
+
+  const result = await create({ validated: nativeValidated, idempotencyKey: IDEMPOTENCY_KEY });
+  const row = harness.rows[0];
+
+  assert.equal(result.kind, "created");
+  assert.equal(row.work_format, "offline");
+  assert.equal(row.city, "Berlin");
+  assert.equal(row.radius_km, 25);
+  assert.equal(row.requested_service, "Установка розеток");
+  assert.equal(row.client_budget_text, "до 200 евро");
+  assert.equal(row.description, "Потрібен електрик у Берліні, розетки в дитячій.");
+});
+
+test("notification and row state are unaffected by the normalized fields", async () => {
+  const notifications: Array<{ eventType: string; payload: Record<string, unknown> }> = [];
+  const withDemand = validatedFrom({
+    ...LEGACY_WEB_BODY,
+    requested_service: "Электрик",
+    subcategory_text: "Розетки",
+    client_budget_text: "200 EUR",
+    preferred_contact_method: "email",
+  });
+
+  const created = await create({ validated: withDemand });
+  await notifyIfServiceRequestCreated(created, withDemand, async (eventType, payload) => {
+    notifications.push({ eventType, payload: payload as unknown as Record<string, unknown> });
+  });
+
+  assert.equal(notifications.length, 1);
+  assert.equal(notifications[0]?.eventType, "NEW_SERVICE_REQUEST");
+  assert.equal(notifications[0]?.payload.description, undefined);
+  assert.equal(notifications[0]?.payload.requested_service, undefined);
+  assert.equal(notifications[0]?.payload.client_budget_text, undefined);
+  assert.equal(harness.rows[0].status, "new");
+  assert.equal(harness.rows[0].source, "assisted_search");
 });
 
 test("same idempotency key and payload replays without a second row", async () => {
