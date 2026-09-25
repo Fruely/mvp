@@ -86,18 +86,24 @@ export function getClientIP(request: NextRequest | Request): string {
   return "unknown";
 }
 
+export type RateLimitOutcome = "allowed" | "limited" | "unavailable";
+
+export type RateLimitDetailedResult = {
+  outcome: RateLimitOutcome;
+  retryAfterSec?: number;
+};
+
 /**
- * Sliding-window rate limit via Upstash. Fails open if env is missing or Upstash errors.
- * `request` is reserved for future use (e.g. shared IP helpers); callers pass `identifier` in config.
+ * Sliding-window rate limit via Upstash that reports an unavailable backend
+ * instead of hiding it. Callers decide whether to fail open or closed.
  */
-export async function checkRateLimit(
-  _request: NextRequest | Request,
+export async function checkRateLimitDetailed(
   config: RateLimitConfig
-): Promise<RateLimitResult> {
+): Promise<RateLimitDetailedResult> {
   const redis = getRedis();
   if (!redis) {
     warnMissingEnvOnce();
-    return { allowed: true };
+    return { outcome: "unavailable" };
   }
 
   const ratelimit = getRatelimit(
@@ -107,23 +113,38 @@ export async function checkRateLimit(
   );
   if (!ratelimit) {
     warnMissingEnvOnce();
-    return { allowed: true };
+    return { outcome: "unavailable" };
   }
 
   try {
     const result = await ratelimit.limit(config.identifier);
     if (result.success) {
-      return { allowed: true };
+      return { outcome: "allowed" };
     }
     const retryAfterSec = Math.max(
       1,
       Math.ceil((result.reset - Date.now()) / 1000)
     );
-    return { allowed: false, retryAfterSec };
+    return { outcome: "limited", retryAfterSec };
   } catch (e) {
     console.error("[rate-limit] Upstash request failed", e);
-    return { allowed: true };
+    return { outcome: "unavailable" };
   }
+}
+
+/**
+ * Sliding-window rate limit via Upstash. Fails open if env is missing or Upstash errors.
+ * `request` is reserved for future use (e.g. shared IP helpers); callers pass `identifier` in config.
+ */
+export async function checkRateLimit(
+  _request: NextRequest | Request,
+  config: RateLimitConfig
+): Promise<RateLimitResult> {
+  const detailed = await checkRateLimitDetailed(config);
+  if (detailed.outcome === "limited") {
+    return { allowed: false, retryAfterSec: detailed.retryAfterSec };
+  }
+  return { allowed: true };
 }
 
 export const RATE_LIMIT_PUBLIC_MESSAGE =

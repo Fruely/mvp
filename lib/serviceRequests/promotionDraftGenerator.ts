@@ -2,6 +2,7 @@ import "server-only";
 
 import { headers } from "next/headers";
 import { assertAdminSession } from "@/lib/adminSession";
+import { containsObviousContactInfo, sanitizeFreeText } from "@/lib/ai/textSanitize";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   PROMOTION_SUMMARY_MAX_LEN,
@@ -87,29 +88,6 @@ function normalizeLocale(value: string | null | undefined): PromotionLocale | nu
 
 function sourceLocaleForRequest(row: PromotionDraftRequestRow): PromotionLocale {
   return normalizeLocale(row.preferred_language) ?? normalizeLocale(row.locale) ?? "ru";
-}
-
-function sanitizeFreeText(value: string | null | undefined): string | null {
-  if (!value?.trim()) return null;
-
-  const sanitized = value
-    .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[contact removed]")
-    .replace(/(?:https?:\/\/|www\.)\S+/gi, "[link removed]")
-    .replace(/(^|\s)@[A-Za-z0-9_]{3,}/g, "$1[handle removed]")
-    .replace(/\+?\d[\d\s()./-]{6,}\d/g, "[phone removed]")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  return sanitized || null;
-}
-
-function containsObviousContactInfo(value: string): boolean {
-  return (
-    /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i.test(value) ||
-    /(?:https?:\/\/|www\.)\S+/i.test(value) ||
-    /(^|\s)@[A-Za-z0-9_]{3,}/.test(value) ||
-    /\+?\d[\d\s()./-]{6,}\d/.test(value)
-  );
 }
 
 function parseGeneratedDraft(raw: string | null | undefined): Pick<GeneratedPromotionDraft, "title" | "summary"> | null {
