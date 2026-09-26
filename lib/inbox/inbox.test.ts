@@ -297,6 +297,7 @@ test("18-20. one channel failure stays on that channel and an unknown channel is
     { id: "sms", inbox_item_id: "inbox-1", match_id: "match-1", channel: "sms", status: "pending", attempt_count: 0, next_attempt_at: "2020-01-01T00:00:00.000Z" },
   );
   const seen: string[] = [];
+  const day = new Date("2026-01-15T12:00:00+01:00");
   await deliverPendingOutbox(db.supabase, DEFAULT_MATCH_DELIVERY_POLICY, {
     telegram: async () => {
       seen.push("telegram");
@@ -307,7 +308,7 @@ test("18-20. one channel failure stays on that channel and an unknown channel is
       return { status: "sent", providerMessageId: "accepted-1", errorCode: null };
     },
     push: async () => ({ status: "skipped", providerMessageId: null, errorCode: "push_not_configured" }),
-  });
+  }, day);
   assert.equal(db.tables.inbox_items.length, 1);
   assert.equal(db.tables.notification_outbox.find((row) => row.id === "tg")?.status, "retryable");
   assert.equal(db.tables.notification_outbox.find((row) => row.id === "mail")?.status, "sent");
@@ -415,15 +416,38 @@ test("recipient locale is used for external delivery, not the request language",
       return { status: "sent", providerMessageId: "ok", errorCode: null };
     },
     push: async () => ({ status: "skipped", providerMessageId: null, errorCode: "push_not_configured" }),
-  });
+  }, new Date("2026-01-15T12:00:00+01:00"));
   assert.equal(locale, "de");
 });
 
-test("quiet hours defer external delivery and a missing channel is recorded", () => {
+test("quiet hours defer external delivery and a missing channel is recorded", async () => {
   const night = externalDeliveryDecision(new Date("2026-01-15T22:30:00+01:00"), "Europe/Berlin");
   const day = externalDeliveryDecision(new Date("2026-01-15T12:00:00+01:00"), "Europe/Berlin");
   assert.equal(night.action, "defer_until");
   assert.equal(day.action, "deliver_now");
+  const db = seed();
+  db.tables.inbox_items.push({ id: "inbox-1", payload: PAYLOAD });
+  db.tables.notification_outbox.push({
+    id: "mail",
+    inbox_item_id: "inbox-1",
+    match_id: "match-1",
+    channel: "email",
+    status: "pending",
+    attempt_count: 0,
+    next_attempt_at: "2020-01-01T00:00:00.000Z",
+  });
+  let calls = 0;
+  await deliverPendingOutbox(db.supabase, DEFAULT_MATCH_DELIVERY_POLICY, {
+    telegram: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+    email: async () => {
+      calls += 1;
+      return { status: "sent", providerMessageId: "no", errorCode: null };
+    },
+    push: async () => ({ status: "skipped", providerMessageId: null, errorCode: "push_not_configured" }),
+  }, new Date("2026-01-15T22:30:00+01:00"));
+  assert.equal(calls, 0);
+  assert.equal(db.tables.notification_outbox[0].status, "pending");
+  assert.equal(db.tables.inbox_items.length, 1);
   const channels = planExternalChannels({ hasTelegram: false, hasEmail: true, emailConfigured: true, pushConfigured: false });
   assert.equal(channels.find((channel) => channel.channel === "telegram")?.status, "skipped");
   assert.equal(channels.find((channel) => channel.channel === "email")?.status, "pending");

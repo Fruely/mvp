@@ -304,8 +304,9 @@ export async function deliverPendingOutbox(
   supabase: SupabaseClient,
   policy: MatchDeliveryPolicy = DEFAULT_MATCH_DELIVERY_POLICY,
   transports: DeliveryTransports = defaultDeliveryTransports,
+  clock: Date = new Date(),
 ): Promise<{ processed: number }> {
-  const now = new Date().toISOString();
+  const now = clock.toISOString();
   const { data, error } = await supabase
     .from("notification_outbox")
     .select("id, inbox_item_id, channel, status, attempt_count, recipient_user_id, match_id")
@@ -324,6 +325,15 @@ export async function deliverPendingOutbox(
       .select("id")
       .maybeSingle();
     if (claim.error || !claim.data?.id) continue;
+
+    const quiet = externalDeliveryDecision(clock, policy.defaultTimeZone, policy);
+    if (quiet.action === "defer_until") {
+      await supabase
+        .from("notification_outbox")
+        .update({ status: "pending", next_attempt_at: quiet.until, updated_at: now })
+        .eq("id", row.id);
+      continue;
+    }
 
     const inbox = await supabase
       .from("inbox_items")
