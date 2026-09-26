@@ -68,6 +68,10 @@ COMMENT ON TABLE public.notification_preferences IS
 ALTER TABLE public.inbox_items
   ADD COLUMN IF NOT EXISTS push_tapped_at timestamptz;
 
+-- Anonymous client events keep an inbox row without auth.uid and still need an email outbox row.
+ALTER TABLE public.notification_outbox
+  ALTER COLUMN recipient_user_id DROP NOT NULL;
+
 ALTER TABLE public.notification_delivery_attempts
   ADD COLUMN IF NOT EXISTS endpoint_id uuid,
   ADD COLUMN IF NOT EXISTS provider text,

@@ -449,6 +449,7 @@ test("migration keeps push private and settings do not ask on first paint", () =
   assert.match(sql, /REVOKE ALL ON public\.push_endpoints FROM anon, authenticated/);
   assert.match(sql, /user_id = auth\.uid\(\)/);
   assert.match(sql, /marketing_consent = false/);
+  assert.match(sql, /notification_outbox\s+ALTER COLUMN recipient_user_id DROP NOT NULL/);
   assert.equal(sql.includes("title_ru"), false);
   const settings = readFileSync(new URL("../../components/dashboard/settings/NotificationSettings.tsx", import.meta.url), "utf8");
   assert.equal(settings.includes("requestPermission"), false);
