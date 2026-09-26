@@ -43,6 +43,25 @@ type ExpoTicket = {
   details?: { error?: string };
 };
 
+export function buildExpoPushRequest(message: LockScreenPush, token: string) {
+  return {
+    to: token,
+    title: message.title,
+    body: message.body,
+    data: {
+      eventType: message.eventType,
+      entityId: message.entityId,
+      deepLink: message.deepLink,
+      locale: message.locale,
+      ...(message.inboxItemId ? { inboxItemId: message.inboxItemId } : {}),
+      ...(message.conversationId ? { conversationId: message.conversationId } : {}),
+    },
+    badge: message.badge ?? undefined,
+    priority: message.priority === "high" ? "high" : "default",
+    sound: "default" as const,
+  };
+}
+
 export function createExpoPushTransport(fetchImpl: typeof fetch = fetch): PushTransport {
   return {
     async deliver(message, endpoint) {
@@ -58,20 +77,7 @@ export function createExpoPushTransport(fetchImpl: typeof fetch = fetch): PushTr
             accept: "application/json",
             authorization: `Bearer ${process.env.EXPO_PUSH_ACCESS_TOKEN}`,
           },
-          body: JSON.stringify({
-            to: endpoint.token,
-            title: message.title,
-            body: message.body,
-            data: {
-              eventType: message.eventType,
-              entityId: message.entityId,
-              deepLink: message.deepLink,
-              locale: message.locale,
-            },
-            badge: message.badge ?? undefined,
-            priority: message.priority === "high" ? "high" : "default",
-            sound: "default",
-          }),
+          body: JSON.stringify(buildExpoPushRequest(message, endpoint.token)),
         });
       } catch {
         return { status: "retryable", errorCode: "push_temporary", providerMessageId: null, invalidate: false };

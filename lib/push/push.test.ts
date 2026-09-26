@@ -4,13 +4,13 @@ import test from "node:test";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { deliverPendingOutbox, enqueueMatchNotifications } from "@/lib/inbox/delivery";
 import { DEFAULT_MATCH_DELIVERY_POLICY, externalDeliveryDecision, notificationLocale, planExternalChannels, stageInitialChannels } from "@/lib/inbox/policy";
-import { buildLockScreenPush, httpsDeepLink, pushHasPrivateContent } from "./message";
+import { buildLockScreenPush, httpsDeepLink, pushHasPrivateContent, pushPathForEvent } from "./message";
 import { applyTransportPreferences, aggregatePushStatuses, pushPriority, resolveRecipientTimeZone } from "./policy";
 import { listOwnPushEndpoints, registerPushEndpoint, unregisterPushEndpoint } from "./endpoints";
 import { saveNotificationPreferences } from "./preferences";
 import { recordPushTap } from "./tap";
 import { hashPushToken, pushLogRecord } from "./token";
-import { classifyPushProviderError, createExpoPushTransport, type PushTransport } from "./transport";
+import { buildExpoPushRequest, classifyPushProviderError, createExpoPushTransport, type PushTransport } from "./transport";
 import { deliverPushFanout } from "./deliver";
 
 type Row = Record<string, unknown>;
@@ -472,4 +472,27 @@ test("migration keeps push private and settings do not ask on first paint", () =
     assert.equal(called, false);
     assert.equal(result.errorCode, "push_not_configured");
   });
+});
+
+test("native tap payload includes the inbox id and the conversation path", () => {
+  const request = buildExpoPushRequest({
+    ...buildLockScreenPush({
+      locale: "ua",
+      eventType: "connection_ready",
+      entityId: "request-1",
+      deepLink: "https://freuly.de/ua/requests/REQ-20260926-ABC123/conversation",
+    }),
+    inboxItemId: "33333333-3333-4333-8333-333333333333",
+    conversationId: "22222222-2222-4222-8222-222222222222",
+  }, TOKEN_A);
+  assert.equal(request.data.inboxItemId, "33333333-3333-4333-8333-333333333333");
+  assert.equal(request.data.conversationId, "22222222-2222-4222-8222-222222222222");
+  assert.equal(JSON.stringify(request.data).includes(TOKEN_A), false);
+  assert.equal(
+    pushPathForEvent({ locale: "ua", eventType: "connection_ready", publicId: "REQ-20260926-ABC123" }),
+    "/ua/requests/REQ-20260926-ABC123/conversation",
+  );
+  const unread = readFileSync(new URL("../../app/api/inbox/unread/route.ts", import.meta.url), "utf8");
+  assert.match(unread, /countUnreadInbox/);
+  assert.match(unread, /requirePushUser/);
 });

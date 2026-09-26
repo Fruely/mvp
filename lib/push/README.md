@@ -6,6 +6,8 @@ The deployed site is a PWA without Web Push. The Expo app lives in a separate re
 
 Anonymous requests are not push recipients. They keep email.
 
+The Expo data payload carries the event, entity, HTTPS path, locale, Inbox item id and conversation id when one exists. It does not carry the push token. `GET /api/inbox/unread` returns the authoritative unread count for the signed-in user. `connection_ready` opens the client conversation path.
+
 ## Defaults
 
 Service notifications start enabled for push, email and Telegram. Quiet hours use the saved IANA time zone, then a device zone, then `Europe/Berlin`. Marketing consent is not collected and cannot be stored as true. Turning a transport off does not remove the Inbox item.

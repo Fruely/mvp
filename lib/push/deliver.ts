@@ -30,6 +30,8 @@ export async function deliverPushFanout(
     opened?: boolean;
     outboxId?: string | null;
     attempt?: number | null;
+    inboxItemId?: string | null;
+    conversationId?: string | null;
   },
   transport: PushTransport,
 ): Promise<{
@@ -65,15 +67,19 @@ export async function deliverPushFanout(
     return { status: "skipped", errorCode: "push_unavailable", providerMessageId: null, endpoints: [] };
   }
   const badge = await countUnreadInbox(supabase, input.userId);
-  const message = buildLockScreenPush({
-    locale: prefs.notificationLocale ?? input.locale,
-    eventType: input.eventType,
-    entityId: input.entityId,
-    deepLink: httpsDeepLink(appOrigin(), input.deepLink.startsWith("http") ? new URL(input.deepLink).pathname : input.deepLink),
-    badge,
-    stage: input.stage,
-    opened: input.opened,
-  });
+  const message = {
+    ...buildLockScreenPush({
+      locale: prefs.notificationLocale ?? input.locale,
+      eventType: input.eventType,
+      entityId: input.entityId,
+      deepLink: httpsDeepLink(appOrigin(), input.deepLink.startsWith("http") ? new URL(input.deepLink).pathname : input.deepLink),
+      badge,
+      stage: input.stage,
+      opened: input.opened,
+    }),
+    inboxItemId: input.inboxItemId ?? null,
+    conversationId: input.conversationId ?? null,
+  };
   const endpoints: PushFanoutEndpoint[] = [];
   for (const target of targets) {
     const started = Date.now();

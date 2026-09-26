@@ -14,6 +14,8 @@ export type LockScreenPush = {
   locale: string;
   badge: number | null;
   priority: "normal" | "high";
+  inboxItemId?: string | null;
+  conversationId?: string | null;
 };
 
 const PRIVATE = ["client_email", "client_phone", "telegram_chat_id", "access_token", "token="];

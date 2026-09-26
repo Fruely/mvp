@@ -24,6 +24,7 @@ import { issueAccessToken } from "@/lib/selection/accessGrant";
 import { clientRequestPath, conversationPath } from "@/lib/selection/policy";
 import { clientEventPushContract } from "@/lib/selection/pushContract";
 import { deliverPushFanout } from "@/lib/push/deliver";
+import { pushPathForEvent } from "@/lib/push/message";
 import { applyTransportPreferences, eventClassEnabled, type PushEventClass } from "@/lib/push/policy";
 import { loadNotificationPreferences } from "@/lib/push/preferences";
 import { isRecipientPushReady } from "@/lib/push/readiness";
@@ -481,11 +482,19 @@ export async function deliverPendingOutbox(
           entityId: payload.event === "client_selected_you"
             ? String(payload.match_id ?? payload.service_request_id ?? "")
             : String(payload.match_id || payload.service_request_id || ""),
-          deepLink: link,
+          deepLink: pushPathForEvent({
+            locale,
+            eventType,
+            matchId: typeof payload.match_id === "string" ? payload.match_id : null,
+            publicId: typeof request.data?.public_id === "string" ? request.data.public_id : null,
+            conversationId: typeof payload.conversation_id === "string" ? payload.conversation_id : null,
+          }),
           stage: noticePayload.stage,
           opened: noticePayload.opened,
           outboxId: String(row.id),
           attempt,
+          inboxItemId: typeof row.inbox_item_id === "string" ? row.inbox_item_id : null,
+          conversationId: typeof payload.conversation_id === "string" ? payload.conversation_id : null,
         }, pushTransport);
         result = { status: fanout.status, providerMessageId: fanout.providerMessageId, errorCode: fanout.errorCode };
         pushEndpoints = fanout.endpoints;
