@@ -3,9 +3,11 @@
 Shadow-mode endpoint. It turns free user text into a typed structured intent, a
 preliminary safety result and at most one clarifying question.
 
-It is **not wired to any client**. The mobile app does not call it, it creates no
-`service_requests` row, it publishes nothing, it notifies nobody and it changes no
-matching behaviour. Nothing in production behaves differently because it exists.
+The endpoint itself creates no `service_requests` row, publishes nothing,
+notifies nobody and changes no matching behaviour. The only client that calls
+it is the conversational intake on `/{lang}/request`, and only when
+`SERVICE_INTENT_EXTRACTION_ENABLED` is exactly `true`. With the flag off that
+page keeps the existing questionnaire, so production behaviour does not change.
 
 ## Why one call
 
@@ -183,3 +185,18 @@ Before the text is sent to the provider, contacts are stripped by the canonical
 `lib/ai/textSanitize.ts` (shared with the promotion draft generator): email,
 links, social handles and phone numbers become neutral markers. The user still
 receives their own original text back.
+
+## Conversational intake
+
+`lib/serviceIntent/intake.ts` is the state of the screen on `/{lang}/request`.
+It is not a new request type. A follow-up answer is sent as its own `raw_text`
+together with the existing `known_context`; it is not appended to a transcript,
+and fields already recognized are kept. At most three clarification steps, then
+review. `service_detail` and other values the create contract does not require
+are not asked just because they are null.
+
+Name, email and phone are collected on the review screen and are sent only to
+`POST /api/service-requests`, after the person presses the submit button.
+`blocked` never builds that body. `restricted` and `manual_review` do, which is
+the existing safety policy. An explicit "does not matter" for format is stored
+as `hybrid`, the value the current questionnaire already saves for that answer.

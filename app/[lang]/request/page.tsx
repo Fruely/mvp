@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ClientDemandEntry from "@/components/serviceRequests/ClientDemandEntry";
+import ConversationalIntake from "@/components/serviceRequests/ConversationalIntake";
 import { isSupportedLang, type Lang } from "@/lib/i18n";
+import { isServiceIntentExtractionEnabled } from "@/lib/serviceIntent/featureFlag";
+import { selectRequestEntry } from "@/lib/serviceIntent/intake";
 
 export const dynamic = "force-dynamic";
 
@@ -32,13 +35,18 @@ export async function generateMetadata({ params }: { params: { lang: string } })
 export default function ClientRequestEntryPage({ params }: { params: { lang: string } }) {
   if (!isSupportedLang(params.lang)) notFound();
   const lang = params.lang as Lang;
+  const entry = selectRequestEntry(isServiceIntentExtractionEnabled());
 
   return (
     <main className="min-h-[100dvh] overflow-x-hidden bg-[#f8f7f5] px-freuly-4 py-8 sm:px-freuly-6 sm:py-12">
       <div className="mx-auto mb-8 flex max-w-2xl items-center justify-center">
         <div className="text-2xl font-black tracking-tight text-freuly-text-primary">Freuly</div>
       </div>
-      <ClientDemandEntry lang={lang} />
+      {entry === "conversational" ? (
+        <ConversationalIntake lang={lang} />
+      ) : (
+        <ClientDemandEntry lang={lang} />
+      )}
     </main>
   );
 }
