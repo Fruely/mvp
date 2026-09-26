@@ -1,9 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { loadNotificationPreferences } from "./preferences";
-import { isExpoPushConfigured } from "./transport";
 
 export async function isRecipientPushReady(supabase: SupabaseClient, userId: string | null): Promise<boolean> {
-  if (!userId || !isExpoPushConfigured()) return false;
+  if (!userId) return false;
   try {
     const prefs = await loadNotificationPreferences(supabase, userId);
     if (!prefs.pushEnabled) return false;

@@ -10,6 +10,7 @@ import { listOwnPushEndpoints, registerPushEndpoint, unregisterPushEndpoint } fr
 import { saveNotificationPreferences } from "./preferences";
 import { recordPushTap } from "./tap";
 import { hashPushToken, pushLogRecord } from "./token";
+import { isRecipientPushReady } from "./readiness";
 import { buildExpoPushRequest, classifyPushProviderError, createExpoPushTransport, type PushTransport } from "./transport";
 import { deliverPushFanout } from "./deliver";
 
@@ -455,24 +456,175 @@ test("migration keeps push private and settings do not ask on first paint", () =
   assert.equal(settings.includes("requestPermission"), false);
   const worker = readFileSync(new URL("../../app/sw.ts", import.meta.url), "utf8");
   assert.equal(worker.includes("pushsubscriptionchange"), false);
-  const previous = process.env.EXPO_PUSH_ACCESS_TOKEN;
-  delete process.env.EXPO_PUSH_ACCESS_TOKEN;
-  let called = false;
-  const idle = createExpoPushTransport(async () => {
-    called = true;
-    return new Response("{}");
-  });
-  return idle.deliver(buildLockScreenPush({
+});
+
+test("optional Expo access token does not gate a configured device", async () => {
+  const message = buildLockScreenPush({
     locale: "de",
     eventType: "match_available",
     entityId: "match-1",
     deepLink: "https://freuly.de/de/specialist/dashboard/inbox",
-  }), { id: "ep", token: TOKEN_A, platform: "ios", provider: "expo" }).then((result) => {
-    if (previous === undefined) delete process.env.EXPO_PUSH_ACCESS_TOKEN;
-    else process.env.EXPO_PUSH_ACCESS_TOKEN = previous;
-    assert.equal(called, false);
-    assert.equal(result.errorCode, "push_not_configured");
   });
+  const endpoint = { id: "ep", token: TOKEN_A, platform: "ios" as const, provider: "expo" as const };
+  const accessToken = "expo-access-token-value";
+
+  async function send(env: string | undefined, ticket: Response) {
+    const previous = process.env.EXPO_PUSH_ACCESS_TOKEN;
+    if (env === undefined) delete process.env.EXPO_PUSH_ACCESS_TOKEN;
+    else process.env.EXPO_PUSH_ACCESS_TOKEN = env;
+    const logs: unknown[] = [];
+    const original = {
+      info: console.info,
+      log: console.log,
+      warn: console.warn,
+      error: console.error,
+      debug: console.debug,
+    };
+    const record = (...args: unknown[]) => {
+      logs.push(args);
+    };
+    console.info = record;
+    console.log = record;
+    console.warn = record;
+    console.error = record;
+    console.debug = record;
+    const calls: Array<{ url: string; method: string; authorization: string | null; body: string }> = [];
+    const transport = createExpoPushTransport(async (input, init) => {
+      const headers = new Headers(init?.headers);
+      calls.push({
+        url: String(input),
+        method: String(init?.method),
+        authorization: headers.get("authorization"),
+        body: typeof init?.body === "string" ? init.body : "",
+      });
+      return ticket;
+    });
+    try {
+      const result = await transport.deliver(message, endpoint);
+      return { result, calls, logs: JSON.stringify(logs) };
+    } finally {
+      console.info = original.info;
+      console.log = original.log;
+      console.warn = original.warn;
+      console.error = original.error;
+      console.debug = original.debug;
+      if (previous === undefined) delete process.env.EXPO_PUSH_ACCESS_TOKEN;
+      else process.env.EXPO_PUSH_ACCESS_TOKEN = previous;
+    }
+  }
+
+  const accepted = () => new Response(JSON.stringify({ data: { status: "ok", id: "ticket-1" } }), { status: 200 });
+
+  const missing = await send(undefined, accepted());
+  assert.equal(missing.calls.length, 1);
+  assert.equal(missing.calls[0].url, "https://exp.host/--/api/v2/push/send");
+  assert.equal(missing.calls[0].method, "POST");
+  assert.equal(missing.calls[0].authorization, null);
+  assert.equal(missing.result.status, "sent");
+  assert.equal(missing.logs.includes(TOKEN_A), false);
+
+  const blank = await send(" \t  ", accepted());
+  assert.equal(blank.calls.length, 1);
+  assert.equal(blank.calls[0].url, "https://exp.host/--/api/v2/push/send");
+  assert.equal(blank.calls[0].method, "POST");
+  assert.equal(blank.calls[0].authorization, null);
+  assert.equal(blank.result.status, "sent");
+  assert.equal(blank.logs.includes(TOKEN_A), false);
+
+  const authed = await send(`  ${accessToken}  `, accepted());
+  assert.equal(authed.calls.length, 1);
+  assert.equal(authed.calls[0].method, "POST");
+  assert.equal(authed.calls[0].authorization, `Bearer ${accessToken}`);
+  assert.equal(authed.logs.includes(accessToken), false);
+  assert.equal(authed.logs.includes(TOKEN_A), false);
+  assert.equal(authed.logs.toLowerCase().includes("authorization"), false);
+
+  const limited = await send(accessToken, new Response("", { status: 429 }));
+  assert.equal(limited.result.status, "retryable");
+  assert.equal(limited.result.errorCode, "push_temporary");
+  assert.equal(limited.result.invalidate, false);
+
+  const unavailable = await send(accessToken, new Response("", { status: 503 }));
+  assert.equal(unavailable.result.status, "retryable");
+  assert.equal(unavailable.result.errorCode, "push_temporary");
+  assert.equal(unavailable.result.invalidate, false);
+
+  const gone = await send(accessToken, new Response(JSON.stringify({
+    data: { status: "error", details: { error: "DeviceNotRegistered" } },
+  }), { status: 200 }));
+  assert.equal(gone.result.status, "failed");
+  assert.equal(gone.result.errorCode, "push_invalid_token");
+  assert.equal(gone.result.invalidate, true);
+  assert.equal(gone.logs.includes(accessToken), false);
+  assert.equal(gone.logs.includes(TOKEN_A), false);
+
+  assert.equal(classifyPushProviderError({ httpStatus: 429, providerError: null }).status, "retryable");
+  assert.equal(classifyPushProviderError({ httpStatus: 500, providerError: null }).status, "retryable");
+  assert.equal(classifyPushProviderError({ httpStatus: 200, providerError: "DeviceNotRegistered" }).status, "failed");
+  assert.equal(classifyPushProviderError({ httpStatus: 200, providerError: "DeviceNotRegistered" }).invalidate, true);
+  assert.equal(classifyPushProviderError({ httpStatus: 200, providerError: "MessageRateExceeded" }).status, "retryable");
+  assert.equal(classifyPushProviderError({ httpStatus: 400, providerError: "push_rejected" }).status, "failed");
+  assert.equal(classifyPushProviderError({ httpStatus: 400, providerError: "push_rejected" }).invalidate, false);
+
+  const readyDb = base();
+  await registerPushEndpoint(readyDb.supabase, {
+    actorUserId: "user-1",
+    token: TOKEN_A,
+    platform: "android",
+    deviceId: "device-pixel",
+    permissionState: "granted",
+  });
+  const readyPrevious = process.env.EXPO_PUSH_ACCESS_TOKEN;
+  delete process.env.EXPO_PUSH_ACCESS_TOKEN;
+  const fanoutLogs: unknown[] = [];
+  const originalInfo = console.info;
+  console.info = (...args: unknown[]) => {
+    fanoutLogs.push(args);
+  };
+  try {
+    assert.equal(await isRecipientPushReady(readyDb.supabase, "user-1"), true);
+    const fanout = await deliverPushFanout(readyDb.supabase, {
+      userId: "user-1",
+      locale: "de",
+      eventType: "match_available",
+      entityId: "match-1",
+      deepLink: "/de/specialist/dashboard/requests/matched/match-1",
+    }, createExpoPushTransport(async () => new Response(JSON.stringify({
+      data: { status: "error", details: { error: "DeviceNotRegistered" } },
+    }), { status: 200 })));
+    assert.equal(fanout.status, "failed");
+    assert.equal(fanout.endpoints[0].invalidate, true);
+    assert.equal(readyDb.tables.push_endpoints[0].enabled, false);
+    assert.equal(typeof readyDb.tables.push_endpoints[0].invalidated_at, "string");
+    const logged = JSON.stringify(fanoutLogs);
+    assert.equal(logged.includes(TOKEN_A), false);
+    assert.equal(logged.toLowerCase().includes("authorization"), false);
+  } finally {
+    console.info = originalInfo;
+    if (readyPrevious === undefined) delete process.env.EXPO_PUSH_ACCESS_TOKEN;
+    else process.env.EXPO_PUSH_ACCESS_TOKEN = readyPrevious;
+  }
+
+  const missingDevice = base();
+  const missingDevicePrevious = process.env.EXPO_PUSH_ACCESS_TOKEN;
+  process.env.EXPO_PUSH_ACCESS_TOKEN = accessToken;
+  try {
+    assert.equal(await isRecipientPushReady(missingDevice.supabase, "user-1"), false);
+    await enqueueMatchNotifications(missingDevice.supabase, {
+      id: "request-1",
+      categoryId: null,
+      serviceLanguages: ["ru"],
+      workFormat: "offline",
+      city: "Berlin",
+      postalCode: null,
+    }, { emailConfigured: true });
+    const push = missingDevice.tables.notification_outbox.find((row) => row.channel === "push");
+    assert.equal(push?.status, "skipped");
+    assert.equal(push?.last_error_code, "push_not_configured");
+  } finally {
+    if (missingDevicePrevious === undefined) delete process.env.EXPO_PUSH_ACCESS_TOKEN;
+    else process.env.EXPO_PUSH_ACCESS_TOKEN = missingDevicePrevious;
+  }
 });
 
 test("native tap payload includes the inbox id and the conversation path", () => {

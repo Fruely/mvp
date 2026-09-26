@@ -2,7 +2,7 @@
 
 Freuly Inbox remains the record of an event. Push only opens that event.
 
-The deployed site is a PWA without Web Push. The Expo app lives in a separate repository and does not register tokens yet. This adapter speaks the Expo push HTTP API. It sends only when `EXPO_PUSH_ACCESS_TOKEN` is set and the recipient has an enabled device. Otherwise the outbox row is skipped and email or Telegram continue.
+The deployed site is a PWA without Web Push. The Expo app lives in a separate repository. This adapter speaks the Expo push HTTP API and sends when the recipient has an enabled device. `EXPO_PUSH_ACCESS_TOKEN` is optional. When it is set, the request includes `Authorization: Bearer` with the trimmed token. Expo requires that token only when Enhanced Push Security is enabled. Android delivery uses FCM V1 credentials configured in Expo/EAS; those credentials are separate from this access token. A missing, empty, or whitespace access token does not by itself turn push off and does not add an `Authorization` header. Without a registered device the push row is skipped and email or Telegram continue.
 
 Anonymous requests are not push recipients. They keep email.
 

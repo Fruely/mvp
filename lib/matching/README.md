@@ -38,8 +38,11 @@ when the client has no account.
 
 The fourth file refuses to run until Inbox, the outbox and conversations exist. It stores
 authenticated device endpoints and service-notification preferences. Anonymous requests stay
-on email. Push is an Expo transport over the existing outbox; without `EXPO_PUSH_ACCESS_TOKEN`
-or a registered device the push row is skipped and Telegram or email still run.
+on email. Push is an Expo transport over the existing outbox. `EXPO_PUSH_ACCESS_TOKEN` is
+optional and is required only when Expo Enhanced Push Security is enabled. FCM V1
+credentials are a separate Android delivery configuration in Expo/EAS. A missing access
+token does not by itself skip push. Without a registered device the push row is skipped
+and Telegram or email still run.
 
 A new match writes one inbox item. Opening the match and interested/declined are the product
 events. The first response wins and stops reminders.
@@ -62,8 +65,10 @@ No match row, Inbox `match_available` item or matching outbox row is written.
 
 `/api/cron/match-delivery` does not read the flag. It schedules reminders only for matches
 that already exist and delivers the outbox that already exists, including client selection
-and conversation mail. It does not invent matches. Push stays on `EXPO_PUSH_ACCESS_TOKEN`,
-notification preferences and registered endpoints.
+and conversation mail. It does not invent matches. Push stays on notification preferences
+and registered endpoints. `EXPO_PUSH_ACCESS_TOKEN` is optional and is not required unless
+Expo Enhanced Push Security is enabled. FCM V1 credentials remain an Expo/EAS Android
+setting, separate from that token.
 
 Before the first production rollout, compare the live catalog with
 `supabase/manual_migrations/2026-09-26_matching_inbox_push.preflight.sql`.
@@ -102,7 +107,9 @@ Stage C, matching canary.
 
 Stage D, push.
 
-19. Add `EXPO_PUSH_ACCESS_TOKEN`.
+19. Leave `EXPO_PUSH_ACCESS_TOKEN` unset unless Expo Enhanced Push Security is enabled.
+    FCM V1 credentials for Android stay in Expo/EAS and are not this token. A missing
+    access token does not turn push off.
 20. Use a physical development or EAS build.
 21. Register one authenticated specialist device.
 22. Create one controlled request and confirm provider acceptance, the device
@@ -113,5 +120,6 @@ Stage D, push.
 
 Stop new matching by setting `SERVICE_REQUEST_MATCHING_ENABLED=false` and reloading the
 environment. Requests continue to be created. Matches already stored are left in place.
-Stop push by removing `EXPO_PUSH_ACCESS_TOKEN`. Do not delete tables, historical matches
-or outbox rows.
+Removing `EXPO_PUSH_ACCESS_TOKEN` does not stop push. The token is optional, and delivery
+continues without it unless Expo Enhanced Push Security is enabled. FCM V1 credentials
+stay in Expo/EAS. Do not delete tables, historical matches or outbox rows.

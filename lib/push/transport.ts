@@ -32,8 +32,9 @@ export function classifyPushProviderError(input: {
   return { status: "failed", errorCode: "push_rejected", providerMessageId: null, invalidate: false };
 }
 
-export function isExpoPushConfigured(): boolean {
-  return Boolean(process.env.EXPO_PUSH_ACCESS_TOKEN?.trim());
+function expoPushAccessToken(): string | null {
+  const token = process.env.EXPO_PUSH_ACCESS_TOKEN?.trim() ?? "";
+  return token.length > 0 ? token : null;
 }
 
 type ExpoTicket = {
@@ -65,18 +66,17 @@ export function buildExpoPushRequest(message: LockScreenPush, token: string) {
 export function createExpoPushTransport(fetchImpl: typeof fetch = fetch): PushTransport {
   return {
     async deliver(message, endpoint) {
-      if (!isExpoPushConfigured()) {
-        return { status: "skipped", errorCode: "push_not_configured", providerMessageId: null, invalidate: false };
-      }
       let response: Response;
       try {
+        const accessToken = expoPushAccessToken();
+        const headers: Record<string, string> = {
+          "content-type": "application/json",
+          accept: "application/json",
+        };
+        if (accessToken) headers.authorization = `Bearer ${accessToken}`;
         response = await fetchImpl("https://exp.host/--/api/v2/push/send", {
           method: "POST",
-          headers: {
-            "content-type": "application/json",
-            accept: "application/json",
-            authorization: `Bearer ${process.env.EXPO_PUSH_ACCESS_TOKEN}`,
-          },
+          headers,
           body: JSON.stringify(buildExpoPushRequest(message, endpoint.token)),
         });
       } catch {
