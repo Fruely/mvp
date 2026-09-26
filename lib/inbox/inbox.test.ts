@@ -60,6 +60,11 @@ function memory(seed: Record<string, Row[]>) {
         filters.push((row) => String(row[column]) <= String(value));
         return api;
       },
+      like(column: string, pattern: string) {
+        const needle = pattern.replace(/%/g, "");
+        filters.push((row) => String(row[column] ?? "").includes(needle));
+        return api;
+      },
       order() { return api; },
       limit(value: number) { limitN = value; return api; },
       maybeSingle: async () => {
@@ -135,6 +140,10 @@ function seed() {
     }],
     service_requests: [{
       id: "request-1",
+      public_id: "REQ-1",
+      client_user_id: "user-client",
+      locale: "ua",
+      client_email: null,
       requested_service: "Tax advice",
       category_text: null,
       city: "Berlin",
@@ -255,7 +264,7 @@ test("13-14. interested and declined cancel pending reminders and keep history",
       matchId: "match-1", specialistId: "specialist-1", userId: "user-1", response,
     });
     assert.equal(db.tables.notification_outbox[0].status, "cancelled");
-    assert.equal(db.tables.inbox_items.length, 1);
+    assert.equal(db.tables.inbox_items.length, response === "interested" ? 2 : 1);
     assert.equal(db.tables.service_request_matches.length, 1);
   }
 });

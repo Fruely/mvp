@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-type ResponseStatus = "active" | "interested" | "declined" | "expired";
+type ResponseStatus = "active" | "interested" | "declined" | "expired" | "selected" | "not_selected";
 
 export default function MatchResponseForm({
   matchId,
@@ -17,6 +17,8 @@ export default function MatchResponseForm({
     interestedDone: string;
     declinedDone: string;
     expired: string;
+    selected: string;
+    notSelected: string;
     error: string;
   };
 }) {
@@ -56,6 +58,12 @@ export default function MatchResponseForm({
   }
   if (current === "expired") {
     return <p className="text-sm font-medium text-gray-700">{labels.expired}</p>;
+  }
+  if (current === "selected") {
+    return <p className="text-sm font-medium text-emerald-800">{labels.selected}</p>;
+  }
+  if (current === "not_selected") {
+    return <p className="text-sm font-medium text-gray-700">{labels.notSelected}</p>;
   }
 
   return (

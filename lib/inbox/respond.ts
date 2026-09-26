@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { recordSpecialistInterest } from "@/lib/selection/interest";
 import { applyMatchResponse, type MatchResponseStatus } from "./policy";
 
 export type MatchActionResult = {
@@ -9,7 +10,14 @@ export type MatchActionResult = {
 };
 
 function asStatus(value: unknown): MatchResponseStatus {
-  if (value === "interested" || value === "declined" || value === "expired" || value === "active") return value;
+  if (
+    value === "interested" ||
+    value === "declined" ||
+    value === "expired" ||
+    value === "active" ||
+    value === "selected" ||
+    value === "not_selected"
+  ) return value;
   return "active";
 }
 
@@ -60,7 +68,7 @@ export async function respondToOwnMatch(
 ): Promise<MatchActionResult | { error: "not_found" | "forbidden" }> {
   const match = await supabase
     .from("service_request_matches")
-    .select("id, specialist_id, status, responded_at, opened_at")
+    .select("id, specialist_id, service_request_id, status, responded_at, opened_at")
     .eq("id", input.matchId)
     .maybeSingle();
   if (match.error || !match.data?.id) return { error: "not_found" };
@@ -112,6 +120,20 @@ export async function respondToOwnMatch(
     .eq("entity_id", input.matchId)
     .eq("recipient_user_id", input.userId)
     .is("actioned_at", null);
+
+  if (input.response === "interested" && match.data.service_request_id) {
+    try {
+      await recordSpecialistInterest(supabase, {
+        matchId: input.matchId,
+        specialistId: input.specialistId,
+        requestId: String(match.data.service_request_id),
+      });
+    } catch (error) {
+      console.error("[selection] interest event failed", {
+        name: error instanceof Error ? error.name : "Error",
+      });
+    }
+  }
 
   return {
     status: decision.status,

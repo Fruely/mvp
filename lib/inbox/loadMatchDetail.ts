@@ -39,7 +39,7 @@ function asString(value: unknown): string | null {
 }
 
 function asStatus(value: unknown): MatchResponseStatus {
-  if (value === "interested" || value === "declined" || value === "expired") return value;
+  if (value === "interested" || value === "declined" || value === "expired" || value === "selected" || value === "not_selected") return value;
   return "active";
 }
 

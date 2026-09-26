@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui";
 import { publicCardClass, publicFieldClass, publicLinkSecondaryClass } from "@/components/public/publicStyles";
+import RequestAccessLink from "@/components/selection/RequestAccessLink";
 import type { Lang } from "@/lib/i18n";
 import { privacyPath } from "@/lib/legal/paths";
 import type { ServiceIntentLocale, ServiceIntentQuestion } from "@/lib/serviceIntent/contract";
@@ -300,6 +301,7 @@ export default function ConversationalIntake({ lang }: { lang: Lang }) {
   const [hp, setHp] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [publicId, setPublicId] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const idempotencyKey = useRef<string | null>(null);
   const submitLock = useRef(false);
 
@@ -431,6 +433,7 @@ export default function ConversationalIntake({ lang }: { lang: Lang }) {
       const result = (await response.json().catch(() => ({}))) as {
         ok?: boolean;
         public_id?: string;
+        access_token?: string;
       };
       if (!response.ok || result.ok !== true || !result.public_id) {
         submitLock.current = false;
@@ -439,6 +442,7 @@ export default function ConversationalIntake({ lang }: { lang: Lang }) {
         return;
       }
       setPublicId(result.public_id);
+      setAccessToken(typeof result.access_token === "string" ? result.access_token : null);
       setPhase("success");
     } catch {
       submitLock.current = false;
@@ -455,6 +459,7 @@ export default function ConversationalIntake({ lang }: { lang: Lang }) {
         <p className="mt-6 text-sm font-semibold text-freuly-text-primary">
           {copy.successId}: {publicId}
         </p>
+        {accessToken ? <RequestAccessLink lang={lang} token={accessToken} /> : null}
         <Link href={`/${lang}`} className={`${publicLinkSecondaryClass} mt-8 inline-flex`}>
           {copy.explore}
         </Link>

@@ -19,6 +19,7 @@ import { validateServiceRequestCreate } from "@/lib/serviceRequests/validation";
 import { normalizeClientIdempotencyKey } from "@/lib/mutations/clientIdempotency";
 import { resolveBearerAuthUser } from "@/lib/auth/resolveBearerAuthUser";
 import { matchAfterServiceRequestCreated } from "@/lib/matching/matchAfterCreate";
+import { issueAccessToken } from "@/lib/selection/accessGrant";
 import {
   IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE,
   buildServiceRequestIdempotencyFingerprint,
@@ -33,9 +34,10 @@ const NO_STORE = { "Cache-Control": "no-store" };
 
 function jsonResult(
   result: { kind: "replayed" | "created"; public_id: string; created_at: string },
+  accessToken: string | null = null,
 ) {
   return NextResponse.json(
-    { ok: true, public_id: result.public_id, created_at: result.created_at },
+    { ok: true, public_id: result.public_id, created_at: result.created_at, ...(accessToken ? { access_token: accessToken } : {}) },
     { status: 200, headers: NO_STORE },
   );
 }
@@ -152,7 +154,23 @@ export async function POST(request: NextRequest) {
       await matchAfterServiceRequestCreated(supabase, result, validated);
     }
 
-    const response = jsonResult(result);
+    let accessToken: string | null = null;
+    if (result.kind === "created" && !clientUserId) {
+      try {
+        const created = await supabase
+          .from("service_requests")
+          .select("id")
+          .eq("public_id", result.public_id)
+          .maybeSingle();
+        if (created.data?.id) accessToken = await issueAccessToken(supabase, String(created.data.id));
+      } catch (tokenError) {
+        console.error("[service-requests/create] return token failed", {
+          name: tokenError instanceof Error ? tokenError.name : "Error",
+        });
+      }
+    }
+
+    const response = jsonResult(result, accessToken);
     if (clientCampaignLinkId) {
       response.cookies.set(CLIENT_CAMPAIGN_COOKIE_NAME, "", {
         path: "/",

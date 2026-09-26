@@ -7,7 +7,7 @@ export type InboxListItem = {
   createdAt: string;
   readAt: string | null;
   entityId: string;
-  payload: MatchInboxPayload | null;
+  payload: (MatchInboxPayload & { event?: string; conversation_id?: string | null; public_id?: string }) | null;
 };
 
 export type InboxListModel =
@@ -15,16 +15,19 @@ export type InboxListModel =
   | { status: "empty" }
   | { status: "error" };
 
-function asPayload(value: unknown): MatchInboxPayload | null {
+function asPayload(value: unknown): InboxListItem["payload"] {
   if (!value || typeof value !== "object") return null;
   const row = value as Record<string, unknown>;
-  if (typeof row.match_id !== "string" || typeof row.service_label !== "string") return null;
+  if (typeof row.service_label !== "string" && typeof row.event !== "string") return null;
   return {
-    match_id: row.match_id,
+    match_id: typeof row.match_id === "string" ? row.match_id : "",
+    event: typeof row.event === "string" ? row.event : undefined,
+    conversation_id: typeof row.conversation_id === "string" ? row.conversation_id : null,
+    public_id: typeof row.public_id === "string" ? row.public_id : undefined,
     service_request_id: typeof row.service_request_id === "string" ? row.service_request_id : "",
     stage: row.stage === "reminder" || row.stage === "final" ? row.stage : "initial",
     reminder_index: typeof row.reminder_index === "number" ? row.reminder_index : 0,
-    service_label: row.service_label,
+    service_label: typeof row.service_label === "string" ? row.service_label : "",
     work_format: typeof row.work_format === "string" ? row.work_format : null,
     city: typeof row.city === "string" ? row.city : null,
     service_languages: Array.isArray(row.service_languages)

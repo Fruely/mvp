@@ -6,6 +6,7 @@ import { Button } from "@/components/ui";
 import { privacyPath } from "@/lib/legal/paths";
 import type { Lang } from "@/lib/i18n";
 import { publicCardClass, publicFieldClass, publicLinkSecondaryClass } from "@/components/public/publicStyles";
+import RequestAccessLink from "@/components/selection/RequestAccessLink";
 import {
   buildAcquisitionFirstTouch,
   type AcquisitionFirstTouch,
@@ -201,6 +202,7 @@ export default function ClientDemandEntry({ lang }: { lang: Lang }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [publicId, setPublicId] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const idempotencyKey = useRef<string | null>(null);
   const acquisitionRef = useRef<AcquisitionFirstTouch | null>(null);
 
@@ -292,12 +294,14 @@ export default function ClientDemandEntry({ lang }: { lang: Lang }) {
       const result = (await response.json().catch(() => ({}))) as {
         ok?: boolean;
         public_id?: string;
+        access_token?: string;
       };
       if (!response.ok || result.ok !== true || !result.public_id) {
         setError(copy.submitFailed);
         return;
       }
       setPublicId(result.public_id);
+      setAccessToken(typeof result.access_token === "string" ? result.access_token : null);
     } catch {
       setError(copy.submitFailed);
     } finally {
@@ -312,6 +316,7 @@ export default function ClientDemandEntry({ lang }: { lang: Lang }) {
         <h1 className="text-3xl font-bold text-freuly-text-primary">{copy.successTitle}</h1>
         <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-freuly-text-secondary">{copy.successBody}</p>
         <p className="mt-6 text-sm font-semibold text-freuly-text-primary">{copy.successId}: {publicId}</p>
+        {accessToken ? <RequestAccessLink lang={lang} token={accessToken} /> : null}
         <Link href={`/${lang}`} className={`${publicLinkSecondaryClass} mt-8 inline-flex`}>
           {copy.explore}
         </Link>

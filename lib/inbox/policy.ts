@@ -20,7 +20,7 @@ export type MatchDeliveryPolicy = {
   defaultTimeZone: string;
 };
 
-export type MatchResponseStatus = "active" | "interested" | "declined" | "expired";
+export type MatchResponseStatus = "active" | "interested" | "declined" | "expired" | "selected" | "not_selected";
 
 export function initialInboxKey(matchId: string): string {
   return `match:${matchId}:initial`;
@@ -47,7 +47,7 @@ export function applyMatchResponse(
   current: MatchResponseStatus,
   next: "interested" | "declined",
 ): { status: MatchResponseStatus; changed: boolean } {
-  if (current === "interested" || current === "declined" || current === "expired") {
+  if (current === "interested" || current === "declined" || current === "expired" || current === "selected" || current === "not_selected") {
     return { status: current, changed: false };
   }
   return { status: next, changed: true };

@@ -19,6 +19,9 @@ import {
   type MatchDeliveryPolicy,
 } from "./policy";
 import { renderActions, renderMatchNotice } from "./render";
+import { issueAccessToken } from "@/lib/selection/accessGrant";
+import { clientRequestPath, conversationPath } from "@/lib/selection/policy";
+import { clientEventPushContract } from "@/lib/selection/pushContract";
 
 type TransportStatus = "sent" | "retryable" | "failed" | "skipped";
 
@@ -211,12 +214,15 @@ export type ChannelSendResult = {
   errorCode: string | null;
 };
 
+export type PreparedNotice = { title: string; body: string; link: string; action: string };
+
 export type ChannelTransport = (input: {
   locale: string;
   payload: MatchInboxPayload;
   telegramChatId: string | number | null;
   email: string | null;
   link: string;
+  prepared?: PreparedNotice | null;
 }) => Promise<ChannelSendResult>;
 
 export type DeliveryTransports = {
@@ -234,7 +240,7 @@ export const defaultDeliveryTransports: DeliveryTransports = {
     if (!process.env.TELEGRAM_BOT_TOKEN || !input.telegramChatId) {
       return { status: "skipped", providerMessageId: null, errorCode: "telegram_unavailable" };
     }
-    const text = renderMatchNotice(input.locale, {
+    const text = input.prepared ?? renderMatchNotice(input.locale, {
       stage: input.payload.stage,
       opened: input.payload.opened,
       serviceLabel: input.payload.service_label,
@@ -242,12 +248,12 @@ export const defaultDeliveryTransports: DeliveryTransports = {
       city: input.payload.city,
       serviceLanguages: input.payload.service_languages,
     });
-    const actions = renderActions(input.locale);
+    const actions = input.prepared ?? renderActions(input.locale);
     const ok = await sendTelegramMessage(
       input.telegramChatId,
       buildTelegramNotice(text.title, text.body),
       input.link,
-      actions.view,
+      "action" in actions ? actions.action : actions.view,
     );
     return ok
       ? { status: "sent", providerMessageId: null, errorCode: null }
@@ -257,7 +263,7 @@ export const defaultDeliveryTransports: DeliveryTransports = {
     if (!input.email || !isEmailConfigured()) {
       return { status: "skipped", providerMessageId: null, errorCode: "email_unavailable" };
     }
-    const text = renderMatchNotice(input.locale, {
+    const text = input.prepared ?? renderMatchNotice(input.locale, {
       stage: input.payload.stage,
       opened: input.payload.opened,
       serviceLabel: input.payload.service_label,
@@ -265,12 +271,12 @@ export const defaultDeliveryTransports: DeliveryTransports = {
       city: input.payload.city,
       serviceLanguages: input.payload.service_languages,
     });
-    const actions = renderActions(input.locale);
+    const actions = input.prepared ?? renderActions(input.locale);
     const message = buildMatchEmail({
       title: text.title,
       body: text.body,
       link: input.link,
-      action: actions.view,
+      action: "action" in actions ? actions.action : actions.view,
     });
     try {
       const data = await sendEmail({ to: input.email, subject: message.subject, html: message.html });
@@ -290,6 +296,7 @@ async function sendChannel(
     telegramChatId: string | number | null;
     email: string | null;
     link: string;
+    prepared?: PreparedNotice | null;
   },
   transports: DeliveryTransports,
 ): Promise<ChannelSendResult> {
@@ -340,15 +347,29 @@ export async function deliverPendingOutbox(
       .select("payload")
       .eq("id", row.inbox_item_id)
       .maybeSingle();
-    const payload = inbox.data?.payload as MatchInboxPayload | undefined;
-    const specialist = row.match_id
+    const payload = inbox.data?.payload as (MatchInboxPayload & {
+      event?: "specialist_interested" | "connection_ready" | "client_reminder" | "client_selected_you";
+      service_request_id?: string;
+      public_id?: string;
+      service_label?: string;
+      conversation_id?: string | null;
+    }) | undefined;
+    const clientEvent = payload?.event && payload.event !== "client_selected_you";
+    const request = payload?.service_request_id
+      ? await supabase
+          .from("service_requests")
+          .select("id, public_id, locale, client_user_id, client_email, requested_service, category_text")
+          .eq("id", payload.service_request_id)
+          .maybeSingle()
+      : { data: null };
+    const specialist = !clientEvent && row.match_id
       ? await supabase
           .from("service_request_matches")
           .select("specialist_id")
           .eq("id", row.match_id)
           .maybeSingle()
       : { data: null };
-    const profile = specialist.data?.specialist_id
+    const profile = !clientEvent && specialist.data?.specialist_id
       ? await supabase
           .from("specialists")
           .select("email, telegram_chat_id, notification_locale")
@@ -358,8 +379,62 @@ export async function deliverPendingOutbox(
 
     const attempt = Number(row.attempt_count ?? 0) + 1;
     const locale = notificationLocale(
-      typeof profile.data?.notification_locale === "string" ? profile.data.notification_locale : null,
+      clientEvent
+        ? typeof request.data?.locale === "string"
+          ? request.data.locale
+          : null
+        : typeof profile.data?.notification_locale === "string"
+          ? profile.data.notification_locale
+          : null,
     );
+    let prepared: PreparedNotice | null = null;
+    let link = payload && "match_id" in payload && payload.match_id
+      ? `${appOrigin()}${matchDeepLink(locale, payload.match_id)}`
+      : appOrigin();
+    if (payload?.event) {
+      let count = 1;
+      if (payload.event === "specialist_interested" && payload.service_request_id) {
+        const interested = await supabase
+          .from("service_request_matches")
+          .select("id")
+          .eq("service_request_id", payload.service_request_id)
+          .eq("status", "interested");
+        count = interested.data?.length ?? 1;
+      }
+      if (payload.event === "client_selected_you" && payload.conversation_id) {
+        link = `${appOrigin()}${conversationPath(locale, payload.conversation_id, "specialist")}`;
+      } else if (request.data?.public_id) {
+        const publicId = String(request.data.public_id);
+        link = `${appOrigin()}${clientRequestPath(locale, publicId)}`;
+        if (!request.data.client_user_id && payload.service_request_id) {
+          const token = await issueAccessToken(supabase, payload.service_request_id);
+          if (token) link = `${appOrigin()}/${locale}/requests/access?token=${encodeURIComponent(token)}`;
+        }
+      }
+      const contract = clientEventPushContract({
+        locale,
+        event: payload.event,
+        entityId: payload.event === "client_selected_you" ? String(payload.match_id ?? payload.service_request_id ?? "") : String(payload.service_request_id ?? ""),
+        link,
+        count,
+        serviceLabel: payload.service_label ?? null,
+      });
+      link = contract.link;
+      prepared = { title: contract.title, body: contract.body, link: contract.link, action: contract.action };
+    }
+    const noticePayload: MatchInboxPayload = payload && payload.match_id && payload.stage
+      ? payload
+      : {
+          match_id: payload?.match_id ?? "",
+          service_request_id: payload?.service_request_id ?? "",
+          stage: "initial",
+          reminder_index: 0,
+          service_label: payload?.service_label ?? "",
+          work_format: null,
+          city: null,
+          service_languages: [],
+          opened: false,
+        };
     let result: ChannelSendResult;
     try {
       result = payload
@@ -367,10 +442,17 @@ export async function deliverPendingOutbox(
             String(row.channel),
             {
               locale,
-              payload,
-              telegramChatId: profile.data?.telegram_chat_id ?? null,
-              email: typeof profile.data?.email === "string" ? profile.data.email : null,
-              link: `${appOrigin()}${matchDeepLink(locale, payload.match_id)}`,
+              payload: noticePayload,
+              telegramChatId: clientEvent ? null : profile.data?.telegram_chat_id ?? null,
+              email: clientEvent
+                ? typeof request.data?.client_email === "string"
+                  ? request.data.client_email
+                  : null
+                : typeof profile.data?.email === "string"
+                  ? profile.data.email
+                  : null,
+              link,
+              prepared,
             },
             transports,
           )

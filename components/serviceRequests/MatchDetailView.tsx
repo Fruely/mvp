@@ -17,6 +17,8 @@ type Copy = {
   interestedDone: string;
   declinedDone: string;
   expired: string;
+  selected: string;
+  notSelected: string;
   error: string;
   reasons: Record<string, string>;
   languages: Record<string, string>;
@@ -37,6 +39,8 @@ const COPY: Record<Lang, Copy> = {
     interestedDone: "Вы отметили, что готовы помочь. Контакты клиента пока не открываются.",
     declinedDone: "Вы отметили, что заявка не подходит.",
     expired: "Срок ответа по этой заявке истёк.",
+    selected: "Клиент выбрал вас. Откройте диалог во входящих.",
+    notSelected: "Клиент выбрал другого специалиста.",
     error: "Не удалось сохранить ответ. Попробуйте ещё раз.",
     reasons: {
       category_match: "Категория совпадает",
@@ -60,6 +64,8 @@ const COPY: Record<Lang, Copy> = {
     interestedDone: "Ви позначили, що готові допомогти. Контакти клієнта поки не відкриваються.",
     declinedDone: "Ви позначили, що заявка не підходить.",
     expired: "Строк відповіді на цю заявку минув.",
+    selected: "Клієнт обрав вас. Відкрийте діалог у вхідних.",
+    notSelected: "Клієнт обрав іншого спеціаліста.",
     error: "Не вдалося зберегти відповідь. Спробуйте ще раз.",
     reasons: {
       category_match: "Категорія збігається",
@@ -83,6 +89,8 @@ const COPY: Record<Lang, Copy> = {
     interestedDone: "Sie haben Interesse bestätigt. Kontaktdaten werden hier noch nicht gezeigt.",
     declinedDone: "Sie haben die Anfrage abgelehnt.",
     expired: "Die Antwortfrist für diese Anfrage ist abgelaufen.",
+    selected: "Der Kunde hat Sie ausgewählt. Öffnen Sie den Dialog im Eingang.",
+    notSelected: "Der Kunde hat eine andere Fachkraft gewählt.",
     error: "Die Antwort konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
     reasons: {
       category_match: "Kategorie passt",
@@ -148,6 +156,8 @@ export default function MatchDetailView({
               interestedDone: copy.interestedDone,
               declinedDone: copy.declinedDone,
               expired: copy.expired,
+              selected: copy.selected,
+              notSelected: copy.notSelected,
               error: copy.error,
             }}
           />

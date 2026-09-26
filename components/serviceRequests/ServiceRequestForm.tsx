@@ -11,6 +11,7 @@ import {
   publicLinkPrimaryClass,
   publicLinkSecondaryClass,
 } from "@/components/public/publicStyles";
+import RequestAccessLink from "@/components/selection/RequestAccessLink";
 import uaDict from "@/locales/ua.json";
 import { splitPlaceForPrefill } from "@/lib/search/searchContext";
 import ServiceRequestTimingFields, {
@@ -64,6 +65,7 @@ export default function ServiceRequestForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successPublicId, setSuccessPublicId] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [hp, setHp] = useState("");
 
   useEffect(() => {
@@ -136,13 +138,14 @@ export default function ServiceRequestForm({
           hp,
         }),
       });
-      const json = (await res.json()) as { ok?: boolean; public_id?: string; error?: string };
+      const json = (await res.json()) as { ok?: boolean; public_id?: string; access_token?: string; error?: string };
       if (!res.ok) {
         setError(json.error || t(dict, "serviceRequest.errors.submitFailed"));
         return;
       }
       if (json.public_id) {
         setSuccessPublicId(json.public_id);
+        setAccessToken(typeof json.access_token === "string" ? json.access_token : null);
       }
     } catch {
       setError(t(dict, "serviceRequest.errors.submitFailed"));
@@ -161,6 +164,7 @@ export default function ServiceRequestForm({
         <p className="mb-8 text-sm font-medium text-freuly-text-primary">
           {t(dict, "serviceRequest.success.publicIdLabel")}: {successPublicId}
         </p>
+        {accessToken ? <RequestAccessLink lang={lang} token={accessToken} /> : null}
         <div className="flex flex-wrap justify-center gap-3">
           <Link href={`/${lang}/service-search`} className={publicLinkPrimaryClass}>
             {t(dict, "serviceRequest.success.backToSearch")}
