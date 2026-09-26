@@ -19,6 +19,7 @@ export default function DashboardShell({
   lang,
   dict,
   isPublished,
+  unreadCount = 0,
 }: {
   specialist: SpecialistShellData;
   /** Canonical `specialist_plan.plan_status`. */
@@ -27,6 +28,7 @@ export default function DashboardShell({
   lang: string;
   dict: Dictionary;
   isPublished: boolean;
+  unreadCount?: number;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -38,6 +40,7 @@ export default function DashboardShell({
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         isPublished={isPublished}
+        unreadCount={unreadCount}
       />
       <div className="flex min-h-screen min-w-0 flex-1 flex-col bg-freuly-dashboard">
         <TopBar

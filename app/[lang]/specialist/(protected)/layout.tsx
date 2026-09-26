@@ -2,7 +2,9 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getDashboardContext } from "@/lib/dashboard/getDashboardContext";
 import DashboardShell from "@/components/dashboard/DashboardShell";
+import { countUnreadInbox } from "@/lib/inbox/unread";
 import { getDictionary, resolveRouteLang, type Lang } from "@/lib/i18n";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 function isOnboardingAllowedPath(pathname: string, lang: Lang): boolean {
   const dashboardBase = `/${lang}/specialist/dashboard`;
@@ -43,6 +45,10 @@ export default async function SpecialistProtectedLayout({
     redirect(`/${lang}/specialist/dashboard/onboarding?step=${step}&reason=incomplete_profile`);
   }
 
+  const unreadCount = specialist.user_id
+    ? await countUnreadInbox(createSupabaseServerClient(), specialist.user_id)
+    : 0;
+
   return (
     <DashboardShell
       specialist={specialist}
@@ -50,6 +56,7 @@ export default async function SpecialistProtectedLayout({
       lang={lang}
       dict={dict}
       isPublished={gate.state === "published"}
+      unreadCount={unreadCount}
     >
       {children}
     </DashboardShell>

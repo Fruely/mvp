@@ -3,7 +3,8 @@ const TELEGRAM_API = "https://api.telegram.org";
 export async function sendTelegramMessage(
   chatId: number | string,
   text: string,
-  leadsDashboardUrl: string
+  leadsDashboardUrl: string,
+  buttonLabel = "Открыть заявку",
 ): Promise<boolean> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) return false;
@@ -16,7 +17,7 @@ export async function sendTelegramMessage(
         text,
         reply_markup: {
           inline_keyboard: [
-            [{ text: "Открыть заявку", url: leadsDashboardUrl }],
+            [{ text: buttonLabel, url: leadsDashboardUrl }],
           ],
         },
       }),

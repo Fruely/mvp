@@ -150,6 +150,7 @@ test("matched request loader returns an error state without throwing", async () 
       return {
         select() { return this; },
         eq() { return this; },
+        in() { return this; },
         order() { return this; },
         limit: async () => ({ data: null, error: { message: "unavailable" } }),
       };

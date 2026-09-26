@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { enqueueMatchNotifications } from "@/lib/inbox/delivery";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 import {
   evaluateMatch,
@@ -183,6 +184,15 @@ export async function matchConfirmedServiceRequest(
         { onConflict: "service_request_id,specialist_id", ignoreDuplicates: true },
       );
       if (error) throw error;
+    }
+
+    try {
+      await enqueueMatchNotifications(supabase, request);
+    } catch (enqueueError) {
+      console.error("[inbox] enqueue failed", {
+        serviceRequestId: request.id,
+        name: enqueueError instanceof Error ? enqueueError.name : "Error",
+      });
     }
 
     const result: MatchingRunResult = {

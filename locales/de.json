@@ -1409,13 +1409,14 @@
     },
     "sidebar": {
       "nav": {
-        "forYou": "Anfragen für Sie",
-        "matched": "Anfragen für Sie"
+        "forYou": "Veröffentlichte Anfragen",
+        "matched": "Passende Anfragen",
+        "inbox": "Eingang"
       }
     },
     "forYou": {
       "kicker": "Für Fachkräfte",
-      "title": "Anfragen für Sie",
+      "title": "Veröffentlichte Anfragen",
       "subtitle": "Veröffentlichte Anfragen, die zu Ihrem Profil passen.",
       "paidOnly": "Dieser Bereich ist für Fachkräfte mit einem aktiven Freuly-Pro-Tarif verfügbar.",
       "subscriptionCta": "Tarife ansehen",

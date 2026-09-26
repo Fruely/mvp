@@ -23,6 +23,14 @@ Requests do not store coordinates, so a kilometre radius is not calculated.
 
 ## Apply before deploy
 
-`supabase/manual_migrations/2026-09-26_service_request_matches.sql` is manual.
-The create path writes `service_languages` and the matcher writes `service_request_matches`.
-Apply that migration before this code runs against a database.
+Migrations are manual and are not applied by the app.
+
+1. `supabase/manual_migrations/2026-09-26_service_request_matches.sql`
+2. `supabase/manual_migrations/2026-09-26_freuly_inbox_delivery.sql`
+
+The second file refuses to run until `service_request_matches` exists. It adds the response
+timestamps, Freuly Inbox, the delivery outbox and specialist `notification_locale`.
+
+A new match writes one inbox item. Telegram and email only signal that item. Native push is
+a contract and is skipped until a device transport exists. Opening the match and
+interested/declined are the product events. The first response wins and stops reminders.

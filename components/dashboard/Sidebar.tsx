@@ -14,6 +14,7 @@ type NavItem = {
   lockedUntilPublished?: boolean;
   /** If true, only exact pathname match highlights this item (used for dashboard home vs `/dashboard/...`). */
   exact?: boolean;
+  badge?: number;
   icon: ReactNode;
 };
 
@@ -40,7 +41,7 @@ function navItemClasses(isActive: boolean, disabled?: boolean) {
   return cn(baseClass, stateClass);
 }
 
-function buildNavItems(lang: string, dict: Dictionary, isPublished: boolean): NavItem[] {
+function buildNavItems(lang: string, dict: Dictionary, isPublished: boolean, unreadCount: number): NavItem[] {
   const base = `/${lang}/specialist/dashboard`;
   const lock = !isPublished;
   return [
@@ -82,7 +83,7 @@ function buildNavItems(lang: string, dict: Dictionary, isPublished: boolean): Na
     ),
   },
   {
-    label: t(dict, "dashboard.sidebar.nav.forYou", { defaultValue: "Заявки для вас" }),
+    label: t(dict, "dashboard.sidebar.nav.forYou", { defaultValue: "Опубликованные запросы" }),
     href: `${base}/requests/for-you`,
     disabled: lock,
     lockedUntilPublished: lock,
@@ -93,13 +94,25 @@ function buildNavItems(lang: string, dict: Dictionary, isPublished: boolean): Na
     ),
   },
   {
-    label: t(dict, "dashboard.sidebar.nav.matched", { defaultValue: "Заявки для вас" }),
+    label: t(dict, "dashboard.sidebar.nav.matched", { defaultValue: "Подходящие заявки" }),
     href: `${base}/requests/matched`,
     disabled: lock,
     lockedUntilPublished: lock,
     icon: (
       <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 opacity-80" aria-hidden>
         <path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h10v2H4v-2z" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    label: t(dict, "dashboard.sidebar.nav.inbox", { defaultValue: "Входящие" }),
+    href: `${base}/inbox`,
+    badge: unreadCount,
+    disabled: lock,
+    lockedUntilPublished: lock,
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 opacity-80" aria-hidden>
+        <path d="M4 6h16v12H4V6zm2 2v8h12V8H6zm2 2h8v2H8v-2z" fill="currentColor" />
       </svg>
     ),
   },
@@ -195,6 +208,9 @@ function renderNavItem(
       >
         <span className={cn("text-current", isActive && "[&_svg]:!opacity-100")}>{item.icon}</span>
         <span className="min-w-0 flex-1 truncate">{item.label}</span>
+        {item.badge ? (
+          <span className="rounded-full bg-emerald-700 px-2 py-0.5 text-[11px] font-semibold text-white">{item.badge}</span>
+        ) : null}
         {lockedBadgeNode}
       </span>
     );
@@ -211,6 +227,9 @@ function renderNavItem(
     >
       <span className={cn("text-current", isActive && "[&_svg]:!opacity-100")}>{item.icon}</span>
       <span className="min-w-0 flex-1 truncate">{item.label}</span>
+      {item.badge ? (
+        <span className="rounded-full bg-emerald-700 px-2 py-0.5 text-[11px] font-semibold text-white">{item.badge}</span>
+      ) : null}
     </Link>
   );
 }
@@ -221,17 +240,22 @@ export default function Sidebar({
   open,
   onClose,
   isPublished,
+  unreadCount = 0,
 }: {
   dict: Dictionary;
   lang: string;
   open: boolean;
   onClose: () => void;
   isPublished: boolean;
+  unreadCount?: number;
 }) {
   const pathname = usePathname();
   const currentPath = pathname ?? "";
   const lockedBadge = lockedLabel(lang);
-  const navItems = useMemo(() => buildNavItems(lang, dict, isPublished), [lang, dict, isPublished]);
+  const navItems = useMemo(
+    () => buildNavItems(lang, dict, isPublished, unreadCount),
+    [lang, dict, isPublished, unreadCount],
+  );
   const disableSidebarPrefetch = isPrivateDashboardPath(currentPath);
 
   return (

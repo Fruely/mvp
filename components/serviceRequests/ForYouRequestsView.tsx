@@ -29,7 +29,7 @@ export default function ForYouRequestsView({
   lang: Lang;
   dict: Dictionary;
 }) {
-  const title = t(dict, "dashboard.forYou.title", { defaultValue: "Заявки для вас" });
+  const title = t(dict, "dashboard.forYou.title", { defaultValue: "Опубликованные запросы" });
   const subtitle = t(dict, "dashboard.forYou.subtitle", {
     defaultValue: "Опубликованные запросы, которые подходят вашему профилю.",
   });

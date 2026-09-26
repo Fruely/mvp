@@ -30,6 +30,7 @@ export type MatchedRequestCard = {
   timingLabel: string;
   createdAt: string;
   reasons: MatchReasonCode[];
+  responseStatus: "active" | "interested" | "declined";
 };
 
 export type MatchedRequestsModel =
@@ -60,7 +61,7 @@ export async function loadMatchedRequests(
     .from("service_request_matches")
     .select("id, service_request_id, match_reasons, matched_at, status")
     .eq("specialist_id", input.specialistId)
-    .eq("status", "active")
+    .in("status", ["active", "interested", "declined"])
     .order("matched_at", { ascending: false })
     .limit(50);
 
@@ -104,6 +105,7 @@ export async function loadMatchedRequests(
       timingLabel: formatServiceTimingDisplay(timing, locale),
       createdAt: asString(request.created_at) ?? String(match.matched_at),
       reasons: asReasons(match.match_reasons),
+      responseStatus: match.status === "interested" || match.status === "declined" ? match.status : "active",
     }];
   });
 

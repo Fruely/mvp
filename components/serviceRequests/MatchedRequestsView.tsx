@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Lang } from "@/lib/i18n";
 import type { MatchedRequestsModel } from "@/lib/matching/loadMatchedRequests";
 
@@ -10,6 +11,9 @@ type Copy = {
   errorTitle: string;
   errorBody: string;
   why: string;
+  open: string;
+  interested: string;
+  declined: string;
   language: string;
   anyLanguage: string;
   online: string;
@@ -22,13 +26,16 @@ type Copy = {
 const COPY: Record<Lang, Copy> = {
   ru: {
     kicker: "Ваша очередь",
-    title: "Заявки для вас",
+    title: "Подходящие заявки",
     subtitle: "Заявки, которые подходят вашему профилю. Контакты клиента здесь не показываются.",
     emptyTitle: "Подходящих заявок пока нет",
     emptyBody: "Когда появится заявка, которая вам подходит, она будет здесь.",
     errorTitle: "Не удалось загрузить заявки",
     errorBody: "Обновите страницу и попробуйте ещё раз.",
     why: "Почему подходит вам",
+    open: "Посмотреть заявку",
+    interested: "Готов помочь",
+    declined: "Не подходит",
     language: "Язык",
     anyLanguage: "Язык не важен",
     online: "Онлайн",
@@ -44,13 +51,16 @@ const COPY: Record<Lang, Copy> = {
   },
   ua: {
     kicker: "Ваша черга",
-    title: "Заявки для вас",
+    title: "Відповідні заявки",
     subtitle: "Заявки, які підходять вашому профілю. Контакти клієнта тут не показуються.",
     emptyTitle: "Відповідних заявок поки немає",
     emptyBody: "Коли з’явиться заявка, яка вам підходить, вона буде тут.",
     errorTitle: "Не вдалося завантажити заявки",
     errorBody: "Оновіть сторінку і спробуйте ще раз.",
     why: "Чому підходить вам",
+    open: "Переглянути заявку",
+    interested: "Готовий допомогти",
+    declined: "Не підходить",
     language: "Мова",
     anyLanguage: "Мова не важлива",
     online: "Онлайн",
@@ -66,13 +76,16 @@ const COPY: Record<Lang, Copy> = {
   },
   de: {
     kicker: "Ihre Warteschlange",
-    title: "Anfragen für Sie",
+    title: "Passende Anfragen",
     subtitle: "Anfragen, die zu Ihrem Profil passen. Kontaktdaten der Kundin oder des Kunden werden hier nicht gezeigt.",
     emptyTitle: "Noch keine passenden Anfragen",
     emptyBody: "Sobald eine passende Anfrage eingeht, erscheint sie hier.",
     errorTitle: "Anfragen konnten nicht geladen werden",
     errorBody: "Bitte laden Sie die Seite neu.",
     why: "Warum das passt",
+    open: "Anfrage ansehen",
+    interested: "Ich kann helfen",
+    declined: "Passt nicht",
     language: "Sprache",
     anyLanguage: "Sprache egal",
     online: "Online",
@@ -135,7 +148,18 @@ export default function MatchedRequestsView({
             const why = item.reasons.filter((reason) => reason !== "location_not_required");
             return (
               <article key={item.matchId} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <h2 className="text-lg font-semibold text-gray-900">{item.title || copy.title}</h2>
+                <div className="flex items-start justify-between gap-3">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    <Link href={`/${lang}/specialist/dashboard/requests/matched/${item.matchId}`} className="hover:underline">
+                      {item.title || copy.title}
+                    </Link>
+                  </h2>
+                  {item.responseStatus === "active" ? null : (
+                    <span className="text-xs font-medium text-gray-500">
+                      {item.responseStatus === "interested" ? copy.interested : copy.declined}
+                    </span>
+                  )}
+                </div>
                 <dl className="mt-3 space-y-1 text-sm text-gray-700">
                   {item.city ? <div><dt className="sr-only">{copy.reasons.location_match}</dt><dd>{item.city}</dd></div> : null}
                   {format ? <div><dt className="sr-only">{copy.reasons.format_match}</dt><dd>{format}</dd></div> : null}
@@ -156,6 +180,12 @@ export default function MatchedRequestsView({
                     {why.map((reason) => copy.reasons[reason] ?? reason).join(" · ")}
                   </p>
                 ) : null}
+                <Link
+                  href={`/${lang}/specialist/dashboard/requests/matched/${item.matchId}`}
+                  className="mt-4 inline-block text-sm font-semibold text-emerald-800"
+                >
+                  {copy.open}
+                </Link>
               </article>
             );
           })
