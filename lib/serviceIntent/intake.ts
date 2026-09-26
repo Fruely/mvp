@@ -437,7 +437,6 @@ export type ConfirmCode =
   | "offer"
   | "missing_name"
   | "missing_contact"
-  | "missing_service"
   | "missing_format"
   | "missing_location"
   | "invalid";
@@ -470,7 +469,6 @@ export function buildConfirmedServiceRequest(args: {
   if (!clientEmail && !clientPhone) return { ok: false, code: "missing_contact" };
 
   const requestedService = args.edits.requestedService.trim();
-  if (!requestedService) return { ok: false, code: "missing_service" };
 
   const workFormat =
     args.edits.workFormat === "no_preference" ? "hybrid" : args.edits.workFormat;
@@ -496,7 +494,7 @@ export function buildConfirmedServiceRequest(args: {
     client_email: clientEmail || null,
     client_phone: clientPhone || null,
     description: args.draft.rawText.trim(),
-    requested_service: requestedService,
+    requested_service: requestedService || null,
     client_budget_text: extraction.budget_text,
     preferred_language: args.edits.preferredLanguage ?? args.draft.locale,
     work_format: workFormat,

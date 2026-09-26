@@ -282,6 +282,15 @@ test("13. restricted and manual_review stay submittable under the existing polic
   }
 });
 
+test("clearing the recognized service still creates a request from the original text", () => {
+  const { draft } = started();
+  const result = confirm(draft, { requestedService: "  " });
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.body.requested_service, null);
+  assert.equal(result.body.description, RAW);
+});
+
 test("14. a null category still produces a valid request", () => {
   const { draft } = started({ category: { query: "гинеколог", id: null, text: null } });
   const result = confirm(draft);

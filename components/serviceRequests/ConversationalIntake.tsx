@@ -66,7 +66,6 @@ type Copy = {
   offerTitle: string;
   offerBody: string;
   requiredTask: string;
-  requiredService: string;
   requiredFormat: string;
   requiredLocation: string;
   requiredName: string;
@@ -124,7 +123,6 @@ const COPY: Record<Lang, Copy> = {
     offerTitle: "Это форма для поиска специалиста",
     offerBody: "Если вы сами оказываете услугу, расскажите, что вам нужно найти, или измените текст.",
     requiredTask: "Опишите задачу хотя бы одним предложением.",
-    requiredService: "Укажите, какая услуга нужна.",
     requiredFormat: "Выберите формат.",
     requiredLocation: "Укажите город.",
     requiredName: "Укажите, как к вам обращаться.",
@@ -180,7 +178,6 @@ const COPY: Record<Lang, Copy> = {
     offerTitle: "Це форма для пошуку спеціаліста",
     offerBody: "Якщо ви самі надаєте послугу, опишіть, що вам потрібно знайти, або змініть текст.",
     requiredTask: "Опишіть завдання хоча б одним реченням.",
-    requiredService: "Вкажіть, яка послуга потрібна.",
     requiredFormat: "Оберіть формат.",
     requiredLocation: "Вкажіть місто.",
     requiredName: "Вкажіть, як до вас звертатися.",
@@ -236,7 +233,6 @@ const COPY: Record<Lang, Copy> = {
     offerTitle: "Dieses Formular sucht eine Fachkraft",
     offerBody: "Wenn Sie selbst eine Leistung anbieten, beschreiben Sie, wen Sie suchen, oder ändern Sie den Text.",
     requiredTask: "Beschreiben Sie die Aufgabe mindestens in einem Satz.",
-    requiredService: "Bitte angeben, welche Leistung gebraucht wird.",
     requiredFormat: "Bitte die Form wählen.",
     requiredLocation: "Bitte die Stadt angeben.",
     requiredName: "Bitte angeben, wie wir Sie ansprechen dürfen.",
@@ -411,7 +407,6 @@ export default function ConversationalIntake({ lang }: { lang: Lang }) {
     });
     if (!built.ok) {
       const messages: Record<string, string> = {
-        missing_service: copy.requiredService,
         missing_format: copy.requiredFormat,
         missing_location: copy.requiredLocation,
         missing_name: copy.requiredName,
