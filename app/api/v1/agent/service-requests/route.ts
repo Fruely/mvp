@@ -11,6 +11,7 @@ import {
 import type { DelegatedAgentAuthorization } from "@/lib/agentAuthorization/decision";
 import { runDelegatedAuthorization } from "@/lib/agentAuthorization/orchestrate";
 import { resolveAgentDelegation } from "@/lib/agentDelegation/resolve";
+import { matchAfterServiceRequestCreated } from "@/lib/matching/matchAfterCreate";
 import { normalizeClientIdempotencyKey } from "@/lib/mutations/clientIdempotency";
 import { notify } from "@/lib/notifications/notify";
 import {
@@ -321,6 +322,10 @@ export async function POST(request: NextRequest) {
       await notifyIfServiceRequestCreated(result, validated, notify);
     } catch (notifyErr) {
       console.error("[agent/service-requests] owner notification failed", notifyErr);
+    }
+
+    if (result.kind === "created") {
+      await matchAfterServiceRequestCreated(supabase, result, validated);
     }
 
     await recordOperationOutcome({

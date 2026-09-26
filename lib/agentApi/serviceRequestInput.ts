@@ -157,6 +157,7 @@ export function parseAgentCreateServiceRequestInput(
     client_phone: phone,
     description: requestText,
     preferred_language: languageRaw,
+    service_languages: [languageRaw],
     work_format: workFormatRaw,
     city,
     postal_code: postalCode,

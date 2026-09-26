@@ -6,6 +6,7 @@ import {
   type ServiceRequestUrgency,
   type ServiceRequestWorkFormat,
 } from "./constants";
+import { canonicalizeLanguages } from "@/lib/matching/languages";
 import {
   mapServiceTimingToLegacyUrgency,
   validateServiceTiming,
@@ -29,6 +30,7 @@ export type ServiceRequestCreateInput = {
   client_budget_text?: unknown;
   preferred_contact_method?: unknown;
   preferred_language?: unknown;
+  service_languages?: unknown;
   work_format?: unknown;
   city?: unknown;
   postal_code?: unknown;
@@ -65,6 +67,8 @@ export type ValidatedServiceRequestCreate = {
   client_budget_text: string | null;
   preferred_contact_method: string | null;
   preferred_language: string;
+  /** Explicit service-language requirement. Empty means no language restriction. */
+  service_languages: string[];
   work_format: ServiceRequestWorkFormat;
   city: string | null;
   postal_code: string | null;
@@ -140,6 +144,11 @@ export function validateServiceRequestCreate(
 
   const preferred_language = str(body.preferred_language);
   if (!preferred_language) return { error: "preferred_language is required", status: 400 };
+  const service_languages = Array.isArray(body.service_languages)
+    ? canonicalizeLanguages(
+        body.service_languages.filter((item): item is string => typeof item === "string"),
+      ).slice(0, 8)
+    : [];
 
   const work_formatRaw = str(body.work_format);
   if (!work_formatRaw || !SERVICE_REQUEST_WORK_FORMATS.includes(work_formatRaw as ServiceRequestWorkFormat)) {
@@ -190,6 +199,7 @@ export function validateServiceRequestCreate(
     client_budget_text,
     preferred_contact_method,
     preferred_language,
+    service_languages,
     work_format,
     city,
     postal_code,

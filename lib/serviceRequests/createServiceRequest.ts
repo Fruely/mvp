@@ -164,6 +164,7 @@ export async function persistNewServiceRequest(
       client_budget_text: validated.client_budget_text,
       preferred_contact_method: validated.preferred_contact_method,
       preferred_language: validated.preferred_language,
+      service_languages: validated.service_languages ?? [],
       work_format: validated.work_format,
       city: validated.city,
       postal_code: validated.postal_code,

@@ -1783,7 +1783,8 @@
   "dashboard": {
     "sidebar": {
       "nav": {
-        "forYou": "Заявки для вас"
+        "forYou": "Заявки для вас",
+        "matched": "Заявки для вас"
       }
     },
     "forYou": {

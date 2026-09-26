@@ -18,6 +18,7 @@ import {
 import { validateServiceRequestCreate } from "@/lib/serviceRequests/validation";
 import { normalizeClientIdempotencyKey } from "@/lib/mutations/clientIdempotency";
 import { resolveBearerAuthUser } from "@/lib/auth/resolveBearerAuthUser";
+import { matchAfterServiceRequestCreated } from "@/lib/matching/matchAfterCreate";
 import {
   IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE,
   buildServiceRequestIdempotencyFingerprint,
@@ -145,6 +146,10 @@ export async function POST(request: NextRequest) {
       await notifyIfServiceRequestCreated(result, validated, notify);
     } catch (notifyErr) {
       console.error("[service-requests/create] owner notification failed", notifyErr);
+    }
+
+    if (result.kind === "created") {
+      await matchAfterServiceRequestCreated(supabase, result, validated);
     }
 
     const response = jsonResult(result);

@@ -38,6 +38,7 @@ const validated: ValidatedServiceRequestCreate = {
   client_budget_text: null,
   preferred_contact_method: null,
   preferred_language: "ru",
+  service_languages: [],
   work_format: "online",
   city: null,
   postal_code: null,
@@ -203,6 +204,10 @@ test("normalized demand fields stay outside the idempotency fingerprint", async 
   assert.equal(
     buildServiceRequestIdempotencyFingerprint(base),
     buildServiceRequestIdempotencyFingerprint(withDemand),
+  );
+  assert.equal(
+    buildServiceRequestIdempotencyFingerprint(base),
+    buildServiceRequestIdempotencyFingerprint({ ...base, service_languages: ["de"] }),
   );
 
   // A row created before the fields existed still replays afterwards.

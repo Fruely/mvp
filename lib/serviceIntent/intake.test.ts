@@ -291,6 +291,21 @@ test("clearing the recognized service still creates a request from the original 
   assert.equal(result.body.description, RAW);
 });
 
+test("an explicit service language is stored and the interface locale alone is not", () => {
+  const explicit = confirm(started().draft);
+  assert.equal(explicit.ok, true);
+  if (!explicit.ok) return;
+  assert.deepEqual(explicit.body.service_languages, ["ru"]);
+
+  const { draft } = started({ preferred_language: null });
+  const open = confirm(draft);
+  assert.equal(open.ok, true);
+  if (!open.ok) return;
+  assert.deepEqual(open.body.service_languages, []);
+  assert.equal(open.body.preferred_language, "ru");
+  assert.equal(open.body.locale, "ru");
+});
+
 test("14. a null category still produces a valid request", () => {
   const { draft } = started({ category: { query: "гинеколог", id: null, text: null } });
   const result = confirm(draft);

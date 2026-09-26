@@ -38,6 +38,7 @@ type Copy = {
   where: string;
   format: string;
   language: string;
+  anyLanguage: string;
   when: string;
   additional: string;
   online: string;
@@ -95,6 +96,7 @@ const COPY: Record<Lang, Copy> = {
     where: "Где",
     format: "Формат",
     language: "Язык",
+    anyLanguage: "Любой язык",
     when: "Когда",
     additional: "Дополнительно",
     online: "Онлайн",
@@ -150,6 +152,7 @@ const COPY: Record<Lang, Copy> = {
     where: "Де",
     format: "Формат",
     language: "Мова",
+    anyLanguage: "Будь-яка мова",
     when: "Коли",
     additional: "Додатково",
     online: "Онлайн",
@@ -205,6 +208,7 @@ const COPY: Record<Lang, Copy> = {
     where: "Wo",
     format: "Form",
     language: "Sprache",
+    anyLanguage: "Jede Sprache",
     when: "Wann",
     additional: "Zusätzlich",
     online: "Online",
@@ -616,12 +620,23 @@ export default function ConversationalIntake({ lang }: { lang: Lang }) {
                   <button
                     key={code}
                     type="button"
-                    className={choiceClass(edits.preferredLanguage === code)}
-                    onClick={() => setEdits({ ...edits, preferredLanguage: code })}
+                    className={choiceClass(edits.serviceLanguages.includes(code === "ua" ? "uk" : code))}
+                    onClick={() => setEdits({
+                      ...edits,
+                      preferredLanguage: code,
+                      serviceLanguages: [code === "ua" ? "uk" : code],
+                    })}
                   >
                     {copy.languages[code]}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  className={choiceClass(edits.serviceLanguages.length === 0)}
+                  onClick={() => setEdits({ ...edits, serviceLanguages: [], preferredLanguage: locale })}
+                >
+                  {copy.anyLanguage}
+                </button>
               </div>
             </div>
             <div>

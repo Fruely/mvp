@@ -1,3 +1,4 @@
+import { canonicalizeLanguages } from "@/lib/matching/languages";
 import { formatServiceTimingDisplay } from "@/lib/serviceRequests/serviceTiming";
 import type { ServiceTimingFields, ServiceTimingPeriod } from "@/lib/serviceRequests/serviceTiming";
 import { validateServiceRequestCreate } from "@/lib/serviceRequests/validation";
@@ -389,6 +390,8 @@ export type ReviewEdits = {
   city: string;
   workFormat: ServiceIntentWorkFormat | "no_preference" | null;
   preferredLanguage: ServiceIntentLocale | null;
+  /** Explicit requirement only. Empty does not inherit the interface locale. */
+  serviceLanguages: string[];
   /** Replaces the extracted timing. `null` keeps what extraction resolved. */
   timingPeriod: "asap" | ServiceTimingPeriod | null;
 };
@@ -399,6 +402,9 @@ export function reviewEditsFromDraft(draft: IntakeDraft): ReviewEdits {
     city: draft.extraction.location.city ?? "",
     workFormat: draft.workFormatNoPreference ? "no_preference" : draft.extraction.work_format,
     preferredLanguage: draft.extraction.preferred_language ?? draft.locale,
+    serviceLanguages: draft.extraction.preferred_language
+      ? canonicalizeLanguages([draft.extraction.preferred_language])
+      : [],
     timingPeriod: null,
   };
 }
@@ -497,6 +503,7 @@ export function buildConfirmedServiceRequest(args: {
     requested_service: requestedService || null,
     client_budget_text: extraction.budget_text,
     preferred_language: args.edits.preferredLanguage ?? args.draft.locale,
+    service_languages: canonicalizeLanguages(args.edits.serviceLanguages),
     work_format: workFormat,
     city: workFormat === "online" ? null : city || null,
     postal_code: workFormat === "online" ? null : postalCode,
