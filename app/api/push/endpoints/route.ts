@@ -1,0 +1,51 @@
+import { NextResponse, type NextRequest } from "next/server";
+import { listOwnPushEndpoints, registerPushEndpoint } from "@/lib/push/endpoints";
+import { requirePushUser } from "@/lib/push/session";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
+
+const NO_STORE = { "Cache-Control": "no-store" };
+
+export async function GET(request: NextRequest) {
+  const auth = await requirePushUser(request);
+  if ("status" in auth) return NextResponse.json({ error: "unauthorized" }, { status: 401, headers: NO_STORE });
+  try {
+    const endpoints = await listOwnPushEndpoints(createSupabaseServerClient(), auth.userId);
+    return NextResponse.json({ endpoints }, { status: 200, headers: NO_STORE });
+  } catch (error) {
+    console.error("[push/endpoints] list failed", { name: error instanceof Error ? error.name : "Error" });
+    return NextResponse.json({ error: "server_error" }, { status: 500, headers: NO_STORE });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  const auth = await requirePushUser(request);
+  if ("status" in auth) return NextResponse.json({ error: "unauthorized" }, { status: 401, headers: NO_STORE });
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    body = null;
+  }
+  const record = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  try {
+    const result = await registerPushEndpoint(createSupabaseServerClient(), {
+      actorUserId: auth.userId,
+      token: typeof record.token === "string" ? record.token : "",
+      platform: typeof record.platform === "string" ? record.platform : "",
+      deviceId: typeof record.deviceId === "string" ? record.deviceId : "",
+      locale: typeof record.locale === "string" ? record.locale : null,
+      timeZone: typeof record.timeZone === "string" ? record.timeZone : null,
+      permissionState: typeof record.permissionState === "string" ? record.permissionState : "granted",
+    });
+    if ("error" in result) {
+      const status = result.error === "forbidden" ? 403 : 400;
+      return NextResponse.json({ error: result.error }, { status, headers: NO_STORE });
+    }
+    return NextResponse.json({ id: result.id, rotated: result.rotated }, { status: 200, headers: NO_STORE });
+  } catch (error) {
+    console.error("[push/endpoints] register failed", { name: error instanceof Error ? error.name : "Error" });
+    return NextResponse.json({ error: "server_error" }, { status: 500, headers: NO_STORE });
+  }
+}

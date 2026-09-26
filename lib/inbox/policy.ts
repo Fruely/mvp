@@ -144,13 +144,28 @@ export function planExternalChannels(input: {
   ];
 }
 
+/** First wave is push plus one external channel. A reminder can use the held channel. */
+export function stageInitialChannels(channels: PlannedChannel[], stage: "initial" | "reminder" = "initial"): PlannedChannel[] {
+  if (stage !== "initial") return channels;
+  const push = channels.find((channel) => channel.channel === "push");
+  const telegram = channels.find((channel) => channel.channel === "telegram");
+  const email = channels.find((channel) => channel.channel === "email");
+  if (push?.status !== "pending" || telegram?.status !== "pending" || email?.status !== "pending") return channels;
+  return channels.map((channel) =>
+    channel.channel === "email" ? { channel: "email", status: "skipped", errorCode: "escalation_held" } : channel,
+  );
+}
+
 export function unsupportedChannelResult(): { status: "skipped"; errorCode: "channel_unsupported" } {
   return { status: "skipped", errorCode: "channel_unsupported" };
 }
 
 /** Recipient locale only. Client locale, source language and service languages are not inputs. */
 export function notificationLocale(recipientLocale: string | null | undefined): string {
-  const value = recipientLocale?.trim().toLowerCase() ?? "";
-  if (/^[a-z]{2,3}$/.test(value)) return value;
+  const value = recipientLocale?.trim().toLowerCase().replace(/_/g, "-") ?? "";
+  if (value === "ua" || value === "uk" || value === "uk-ua") return "ua";
+  const primary = value.split("-")[0] ?? "";
+  if (primary === "uk") return "ua";
+  if (/^[a-z]{2,3}$/.test(primary)) return primary;
   return "ru";
 }

@@ -1,5 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { channelDedupeKey, planExternalChannels } from "@/lib/inbox/policy";
+import { channelDedupeKey, planExternalChannels, stageInitialChannels } from "@/lib/inbox/policy";
+import { applyTransportPreferences, eventClassEnabled, type PushEventClass } from "@/lib/push/policy";
+import { loadNotificationPreferences } from "@/lib/push/preferences";
+import { isRecipientPushReady } from "@/lib/push/readiness";
 import { isEmailConfigured } from "@/lib/email";
 import {
   CLIENT_SELECTION_POLICY,
@@ -81,14 +84,28 @@ async function scheduleChannels(
     email: string | null;
     telegram: boolean;
     dueAt: string;
+    eventClass?: PushEventClass;
   },
 ): Promise<void> {
-  const channels = planExternalChannels({
-    hasTelegram: input.telegram,
-    hasEmail: Boolean(input.email),
-    emailConfigured: Boolean(input.email) && isEmailConfigured(),
-    pushConfigured: false,
-  });
+  const prefs = await loadNotificationPreferences(supabase, input.recipientUserId);
+  const eventClass = input.eventClass ?? "selection";
+  const channels = stageInitialChannels(
+    applyTransportPreferences(
+      planExternalChannels({
+        hasTelegram: input.telegram,
+        hasEmail: Boolean(input.email),
+        emailConfigured: Boolean(input.email) && isEmailConfigured(),
+        pushConfigured: await isRecipientPushReady(supabase, input.recipientUserId),
+      }),
+      {
+        push: prefs.pushEnabled,
+        email: prefs.emailEnabled,
+        telegram: prefs.telegramEnabled,
+        eventEnabled: eventClassEnabled(prefs, eventClass),
+      },
+    ),
+    eventClass === "reminder" ? "reminder" : "initial",
+  );
   for (const channel of channels) {
     const { error } = await supabase.from("notification_outbox").upsert(
       {
@@ -297,6 +314,7 @@ export async function scheduleClientReminders(supabase: SupabaseClient, now = ne
       email: typeof row.client_email === "string" ? row.client_email : null,
       telegram: false,
       dueAt: now.toISOString(),
+      eventClass: "reminder",
     });
     scheduled += 1;
   }

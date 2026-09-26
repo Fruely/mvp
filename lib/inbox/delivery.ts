@@ -14,6 +14,7 @@ import {
   nextAttemptStatus,
   notificationLocale,
   planExternalChannels,
+  stageInitialChannels,
   reminderInboxKey,
   unsupportedChannelResult,
   type MatchDeliveryPolicy,
@@ -22,6 +23,12 @@ import { renderActions, renderMatchNotice } from "./render";
 import { issueAccessToken } from "@/lib/selection/accessGrant";
 import { clientRequestPath, conversationPath } from "@/lib/selection/policy";
 import { clientEventPushContract } from "@/lib/selection/pushContract";
+import { deliverPushFanout } from "@/lib/push/deliver";
+import { applyTransportPreferences, eventClassEnabled, type PushEventClass } from "@/lib/push/policy";
+import { loadNotificationPreferences } from "@/lib/push/preferences";
+import { isRecipientPushReady } from "@/lib/push/readiness";
+import { lookupRecipientTimeZone } from "@/lib/push/timeZone";
+import { createExpoPushTransport, type PushTransport } from "@/lib/push/transport";
 
 type TransportStatus = "sent" | "retryable" | "failed" | "skipped";
 
@@ -76,17 +83,33 @@ async function ensureOutbox(
     email: string | null;
     emailConfigured: boolean;
     policy?: MatchDeliveryPolicy;
+    stage?: "initial" | "reminder";
+    eventClass?: PushEventClass;
   },
 ): Promise<void> {
   const policy = input.policy ?? DEFAULT_MATCH_DELIVERY_POLICY;
-  const decision = externalDeliveryDecision(new Date(), policy.defaultTimeZone, policy);
+  const zone = await lookupRecipientTimeZone(supabase, input.recipientUserId);
+  const decision = externalDeliveryDecision(new Date(), zone, policy);
   const when = decision.action === "defer_until" ? decision.until : new Date().toISOString();
-  const channels = planExternalChannels({
-    hasTelegram: Boolean(input.telegramChatId),
-    hasEmail: Boolean(input.email),
-    emailConfigured: input.emailConfigured,
-    pushConfigured: false,
-  });
+  const prefs = await loadNotificationPreferences(supabase, input.recipientUserId);
+  const eventClass = input.eventClass ?? "match";
+  const channels = stageInitialChannels(
+    applyTransportPreferences(
+      planExternalChannels({
+        hasTelegram: Boolean(input.telegramChatId),
+        hasEmail: Boolean(input.email),
+        emailConfigured: input.emailConfigured,
+        pushConfigured: await isRecipientPushReady(supabase, input.recipientUserId),
+      }),
+      {
+        push: prefs.pushEnabled,
+        email: prefs.emailEnabled,
+        telegram: prefs.telegramEnabled,
+        eventEnabled: eventClassEnabled(prefs, eventClass),
+      },
+    ),
+    input.stage ?? "initial",
+  );
   for (const channel of channels) {
     const { error } = await supabase.from("notification_outbox").upsert(
       {
@@ -312,6 +335,7 @@ export async function deliverPendingOutbox(
   policy: MatchDeliveryPolicy = DEFAULT_MATCH_DELIVERY_POLICY,
   transports: DeliveryTransports = defaultDeliveryTransports,
   clock: Date = new Date(),
+  pushTransport: PushTransport = createExpoPushTransport(),
 ): Promise<{ processed: number }> {
   const now = clock.toISOString();
   const { data, error } = await supabase
@@ -333,7 +357,8 @@ export async function deliverPendingOutbox(
       .maybeSingle();
     if (claim.error || !claim.data?.id) continue;
 
-    const quiet = externalDeliveryDecision(clock, policy.defaultTimeZone, policy);
+    const quietZone = await lookupRecipientTimeZone(supabase, typeof row.recipient_user_id === "string" ? row.recipient_user_id : null);
+    const quiet = externalDeliveryDecision(clock, quietZone, policy);
     if (quiet.action === "defer_until") {
       await supabase
         .from("notification_outbox")
@@ -378,15 +403,16 @@ export async function deliverPendingOutbox(
       : { data: null };
 
     const attempt = Number(row.attempt_count ?? 0) + 1;
-    const locale = notificationLocale(
-      clientEvent
-        ? typeof request.data?.locale === "string"
-          ? request.data.locale
-          : null
-        : typeof profile.data?.notification_locale === "string"
-          ? profile.data.notification_locale
-          : null,
-    );
+    const recipientUserId = typeof row.recipient_user_id === "string" ? row.recipient_user_id : null;
+    const prefs = await loadNotificationPreferences(supabase, recipientUserId);
+    const accountLocale = clientEvent
+      ? typeof request.data?.locale === "string"
+        ? request.data.locale
+        : null
+      : typeof profile.data?.notification_locale === "string"
+        ? profile.data.notification_locale
+        : null;
+    const locale = notificationLocale(prefs.notificationLocale ?? accountLocale);
     let prepared: PreparedNotice | null = null;
     let link = payload && "match_id" in payload && payload.match_id
       ? `${appOrigin()}${matchDeepLink(locale, payload.match_id)}`
@@ -436,7 +462,34 @@ export async function deliverPendingOutbox(
           opened: false,
         };
     let result: ChannelSendResult;
+    let pushEndpoints: Array<{ id: string; platform: string; provider: string; status: string; errorCode: string | null; providerMessageId: string | null }> = [];
+    const eventType = payload?.event
+      ? payload.event
+      : noticePayload.stage === "initial"
+        ? "match_available"
+        : "match_reminder";
     try {
+      if (String(row.channel) === "email" && !prefs.emailEnabled) {
+        result = { status: "skipped", providerMessageId: null, errorCode: "email_disabled" };
+      } else if (String(row.channel) === "telegram" && !prefs.telegramEnabled) {
+        result = { status: "skipped", providerMessageId: null, errorCode: "telegram_disabled" };
+      } else if (String(row.channel) === "push" && payload) {
+        const fanout = await deliverPushFanout(supabase, {
+          userId: recipientUserId,
+          locale,
+          eventType,
+          entityId: payload.event === "client_selected_you"
+            ? String(payload.match_id ?? payload.service_request_id ?? "")
+            : String(payload.match_id || payload.service_request_id || ""),
+          deepLink: link,
+          stage: noticePayload.stage,
+          opened: noticePayload.opened,
+          outboxId: String(row.id),
+          attempt,
+        }, pushTransport);
+        result = { status: fanout.status, providerMessageId: fanout.providerMessageId, errorCode: fanout.errorCode };
+        pushEndpoints = fanout.endpoints;
+      } else {
       result = payload
         ? await sendChannel(
             String(row.channel),
@@ -457,17 +510,33 @@ export async function deliverPendingOutbox(
             transports,
           )
         : { status: "failed", providerMessageId: null, errorCode: "missing_payload" };
+      }
     } catch {
       result = { status: "retryable", providerMessageId: null, errorCode: "transport_failed" };
     }
     const status = nextAttemptStatus({ result: result.status, attempt, policy });
-    await supabase.from("notification_delivery_attempts").insert({
-      outbox_id: row.id,
-      attempt,
-      status,
-      provider_message_id: result.providerMessageId,
-      error_code: result.errorCode,
-    });
+    if (pushEndpoints.length > 0) {
+      for (const endpoint of pushEndpoints) {
+        await supabase.from("notification_delivery_attempts").insert({
+          outbox_id: row.id,
+          attempt,
+          status: endpoint.status,
+          provider_message_id: endpoint.providerMessageId,
+          error_code: endpoint.errorCode,
+          endpoint_id: endpoint.id,
+          provider: endpoint.provider,
+          platform: endpoint.platform,
+        });
+      }
+    } else {
+      await supabase.from("notification_delivery_attempts").insert({
+        outbox_id: row.id,
+        attempt,
+        status,
+        provider_message_id: result.providerMessageId,
+        error_code: result.errorCode,
+      });
+    }
     const retryAt = new Date(Date.now() + attempt * 5 * 60 * 1000).toISOString();
     await supabase
       .from("notification_outbox")
@@ -568,6 +637,8 @@ export async function scheduleDueReminders(
       email: typeof specialist.data?.email === "string" ? specialist.data.email : null,
       emailConfigured,
       policy,
+      stage: "reminder",
+      eventClass: "reminder",
     });
     scheduled += 1;
   }

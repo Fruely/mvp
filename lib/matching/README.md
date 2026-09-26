@@ -28,6 +28,7 @@ Migrations are manual and are not applied by the app.
 1. `supabase/manual_migrations/2026-09-26_service_request_matches.sql`
 2. `supabase/manual_migrations/2026-09-26_freuly_inbox_delivery.sql`
 3. `supabase/manual_migrations/2026-09-26_client_selection.sql`
+4. `supabase/manual_migrations/2026-09-26_native_push_notifications.sql`
 
 The second file refuses to run until `service_request_matches` exists. It adds the response
 timestamps, Freuly Inbox, the delivery outbox and specialist `notification_locale`.
@@ -35,6 +36,10 @@ The third file refuses to run until both earlier tables exist. It adds client re
 selection timestamps, conversation rows and allows an inbox item to belong to a request
 when the client has no account.
 
-A new match writes one inbox item. Telegram and email only signal that item. Native push is
-a contract and is skipped until a device transport exists. Opening the match and
-interested/declined are the product events. The first response wins and stops reminders.
+The fourth file refuses to run until Inbox, the outbox and conversations exist. It stores
+authenticated device endpoints and service-notification preferences. Anonymous requests stay
+on email. Push is an Expo transport over the existing outbox; without `EXPO_PUSH_ACCESS_TOKEN`
+or a registered device the push row is skipped and Telegram or email still run.
+
+A new match writes one inbox item. Opening the match and interested/declined are the product
+events. The first response wins and stops reminders.

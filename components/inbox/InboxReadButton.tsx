@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function InboxReadButton({ inboxId, label }: { inboxId: string; label: string }) {
+  const router = useRouter();
   const [done, setDone] = useState(false);
   const [failed, setFailed] = useState(false);
 
@@ -15,6 +17,7 @@ export default function InboxReadButton({ inboxId, label }: { inboxId: string; l
         return;
       }
       setDone(true);
+      router.refresh();
     } catch {
       setFailed(true);
     }

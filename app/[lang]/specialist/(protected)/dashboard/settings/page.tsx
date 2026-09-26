@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
 import { dashboardPageStackClass } from "@/components/dashboard/dashboardStyles";
 import ChangePasswordForm from "@/components/dashboard/settings/ChangePasswordForm";
+import NotificationSettings from "@/components/dashboard/settings/NotificationSettings";
 import { Card, CardContent, CardHeader, CardTitle, Input } from "@/components/ui";
 import { getDictionary, resolveRouteLang, t } from "@/lib/i18n";
 import { getCurrentUserAndSpecialist } from "@/lib/specialists/server";
@@ -41,6 +42,7 @@ export default async function SpecialistDashboardSettingsPage({
           <ChangePasswordForm email={email} dict={dict} />
         </CardContent>
       </Card>
+      <NotificationSettings lang={lang} />
     </div>
   );
 }
