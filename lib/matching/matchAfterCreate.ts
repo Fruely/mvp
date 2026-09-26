@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ServiceRequestCreateResult } from "@/lib/serviceRequests/createServiceRequest";
 import type { ValidatedServiceRequestCreate } from "@/lib/serviceRequests/validation";
 import type { MatchWorkFormat } from "./eligibility";
+import { isServiceRequestMatchingEnabled } from "./featureFlag";
 import { matchConfirmedServiceRequest } from "./runMatching";
 
 function asFormat(value: string): MatchWorkFormat | null {
@@ -30,6 +31,13 @@ export async function matchAfterServiceRequestCreated(
       .maybeSingle();
     if (error || !data?.id) {
       console.error("[matching] failed", { outcome: "request_not_found" });
+      return;
+    }
+    if (!isServiceRequestMatchingEnabled()) {
+      console.info("[matching] matching_skipped", {
+        reason: "feature_disabled",
+        request_id: String(data.id),
+      });
       return;
     }
     await matchConfirmedServiceRequest(supabase, {
