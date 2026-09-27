@@ -30,7 +30,6 @@ import { loadNotificationPreferences } from "@/lib/push/preferences";
 import { isRecipientPushReady } from "@/lib/push/readiness";
 import { lookupRecipientTimeZone } from "@/lib/push/timeZone";
 import { createExpoPushTransport, type PushTransport } from "@/lib/push/transport";
-import { applyMatchingCanary } from "@/lib/matching/canary";
 
 type TransportStatus = "sent" | "retryable" | "failed" | "skipped";
 
@@ -143,10 +142,7 @@ export async function enqueueMatchNotifications(
     .select("id, specialist_id, status, opened_at")
     .eq("service_request_id", request.id);
   if (error) throw error;
-  const rows = applyMatchingCanary(
-    (matches ?? []).map((row) => ({ ...row, specialist_id: String(row.specialist_id ?? "") })),
-    { serviceRequestId: request.id },
-  );
+  const rows = matches ?? [];
   if (!rows.length) return;
 
   const specialistIds = rows.map((row) => String(row.specialist_id));
@@ -590,29 +586,8 @@ export async function scheduleDueReminders(
     .limit(30);
   if (error) throw error;
 
-  const due = [...(matches ?? [])];
-  const allowed: typeof due = [];
-  const byRequest = new Map<string, typeof due>();
-  for (const match of due) {
-    const requestId = String(match.service_request_id ?? "");
-    const group = byRequest.get(requestId);
-    if (group) group.push(match);
-    else byRequest.set(requestId, [match]);
-  }
-  for (const [serviceRequestId, group] of Array.from(byRequest.entries())) {
-    const allowedIds = new Set(
-      applyMatchingCanary(
-        group.map((match) => ({ specialist_id: String(match.specialist_id ?? "") })),
-        { serviceRequestId: serviceRequestId || null },
-      ).map((match) => match.specialist_id),
-    );
-    for (const match of group) {
-      if (allowedIds.has(String(match.specialist_id ?? ""))) allowed.push(match);
-    }
-  }
-
   let scheduled = 0;
-  for (const match of allowed) {
+  for (const match of matches ?? []) {
     const first = await supabase.from("inbox_items").select("id").eq("dedupe_key", reminderInboxKey(String(match.id), 1)).maybeSingle();
     const second = await supabase.from("inbox_items").select("id").eq("dedupe_key", reminderInboxKey(String(match.id), 2)).maybeSingle();
     const sentReminders = (first.data?.id ? 1 : 0) + (second.data?.id ? 1 : 0);
