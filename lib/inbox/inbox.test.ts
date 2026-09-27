@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { deliverPendingOutbox, enqueueMatchNotifications, scheduleDueReminders, buildMatchEmail, buildTelegramNotice } from "./delivery.ts";
+import { MATCHING_CANARY_SPECIALIST_ENV } from "../matching/canary.ts";
 import { loadInbox } from "./loadInbox.ts";
 import { canReadInbox, safeMatchPayload, type MatchInboxPayload } from "./payload.ts";
 import {
@@ -489,6 +490,128 @@ test("migration, cron and feeds keep the phase boundaries", () => {
 function awaitableInbox(): string {
   return "ready-or-empty";
 }
+
+const CANARY_SPECIALIST = "55b177ab-d62b-4c65-aa6c-384dad91709e";
+const OTHER_SPECIALIST = "73d0f95e-5959-4ad1-8670-3913fa26e5bc";
+
+function twoSpecialistSeed() {
+  return memory({
+    service_request_matches: [
+      {
+        id: "match-canary",
+        specialist_id: CANARY_SPECIALIST,
+        service_request_id: "request-1",
+        status: "active",
+        opened_at: null,
+        responded_at: null,
+        first_notified_at: null,
+        matched_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+      },
+      {
+        id: "match-other",
+        specialist_id: OTHER_SPECIALIST,
+        service_request_id: "request-1",
+        status: "active",
+        opened_at: null,
+        responded_at: null,
+        first_notified_at: null,
+        matched_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+      },
+    ],
+    specialists: [
+      { id: CANARY_SPECIALIST, user_id: "user-canary", email: "canary@example.com", telegram_chat_id: 100, notification_locale: "de" },
+      { id: OTHER_SPECIALIST, user_id: "user-other", email: "other@example.com", telegram_chat_id: 200, notification_locale: "de" },
+    ],
+    service_requests: [{
+      id: "request-1",
+      public_id: "REQ-1",
+      client_user_id: "user-client",
+      locale: "ua",
+      client_email: null,
+      requested_service: "Tax advice",
+      category_text: null,
+      city: "Berlin",
+      work_format: "online",
+      service_languages: ["de"],
+    }],
+    inbox_items: [],
+    notification_outbox: [],
+    notification_delivery_attempts: [],
+  });
+}
+
+async function withCanary<T>(value: string | undefined, run: () => Promise<T>): Promise<T> {
+  const previous = process.env[MATCHING_CANARY_SPECIALIST_ENV];
+  if (value === undefined) delete process.env[MATCHING_CANARY_SPECIALIST_ENV];
+  else process.env[MATCHING_CANARY_SPECIALIST_ENV] = value;
+  try {
+    return await run();
+  } finally {
+    if (previous === undefined) delete process.env[MATCHING_CANARY_SPECIALIST_ENV];
+    else process.env[MATCHING_CANARY_SPECIALIST_ENV] = previous;
+  }
+}
+
+const MATCH_REQUEST = {
+  id: "request-1",
+  categoryId: null,
+  serviceLanguages: ["de"],
+  workFormat: "online" as const,
+  city: null,
+  postalCode: null,
+};
+
+test("H. valid canary enqueues inbox and outbox only for that specialist", async () => {
+  const db = twoSpecialistSeed();
+  await withCanary(CANARY_SPECIALIST, async () => {
+    await enqueueMatchNotifications(db.supabase, MATCH_REQUEST, { emailConfigured: true });
+  });
+  assert.equal(db.tables.inbox_items.length, 1);
+  assert.equal(db.tables.inbox_items[0].recipient_user_id, "user-canary");
+  assert.equal(db.tables.notification_outbox.length > 0, true);
+  assert.equal(db.tables.notification_outbox.every((row) => row.recipient_user_id === "user-canary"), true);
+  assert.equal(JSON.stringify(db.tables.inbox_items).includes("user-other"), false);
+  assert.equal(JSON.stringify(db.tables.notification_outbox).includes("user-other"), false);
+});
+
+test("I. a valid canary does not remind another specialist", async () => {
+  const db = seed();
+  const result = await withCanary(CANARY_SPECIALIST, async () => scheduleDueReminders(db.supabase, new Date(), DEFAULT_MATCH_DELIVERY_POLICY, false));
+  assert.equal(result.scheduled, 0);
+  assert.equal(db.tables.inbox_items.length, 0);
+  assert.equal(db.tables.notification_outbox.length, 0);
+});
+
+test("J. malformed canary config creates no specialist inbox or outbox", async () => {
+  const initial = twoSpecialistSeed();
+  await withCanary("not-a-uuid", async () => {
+    await enqueueMatchNotifications(initial.supabase, MATCH_REQUEST, { emailConfigured: true });
+  });
+  assert.equal(initial.tables.inbox_items.length, 0);
+  assert.equal(initial.tables.notification_outbox.length, 0);
+
+  const reminder = seed();
+  const scheduled = await withCanary("", async () => scheduleDueReminders(reminder.supabase, new Date(), DEFAULT_MATCH_DELIVERY_POLICY, false));
+  assert.equal(scheduled.scheduled, 0);
+  assert.equal(reminder.tables.inbox_items.length, 0);
+  assert.equal(reminder.tables.notification_outbox.length, 0);
+});
+
+test("K. absent canary env keeps inbox and reminder delivery", async () => {
+  const initial = seed();
+  await withCanary(undefined, async () => {
+    await enqueueMatchNotifications(initial.supabase, MATCH_REQUEST, { emailConfigured: true });
+  });
+  assert.equal(initial.tables.inbox_items.length, 1);
+  assert.equal(initial.tables.inbox_items[0].recipient_user_id, "user-1");
+  assert.equal(initial.tables.notification_outbox.length > 0, true);
+
+  const reminder = seed();
+  const scheduled = await withCanary(undefined, async () => scheduleDueReminders(reminder.supabase, new Date(), DEFAULT_MATCH_DELIVERY_POLICY, false));
+  assert.equal(scheduled.scheduled, 1);
+  assert.equal(reminder.tables.inbox_items.length, 1);
+  assert.equal(reminder.tables.notification_outbox.length > 0, true);
+});
 
 test("inbox loader returns an error state without throwing", async () => {
   const supabase = {

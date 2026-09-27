@@ -123,3 +123,36 @@ environment. Requests continue to be created. Matches already stored are left in
 Removing `EXPO_PUSH_ACCESS_TOKEN` does not stop push. The token is optional, and delivery
 continues without it unless Expo Enhanced Push Security is enabled. FCM V1 credentials
 stay in Expo/EAS. Do not delete tables, historical matches or outbox rows.
+
+## TEMPORARY PRODUCTION CANARY GUARD
+
+`lib/matching/canary.ts` is temporary. Delete it after the controlled matching test,
+together with its call sites, tests and this section.
+
+`SERVICE_REQUEST_MATCHING_CANARY_SPECIALIST_ID` is read only by that helper.
+
+- Absent: matching, inbox and reminders behave as they do without the guard.
+- Present and exactly one UUID, with no extra spaces or extra values: a
+  `service_request_match` is stored only when ordinary matching already selected that
+  specialist. No synthetic match is created. Initial inbox and reminder inbox are
+  created only for that specialist.
+- Present but empty, whitespace, an invalid UUID, several values, or any other
+  malformed string: fail closed. Zero matches are stored and no specialist inbox or
+  outbox is created. Matching does not fall back to the unfiltered set.
+
+The owner `NEW_SERVICE_REQUEST` notification is outside this guard.
+
+While this guard exists, use the order below instead of Stage C steps 13-15.
+
+Rollout:
+
+a. `SERVICE_REQUEST_MATCHING_ENABLED` stays false.
+b. Prepare the production env `SERVICE_REQUEST_MATCHING_CANARY_SPECIALIST_ID=<controlled UUID>`.
+c. Deploy the guard code.
+d. Verify the runtime/deployment while matching is still false.
+e. Only then set `SERVICE_REQUEST_MATCHING_ENABLED=true`.
+f. Create exactly one controlled request.
+g. Verify the database and push.
+h. Immediately set `SERVICE_REQUEST_MATCHING_ENABLED=false`.
+i. Remove the canary env.
+j. Remove the temporary canary code in a separate cleanup commit and deploy.

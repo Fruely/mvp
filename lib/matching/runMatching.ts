@@ -8,6 +8,7 @@ import {
   type MatchRequest,
   type MatchWorkFormat,
 } from "./eligibility";
+import { applyMatchingCanary } from "./canary";
 import { storedLanguageVariants } from "./languages";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -170,8 +171,9 @@ export async function matchConfirmedServiceRequest(
       matches.push({ specialist_id: candidate.id, match_reasons: decision.reasons });
     }
 
+    const persisted = applyMatchingCanary(matches, { serviceRequestId: request.id });
     const now = new Date().toISOString();
-    for (const part of chunk(matches, UPSERT_CHUNK)) {
+    for (const part of chunk(persisted, UPSERT_CHUNK)) {
       const { error } = await supabase.from("service_request_matches").upsert(
         part.map((match) => ({
           service_request_id: request.id,
@@ -200,7 +202,7 @@ export async function matchConfirmedServiceRequest(
       runId,
       serviceRequestId: request.id,
       candidates: rows.length,
-      matches: matches.length,
+      matches: persisted.length,
       durationMs: Date.now() - started,
     };
     console.info("[matching] completed", result);
