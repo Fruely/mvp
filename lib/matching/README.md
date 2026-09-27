@@ -2,7 +2,9 @@
 
 Confirmed `service_requests` are matched to published specialists without a model call.
 The result is stored in `service_request_matches` and shown in the specialist dashboard
-at `/{lang}/specialist/dashboard/requests/matched`.
+at `/{lang}/specialist/dashboard/requests/matched`. Native reads the same rows through
+`GET /api/specialist/matches` and `GET /api/specialist/matches/{matchId}`. Those reads
+return demand fields only and do not change match status.
 
 This is separate from the public demand drum and from the existing paid promotion inbox
 at `/requests/for-you`. Those projections are unchanged.
