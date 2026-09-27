@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { register } from "node:module";
 import test from "node:test";
 import { harness, resetHarness } from "./serviceRequests.harness.mjs";
@@ -75,4 +76,91 @@ test("HTTP idempotent replay does not notify twice", async () => {
   assert.equal(secondJson.public_id, firstJson.public_id);
   assert.equal(harness.rows.length, 1);
   assert.equal(harness.notifyCalls.length, 1);
+});
+
+const COACHES_ID = "11111111-1111-4111-8111-111111111111";
+const OTHER_ID = "22222222-2222-4222-8222-222222222222";
+
+function nativeLikeBody(overrides: Record<string, unknown> = {}) {
+  return {
+    ...validBody,
+    category_id: null,
+    category_text: "Коучи",
+    preferred_language: "ua",
+    service_languages: ["uk"],
+    work_format: "online",
+    ...overrides,
+  };
+}
+
+test("native category text resolves to the exact catalogue id before persist", async () => {
+  harness.catalogRows = [
+    { category_id: COACHES_ID, title: "Coaches", title_ru: "Коучи", title_de: "Coaches", title_ua: "Коучи" },
+  ];
+  const res = await createPost(publicCreateRequest(nativeLikeBody()));
+  assert.equal(res.status, 200);
+  assert.equal(harness.rows.length, 1);
+  assert.equal(harness.rows[0].category_id, COACHES_ID);
+  assert.equal(harness.rows[0].category_text, "Коучи");
+  assert.deepEqual(harness.rows[0].service_languages, ["uk"]);
+  assert.equal(harness.rows[0].work_format, "online");
+  assert.equal(harness.notifyCalls.length, 1);
+});
+
+test("an ambiguous category is stored unresolved and still notifies the owner", async () => {
+  harness.catalogRows = [
+    { category_id: COACHES_ID, title_ua: "Коучи" },
+    { category_id: OTHER_ID, title: "Коучи" },
+  ];
+  const res = await createPost(publicCreateRequest(nativeLikeBody()));
+  assert.equal(res.status, 200);
+  assert.equal(harness.rows.length, 1);
+  assert.equal(harness.rows[0].category_id, null);
+  assert.equal(harness.rows[0].category_text, "Коучи");
+  assert.equal(harness.notifyCalls.length, 1);
+});
+
+test("an unknown category text is stored with a null category id", async () => {
+  const res = await createPost(publicCreateRequest(nativeLikeBody()));
+  assert.equal(res.status, 200);
+  assert.equal(harness.rows.length, 1);
+  assert.equal(harness.rows[0].category_id, null);
+  assert.equal(harness.notifyCalls.length, 1);
+});
+
+test("a catalogue read error does not create the request", async () => {
+  harness.catalogError = { message: "boom" };
+  const res = await createPost(publicCreateRequest(nativeLikeBody()));
+  const json = await res.json();
+  assert.equal(res.status, 500);
+  assert.equal(json.error, "server_error");
+  assert.equal(harness.rows.length, 0);
+  assert.equal(harness.notifyCalls.length, 0);
+});
+
+test("an existing category id skips catalogue lookup", async () => {
+  harness.catalogRows = [{ category_id: OTHER_ID, title: "Коучи" }];
+  const res = await createPost(publicCreateRequest(nativeLikeBody({ category_id: COACHES_ID })));
+  assert.equal(res.status, 200);
+  assert.equal(harness.rows[0].category_id, COACHES_ID);
+  assert.equal(harness.catalogReads, 0);
+});
+
+test("category resolution stays on the public create route", () => {
+  const publicRoute = readFileSync(new URL("../../app/api/service-requests/route.ts", import.meta.url), "utf8");
+  const agentRoute = readFileSync(new URL("../../app/api/v1/agent/service-requests/route.ts", import.meta.url), "utf8");
+  const extractRoute = readFileSync(new URL("../../app/api/intent/extract/route.ts", import.meta.url), "utf8");
+  const suggest = readFileSync(new URL("../categories/suggestCategories.ts", import.meta.url), "utf8");
+  const intake = readFileSync(new URL("../serviceIntent/intake.ts", import.meta.url), "utf8");
+  const create = readFileSync(new URL("./createServiceRequest.ts", import.meta.url), "utf8");
+  assert.equal(publicRoute.includes("resolveExactCategoryId"), true);
+  assert.equal(agentRoute.includes("resolveExactCategoryId"), false);
+  assert.equal(extractRoute.includes("resolveExactCategoryId"), false);
+  assert.equal(suggest.includes("resolveExactCategoryId"), false);
+  assert.equal(intake.includes("resolveExactCategoryId"), false);
+  const payloadStart = create.indexOf("function buildServiceRequestIdempotencyPayload");
+  const payloadEnd = create.indexOf("export function buildServiceRequestIdempotencyFingerprint");
+  const payload = create.slice(payloadStart, payloadEnd);
+  assert.equal(payload.includes("service_languages"), false);
+  assert.equal(payload.includes("category_id"), true);
 });

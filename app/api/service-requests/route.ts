@@ -18,6 +18,7 @@ import {
 import { validateServiceRequestCreate } from "@/lib/serviceRequests/validation";
 import { normalizeClientIdempotencyKey } from "@/lib/mutations/clientIdempotency";
 import { resolveBearerAuthUser } from "@/lib/auth/resolveBearerAuthUser";
+import { resolveExactCategoryId } from "@/lib/categories/resolveExactCategoryId";
 import { matchAfterServiceRequestCreated } from "@/lib/matching/matchAfterCreate";
 import { issueAccessToken } from "@/lib/selection/accessGrant";
 import {
@@ -67,12 +68,23 @@ export async function POST(request: NextRequest) {
 
     const clientUserId = auth.kind === "authenticated" ? auth.userId : null;
     const body = await request.json();
-    const validated = validateServiceRequestCreate(body);
+    let validated = validateServiceRequestCreate(body);
     if ("error" in validated) {
       return NextResponse.json({ error: validated.error }, { status: validated.status, headers: NO_STORE });
     }
 
     const supabase = createSupabaseServerClient();
+    if (validated.category_id == null && validated.category_text) {
+      const resolution = await resolveExactCategoryId(supabase, validated.category_text);
+      if (resolution.status === "error") {
+        console.error("[service-requests/create] category lookup failed");
+        return NextResponse.json({ error: "server_error" }, { status: 500, headers: NO_STORE });
+      }
+      if (resolution.status === "resolved") {
+        validated = { ...validated, category_id: resolution.categoryId };
+      }
+    }
+
     const clientIdempotencyKey = normalizeClientIdempotencyKey(body.idempotency_key);
     const idempotencyFingerprint = buildServiceRequestIdempotencyFingerprint(validated);
 

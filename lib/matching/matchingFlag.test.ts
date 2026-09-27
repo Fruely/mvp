@@ -14,7 +14,7 @@ const VALIDATED = {
   postal_code: null,
 } as never;
 
-function database() {
+function database(specialistCategoryId: string | null = null) {
   const writes: string[] = [];
   const supabase = {
     from(table: string) {
@@ -36,7 +36,7 @@ function database() {
             data: table === "specialists"
               ? [{
                 id: "specialist-1",
-                category_id: null,
+                category_id: specialistCategoryId,
                 languages: ["ru"],
                 work_format: "online",
                 postal_code: null,
@@ -101,12 +101,13 @@ test("2. flag false creates no match", async () => {
 });
 
 test("3. flag true runs matching for the new request", async () => {
-  const db = database();
+  const categoryId = "22222222-2222-4222-8222-222222222222";
+  const db = database(categoryId);
   await withFlag("true", async () => {
     await matchAfterServiceRequestCreated(
       db.supabase,
       { kind: "created", public_id: "REQ-1", created_at: "2026-09-26T00:00:00.000Z" },
-      VALIDATED,
+      { ...VALIDATED, category_id: categoryId, service_languages: [] },
     );
   });
   assert.equal(db.writes.includes("service_request_matches"), true);
@@ -114,6 +115,35 @@ test("3. flag true runs matching for the new request", async () => {
   const enqueueAt = matching.lastIndexOf("enqueueMatchNotifications");
   const upsertAt = matching.indexOf('from("service_request_matches")');
   assert.equal(upsertAt > 0 && enqueueAt > upsertAt, true);
+});
+
+test("3b. a missing category does not start matching", async () => {
+  const db = database();
+  const logs: unknown[][] = [];
+  const original = console.info;
+  console.info = (...args: unknown[]) => {
+    logs.push(args);
+  };
+  try {
+    await withFlag("true", async () => {
+      await matchAfterServiceRequestCreated(
+        db.supabase,
+        { kind: "created", public_id: "REQ-1", created_at: "2026-09-26T00:00:00.000Z" },
+        VALIDATED,
+      );
+    });
+  } finally {
+    console.info = original;
+  }
+  assert.deepEqual(db.writes, []);
+  assert.deepEqual(logs, [[
+    "[matching] matching_skipped",
+    { reason: "category_unresolved", request_id: "request-internal-1" },
+  ]]);
+  const serialized = JSON.stringify(logs);
+  assert.equal(serialized.includes("category_text"), false);
+  assert.equal(serialized.includes("description"), false);
+  assert.equal(serialized.includes("@"), false);
 });
 
 test("4-5. extraction and matching flags are independent", () => {

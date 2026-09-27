@@ -40,6 +40,13 @@ export async function matchAfterServiceRequestCreated(
       });
       return;
     }
+    if (!validated.category_id) {
+      console.info("[matching] matching_skipped", {
+        reason: "category_unresolved",
+        request_id: String(data.id),
+      });
+      return;
+    }
     await matchConfirmedServiceRequest(supabase, {
       id: String(data.id),
       categoryId: validated.category_id,
