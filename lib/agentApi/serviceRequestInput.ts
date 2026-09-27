@@ -166,5 +166,5 @@ export function parseAgentCreateServiceRequestInput(
     source_path: AGENT_CREATE_SERVICE_REQUEST_SOURCE_PATH,
     service_timing_type: "flexible_period",
     service_timing_period: "flexible",
-  });
+  }, "agent");
 }

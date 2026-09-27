@@ -29,6 +29,7 @@ import { applyTransportPreferences, eventClassEnabled, type PushEventClass } fro
 import { loadNotificationPreferences } from "@/lib/push/preferences";
 import { isRecipientPushReady } from "@/lib/push/readiness";
 import { lookupRecipientTimeZone } from "@/lib/push/timeZone";
+import { resolveClientEventEmail } from "@/lib/inbox/clientEventEmail";
 import { createExpoPushTransport, type PushTransport } from "@/lib/push/transport";
 
 type TransportStatus = "sent" | "retryable" | "failed" | "skipped";
@@ -507,9 +508,13 @@ export async function deliverPendingOutbox(
               payload: noticePayload,
               telegramChatId: clientEvent ? null : profile.data?.telegram_chat_id ?? null,
               email: clientEvent
-                ? typeof request.data?.client_email === "string"
-                  ? request.data.client_email
-                  : null
+                ? await resolveClientEventEmail(supabase, {
+                    storedEmail: request.data?.client_email,
+                    clientUserId:
+                      typeof request.data?.client_user_id === "string"
+                        ? request.data.client_user_id
+                        : null,
+                  })
                 : typeof profile.data?.email === "string"
                   ? profile.data.email
                   : null,

@@ -164,3 +164,75 @@ test("category resolution stays on the public create route", () => {
   assert.equal(payload.includes("service_languages"), false);
   assert.equal(payload.includes("category_id"), true);
 });
+
+const ownedDemand = {
+  description: "Need an online coach",
+  preferred_language: "ua",
+  service_languages: ["uk"],
+  work_format: "online",
+  service_timing_type: "asap",
+  locale: "ua",
+  hp: "",
+};
+
+test("authenticated human create succeeds without copied identity", async () => {
+  harness.authUserId = "user-owner-1";
+  const res = await createPost(publicCreateRequest({
+    ...ownedDemand,
+    client_user_id: "attacker-user",
+    client_name: "Spoofed",
+    client_email: "spoof@example.com",
+    client_phone: "+490000",
+  }));
+  assert.equal(res.status, 200);
+  assert.equal(harness.rows.length, 1);
+  assert.equal(harness.rows[0].client_user_id, "user-owner-1");
+  assert.equal(harness.rows[0].client_name, null);
+  assert.equal(harness.rows[0].client_email, null);
+  assert.equal(harness.rows[0].client_phone, null);
+});
+
+test("missing bearer still uses the anonymous contact contract", async () => {
+  const missingName = await createPost(publicCreateRequest({ ...validBody, client_name: "  " }));
+  assert.equal(missingName.status, 400);
+  const missingContact = await createPost(publicCreateRequest({
+    ...validBody,
+    client_email: null,
+    client_phone: null,
+  }));
+  assert.equal(missingContact.status, 400);
+  const created = await createPost(publicCreateRequest(validBody));
+  assert.equal(created.status, 200);
+  assert.equal(harness.rows[0].client_user_id, null);
+  assert.equal(harness.rows[0].client_name, "Anna");
+  assert.equal(harness.rows[0].client_email, "anna@example.com");
+});
+
+test("authenticated retries of the same owned demand replay", async () => {
+  harness.authUserId = "user-owner-1";
+  const body = { ...ownedDemand, idempotency_key: "native:demand:owned1234" };
+  const first = await createPost(publicCreateRequest(body));
+  const second = await createPost(publicCreateRequest({
+    ...body,
+    client_name: "Different",
+    client_email: "other@example.com",
+  }));
+  const firstJson = await first.json();
+  const secondJson = await second.json();
+  assert.equal(first.status, 200);
+  assert.equal(second.status, 200);
+  assert.equal(secondJson.public_id, firstJson.public_id);
+  assert.equal(harness.rows.length, 1);
+});
+
+test("the same idempotency key under another owner conflicts", async () => {
+  harness.authUserId = "user-owner-1";
+  const body = { ...ownedDemand, idempotency_key: "native:demand:owned9999" };
+  const first = await createPost(publicCreateRequest(body));
+  assert.equal(first.status, 200);
+  harness.authUserId = "user-other-2";
+  const second = await createPost(publicCreateRequest(body));
+  assert.equal(second.status, 409);
+  assert.equal(harness.rows.length, 1);
+  assert.equal(harness.rows[0].client_user_id, "user-owner-1");
+});

@@ -57,8 +57,11 @@ export type ServiceRequestCreateInput = {
   idempotency_key?: unknown;
 };
 
+/** Who is creating the request. Chosen only after auth has already been resolved. */
+export type ServiceRequestIdentityContract = "authenticated_human" | "anonymous_legacy" | "agent";
+
 export type ValidatedServiceRequestCreate = {
-  client_name: string;
+  client_name: string | null;
   client_email: string | null;
   client_phone: string | null;
   description: string;
@@ -106,6 +109,7 @@ const TIMING_LIST_COLUMNS =
 
 export function validateServiceRequestCreate(
   body: ServiceRequestCreateInput,
+  identity: ServiceRequestIdentityContract = "anonymous_legacy",
 ): ValidatedServiceRequestCreate | ValidationError {
   if (typeof body.hp === "string" && body.hp.trim().length > 0) {
     return { error: "Spam rejected", status: 400 };
@@ -127,19 +131,31 @@ export function validateServiceRequestCreate(
     return { error: "invalid source", status: 400 };
   }
 
-  const client_name = str(body.client_name);
-  if (!client_name) return { error: "client_name is required", status: 400 };
+  const suppliedName = str(body.client_name);
+  const suppliedEmail = str(body.client_email);
+  const suppliedPhone = str(body.client_phone);
+  let client_name: string | null;
+  let client_email: string | null;
+  let client_phone: string | null;
+  if (identity === "authenticated_human") {
+    // Ownership is the auth user. Do not copy body identity onto the demand row.
+    client_name = null;
+    client_email = null;
+    client_phone = null;
+  } else {
+    if (!suppliedName) return { error: "client_name is required", status: 400 };
+    if (!suppliedEmail && !suppliedPhone) {
+      return { error: "client_email or client_phone is required", status: 400 };
+    }
+    client_name = suppliedName;
+    client_email = suppliedEmail;
+    client_phone = suppliedPhone;
+  }
 
   const description = str(body.description);
   if (!description) return { error: "description is required", status: 400 };
   if (description.length > DESCRIPTION_MAX_LEN) {
     return { error: "description is too long", status: 400 };
-  }
-
-  const client_email = str(body.client_email);
-  const client_phone = str(body.client_phone);
-  if (!client_email && !client_phone) {
-    return { error: "client_email or client_phone is required", status: 400 };
   }
 
   const preferred_language = str(body.preferred_language);

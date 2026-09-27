@@ -337,6 +337,48 @@ test("same key with a different payload is a conflict", async () => {
   assert.equal(harness.rows.length, 1);
 });
 
+test("authenticated identity is omitted from the fingerprint and the row", async () => {
+  const owned = validateServiceRequestCreate(
+    {
+      ...LEGACY_WEB_BODY,
+      client_name: "Spoofed",
+      client_email: "spoof@example.com",
+      client_phone: "+490000",
+    },
+    "authenticated_human",
+  );
+  assert.equal("error" in owned, false);
+  if ("error" in owned) return;
+  assert.equal(owned.client_name, null);
+  assert.equal(owned.client_email, null);
+  assert.equal(owned.client_phone, null);
+
+  const again = validateServiceRequestCreate(LEGACY_WEB_BODY, "authenticated_human");
+  if ("error" in again) throw new Error(again.error);
+  assert.equal(
+    buildServiceRequestIdempotencyFingerprint(owned),
+    buildServiceRequestIdempotencyFingerprint(again),
+  );
+
+  const first = await create({ validated: owned, clientUserId: OWNER_ID, idempotencyKey: IDEMPOTENCY_KEY });
+  const replay = await create({ validated: again, clientUserId: OWNER_ID, idempotencyKey: IDEMPOTENCY_KEY });
+  assert.equal(first.kind, "created");
+  assert.equal(replay.kind, "replayed");
+  assert.equal(harness.rows[0].client_name, null);
+  assert.equal(harness.rows[0].client_email, null);
+  assert.equal(harness.rows[0].client_phone, null);
+});
+
+test("agent identity contract still requires a contact", () => {
+  const missing = validateServiceRequestCreate(
+    { ...LEGACY_WEB_BODY, client_email: null, client_phone: null },
+    "agent",
+  );
+  assert.equal("error" in missing, true);
+  if (!("error" in missing)) return;
+  assert.equal(missing.error, "client_email or client_phone is required");
+});
+
 test("same key with a different owner is an ownership conflict", async () => {
   await create({
     clientUserId: OWNER_ID,

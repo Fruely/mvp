@@ -68,7 +68,10 @@ export async function POST(request: NextRequest) {
 
     const clientUserId = auth.kind === "authenticated" ? auth.userId : null;
     const body = await request.json();
-    let validated = validateServiceRequestCreate(body);
+    let validated = validateServiceRequestCreate(
+      body,
+      clientUserId ? "authenticated_human" : "anonymous_legacy",
+    );
     if ("error" in validated) {
       return NextResponse.json({ error: validated.error }, { status: validated.status, headers: NO_STORE });
     }
