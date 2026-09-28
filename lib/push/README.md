@@ -6,7 +6,7 @@ The deployed site is a PWA without Web Push. The Expo app lives in a separate re
 
 Anonymous requests are not push recipients. They keep email.
 
-The Expo data payload carries the event, entity, HTTPS path, locale, Inbox item id and conversation id when one exists. It does not carry the push token. `GET /api/inbox/unread` returns the authoritative unread count for the signed-in user. `connection_ready` opens the client conversation path.
+The Expo data payload carries the event, entity, HTTPS path, locale, Inbox item id and conversation id when one exists. It does not carry the push token, message text, or contact details. `GET /api/inbox/unread` returns the authoritative unread count for the signed-in user. `connection_ready` opens the client conversation path. A user `conversation_message` notifies only the other participant through Inbox and push. The client path is `/{locale}/requests/{publicId}/conversation`. The specialist path is `/{locale}/specialist/dashboard/conversations/{conversationId}`. Email and Telegram are not used for that event.
 
 ## Defaults
 

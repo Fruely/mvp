@@ -182,6 +182,7 @@ test("owner claim selects the match, owns the request, and opens one conversatio
   assert.equal(serialized.includes("client_phone"), false);
   assert.equal(serialized.includes("Hidden"), false);
   assert.equal(db.tables.inbox_items.some((row) => row.type === "connection_ready"), true);
+  assert.equal(db.tables.inbox_items.some((row) => row.type === "conversation_message"), false);
   assert.equal(db.tables.inbox_items.some((row) => row.type === "client_selected_you"), false);
   assert.equal(db.tables.inbox_items.some((row) => row.type === "specialist_interested"), false);
   const notice = renderClientEvent("ru", "connection_ready", { serviceLabel: "психолог" });

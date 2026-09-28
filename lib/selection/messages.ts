@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { recordConversationMessage } from "./conversationNotice";
 import { CLIENT_SELECTION_POLICY } from "./policy";
 
 export function normalizeMessageBody(value: unknown): string | null {
@@ -32,5 +33,13 @@ export async function postConversationText(
     .select("id")
     .maybeSingle();
   if (inserted.error || !inserted.data?.id) return { error: "invalid" };
-  return { id: String(inserted.data.id) };
+  const id = String(inserted.data.id);
+  await recordConversationMessage(supabase, {
+    conversationId: input.conversationId,
+    messageId: id,
+    kind: "text",
+    actor: input.actor,
+    authorUserId: input.authorUserId,
+  });
+  return { id };
 }

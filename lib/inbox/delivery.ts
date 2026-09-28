@@ -375,13 +375,14 @@ export async function deliverPendingOutbox(
       .eq("id", row.inbox_item_id)
       .maybeSingle();
     const payload = inbox.data?.payload as (MatchInboxPayload & {
-      event?: "specialist_interested" | "connection_ready" | "client_reminder" | "client_selected_you";
+      event?: "specialist_interested" | "connection_ready" | "client_reminder" | "client_selected_you" | "conversation_message";
       service_request_id?: string;
       public_id?: string;
       service_label?: string;
       conversation_id?: string | null;
     }) | undefined;
-    const clientEvent = payload?.event && payload.event !== "client_selected_you";
+    const messageEvent = payload?.event === "conversation_message";
+    const clientEvent = Boolean(payload?.event) && payload?.event !== "client_selected_you" && !messageEvent;
     const request = payload?.service_request_id
       ? await supabase
           .from("service_requests")
@@ -406,20 +407,45 @@ export async function deliverPendingOutbox(
 
     const attempt = Number(row.attempt_count ?? 0) + 1;
     const recipientUserId = typeof row.recipient_user_id === "string" ? row.recipient_user_id : null;
+    const messageSide =
+      messageEvent && recipientUserId && request.data?.client_user_id === recipientUserId ? "client" : messageEvent ? "specialist" : null;
+    let messageSpecialistLocale: string | null = null;
+    if (messageSide === "specialist" && payload?.conversation_id) {
+      const conversation = await supabase
+        .from("conversations")
+        .select("specialist_id")
+        .eq("id", payload.conversation_id)
+        .maybeSingle();
+      if (conversation.data?.specialist_id) {
+        const specialistLocale = await supabase
+          .from("specialists")
+          .select("notification_locale")
+          .eq("id", conversation.data.specialist_id)
+          .maybeSingle();
+        messageSpecialistLocale =
+          typeof specialistLocale.data?.notification_locale === "string" ? specialistLocale.data.notification_locale : null;
+      }
+    }
     const prefs = await loadNotificationPreferences(supabase, recipientUserId);
-    const accountLocale = clientEvent
+    const accountLocale = messageSide === "client"
       ? typeof request.data?.locale === "string"
         ? request.data.locale
         : null
-      : typeof profile.data?.notification_locale === "string"
-        ? profile.data.notification_locale
-        : null;
+      : messageSide === "specialist"
+        ? messageSpecialistLocale
+        : clientEvent
+          ? typeof request.data?.locale === "string"
+            ? request.data.locale
+            : null
+          : typeof profile.data?.notification_locale === "string"
+            ? profile.data.notification_locale
+            : null;
     const locale = notificationLocale(prefs.notificationLocale ?? accountLocale);
     let prepared: PreparedNotice | null = null;
     let link = payload && "match_id" in payload && payload.match_id
       ? `${appOrigin()}${matchDeepLink(locale, payload.match_id)}`
       : appOrigin();
-    if (payload?.event) {
+    if (payload?.event && payload.event !== "conversation_message") {
       let count = 1;
       if (payload.event === "specialist_interested" && payload.service_request_id) {
         const interested = await supabase
@@ -480,16 +506,24 @@ export async function deliverPendingOutbox(
           userId: recipientUserId,
           locale,
           eventType,
-          entityId: payload.event === "client_selected_you"
-            ? String(payload.match_id ?? payload.service_request_id ?? "")
-            : String(payload.match_id || payload.service_request_id || ""),
+          entityId: payload.event === "conversation_message"
+            ? String(payload.conversation_id ?? "")
+            : payload.event === "client_selected_you"
+              ? String(payload.match_id ?? payload.service_request_id ?? "")
+              : String(payload.match_id || payload.service_request_id || ""),
           deepLink: pushPathForEvent({
             locale,
             eventType,
             matchId: typeof payload.match_id === "string" ? payload.match_id : null,
             publicId: typeof request.data?.public_id === "string" ? request.data.public_id : null,
             conversationId: typeof payload.conversation_id === "string" ? payload.conversation_id : null,
+            side: messageSide,
           }),
+          serviceLabel: messageSide
+            ? (typeof request.data?.requested_service === "string" && request.data.requested_service) ||
+              (typeof request.data?.category_text === "string" && request.data.category_text) ||
+              ""
+            : null,
           stage: noticePayload.stage,
           opened: noticePayload.opened,
           outboxId: String(row.id),

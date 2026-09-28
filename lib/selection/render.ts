@@ -83,6 +83,37 @@ export function renderClientEvent(
   };
 }
 
+export function renderConversationMessage(
+  locale: string,
+  input: { serviceLabel?: string | null },
+): { title: string; body: string } {
+  const label = input.serviceLabel?.trim() ?? "";
+  const quoted = label ? `«${label}»` : "";
+  const language = notificationLocale(locale);
+  if (language === "ua") {
+    return {
+      title: "Нове повідомлення у Freuly",
+      body: quoted ? `У вас нове повідомлення за заявкою ${quoted}.` : "У вас нове повідомлення.",
+    };
+  }
+  if (language === "de") {
+    return {
+      title: "Neue Nachricht in Freuly",
+      body: quoted ? `Sie haben eine neue Nachricht zur Anfrage ${quoted}.` : "Sie haben eine neue Nachricht.",
+    };
+  }
+  if (language !== "ru") {
+    return {
+      title: "New message in Freuly",
+      body: quoted ? `You have a new message about the request ${quoted}.` : "You have a new message.",
+    };
+  }
+  return {
+    title: "Новое сообщение в Freuly",
+    body: quoted ? `У вас новое сообщение по заявке ${quoted}.` : "У вас новое сообщение.",
+  };
+}
+
 export function renderSystemConnection(locale: string, serviceLabel: string | null): string {
   const phrase = phrasesFor(locale);
   const label = serviceLabel?.trim();

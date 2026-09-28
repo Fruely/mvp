@@ -32,6 +32,7 @@ export async function deliverPushFanout(
     attempt?: number | null;
     inboxItemId?: string | null;
     conversationId?: string | null;
+    serviceLabel?: string | null;
   },
   transport: PushTransport,
 ): Promise<{
@@ -76,6 +77,7 @@ export async function deliverPushFanout(
       badge,
       stage: input.stage,
       opened: input.opened,
+      serviceLabel: input.serviceLabel,
     }),
     inboxItemId: input.inboxItemId ?? null,
     conversationId: input.conversationId ?? null,

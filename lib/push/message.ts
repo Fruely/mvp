@@ -2,7 +2,7 @@ import { notificationLocale } from "@/lib/inbox/policy";
 import { renderMatchNotice } from "@/lib/inbox/render";
 import { matchDeepLink } from "@/lib/inbox/policy";
 import { clientRequestPath, conversationPath } from "@/lib/selection/policy";
-import { renderClientEvent } from "@/lib/selection/render";
+import { renderClientEvent, renderConversationMessage } from "@/lib/selection/render";
 import { pushPriority } from "./policy";
 
 export type LockScreenPush = {
@@ -34,8 +34,15 @@ export function pushPathForEvent(input: {
   matchId?: string | null;
   publicId?: string | null;
   conversationId?: string | null;
+  side?: "client" | "specialist" | null;
 }): string {
   const locale = notificationLocale(input.locale);
+  if (input.eventType === "conversation_message") {
+    if (input.side === "specialist" && input.conversationId) {
+      return conversationPath(locale, input.conversationId, "specialist");
+    }
+    if (input.publicId) return conversationPath(locale, input.conversationId ?? "", "client", input.publicId);
+  }
   if (input.eventType === "client_selected_you" && input.conversationId) {
     return conversationPath(locale, input.conversationId, "specialist");
   }
@@ -60,6 +67,19 @@ export function buildLockScreenPush(input: {
   opened?: boolean;
 }): LockScreenPush {
   const locale = notificationLocale(input.locale);
+  if (input.eventType === "conversation_message") {
+    const text = renderConversationMessage(locale, { serviceLabel: input.serviceLabel });
+    return {
+      title: text.title,
+      body: text.body,
+      eventType: input.eventType,
+      entityId: input.entityId,
+      deepLink: input.deepLink,
+      locale,
+      badge: typeof input.badge === "number" ? input.badge : null,
+      priority: pushPriority(input.eventType),
+    };
+  }
   const clientEvent =
     input.eventType === "specialist_interested" ||
     input.eventType === "connection_ready" ||

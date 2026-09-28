@@ -14,9 +14,10 @@ export const DEFAULT_NOTIFICATION_PREFERENCES = {
 
 export type NotificationPreferences = typeof DEFAULT_NOTIFICATION_PREFERENCES;
 
-export type PushEventClass = "match" | "selection" | "reminder";
+export type PushEventClass = "match" | "selection" | "reminder" | "message";
 
 export function notificationEventClass(eventType: string): PushEventClass {
+  if (eventType === "conversation_message") return "message";
   if (eventType === "match_reminder" || eventType === "client_reminder") return "reminder";
   if (
     eventType === "client_selected_you" ||
@@ -29,6 +30,7 @@ export function notificationEventClass(eventType: string): PushEventClass {
 }
 
 export function eventClassEnabled(prefs: NotificationPreferences, eventClass: PushEventClass): boolean {
+  if (eventClass === "message") return true;
   if (eventClass === "reminder") return prefs.reminderNotifications;
   if (eventClass === "selection") return prefs.selectionNotifications;
   return prefs.matchNotifications;
@@ -86,7 +88,8 @@ export function pushPriority(eventType: string): "normal" | "high" {
     eventType === "match_available" ||
     eventType === "client_selected_you" ||
     eventType === "connection_ready" ||
-    eventType === "specialist_interested"
+    eventType === "specialist_interested" ||
+    eventType === "conversation_message"
   ) {
     return "high";
   }
