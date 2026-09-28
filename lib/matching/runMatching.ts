@@ -17,6 +17,7 @@ const ID_CHUNK = 200;
 
 type SpecialistRow = {
   id?: string;
+  user_id?: string | null;
   category_id?: string | null;
   languages?: unknown;
   work_format?: string | null;
@@ -79,7 +80,7 @@ async function loadSpecialistRows(
   let query = supabase
     .from("specialists")
     .select(
-      "id, category_id, languages, work_format, postal_code, status, is_active, is_visible, billing_visibility_blocked, is_test",
+      "id, user_id, category_id, languages, work_format, postal_code, status, is_active, is_visible, billing_visibility_blocked, is_test",
     )
     .eq("is_active", true)
     .eq("is_visible", true)
@@ -118,6 +119,25 @@ async function loadCities(
     }
   }
   return cities;
+}
+
+async function loadActiveInstallationUserIds(
+  supabase: SupabaseClient,
+  userIds: readonly string[],
+): Promise<Set<string>> {
+  const active = new Set<string>();
+  for (const ids of chunk([...userIds], ID_CHUNK)) {
+    const { data, error } = await supabase
+      .from("native_installations")
+      .select("user_id, active")
+      .in("user_id", ids)
+      .eq("active", true);
+    if (error) throw error;
+    for (const row of data ?? []) {
+      if (row.active === true && typeof row.user_id === "string" && row.user_id) active.add(row.user_id);
+    }
+  }
+  return active;
 }
 
 function toCandidate(row: SpecialistRow, city: string | null, extraCategoryIds: readonly string[]): MatchCandidate | null {
@@ -159,8 +179,13 @@ export async function matchConfirmedServiceRequest(
         )
       : new Map<string, string | null>();
 
+    const activeUsers = await loadActiveInstallationUserIds(
+      supabase,
+      rows.map((row) => row.user_id).filter((id): id is string => typeof id === "string" && id.length > 0),
+    );
     const matches: { specialist_id: string; match_reasons: MatchReasonCode[] }[] = [];
     for (const row of rows) {
+      if (typeof row.user_id !== "string" || !activeUsers.has(row.user_id)) continue;
       const extraCategory =
         request.categoryId && row.id && serviceIdSet.has(row.id) ? [request.categoryId] : [];
       const candidate = toCandidate(row, row.id ? cities.get(row.id) ?? null : null, extraCategory);

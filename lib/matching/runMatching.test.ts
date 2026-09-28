@@ -16,9 +16,10 @@ const REQUEST: MatchRequest = {
   postalCode: null,
 };
 
-function specialist(id: string, languages: string[]) {
+function specialist(id: string, languages: string[], userId = `user-${id}`) {
   return {
     id,
+    user_id: userId,
     category_id: null,
     languages,
     work_format: "online",
@@ -31,7 +32,11 @@ function specialist(id: string, languages: string[]) {
   };
 }
 
-function database(rows = [specialist("specialist-1", ["ru"])]) {
+function database(
+  rows = [specialist("specialist-1", ["ru"])],
+  installations?: Array<{ user_id: string; active: boolean }>,
+) {
+  const installs = installations ?? rows.map((row) => ({ user_id: row.user_id, active: true }));
   const matches = new Map<string, Record<string, unknown>>();
   const supabase = {
     from(table: string) {
@@ -52,7 +57,8 @@ function database(rows = [specialist("specialist-1", ["ru"])]) {
           return { error: null };
         },
         then(resolve: (value: { data: unknown; error: null }) => void) {
-          resolve({ data: table === "specialists" ? rows : [], error: null });
+          const data = table === "specialists" ? rows : table === "native_installations" ? installs : [];
+          resolve({ data, error: null });
         },
       };
       return query;
@@ -142,6 +148,57 @@ test("the migration protects the pair and hides the queue from anon", () => {
   assert.match(sql, /user_id = auth.uid\(\)/);
   assert.match(sql, /REVOKE ALL ON public.service_request_matches FROM anon, authenticated/);
   assert.doesNotMatch(sql, /client_email|client_phone|description/);
+});
+
+test("13-18. a new match requires an active native installation and does not require push", async () => {
+  const eligible = database();
+  await matchConfirmedServiceRequest(eligible.supabase, REQUEST);
+  assert.equal(eligible.matches.size, 1);
+
+  const webOnly = database([specialist("specialist-1", ["ru"])], []);
+  await matchConfirmedServiceRequest(webOnly.supabase, REQUEST);
+  assert.equal(webOnly.matches.size, 0);
+
+  const inactive = database([specialist("specialist-1", ["ru"])], [{ user_id: "user-specialist-1", active: false }]);
+  await matchConfirmedServiceRequest(inactive.supabase, REQUEST);
+  assert.equal(inactive.matches.size, 0);
+
+  const oneDevice = database(
+    [specialist("specialist-1", ["ru"])],
+    [
+      { user_id: "user-specialist-1", active: false },
+      { user_id: "user-specialist-1", active: true },
+    ],
+  );
+  await matchConfirmedServiceRequest(oneDevice.supabase, REQUEST);
+  assert.equal(oneDevice.matches.size, 1);
+
+  const none = database(
+    [specialist("specialist-1", ["ru"])],
+    [
+      { user_id: "user-specialist-1", active: false },
+      { user_id: "user-specialist-1", active: false },
+    ],
+  );
+  await matchConfirmedServiceRequest(none.supabase, REQUEST);
+  assert.equal(none.matches.size, 0);
+
+  const source = readFileSync(new URL("./runMatching.ts", import.meta.url), "utf8");
+  assert.equal(source.includes("native_installations"), true);
+  assert.equal(source.includes("push_endpoints"), false);
+  assert.equal(source.includes("notification_preferences"), false);
+  assert.equal(source.includes(".delete("), false);
+});
+
+test("19-21. push preference stays out of matching and catalog search is unchanged", () => {
+  const matching = readFileSync(new URL("./runMatching.ts", import.meta.url), "utf8");
+  const eligibility = readFileSync(new URL("./eligibility.ts", import.meta.url), "utf8");
+  const search = readFileSync(new URL("../search/serviceQueryMatch.ts", import.meta.url), "utf8");
+  const profile = readFileSync(new URL("../specialistProfile/loadProfile.ts", import.meta.url), "utf8");
+  assert.equal(matching.includes("pushEnabled"), false);
+  assert.equal(eligibility.includes("native_installations"), false);
+  assert.equal(search.includes("native_installations"), false);
+  assert.equal(profile.includes("native_installations"), false);
 });
 
 test("matched request loader returns an error state without throwing", async () => {

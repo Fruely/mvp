@@ -33,6 +33,7 @@ Migrations are manual and are not applied by the app.
 2. `supabase/manual_migrations/2026-09-26_freuly_inbox_delivery.sql`
 3. `supabase/manual_migrations/2026-09-26_client_selection.sql`
 4. `supabase/manual_migrations/2026-09-26_native_push_notifications.sql`
+5. `supabase/manual_migrations/2026-09-28_native_installations.sql`
 
 The second file refuses to run until `service_request_matches` exists. It adds the response
 timestamps, Freuly Inbox, the delivery outbox and specialist `notification_locale`.
@@ -50,6 +51,23 @@ and Telegram or email still run.
 
 A new match writes one inbox item. Opening the match and interested/declined are the product
 events. The first response wins and stops reminders.
+
+## Live-market participation
+
+A published profile is not enough to receive a new live match. `matchConfirmedServiceRequest`
+keeps the existing category, language, work-format and location rules, and also requires
+an active `native_installations` row for `specialists.user_id`.
+
+One `installation_id` has one current `user_id`. Signing in on that installation reassigns
+the same row. Logout sets `active=false` on that installation only. Another active
+installation for the same account is enough. Push permission, push preference, email and
+Telegram do not decide participation. `push_endpoints` remains delivery data. Invalidating
+an Expo token does not deactivate the installation.
+
+`last_seen_at` is refreshed by the authenticated app. This MVP does not expire a row by
+age. Uninstall without logout can leave `active=true` until a later policy. Existing
+`service_request_matches` rows are not rewritten or deleted when this rule is applied.
+The public catalog and specialist search do not read `native_installations`.
 
 ## Activation
 

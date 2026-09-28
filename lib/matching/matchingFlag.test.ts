@@ -36,6 +36,7 @@ function database(specialistCategoryId: string | null = null) {
             data: table === "specialists"
               ? [{
                 id: "specialist-1",
+                user_id: "user-1",
                 category_id: specialistCategoryId,
                 languages: ["ru"],
                 work_format: "online",
@@ -46,7 +47,9 @@ function database(specialistCategoryId: string | null = null) {
                 billing_visibility_blocked: false,
                 is_test: false,
               }]
-              : [],
+              : table === "native_installations"
+                ? [{ user_id: "user-1", active: true }]
+                : [],
             error: null,
           });
         },
