@@ -170,18 +170,106 @@ export type ConversationMessageView = {
   kind: "system" | "text";
   actor: "system" | "client" | "specialist";
   body: string | null;
+  createdAt: string | null;
   serviceLabel: string | null;
+  systemEvent: "connection_ready" | null;
 };
+
+export type ConversationTranscript = {
+  id: string;
+  requestId: string;
+  publicId: string;
+  serviceLabel: string;
+  role: "client" | "specialist";
+  messages: ConversationMessageView[];
+};
+
+function safeSystemEvent(value: unknown): ConversationMessageView["systemEvent"] {
+  return value === "connection_ready" ? "connection_ready" : null;
+}
+
+export function toTranscriptResponse(conversation: ConversationTranscript): {
+  conversation_id: string;
+  service_request_id: string;
+  public_id: string;
+  service_label: string;
+  role: "client" | "specialist";
+  messages: Array<{
+    id: string;
+    kind: "system" | "text";
+    actor_type: "system" | "client" | "specialist";
+    body: string | null;
+    created_at: string | null;
+    system_payload?: { event?: "connection_ready"; service_label?: string };
+  }>;
+} {
+  return {
+    conversation_id: conversation.id,
+    service_request_id: conversation.requestId,
+    public_id: conversation.publicId,
+    service_label: conversation.serviceLabel,
+    role: conversation.role,
+    messages: conversation.messages.map((message) => {
+      const systemPayload: { event?: "connection_ready"; service_label?: string } = {};
+      if (message.kind === "system" && message.systemEvent) systemPayload.event = message.systemEvent;
+      if (message.kind === "system" && message.serviceLabel) systemPayload.service_label = message.serviceLabel;
+      return {
+        id: message.id,
+        kind: message.kind,
+        actor_type: message.actor,
+        body: message.kind === "text" ? message.body : null,
+        created_at: message.createdAt,
+        ...(message.kind === "system" && Object.keys(systemPayload).length ? { system_payload: systemPayload } : {}),
+      };
+    }),
+  };
+}
+
+export async function resolveOwnedConversation(
+  supabase: SupabaseClient,
+  input: { publicId: string; viewer: Viewer },
+): Promise<
+  | { status: "absent" }
+  | { status: "forbidden" }
+  | {
+      status: "ready";
+      requestId: string;
+      publicId: string;
+      serviceLabel: string;
+      conversationId: string | null;
+    }
+> {
+  const request = await supabase
+    .from("service_requests")
+    .select("id, public_id, client_user_id, requested_service, category_text")
+    .eq("public_id", input.publicId)
+    .maybeSingle();
+  if (request.error || !request.data?.id) return { status: "absent" };
+  const requestId = String(request.data.id);
+  const clientUserId = typeof request.data.client_user_id === "string" ? request.data.client_user_id : null;
+  if (!ownsRequest(clientUserId, requestId, input.viewer)) return { status: "forbidden" };
+  const conversation = await supabase
+    .from("conversations")
+    .select("id")
+    .eq("service_request_id", requestId)
+    .maybeSingle();
+  const serviceLabel =
+    (typeof request.data.requested_service === "string" && request.data.requested_service) ||
+    (typeof request.data.category_text === "string" && request.data.category_text) ||
+    "";
+  return {
+    status: "ready",
+    requestId,
+    publicId: String(request.data.public_id ?? input.publicId),
+    serviceLabel,
+    conversationId: conversation.data?.id ? String(conversation.data.id) : null,
+  };
+}
 
 export async function loadConversationForViewer(
   supabase: SupabaseClient,
   input: { conversationId: string; viewer: Viewer },
-): Promise<{
-  id: string;
-  requestId: string;
-  role: "client" | "specialist";
-  messages: ConversationMessageView[];
-} | null> {
+): Promise<ConversationTranscript | null> {
   const conversation = await supabase
     .from("conversations")
     .select("id, service_request_id, specialist_id, client_user_id, status")
@@ -198,22 +286,40 @@ export async function loadConversationForViewer(
     anonymousRequestId: input.viewer.anonymousRequestId,
   });
   if (!role) return null;
+  const request = await supabase
+    .from("service_requests")
+    .select("id, public_id, requested_service, category_text")
+    .eq("id", requestId)
+    .maybeSingle();
   const messages = await supabase
     .from("conversation_messages")
     .select("id, kind, actor_type, body, payload, created_at")
-    .eq("conversation_id", input.conversationId);
+    .eq("conversation_id", input.conversationId)
+    .order("created_at", { ascending: true });
+  const serviceLabel =
+    (typeof request.data?.requested_service === "string" && request.data.requested_service) ||
+    (typeof request.data?.category_text === "string" && request.data.category_text) ||
+    "";
+  const rows = [...(messages.data ?? [])].sort((left, right) =>
+    String(left.created_at ?? "") < String(right.created_at ?? "") ? -1 : String(left.created_at ?? "") > String(right.created_at ?? "") ? 1 : 0,
+  );
   return {
     id: String(conversation.data.id),
     requestId,
+    publicId: typeof request.data?.public_id === "string" ? request.data.public_id : "",
+    serviceLabel,
     role,
-    messages: (messages.data ?? []).map((row) => {
+    messages: rows.map((row) => {
       const payload = row.payload && typeof row.payload === "object" ? (row.payload as Record<string, unknown>) : {};
+      const kind = row.kind === "system" ? "system" : "text";
       return {
         id: String(row.id),
-        kind: row.kind === "system" ? "system" : "text",
+        kind,
         actor: row.actor_type === "system" || row.actor_type === "specialist" ? row.actor_type : "client",
-        body: typeof row.body === "string" ? row.body : null,
+        body: kind === "text" && typeof row.body === "string" ? row.body : null,
+        createdAt: typeof row.created_at === "string" ? row.created_at : null,
         serviceLabel: typeof payload.service_label === "string" ? payload.service_label : null,
+        systemEvent: kind === "system" ? safeSystemEvent(payload.event) : null,
       };
     }),
   };

@@ -67,15 +67,15 @@ export async function recordConversationMessage(
     actor: ConversationMessageActor;
     authorUserId: string | null;
   },
-): Promise<void> {
-  if (!shouldNotifyUserMessage(input)) return;
+): Promise<{ outboxId: string | null }> {
+  if (!shouldNotifyUserMessage(input)) return { outboxId: null };
   const actor = input.actor === "specialist" ? "specialist" : "client";
   const conversation = await supabase
     .from("conversations")
     .select("id, service_request_id, specialist_id, client_user_id")
     .eq("id", input.conversationId)
     .maybeSingle();
-  if (conversation.error || !conversation.data?.id) return;
+  if (conversation.error || !conversation.data?.id) return { outboxId: null };
   const requestId = typeof conversation.data.service_request_id === "string" ? conversation.data.service_request_id : "";
   const specialistId = typeof conversation.data.specialist_id === "string" ? conversation.data.specialist_id : "";
   const request = await supabase
@@ -83,13 +83,13 @@ export async function recordConversationMessage(
     .select("id, public_id, client_user_id")
     .eq("id", requestId)
     .maybeSingle();
-  if (request.error || !request.data?.id) return;
+  if (request.error || !request.data?.id) return { outboxId: null };
   const specialist = await supabase
     .from("specialists")
     .select("id, user_id")
     .eq("id", specialistId)
     .maybeSingle();
-  if (specialist.error || !specialist.data?.id) return;
+  if (specialist.error || !specialist.data?.id) return { outboxId: null };
   const recipient = resolveConversationMessageRecipient({
     actor,
     authorUserId: input.authorUserId,
@@ -99,7 +99,7 @@ export async function recordConversationMessage(
     specialistId: String(specialist.data.id),
     specialistUserId: typeof specialist.data.user_id === "string" ? specialist.data.user_id : null,
   });
-  if ("error" in recipient) return;
+  if ("error" in recipient) return { outboxId: null };
 
   const dedupeKey = conversationMessageInboxKey(input.conversationId, input.messageId);
   const payload = conversationMessagePayload({
@@ -133,24 +133,31 @@ export async function recordConversationMessage(
         .eq("dedupe_key", dedupeKey)
         .maybeSingle()
         .then((row) => (row.data?.id ? String(row.data.id) : null));
-  if (!inboxId) return;
+  if (!inboxId) return { outboxId: null };
 
   const prefs = await loadNotificationPreferences(supabase, recipient.userId);
   const allowed = preferenceAllows(prefs, "push", "message");
   const ready = allowed && (await isRecipientPushReady(supabase, recipient.userId));
-  const { error } = await supabase.from("notification_outbox").upsert(
-    {
-      inbox_item_id: inboxId,
-      match_id: null,
-      recipient_user_id: recipient.userId,
-      channel: "push",
-      dedupe_key: channelDedupeKey(dedupeKey, "push"),
-      status: ready ? "pending" : "skipped",
-      next_attempt_at: new Date().toISOString(),
-      last_error_code: ready ? null : allowed ? "push_not_configured" : "push_disabled",
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "dedupe_key", ignoreDuplicates: true },
-  );
-  if (error) throw error;
+  const written = await supabase
+    .from("notification_outbox")
+    .upsert(
+      {
+        inbox_item_id: inboxId,
+        match_id: null,
+        recipient_user_id: recipient.userId,
+        channel: "push",
+        dedupe_key: channelDedupeKey(dedupeKey, "push"),
+        status: ready ? "pending" : "skipped",
+        next_attempt_at: new Date().toISOString(),
+        last_error_code: ready ? null : allowed ? "push_not_configured" : "push_disabled",
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "dedupe_key", ignoreDuplicates: true },
+    )
+    .select("id, status")
+    .maybeSingle();
+  if (written.error) throw written.error;
+  const outboxId =
+    written.data?.id && written.data.status === "pending" ? String(written.data.id) : null;
+  return { outboxId };
 }

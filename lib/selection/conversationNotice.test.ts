@@ -51,6 +51,9 @@ function memory(seed: Record<string, Row[]>) {
       limit() {
         return api;
       },
+      order() {
+        return api;
+      },
       insert(row: Row) {
         const stored = { id: crypto.randomUUID(), ...row };
         ensure(table).push(stored);

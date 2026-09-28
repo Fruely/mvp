@@ -17,7 +17,7 @@ export async function postConversationText(
     authorUserId: string | null;
     body: string;
   },
-): Promise<{ id: string } | { error: "invalid" }> {
+): Promise<{ id: string; outboxId: string | null } | { error: "invalid" }> {
   const body = normalizeMessageBody(input.body);
   if (!body) return { error: "invalid" };
   const inserted = await supabase
@@ -34,12 +34,12 @@ export async function postConversationText(
     .maybeSingle();
   if (inserted.error || !inserted.data?.id) return { error: "invalid" };
   const id = String(inserted.data.id);
-  await recordConversationMessage(supabase, {
+  const notice = await recordConversationMessage(supabase, {
     conversationId: input.conversationId,
     messageId: id,
     kind: "text",
     actor: input.actor,
     authorUserId: input.authorUserId,
   });
-  return { id };
+  return { id, outboxId: notice.outboxId };
 }

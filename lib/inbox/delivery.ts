@@ -332,20 +332,50 @@ async function sendChannel(
   return { status: skipped.status, providerMessageId: null, errorCode: skipped.errorCode };
 }
 
+const OUTBOX_COLUMNS = "id, inbox_item_id, channel, status, attempt_count, recipient_user_id, match_id";
+
+/** Deliver one persisted outbox row. Does not scan the rest of the queue. */
+export async function deliverOutboxById(
+  supabase: SupabaseClient,
+  outboxId: string,
+  policy: MatchDeliveryPolicy = DEFAULT_MATCH_DELIVERY_POLICY,
+  transports: DeliveryTransports = defaultDeliveryTransports,
+  clock: Date = new Date(),
+  pushTransport: PushTransport = createExpoPushTransport(),
+): Promise<{ processed: number }> {
+  if (!outboxId) return { processed: 0 };
+  const row = await supabase
+    .from("notification_outbox")
+    .select(OUTBOX_COLUMNS)
+    .eq("id", outboxId)
+    .in("status", ["pending", "retryable"])
+    .maybeSingle();
+  if (row.error) throw row.error;
+  if (!row.data?.id) return { processed: 0 };
+  return deliverPendingOutbox(supabase, policy, transports, clock, pushTransport, [row.data]);
+}
+
 export async function deliverPendingOutbox(
   supabase: SupabaseClient,
   policy: MatchDeliveryPolicy = DEFAULT_MATCH_DELIVERY_POLICY,
   transports: DeliveryTransports = defaultDeliveryTransports,
   clock: Date = new Date(),
   pushTransport: PushTransport = createExpoPushTransport(),
+  onlyRows?: Array<Record<string, unknown>> | null,
 ): Promise<{ processed: number }> {
   const now = clock.toISOString();
-  const { data, error } = await supabase
-    .from("notification_outbox")
-    .select("id, inbox_item_id, channel, status, attempt_count, recipient_user_id, match_id")
-    .in("status", ["pending", "retryable"])
-    .lte("next_attempt_at", now)
-    .limit(30);
+  const selected = onlyRows
+    ? { data: onlyRows, error: null }
+    : await supabase
+        .from("notification_outbox")
+        .select(OUTBOX_COLUMNS)
+        .in("status", ["pending", "retryable"])
+        .lte("next_attempt_at", now)
+        .order("next_attempt_at", { ascending: true })
+        .order("created_at", { ascending: true })
+        .limit(30);
+  const data = selected.data;
+  const error = selected.error;
   if (error) throw error;
 
   let processed = 0;

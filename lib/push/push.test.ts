@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { deliverPendingOutbox, enqueueMatchNotifications } from "@/lib/inbox/delivery";
+import { deliverOutboxById, deliverPendingOutbox, enqueueMatchNotifications } from "@/lib/inbox/delivery";
+import { postConversationText } from "@/lib/selection/messages";
 import { DEFAULT_MATCH_DELIVERY_POLICY, externalDeliveryDecision, notificationLocale, planExternalChannels, stageInitialChannels } from "@/lib/inbox/policy";
 import { buildLockScreenPush, httpsDeepLink, pushHasPrivateContent, pushPathForEvent } from "./message";
 import { applyTransportPreferences, aggregatePushStatuses, pushPriority, resolveRecipientTimeZone } from "./policy";
@@ -156,6 +157,75 @@ function transport(result: "sent" | "retryable" | "failed", errorCode: string | 
     },
   };
 }
+
+test("a new conversation-message push is delivered immediately and a transport failure stays retryable", async () => {
+  const db = base();
+  const conversationId = "ff788ff2-d2f1-4534-92d0-e9eb81bad028";
+  db.tables.conversations = [
+    {
+      id: conversationId,
+      service_request_id: "request-1",
+      specialist_id: "specialist-1",
+      client_user_id: "user-client",
+      status: "open",
+    },
+  ];
+  db.tables.push_endpoints.push({
+    id: "endpoint-specialist",
+    user_id: "user-1",
+    enabled: true,
+    invalidated_at: null,
+    token: TOKEN_A,
+    platform: "android",
+    provider: "expo",
+  });
+  const posted = await postConversationText(db.supabase, {
+    conversationId,
+    actor: "client",
+    authorUserId: "user-client",
+    body: "Otvet",
+  });
+  assert.equal("id" in posted, true);
+  if (!("id" in posted) || !posted.outboxId) return;
+  db.tables.notification_outbox.push({
+    id: "older-unrelated",
+    inbox_item_id: "inbox-other",
+    match_id: "match-1",
+    recipient_user_id: "user-1",
+    channel: "push",
+    status: "pending",
+    attempt_count: 0,
+    next_attempt_at: "2020-01-01T00:00:00.000Z",
+    created_at: "2020-01-01T00:00:00.000Z",
+    dedupe_key: "other",
+  });
+  let calls = 0;
+  await deliverOutboxById(
+    db.supabase,
+    posted.outboxId,
+    DEFAULT_MATCH_DELIVERY_POLICY,
+    {
+      push: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+      telegram: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+      email: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+    },
+    new Date("2026-01-15T12:00:00+01:00"),
+    {
+      async deliver() {
+        calls += 1;
+        throw new Error("expo down");
+      },
+    },
+  );
+  assert.equal(calls, 1);
+  assert.equal(db.tables.conversation_messages.length, 1);
+  assert.equal(db.tables.conversation_messages[0].body, "Otvet");
+  const messageOutbox = db.tables.notification_outbox.find((row) => row.id === posted.outboxId);
+  assert.equal(messageOutbox?.status, "retryable");
+  assert.equal(Number(messageOutbox?.attempt_count) > 0, true);
+  assert.equal(db.tables.notification_outbox.find((row) => row.id === "older-unrelated")?.status, "pending");
+  assert.equal(db.tables.notification_outbox.find((row) => row.id === "older-unrelated")?.attempt_count ?? 0, 0);
+});
 
 test("1-9. endpoint registration is per user and per device", async () => {
   const db = base();
