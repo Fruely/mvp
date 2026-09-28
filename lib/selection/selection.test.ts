@@ -306,7 +306,10 @@ test("9-10. client locale controls the client notice", () => {
   const specialist = renderClientEvent("de", "client_selected_you", { serviceLabel: "Tax advice" });
   assert.equal(client.title, "Спеціаліст готовий допомогти");
   assert.equal(specialist.title, "Der Kunde hat Sie ausgewählt");
-  assert.equal(renderClientEvent("en", "connection_ready", {}).title.includes("You chose"), true);
+  const connection = renderClientEvent("en", "connection_ready", {});
+  assert.equal(connection.title.includes("found"), true);
+  assert.equal(connection.title.includes("chose"), false);
+  assert.equal(renderClientEvent("ru", "connection_ready", {}).title.includes("выбрали"), false);
 });
 
 test("interest bursts share one external digest", async () => {

@@ -187,14 +187,14 @@ export async function recordSpecialistInterest(
   });
 }
 
-export async function recordSelectionNotices(
+/** Client connection notice only. Specialist TAKE does not send `client_selected_you`. */
+export async function recordClaimConnection(
   supabase: SupabaseClient,
   input: {
     requestId: string;
     publicId: string;
     matchId: string;
     specialistId: string;
-    specialistUserId: string | null;
     clientUserId: string | null;
     clientEmail: string | null;
     serviceLabel: string;
@@ -218,18 +218,34 @@ export async function recordSelectionNotices(
     entityId: input.requestId,
     payload: clientPayload,
   });
-  if (clientInbox) {
-    await scheduleChannels(supabase, {
-      inboxItemId: clientInbox,
-      dedupeKey: connectionInboxKey(input.requestId),
-      requestId: input.requestId,
-      matchId: input.matchId,
-      recipientUserId: input.clientUserId,
-      email: input.clientEmail,
-      telegram: false,
-      dueAt: new Date().toISOString(),
-    });
-  }
+  if (!clientInbox) return;
+  await scheduleChannels(supabase, {
+    inboxItemId: clientInbox,
+    dedupeKey: connectionInboxKey(input.requestId),
+    requestId: input.requestId,
+    matchId: input.matchId,
+    recipientUserId: input.clientUserId,
+    email: input.clientEmail,
+    telegram: false,
+    dueAt: new Date().toISOString(),
+  });
+}
+
+export async function recordSelectionNotices(
+  supabase: SupabaseClient,
+  input: {
+    requestId: string;
+    publicId: string;
+    matchId: string;
+    specialistId: string;
+    specialistUserId: string | null;
+    clientUserId: string | null;
+    clientEmail: string | null;
+    serviceLabel: string;
+    conversationId: string;
+  },
+): Promise<void> {
+  await recordClaimConnection(supabase, input);
   if (!input.specialistUserId) return;
   const specialistPayload = safeClientPayload({
     event: "client_selected_you",

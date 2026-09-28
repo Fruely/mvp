@@ -34,7 +34,7 @@ const COPY: Record<Lang, {
   ru: {
     responses: "На вашу заявку откликнулись специалисты",
     searching: "Ищем специалистов",
-    selected: "Вы выбрали специалиста. Теперь можно общаться во Freuly.",
+    selected: "Специалист найден. Теперь можно общаться во Freuly.",
     connected: "Диалог открыт",
     completed: "Заявка завершена",
     cancelled: "Заявка отменена",
@@ -52,7 +52,7 @@ const COPY: Record<Lang, {
   ua: {
     responses: "На вашу заявку відгукнулися спеціалісти",
     searching: "Шукаємо спеціалістів",
-    selected: "Ви обрали спеціаліста. Тепер можна спілкуватися у Freuly.",
+    selected: "Спеціаліста знайдено. Тепер можна спілкуватися у Freuly.",
     connected: "Діалог відкрито",
     completed: "Заявку завершено",
     cancelled: "Заявку скасовано",
@@ -70,7 +70,7 @@ const COPY: Record<Lang, {
   de: {
     responses: "Auf Ihre Anfrage haben sich Fachkräfte gemeldet",
     searching: "Wir suchen Fachkräfte",
-    selected: "Sie haben eine Fachkraft gewählt. Sie können jetzt in Freuly schreiben.",
+    selected: "Eine Fachkraft wurde gefunden. Sie können jetzt in Freuly schreiben.",
     connected: "Der Dialog ist offen",
     completed: "Die Anfrage ist abgeschlossen",
     cancelled: "Die Anfrage wurde abgebrochen",

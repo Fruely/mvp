@@ -15,7 +15,7 @@ const PHRASES: Record<string, Phrase> = {
   ru: {
     interestedOne: "Специалист готов помочь",
     interestedMany: "На вашу заявку откликнулись специалисты",
-    connection: "Вы выбрали специалиста. Теперь можно общаться во Freuly.",
+    connection: "Специалист найден. Теперь можно общаться во Freuly.",
     selectedYou: "Клиент выбрал вас",
     reminder: "На вашу заявку уже откликнулись специалисты.",
     systemConnected: "Freuly соединил вас по заявке",
@@ -25,7 +25,7 @@ const PHRASES: Record<string, Phrase> = {
   ua: {
     interestedOne: "Спеціаліст готовий допомогти",
     interestedMany: "На вашу заявку відгукнулися спеціалісти",
-    connection: "Ви обрали спеціаліста. Тепер можна спілкуватися у Freuly.",
+    connection: "Спеціаліста знайдено. Тепер можна спілкуватися у Freuly.",
     selectedYou: "Клієнт обрав вас",
     reminder: "На вашу заявку вже відгукнулися спеціалісти.",
     systemConnected: "Freuly з’єднав вас за заявкою",
@@ -35,7 +35,7 @@ const PHRASES: Record<string, Phrase> = {
   de: {
     interestedOne: "Eine Fachkraft kann helfen",
     interestedMany: "Auf Ihre Anfrage haben sich Fachkräfte gemeldet",
-    connection: "Sie haben eine Fachkraft gewählt. Sie können jetzt in Freuly schreiben.",
+    connection: "Eine Fachkraft wurde gefunden. Sie können jetzt in Freuly schreiben.",
     selectedYou: "Der Kunde hat Sie ausgewählt",
     reminder: "Auf Ihre Anfrage haben sich bereits Fachkräfte gemeldet.",
     systemConnected: "Freuly hat Sie zu dieser Anfrage verbunden",
@@ -47,7 +47,7 @@ const PHRASES: Record<string, Phrase> = {
 const FALLBACK: Phrase = {
   interestedOne: "A specialist can help",
   interestedMany: "Specialists responded to your request",
-  connection: "You chose a specialist. You can now talk in Freuly.",
+  connection: "A specialist was found. You can now talk in Freuly.",
   selectedYou: "The client chose you",
   reminder: "Specialists have already responded to your request.",
   systemConnected: "Freuly connected you about this request",

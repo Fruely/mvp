@@ -24,6 +24,7 @@ export const MATCH_PREVIEW_REQUEST_COLUMNS = [
   "service_timing_date_end",
   "service_timing_period",
   "service_timing_note",
+  "selected_specialist_id",
 ].join(", ");
 
 const MATCH_COLUMNS =
@@ -40,10 +41,14 @@ export type MatchPreviewTiming = {
   service_timing_note: string | null;
 };
 
+export type MatchOfferState = "open" | "owned" | "unavailable";
+
 export type MatchPreview = {
   match_id: string;
   service_request_id: string;
   match_status: MatchResponseStatus;
+  offer_state: MatchOfferState;
+  conversation_id: string | null;
   service_label: string;
   description: string | null;
   work_format: string | null;
@@ -151,7 +156,38 @@ export function toMatchPreview(match: Record<string, unknown>, request: Record<s
     created_at: asString(request.created_at),
     matched_at: asString(match.matched_at),
     opened: Boolean(asString(match.opened_at)),
+    offer_state: "open",
+    conversation_id: null,
   };
+}
+
+function unavailablePreview(match: Record<string, unknown>, requestId: string): MatchPreview {
+  return {
+    match_id: String(match.id),
+    service_request_id: requestId,
+    match_status: asStatus(match.status),
+    offer_state: "unavailable",
+    conversation_id: null,
+    service_label: "",
+    description: null,
+    work_format: null,
+    city: null,
+    postal_code: null,
+    service_languages: [],
+    client_budget_text: null,
+    timing: null,
+    created_at: null,
+    matched_at: null,
+    opened: Boolean(asString(match.opened_at)),
+  };
+}
+
+function offerStateFor(matchStatus: string, ownerId: string | null, specialistId: string): MatchOfferState {
+  if (ownerId && ownerId !== specialistId) return "unavailable";
+  if (matchStatus === "declined" || matchStatus === "not_selected" || matchStatus === "expired") return "unavailable";
+  if (ownerId === specialistId || matchStatus === "selected") return "owned";
+  if (matchStatus === "active" && !ownerId) return "open";
+  return "unavailable";
 }
 
 export async function loadOwnedMatchPreview(
@@ -175,12 +211,39 @@ export async function loadOwnedMatchPreview(
       .maybeSingle();
     if (request.error || !request.data) return { status: "error" };
 
+    const requestRow = request.data as unknown as Record<string, unknown>;
+    const matchRow = match.data as unknown as Record<string, unknown>;
+    const ownerId = asString(requestRow.selected_specialist_id);
+    const offerState = offerStateFor(String(matchRow.status ?? ""), ownerId, input.specialistId);
+    if (offerState === "unavailable") {
+      return {
+        status: "ready",
+        preview: unavailablePreview(matchRow, String(matchRow.service_request_id)),
+      };
+    }
+
+    let conversationId: string | null = null;
+    if (offerState === "owned") {
+      const conversation = await supabase
+        .from("conversations")
+        .select("id, specialist_id")
+        .eq("service_request_id", matchRow.service_request_id)
+        .maybeSingle();
+      if (
+        conversation.data?.id &&
+        String(conversation.data.specialist_id) === input.specialistId
+      ) {
+        conversationId = String(conversation.data.id);
+      }
+    }
+
     return {
       status: "ready",
-      preview: toMatchPreview(
-        match.data as unknown as Record<string, unknown>,
-        request.data as unknown as Record<string, unknown>,
-      ),
+      preview: {
+        ...toMatchPreview(matchRow, requestRow),
+        offer_state: offerState,
+        conversation_id: conversationId,
+      },
     };
   } catch {
     return { status: "error" };
@@ -229,7 +292,8 @@ export async function listOwnedActiveMatchPreviews(
     const items = rows
       .flatMap((match) => {
         const request = byId.get(String(match.service_request_id));
-        return request ? [toMatchPreview(match, request)] : [];
+        if (!request || asString(request.selected_specialist_id)) return [];
+        return [toMatchPreview(match, request)];
       })
       .sort((a, b) => (b.matched_at ?? "").localeCompare(a.matched_at ?? ""))
       .slice(0, LIST_LIMIT);

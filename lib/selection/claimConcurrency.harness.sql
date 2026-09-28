@@ -1,0 +1,28 @@
+-- Manual concurrency harness for specialist TAKE.
+-- This file is not a migration and is not applied by CI.
+-- Run it only against a disposable database that already has the
+-- service_requests / service_request_matches / conversations schema.
+--
+-- Two sessions must run the ownership update at the same time.
+-- Expected: one session updates 1 row, the other updates 0 rows.
+-- There is still one selected_specialist_id, one selected match, and
+-- at most one conversation for the request.
+
+-- Session A and Session B, after the same two active matches exist:
+--
+-- BEGIN;
+-- UPDATE public.service_requests
+-- SET selected_specialist_id = '<specialist-a-or-b>',
+--     selected_at = now(),
+--     status = 'matched',
+--     updated_at = now()
+-- WHERE id = '<request-id>'
+--   AND selected_specialist_id IS NULL
+-- RETURNING id, selected_specialist_id;
+-- COMMIT;
+--
+-- Then:
+-- SELECT selected_specialist_id FROM public.service_requests WHERE id = '<request-id>';
+-- SELECT count(*) FROM public.service_request_matches
+--   WHERE service_request_id = '<request-id>' AND status = 'selected';
+-- SELECT specialist_id FROM public.conversations WHERE service_request_id = '<request-id>';

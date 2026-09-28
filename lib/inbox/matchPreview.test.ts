@@ -256,6 +256,24 @@ test("an empty budget stays empty and the select list has no contact columns", (
   assert.equal(MATCH_PREVIEW_REQUEST_COLUMNS.includes("client_name"), false);
 });
 
+test("another owner's request is not a live offer and leaves the active list", async () => {
+  const db = seed({ selected_specialist_id: "specialist-2" });
+  const preview = await readOwnedMatchPreview(db.supabase, {
+    matchId: MATCH,
+    specialistId: OWN,
+    userId: USER,
+  });
+  assert.equal(preview.status, "ready");
+  if (preview.status !== "ready") return;
+  assert.equal(preview.preview.offer_state, "unavailable");
+  assert.equal(preview.preview.description, null);
+  assert.equal(preview.preview.client_budget_text, null);
+  assert.equal(JSON.stringify(preview.preview).includes("Hidden"), false);
+  const list = await listOwnedActiveMatchPreviews(db.supabase, OWN);
+  assert.equal(list.status, "ready");
+  if (list.status === "ready") assert.deepEqual(list.items, []);
+});
+
 test("the current-match list contains only this specialist's active demand", async () => {
   const db = seed({ client_budget_text: null });
   const result = await listOwnedActiveMatchPreviews(db.supabase, OWN);
