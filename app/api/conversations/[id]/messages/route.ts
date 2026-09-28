@@ -2,7 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { resolveBearerAuthUser } from "@/lib/auth/resolveBearerAuthUser";
 import { deliverOutboxById } from "@/lib/inbox/delivery";
 import { readRequestAccessToken } from "@/lib/selection/accessCookie";
-import { postConversationText } from "@/lib/selection/messages";
+import { conversationWriteStatus } from "@/lib/selection/conversationMedia";
+import { postConversationMessage } from "@/lib/selection/messages";
 import { loadConversationForViewer, resolveViewer, toTranscriptResponse, type Viewer } from "@/lib/selection/view";
 import { createSupabaseServerClient as createSessionClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -78,21 +79,24 @@ export async function POST(
   } catch {
     body = null;
   }
-  const text = body && typeof body === "object" && "body" in body ? body.body : null;
+  const kind = body && typeof body === "object" && "kind" in body && typeof body.kind === "string" ? body.kind : "text";
+  if (kind !== "text" && !resolved.viewer.actorUserId) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401, headers: NO_STORE });
+  }
 
   try {
     const conversation = await loadConversationForViewer(resolved.supabase, { conversationId, viewer: resolved.viewer });
     if (!conversation) {
       return NextResponse.json({ error: "not_found" }, { status: 404, headers: NO_STORE });
     }
-    const posted = await postConversationText(resolved.supabase, {
+    const posted = await postConversationMessage(resolved.supabase, {
       conversationId,
       actor: conversation.role,
       authorUserId: resolved.viewer.actorUserId,
-      body: typeof text === "string" ? text : "",
+      raw: body,
     });
     if ("error" in posted) {
-      return NextResponse.json({ error: "invalid" }, { status: 400, headers: NO_STORE });
+      return NextResponse.json({ error: posted.error }, { status: conversationWriteStatus(posted.error), headers: NO_STORE });
     }
     if (posted.outboxId) {
       try {

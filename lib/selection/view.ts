@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { readStoredLocation, signConversationPlayback } from "./conversationMedia";
 import { findAccessGrant } from "./accessGrant";
 import { conversationRole } from "./policy";
 import { toPublicSpecialistPreview, type PublicSpecialistPreview } from "./preview";
@@ -165,14 +166,30 @@ export async function loadOwnedRequestView(
   };
 }
 
+export type ConversationAudioView = {
+  path: string;
+  mimeType: string;
+  sizeBytes: number;
+  durationMs: number;
+  playbackUrl: string | null;
+};
+
+export type ConversationLocationView = {
+  latitude: number;
+  longitude: number;
+  label: string | null;
+};
+
 export type ConversationMessageView = {
   id: string;
-  kind: "system" | "text";
+  kind: "system" | "text" | "audio" | "location";
   actor: "system" | "client" | "specialist";
   body: string | null;
   createdAt: string | null;
   serviceLabel: string | null;
   systemEvent: "connection_ready" | null;
+  audio: ConversationAudioView | null;
+  location: ConversationLocationView | null;
 };
 
 export type ConversationTranscript = {
@@ -196,11 +213,13 @@ export function toTranscriptResponse(conversation: ConversationTranscript): {
   role: "client" | "specialist";
   messages: Array<{
     id: string;
-    kind: "system" | "text";
+    kind: "system" | "text" | "audio" | "location";
     actor_type: "system" | "client" | "specialist";
     body: string | null;
     created_at: string | null;
     system_payload?: { event?: "connection_ready"; service_label?: string };
+    audio?: { mime_type: string; size_bytes: number; duration_ms: number; playback_url: string | null };
+    location?: { latitude: number; longitude: number; label: string | null };
   }>;
 } {
   return {
@@ -220,6 +239,17 @@ export function toTranscriptResponse(conversation: ConversationTranscript): {
         body: message.kind === "text" ? message.body : null,
         created_at: message.createdAt,
         ...(message.kind === "system" && Object.keys(systemPayload).length ? { system_payload: systemPayload } : {}),
+        ...(message.kind === "audio" && message.audio
+          ? {
+              audio: {
+                mime_type: message.audio.mimeType,
+                size_bytes: message.audio.sizeBytes,
+                duration_ms: message.audio.durationMs,
+                playback_url: message.audio.playbackUrl,
+              },
+            }
+          : {}),
+        ...(message.kind === "location" && message.location ? { location: message.location } : {}),
       };
     }),
   };
@@ -303,24 +333,60 @@ export async function loadConversationForViewer(
   const rows = [...(messages.data ?? [])].sort((left, right) =>
     String(left.created_at ?? "") < String(right.created_at ?? "") ? -1 : String(left.created_at ?? "") > String(right.created_at ?? "") ? 1 : 0,
   );
+  const attachmentRows = await loadAttachmentRows(
+    supabase,
+    rows.map((row) => String(row.id)),
+  );
+  const mapped = rows.map((row) => {
+    const payload = row.payload && typeof row.payload === "object" ? (row.payload as Record<string, unknown>) : {};
+    const kind = row.kind === "system" || row.kind === "audio" || row.kind === "location" || row.kind === "text" ? row.kind : "text";
+    const attachment = attachmentRows.find((item) => String(item.message_id) === String(row.id) && item.media_type === "audio");
+    return {
+      id: String(row.id),
+      kind,
+      actor: row.actor_type === "system" || row.actor_type === "specialist" ? row.actor_type : "client",
+      body: kind === "text" && typeof row.body === "string" ? row.body : null,
+      createdAt: typeof row.created_at === "string" ? row.created_at : null,
+      serviceLabel: typeof payload.service_label === "string" ? payload.service_label : null,
+      systemEvent: kind === "system" ? safeSystemEvent(payload.event) : null,
+      audio:
+        kind === "audio" && attachment && typeof attachment.storage_path === "string"
+          ? {
+              path: attachment.storage_path,
+              mimeType: typeof attachment.mime_type === "string" ? attachment.mime_type : "",
+              sizeBytes: typeof attachment.size_bytes === "number" ? attachment.size_bytes : 0,
+              durationMs: typeof attachment.duration_ms === "number" ? attachment.duration_ms : 0,
+              playbackUrl: null,
+            }
+          : null,
+      location: kind === "location" ? readStoredLocation(payload) : null,
+    };
+  });
   return {
     id: String(conversation.data.id),
     requestId,
     publicId: typeof request.data?.public_id === "string" ? request.data.public_id : "",
     serviceLabel,
     role,
-    messages: rows.map((row) => {
-      const payload = row.payload && typeof row.payload === "object" ? (row.payload as Record<string, unknown>) : {};
-      const kind = row.kind === "system" ? "system" : "text";
-      return {
-        id: String(row.id),
-        kind,
-        actor: row.actor_type === "system" || row.actor_type === "specialist" ? row.actor_type : "client",
-        body: kind === "text" && typeof row.body === "string" ? row.body : null,
-        createdAt: typeof row.created_at === "string" ? row.created_at : null,
-        serviceLabel: typeof payload.service_label === "string" ? payload.service_label : null,
-        systemEvent: kind === "system" ? safeSystemEvent(payload.event) : null,
-      };
-    }),
+    messages: await signConversationPlayback(supabase, mapped),
   };
+}
+
+async function loadAttachmentRows(
+  supabase: SupabaseClient,
+  messageIds: string[],
+): Promise<Array<Record<string, unknown>>> {
+  if (!messageIds.length) return [];
+  const client = supabase as unknown as {
+    from: (table: string) => {
+      select: (columns: string) => {
+        in?: (column: string, values: string[]) => Promise<{ data: Array<Record<string, unknown>> | null }>;
+      } & PromiseLike<{ data: Array<Record<string, unknown>> | null }>;
+    };
+  };
+  const selected = client
+    .from("conversation_message_attachments")
+    .select("message_id, storage_path, media_type, mime_type, size_bytes, duration_ms");
+  const result = typeof selected.in === "function" ? await selected.in("message_id", messageIds) : await selected;
+  return (result.data ?? []).filter((row) => messageIds.includes(String(row.message_id ?? "")));
 }
