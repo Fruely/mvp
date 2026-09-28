@@ -4,7 +4,7 @@ import test from "node:test";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { deliverOutboxById, deliverPendingOutbox, enqueueMatchNotifications } from "@/lib/inbox/delivery";
 import { postConversationText } from "@/lib/selection/messages";
-import { DEFAULT_MATCH_DELIVERY_POLICY, externalDeliveryDecision, notificationLocale, planExternalChannels, stageInitialChannels } from "@/lib/inbox/policy";
+import { DEFAULT_MATCH_DELIVERY_POLICY, externalDeliveryDecision, notificationLocale, planExternalChannels, quietHoursDeferralApplies, stageInitialChannels } from "@/lib/inbox/policy";
 import { buildLockScreenPush, httpsDeepLink, pushHasPrivateContent, pushPathForEvent } from "./message";
 import { applyTransportPreferences, aggregatePushStatuses, pushPriority, resolveRecipientTimeZone } from "./policy";
 import { listOwnPushEndpoints, registerPushEndpoint, unregisterPushEndpoint } from "./endpoints";
@@ -225,6 +225,254 @@ test("a new conversation-message push is delivered immediately and a transport f
   assert.equal(Number(messageOutbox?.attempt_count) > 0, true);
   assert.equal(db.tables.notification_outbox.find((row) => row.id === "older-unrelated")?.status, "pending");
   assert.equal(db.tables.notification_outbox.find((row) => row.id === "older-unrelated")?.attempt_count ?? 0, 0);
+});
+
+function chatNotice(id: string) {
+  return {
+    id: `inbox-${id}`,
+    recipient_user_id: "user-client",
+    read_at: null,
+    payload: {
+      event: "conversation_message",
+      conversation_id: "ff788ff2-d2f1-4534-92d0-e9eb81bad028",
+      service_request_id: "request-1",
+      public_id: "REQ-20260928-8MMQHF",
+      service_label: "коуч",
+    },
+  };
+}
+
+function dueRow(id: string, inboxId: string, recipient: string) {
+  return {
+    id,
+    inbox_item_id: inboxId,
+    match_id: recipient === "user-1" ? "match-1" : null,
+    recipient_user_id: recipient,
+    channel: "push",
+    status: "pending",
+    attempt_count: 0,
+    next_attempt_at: "2020-01-01T00:00:00.000Z",
+    created_at: "2026-09-28T18:00:00.000Z",
+    dedupe_key: id,
+  };
+}
+
+async function deliverChatAt(clock: string): Promise<{ calls: number; status: unknown; attempt: unknown; next: unknown }> {
+  const db = base();
+  db.tables.inbox_items.push(chatNotice("chat"));
+  db.tables.notification_outbox.push(dueRow("chat", "inbox-chat", "user-client"));
+  db.tables.push_endpoints.push({
+    id: "endpoint-client",
+    user_id: "user-client",
+    enabled: true,
+    invalidated_at: null,
+    token: TOKEN_A,
+    platform: "ios",
+    provider: "expo",
+  });
+  let calls = 0;
+  await deliverOutboxById(db.supabase, "chat", DEFAULT_MATCH_DELIVERY_POLICY, {
+    push: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+    telegram: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+    email: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+  }, new Date(clock), {
+    async deliver() {
+      calls += 1;
+      return { status: "sent", errorCode: null, providerMessageId: "ticket-chat", invalidate: false };
+    },
+  });
+  const row = db.tables.notification_outbox.find((item) => item.id === "chat");
+  return { calls, status: row?.status, attempt: row?.attempt_count, next: row?.next_attempt_at };
+}
+
+test("conversation messages ignore quiet hours and marketplace notices keep them", async () => {
+  assert.equal(quietHoursDeferralApplies("conversation_message"), false);
+  assert.equal(quietHoursDeferralApplies("match_available"), true);
+  assert.equal(quietHoursDeferralApplies("match_reminder"), true);
+  for (const clock of [
+    "2026-09-28T21:59:00+02:00",
+    "2026-09-28T22:01:00+02:00",
+    "2026-01-16T03:00:00+01:00",
+    "2026-01-16T07:59:00+01:00",
+  ]) {
+    const result = await deliverChatAt(clock);
+    assert.equal(result.calls, 1, clock);
+    assert.equal(result.status, "sent", clock);
+    assert.equal(Number(result.attempt) > 0, true, clock);
+  }
+
+  const nightMatch = base();
+  nightMatch.tables.inbox_items.push({
+    id: "inbox-match",
+    payload: {
+      match_id: "match-1",
+      service_request_id: "request-1",
+      stage: "initial",
+      reminder_index: 0,
+      service_label: "Tax advice",
+      work_format: null,
+      city: null,
+      service_languages: [],
+      opened: false,
+    },
+  });
+  nightMatch.tables.notification_outbox.push(dueRow("match", "inbox-match", "user-1"));
+  let matchCalls = 0;
+  await deliverPendingOutbox(nightMatch.supabase, DEFAULT_MATCH_DELIVERY_POLICY, {
+    push: async () => ({ status: "sent", providerMessageId: "x", errorCode: null }),
+    telegram: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+    email: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+  }, new Date("2026-09-28T22:01:00+02:00"), {
+    async deliver() {
+      matchCalls += 1;
+      return { status: "sent", errorCode: null, providerMessageId: "ticket", invalidate: false };
+    },
+  });
+  assert.equal(matchCalls, 0);
+  assert.equal(nightMatch.tables.notification_outbox[0].status, "pending");
+  assert.equal(nightMatch.tables.notification_outbox[0].attempt_count ?? 0, 0);
+  assert.notEqual(nightMatch.tables.notification_outbox[0].next_attempt_at, "2020-01-01T00:00:00.000Z");
+
+  const reminder = base();
+  reminder.tables.inbox_items.push({
+    id: "inbox-reminder",
+    payload: {
+      match_id: "match-1",
+      service_request_id: "request-1",
+      stage: "reminder",
+      reminder_index: 1,
+      service_label: "Tax advice",
+      work_format: null,
+      city: null,
+      service_languages: [],
+      opened: false,
+    },
+  });
+  reminder.tables.notification_outbox.push(dueRow("reminder", "inbox-reminder", "user-1"));
+  let reminderCalls = 0;
+  await deliverPendingOutbox(reminder.supabase, DEFAULT_MATCH_DELIVERY_POLICY, {
+    push: async () => ({ status: "sent", providerMessageId: null, errorCode: null }),
+    telegram: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+    email: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+  }, new Date("2026-01-16T03:00:00+01:00"), {
+    async deliver() {
+      reminderCalls += 1;
+      return { status: "sent", errorCode: null, providerMessageId: "ticket", invalidate: false };
+    },
+  });
+  assert.equal(reminderCalls, 0);
+  assert.equal(reminder.tables.notification_outbox[0].status, "pending");
+  assert.equal(reminder.tables.notification_outbox[0].attempt_count ?? 0, 0);
+
+  const day = base();
+  day.tables.inbox_items.push({
+    id: "inbox-day",
+    payload: {
+      match_id: "match-1",
+      service_request_id: "request-1",
+      stage: "initial",
+      reminder_index: 0,
+      service_label: "Tax advice",
+      work_format: null,
+      city: null,
+      service_languages: [],
+      opened: false,
+    },
+  });
+  day.tables.notification_outbox.push(dueRow("day", "inbox-day", "user-1"));
+  day.tables.push_endpoints.push({
+    id: "endpoint-day",
+    user_id: "user-1",
+    enabled: true,
+    invalidated_at: null,
+    token: TOKEN_B,
+    platform: "android",
+    provider: "expo",
+  });
+  let dayCalls = 0;
+  await deliverPendingOutbox(day.supabase, DEFAULT_MATCH_DELIVERY_POLICY, {
+    push: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+    telegram: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+    email: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+  }, new Date("2026-09-28T12:00:00+02:00"), {
+    async deliver() {
+      dayCalls += 1;
+      return { status: "sent", errorCode: null, providerMessageId: "ticket-day", invalidate: false };
+    },
+  });
+  assert.equal(dayCalls, 1);
+  assert.equal(day.tables.notification_outbox[0].status, "sent");
+
+  const disabled = base();
+  disabled.tables.notification_preferences.push({ user_id: "user-client", push_enabled: false });
+  disabled.tables.inbox_items.push(chatNotice("disabled"));
+  disabled.tables.notification_outbox.push(dueRow("disabled", "inbox-disabled", "user-client"));
+  disabled.tables.push_endpoints.push({
+    id: "endpoint-disabled",
+    user_id: "user-client",
+    enabled: true,
+    invalidated_at: null,
+    token: TOKEN_C,
+    platform: "ios",
+    provider: "expo",
+  });
+  let disabledCalls = 0;
+  await deliverOutboxById(disabled.supabase, "disabled", DEFAULT_MATCH_DELIVERY_POLICY, {
+    push: async () => ({ status: "sent", providerMessageId: null, errorCode: null }),
+    telegram: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+    email: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+  }, new Date("2026-09-28T22:01:00+02:00"), {
+    async deliver() {
+      disabledCalls += 1;
+      return { status: "sent", errorCode: null, providerMessageId: "no", invalidate: false };
+    },
+  });
+  assert.equal(disabledCalls, 0);
+  assert.equal(disabled.tables.notification_outbox[0].status, "skipped");
+  assert.equal(disabled.tables.notification_outbox[0].last_error_code, "push_disabled");
+
+  const failed = await deliverChatAt("2026-09-28T22:01:00+02:00");
+  assert.equal(failed.status, "sent");
+  const retry = base();
+  retry.tables.inbox_items.push(chatNotice("retry"));
+  retry.tables.notification_outbox.push(dueRow("retry", "inbox-retry", "user-client"));
+  retry.tables.push_endpoints.push({
+    id: "endpoint-retry",
+    user_id: "user-client",
+    enabled: true,
+    invalidated_at: null,
+    token: TOKEN_A,
+    platform: "ios",
+    provider: "expo",
+  });
+  retry.tables.notification_outbox.push(dueRow("other-match", "inbox-other-match", "user-1"));
+  retry.tables.inbox_items.push({
+    id: "inbox-other-match",
+    payload: {
+      match_id: "match-1",
+      service_request_id: "request-1",
+      stage: "initial",
+      reminder_index: 0,
+      service_label: "Tax advice",
+      work_format: null,
+      city: null,
+      service_languages: [],
+      opened: false,
+    },
+  });
+  await deliverOutboxById(retry.supabase, "retry", DEFAULT_MATCH_DELIVERY_POLICY, {
+    push: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+    telegram: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+    email: async () => ({ status: "skipped", providerMessageId: null, errorCode: null }),
+  }, new Date("2026-09-28T22:01:00+02:00"), {
+    async deliver() {
+      throw new Error("expo down");
+    },
+  });
+  assert.equal(retry.tables.notification_outbox.find((row) => row.id === "retry")?.status, "retryable");
+  assert.equal(Number(retry.tables.notification_outbox.find((row) => row.id === "retry")?.attempt_count) > 0, true);
+  assert.equal(retry.tables.notification_outbox.find((row) => row.id === "other-match")?.status, "pending");
+  assert.equal(retry.tables.notification_outbox.find((row) => row.id === "other-match")?.attempt_count ?? 0, 0);
 });
 
 test("1-9. endpoint registration is per user and per device", async () => {

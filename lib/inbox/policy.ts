@@ -83,6 +83,11 @@ export type ExternalDeliveryDecision =
   | { action: "defer_until"; until: string }
   | { action: "skip_channel"; reason: string };
 
+/** Marketplace match and reminder pushes wait. A live conversation message does not. */
+export function quietHoursDeferralApplies(event: string | null | undefined): boolean {
+  return event !== "conversation_message";
+}
+
 /** Inbox is created immediately. This decision applies only to external transports. */
 export function externalDeliveryDecision(
   now: Date,

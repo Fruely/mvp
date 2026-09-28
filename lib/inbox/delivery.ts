@@ -10,6 +10,7 @@ import {
   DEFAULT_MATCH_DELIVERY_POLICY,
   dueReminderIndex,
   externalDeliveryDecision,
+  quietHoursDeferralApplies,
   initialInboxKey,
   nextAttemptStatus,
   notificationLocale,
@@ -389,16 +390,6 @@ export async function deliverPendingOutbox(
       .maybeSingle();
     if (claim.error || !claim.data?.id) continue;
 
-    const quietZone = await lookupRecipientTimeZone(supabase, typeof row.recipient_user_id === "string" ? row.recipient_user_id : null);
-    const quiet = externalDeliveryDecision(clock, quietZone, policy);
-    if (quiet.action === "defer_until") {
-      await supabase
-        .from("notification_outbox")
-        .update({ status: "pending", next_attempt_at: quiet.until, updated_at: now })
-        .eq("id", row.id);
-      continue;
-    }
-
     const inbox = await supabase
       .from("inbox_items")
       .select("payload")
@@ -412,6 +403,17 @@ export async function deliverPendingOutbox(
       conversation_id?: string | null;
     }) | undefined;
     const messageEvent = payload?.event === "conversation_message";
+    if (quietHoursDeferralApplies(payload?.event)) {
+      const quietZone = await lookupRecipientTimeZone(supabase, typeof row.recipient_user_id === "string" ? row.recipient_user_id : null);
+      const quiet = externalDeliveryDecision(clock, quietZone, policy);
+      if (quiet.action === "defer_until") {
+        await supabase
+          .from("notification_outbox")
+          .update({ status: "pending", next_attempt_at: quiet.until, updated_at: now })
+          .eq("id", row.id);
+        continue;
+      }
+    }
     const clientEvent = Boolean(payload?.event) && payload?.event !== "client_selected_you" && !messageEvent;
     const request = payload?.service_request_id
       ? await supabase
