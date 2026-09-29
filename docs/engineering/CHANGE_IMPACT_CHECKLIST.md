@@ -1,5 +1,7 @@
 # Change Impact Checklist
 
+> For cross-client/domain changes, `docs/sdd/00-BASELINE.md` and the owning `docs/sdd/*` contract are the first compatibility gate. A released Native build is an immutable API consumer; default backend evolution is additive.
+
 ## Cross-client producer contracts
 
 When a Web API/backend change is required by **Freuly Native** (or another Freuly client):

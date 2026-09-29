@@ -91,6 +91,23 @@ Web and Native share one backend. A change to schema, RLS, storage, RPC, an API 
 
 Name the producer and the consumer by repository, branch, and commit when the change crosses repos. Do not call a consumer feature production-complete while the producer contract it needs is not deployed. Follow `BACKEND_CHANGE_PROTOCOL.md` in Native and `docs/engineering/CHANGE_IMPACT_CHECKLIST.md` in Backend/Web.
 
+
+## 9A. Spec-driven development gate
+
+Canonical cross-client product contracts live in `docs/sdd/`.
+
+Before changing any mobile-visible domain state, API DTO, enum/status, push/deep-link contract, auth boundary, billing/payment behavior, entitlement rule, RLS policy, RPC or schema used by a supported client:
+
+1. read `docs/sdd/00-BASELINE.md` and the owning SDD file;
+2. verify whether the requested behavior is **Implemented**, **Planned** or **Deferred**;
+3. update/approve the spec before implementation when the contract itself changes;
+4. add or update contract/invariant tests before relying on the new behavior;
+5. preserve supported released mobile binaries by default through additive compatibility.
+
+The SDD describes the canonical domain; it must not invent a parallel model merely to make a diagram cleaner. Existing entity names and state machines stay canonical unless an explicit migration changes them.
+
+Do not introduce speculative response fields, blanket `/v1/` route renames or provider-specific payment assumptions as architecture. Version only when a real breaking contract requires a compatibility boundary.
+
 ## 10. Data and migrations
 
 Do not edit an already-applied production migration to describe a new production change. Add a new migration. Prefer additive, backward-compatible evolution. Do not mutate production data to make a test pass unless the task explicitly authorizes that repair and the mutation is understood. Do not weaken authorization or storage privacy to make a client easier to write.
