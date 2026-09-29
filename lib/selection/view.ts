@@ -180,9 +180,16 @@ export type ConversationLocationView = {
   label: string | null;
 };
 
+export type ConversationImageView = {
+  path: string;
+  mimeType: string;
+  sizeBytes: number;
+  imageUrl: string | null;
+};
+
 export type ConversationMessageView = {
   id: string;
-  kind: "system" | "text" | "audio" | "location";
+  kind: "system" | "text" | "audio" | "location" | "image";
   actor: "system" | "client" | "specialist";
   body: string | null;
   createdAt: string | null;
@@ -190,6 +197,7 @@ export type ConversationMessageView = {
   systemEvent: "connection_ready" | null;
   audio: ConversationAudioView | null;
   location: ConversationLocationView | null;
+  image: ConversationImageView | null;
 };
 
 export type ConversationTranscript = {
@@ -213,13 +221,14 @@ export function toTranscriptResponse(conversation: ConversationTranscript): {
   role: "client" | "specialist";
   messages: Array<{
     id: string;
-    kind: "system" | "text" | "audio" | "location";
+    kind: "system" | "text" | "audio" | "location" | "image";
     actor_type: "system" | "client" | "specialist";
     body: string | null;
     created_at: string | null;
     system_payload?: { event?: "connection_ready"; service_label?: string };
     audio?: { mime_type: string; size_bytes: number; duration_ms: number; playback_url: string | null };
     location?: { latitude: number; longitude: number; label: string | null };
+    image?: { mime_type: string; size_bytes: number; image_url: string | null };
   }>;
 } {
   return {
@@ -250,6 +259,15 @@ export function toTranscriptResponse(conversation: ConversationTranscript): {
             }
           : {}),
         ...(message.kind === "location" && message.location ? { location: message.location } : {}),
+        ...(message.kind === "image" && message.image
+          ? {
+              image: {
+                mime_type: message.image.mimeType,
+                size_bytes: message.image.sizeBytes,
+                image_url: message.image.imageUrl,
+              },
+            }
+          : {}),
       };
     }),
   };
@@ -339,8 +357,12 @@ export async function loadConversationForViewer(
   );
   const mapped = rows.map((row) => {
     const payload = row.payload && typeof row.payload === "object" ? (row.payload as Record<string, unknown>) : {};
-    const kind = row.kind === "system" || row.kind === "audio" || row.kind === "location" || row.kind === "text" ? row.kind : "text";
-    const attachment = attachmentRows.find((item) => String(item.message_id) === String(row.id) && item.media_type === "audio");
+    const kind =
+      row.kind === "system" || row.kind === "audio" || row.kind === "location" || row.kind === "image" || row.kind === "text"
+        ? row.kind
+        : "text";
+    const audioAttachment = attachmentRows.find((item) => String(item.message_id) === String(row.id) && item.media_type === "audio");
+    const imageAttachment = attachmentRows.find((item) => String(item.message_id) === String(row.id) && item.media_type === "image");
     return {
       id: String(row.id),
       kind,
@@ -350,16 +372,25 @@ export async function loadConversationForViewer(
       serviceLabel: typeof payload.service_label === "string" ? payload.service_label : null,
       systemEvent: kind === "system" ? safeSystemEvent(payload.event) : null,
       audio:
-        kind === "audio" && attachment && typeof attachment.storage_path === "string"
+        kind === "audio" && audioAttachment && typeof audioAttachment.storage_path === "string"
           ? {
-              path: attachment.storage_path,
-              mimeType: typeof attachment.mime_type === "string" ? attachment.mime_type : "",
-              sizeBytes: typeof attachment.size_bytes === "number" ? attachment.size_bytes : 0,
-              durationMs: typeof attachment.duration_ms === "number" ? attachment.duration_ms : 0,
+              path: audioAttachment.storage_path,
+              mimeType: typeof audioAttachment.mime_type === "string" ? audioAttachment.mime_type : "",
+              sizeBytes: typeof audioAttachment.size_bytes === "number" ? audioAttachment.size_bytes : 0,
+              durationMs: typeof audioAttachment.duration_ms === "number" ? audioAttachment.duration_ms : 0,
               playbackUrl: null,
             }
           : null,
       location: kind === "location" ? readStoredLocation(payload) : null,
+      image:
+        kind === "image" && imageAttachment && typeof imageAttachment.storage_path === "string"
+          ? {
+              path: imageAttachment.storage_path,
+              mimeType: typeof imageAttachment.mime_type === "string" ? imageAttachment.mime_type : "",
+              sizeBytes: typeof imageAttachment.size_bytes === "number" ? imageAttachment.size_bytes : 0,
+              imageUrl: null,
+            }
+          : null,
     };
   });
   return {

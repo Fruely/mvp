@@ -3,17 +3,17 @@ import { channelDedupeKey } from "@/lib/inbox/policy";
 import { loadNotificationPreferences, preferenceAllows } from "@/lib/push/preferences";
 import { isRecipientPushReady } from "@/lib/push/readiness";
 
-export type ConversationMessageKind = "text" | "audio" | "location" | "system";
+export type ConversationMessageKind = "text" | "audio" | "location" | "image" | "system";
 export type ConversationMessageActor = "client" | "specialist" | "system";
 
 export function conversationMessageInboxKey(conversationId: string, messageId: string): string {
   return `conversation:${conversationId}:message:${messageId}`;
 }
 
-/** Text, audio, and location share one event. System rows keep their own flows. */
+/** Text, audio, location, and image share one event. System rows keep their own flows. */
 export function shouldNotifyUserMessage(input: { kind: string; actor: string }): boolean {
   return (
-    (input.kind === "text" || input.kind === "audio" || input.kind === "location") &&
+    (input.kind === "text" || input.kind === "audio" || input.kind === "location" || input.kind === "image") &&
     (input.actor === "client" || input.actor === "specialist")
   );
 }

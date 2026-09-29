@@ -4,6 +4,8 @@ export const CONVERSATION_MEDIA_BUCKET = "conversation-media";
 export const AUDIO_MAX_BYTES = 10 * 1024 * 1024;
 export const AUDIO_MAX_DURATION_MS = 3 * 60 * 1000;
 export const AUDIO_MIME_TYPES = ["audio/mp4", "audio/m4a", "audio/x-m4a", "audio/aac"] as const;
+export const IMAGE_MIME_TYPE = "image/jpeg";
+export const IMAGE_MAX_BYTES = 10 * 1024 * 1024;
 export const AUDIO_CODEC = "aac";
 export const AUDIO_CONTAINER = "m4a";
 export const PLAYBACK_TTL_SECONDS = 10 * 60;
@@ -11,6 +13,7 @@ export const LOCATION_LABEL_MAX = 80;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const AUDIO_PATH = /^conversation\/([0-9a-f-]{36})\/([0-9a-f-]{36})\.m4a$/i;
+const IMAGE_PATH = /^conversation\/([0-9a-f-]{36})\/([0-9a-f-]{36})\.jpg$/i;
 
 export type ConversationWriteError =
   | "invalid"
@@ -30,6 +33,13 @@ export type AudioReference = {
   durationMs: number;
 };
 
+export type ImageReference = {
+  path: string;
+  uploadId: string;
+  mimeType: typeof IMAGE_MIME_TYPE;
+  sizeBytes: number;
+};
+
 export type LocationPoint = {
   latitude: number;
   longitude: number;
@@ -39,7 +49,8 @@ export type LocationPoint = {
 export type ConversationPost =
   | { kind: "text"; body: string }
   | { kind: "audio"; audio: AudioReference }
-  | { kind: "location"; location: LocationPoint };
+  | { kind: "location"; location: LocationPoint }
+  | { kind: "image"; image: ImageReference };
 
 type StorageListItem = {
   name?: string;
@@ -154,6 +165,10 @@ export function parseConversationPost(
     const location = validateLocation(row.location);
     return location.ok ? { kind: "location", location: location.location } : { error: location.error };
   }
+  if (kind === "image") {
+    const image = validateImageReference(conversationId, row.attachment);
+    return image.ok ? { kind: "image", image: image.image } : { error: image.error };
+  }
   return { error: "invalid" };
 }
 
@@ -226,22 +241,131 @@ export async function uploadedAudioMatches(
   return { ok: true };
 }
 
-export async function signConversationPlayback<T extends { kind: string; audio: { path: string; playbackUrl: string | null } | null }>(
+export function imageStoragePath(conversationId: string, uploadId: string): string {
+  return `conversation/${conversationId}/${uploadId}.jpg`;
+}
+
+export function parseImageStoragePath(path: string): { conversationId: string; uploadId: string } | null {
+  const match = IMAGE_PATH.exec(path);
+  if (!match) return null;
+  const conversationId = match[1] ?? "";
+  const uploadId = match[2] ?? "";
+  if (!UUID.test(conversationId) || !UUID.test(uploadId)) return null;
+  if (path !== imageStoragePath(conversationId, uploadId)) return null;
+  return { conversationId, uploadId };
+}
+
+export function validateImageReference(
+  conversationId: string,
+  raw: unknown,
+): { ok: true; image: ImageReference } | { ok: false; error: ConversationWriteError } {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return { ok: false, error: "invalid" };
+  const row = raw as Record<string, unknown>;
+  const path = typeof row.path === "string" ? row.path : "";
+  const parsed = parseImageStoragePath(path);
+  if (!parsed) return { ok: false, error: "wrong_conversation" };
+  if (parsed.conversationId !== conversationId) return { ok: false, error: "wrong_conversation" };
+  if (typeof row.mime_type !== "string" || row.mime_type.trim().toLowerCase() !== IMAGE_MIME_TYPE) {
+    return { ok: false, error: "unsupported_media" };
+  }
+  const sizeBytes = wholeNumber(row.size_bytes);
+  if (sizeBytes === null || sizeBytes < 1) return { ok: false, error: "invalid" };
+  if (sizeBytes > IMAGE_MAX_BYTES) return { ok: false, error: "too_large" };
+  return {
+    ok: true,
+    image: { path, uploadId: parsed.uploadId, mimeType: IMAGE_MIME_TYPE, sizeBytes },
+  };
+}
+
+export async function authorizeConversationImageUpload(
   supabase: SupabaseClient,
-  messages: T[],
-): Promise<T[]> {
+  input: { conversationId: string; mimeType: unknown; sizeBytes: unknown },
+): Promise<
+  | { ok: true; path: string; token: string; signedUrl: string; mimeType: string }
+  | { ok: false; error: ConversationWriteError | "sign_failed" }
+> {
+  const uploadId = crypto.randomUUID();
+  const path = imageStoragePath(input.conversationId, uploadId);
+  const image = validateImageReference(input.conversationId, {
+    path,
+    mime_type: input.mimeType,
+    size_bytes: input.sizeBytes,
+  });
+  if (!image.ok) return image;
+  const from = storageOf(supabase);
+  if (!from) return { ok: false, error: "sign_failed" };
+  const signed = await from(CONVERSATION_MEDIA_BUCKET).createSignedUploadUrl(path, { upsert: false });
+  if (signed.error || !signed.data?.signedUrl || !signed.data.token || !signed.data.path) {
+    return { ok: false, error: "sign_failed" };
+  }
+  const signedPath = signed.data.path;
+  if (signedPath !== path && signedPath !== `${CONVERSATION_MEDIA_BUCKET}/${path}`) {
+    return { ok: false, error: "sign_failed" };
+  }
+  return {
+    ok: true,
+    path,
+    token: signed.data.token,
+    signedUrl: signed.data.signedUrl,
+    mimeType: image.image.mimeType,
+  };
+}
+
+export async function uploadedImageMatches(
+  supabase: SupabaseClient,
+  image: ImageReference,
+): Promise<{ ok: true } | { ok: false; error: ConversationWriteError }> {
+  const parsed = parseImageStoragePath(image.path);
+  const from = storageOf(supabase);
+  if (!from || !parsed) return { ok: false, error: "missing_upload" };
+  const listed = await from(CONVERSATION_MEDIA_BUCKET).list(`conversation/${parsed.conversationId}`, {
+    search: `${image.uploadId}.jpg`,
+    limit: 5,
+  });
+  if (listed.error) return { ok: false, error: "missing_upload" };
+  const object = (listed.data ?? []).find((item) => item.name === `${image.uploadId}.jpg`);
+  if (!object) return { ok: false, error: "missing_upload" };
+  const size = object.metadata?.size;
+  if (typeof size === "number" && (size < 1 || size > IMAGE_MAX_BYTES || size !== image.sizeBytes)) {
+    return { ok: false, error: "too_large" };
+  }
+  const storedMime = object.metadata?.mimetype;
+  if (typeof storedMime === "string" && storedMime.trim().toLowerCase() !== image.mimeType) {
+    return { ok: false, error: "unsupported_media" };
+  }
+  return { ok: true };
+}
+
+export async function signConversationPlayback<
+  T extends {
+    kind: string;
+    audio: { path: string; playbackUrl: string | null } | null;
+    image: { path: string; imageUrl: string | null } | null;
+  },
+>(supabase: SupabaseClient, messages: T[]): Promise<T[]> {
   const from = storageOf(supabase);
   if (!from) return messages;
   return Promise.all(
     messages.map(async (message) => {
-      if (message.kind !== "audio" || !message.audio?.path) return message;
-      try {
-        const signed = await from(CONVERSATION_MEDIA_BUCKET).createSignedUrl(message.audio.path, PLAYBACK_TTL_SECONDS);
-        if (signed.error || !signed.data?.signedUrl) return message;
-        return { ...message, audio: { ...message.audio, playbackUrl: signed.data.signedUrl } };
-      } catch {
-        return message;
+      if (message.kind === "audio" && message.audio?.path) {
+        try {
+          const signed = await from(CONVERSATION_MEDIA_BUCKET).createSignedUrl(message.audio.path, PLAYBACK_TTL_SECONDS);
+          if (signed.error || !signed.data?.signedUrl) return message;
+          return { ...message, audio: { ...message.audio, playbackUrl: signed.data.signedUrl } };
+        } catch {
+          return message;
+        }
       }
+      if (message.kind === "image" && message.image?.path) {
+        try {
+          const signed = await from(CONVERSATION_MEDIA_BUCKET).createSignedUrl(message.image.path, PLAYBACK_TTL_SECONDS);
+          if (signed.error || !signed.data?.signedUrl) return message;
+          return { ...message, image: { ...message.image, imageUrl: signed.data.signedUrl } };
+        } catch {
+          return message;
+        }
+      }
+      return message;
     }),
   );
 }

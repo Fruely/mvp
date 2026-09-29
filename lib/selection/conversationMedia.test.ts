@@ -10,7 +10,10 @@ import {
   AUDIO_MAX_BYTES,
   AUDIO_MAX_DURATION_MS,
   AUDIO_MIME_TYPES,
+  IMAGE_MAX_BYTES,
+  IMAGE_MIME_TYPE,
   authorizeConversationAudioUpload,
+  authorizeConversationImageUpload,
   parseConversationPost,
   validateLocation,
 } from "./conversationMedia.ts";
@@ -296,7 +299,7 @@ test("invalid location, audio MIME, size, and duration are rejected", () => {
   assert.equal(parseConversationPost(CONVERSATION, audioBody(AUDIO_PATH, { mime_type: "audio/wav" })).error, "unsupported_media");
   assert.equal(parseConversationPost(CONVERSATION, audioBody(AUDIO_PATH, { size_bytes: AUDIO_MAX_BYTES + 1 })).error, "too_large");
   assert.equal(parseConversationPost(CONVERSATION, audioBody(AUDIO_PATH, { duration_ms: AUDIO_MAX_DURATION_MS + 1 })).error, "too_long");
-  assert.equal(parseConversationPost(CONVERSATION, { kind: "image", attachment: { path: AUDIO_PATH } }).error, "invalid");
+  assert.equal(parseConversationPost(CONVERSATION, { kind: "image", attachment: { path: AUDIO_PATH } }).error, "wrong_conversation");
 });
 
 test("missing or oversized stored audio is not saved", async () => {
@@ -469,4 +472,219 @@ test("signed upload is conversation-scoped and the attachment schema already all
   assert.equal(AUDIO_CONTAINER, "m4a");
   assert.equal(AUDIO_MAX_DURATION_MS, 180000);
   assert.equal(AUDIO_MAX_BYTES, 10485760);
+});
+
+const IMAGE_PATH = `conversation/${CONVERSATION}/${UPLOAD}.jpg`;
+
+function imageBody(path = IMAGE_PATH, extra?: Record<string, unknown>) {
+  return {
+    kind: "image",
+    attachment: {
+      path,
+      mime_type: "image/jpeg",
+      size_bytes: 2400,
+      ...extra,
+    },
+  };
+}
+
+test("a valid jpeg reference is accepted and other image types are not", () => {
+  const valid = parseConversationPost(CONVERSATION, imageBody());
+  assert.equal("error" in valid, false);
+  assert.equal(parseConversationPost(CONVERSATION, imageBody(IMAGE_PATH, { mime_type: "image/png" })).error, "unsupported_media");
+  assert.equal(parseConversationPost(CONVERSATION, imageBody(IMAGE_PATH, { mime_type: "image/webp" })).error, "unsupported_media");
+  assert.equal(parseConversationPost(CONVERSATION, imageBody(IMAGE_PATH, { size_bytes: IMAGE_MAX_BYTES + 1 })).error, "too_large");
+  assert.equal(parseConversationPost(CONVERSATION, imageBody("conversation/not-a-path.jpg")).error, "wrong_conversation");
+  assert.equal(parseConversationPost(CONVERSATION, imageBody(`conversation/${OTHER}/${UPLOAD}.jpg`)).error, "wrong_conversation");
+  assert.equal(parseConversationPost(CONVERSATION, imageBody(`conversation/${CONVERSATION}/${UPLOAD}.png`)).error, "wrong_conversation");
+  assert.equal(IMAGE_MIME_TYPE, "image/jpeg");
+  assert.equal(IMAGE_MAX_BYTES, 10485760);
+});
+
+test("missing, mismatched, oversized, and reused images are not saved", async () => {
+  const missing = seed();
+  const absent = await postConversationMessage(missing.supabase, {
+    conversationId: CONVERSATION,
+    actor: "client",
+    authorUserId: CLIENT,
+    raw: imageBody(),
+  });
+  assert.deepEqual(absent, { error: "missing_upload" });
+  assert.equal(missing.tables.conversation_messages.some((row) => row.kind === "image"), false);
+
+  const mismatch = seed();
+  mismatch.files.set(IMAGE_PATH, { size: 2400, mimetype: "image/png" });
+  const wrongMime = await postConversationMessage(mismatch.supabase, {
+    conversationId: CONVERSATION,
+    actor: "client",
+    authorUserId: CLIENT,
+    raw: imageBody(),
+  });
+  assert.deepEqual(wrongMime, { error: "unsupported_media" });
+
+  const wrongSize = seed();
+  wrongSize.files.set(IMAGE_PATH, { size: 100, mimetype: "image/jpeg" });
+  const sizeMismatch = await postConversationMessage(wrongSize.supabase, {
+    conversationId: CONVERSATION,
+    actor: "client",
+    authorUserId: CLIENT,
+    raw: imageBody(),
+  });
+  assert.deepEqual(sizeMismatch, { error: "too_large" });
+
+  const oversized = seed();
+  oversized.files.set(IMAGE_PATH, { size: IMAGE_MAX_BYTES + 1, mimetype: "image/jpeg" });
+  const tooBig = await postConversationMessage(oversized.supabase, {
+    conversationId: CONVERSATION,
+    actor: "client",
+    authorUserId: CLIENT,
+    raw: imageBody(IMAGE_PATH, { size_bytes: IMAGE_MAX_BYTES }),
+  });
+  assert.deepEqual(tooBig, { error: "too_large" });
+
+  const db = seed();
+  db.files.set(IMAGE_PATH, { size: 2400, mimetype: "image/jpeg" });
+  const posted = await postConversationMessage(db.supabase, {
+    conversationId: CONVERSATION,
+    actor: "specialist",
+    authorUserId: SPECIALIST_USER,
+    raw: imageBody(),
+  });
+  assert.equal("error" in posted, false);
+  assert.equal(db.tables.conversation_message_attachments.length, 1);
+  const attachment = db.tables.conversation_message_attachments[0];
+  assert.equal(attachment?.media_type, "image");
+  assert.equal(attachment?.mime_type, "image/jpeg");
+  assert.equal(attachment?.duration_ms, null);
+  assert.equal(attachment?.size_bytes, 2400);
+  const message = db.tables.conversation_messages.find((row) => row.kind === "image");
+  assert.equal(message?.body, null);
+  assert.equal(message?.author_user_id, SPECIALIST_USER);
+  const reused = await postConversationMessage(db.supabase, {
+    conversationId: CONVERSATION,
+    actor: "client",
+    authorUserId: CLIENT,
+    raw: imageBody(),
+  });
+  assert.deepEqual(reused, { error: "wrong_conversation" });
+  assert.equal(db.tables.conversation_message_attachments.length, 1);
+});
+
+test("an unrelated or anonymous caller cannot send an image", async () => {
+  const db = seed();
+  db.files.set(IMAGE_PATH, { size: 2400, mimetype: "image/jpeg" });
+  const stranger = await loadConversationForViewer(db.supabase, {
+    conversationId: CONVERSATION,
+    viewer: { actorUserId: "stranger", actorSpecialistId: null, anonymousRequestId: null },
+  });
+  assert.equal(stranger, null);
+  const anonymous = await postConversationMessage(db.supabase, {
+    conversationId: CONVERSATION,
+    actor: "client",
+    authorUserId: null,
+    raw: imageBody(),
+  });
+  assert.deepEqual(anonymous, { error: "invalid" });
+  assert.equal(db.tables.conversation_messages.some((row) => row.kind === "image"), false);
+  const route = readFileSync(new URL("../../app/api/conversations/[id]/image/route.ts", import.meta.url), "utf8");
+  assert.match(route, /!resolved\.viewer\.actorUserId/);
+  assert.match(route, /loadConversationForViewer/);
+  assert.equal(route.includes("actor_type"), false);
+});
+
+test("transcript signs an image url without the storage path, including after restart", async () => {
+  const db = seed();
+  db.files.set(IMAGE_PATH, { size: 2400, mimetype: "image/jpeg" });
+  await postConversationMessage(db.supabase, {
+    conversationId: CONVERSATION,
+    actor: "client",
+    authorUserId: CLIENT,
+    raw: imageBody(),
+  });
+  const loaded = await loadConversationForViewer(db.supabase, { conversationId: CONVERSATION, viewer: clientViewer });
+  assert.ok(loaded);
+  const response = toTranscriptResponse(loaded);
+  const image = response.messages.find((message) => message.kind === "image");
+  assert.equal(image?.body, null);
+  assert.equal(image?.image?.mime_type, "image/jpeg");
+  assert.equal(image?.image?.size_bytes, 2400);
+  assert.match(image?.image?.image_url ?? "", /^https:\/\/storage\.example\/signed\//);
+  const serialized = JSON.stringify(response);
+  assert.equal(serialized.includes(IMAGE_PATH), false);
+  assert.equal(serialized.includes("storage_path"), false);
+  assert.equal(serialized.includes("author_user_id"), false);
+  assert.equal(serialized.includes(EMAIL), false);
+
+  const restarted = memory(
+    {
+      conversations: db.tables.conversations,
+      service_requests: db.tables.service_requests,
+      specialists: db.tables.specialists,
+      conversation_messages: db.tables.conversation_messages,
+      conversation_message_attachments: db.tables.conversation_message_attachments,
+    },
+    new Map(),
+  );
+  const again = await loadConversationForViewer(restarted.supabase, { conversationId: CONVERSATION, viewer: specialistViewer });
+  assert.ok(again);
+  assert.equal(again.messages.some((message) => message.kind === "image" && message.image?.sizeBytes === 2400), true);
+  assert.match(again.messages.find((message) => message.kind === "image")?.image?.imageUrl ?? "", /^https:\/\/storage\.example\/signed\//);
+});
+
+test("an image uses conversation_message, skips quiet hours, and does not notify the author", async () => {
+  const db = seed();
+  db.files.set(IMAGE_PATH, { size: 2400, mimetype: "image/jpeg" });
+  await postConversationMessage(db.supabase, {
+    conversationId: CONVERSATION,
+    actor: "specialist",
+    authorUserId: SPECIALIST_USER,
+    raw: imageBody(),
+  });
+  const notices = db.tables.inbox_items.filter((row) => row.type === "conversation_message");
+  assert.equal(notices.length, 1);
+  assert.equal((notices[0]?.payload as { event?: string }).event, "conversation_message");
+  assert.equal(notices[0]?.recipient_user_id, CLIENT);
+  assert.notEqual(notices[0]?.recipient_user_id, SPECIALIST_USER);
+  const payload = JSON.stringify(notices);
+  assert.equal(payload.includes(IMAGE_PATH), false);
+  assert.equal(payload.includes("image/jpeg"), false);
+  assert.equal(payload.includes("image_url"), false);
+  assert.equal(quietHoursDeferralApplies("conversation_message"), false);
+  assert.equal(db.tables.notification_outbox.filter((row) => row.channel === "push" && row.status === "pending").length, 1);
+});
+
+test("image upload is conversation-scoped and the bucket keeps audio types", async () => {
+  const db = seed();
+  const signed = await authorizeConversationImageUpload(db.supabase, {
+    conversationId: CONVERSATION,
+    mimeType: "image/jpeg",
+    sizeBytes: 1000,
+  });
+  assert.equal(signed.ok, true);
+  if (signed.ok) {
+    assert.match(signed.path, new RegExp(`^conversation/${CONVERSATION}/[0-9a-f-]{36}\\.jpg$`));
+    assert.equal(signed.mimeType, "image/jpeg");
+    assert.equal(db.tables.conversation_messages.some((row) => row.kind === "image"), false);
+  }
+  const rejected = await authorizeConversationImageUpload(db.supabase, {
+    conversationId: CONVERSATION,
+    mimeType: "image/png",
+    sizeBytes: 1000,
+  });
+  assert.deepEqual(rejected, { ok: false, error: "unsupported_media" });
+  const sql = readFileSync(new URL("../../supabase/manual_migrations/2026-09-29_conversation_image.sql", import.meta.url), "utf8");
+  assert.match(sql, /kind IN \('system', 'text', 'audio', 'location', 'image'\)/);
+  assert.match(sql, /kind = 'image' AND body IS NULL AND actor_type IN \('client', 'specialist'\) AND author_user_id IS NOT NULL/);
+  assert.match(sql, /kind = 'audio' AND body IS NULL/);
+  assert.match(sql, /kind = 'location'/);
+  assert.equal(sql.includes("CREATE TABLE"), false);
+  assert.match(sql, /audio\/mp4/);
+  assert.match(sql, /audio\/m4a/);
+  assert.match(sql, /audio\/x-m4a/);
+  assert.match(sql, /audio\/aac/);
+  assert.match(sql, /image\/jpeg/);
+  assert.match(sql, /public = false/);
+  assert.match(sql, /10485760/);
+  assert.equal(sql.includes("GRANT SELECT ON public.conversation_message_attachments TO authenticated"), false);
+  assert.equal(sql.includes("CREATE POLICY"), false);
 });
