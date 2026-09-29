@@ -1,0 +1,12 @@
+---
+description: Require the Freuly engineering contract before substantial coding
+alwaysApply: true
+---
+
+# Engineering contract
+
+Before a substantial coding task, read `FREULY_ENGINEERING_CONTRACT.md` and apply it.
+
+This rule does not restate that contract. Narrow rules in this directory stay authoritative for their scopes: canonical implementation, dead-code cleanup, critical flows, anti-regression, and commit discipline.
+
+The contract governs reuse, placement, naming, scope, tests, and completion reports. If a narrow rule and the contract appear to conflict, follow the narrow rule for that scope.

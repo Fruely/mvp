@@ -16,3 +16,9 @@ This is a live production Next.js/Supabase application. Preserve current product
 - A successful build alone does not prove business-flow correctness.
 
 Detailed project rules live in `.cursor/rules/` and must be followed.
+
+## Engineering contract
+
+Before a substantial coding task, read `FREULY_ENGINEERING_CONTRACT.md` and apply it. It is mandatory. It governs reuse, file placement, naming, scope, tests, and the completion report.
+
+It does not replace this safety contract or the narrow rules in `.cursor/rules/`. Those remain authoritative for production behavior, critical flows, dead-code cleanup, anti-regression, and commit discipline.
