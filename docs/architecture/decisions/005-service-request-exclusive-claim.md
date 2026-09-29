@@ -38,7 +38,9 @@ When `SERVICE_REQUEST_COMMERCIAL_OFFERS_ENABLED=true`, matching writes one idemp
 
 `POST /api/specialist/claims/[claimId]/payment-intent` creates a direct card PaymentIntent with `capture_method=manual`. It stays off unless both `SERVICE_REQUEST_PAID_CLAIM_ENABLED` and `SERVICE_REQUEST_PAYMENT_AUTH_ENABLED` are true. Amount and currency come only from the persisted offer. `price_cents` null returns `price_unavailable`. The specialist client receives `client_secret` only to confirm; the server does not store or log it. The existing Stripe webhook marks the payment `authorized` when the intent is `requires_capture` and the claim is still `reserved`. A declined confirmation leaves that payment `pending` on the same PaymentIntent. Cancellation releases the payment row and does not change the claim. That handler does not capture, grant access, or open chat. The same reserved claim accepts only its bound offer on retry.
 
-`POST /api/specialist/matches/[matchId]/claim` remains the current TAKE contract. It still finalizes immediately through `finalizeServiceRequestConnection` and does not write `service_request_claims` or payments. That legacy path stays until a later cutover. Paid finalization will call the same function only after capture.
+`POST /api/specialist/matches/[matchId]/claim` remains the current TAKE contract. It still finalizes immediately through `finalizeServiceRequestConnection` and does not write `service_request_claims` or payments. That legacy path stays until a later cutover. Paid finalization calls the same function only after capture.
+
+Phase 3A client confirmation and capture are ADR-007. `SERVICE_REQUEST_CAPTURE_ENABLED` stays off.
 
 ## Non-goals of Phase 2
 

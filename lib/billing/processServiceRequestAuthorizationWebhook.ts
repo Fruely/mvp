@@ -1,13 +1,18 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type Stripe from "stripe";
-import { SERVICE_REQUEST_AUTHORIZATION_PURPOSE } from "@/lib/billing/createServiceRequestAuthorization";
+import {
+  isServiceRequestCaptureEnabled,
+  SERVICE_REQUEST_AUTHORIZATION_PURPOSE,
+} from "@/lib/billing/createServiceRequestAuthorization";
+import { fulfillConfirmedServiceRequestCapture } from "@/lib/billing/fulfillServiceRequestCapture";
+import { notifyClientConfirmationRequired } from "@/lib/selection/interest";
 
 /**
  * Authorization state for a service-request PaymentIntent.
  *
  * The direct-lead Checkout processor grants access. This processor must not
- * call it. Authorization, release, and an externally captured payment stay on
- * request_offer_payments. The claim stays reserved.
+ * call it. A succeeded service-request intent is fulfilled only after the
+ * client confirmation timestamp exists.
  */
 export type ServiceRequestAuthorizationWebhookOutcome =
   | "ignored"
@@ -41,8 +46,10 @@ type ClaimRow = {
   id: string;
   specialist_id: string;
   service_request_id: string;
+  match_id: string | null;
   request_offer_id: string | null;
   status: string;
+  client_confirmed_at: string | null;
 };
 
 type OfferRow = {
@@ -98,7 +105,7 @@ async function coherent(
 
   const claimResult = await supabase
     .from("service_request_claims")
-    .select("id, specialist_id, service_request_id, request_offer_id, status")
+    .select("id, specialist_id, service_request_id, match_id, request_offer_id, status, client_confirmed_at")
     .eq("id", payment.service_request_claim_id)
     .maybeSingle();
   if (claimResult.error) return { outcome: "retry" };
@@ -125,9 +132,15 @@ async function coherent(
   return { outcome: "ok", claim };
 }
 
+async function noteAuthorized(supabase: SupabaseClient, claimId: string, env: NodeJS.ProcessEnv): Promise<void> {
+  if (!isServiceRequestCaptureEnabled(env)) return;
+  await notifyClientConfirmationRequired(supabase, claimId);
+}
+
 export async function processStripeWebhookEventForServiceRequestAuthorization(
   supabase: SupabaseClient,
   event: Stripe.Event,
+  env: NodeJS.ProcessEnv = process.env,
 ): Promise<ServiceRequestAuthorizationWebhookResult> {
   const intent = intentOf(event);
   if (!intent || intent.metadata?.purpose !== SERVICE_REQUEST_AUTHORIZATION_PURPOSE) {
@@ -151,7 +164,11 @@ export async function processStripeWebhookEventForServiceRequestAuthorization(
 
   if (event.type === "payment_intent.amount_capturable_updated") {
     if (intent.status !== "requires_capture") return { outcome: "validation_failed" };
-    if (payment.status === "authorized" || payment.status === "paid") return { outcome: "success" };
+    if (payment.status === "paid") return { outcome: "success" };
+    if (payment.status === "authorized") {
+      await noteAuthorized(supabase, claim.id, env);
+      return { outcome: "success" };
+    }
     if (payment.status !== "pending" || claim.status !== "reserved") {
       return { outcome: "validation_failed" };
     }
@@ -166,7 +183,9 @@ export async function processStripeWebhookEventForServiceRequestAuthorization(
       })
       .eq("id", payment.id)
       .eq("status", "pending");
-    return error ? { outcome: "retryable_failure" } : { outcome: "success" };
+    if (error) return { outcome: "retryable_failure" };
+    await noteAuthorized(supabase, claim.id, env);
+    return { outcome: "success" };
   }
 
   if (event.type === "payment_intent.payment_failed") {
@@ -209,25 +228,21 @@ export async function processStripeWebhookEventForServiceRequestAuthorization(
 
   if (event.type === "payment_intent.succeeded") {
     if (intent.status !== "succeeded") return { outcome: "validation_failed" };
-    if (payment.status === "paid") return { outcome: "success" };
-    if (
-      (payment.status !== "pending" && payment.status !== "authorized") ||
-      claim.status !== "reserved"
-    ) {
+    if (payment.status === "paid" && claim.status === "completed") return { outcome: "success" };
+    if (claim.status !== "reserved" || !claim.client_confirmed_at) return { outcome: "validation_failed" };
+    if (payment.status !== "pending" && payment.status !== "authorized" && payment.status !== "paid") {
       return { outcome: "validation_failed" };
     }
-    const paidAt = new Date().toISOString();
-    const { error } = await supabase
-      .from("request_offer_payments")
-      .update({
-        status: "paid",
-        paid_at: paidAt,
-        stripe_payment_intent_id: intent.id,
-        updated_at: paidAt,
-      })
-      .eq("id", payment.id)
-      .in("status", ["pending", "authorized"]);
-    return error ? { outcome: "retryable_failure" } : { outcome: "success" };
+    try {
+      const outcome = await fulfillConfirmedServiceRequestCapture(supabase, {
+        payment,
+        claim,
+        paymentIntentId: intent.id,
+      });
+      return { outcome };
+    } catch {
+      return { outcome: "retryable_failure" };
+    }
   }
 
   return { outcome: "ignored" };

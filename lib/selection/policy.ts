@@ -20,6 +20,10 @@ export function connectionInboxKey(requestId: string): string {
   return `request:${requestId}:connection_ready`;
 }
 
+export function connectionConfirmationInboxKey(claimId: string): string {
+  return `claim:${claimId}:connection_confirmation_required`;
+}
+
 export function selectedSpecialistInboxKey(matchId: string): string {
   return `match:${matchId}:client_selected`;
 }

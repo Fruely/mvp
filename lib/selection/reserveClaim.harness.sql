@@ -1,7 +1,7 @@
 -- Manual concurrency and exclusivity harness for service-request reservation.
 -- This file is not a migration and is not applied by CI.
 -- Run it only against a disposable database AFTER
--- supabase/manual_migrations/2026-09-29_service_request_payment_authorization.sql.
+-- supabase/manual_migrations/2026-09-29_service_request_client_confirmation.sql.
 -- Do not run it on production.
 --
 -- The script opens a transaction and rolls it back.
@@ -29,7 +29,11 @@ DECLARE
   spec_ids uuid[];
   spec_a uuid;
   spec_b uuid;
+  client_user uuid;
   req uuid;
+  anonymous_req uuid;
+  anonymous_match uuid;
+  anonymous_offer uuid;
   match_a uuid;
   match_b uuid;
   offer_a uuid;
@@ -48,6 +52,26 @@ BEGIN
   IF to_regprocedure('public.reserve_service_request_claim(uuid,uuid)') IS NOT NULL THEN
     RAISE EXCEPTION 'obsolete two-argument reservation function is still present';
   END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'service_request_claims'
+      AND column_name = 'client_confirmed_at'
+  ) THEN
+    RAISE EXCEPTION 'client_confirmed_at is missing';
+  END IF;
+  IF NOT has_function_privilege('service_role', 'public.reserve_service_request_claim(uuid,uuid,uuid)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'service_role cannot execute reservation';
+  END IF;
+  IF has_function_privilege('anon', 'public.reserve_service_request_claim(uuid,uuid,uuid)', 'EXECUTE')
+     OR has_function_privilege('authenticated', 'public.reserve_service_request_claim(uuid,uuid,uuid)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'reservation is executable outside service_role';
+  END IF;
+
+  SELECT id INTO client_user FROM auth.users LIMIT 1;
+  IF client_user IS NULL THEN
+    RAISE EXCEPTION 'Disposable database needs one auth user before this harness';
+  END IF;
 
   SELECT array_agg(id) INTO spec_ids
   FROM (SELECT id FROM public.specialists LIMIT 2) picked;
@@ -58,7 +82,7 @@ BEGIN
   spec_b := spec_ids[2];
 
   INSERT INTO public.service_requests (
-    public_id, client_name, client_email, description, urgency, locale, status
+    public_id, client_name, client_email, description, urgency, locale, status, client_user_id
   ) VALUES (
     'REQ-HARNESS-CLAIM-' || gen_random_uuid()::text,
     'Harness',
@@ -66,9 +90,38 @@ BEGIN
     'Reservation harness',
     'flexible',
     'de',
-    'new'
+    'new',
+    client_user
   )
   RETURNING id INTO req;
+
+  INSERT INTO public.service_requests (
+    public_id, client_name, client_email, description, urgency, locale, status
+  ) VALUES (
+    'REQ-HARNESS-ANON-' || gen_random_uuid()::text,
+    'Harness',
+    'harness-anon@example.test',
+    'Anonymous reservation harness',
+    'flexible',
+    'de',
+    'new'
+  )
+  RETURNING id INTO anonymous_req;
+  INSERT INTO public.service_request_matches (service_request_id, specialist_id, status)
+  VALUES (anonymous_req, spec_a, 'active')
+  RETURNING id INTO anonymous_match;
+  INSERT INTO public.request_offers (
+    request_kind, lead_id, service_request_id, promotion_id, specialist_id,
+    offer_reason, pricing_segment, billing_model, price_cents, currency, status, idempotency_key
+  ) VALUES (
+    'service_request', NULL, anonymous_req, NULL, spec_a,
+    'matched', 'consumer', 'pay_per_lead', 2500, 'eur', 'offered',
+    'service-request:' || anonymous_req::text || ':specialist:' || spec_a::text || ':matched:initial'
+  )
+  RETURNING id INTO anonymous_offer;
+  IF public.reserve_service_request_claim(anonymous_match, spec_a, anonymous_offer)->>'error' <> 'not_claimable' THEN
+    RAISE EXCEPTION 'anonymous request was reservable';
+  END IF;
 
   INSERT INTO public.service_request_matches (service_request_id, specialist_id, status)
   VALUES (req, spec_a, 'active')

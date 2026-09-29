@@ -139,7 +139,12 @@ function seed(price: number | null = 2500, extra: Record<string, Row[]> = {}) {
         currency: "eur",
       },
     ],
-    service_requests: [{ id: REQUEST, selected_specialist_id: null, client_budget_text: "500 euros" }],
+    service_requests: [{
+      id: REQUEST,
+      selected_specialist_id: null,
+      client_user_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      client_budget_text: "500 euros",
+    }],
     service_request_matches: [
       { id: MATCH, specialist_id: SPEC, service_request_id: REQUEST, status: "active" },
     ],
@@ -205,6 +210,16 @@ test("payment authorization is closed unless both flags are on", async () => {
   const { stripe, creates } = stripeFor();
   const result = await authorize(db, stripe, {});
   assert.deepEqual(result, { ok: false, error: "not_found" });
+  assert.equal(creates.length, 0);
+  assert.equal(db.inserts.length, 0);
+});
+
+test("an anonymous request is not authorized and does not call Stripe", async () => {
+  const db = seed();
+  db.tables.service_requests[0].client_user_id = null;
+  const { stripe, creates } = stripeFor();
+  const result = await authorize(db, stripe);
+  assert.deepEqual(result, { ok: false, error: "not_claimable" });
   assert.equal(creates.length, 0);
   assert.equal(db.inserts.length, 0);
 });

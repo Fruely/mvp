@@ -1,0 +1,380 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { createServiceRequestAuthorization } from "./createServiceRequestAuthorization.ts";
+import {
+  confirmServiceRequestConnection,
+  serviceRequestCaptureIdempotencyKey,
+  type ServiceRequestCaptureStripe,
+} from "./confirmServiceRequestConnection.ts";
+import { processStripeWebhookEventForServiceRequestAuthorization } from "./processServiceRequestAuthorizationWebhook.ts";
+import { notifyClientConfirmationRequired } from "@/lib/selection/interest";
+import { renderClientEvent } from "@/lib/selection/render";
+import { pushPathForEvent } from "@/lib/push/message";
+
+const CLIENT = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+const OTHER = "99999999-9999-4999-8999-999999999999";
+const SPEC = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+const REQUEST = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+const MATCH = "11111111-1111-4111-8111-111111111111";
+const OFFER = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
+const CLAIM = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+const PAYMENT = "12121212-1212-4121-8121-121212121212";
+const PUBLIC_ID = "REQ-20260929-CONFIRM";
+const FLAGS = {
+  SERVICE_REQUEST_PAID_CLAIM_ENABLED: "true",
+  SERVICE_REQUEST_PAYMENT_AUTH_ENABLED: "true",
+  SERVICE_REQUEST_CAPTURE_ENABLED: "true",
+};
+
+type Row = Record<string, unknown>;
+
+class Memory {
+  readonly tables: Record<string, Row[]>;
+  constructor(seed: Record<string, Row[]>) {
+    this.tables = {};
+    for (const [name, rows] of Object.entries(seed)) this.tables[name] = rows.map((row) => ({ ...row }));
+  }
+  from(table: string) {
+    const filters: Array<(row: Row) => boolean> = [];
+    let patch: Row | null = null;
+    let incoming: Row | null = null;
+    let ignore = false;
+    let conflict = "";
+    const rows = () => (this.tables[table] ??= []);
+    const matched = () => rows().filter((row) => filters.every((filter) => filter(row)));
+    const apply = () => {
+      if (patch) for (const row of matched()) Object.assign(row, patch);
+      if (!incoming) return null;
+      const existing = conflict ? rows().find((row) => row[conflict] === incoming?.[conflict]) : undefined;
+      if (existing && ignore) {
+        incoming = null;
+        return existing;
+      }
+      if (existing) Object.assign(existing, incoming);
+      else rows().push(incoming);
+      const stored = existing ?? incoming;
+      incoming = null;
+      return stored;
+    };
+    const api = {
+      select() { return api; },
+      eq(column: string, value: unknown) {
+        filters.push((row) => row[column] === value);
+        return api;
+      },
+      is(column: string, value: unknown) {
+        filters.push((row) => (value == null ? row[column] == null : row[column] === value));
+        return api;
+      },
+      in(column: string, values: unknown[]) {
+        filters.push((row) => values.includes(row[column]));
+        return api;
+      },
+      neq(column: string, value: unknown) {
+        filters.push((row) => row[column] !== value);
+        return api;
+      },
+      not(column: string, operator: string, value: unknown) {
+        if (operator === "is" && value == null) filters.push((row) => row[column] != null);
+        return api;
+      },
+      limit() { return api; },
+      order() { return api; },
+      update(next: Row) { patch = next; return api; },
+      insert(row: Row) { incoming = { ...row, id: row.id ?? crypto.randomUUID() }; return api; },
+      upsert(row: Row, options?: { onConflict?: string; ignoreDuplicates?: boolean }) {
+        incoming = { ...row, id: row.id ?? crypto.randomUUID() };
+        ignore = Boolean(options?.ignoreDuplicates);
+        conflict = options?.onConflict ?? "";
+        return api;
+      },
+      async maybeSingle() {
+        const stored = apply();
+        const row = stored ?? matched()[0] ?? null;
+        return { data: row ? { ...row } : null, error: null };
+      },
+      then(resolve: (value: { data: Row[]; error: null }) => unknown, reject?: (reason: unknown) => unknown) {
+        apply();
+        return Promise.resolve({ data: matched().map((row) => ({ ...row })), error: null as null }).then(resolve, reject);
+      },
+    };
+    return api;
+  }
+}
+
+function seed(overrides: { paymentStatus?: string; claimStatus?: string; selected?: string | null } = {}) {
+  return new Memory({
+    service_requests: [{
+      id: REQUEST,
+      public_id: PUBLIC_ID,
+      client_user_id: CLIENT,
+      selected_specialist_id: overrides.selected ?? null,
+      locale: "ru",
+      requested_service: "коуч",
+    }],
+    service_request_claims: [{
+      id: CLAIM,
+      status: overrides.claimStatus ?? "reserved",
+      specialist_id: SPEC,
+      service_request_id: REQUEST,
+      match_id: MATCH,
+      request_offer_id: OFFER,
+      client_confirmed_at: null,
+    }],
+    request_offer_payments: [{
+      id: PAYMENT,
+      offer_id: OFFER,
+      specialist_id: SPEC,
+      service_request_claim_id: CLAIM,
+      amount_cents: 2500,
+      currency: "eur",
+      status: overrides.paymentStatus ?? "authorized",
+      stripe_payment_intent_id: "pi_auth",
+    }],
+    request_offers: [{
+      id: OFFER,
+      request_kind: "service_request",
+      service_request_id: REQUEST,
+      specialist_id: SPEC,
+      billing_model: "pay_per_lead",
+      status: "offered",
+      price_cents: 2500,
+      currency: "eur",
+    }],
+    service_request_matches: [{
+      id: MATCH,
+      service_request_id: REQUEST,
+      specialist_id: SPEC,
+      status: "active",
+    }],
+    conversations: [],
+    request_offer_access_grants: [],
+    inbox_items: [],
+    notification_outbox: [],
+  });
+}
+
+function stripeFor(status = "requires_capture") {
+  const captures: Array<{ id: string; params: Record<string, unknown>; key: string; confirmed: boolean }> = [];
+  let current = status;
+  const stripe: ServiceRequestCaptureStripe = {
+    paymentIntents: {
+      retrieve: async (id) => ({
+        id,
+        amount: 2500,
+        currency: "eur",
+        status: current,
+        metadata: {
+          purpose: "service_request_access_authorization",
+          payment_id: PAYMENT,
+          offer_id: OFFER,
+          claim_id: CLAIM,
+          specialist_id: SPEC,
+        },
+      }),
+      capture: async (id, params, options) => {
+        captures.push({
+          id,
+          params,
+          key: options.idempotencyKey,
+          confirmed: true,
+        });
+        current = "succeeded";
+        return { id, amount: 2500, currency: "eur", status: "succeeded", metadata: {} };
+      },
+    },
+  };
+  return { stripe, captures, markSucceeded: () => { current = "succeeded"; } };
+}
+
+async function confirm(db: Memory, stripe: ServiceRequestCaptureStripe, userId = CLIENT, env: NodeJS.ProcessEnv = FLAGS) {
+  return confirmServiceRequestConnection({
+    supabase: db as unknown as SupabaseClient,
+    publicId: PUBLIC_ID,
+    clientUserId: userId,
+    env,
+    stripe,
+  });
+}
+
+test("capture flag off makes confirmation unavailable and sends no notice", async () => {
+  const db = seed();
+  const { stripe, captures } = stripeFor();
+  const closed = await confirm(db, stripe, CLIENT, {
+    SERVICE_REQUEST_PAID_CLAIM_ENABLED: "true",
+    SERVICE_REQUEST_PAYMENT_AUTH_ENABLED: "true",
+  });
+  assert.deepEqual(closed, { ok: false, error: "not_found" });
+  assert.equal(captures.length, 0);
+  assert.equal(db.tables.inbox_items.length, 0);
+  assert.equal(db.tables.service_request_claims[0]?.client_confirmed_at, null);
+});
+
+test("another authenticated client cannot see the request", async () => {
+  const db = seed();
+  const { stripe, captures } = stripeFor();
+  const result = await confirm(db, stripe, OTHER);
+  assert.deepEqual(result, { ok: false, error: "not_found" });
+  assert.equal(captures.length, 0);
+  assert.equal(JSON.stringify(result).includes(SPEC), false);
+  assert.equal(JSON.stringify(result).includes(PUBLIC_ID), false);
+});
+
+test("pending, terminal, and already selected requests do not capture", async () => {
+  const pending = seed({ paymentStatus: "pending" });
+  const pendingStripe = stripeFor();
+  assert.deepEqual(await confirm(pending, pendingStripe.stripe), { ok: false, error: "not_claimable" });
+  assert.equal(pendingStripe.captures.length, 0);
+
+  for (const status of ["released", "expired", "failed"] as const) {
+    const db = seed({ claimStatus: status });
+    const local = stripeFor();
+    assert.equal((await confirm(db, local.stripe)).ok, false);
+    assert.equal(local.captures.length, 0);
+    assert.equal(db.tables.conversations.length, 0);
+  }
+
+  const taken = seed({ selected: "abababab-abab-4aba-8aba-abababababab" });
+  const takenStripe = stripeFor();
+  assert.deepEqual(await confirm(taken, takenStripe.stripe), { ok: false, error: "already_claimed" });
+  assert.equal(takenStripe.captures.length, 0);
+});
+
+test("an incoherent offer does not capture", async () => {
+  const db = seed();
+  db.tables.request_offers[0].billing_model = "subscription";
+  const { stripe, captures } = stripeFor();
+  assert.deepEqual(await confirm(db, stripe), { ok: false, error: "invariant" });
+  assert.equal(captures.length, 0);
+  assert.equal(db.tables.service_request_claims[0]?.client_confirmed_at, null);
+});
+
+test("confirmation captures the stored intent once per idempotency key and does not fulfill", async () => {
+  const db = seed();
+  const { stripe, captures } = stripeFor();
+  const first = await confirm(db, stripe);
+  const second = await confirm(db, stripe);
+  assert.deepEqual(first, { ok: true, state: "capture_pending" });
+  assert.deepEqual(second, { ok: true, state: "capture_pending" });
+  assert.equal(typeof db.tables.service_request_claims[0]?.client_confirmed_at, "string");
+  assert.equal(db.tables.service_request_claims[0]?.status, "reserved");
+  assert.equal(db.tables.request_offer_payments.length, 1);
+  assert.equal(db.tables.request_offer_payments[0]?.status, "authorized");
+  assert.equal(db.tables.request_offer_access_grants.length, 0);
+  assert.equal(db.tables.conversations.length, 0);
+  assert.deepEqual(captures.map((call) => call.id), ["pi_auth"]);
+  assert.deepEqual(captures.map((call) => call.params), [{}]);
+  assert.equal(captures[0]?.key, serviceRequestCaptureIdempotencyKey(PAYMENT));
+});
+
+test("an already succeeded intent is not captured again", async () => {
+  const db = seed();
+  db.tables.service_request_claims[0].client_confirmed_at = "2026-09-29T18:00:00.000Z";
+  const { stripe, captures } = stripeFor("succeeded");
+  const result = await confirm(db, stripe);
+  assert.deepEqual(result, { ok: true, state: "capture_pending" });
+  assert.equal(captures.length, 0);
+  assert.equal(db.tables.conversations.length, 0);
+  assert.equal(db.tables.request_offer_access_grants.length, 0);
+});
+
+test("confirmation copy and route do not accept client money fields", () => {
+  assert.equal(
+    renderClientEvent("ru", "connection_confirmation_required", {}).title,
+    "Специалист готов принять вашу заявку. Подтвердите соединение.",
+  );
+  assert.equal(
+    renderClientEvent("ua", "connection_confirmation_required", {}).title,
+    "Спеціаліст готовий прийняти вашу заявку. Підтвердьте з’єднання.",
+  );
+  assert.match(renderClientEvent("de", "connection_confirmation_required", {}).title, /Bestätigen Sie die Verbindung/);
+  assert.match(renderClientEvent("en", "connection_confirmation_required", {}).title, /Confirm the connection/);
+  assert.equal(
+    pushPathForEvent({ locale: "ru", eventType: "connection_confirmation_required", publicId: PUBLIC_ID }),
+    `/ru/requests/${PUBLIC_ID}`,
+  );
+  const route = readFileSync(
+    new URL("../../app/api/client/requests/[kind]/[id]/confirm/route.ts", import.meta.url),
+    "utf8",
+  );
+  const service = readFileSync(new URL("./confirmServiceRequestConnection.ts", import.meta.url), "utf8");
+  const claim = readFileSync(
+    new URL("../../app/api/specialist/matches/[matchId]/claim/route.ts", import.meta.url),
+    "utf8",
+  );
+  const checkout = readFileSync(new URL("./processRequestOfferWebhook.ts", import.meta.url), "utf8");
+  assert.match(route, /resolveBearerAuthUser/);
+  assert.equal(route.includes("request.json"), false);
+  assert.equal(service.includes("amount_to_capture"), false);
+  assert.equal(service.includes("finalizeServiceRequestConnection"), false);
+  assert.match(claim, /claimOwnMatch/);
+  assert.equal(claim.includes("SERVICE_REQUEST_CAPTURE_ENABLED"), false);
+  assert.equal(checkout.includes("client_confirmed_at"), false);
+  assert.match(checkout, /checkout\.session\.completed/);
+});
+
+test("one confirmation notice is shared by both authorization paths", async () => {
+  const db = seed({ paymentStatus: "pending" });
+  db.tables.request_offer_payments[0].stripe_payment_intent_id = null;
+  const created = await createServiceRequestAuthorization({
+    supabase: db as unknown as SupabaseClient,
+    claimId: CLAIM,
+    specialistId: SPEC,
+    userId: OTHER,
+    env: FLAGS,
+    stripe: {
+      paymentIntents: {
+        create: async () => ({
+          id: "pi_auth",
+          amount: 2500,
+          currency: "eur",
+          status: "requires_capture",
+          client_secret: "secret",
+        }),
+        retrieve: async (id) => ({
+          id,
+          amount: 2500,
+          currency: "eur",
+          status: "requires_capture",
+          client_secret: "secret",
+        }),
+      },
+    },
+    resolveCustomer: async () => "cus_test",
+  });
+  assert.equal(created.ok, true);
+  await processStripeWebhookEventForServiceRequestAuthorization(
+    db as unknown as SupabaseClient,
+    {
+      id: "evt_cap",
+      type: "payment_intent.amount_capturable_updated",
+      data: {
+        object: {
+          id: "pi_auth",
+          object: "payment_intent",
+          amount: 2500,
+          currency: "eur",
+          status: "requires_capture",
+          metadata: {
+            purpose: "service_request_access_authorization",
+            payment_id: String(db.tables.request_offer_payments[0]?.id),
+            offer_id: OFFER,
+            claim_id: CLAIM,
+            specialist_id: SPEC,
+          },
+        },
+      },
+    } as never,
+    FLAGS,
+  );
+  await notifyClientConfirmationRequired(db as unknown as SupabaseClient, CLAIM);
+  const notices = db.tables.inbox_items.filter((row) => row.type === "connection_confirmation_required");
+  assert.equal(notices.length, 1);
+  assert.equal(notices[0]?.dedupe_key, `claim:${CLAIM}:connection_confirmation_required`);
+  assert.equal(JSON.stringify(notices[0]?.payload).includes("pi_auth"), false);
+  assert.equal(JSON.stringify(notices[0]?.payload).includes("secret"), false);
+  assert.equal(db.tables.conversations.length, 0);
+});

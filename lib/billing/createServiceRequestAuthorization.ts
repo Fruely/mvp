@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { getOrCreateStripeCustomerForSpecialist } from "@/lib/billing/billingCustomers";
 import { getStripeClient } from "@/lib/billing/stripeClient";
 import { PURCHASABLE_SERVICE_REQUEST_OFFER_STATUSES } from "@/lib/leadEngine/requestOfferPolicy";
+import { notifyClientConfirmationRequired } from "@/lib/selection/interest";
 import { isServiceRequestPaidClaimEnabled } from "@/lib/selection/reserveMatch";
 
 /**
@@ -13,6 +14,7 @@ import { isServiceRequestPaidClaimEnabled } from "@/lib/selection/reserveMatch";
  * It does not capture, grant access, select a specialist, or open chat.
  */
 export const SERVICE_REQUEST_PAYMENT_AUTH_FLAG = "SERVICE_REQUEST_PAYMENT_AUTH_ENABLED";
+export const SERVICE_REQUEST_CAPTURE_FLAG = "SERVICE_REQUEST_CAPTURE_ENABLED";
 export const SERVICE_REQUEST_AUTHORIZATION_PURPOSE = "service_request_access_authorization";
 
 const ACTIVE_PAYMENT_STATUSES = ["pending", "authorized", "paid"] as const;
@@ -20,6 +22,10 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 
 export function isServiceRequestPaymentAuthEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
   return env[SERVICE_REQUEST_PAYMENT_AUTH_FLAG]?.trim().toLowerCase() === "true";
+}
+
+export function isServiceRequestCaptureEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env[SERVICE_REQUEST_CAPTURE_FLAG]?.trim().toLowerCase() === "true";
 }
 
 export function serviceRequestAuthorizationIdempotencyKey(paymentId: string): string {
@@ -167,6 +173,15 @@ export async function createServiceRequestAuthorization(input: {
   if (claim.status !== "reserved") return { ok: false, error: "not_claimable" };
   if (!claim.request_offer_id) return { ok: false, error: "offer_unavailable" };
 
+  const noteAuthorized = async (
+    result: ServiceRequestAuthorizationResult,
+  ): Promise<ServiceRequestAuthorizationResult> => {
+    if (result.ok && result.state === "authorized" && isServiceRequestCaptureEnabled(env)) {
+      await notifyClientConfirmationRequired(input.supabase, claim.id);
+    }
+    return result;
+  };
+
   const offerResult = await input.supabase
     .from("request_offers")
     .select("id, request_kind, service_request_id, specialist_id, billing_model, status, price_cents, currency")
@@ -194,11 +209,14 @@ export async function createServiceRequestAuthorization(input: {
 
   const requestResult = await input.supabase
     .from("service_requests")
-    .select("id, selected_specialist_id")
+    .select("id, selected_specialist_id, client_user_id")
     .eq("id", claim.service_request_id)
     .maybeSingle();
   if (requestResult.error) return { ok: false, error: "retryable" };
   if (!requestResult.data) return { ok: false, error: "not_found" };
+  if (typeof requestResult.data.client_user_id !== "string" || !requestResult.data.client_user_id) {
+    return { ok: false, error: "not_claimable" };
+  }
   if (requestResult.data.selected_specialist_id) return { ok: false, error: "already_claimed" };
 
   const matchResult = await input.supabase
@@ -231,7 +249,7 @@ export async function createServiceRequestAuthorization(input: {
   if (payment?.status === "authorized") {
     const settled = money(payment);
     if (!settled || payment.amount_cents !== priceCents) return { ok: false, error: "invariant" };
-    return { ok: true, state: "authorized", ...settled };
+    return noteAuthorized({ ok: true, state: "authorized", ...settled });
   }
   if (payment?.status === "paid") {
     const settled = money(payment);
@@ -271,7 +289,7 @@ export async function createServiceRequestAuthorization(input: {
   if (payment.status === "authorized") {
     const settled = money(payment);
     if (!settled) return { ok: false, error: "invariant" };
-    return { ok: true, state: "authorized", ...settled };
+    return noteAuthorized({ ok: true, state: "authorized", ...settled });
   }
   if (payment.status === "paid") {
     const settled = money(payment);
@@ -350,7 +368,7 @@ export async function createServiceRequestAuthorization(input: {
   }
 
   if (intent.status === "requires_capture") {
-    return finishAuthorized(input.supabase, payment, intent.id);
+    return noteAuthorized(await finishAuthorized(input.supabase, payment, intent.id));
   }
   if (intent.status === "succeeded") {
     return finishPaid(input.supabase, payment, intent.id);

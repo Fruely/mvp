@@ -49,7 +49,12 @@ export function pushPathForEvent(input: {
   if (input.eventType === "connection_ready" && input.publicId) {
     return conversationPath(locale, input.conversationId ?? "", "client", input.publicId);
   }
-  if ((input.eventType === "specialist_interested" || input.eventType === "client_reminder") && input.publicId) {
+  if (
+    (input.eventType === "specialist_interested" ||
+      input.eventType === "client_reminder" ||
+      input.eventType === "connection_confirmation_required") &&
+    input.publicId
+  ) {
     return clientRequestPath(locale, input.publicId);
   }
   if (input.matchId) return matchDeepLink(locale, input.matchId);
@@ -83,6 +88,7 @@ export function buildLockScreenPush(input: {
   const clientEvent =
     input.eventType === "specialist_interested" ||
     input.eventType === "connection_ready" ||
+    input.eventType === "connection_confirmation_required" ||
     input.eventType === "client_reminder" ||
     input.eventType === "client_selected_you"
       ? input.eventType

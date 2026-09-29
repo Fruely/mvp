@@ -299,3 +299,26 @@ test("payment authorization migration keeps one reservation writer and extends p
   );
   assert.equal(binding?.length, 2);
 });
+
+test("client confirmation migration requires an authenticated client and keeps service-role execution", () => {
+  const sql = readFileSync(
+    new URL("../../supabase/manual_migrations/2026-09-29_service_request_client_confirmation.sql", import.meta.url),
+    "utf8",
+  );
+  const applied = readFileSync(
+    new URL("../../supabase/manual_migrations/2026-09-29_service_request_payment_authorization.sql", import.meta.url),
+    "utf8",
+  );
+  assert.match(sql, /client_confirmed_at timestamptz NULL/);
+  assert.match(sql, /IF v_client_user_id IS NULL THEN/);
+  assert.match(sql, /'not_claimable'/);
+  assert.match(sql, /p_request_offer_id IS NULL/);
+  assert.match(sql, /GRANT EXECUTE ON FUNCTION public\.reserve_service_request_claim\(uuid, uuid, uuid\) TO service_role/);
+  assert.match(sql, /REVOKE ALL ON FUNCTION public\.reserve_service_request_claim\(uuid, uuid, uuid\) FROM anon, authenticated/);
+  assert.equal(sql.includes("INSERT INTO public.conversations"), false);
+  assert.equal(applied.includes("client_confirmed_at"), false);
+  const binding = sql.match(
+    /p_request_offer_id IS NULL[\s\S]*?request_offer_id IS DISTINCT FROM p_request_offer_id/g,
+  );
+  assert.equal(binding?.length, 2);
+});

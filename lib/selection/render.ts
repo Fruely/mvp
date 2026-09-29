@@ -4,6 +4,7 @@ type Phrase = {
   interestedOne: string;
   interestedMany: string;
   connection: string;
+  confirmation: string;
   selectedYou: string;
   reminder: string;
   systemConnected: string;
@@ -16,6 +17,7 @@ const PHRASES: Record<string, Phrase> = {
     interestedOne: "Специалист готов помочь",
     interestedMany: "На вашу заявку откликнулись специалисты",
     connection: "Специалист найден. Теперь можно общаться во Freuly.",
+    confirmation: "Специалист готов принять вашу заявку. Подтвердите соединение.",
     selectedYou: "Клиент выбрал вас",
     reminder: "На вашу заявку уже откликнулись специалисты.",
     systemConnected: "Freuly соединил вас по заявке",
@@ -26,6 +28,7 @@ const PHRASES: Record<string, Phrase> = {
     interestedOne: "Спеціаліст готовий допомогти",
     interestedMany: "На вашу заявку відгукнулися спеціалісти",
     connection: "Спеціаліста знайдено. Тепер можна спілкуватися у Freuly.",
+    confirmation: "Спеціаліст готовий прийняти вашу заявку. Підтвердьте з’єднання.",
     selectedYou: "Клієнт обрав вас",
     reminder: "На вашу заявку вже відгукнулися спеціалісти.",
     systemConnected: "Freuly з’єднав вас за заявкою",
@@ -36,6 +39,7 @@ const PHRASES: Record<string, Phrase> = {
     interestedOne: "Eine Fachkraft kann helfen",
     interestedMany: "Auf Ihre Anfrage haben sich Fachkräfte gemeldet",
     connection: "Eine Fachkraft wurde gefunden. Sie können jetzt in Freuly schreiben.",
+    confirmation: "Eine Fachkraft ist bereit, Ihre Anfrage zu übernehmen. Bestätigen Sie die Verbindung.",
     selectedYou: "Der Kunde hat Sie ausgewählt",
     reminder: "Auf Ihre Anfrage haben sich bereits Fachkräfte gemeldet.",
     systemConnected: "Freuly hat Sie zu dieser Anfrage verbunden",
@@ -48,6 +52,7 @@ const FALLBACK: Phrase = {
   interestedOne: "A specialist can help",
   interestedMany: "Specialists responded to your request",
   connection: "A specialist was found. You can now talk in Freuly.",
+  confirmation: "A specialist is ready to take your request. Confirm the connection.",
   selectedYou: "The client chose you",
   reminder: "Specialists have already responded to your request.",
   systemConnected: "Freuly connected you about this request",
@@ -61,7 +66,12 @@ function phrasesFor(locale: string): Phrase {
 
 export function renderClientEvent(
   locale: string,
-  event: "specialist_interested" | "connection_ready" | "client_reminder" | "client_selected_you",
+  event:
+    | "specialist_interested"
+    | "connection_ready"
+    | "client_reminder"
+    | "client_selected_you"
+    | "connection_confirmation_required",
   input: { count?: number; serviceLabel?: string | null },
 ): { title: string; body: string; action: string } {
   const phrase = phrasesFor(locale);
@@ -71,6 +81,9 @@ export function renderClientEvent(
   }
   if (event === "connection_ready") {
     return { title: phrase.connection, body: label, action: phrase.openDialog };
+  }
+  if (event === "connection_confirmation_required") {
+    return { title: phrase.confirmation, body: "", action: phrase.view };
   }
   if (event === "client_reminder") {
     return { title: phrase.reminder, body: label, action: phrase.view };

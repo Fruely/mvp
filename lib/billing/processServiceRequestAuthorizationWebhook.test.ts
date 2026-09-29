@@ -243,10 +243,10 @@ test("an already paid event stays idempotent after the claim is completed", asyn
   assert.equal(database.tables.conversations.length, 0);
 });
 
-test("succeeded on a reserved claim records payment without granting access", async () => {
+test("succeeded without client confirmation does not pay, grant, or open chat", async () => {
   const paid = db();
-  assert.deepEqual(await run(paid, event("payment_intent.succeeded")), { outcome: "success" });
-  assert.equal(paid.tables.request_offer_payments[0]?.status, "paid");
+  assert.deepEqual(await run(paid, event("payment_intent.succeeded")), { outcome: "validation_failed" });
+  assert.equal(paid.tables.request_offer_payments[0]?.status, "pending");
   assert.equal(paid.tables.service_request_claims[0]?.status, "reserved");
   assert.equal(paid.tables.request_offer_access_grants.length, 0);
   assert.equal(paid.tables.conversations.length, 0);
@@ -254,15 +254,16 @@ test("succeeded on a reserved claim records payment without granting access", as
   assert.equal(paid.writes.includes("conversations"), false);
 });
 
-test("authorization webhook does not grant, finalize, or capture", () => {
+test("authorization webhook does not capture from the webhook handler", () => {
   const source = readFileSync(new URL("./processServiceRequestAuthorizationWebhook.ts", import.meta.url), "utf8");
   const aggregate = readFileSync(new URL("./processStripeBillingWebhook.ts", import.meta.url), "utf8");
-  assert.equal(source.includes("request_offer_access_grants"), false);
-  assert.equal(source.includes("conversations"), false);
-  assert.equal(source.includes("finalizeServiceRequestConnection"), false);
-  assert.equal(source.includes("selected_specialist_id"), false);
+  const confirm = readFileSync(new URL("./confirmServiceRequestConnection.ts", import.meta.url), "utf8");
   assert.equal(source.includes(".capture("), false);
   assert.equal(source.includes('status: "failed"'), false);
+  assert.match(source, /fulfillConfirmedServiceRequestCapture/);
+  assert.match(source, /client_confirmed_at/);
+  assert.equal(confirm.includes("finalizeServiceRequestConnection"), false);
+  assert.equal(confirm.includes("request_offer_access_grants"), false);
   assert.match(aggregate, /processStripeWebhookEventForServiceRequestAuthorization/);
   assert.match(aggregate, /processStripeWebhookEventForRequestOffers/);
   assert.match(aggregate, /serviceRequestAuthorization\.outcome === "retryable_failure"/);

@@ -22,6 +22,7 @@ export function notificationEventClass(eventType: string): PushEventClass {
   if (
     eventType === "client_selected_you" ||
     eventType === "connection_ready" ||
+    eventType === "connection_confirmation_required" ||
     eventType === "specialist_interested"
   ) {
     return "selection";
@@ -88,6 +89,7 @@ export function pushPriority(eventType: string): "normal" | "high" {
     eventType === "match_available" ||
     eventType === "client_selected_you" ||
     eventType === "connection_ready" ||
+    eventType === "connection_confirmation_required" ||
     eventType === "specialist_interested" ||
     eventType === "conversation_message"
   ) {

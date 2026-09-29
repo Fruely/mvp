@@ -396,7 +396,13 @@ export async function deliverPendingOutbox(
       .eq("id", row.inbox_item_id)
       .maybeSingle();
     const payload = inbox.data?.payload as (MatchInboxPayload & {
-      event?: "specialist_interested" | "connection_ready" | "client_reminder" | "client_selected_you" | "conversation_message";
+      event?:
+        | "specialist_interested"
+        | "connection_ready"
+        | "connection_confirmation_required"
+        | "client_reminder"
+        | "client_selected_you"
+        | "conversation_message";
       service_request_id?: string;
       public_id?: string;
       service_label?: string;

@@ -4,7 +4,12 @@ import { renderClientEvent } from "./render";
 export type ClientPushContract = {
   title: string;
   body: string;
-  event: "specialist_interested" | "connection_ready" | "client_reminder" | "client_selected_you";
+  event:
+    | "specialist_interested"
+    | "connection_ready"
+    | "client_reminder"
+    | "client_selected_you"
+    | "connection_confirmation_required";
   entityId: string;
   link: string;
   locale: string;

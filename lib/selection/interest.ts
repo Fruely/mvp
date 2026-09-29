@@ -3,11 +3,13 @@ import { channelDedupeKey, planExternalChannels, stageInitialChannels } from "@/
 import { applyTransportPreferences, eventClassEnabled, type PushEventClass } from "@/lib/push/policy";
 import { loadNotificationPreferences } from "@/lib/push/preferences";
 import { isRecipientPushReady } from "@/lib/push/readiness";
+import { deliverOutboxById } from "@/lib/inbox/delivery";
 import { isEmailConfigured } from "@/lib/email";
 import {
   CLIENT_SELECTION_POLICY,
   clientReminderDue,
   clientReminderKey,
+  connectionConfirmationInboxKey,
   connectionInboxKey,
   interestDigestKey,
   interestInboxKey,
@@ -15,7 +17,12 @@ import {
   selectedSpecialistInboxKey,
 } from "./policy";
 
-export type ClientEventName = "specialist_interested" | "connection_ready" | "client_reminder" | "client_selected_you";
+export type ClientEventName =
+  | "specialist_interested"
+  | "connection_ready"
+  | "client_reminder"
+  | "client_selected_you"
+  | "connection_confirmation_required";
 
 export type ClientEventPayload = {
   event: ClientEventName;
@@ -185,6 +192,77 @@ export async function recordSpecialistInterest(
     telegram: false,
     dueAt,
   });
+}
+
+/**
+ * One confirmation notice per reserved claim. Safe copy only.
+ * A duplicate call reuses the same inbox and outbox keys.
+ */
+export async function notifyClientConfirmationRequired(
+  supabase: SupabaseClient,
+  claimId: string,
+): Promise<void> {
+  try {
+    const claim = await supabase
+      .from("service_request_claims")
+      .select("id, service_request_id, match_id, status")
+      .eq("id", claimId)
+      .maybeSingle();
+    if (claim.error || claim.data?.status !== "reserved") return;
+    const requestId = String(claim.data.service_request_id ?? "");
+    const request = await supabase
+      .from("service_requests")
+      .select("id, public_id, client_user_id, client_email, locale, requested_service, category_text")
+      .eq("id", requestId)
+      .maybeSingle();
+    const clientUserId = typeof request.data?.client_user_id === "string" ? request.data.client_user_id : null;
+    if (request.error || !request.data?.id || !clientUserId) return;
+    const serviceLabel =
+      (typeof request.data.requested_service === "string" && request.data.requested_service) ||
+      (typeof request.data.category_text === "string" && request.data.category_text) ||
+      "";
+    const payload = safeClientPayload({
+      event: "connection_confirmation_required",
+      service_request_id: requestId,
+      public_id: String(request.data.public_id ?? ""),
+      service_label: serviceLabel,
+      match_id: typeof claim.data.match_id === "string" ? claim.data.match_id : null,
+      specialist_id: null,
+      conversation_id: null,
+    });
+    const dedupeKey = connectionConfirmationInboxKey(claimId);
+    const inboxId = await insertClientInbox(supabase, {
+      dedupeKey,
+      type: "connection_confirmation_required",
+      recipientUserId: clientUserId,
+      requestId,
+      entityId: requestId,
+      payload,
+    });
+    if (!inboxId) return;
+    await scheduleChannels(supabase, {
+      inboxItemId: inboxId,
+      dedupeKey,
+      requestId,
+      matchId: payload.match_id,
+      recipientUserId: clientUserId,
+      email: typeof request.data.client_email === "string" ? request.data.client_email : null,
+      telegram: false,
+      dueAt: new Date().toISOString(),
+    });
+    const outbox = await supabase
+      .from("notification_outbox")
+      .select("id, status")
+      .eq("inbox_item_id", inboxId);
+    for (const row of outbox.data ?? []) {
+      if (row.status !== "pending" && row.status !== "retryable") continue;
+      await deliverOutboxById(supabase, String(row.id));
+    }
+  } catch (error) {
+    console.error("[selection/confirmation] notice failed", {
+      name: error instanceof Error ? error.name : "Error",
+    });
+  }
 }
 
 /** Client connection notice only. Specialist TAKE does not send `client_selected_you`. */
