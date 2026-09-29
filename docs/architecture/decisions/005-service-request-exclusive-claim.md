@@ -34,7 +34,7 @@ At most one `reserved` or `completed` claim may exist for a request, and for a m
 
 `POST /api/specialist/matches/[matchId]/reserve` calls that function. It stays off unless `SERVICE_REQUEST_PAID_CLAIM_ENABLED=true`.
 
-When `SERVICE_REQUEST_COMMERCIAL_OFFERS_ENABLED=true`, matching writes one idempotent `request_offers` row per persisted eligible service-request match: `request_kind=service_request`, `offer_reason=matched`, `billing_model=pay_per_lead`, `price_cents` null. The flag defaults off. No live price is chosen here.
+When `SERVICE_REQUEST_COMMERCIAL_OFFERS_ENABLED=true`, matching writes one idempotent `request_offers` row per persisted eligible service-request match. Every specialist on that request gets the same Access Pricing v1 snapshot from ADR-006. The flag defaults off. `pricing_rule_id` stays null.
 
 `POST /api/specialist/claims/[claimId]/payment-intent` creates a direct card PaymentIntent with `capture_method=manual`. It stays off unless both `SERVICE_REQUEST_PAID_CLAIM_ENABLED` and `SERVICE_REQUEST_PAYMENT_AUTH_ENABLED` are true. Amount and currency come only from the persisted offer. `price_cents` null returns `price_unavailable`. The specialist client receives `client_secret` only to confirm; the server does not store or log it. The existing Stripe webhook marks the payment `authorized` when the intent is `requires_capture` and the claim is still `reserved`. A declined confirmation leaves that payment `pending` on the same PaymentIntent. Cancellation releases the payment row and does not change the claim. That handler does not capture, grant access, or open chat. The same reserved claim accepts only its bound offer on retry.
 
@@ -42,4 +42,4 @@ When `SERVICE_REQUEST_COMMERCIAL_OFFERS_ENABLED=true`, matching writes one idemp
 
 ## Non-goals of Phase 2
 
-No client confirmation, no capture, no reservation TTL, no access grant, no claim completion, no conversation, no live pricing rule, and no Native change.
+No client confirmation, no capture, no reservation TTL, no access grant, no claim completion, no conversation, no `lead_pricing_rules` activation, and no Native change. The access price itself is ADR-006.

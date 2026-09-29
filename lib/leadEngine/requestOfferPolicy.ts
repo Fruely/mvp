@@ -97,15 +97,26 @@ export function buildMatchedServiceRequestOfferIdempotencyKey(input: {
   return `service-request:${input.requestId}:specialist:${input.specialistId}:matched:initial`;
 }
 
+export type MatchedServiceRequestOfferInsert = RequestOfferInsert & {
+  estimated_service_value_min_cents: number | null;
+  estimated_service_value_max_cents: number | null;
+  max_buyers_snapshot: 1;
+  pricing_rule_id: null;
+};
+
 /**
  * Initial matched service-request offer.
- * price_cents stays null until a later server-authoritative pricing decision.
- * This function has no price argument.
+ * The access price is the shared V1 snapshot. This function does not price.
  */
 export function buildMatchedServiceRequestOffer(input: {
   requestId: string;
   specialistId: string;
-}): RequestOfferInsert {
+  pricing: {
+    priceCents: number;
+    estimatedServiceValueMinCents: number | null;
+    estimatedServiceValueMaxCents: number | null;
+  };
+}): MatchedServiceRequestOfferInsert {
   return {
     request_kind: "service_request",
     lead_id: null,
@@ -115,9 +126,13 @@ export function buildMatchedServiceRequestOffer(input: {
     offer_reason: "matched",
     pricing_segment: "consumer",
     billing_model: "pay_per_lead",
-    price_cents: null,
+    price_cents: input.pricing.priceCents,
     currency: "eur",
     status: "offered",
     idempotency_key: buildMatchedServiceRequestOfferIdempotencyKey(input),
+    estimated_service_value_min_cents: input.pricing.estimatedServiceValueMinCents,
+    estimated_service_value_max_cents: input.pricing.estimatedServiceValueMaxCents,
+    max_buyers_snapshot: 1,
+    pricing_rule_id: null,
   };
 }

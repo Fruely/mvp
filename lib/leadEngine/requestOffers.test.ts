@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
@@ -8,6 +9,7 @@ import {
   buildMatchedServiceRequestOfferIdempotencyKey,
 } from "@/lib/leadEngine/requestOfferPolicy";
 import { ensureMatchedServiceRequestOffers } from "@/lib/leadEngine/matchedServiceRequestOffer";
+import { resolveServiceRequestAccessPrice } from "@/lib/leadEngine/serviceRequestAccessPricing";
 
 test("buildDirectLeadOfferIdempotencyKey is stable for the same lead and specialist", () => {
   const input = {
@@ -54,88 +56,212 @@ test("buildDirectLeadShadowOffer preserves current production economics", () => 
   });
 });
 
-test("matched service-request offer stays unpriced and idempotent", () => {
+test("matched service-request offer snapshots the shared access price", () => {
   const input = {
     requestId: "11111111-1111-4111-8111-111111111111",
     specialistId: "22222222-2222-4222-8222-222222222222",
   };
-  const offer = buildMatchedServiceRequestOffer(input);
-  assert.deepEqual(offer, {
-    request_kind: "service_request",
-    lead_id: null,
-    service_request_id: input.requestId,
-    promotion_id: null,
-    specialist_id: input.specialistId,
-    offer_reason: "matched",
-    pricing_segment: "consumer",
-    billing_model: "pay_per_lead",
-    price_cents: null,
-    currency: "eur",
-    status: "offered",
-    idempotency_key: buildMatchedServiceRequestOfferIdempotencyKey(input),
-  });
-  assert.equal(
-    offer.idempotency_key,
-    "service-request:11111111-1111-4111-8111-111111111111:specialist:22222222-2222-4222-8222-222222222222:matched:initial",
-  );
-  assert.equal("price" in offer, false);
+  const pricing = resolveServiceRequestAccessPrice("500 €");
+  const offer = buildMatchedServiceRequestOffer({ ...input, pricing });
+  assert.equal(offer.price_cents, 4000);
+  assert.equal(offer.currency, "eur");
+  assert.equal(offer.max_buyers_snapshot, 1);
+  assert.equal(offer.pricing_rule_id, null);
+  assert.equal(offer.estimated_service_value_min_cents, 50000);
+  assert.equal(offer.estimated_service_value_max_cents, 50000);
+  assert.equal(offer.idempotency_key, buildMatchedServiceRequestOfferIdempotencyKey(input));
+  assert.equal(offer.billing_model, "pay_per_lead");
+  assert.equal(offer.offer_reason, "matched");
 });
 
 const COMMERCIAL = { SERVICE_REQUEST_COMMERCIAL_OFFERS_ENABLED: "true" };
+const REQUEST_ID = "11111111-1111-4111-8111-111111111111";
+const SPECIALIST_A = "22222222-2222-4222-8222-222222222222";
+const SPECIALIST_B = "33333333-3333-4333-8333-333333333333";
 
-function offerStore(existing: Record<string, unknown> | null) {
+function commercialDb(input: { budget: string | null; existing?: Record<string, unknown>[] }) {
+  const rows = (input.existing ?? []).map((row) => ({ ...row }));
   const inserts: Record<string, unknown>[] = [];
+  const updates: Record<string, unknown>[] = [];
+  const tables: string[] = [];
   const supabase = {
-    from() {
-      const filters: Array<[string, unknown]> = [];
-      return {
+    from(table: string) {
+      tables.push(table);
+      const filters: Array<(row: Record<string, unknown>) => boolean> = [];
+      let patch: Record<string, unknown> | null = null;
+      const api = {
         select() {
-          return this;
+          return api;
         },
         eq(column: string, value: unknown) {
-          filters.push([column, value]);
-          return this;
+          filters.push((row) => row[column] === value);
+          return api;
+        },
+        is(column: string, value: unknown) {
+          filters.push((row) => (value === null ? row[column] == null : row[column] === value));
+          return api;
         },
         insert: async (row: Record<string, unknown>) => {
           inserts.push(row);
-          return { error: { code: "23505" } };
+          if (rows.some((existing) => existing.idempotency_key === row.idempotency_key)) {
+            return { error: { code: "23505" } };
+          }
+          rows.push({ ...row });
+          return { error: null };
+        },
+        update(next: Record<string, unknown>) {
+          patch = next;
+          return api;
         },
         maybeSingle: async () => {
-          if (!existing) return { data: null, error: null };
-          const matches = filters.every(([column, value]) => existing[column] === value);
-          return { data: matches ? existing : null, error: null };
+          if (table === "service_requests") {
+            return { data: { id: REQUEST_ID, client_budget_text: input.budget }, error: null };
+          }
+          const found = rows.filter((row) => filters.every((filter) => filter(row)));
+          return { data: found[0] ? { ...found[0] } : null, error: null };
+        },
+        then(
+          resolve: (value: { error: null }) => unknown,
+          reject?: (reason: unknown) => unknown,
+        ) {
+          if (patch) {
+            updates.push({ ...patch });
+            for (const row of rows) {
+              if (filters.every((filter) => filter(row))) Object.assign(row, patch);
+            }
+          }
+          return Promise.resolve({ error: null }).then(resolve, reject);
         },
       };
+      return api;
     },
   };
-  return { supabase, inserts };
+  return { supabase, inserts, updates, rows, tables };
 }
 
-test("a unique violation is idempotent only when the stored offer matches", async () => {
-  const input = {
-    requestId: "11111111-1111-4111-8111-111111111111",
-    specialistId: "22222222-2222-4222-8222-222222222222",
+function canonicalOffer(specialistId: string, price: number | null) {
+  return {
+    idempotency_key: buildMatchedServiceRequestOfferIdempotencyKey({
+      requestId: REQUEST_ID,
+      specialistId,
+    }),
+    request_kind: "service_request",
+    service_request_id: REQUEST_ID,
+    specialist_id: specialistId,
+    offer_reason: "matched",
+    billing_model: "pay_per_lead",
+    currency: "eur",
+    price_cents: price,
   };
-  const stored = buildMatchedServiceRequestOffer(input);
-  const same = offerStore(stored);
-  const ok = await ensureMatchedServiceRequestOffers(
-    same.supabase as never,
-    { requestId: input.requestId, specialistIds: [input.specialistId] },
+}
+
+test("commercial offers stay off without reading pricing tables", async () => {
+  const db = commercialDb({ budget: "500 €" });
+  const result = await ensureMatchedServiceRequestOffers(
+    db.supabase as never,
+    { requestId: REQUEST_ID, specialistIds: [SPECIALIST_A] },
+    {},
+  );
+  assert.deepEqual(result, { ok: true, kind: "disabled" });
+  assert.deepEqual(db.tables, []);
+  assert.equal(db.inserts.length, 0);
+});
+
+test("one request gets the same priced snapshot for every matched specialist", async () => {
+  const db = commercialDb({ budget: "500 €" });
+  const result = await ensureMatchedServiceRequestOffers(
+    db.supabase as never,
+    { requestId: REQUEST_ID, specialistIds: [SPECIALIST_A, SPECIALIST_B, SPECIALIST_A] },
     COMMERCIAL,
   );
-  assert.deepEqual(ok, { ok: true, kind: "ready" });
-  assert.equal(same.inserts.length, 1);
+  assert.deepEqual(result, { ok: true, kind: "ready" });
+  assert.equal(db.rows.length, 2);
+  assert.deepEqual(
+    db.rows.map((row) => row.price_cents),
+    [4000, 4000],
+  );
+  assert.deepEqual(
+    db.rows.map((row) => row.max_buyers_snapshot),
+    [1, 1],
+  );
+  assert.deepEqual(
+    db.rows.map((row) => row.estimated_service_value_max_cents),
+    [50000, 50000],
+  );
+  assert.equal(db.tables.includes("lead_pricing_rules"), false);
+});
 
-  const conflict = offerStore({
-    ...stored,
-    specialist_id: "33333333-3333-4333-8333-333333333333",
-    billing_model: "subscription",
+test("no budget still prices the floor and a retry does not reprice", async () => {
+  const db = commercialDb({ budget: null });
+  const first = await ensureMatchedServiceRequestOffers(
+    db.supabase as never,
+    { requestId: REQUEST_ID, specialistIds: [SPECIALIST_A] },
+    COMMERCIAL,
+  );
+  db.rows[0].price_cents = 9900;
+  const second = await ensureMatchedServiceRequestOffers(
+    db.supabase as never,
+    { requestId: REQUEST_ID, specialistIds: [SPECIALIST_A] },
+    COMMERCIAL,
+  );
+  assert.deepEqual(first, { ok: true, kind: "ready" });
+  assert.equal(db.inserts[0]?.price_cents, 2500);
+  assert.deepEqual(second, { ok: true, kind: "ready" });
+  assert.equal(db.rows.length, 1);
+  assert.equal(db.rows[0]?.price_cents, 9900);
+  assert.equal(db.updates.length, 0);
+});
+
+test("a null-price canonical offer is priced once and a conflicting offer fails", async () => {
+  const missing = commercialDb({
+    budget: "до 80 евро",
+    existing: [canonicalOffer(SPECIALIST_A, null)],
+  });
+  const priced = await ensureMatchedServiceRequestOffers(
+    missing.supabase as never,
+    { requestId: REQUEST_ID, specialistIds: [SPECIALIST_A] },
+    COMMERCIAL,
+  );
+  assert.deepEqual(priced, { ok: true, kind: "ready" });
+  assert.equal(missing.updates.length, 1);
+  assert.equal(missing.rows[0]?.price_cents, 2500);
+  assert.equal(missing.rows[0]?.estimated_service_value_min_cents, null);
+  assert.equal(missing.rows[0]?.estimated_service_value_max_cents, 8000);
+  assert.equal(missing.rows[0]?.max_buyers_snapshot, 1);
+  const again = await ensureMatchedServiceRequestOffers(
+    missing.supabase as never,
+    { requestId: REQUEST_ID, specialistIds: [SPECIALIST_A] },
+    COMMERCIAL,
+  );
+  assert.deepEqual(again, { ok: true, kind: "ready" });
+  assert.equal(missing.updates.length, 1);
+
+  const conflict = commercialDb({
+    budget: "500 €",
+    existing: [{ ...canonicalOffer(SPECIALIST_A, 4000), billing_model: "subscription" }],
   });
   const failed = await ensureMatchedServiceRequestOffers(
     conflict.supabase as never,
-    { requestId: input.requestId, specialistIds: [input.specialistId] },
+    { requestId: REQUEST_ID, specialistIds: [SPECIALIST_A] },
     COMMERCIAL,
   );
   assert.deepEqual(failed, { ok: false, kind: "offer_write_failed" });
-  assert.equal(JSON.stringify(failed).includes("33333333-3333-4333-8333-333333333333"), false);
+  assert.equal(conflict.updates.length, 0);
+  assert.equal(JSON.stringify(failed).includes(SPECIALIST_B), false);
+});
+
+test("access pricing does not read shadow rules or payment-request budget text", () => {
+  const pricing = readFileSync(new URL("./serviceRequestAccessPricing.ts", import.meta.url), "utf8");
+  const offers = readFileSync(new URL("./matchedServiceRequestOffer.ts", import.meta.url), "utf8");
+  const payment = readFileSync(
+    new URL("../billing/createServiceRequestAuthorization.ts", import.meta.url),
+    "utf8",
+  );
+  const direct = readFileSync(new URL("./requestOfferPolicy.ts", import.meta.url), "utf8");
+  assert.equal(pricing.includes("lead_pricing_rules"), false);
+  assert.equal(offers.includes("lead_pricing_rules"), false);
+  assert.equal(pricing.includes("shadowPricing"), false);
+  assert.equal(offers.includes("shadowPricing"), false);
+  assert.equal(payment.includes("client_budget_text"), false);
+  assert.match(direct, /function buildDirectLeadShadowOffer[\s\S]*price_cents: null/);
 });

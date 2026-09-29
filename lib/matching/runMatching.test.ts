@@ -242,7 +242,11 @@ test("commercial offer flag creates one matched service-request offer and retry 
   assert.equal(offer.billing_model, "pay_per_lead");
   assert.equal(offer.currency, "eur");
   assert.equal(offer.status, "offered");
-  assert.equal(offer.price_cents, null);
+  assert.equal(offer.price_cents, 2500);
+  assert.equal(offer.max_buyers_snapshot, 1);
+  assert.equal(offer.estimated_service_value_min_cents, null);
+  assert.equal(offer.estimated_service_value_max_cents, null);
+  assert.equal(offer.pricing_rule_id, null);
   assert.equal(
     offer.idempotency_key,
     "service-request:request-1:specialist:specialist-1:matched:initial",
