@@ -73,3 +73,15 @@ Provider acceptance is not proof the user saw the notification.
 Notification retry/dedupe must not create duplicate domain actions.
 
 The app must remain usable when push is disabled, delayed or unavailable; authoritative inbox/state reads are the recovery path.
+
+## 8. Shared transport, separate semantics
+
+Vercel, Supabase, `notification_outbox`, Expo push, Telegram, email, retry, and dedupe may be shared.
+
+A new event does not inherit match-reminder timers, selection preferences, email escalation, Telegram fan-out, quiet hours, or high-priority push unless its own policy says so.
+
+The paid service-request flow must not emit `client_selected_you`. Reservation is not client selection. Capture and fulfillment do not depend on that event. `connection_ready` means the connection is ready. `specialist_interested`, `client_reminder`, and `client_selected_you` remain compatibility behavior for the legacy paths only.
+
+A live exclusive claim (`reserved` or `completed`) suppresses later match-available reminders for that match. `released`, `expired`, and `failed` do not count as live and must not be revived by the reminder job. An ordinary active match with no live claim still receives reminders.
+
+Budget reconciliation does not add a push event. The client learns the unresolved floor from the create response and from the authenticated request detail.

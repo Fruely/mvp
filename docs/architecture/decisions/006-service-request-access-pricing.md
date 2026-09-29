@@ -11,7 +11,7 @@ Exclusive service-request access is a Freuly product. It is not a commission on 
 
 ## Decision
 
-Currency is EUR. The price is computed once per service request from `service_requests.client_budget_text` and copied onto every initial matched offer. Specialist identity does not change it.
+Currency is EUR. The price is computed once per service request from the explicit client budget and copied onto every initial matched offer. The default basis is `service_requests.client_budget_text`. If the client has explicitly accepted a budget-reconciliation ceiling, that accepted amount is the basis for offers created after the acceptance. Specialist identity does not change the price. The supply floor itself is not a pricing input. A previously persisted positive `price_cents` is not rewritten when the ceiling changes.
 
 Let B be the explicit client budget in EUR. If no reliable explicit EUR budget exists, or B is at most EUR 250, the raw price is EUR 25. Above EUR 250 and through EUR 1,000, the raw price is EUR 25 plus 5% of the amount above EUR 250. Above EUR 1,000, the raw price is EUR 62.50 plus 2% of the amount above EUR 1,000. The result is capped at EUR 250.
 

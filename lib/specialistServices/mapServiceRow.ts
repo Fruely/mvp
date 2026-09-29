@@ -26,6 +26,12 @@ export function mapServiceRow(row: Record<string, unknown>): SpecialistServiceDt
         : typeof row.duration_minutes === "number"
           ? row.duration_minutes
           : Number(row.duration_minutes),
+    minimum_order_cents:
+      typeof row.minimum_order_cents === "number" &&
+      Number.isInteger(row.minimum_order_cents) &&
+      row.minimum_order_cents >= 0
+        ? row.minimum_order_cents
+        : null,
     is_active: row.is_active === true,
     category_id: typeof row.category_id === "string" ? row.category_id : null,
     created_at: typeof row.created_at === "string" ? row.created_at : null,

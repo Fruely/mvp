@@ -21,10 +21,19 @@ export type ClientRequestHistoryItem = {
   preferred_language: string | null;
 };
 
+export type ClientBudgetReconciliationDetail = {
+  required: boolean;
+  minimum_budget_cents: number | null;
+  currency: "eur";
+  accepted_cents: number | null;
+  declined: boolean;
+};
+
 export type ClientRequestHistoryDetail = ClientRequestHistoryItem & {
   message: string | null;
   description: string | null;
   public_id: string | null;
+  budget_reconciliation?: ClientBudgetReconciliationDetail;
 };
 
 export function normalizeHistoryLimit(value: unknown): number {
@@ -208,7 +217,12 @@ export function paginateHistoryItems(
 
 export function toClientSafeHistoryDetail(
   item: ClientRequestHistoryItem,
-  extras: { message?: unknown; description?: unknown; public_id?: unknown },
+  extras: {
+    message?: unknown;
+    description?: unknown;
+    public_id?: unknown;
+    budget_reconciliation?: ClientBudgetReconciliationDetail | null;
+  },
 ): ClientRequestHistoryDetail {
   return {
     ...item,
@@ -220,5 +234,6 @@ export function toClientSafeHistoryDetail(
         : item.kind === "service_request"
           ? item.id
           : null,
+    ...(extras.budget_reconciliation ? { budget_reconciliation: extras.budget_reconciliation } : {}),
   };
 }

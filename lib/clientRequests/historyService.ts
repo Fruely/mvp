@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { clientBudgetReconciliationState } from "@/lib/serviceRequests/budgetReconciliation";
 import {
   buildLeadHistoryPaginationOrFilter,
   buildServiceRequestHistoryPaginationOrFilter,
@@ -22,6 +23,9 @@ const LEAD_HISTORY_SELECT =
 
 const SERVICE_REQUEST_HISTORY_SELECT =
   "public_id, created_at, status, category_text, description, preferred_language, work_format, city, postal_code";
+
+const SERVICE_REQUEST_DETAIL_SELECT =
+  `${SERVICE_REQUEST_HISTORY_SELECT}, budget_reconciliation_required_cents, budget_reconciliation_accepted_cents, budget_reconciliation_declined_at`;
 
 export async function listClientRequestHistory(
   supabase: SupabaseClient,
@@ -115,7 +119,7 @@ export async function getClientRequestHistoryDetail(
 
   const { data, error } = await supabase
     .from("service_requests")
-    .select(SERVICE_REQUEST_HISTORY_SELECT)
+    .select(SERVICE_REQUEST_DETAIL_SELECT)
     .eq("client_user_id", userId)
     .eq("public_id", id)
     .maybeSingle();
@@ -126,5 +130,6 @@ export async function getClientRequestHistoryDetail(
   return toClientSafeHistoryDetail(item, {
     description: data.description,
     public_id: data.public_id,
+    budget_reconciliation: clientBudgetReconciliationState(data),
   });
 }

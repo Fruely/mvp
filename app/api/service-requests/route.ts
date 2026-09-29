@@ -20,6 +20,7 @@ import { normalizeClientIdempotencyKey } from "@/lib/mutations/clientIdempotency
 import { resolveBearerAuthUser } from "@/lib/auth/resolveBearerAuthUser";
 import { resolveExactCategoryId } from "@/lib/categories/resolveExactCategoryId";
 import { matchAfterServiceRequestCreated } from "@/lib/matching/matchAfterCreate";
+import type { BudgetReconciliationOffer } from "@/lib/matching/runMatching";
 import { issueAccessToken } from "@/lib/selection/accessGrant";
 import {
   IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE,
@@ -36,9 +37,10 @@ const NO_STORE = { "Cache-Control": "no-store" };
 function jsonResult(
   result: { kind: "replayed" | "created"; public_id: string; created_at: string },
   accessToken: string | null = null,
+  budgetReconciliation: { required: true; minimum_budget_cents: number; currency: "eur" } | null = null,
 ) {
   return NextResponse.json(
-    { ok: true, public_id: result.public_id, created_at: result.created_at, ...(accessToken ? { access_token: accessToken } : {}) },
+    { ok: true, public_id: result.public_id, created_at: result.created_at, ...(accessToken ? { access_token: accessToken } : {}), ...(budgetReconciliation ? { budget_reconciliation: budgetReconciliation } : {}) },
     { status: 200, headers: NO_STORE },
   );
 }
@@ -165,8 +167,9 @@ export async function POST(request: NextRequest) {
       console.error("[service-requests/create] owner notification failed", notifyErr);
     }
 
+    let budgetReconciliation: BudgetReconciliationOffer | null = null;
     if (result.kind === "created") {
-      await matchAfterServiceRequestCreated(supabase, result, validated);
+      budgetReconciliation = await matchAfterServiceRequestCreated(supabase, result, validated);
     }
 
     let accessToken: string | null = null;
@@ -185,7 +188,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const response = jsonResult(result, accessToken);
+    const response = jsonResult(result, accessToken, budgetReconciliation);
     if (clientCampaignLinkId) {
       response.cookies.set(CLIENT_CAMPAIGN_COOKIE_NAME, "", {
         path: "/",

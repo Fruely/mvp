@@ -26,7 +26,17 @@ function database(specialistCategoryId: string | null = null) {
         or() { return query; },
         order() { return query; },
         limit() { return query; },
-        maybeSingle: async () => ({ data: { id: "request-internal-1" }, error: null }),
+        maybeSingle: async () => ({
+          data: {
+            id: "request-internal-1",
+            category_id: specialistCategoryId,
+            service_languages: [],
+            work_format: "online",
+            city: null,
+            postal_code: null,
+          },
+          error: null,
+        }),
         upsert: async () => {
           writes.push(table);
           return { error: null };

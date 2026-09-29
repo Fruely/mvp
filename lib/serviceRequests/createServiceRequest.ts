@@ -15,6 +15,7 @@ import { SERVICE_REQUEST_SOURCE } from "@/lib/serviceRequests/constants";
 import { generateServiceRequestPublicId } from "@/lib/serviceRequests/publicId";
 import { buildOwnerTelegramTimingPayload } from "@/lib/serviceRequests/ownerTelegramTiming";
 import type { NewServiceRequestOwnerPayload } from "@/lib/serviceRequests/ownerTelegramMessage";
+import { openBudgetReconciliationOffer, type BudgetReconciliationClientOffer } from "@/lib/serviceRequests/budgetReconciliation";
 import type { ValidatedServiceRequestCreate } from "@/lib/serviceRequests/validation";
 
 export { IDEMPOTENCY_OWNERSHIP_CONFLICT_MESSAGE };
@@ -25,6 +26,7 @@ export type ServiceRequestCreateResponse = {
   ok: true;
   public_id: string;
   created_at: string;
+  budget_reconciliation?: BudgetReconciliationClientOffer;
 };
 
 export type ServiceRequestCreateResult =
@@ -81,11 +83,15 @@ export function buildServiceRequestIdempotencyFingerprint(
 function replayResponseFromRow(row: {
   public_id: unknown;
   created_at: unknown;
+  budget_reconciliation_required_cents?: unknown;
+  budget_reconciliation_declined_at?: unknown;
 }): ServiceRequestCreateResponse {
+  const reconciliation = openBudgetReconciliationOffer(row);
   return {
     ok: true,
     public_id: String(row.public_id),
     created_at: String(row.created_at),
+    ...(reconciliation ? { budget_reconciliation: reconciliation } : {}),
   };
 }
 
@@ -97,7 +103,9 @@ export async function lookupServiceRequestIdempotentReplay(
 ): Promise<IdempotentReplayWithOwnershipResult | { kind: "error" }> {
   const { data: existingRequest, error: existingError } = await supabase
     .from("service_requests")
-    .select("public_id, created_at, client_idempotency_fingerprint, client_user_id")
+    .select(
+      "public_id, created_at, client_idempotency_fingerprint, client_user_id, budget_reconciliation_required_cents, budget_reconciliation_declined_at",
+    )
     .eq("client_idempotency_key", clientIdempotencyKey)
     .maybeSingle();
 

@@ -269,6 +269,33 @@ test("13-14. interested and declined cancel pending reminders and keep history",
   }
 });
 
+test("a live reserved or completed claim suppresses match reminders", async () => {
+  for (const status of ["reserved", "completed"] as const) {
+    const db = seed();
+    db.tables.service_request_claims = [{ id: "claim-1", match_id: "match-1", status }];
+    const now = new Date();
+    const result = await scheduleDueReminders(db.supabase, now, DEFAULT_MATCH_DELIVERY_POLICY, false);
+    assert.equal(result.scheduled, 0, status);
+    assert.equal(db.tables.inbox_items.length, 0, status);
+  }
+});
+
+test("released expired and failed claims do not suppress an ordinary reminder", async () => {
+  for (const status of ["released", "expired", "failed"] as const) {
+    const db = seed();
+    db.tables.service_request_claims = [{ id: "claim-1", match_id: "match-1", status }];
+    const result = await scheduleDueReminders(db.supabase, new Date(), DEFAULT_MATCH_DELIVERY_POLICY, false);
+    assert.equal(result.scheduled, 1, status);
+  }
+});
+
+test("an ordinary unclaimed match still receives a reminder", async () => {
+  const db = seed();
+  const result = await scheduleDueReminders(db.supabase, new Date(), DEFAULT_MATCH_DELIVERY_POLICY, false);
+  assert.equal(result.scheduled, 1);
+  assert.equal(db.tables.inbox_items.filter((row) => row.type === "match_reminder").length, 1);
+});
+
 test("15-17. reminders are scheduled twice and then stop", async () => {
   const db = seed();
   const now = new Date();

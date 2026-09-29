@@ -11,7 +11,7 @@ export type { PricingException };
 export const SPECIALIST_SERVICE_CURRENCY = "EUR";
 
 export const SERVICE_SELECT =
-  "id, title, description, price_comment, pricing_exception, pricing_type, price_from, price_to, currency, duration_minutes, is_active, category_id, created_at, updated_at";
+  "id, title, description, price_comment, pricing_exception, pricing_type, price_from, price_to, currency, duration_minutes, is_active, category_id, minimum_order_cents, created_at, updated_at";
 
 export const SERVICE_PRICING_READINESS_SELECT =
   "id, title, pricing_type, price_from, price_to, price_comment, pricing_exception, is_active, category_id";
@@ -27,6 +27,7 @@ export type SpecialistServiceDto = {
   price_to: number | null;
   currency: string;
   duration_minutes: number | null;
+  minimum_order_cents: number | null;
   is_active: boolean;
   category_id: string | null;
   created_at: string | null;

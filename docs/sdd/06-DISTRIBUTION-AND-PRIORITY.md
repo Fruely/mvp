@@ -23,6 +23,12 @@ Distribution answers who gets the opportunity, in what order and for how long.
 
 This separation is mandatory.
 
+Economic compatibility is a matching gate, before distribution. A specialist blocked because the client's reliable maximum is below that specialist's explicit minimum is not eligible supply. They do not enter distribution, and they do not receive a match notification.
+
+If every otherwise-eligible specialist is blocked only by that comparison, distribution does not start. The client may accept the current supply floor on the same request. That acceptance is a revised demand ceiling, not a Freuly access price and not a category market price. Decline leaves the request stored and undistributed.
+
+A later pricing policy must not treat that supply floor as a hidden Pricing v2 input. Only an explicitly accepted ceiling changes the client budget basis used for newly created access offers.
+
 ## 3. Target distribution
 
 **Planned.**

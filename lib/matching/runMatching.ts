@@ -3,6 +3,14 @@ import { enqueueMatchNotifications } from "@/lib/inbox/delivery";
 import { ensureMatchedServiceRequestOffers } from "@/lib/leadEngine/matchedServiceRequestOffer";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 import {
+  partitionEconomicEligibility,
+  reconciliationFloorCents,
+  shouldKeepBudgetDecline,
+  effectiveClientMaximumCents,
+  nonNegativeIntegerCents,
+  type ServiceEconomicFloor,
+} from "./budgetGate";
+import {
   evaluateMatch,
   type MatchCandidate,
   type MatchReasonCode,
@@ -30,6 +38,12 @@ type SpecialistRow = {
   is_test?: boolean | null;
 };
 
+export type BudgetReconciliationOffer = {
+  required: true;
+  minimum_budget_cents: number;
+  currency: "eur";
+};
+
 export type MatchingRunResult = {
   outcome: "matched" | "skipped" | "error";
   runId: string;
@@ -37,6 +51,7 @@ export type MatchingRunResult = {
   candidates: number;
   matches: number;
   durationMs: number;
+  budgetReconciliation: BudgetReconciliationOffer | null;
 };
 
 function formatsFor(workFormat: MatchWorkFormat): MatchWorkFormat[] {
@@ -55,22 +70,58 @@ function chunk<T>(values: T[], size: number): T[][] {
   return out;
 }
 
-async function categorySpecialistIds(
+async function loadCategoryServiceFloors(
   supabase: SupabaseClient,
   categoryId: string,
-): Promise<string[]> {
+): Promise<Map<string, ServiceEconomicFloor[]>> {
+  const floors = new Map<string, ServiceEconomicFloor[]>();
   const { data, error } = await supabase
     .from("specialist_services")
-    .select("specialist_id")
+    .select("specialist_id, minimum_order_cents, currency")
     .eq("category_id", categoryId)
     .eq("is_active", true);
   if (error) throw error;
-  const ids: string[] = [];
   for (const row of data ?? []) {
     const id = String(row.specialist_id ?? "");
-    if (id && !ids.includes(id)) ids.push(id);
+    if (!id) continue;
+    const current = floors.get(id) ?? [];
+    current.push({
+      minimumOrderCents: nonNegativeIntegerCents(row.minimum_order_cents),
+      currency: typeof row.currency === "string" ? row.currency : null,
+    });
+    floors.set(id, current);
   }
-  return ids;
+  return floors;
+}
+
+type RequestEconomy = {
+  text: string | null;
+  acceptedCents: number | null;
+  requiredCents: number | null;
+  declinedAt: string | null;
+};
+
+async function loadRequestEconomy(
+  supabase: SupabaseClient,
+  requestId: string,
+): Promise<RequestEconomy> {
+  const { data, error } = await supabase
+    .from("service_requests")
+    .select(
+      "client_budget_text, budget_reconciliation_accepted_cents, budget_reconciliation_required_cents, budget_reconciliation_declined_at",
+    )
+    .eq("id", requestId)
+    .maybeSingle();
+  if (error) throw error;
+  return {
+    text: typeof data?.client_budget_text === "string" ? data.client_budget_text : null,
+    acceptedCents: nonNegativeIntegerCents(data?.budget_reconciliation_accepted_cents),
+    requiredCents: nonNegativeIntegerCents(data?.budget_reconciliation_required_cents),
+    declinedAt:
+      typeof data?.budget_reconciliation_declined_at === "string"
+        ? data.budget_reconciliation_declined_at
+        : null,
+  };
 }
 
 async function loadSpecialistRows(
@@ -168,10 +219,19 @@ export async function matchConfirmedServiceRequest(
   const started = Date.now();
   const runId = crypto.randomUUID();
   try {
-    const serviceSpecialistIds = request.categoryId
-      ? await categorySpecialistIds(supabase, request.categoryId)
-      : [];
+    const serviceFloors = request.categoryId
+      ? await loadCategoryServiceFloors(supabase, request.categoryId)
+      : new Map<string, ServiceEconomicFloor[]>();
+    const serviceSpecialistIds: string[] = [];
+    serviceFloors.forEach((_floors, specialistId) => {
+      serviceSpecialistIds.push(specialistId);
+    });
     const serviceIdSet = new Set(serviceSpecialistIds);
+    const economy = await loadRequestEconomy(supabase, request.id);
+    const clientMaxCents = effectiveClientMaximumCents({
+      clientBudgetText: economy.text,
+      acceptedCents: economy.acceptedCents,
+    });
     const rows = await loadSpecialistRows(supabase, request, serviceSpecialistIds);
     const needsCity = request.workFormat !== "online";
     const cities = needsCity
@@ -185,7 +245,7 @@ export async function matchConfirmedServiceRequest(
       supabase,
       rows.map((row) => row.user_id).filter((id): id is string => typeof id === "string" && id.length > 0),
     );
-    const matches: { specialist_id: string; match_reasons: MatchReasonCode[] }[] = [];
+    const otherwiseEligible: { specialist_id: string; match_reasons: MatchReasonCode[]; services: ServiceEconomicFloor[] }[] = [];
     for (const row of rows) {
       if (typeof row.user_id !== "string" || !activeUsers.has(row.user_id)) continue;
       const extraCategory =
@@ -194,7 +254,59 @@ export async function matchConfirmedServiceRequest(
       if (!candidate) continue;
       const decision = evaluateMatch(request, candidate);
       if (!decision.eligible) continue;
-      matches.push({ specialist_id: candidate.id, match_reasons: decision.reasons });
+      otherwiseEligible.push({
+        specialist_id: candidate.id,
+        match_reasons: decision.reasons,
+        services: serviceFloors.get(candidate.id) ?? [],
+      });
+    }
+
+    const partition = partitionEconomicEligibility({
+      clientMaxCents,
+      candidates: otherwiseEligible.map((candidate) => ({
+        id: candidate.specialist_id,
+        services: candidate.services,
+      })),
+    });
+    const economicIds = new Set(partition.economicallyEligibleIds);
+    const matches = otherwiseEligible
+      .filter((candidate) => economicIds.has(candidate.specialist_id))
+      .map((candidate) => ({
+        specialist_id: candidate.specialist_id,
+        match_reasons: candidate.match_reasons,
+      }));
+    const floorCents = reconciliationFloorCents(partition, clientMaxCents);
+    let budgetReconciliation: BudgetReconciliationOffer | null = null;
+    if (floorCents != null) {
+      const keepDecline = shouldKeepBudgetDecline({
+        existingRequiredCents: economy.requiredCents,
+        existingDeclinedAt: economy.declinedAt,
+        nextFloorCents: floorCents,
+      });
+      const { error: reconciliationError } = await supabase
+        .from("service_requests")
+        .update({
+          budget_reconciliation_required_cents: floorCents,
+          budget_reconciliation_declined_at: keepDecline ? economy.declinedAt : null,
+        })
+        .eq("id", request.id);
+      if (reconciliationError) throw reconciliationError;
+      if (!keepDecline) {
+        budgetReconciliation = {
+          required: true,
+          minimum_budget_cents: floorCents,
+          currency: "eur",
+        };
+      }
+    } else if (economy.requiredCents != null || economy.declinedAt != null) {
+      const { error: clearError } = await supabase
+        .from("service_requests")
+        .update({
+          budget_reconciliation_required_cents: null,
+          budget_reconciliation_declined_at: null,
+        })
+        .eq("id", request.id);
+      if (clearError) throw clearError;
     }
 
     const now = new Date().toISOString();
@@ -213,6 +325,7 @@ export async function matchConfirmedServiceRequest(
       if (error) throw error;
     }
 
+    if (floorCents == null) {
     const commercial = await ensureMatchedServiceRequestOffers(
       supabase,
       {
@@ -233,6 +346,7 @@ export async function matchConfirmedServiceRequest(
         candidates: rows.length,
         matches: matches.length,
         durationMs: Date.now() - started,
+        budgetReconciliation: null,
       };
     }
 
@@ -244,6 +358,7 @@ export async function matchConfirmedServiceRequest(
         name: enqueueError instanceof Error ? enqueueError.name : "Error",
       });
     }
+    }
 
     const result: MatchingRunResult = {
       outcome: "matched",
@@ -252,6 +367,7 @@ export async function matchConfirmedServiceRequest(
       candidates: rows.length,
       matches: matches.length,
       durationMs: Date.now() - started,
+      budgetReconciliation,
     };
     console.info("[matching] completed", result);
     return result;
@@ -263,6 +379,7 @@ export async function matchConfirmedServiceRequest(
       candidates: 0,
       matches: 0,
       durationMs: Date.now() - started,
+      budgetReconciliation: null,
     };
     console.error("[matching] failed", {
       ...result,

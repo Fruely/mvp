@@ -232,6 +232,11 @@ export async function POST(request: NextRequest) {
       const response = replay.response as {
         public_id: string;
         created_at: string;
+        budget_reconciliation?: {
+          required: true;
+          minimum_budget_cents: number;
+          currency: "eur";
+        };
       };
       await recordOperationOutcome({
         agentClientId,
@@ -246,6 +251,9 @@ export async function POST(request: NextRequest) {
           ok: true,
           request_id: response.public_id,
           created_at: response.created_at,
+          ...(response.budget_reconciliation
+            ? { budget_reconciliation: response.budget_reconciliation }
+            : {}),
         },
         200,
       );
@@ -324,9 +332,9 @@ export async function POST(request: NextRequest) {
       console.error("[agent/service-requests] owner notification failed", notifyErr);
     }
 
-    if (result.kind === "created") {
-      await matchAfterServiceRequestCreated(supabase, result, validated);
-    }
+    const budgetReconciliation = result.kind === "created"
+      ? await matchAfterServiceRequestCreated(supabase, result, validated)
+      : null;
 
     await recordOperationOutcome({
       agentClientId,
@@ -342,6 +350,7 @@ export async function POST(request: NextRequest) {
         ok: true,
         request_id: result.public_id,
         created_at: result.created_at,
+        ...(budgetReconciliation ? { budget_reconciliation: budgetReconciliation } : {}),
       },
       200,
     );

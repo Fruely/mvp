@@ -1,9 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildMatchedServiceRequestOffer } from "@/lib/leadEngine/requestOfferPolicy";
 import {
+  resolveAcceptedCeilingAccessPrice,
   resolveServiceRequestAccessPrice,
   type ServiceRequestAccessPrice,
 } from "@/lib/leadEngine/serviceRequestAccessPricing";
+import { nonNegativeIntegerCents } from "@/lib/serviceRequests/clientBudget";
 
 /**
  * Persists the initial matched service-request offer on request_offers.
@@ -35,18 +37,21 @@ function positivePrice(value: unknown): number | null {
   return typeof value === "number" && Number.isInteger(value) && value > 0 ? value : null;
 }
 
-async function loadClientBudgetText(
+async function loadClientBudgetBasis(
   supabase: Pick<SupabaseClient, "from">,
   requestId: string,
-): Promise<{ text: string | null } | { error: true }> {
+): Promise<{ text: string | null; acceptedCents: number | null } | { error: true }> {
   const result = await supabase
     .from("service_requests")
-    .select("client_budget_text")
+    .select("client_budget_text, budget_reconciliation_accepted_cents")
     .eq("id", requestId)
     .maybeSingle();
   if (result.error || !result.data) return { error: true };
   const text = result.data.client_budget_text;
-  return { text: typeof text === "string" ? text : null };
+  return {
+    text: typeof text === "string" ? text : null,
+    acceptedCents: nonNegativeIntegerCents(result.data.budget_reconciliation_accepted_cents),
+  };
 }
 
 async function loadExistingOffer(
@@ -140,9 +145,11 @@ export async function ensureMatchedServiceRequestOffers(
     if (id.length > 0 && !specialistIds.includes(id)) specialistIds.push(id);
   }
   try {
-    const budget = await loadClientBudgetText(supabase, input.requestId);
+    const budget = await loadClientBudgetBasis(supabase, input.requestId);
     if ("error" in budget) return { ok: false, kind: "offer_write_failed" };
-    const pricing = resolveServiceRequestAccessPrice(budget.text);
+    const pricing = budget.acceptedCents != null
+      ? resolveAcceptedCeilingAccessPrice(budget.acceptedCents)
+      : resolveServiceRequestAccessPrice(budget.text);
     for (const specialistId of specialistIds) {
       const payload = buildMatchedServiceRequestOffer({
         requestId: input.requestId,

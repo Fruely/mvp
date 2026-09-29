@@ -165,6 +165,15 @@ export function enforceServiceCurrency(): string {
   return SPECIALIST_SERVICE_CURRENCY;
 }
 
+/** Optional demand floor in integer EUR cents. Null clears it. Not derived from price_from. */
+export function parseMinimumOrderCents(
+  value: unknown,
+): { ok: true; cents: number | null } | { ok: false } {
+  if (value === null) return { ok: true, cents: null };
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) return { ok: false };
+  return { ok: true, cents: value };
+}
+
 export function isAllowedPricingType(value: string | null): value is PricingType {
   return Boolean(value && ALLOWED_PRICING_TYPES.includes(value as PricingType));
 }

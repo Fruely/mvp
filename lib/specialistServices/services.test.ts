@@ -616,6 +616,83 @@ function emptyState(): MockState {
   };
 }
 
+test("old service-create fingerprint stays stable when minimum order is absent", async () => {
+  const state = emptyState();
+  const result = await createSpecialistService(
+    okCtx(createMockSupabase(state)),
+    {
+      title: "Math tutoring",
+      pricing_type: "fixed",
+      price_from: 25,
+      is_active: true,
+      idempotency_key: IDEMPOTENCY_KEY,
+    },
+    "de",
+    { loadReadiness: stubReadiness },
+  );
+  assert.equal(result.ok, true);
+  assert.equal(state.inserts[0]?.client_idempotency_fingerprint, buildFingerprint());
+  assert.equal(state.inserts[0]?.minimum_order_cents, undefined);
+});
+
+test("minimum order cents is optional, rejects fractions, and null clears it", async () => {
+  const created = emptyState();
+  const result = await createSpecialistService(
+    okCtx(createMockSupabase(created)),
+    {
+      title: "Consult",
+      pricing_type: "fixed",
+      price_from: 50,
+      is_active: true,
+      minimum_order_cents: 7000,
+    },
+    "de",
+    { loadReadiness: stubReadiness },
+  );
+  assert.equal(result.ok, true);
+  assert.equal(created.inserts[0]?.minimum_order_cents, 7000);
+  if (result.ok) assert.equal(result.body.data.minimum_order_cents, 7000);
+
+  const fractional = await createSpecialistService(
+    okCtx(createMockSupabase(emptyState())),
+    { title: "Consult", pricing_type: "fixed", price_from: 50, minimum_order_cents: 70.5 },
+    "de",
+    { loadReadiness: stubReadiness },
+  );
+  assert.equal(fractional.ok, false);
+
+  const negative = await createSpecialistService(
+    okCtx(createMockSupabase(emptyState())),
+    { title: "Consult", pricing_type: "fixed", price_from: 50, minimum_order_cents: -1 },
+    "de",
+    { loadReadiness: stubReadiness },
+  );
+  assert.equal(negative.ok, false);
+
+  const state = emptyState();
+  state.services.push({
+    id: SERVICE_ID,
+    specialist_id: SPECIALIST_ID,
+    title: "Consult",
+    pricing_type: "fixed",
+    price_from: 50,
+    price_to: null,
+    price_comment: null,
+    pricing_exception: null,
+    is_active: true,
+    category_id: CATEGORY_ID,
+    minimum_order_cents: 7000,
+  });
+  const cleared = await updateSpecialistService(
+    okCtx(createMockSupabase(state)),
+    { id: SERVICE_ID, minimum_order_cents: null },
+    "de",
+    { loadReadiness: stubReadiness },
+  );
+  assert.equal(cleared.ok, true);
+  assert.equal(state.updates.at(-1)?.minimum_order_cents, null);
+});
+
 test("create A: positive price without exception is valid", async () => {
   const state = emptyState();
   const result = await createSpecialistService(

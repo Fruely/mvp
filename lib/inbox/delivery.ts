@@ -663,8 +663,23 @@ export async function scheduleDueReminders(
     .limit(30);
   if (error) throw error;
 
+  const matchIds = (matches ?? []).map((match) => String(match.id)).filter((id) => id.length > 0);
+  const liveClaimMatchIds = new Set<string>();
+  if (matchIds.length > 0) {
+    const { data: claims, error: claimError } = await supabase
+      .from("service_request_claims")
+      .select("match_id, status")
+      .in("match_id", matchIds)
+      .in("status", ["reserved", "completed"]);
+    if (claimError) throw claimError;
+    for (const claim of claims ?? []) {
+      if (typeof claim.match_id === "string" && claim.match_id) liveClaimMatchIds.add(claim.match_id);
+    }
+  }
+
   let scheduled = 0;
   for (const match of matches ?? []) {
+    if (liveClaimMatchIds.has(String(match.id))) continue;
     const first = await supabase.from("inbox_items").select("id").eq("dedupe_key", reminderInboxKey(String(match.id), 1)).maybeSingle();
     const second = await supabase.from("inbox_items").select("id").eq("dedupe_key", reminderInboxKey(String(match.id), 2)).maybeSingle();
     const sentReminders = (first.data?.id ? 1 : 0) + (second.data?.id ? 1 : 0);

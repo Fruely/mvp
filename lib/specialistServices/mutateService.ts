@@ -35,6 +35,7 @@ import {
   normalizeNumber,
   normalizePricingType,
   normalizeText,
+  parseMinimumOrderCents,
   PRICING_EXCEPTION_EXPLANATION_REQUIRED_ERROR,
   PRICING_EXCEPTION_INVALID_ERROR,
   SPECIALIST_CATEGORY_REQUIRED_ERROR,
@@ -57,8 +58,11 @@ export type ServiceMutationDependencies = {
   loadReadiness?: typeof defaultLoadReadiness;
 };
 
-function buildCreateIdempotencyPayload(payload: Record<string, unknown>) {
-  return {
+function buildCreateIdempotencyPayload(
+  payload: Record<string, unknown>,
+  includeMinimumOrder: boolean,
+) {
+  const fingerprint = {
     title: payload.title,
     description: payload.description,
     price_comment: payload.price_comment,
@@ -71,6 +75,9 @@ function buildCreateIdempotencyPayload(payload: Record<string, unknown>) {
     is_active: payload.is_active,
     category_id: payload.category_id,
   };
+  // Absent minimum keeps the historical fingerprint. Old retries still replay.
+  if (!includeMinimumOrder) return fingerprint;
+  return { ...fingerprint, minimum_order_cents: payload.minimum_order_cents ?? null };
 }
 
 function resolvePricingException(body: Record<string, unknown>): {
@@ -166,6 +173,20 @@ export async function createSpecialistService(
     return { ok: false, status: 400, body: { error: ACTIVE_PRICE_REQUIRED_ERROR } };
   }
 
+  const includeMinimumOrder = hasOwn(body, "minimum_order_cents");
+  let minimumOrderCents: number | null = null;
+  if (includeMinimumOrder) {
+    const parsedMinimum = parseMinimumOrderCents(body.minimum_order_cents);
+    if (!parsedMinimum.ok) {
+      return {
+        ok: false,
+        status: 400,
+        body: { error: "minimum_order_cents must be a non-negative integer or null" },
+      };
+    }
+    minimumOrderCents = parsedMinimum.cents;
+  }
+
   const payload: Record<string, unknown> = {
     specialist_id: ctx.specialistId,
     title,
@@ -179,10 +200,13 @@ export async function createSpecialistService(
     duration_minutes: durationMinutes,
     is_active: validPriceShape && validPublishablePricing ? requestedActive : false,
     category_id: resolvedCategoryId,
+    ...(includeMinimumOrder ? { minimum_order_cents: minimumOrderCents } : {}),
   };
 
   const clientIdempotencyKey = normalizeClientIdempotencyKey(body.idempotency_key);
-  const idempotencyFingerprint = buildClientIdempotencyFingerprint(buildCreateIdempotencyPayload(payload));
+  const idempotencyFingerprint = buildClientIdempotencyFingerprint(
+    buildCreateIdempotencyPayload(payload, includeMinimumOrder),
+  );
 
   async function resolveIdempotencyReplay(
     replay: Awaited<ReturnType<typeof lookupServiceCreateIdempotentReplay>>,
@@ -338,6 +362,17 @@ export async function updateSpecialistService(
   if (hasOwn(body, "price_to")) patch.price_to = priceTo;
   if (hasOwn(body, "duration_minutes")) patch.duration_minutes = durationMinutes;
   if (isActive !== null) patch.is_active = isActive;
+  if (hasOwn(body, "minimum_order_cents")) {
+    const parsedMinimum = parseMinimumOrderCents(body.minimum_order_cents);
+    if (!parsedMinimum.ok) {
+      return {
+        ok: false,
+        status: 400,
+        body: { error: "minimum_order_cents must be a non-negative integer or null" },
+      };
+    }
+    patch.minimum_order_cents = parsedMinimum.cents;
+  }
 
   const effectiveTitle = (patch.title as string | undefined) ?? normalizeText(currentService.title);
   const effectivePriceComment = hasOwn(patch, "price_comment")
