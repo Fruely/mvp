@@ -223,7 +223,12 @@ async function reconcileWinner(
   return { ok: true, changed: input.changed, conversationId: conversation.id };
 }
 
-export async function claimOwnMatch(
+/**
+ * Final connection after a specialist is allowed to take the request.
+ * Legacy TAKE calls this immediately. Paid claim must call it only after capture.
+ * It does not read or write reservation rows.
+ */
+export async function finalizeServiceRequestConnection(
   supabase: SupabaseClient,
   input: { matchId: string; specialistId: string },
 ): Promise<ClaimResult> {
@@ -310,4 +315,12 @@ export async function claimOwnMatch(
 
   if (match.status === "declined") return { ok: false, error: "not_claimable" };
   return reconcileWinner(supabase, { match, request, specialistId: input.specialistId, changed: false });
+}
+
+/** Current production TAKE. Unchanged contract: select, conversation, notices. */
+export async function claimOwnMatch(
+  supabase: SupabaseClient,
+  input: { matchId: string; specialistId: string },
+): Promise<ClaimResult> {
+  return finalizeServiceRequestConnection(supabase, input);
 }
