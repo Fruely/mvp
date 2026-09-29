@@ -150,6 +150,10 @@ BEGIN
     IF v_existing.status = 'reserved'
        AND v_existing.match_id = p_match_id
        AND v_existing.specialist_id = p_specialist_id THEN
+      IF p_request_offer_id IS NULL
+         OR v_existing.request_offer_id IS DISTINCT FROM p_request_offer_id THEN
+        RETURN jsonb_build_object('ok', false, 'error', 'offer_unavailable');
+      END IF;
       RETURN jsonb_build_object(
         'ok', true,
         'claim_id', v_existing.id,
@@ -218,6 +222,10 @@ EXCEPTION
        AND v_existing.status = 'reserved'
        AND v_existing.match_id = p_match_id
        AND v_existing.specialist_id = p_specialist_id THEN
+      IF p_request_offer_id IS NULL
+         OR v_existing.request_offer_id IS DISTINCT FROM p_request_offer_id THEN
+        RETURN jsonb_build_object('ok', false, 'error', 'offer_unavailable');
+      END IF;
       RETURN jsonb_build_object(
         'ok', true,
         'claim_id', v_existing.id,

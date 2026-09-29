@@ -79,21 +79,21 @@ async function coherent(
   supabase: SupabaseClient,
   payment: PaymentRow,
   intent: Stripe.PaymentIntent,
-): Promise<"ok" | "invalid" | "retry"> {
+): Promise<{ outcome: "ok"; claim: ClaimRow } | { outcome: "invalid" } | { outcome: "retry" }> {
   const metadata = intent.metadata ?? {};
-  if (metadata.purpose !== SERVICE_REQUEST_AUTHORIZATION_PURPOSE) return "invalid";
-  if (metadata.payment_id !== payment.id) return "invalid";
+  if (metadata.purpose !== SERVICE_REQUEST_AUTHORIZATION_PURPOSE) return { outcome: "invalid" };
+  if (metadata.payment_id !== payment.id) return { outcome: "invalid" };
   if (!payment.service_request_claim_id || metadata.claim_id !== payment.service_request_claim_id) {
-    return "invalid";
+    return { outcome: "invalid" };
   }
-  if (metadata.offer_id !== payment.offer_id) return "invalid";
-  if (metadata.specialist_id && metadata.specialist_id !== payment.specialist_id) return "invalid";
-  if (intent.amount !== payment.amount_cents) return "invalid";
+  if (metadata.offer_id !== payment.offer_id) return { outcome: "invalid" };
+  if (metadata.specialist_id && metadata.specialist_id !== payment.specialist_id) return { outcome: "invalid" };
+  if (intent.amount !== payment.amount_cents) return { outcome: "invalid" };
   if (intent.currency.toLowerCase() !== payment.currency.toLowerCase() || payment.currency !== "eur") {
-    return "invalid";
+    return { outcome: "invalid" };
   }
   if (payment.stripe_payment_intent_id && payment.stripe_payment_intent_id !== intent.id) {
-    return "invalid";
+    return { outcome: "invalid" };
   }
 
   const claimResult = await supabase
@@ -101,10 +101,10 @@ async function coherent(
     .select("id, specialist_id, service_request_id, request_offer_id, status")
     .eq("id", payment.service_request_claim_id)
     .maybeSingle();
-  if (claimResult.error) return "retry";
+  if (claimResult.error) return { outcome: "retry" };
   const claim = claimResult.data as ClaimRow | null;
   if (!claim || claim.request_offer_id !== payment.offer_id || claim.specialist_id !== payment.specialist_id) {
-    return "invalid";
+    return { outcome: "invalid" };
   }
 
   const offerResult = await supabase
@@ -112,7 +112,7 @@ async function coherent(
     .select("id, request_kind, service_request_id, specialist_id")
     .eq("id", payment.offer_id)
     .maybeSingle();
-  if (offerResult.error) return "retry";
+  if (offerResult.error) return { outcome: "retry" };
   const offer = offerResult.data as OfferRow | null;
   if (
     !offer ||
@@ -120,15 +120,9 @@ async function coherent(
     offer.service_request_id !== claim.service_request_id ||
     offer.specialist_id !== claim.specialist_id
   ) {
-    return "invalid";
+    return { outcome: "invalid" };
   }
-  return "ok";
-}
-
-function outcomeFor(relation: "ok" | "invalid" | "retry"): ServiceRequestAuthorizationWebhookResult | null {
-  if (relation === "retry") return { outcome: "retryable_failure" };
-  if (relation === "invalid") return { outcome: "validation_failed" };
-  return null;
+  return { outcome: "ok", claim };
 }
 
 export async function processStripeWebhookEventForServiceRequestAuthorization(
@@ -151,13 +145,16 @@ export async function processStripeWebhookEventForServiceRequestAuthorization(
   if (!payment) return { outcome: "validation_failed" };
 
   const relation = await coherent(supabase, payment, intent);
-  const rejected = outcomeFor(relation);
-  if (rejected) return rejected;
+  if (relation.outcome === "retry") return { outcome: "retryable_failure" };
+  if (relation.outcome === "invalid") return { outcome: "validation_failed" };
+  const claim = relation.claim;
 
   if (event.type === "payment_intent.amount_capturable_updated") {
     if (intent.status !== "requires_capture") return { outcome: "validation_failed" };
     if (payment.status === "authorized" || payment.status === "paid") return { outcome: "success" };
-    if (payment.status !== "pending") return { outcome: "validation_failed" };
+    if (payment.status !== "pending" || claim.status !== "reserved") {
+      return { outcome: "validation_failed" };
+    }
     const authorizedAt = new Date().toISOString();
     const { error } = await supabase
       .from("request_offer_payments")
@@ -173,16 +170,18 @@ export async function processStripeWebhookEventForServiceRequestAuthorization(
   }
 
   if (event.type === "payment_intent.payment_failed") {
-    if (payment.status === "failed") return { outcome: "success" };
-    if (payment.status !== "pending") return { outcome: "validation_failed" };
-    const failedAt = new Date().toISOString();
+    // One declined confirmation leaves the same PaymentIntent retryable.
+    // Terminal release belongs to cancellation, not to this event.
+    if (payment.status !== "pending" || claim.status !== "reserved") {
+      return { outcome: "validation_failed" };
+    }
+    if (payment.stripe_payment_intent_id === intent.id) return { outcome: "success" };
+    const updatedAt = new Date().toISOString();
     const { error } = await supabase
       .from("request_offer_payments")
       .update({
-        status: "failed",
-        failed_at: failedAt,
-        stripe_payment_intent_id: payment.stripe_payment_intent_id ?? intent.id,
-        updated_at: failedAt,
+        stripe_payment_intent_id: intent.id,
+        updated_at: updatedAt,
       })
       .eq("id", payment.id)
       .eq("status", "pending");
@@ -211,7 +210,10 @@ export async function processStripeWebhookEventForServiceRequestAuthorization(
   if (event.type === "payment_intent.succeeded") {
     if (intent.status !== "succeeded") return { outcome: "validation_failed" };
     if (payment.status === "paid") return { outcome: "success" };
-    if (payment.status !== "pending" && payment.status !== "authorized") {
+    if (
+      (payment.status !== "pending" && payment.status !== "authorized") ||
+      claim.status !== "reserved"
+    ) {
       return { outcome: "validation_failed" };
     }
     const paidAt = new Date().toISOString();

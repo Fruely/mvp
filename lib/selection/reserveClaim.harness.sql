@@ -112,6 +112,13 @@ BEGIN
     RAISE EXCEPTION 'idempotent retry failed: %', again;
   END IF;
 
+  IF public.reserve_service_request_claim(match_a, spec_a, offer_b)->>'error' <> 'offer_unavailable' THEN
+    RAISE EXCEPTION 'a different offer was accepted for the same reservation';
+  END IF;
+  IF public.reserve_service_request_claim(match_a, spec_a, NULL)->>'error' <> 'offer_unavailable' THEN
+    RAISE EXCEPTION 'a null offer was accepted for the same reservation';
+  END IF;
+
   other := public.reserve_service_request_claim(match_b, spec_b, offer_b);
   IF other->>'error' <> 'already_claimed' THEN
     RAISE EXCEPTION 'second specialist was not blocked: %', other;

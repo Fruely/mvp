@@ -176,24 +176,74 @@ test("wrong amount, currency, or claim relation fails validation", async () => {
   }
 });
 
-test("cancellation releases, payment failure fails, and success does not deliver access", async () => {
-  const canceled = db();
+test("a declined confirmation leaves the same pending payment retryable", async () => {
+  const database = db();
+  const before = database.tables.request_offer_payments[0];
   assert.deepEqual(
-    await run(canceled, event("payment_intent.canceled")),
+    await run(database, event("payment_intent.payment_failed")),
     { outcome: "success" },
   );
-  assert.equal(canceled.tables.request_offer_payments[0]?.status, "released");
-  assert.equal(typeof canceled.tables.request_offer_payments[0]?.released_at, "string");
-  assert.equal(canceled.tables.service_request_claims[0]?.status, "reserved");
+  assert.equal(database.tables.request_offer_payments.length, 1);
+  assert.equal(database.tables.request_offer_payments[0]?.status, "pending");
+  assert.equal(database.tables.request_offer_payments[0]?.stripe_payment_intent_id, "pi_auth");
+  assert.equal(database.tables.request_offer_payments[0]?.failed_at, undefined);
+  assert.equal(database.tables.request_offer_payments[0]?.id, before?.id);
+  assert.equal(database.tables.service_request_claims[0]?.status, "reserved");
 
-  const failed = db();
+  database.tables.request_offer_payments[0].stripe_payment_intent_id = null;
   assert.deepEqual(
-    await run(failed, event("payment_intent.payment_failed")),
+    await run(database, event("payment_intent.payment_failed")),
     { outcome: "success" },
   );
-  assert.equal(failed.tables.request_offer_payments[0]?.status, "failed");
-  assert.equal(typeof failed.tables.request_offer_payments[0]?.failed_at, "string");
+  assert.equal(database.tables.request_offer_payments[0]?.status, "pending");
+  assert.equal(database.tables.request_offer_payments[0]?.stripe_payment_intent_id, "pi_auth");
+  assert.equal(database.tables.request_offer_payments[0]?.failed_at, undefined);
+});
 
+test("authorization requires a reserved claim and does not reopen a closed one", async () => {
+  for (const status of ["released", "expired", "failed"] as const) {
+    const database = db();
+    database.tables.service_request_claims[0].status = status;
+    const result = await run(database, event("payment_intent.amount_capturable_updated"));
+    assert.deepEqual(result, { outcome: "validation_failed" });
+    assert.equal(database.tables.request_offer_payments[0]?.status, "pending");
+    assert.equal(database.tables.request_offer_payments[0]?.authorized_at, undefined);
+    assert.equal(database.tables.service_request_claims[0]?.status, status);
+  }
+
+  const reserved = db();
+  assert.deepEqual(
+    await run(reserved, event("payment_intent.amount_capturable_updated")),
+    { outcome: "success" },
+  );
+  assert.equal(reserved.tables.request_offer_payments[0]?.status, "authorized");
+  assert.equal(reserved.tables.service_request_claims[0]?.status, "reserved");
+});
+
+test("cancellation can release the payment without reviving the claim", async () => {
+  const database = db();
+  database.tables.service_request_claims[0].status = "released";
+  assert.deepEqual(await run(database, event("payment_intent.canceled")), { outcome: "success" });
+  assert.equal(database.tables.request_offer_payments[0]?.status, "released");
+  assert.equal(typeof database.tables.request_offer_payments[0]?.released_at, "string");
+  assert.equal(database.tables.service_request_claims[0]?.status, "released");
+  assert.equal(database.writes.includes("conversations"), false);
+});
+
+test("an already paid event stays idempotent after the claim is completed", async () => {
+  const database = db();
+  database.tables.request_offer_payments[0].status = "paid";
+  database.tables.request_offer_payments[0].paid_at = "2026-09-29T12:00:00.000Z";
+  database.tables.service_request_claims[0].status = "completed";
+  assert.deepEqual(await run(database, event("payment_intent.succeeded")), { outcome: "success" });
+  assert.equal(database.tables.request_offer_payments[0]?.status, "paid");
+  assert.equal(database.tables.request_offer_payments[0]?.paid_at, "2026-09-29T12:00:00.000Z");
+  assert.equal(database.tables.service_request_claims[0]?.status, "completed");
+  assert.equal(database.tables.request_offer_access_grants.length, 0);
+  assert.equal(database.tables.conversations.length, 0);
+});
+
+test("succeeded on a reserved claim records payment without granting access", async () => {
   const paid = db();
   assert.deepEqual(await run(paid, event("payment_intent.succeeded")), { outcome: "success" });
   assert.equal(paid.tables.request_offer_payments[0]?.status, "paid");
@@ -212,6 +262,7 @@ test("authorization webhook does not grant, finalize, or capture", () => {
   assert.equal(source.includes("finalizeServiceRequestConnection"), false);
   assert.equal(source.includes("selected_specialist_id"), false);
   assert.equal(source.includes(".capture("), false);
+  assert.equal(source.includes('status: "failed"'), false);
   assert.match(aggregate, /processStripeWebhookEventForServiceRequestAuthorization/);
   assert.match(aggregate, /processStripeWebhookEventForRequestOffers/);
   assert.match(aggregate, /serviceRequestAuthorization\.outcome === "retryable_failure"/);

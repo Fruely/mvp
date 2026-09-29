@@ -24,6 +24,22 @@ function isUniqueViolation(error: { code?: string } | null | undefined): boolean
   return error?.code === "23505";
 }
 
+function existingOfferMatches(
+  row: Record<string, unknown> | null,
+  input: { requestId: string; specialistId: string; idempotencyKey: string },
+): boolean {
+  if (!row) return false;
+  return (
+    row.idempotency_key === input.idempotencyKey &&
+    row.request_kind === "service_request" &&
+    row.service_request_id === input.requestId &&
+    row.specialist_id === input.specialistId &&
+    row.offer_reason === "matched" &&
+    row.billing_model === "pay_per_lead" &&
+    row.currency === "eur"
+  );
+}
+
 export async function ensureMatchedServiceRequestOffers(
   supabase: Pick<SupabaseClient, "from">,
   input: { requestId: string; specialistIds: readonly string[] },
@@ -44,7 +60,31 @@ export async function ensureMatchedServiceRequestOffers(
         specialistId,
       });
       const { error } = await supabase.from("request_offers").insert(payload);
-      if (!error || isUniqueViolation(error)) continue;
+      if (!error) continue;
+      if (isUniqueViolation(error)) {
+        const existing = await supabase
+          .from("request_offers")
+          .select(
+            "idempotency_key, request_kind, service_request_id, specialist_id, offer_reason, billing_model, currency",
+          )
+          .eq("idempotency_key", payload.idempotency_key)
+          .maybeSingle();
+        if (existing.error) {
+          console.error("[lead-engine/matched-offer] existing offer read failed", {
+            code: existing.error.code ?? "unknown",
+          });
+          return { ok: false, kind: "offer_write_failed" };
+        }
+        if (
+          existingOfferMatches(existing.data as Record<string, unknown> | null, {
+            requestId: input.requestId,
+            specialistId,
+            idempotencyKey: payload.idempotency_key,
+          })
+        ) {
+          continue;
+        }
+      }
       console.error("[lead-engine/matched-offer] write failed", {
         code: error.code ?? "unknown",
       });

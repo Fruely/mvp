@@ -8,6 +8,7 @@ import {
   serviceRequestAuthorizationIdempotencyKey,
   type ServiceRequestAuthorizationStripe,
 } from "./createServiceRequestAuthorization.ts";
+import { processStripeWebhookEventForServiceRequestAuthorization } from "./processServiceRequestAuthorizationWebhook.ts";
 
 const CLAIM = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const OFFER = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
@@ -350,6 +351,69 @@ test("a pending payment is reused and a conflicting insert converges on it", asy
   assert.equal(creates.length, 1);
   assert.equal(creates[0]?.options.idempotencyKey, serviceRequestAuthorizationIdempotencyKey(existing.id));
   assert.equal(db.tables.request_offer_payments.length, 1);
+});
+
+test("payment_failed keeps one pending PaymentIntent and the next call reuses it", async () => {
+  const db = seed();
+  const { stripe, creates } = stripeFor(async (params, options) => {
+    creates.push({ params, options });
+    return {
+      id: "pi_created",
+      amount: Number(params.amount),
+      currency: String(params.currency),
+      status: "requires_payment_method",
+      client_secret: SECRET,
+    };
+  });
+  stripe.paymentIntents.retrieve = async (id) => ({
+    id,
+    amount: 2500,
+    currency: "eur",
+    status: "requires_payment_method",
+    client_secret: SECRET,
+  });
+  const created = await authorize(db, stripe);
+  assert.equal(created.ok, true);
+  const paymentId = String(db.tables.request_offer_payments[0]?.id);
+  const failed = await processStripeWebhookEventForServiceRequestAuthorization(
+    db as unknown as SupabaseClient,
+    {
+      id: "evt_failed",
+      type: "payment_intent.payment_failed",
+      data: {
+        object: {
+          id: "pi_created",
+          object: "payment_intent",
+          amount: 2500,
+          currency: "eur",
+          status: "requires_payment_method",
+          metadata: {
+            purpose: "service_request_access_authorization",
+            payment_id: paymentId,
+            offer_id: OFFER,
+            claim_id: CLAIM,
+            specialist_id: SPEC,
+          },
+        },
+      },
+    } as never,
+  );
+  assert.deepEqual(failed, { outcome: "success" });
+  assert.equal(db.tables.request_offer_payments.length, 1);
+  assert.equal(db.tables.request_offer_payments[0]?.status, "pending");
+  assert.equal(db.tables.request_offer_payments[0]?.stripe_payment_intent_id, "pi_created");
+  assert.equal(db.tables.request_offer_payments[0]?.failed_at, undefined);
+  assert.equal(db.tables.service_request_claims[0]?.status, "reserved");
+
+  const retry = await authorize(db, stripe);
+  assert.equal(retry.ok, true);
+  if (!retry.ok || retry.state !== "requires_confirmation") return;
+  assert.equal(retry.paymentId, paymentId);
+  assert.equal(retry.clientSecret, SECRET);
+  assert.equal(creates.length, 1);
+  assert.equal(db.inserts.length, 1);
+  assert.equal(db.tables.request_offer_payments.length, 1);
+  assert.equal(persisted(db).includes(SECRET), false);
 });
 
 test("client secret is returned for confirmation and never persisted", async () => {

@@ -294,4 +294,8 @@ test("payment authorization migration keeps one reservation writer and extends p
   assert.equal(sql.includes("INSERT INTO public.conversations"), false);
   assert.equal(sql.includes("selected_specialist_id ="), false);
   assert.equal(sql.includes("client_email"), false);
+  const binding = sql.match(
+    /p_request_offer_id IS NULL[\s\S]*?request_offer_id IS DISTINCT FROM p_request_offer_id/g,
+  );
+  assert.equal(binding?.length, 2);
 });

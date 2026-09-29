@@ -43,15 +43,25 @@ function database(
   const supabase = {
     from(table: string) {
       seen.push(table);
+      let idempotencyKey: string | null = null;
       const query = {
         select() { return query; },
-        eq() { return query; },
+        eq(column: string, value: unknown) {
+          if (column === "idempotency_key") idempotencyKey = String(value);
+          return query;
+        },
         in() { return query; },
         overlaps() { return query; },
         or() { return query; },
         order() { return query; },
         limit() { return query; },
-        maybeSingle: async () => ({ data: { id: "request-1" }, error: null }),
+        maybeSingle: async () => {
+          if (table === "request_offers") {
+            const row = idempotencyKey ? offers.get(idempotencyKey) ?? null : null;
+            return { data: row, error: null };
+          }
+          return { data: { id: "request-1" }, error: null };
+        },
         insert: async (payload: Record<string, unknown>) => {
           if (table !== "request_offers") return { error: null };
           const key = String(payload.idempotency_key ?? "");
