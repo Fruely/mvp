@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { enqueueMatchNotifications } from "@/lib/inbox/delivery";
+import { ensureMatchedServiceRequestOffers } from "@/lib/leadEngine/matchedServiceRequestOffer";
 import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 import {
   evaluateMatch,
@@ -162,6 +163,7 @@ function toCandidate(row: SpecialistRow, city: string | null, extraCategoryIds: 
 export async function matchConfirmedServiceRequest(
   supabase: SupabaseClient,
   request: MatchRequest,
+  env: NodeJS.ProcessEnv = process.env,
 ): Promise<MatchingRunResult> {
   const started = Date.now();
   const runId = crypto.randomUUID();
@@ -209,6 +211,29 @@ export async function matchConfirmedServiceRequest(
         { onConflict: "service_request_id,specialist_id", ignoreDuplicates: true },
       );
       if (error) throw error;
+    }
+
+    const commercial = await ensureMatchedServiceRequestOffers(
+      supabase,
+      {
+        requestId: request.id,
+        specialistIds: matches.map((match) => match.specialist_id),
+      },
+      env,
+    );
+    if (!commercial.ok) {
+      console.error("[matching] commercial offer preparation failed", {
+        serviceRequestId: request.id,
+        kind: commercial.kind,
+      });
+      return {
+        outcome: "error",
+        runId,
+        serviceRequestId: request.id,
+        candidates: rows.length,
+        matches: matches.length,
+        durationMs: Date.now() - started,
+      };
     }
 
     try {

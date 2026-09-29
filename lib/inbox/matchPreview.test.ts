@@ -103,7 +103,7 @@ function memory(seed: Record<string, Row[]>) {
   return { supabase: { from } as unknown as SupabaseClient, tables, updates };
 }
 
-function seed(requestOverrides: Row = {}) {
+function seed(requestOverrides: Row = {}, extra: Record<string, Row[]> = {}) {
   return memory({
     service_request_matches: [
       {
@@ -141,6 +141,7 @@ function seed(requestOverrides: Row = {}) {
         opened_at: null,
       },
     ],
+    ...extra,
   });
 }
 
@@ -290,4 +291,63 @@ test("the current-match list contains only this specialist's active demand", asy
   if (foreign.status === "ready") {
     assert.deepEqual(foreign.items.map((item) => item.match_id), [FOREIGN]);
   }
+});
+
+test("owned preview exposes only this specialist's service-request offer and not a shadow price", async () => {
+  const db = seed({}, {
+    request_offers: [
+      {
+        id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+        service_request_id: REQUEST,
+        specialist_id: OWN,
+        request_kind: "service_request",
+        offer_reason: "matched",
+        billing_model: "pay_per_lead",
+        currency: "eur",
+        status: "offered",
+        price_cents: null,
+        shadow_price_cents: 2500,
+      },
+      {
+        id: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+        service_request_id: REQUEST,
+        specialist_id: OTHER,
+        request_kind: "service_request",
+        offer_reason: "matched",
+        billing_model: "pay_per_lead",
+        currency: "eur",
+        status: "offered",
+        price_cents: 9900,
+      },
+    ],
+  });
+  const own = await readOwnedMatchPreview(db.supabase, {
+    matchId: MATCH,
+    specialistId: OWN,
+    userId: USER,
+  });
+  assert.equal(own.status, "ready");
+  if (own.status !== "ready") return;
+  assert.deepEqual(own.preview.access_offer, {
+    offer_id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+    price_cents: null,
+    currency: "eur",
+    ready: false,
+  });
+  assert.equal(JSON.stringify(own.preview).includes("2500"), false);
+  assert.equal(JSON.stringify(own.preview).includes("9900"), false);
+
+  const foreign = await readOwnedMatchPreview(db.supabase, {
+    matchId: FOREIGN,
+    specialistId: OTHER,
+    userId: USER,
+  });
+  assert.equal(foreign.status, "ready");
+  if (foreign.status !== "ready") return;
+  assert.deepEqual(foreign.preview.access_offer, {
+    offer_id: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+    price_cents: 9900,
+    currency: "eur",
+    ready: true,
+  });
 });

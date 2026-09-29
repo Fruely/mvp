@@ -1,0 +1,218 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type Stripe from "stripe";
+
+import { processStripeWebhookEventForServiceRequestAuthorization } from "./processServiceRequestAuthorizationWebhook.ts";
+
+const PAYMENT = "12121212-1212-4121-8121-121212121212";
+const CLAIM = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+const OFFER = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
+const SPEC = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+const REQUEST = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+
+type Row = Record<string, unknown>;
+
+class Memory {
+  readonly tables: Record<string, Row[]>;
+  readonly writes: string[] = [];
+
+  constructor(seed: Record<string, Row[]>) {
+    this.tables = {};
+    for (const [name, rows] of Object.entries(seed)) this.tables[name] = rows.map((row) => ({ ...row }));
+  }
+
+  from(table: string) {
+    this.writes.push(table);
+    const filters: Array<(row: Row) => boolean> = [];
+    let patch: Row | null = null;
+    const matched = () => (this.tables[table] ?? []).filter((row) => filters.every((filter) => filter(row)));
+    const api = {
+      select() {
+        return api;
+      },
+      eq(column: string, value: unknown) {
+        filters.push((row) => row[column] === value);
+        return api;
+      },
+      in(column: string, values: unknown[]) {
+        filters.push((row) => values.includes(row[column]));
+        return api;
+      },
+      update(next: Row) {
+        patch = next;
+        return api;
+      },
+      insert(row: Row) {
+        this.tables[table] = [...(this.tables[table] ?? []), row];
+        return api;
+      },
+      maybeSingle: async () => ({ data: matched()[0] ?? null, error: null }),
+      then: (
+        resolve: (value: { data: Row[]; error: null }) => unknown,
+        reject?: (reason: unknown) => unknown,
+      ) => {
+        if (patch) {
+          for (const row of matched()) Object.assign(row, patch);
+        }
+        return Promise.resolve({ data: matched().map((row) => ({ ...row })), error: null as null }).then(
+          resolve,
+          reject,
+        );
+      },
+    };
+    return api;
+  }
+}
+
+function db() {
+  return new Memory({
+    request_offer_payments: [
+      {
+        id: PAYMENT,
+        offer_id: OFFER,
+        specialist_id: SPEC,
+        service_request_claim_id: CLAIM,
+        amount_cents: 2500,
+        currency: "eur",
+        status: "pending",
+        stripe_payment_intent_id: "pi_auth",
+      },
+    ],
+    service_request_claims: [
+      {
+        id: CLAIM,
+        specialist_id: SPEC,
+        service_request_id: REQUEST,
+        request_offer_id: OFFER,
+        status: "reserved",
+      },
+    ],
+    request_offers: [
+      {
+        id: OFFER,
+        request_kind: "service_request",
+        service_request_id: REQUEST,
+        specialist_id: SPEC,
+      },
+    ],
+    request_offer_access_grants: [],
+    conversations: [],
+  });
+}
+
+function event(
+  type: string,
+  overrides: Record<string, unknown> = {},
+  metadata: Record<string, string> = {},
+): Stripe.Event {
+  return {
+    id: "evt_auth",
+    type,
+    data: {
+      object: {
+        id: "pi_auth",
+        object: "payment_intent",
+        amount: 2500,
+        currency: "eur",
+        status:
+          type === "payment_intent.succeeded"
+            ? "succeeded"
+            : type === "payment_intent.canceled"
+              ? "canceled"
+              : type === "payment_intent.payment_failed"
+                ? "requires_payment_method"
+                : "requires_capture",
+        metadata: {
+          purpose: "service_request_access_authorization",
+          payment_id: PAYMENT,
+          offer_id: OFFER,
+          claim_id: CLAIM,
+          specialist_id: SPEC,
+          ...metadata,
+        },
+        ...overrides,
+      },
+    },
+  } as unknown as Stripe.Event;
+}
+
+async function run(database: Memory, stripeEvent: Stripe.Event) {
+  return processStripeWebhookEventForServiceRequestAuthorization(
+    database as unknown as SupabaseClient,
+    stripeEvent,
+  );
+}
+
+test("amount_capturable_updated with requires_capture authorizes once", async () => {
+  const database = db();
+  const first = await run(database, event("payment_intent.amount_capturable_updated"));
+  const authorizedAt = database.tables.request_offer_payments[0]?.authorized_at;
+  const second = await run(database, event("payment_intent.amount_capturable_updated"));
+  assert.deepEqual(first, { outcome: "success" });
+  assert.deepEqual(second, { outcome: "success" });
+  assert.equal(database.tables.request_offer_payments[0]?.status, "authorized");
+  assert.equal(database.tables.request_offer_payments[0]?.authorized_at, authorizedAt);
+  assert.equal(database.tables.service_request_claims[0]?.status, "reserved");
+  assert.equal(database.tables.request_offer_access_grants.length, 0);
+  assert.equal(database.tables.conversations.length, 0);
+  assert.equal(database.writes.includes("request_offer_access_grants"), false);
+  assert.equal(database.writes.includes("conversations"), false);
+});
+
+test("wrong amount, currency, or claim relation fails validation", async () => {
+  for (const stripeEvent of [
+    event("payment_intent.amount_capturable_updated", { amount: 100 }),
+    event("payment_intent.amount_capturable_updated", { currency: "usd" }),
+    event("payment_intent.amount_capturable_updated", {}, { claim_id: "abababab-abab-4aba-8aba-abababababab" }),
+    event("payment_intent.amount_capturable_updated", {}, { offer_id: "abababab-abab-4aba-8aba-abababababab" }),
+  ]) {
+    const database = db();
+    const result = await run(database, stripeEvent);
+    assert.deepEqual(result, { outcome: "validation_failed" });
+    assert.equal(database.tables.request_offer_payments[0]?.status, "pending");
+    assert.equal(database.tables.service_request_claims[0]?.status, "reserved");
+  }
+});
+
+test("cancellation releases, payment failure fails, and success does not deliver access", async () => {
+  const canceled = db();
+  assert.deepEqual(
+    await run(canceled, event("payment_intent.canceled")),
+    { outcome: "success" },
+  );
+  assert.equal(canceled.tables.request_offer_payments[0]?.status, "released");
+  assert.equal(typeof canceled.tables.request_offer_payments[0]?.released_at, "string");
+  assert.equal(canceled.tables.service_request_claims[0]?.status, "reserved");
+
+  const failed = db();
+  assert.deepEqual(
+    await run(failed, event("payment_intent.payment_failed")),
+    { outcome: "success" },
+  );
+  assert.equal(failed.tables.request_offer_payments[0]?.status, "failed");
+  assert.equal(typeof failed.tables.request_offer_payments[0]?.failed_at, "string");
+
+  const paid = db();
+  assert.deepEqual(await run(paid, event("payment_intent.succeeded")), { outcome: "success" });
+  assert.equal(paid.tables.request_offer_payments[0]?.status, "paid");
+  assert.equal(paid.tables.service_request_claims[0]?.status, "reserved");
+  assert.equal(paid.tables.request_offer_access_grants.length, 0);
+  assert.equal(paid.tables.conversations.length, 0);
+  assert.equal(paid.writes.includes("request_offer_access_grants"), false);
+  assert.equal(paid.writes.includes("conversations"), false);
+});
+
+test("authorization webhook does not grant, finalize, or capture", () => {
+  const source = readFileSync(new URL("./processServiceRequestAuthorizationWebhook.ts", import.meta.url), "utf8");
+  const aggregate = readFileSync(new URL("./processStripeBillingWebhook.ts", import.meta.url), "utf8");
+  assert.equal(source.includes("request_offer_access_grants"), false);
+  assert.equal(source.includes("conversations"), false);
+  assert.equal(source.includes("finalizeServiceRequestConnection"), false);
+  assert.equal(source.includes("selected_specialist_id"), false);
+  assert.equal(source.includes(".capture("), false);
+  assert.match(aggregate, /processStripeWebhookEventForServiceRequestAuthorization/);
+  assert.match(aggregate, /processStripeWebhookEventForRequestOffers/);
+  assert.match(aggregate, /serviceRequestAuthorization\.outcome === "retryable_failure"/);
+});

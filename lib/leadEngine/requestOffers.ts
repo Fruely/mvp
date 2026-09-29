@@ -11,6 +11,8 @@ import {
   type ShadowServiceValueRow,
 } from "@/lib/leadEngine/serviceValuePolicy";
 
+export { ensureMatchedServiceRequestOffers } from "@/lib/leadEngine/matchedServiceRequestOffer";
+
 export const LEAD_ENGINE_SHADOW_OFFERS_ENV = "LEAD_ENGINE_SHADOW_OFFERS_ENABLED";
 
 export type EnsureDirectLeadOfferResult =

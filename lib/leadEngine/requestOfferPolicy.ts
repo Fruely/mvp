@@ -30,6 +30,9 @@ export const REQUEST_OFFER_STATUSES = [
   "expired",
   "fulfilled",
 ] as const;
+
+/** Statuses that can still be reserved and authorized. Paid, declined, expired, and fulfilled cannot. */
+export const PURCHASABLE_SERVICE_REQUEST_OFFER_STATUSES = ["offered", "viewed", "accepted"] as const;
 export type RequestOfferStatus = (typeof REQUEST_OFFER_STATUSES)[number];
 
 export type RequestOfferInsert = {
@@ -83,5 +86,38 @@ export function buildDirectLeadShadowOffer(input: {
     currency: "eur",
     status: "offered",
     idempotency_key: buildDirectLeadOfferIdempotencyKey(input),
+  };
+}
+
+/** Stable server key for the initial matched service-request offer. */
+export function buildMatchedServiceRequestOfferIdempotencyKey(input: {
+  requestId: string;
+  specialistId: string;
+}): string {
+  return `service-request:${input.requestId}:specialist:${input.specialistId}:matched:initial`;
+}
+
+/**
+ * Initial matched service-request offer.
+ * price_cents stays null until a later server-authoritative pricing decision.
+ * This function has no price argument.
+ */
+export function buildMatchedServiceRequestOffer(input: {
+  requestId: string;
+  specialistId: string;
+}): RequestOfferInsert {
+  return {
+    request_kind: "service_request",
+    lead_id: null,
+    service_request_id: input.requestId,
+    promotion_id: null,
+    specialist_id: input.specialistId,
+    offer_reason: "matched",
+    pricing_segment: "consumer",
+    billing_model: "pay_per_lead",
+    price_cents: null,
+    currency: "eur",
+    status: "offered",
+    idempotency_key: buildMatchedServiceRequestOfferIdempotencyKey(input),
   };
 }

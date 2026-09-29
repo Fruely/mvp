@@ -38,8 +38,11 @@ function database(
 ) {
   const installs = installations ?? rows.map((row) => ({ user_id: row.user_id, active: true }));
   const matches = new Map<string, Record<string, unknown>>();
+  const offers = new Map<string, Record<string, unknown>>();
+  const seen: string[] = [];
   const supabase = {
     from(table: string) {
+      seen.push(table);
       const query = {
         select() { return query; },
         eq() { return query; },
@@ -49,6 +52,13 @@ function database(
         order() { return query; },
         limit() { return query; },
         maybeSingle: async () => ({ data: { id: "request-1" }, error: null }),
+        insert: async (payload: Record<string, unknown>) => {
+          if (table !== "request_offers") return { error: null };
+          const key = String(payload.idempotency_key ?? "");
+          if (offers.has(key)) return { error: { code: "23505" } };
+          offers.set(key, payload);
+          return { error: null };
+        },
         upsert: async (payload: Record<string, unknown>[]) => {
           for (const row of payload) {
             const key = `${row.service_request_id}:${row.specialist_id}`;
@@ -64,7 +74,7 @@ function database(
       return query;
     },
   };
-  return { supabase: supabase as unknown as SupabaseClient, matches };
+  return { supabase: supabase as unknown as SupabaseClient, matches, offers, seen };
 }
 
 test("19. running matching twice does not create a second row", async () => {
@@ -199,6 +209,56 @@ test("19-21. push preference stays out of matching and catalog search is unchang
   assert.equal(eligibility.includes("native_installations"), false);
   assert.equal(search.includes("native_installations"), false);
   assert.equal(profile.includes("native_installations"), false);
+});
+
+const COMMERCIAL = { SERVICE_REQUEST_COMMERCIAL_OFFERS_ENABLED: "true" };
+
+test("commercial offer flag creates one matched service-request offer and retry does not duplicate it", async () => {
+  const db = database();
+  const first = await matchConfirmedServiceRequest(db.supabase, REQUEST, COMMERCIAL);
+  const second = await matchConfirmedServiceRequest(db.supabase, REQUEST, COMMERCIAL);
+  assert.equal(first.outcome, "matched");
+  assert.equal(second.outcome, "matched");
+  assert.equal(db.matches.size, 1);
+  assert.equal(db.offers.size, 1);
+  const offer = [...db.offers.values()][0];
+  assert.equal(offer.request_kind, "service_request");
+  assert.equal(offer.lead_id, null);
+  assert.equal(offer.service_request_id, REQUEST.id);
+  assert.equal(offer.promotion_id, null);
+  assert.equal(offer.specialist_id, "specialist-1");
+  assert.equal(offer.offer_reason, "matched");
+  assert.equal(offer.pricing_segment, "consumer");
+  assert.equal(offer.billing_model, "pay_per_lead");
+  assert.equal(offer.currency, "eur");
+  assert.equal(offer.status, "offered");
+  assert.equal(offer.price_cents, null);
+  assert.equal(
+    offer.idempotency_key,
+    "service-request:request-1:specialist:specialist-1:matched:initial",
+  );
+});
+
+test("commercial offer flag off creates no service-request offer", async () => {
+  const db = database();
+  const result = await matchConfirmedServiceRequest(db.supabase, REQUEST, {});
+  assert.equal(result.outcome, "matched");
+  assert.equal(db.matches.size, 1);
+  assert.equal(db.offers.size, 0);
+});
+
+test("failed commercial offer preparation is reported and not delivered", async () => {
+  const db = database();
+  const base = db.supabase.from.bind(db.supabase);
+  db.supabase.from = ((table: string) => {
+    const query = base(table) as { insert?: (payload: Record<string, unknown>) => Promise<unknown> };
+    if (table !== "request_offers") return query;
+    return { ...query, insert: async () => ({ error: { code: "42501" } }) };
+  }) as typeof db.supabase.from;
+  const result = await matchConfirmedServiceRequest(db.supabase, REQUEST, COMMERCIAL);
+  assert.equal(result.outcome, "error");
+  assert.equal(db.offers.size, 0);
+  assert.equal(db.seen.filter((table) => table === "service_request_matches").length, 1);
 });
 
 test("matched request loader returns an error state without throwing", async () => {

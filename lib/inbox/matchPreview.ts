@@ -43,6 +43,13 @@ export type MatchPreviewTiming = {
 
 export type MatchOfferState = "open" | "owned" | "unavailable";
 
+export type MatchAccessOffer = {
+  offer_id: string;
+  price_cents: number | null;
+  currency: "eur";
+  ready: boolean;
+};
+
 export type MatchPreview = {
   match_id: string;
   service_request_id: string;
@@ -60,6 +67,7 @@ export type MatchPreview = {
   created_at: string | null;
   matched_at: string | null;
   opened: boolean;
+  access_offer: MatchAccessOffer | null;
 };
 
 type LoadResult =
@@ -158,6 +166,7 @@ export function toMatchPreview(match: Record<string, unknown>, request: Record<s
     opened: Boolean(asString(match.opened_at)),
     offer_state: "open",
     conversation_id: null,
+    access_offer: null,
   };
 }
 
@@ -179,7 +188,55 @@ function unavailablePreview(match: Record<string, unknown>, requestId: string): 
     created_at: null,
     matched_at: null,
     opened: Boolean(asString(match.opened_at)),
+    access_offer: null,
   };
+}
+
+const ACCESS_OFFER_COLUMNS =
+  "id, service_request_id, specialist_id, price_cents, currency, status, billing_model, offer_reason, request_kind";
+
+function accessOfferFrom(row: Record<string, unknown>, specialistId: string): MatchAccessOffer | null {
+  if (String(row.specialist_id ?? "") !== specialistId) return null;
+  if (row.request_kind !== "service_request" || row.offer_reason !== "matched") return null;
+  if (row.billing_model !== "pay_per_lead" || row.currency !== "eur") return null;
+  if (typeof row.id !== "string" || !row.id) return null;
+  const price = row.price_cents;
+  const live = typeof price === "number" && Number.isInteger(price) && price > 0;
+  const purchasable = row.status === "offered" || row.status === "viewed" || row.status === "accepted";
+  return {
+    offer_id: row.id,
+    price_cents: live ? price : null,
+    currency: "eur",
+    ready: live && purchasable,
+  };
+}
+
+async function accessOffersByRequest(
+  supabase: SupabaseClient,
+  specialistId: string,
+  requestIds: string[],
+): Promise<Map<string, MatchAccessOffer>> {
+  const found = new Map<string, MatchAccessOffer>();
+  if (!requestIds.length) return found;
+  try {
+    const result = await supabase
+      .from("request_offers")
+      .select(ACCESS_OFFER_COLUMNS)
+      .eq("specialist_id", specialistId)
+      .eq("request_kind", "service_request")
+      .in("service_request_id", requestIds);
+    if (result.error || !Array.isArray(result.data)) return found;
+    for (const row of result.data as Record<string, unknown>[]) {
+      const requestId = typeof row.service_request_id === "string" ? row.service_request_id : null;
+      const offer = requestId ? accessOfferFrom(row, specialistId) : null;
+      if (!requestId || !offer) continue;
+      const current = found.get(requestId);
+      if (!current || (offer.ready && !current.ready)) found.set(requestId, offer);
+    }
+  } catch {
+    return found;
+  }
+  return found;
 }
 
 function offerStateFor(matchStatus: string, ownerId: string | null, specialistId: string): MatchOfferState {
@@ -237,12 +294,16 @@ export async function loadOwnedMatchPreview(
       }
     }
 
+    const offers = await accessOffersByRequest(supabase, input.specialistId, [
+      String(matchRow.service_request_id),
+    ]);
     return {
       status: "ready",
       preview: {
         ...toMatchPreview(matchRow, requestRow),
         offer_state: offerState,
         conversation_id: conversationId,
+        access_offer: offers.get(String(matchRow.service_request_id)) ?? null,
       },
     };
   } catch {
@@ -289,11 +350,13 @@ export async function listOwnedActiveMatchPreviews(
     const byId = new Map(
       ((requests.data ?? []) as unknown as Record<string, unknown>[]).map((row) => [String(row.id), row]),
     );
+    const offers = await accessOffersByRequest(supabase, specialistId, requestIds);
     const items = rows
       .flatMap((match) => {
         const request = byId.get(String(match.service_request_id));
         if (!request || asString(request.selected_specialist_id)) return [];
-        return [toMatchPreview(match, request)];
+        const requestId = String(match.service_request_id);
+        return [{ ...toMatchPreview(match, request), access_offer: offers.get(requestId) ?? null }];
       })
       .sort((a, b) => (b.matched_at ?? "").localeCompare(a.matched_at ?? ""))
       .slice(0, LIST_LIMIT);

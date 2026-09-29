@@ -25,6 +25,10 @@ import {
   type RequestOfferWebhookResult,
 } from "@/lib/billing/processRequestOfferWebhook";
 import {
+  processStripeWebhookEventForServiceRequestAuthorization,
+  type ServiceRequestAuthorizationWebhookResult,
+} from "@/lib/billing/processServiceRequestAuthorizationWebhook";
+import {
   processStripeWebhookEventForSubscriptions,
   shouldMarkSubscriptionBillingEventSkipped,
   shouldRetrySubscriptionBillingWebhook,
@@ -38,6 +42,7 @@ export type StripeBillingWebhookProcessResult = {
   promoted: PromotedAccessWebhookResult;
   promotedReservation: PromotedReservationWebhookResult;
   requestOffer: RequestOfferWebhookResult;
+  serviceRequestAuthorization: ServiceRequestAuthorizationWebhookResult;
   subscription: SubscriptionWebhookResult;
 };
 
@@ -53,6 +58,10 @@ export async function processStripeBillingWebhook(
     event,
   );
   const requestOffer = await processStripeWebhookEventForRequestOffers(supabase, event);
+  const serviceRequestAuthorization = await processStripeWebhookEventForServiceRequestAuthorization(
+    supabase,
+    event,
+  );
   const subscription = await processStripeWebhookEventForSubscriptions(supabase, event);
   return {
     eventType: event.type,
@@ -61,6 +70,7 @@ export async function processStripeBillingWebhook(
     promoted,
     promotedReservation,
     requestOffer,
+    serviceRequestAuthorization,
     subscription,
   };
 }
@@ -72,6 +82,7 @@ export function shouldMarkBillingEventSkipped(result: StripeBillingWebhookProces
     shouldMarkPromotedBillingEventSkipped(result.promoted) &&
     shouldMarkPromotedReservationBillingEventSkipped(result.promotedReservation) &&
     shouldMarkRequestOfferBillingEventSkipped(result.requestOffer) &&
+    shouldMarkServiceRequestAuthorizationBillingEventSkipped(result.serviceRequestAuthorization) &&
     shouldMarkSubscriptionBillingEventSkipped(result.subscription)
   );
 }
@@ -95,6 +106,12 @@ export function shouldMarkPromotedBillingEventSkipped(
   );
 }
 
+export function shouldMarkServiceRequestAuthorizationBillingEventSkipped(
+  authorization: ServiceRequestAuthorizationWebhookResult,
+): boolean {
+  return authorization.outcome === "ignored" || authorization.outcome === "validation_failed";
+}
+
 export function shouldMarkRequestOfferBillingEventSkipped(
   requestOffer: RequestOfferWebhookResult,
 ): boolean {
@@ -111,6 +128,7 @@ export function shouldRetryBillingWebhook(result: StripeBillingWebhookProcessRes
     result.promoted.outcome === "retryable_failure" ||
     result.promotedReservation.outcome === "retryable_failure" ||
     result.requestOffer.outcome === "retryable_failure" ||
+    result.serviceRequestAuthorization.outcome === "retryable_failure" ||
     shouldRetrySubscriptionBillingWebhook(result.subscription)
   );
 }
