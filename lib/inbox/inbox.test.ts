@@ -489,6 +489,105 @@ test("quiet hours defer external delivery and a missing channel is recorded", as
   assert.equal(channels.find((channel) => channel.channel === "email")?.status, "pending");
 });
 
+const DAY = new Date("2026-01-15T12:00:00+01:00");
+
+function queueNotice(db: ReturnType<typeof seed>, payload: Record<string, unknown>) {
+  db.tables.inbox_items.push({ id: "inbox-guard", payload });
+  db.tables.notification_outbox.push({
+    id: "out-guard",
+    inbox_item_id: "inbox-guard",
+    match_id: "match-1",
+    recipient_user_id: "user-1",
+    channel: "email",
+    status: "pending",
+    attempt_count: 0,
+    next_attempt_at: "2020-01-01T00:00:00.000Z",
+  });
+}
+
+function countingTransports(seen: string[]) {
+  return {
+    telegram: async () => ({ status: "skipped" as const, providerMessageId: null, errorCode: null }),
+    email: async () => {
+      seen.push("email");
+      return { status: "sent" as const, providerMessageId: "ok", errorCode: null };
+    },
+    push: async () => ({ status: "skipped" as const, providerMessageId: null, errorCode: "push_not_configured" }),
+  };
+}
+
+test("queued match availability delivers when the match is still unclaimed", async () => {
+  for (const stage of ["initial", "reminder"] as const) {
+    const db = seed();
+    const seen: string[] = [];
+    queueNotice(db, { ...PAYLOAD, stage, reminder_index: stage === "reminder" ? 1 : 0 });
+    await deliverPendingOutbox(db.supabase, DEFAULT_MATCH_DELIVERY_POLICY, countingTransports(seen), DAY);
+    assert.deepEqual(seen, ["email"], stage);
+    assert.equal(db.tables.notification_outbox[0].status, "sent", stage);
+    assert.equal(db.tables.inbox_items.length, 1, stage);
+  }
+});
+
+test("a live claim cancels queued match availability without deleting inbox history", async () => {
+  for (const [stage, status] of [["initial", "reserved"], ["reminder", "reserved"], ["initial", "completed"]] as const) {
+    const db = seed();
+    const seen: string[] = [];
+    db.tables.service_request_claims = [{ id: "claim-1", match_id: "match-1", status }];
+    queueNotice(db, { ...PAYLOAD, stage, reminder_index: stage === "reminder" ? 1 : 0 });
+    await deliverPendingOutbox(db.supabase, DEFAULT_MATCH_DELIVERY_POLICY, countingTransports(seen), DAY);
+    assert.deepEqual(seen, [], `${stage}:${status}`);
+    assert.equal(db.tables.notification_outbox[0].status, "cancelled", `${stage}:${status}`);
+    assert.equal(db.tables.notification_outbox[0].last_error_code, "stale_claimed_match", `${stage}:${status}`);
+    assert.equal(db.tables.inbox_items.length, 1, `${stage}:${status}`);
+  }
+});
+
+test("released expired and failed claims do not cancel a queued availability notice", async () => {
+  for (const status of ["released", "expired", "failed"] as const) {
+    const db = seed();
+    const seen: string[] = [];
+    db.tables.service_request_claims = [{ id: "claim-1", match_id: "match-1", status }];
+    queueNotice(db, PAYLOAD);
+    await deliverPendingOutbox(db.supabase, DEFAULT_MATCH_DELIVERY_POLICY, countingTransports(seen), DAY);
+    assert.deepEqual(seen, ["email"], status);
+    assert.equal(db.tables.notification_outbox[0].status, "sent", status);
+  }
+});
+
+test("connection and conversation notices are not cancelled by a live claim", async () => {
+  for (const event of ["connection_confirmation_required", "connection_ready", "conversation_message"] as const) {
+    const db = seed();
+    const seen: string[] = [];
+    db.tables.service_requests[0].client_email = "client@example.com";
+    db.tables.service_request_claims = [{ id: "claim-1", match_id: "match-1", status: "reserved" }];
+    queueNotice(db, {
+      event,
+      service_request_id: "request-1",
+      public_id: "REQ-1",
+      service_label: "Tax advice",
+      match_id: "match-1",
+      conversation_id: event === "conversation_message" ? "conversation-1" : null,
+    });
+    await deliverPendingOutbox(db.supabase, DEFAULT_MATCH_DELIVERY_POLICY, countingTransports(seen), DAY);
+    assert.deepEqual(seen, ["email"], event);
+    assert.equal(db.tables.notification_outbox[0].status, "sent", event);
+    assert.equal(db.tables.inbox_items.length, 1, event);
+  }
+});
+
+test("cancelling a stale availability notice is idempotent", async () => {
+  const db = seed();
+  const seen: string[] = [];
+  db.tables.service_request_claims = [{ id: "claim-1", match_id: "match-1", status: "reserved" }];
+  queueNotice(db, PAYLOAD);
+  const transports = countingTransports(seen);
+  await deliverPendingOutbox(db.supabase, DEFAULT_MATCH_DELIVERY_POLICY, transports, DAY);
+  await deliverPendingOutbox(db.supabase, DEFAULT_MATCH_DELIVERY_POLICY, transports, DAY);
+  assert.deepEqual(seen, []);
+  assert.equal(db.tables.notification_outbox.filter((row) => row.status === "cancelled").length, 1);
+  assert.equal(db.tables.inbox_items.length, 1);
+});
+
 test("migration, cron and feeds keep the phase boundaries", () => {
   const sql = readFileSync(new URL("../../supabase/manual_migrations/2026-09-26_freuly_inbox_delivery.sql", import.meta.url), "utf8");
   assert.match(sql, /service_request_matches/);

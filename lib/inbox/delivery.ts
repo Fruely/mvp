@@ -10,6 +10,7 @@ import {
   DEFAULT_MATCH_DELIVERY_POLICY,
   dueReminderIndex,
   externalDeliveryDecision,
+  matchAvailabilityDeliveryBlock,
   quietHoursDeferralApplies,
   initialInboxKey,
   nextAttemptStatus,
@@ -335,6 +336,37 @@ async function sendChannel(
 
 const OUTBOX_COLUMNS = "id, inbox_item_id, channel, status, attempt_count, recipient_user_id, match_id";
 
+function isMatchAvailabilityNotice(payload: { event?: string; stage?: string } | undefined): boolean {
+  if (!payload || payload.event) return false;
+  return payload.stage === "initial" || payload.stage === "reminder" || payload.stage === "final";
+}
+
+async function matchAvailabilityBlock(
+  supabase: SupabaseClient,
+  matchId: unknown,
+): Promise<{ kind: "deliver" } | { kind: "blocked"; reason: "stale_claimed_match" | "stale_match_state" } | { kind: "error" }> {
+  const id = typeof matchId === "string" && matchId ? matchId : "";
+  if (!id) return { kind: "blocked", reason: "stale_match_state" };
+  const [match, claims] = await Promise.all([
+    supabase.from("service_request_matches").select("status, responded_at").eq("id", id).maybeSingle(),
+    supabase
+      .from("service_request_claims")
+      .select("status")
+      .eq("match_id", id)
+      .in("status", ["reserved", "completed"]),
+  ]);
+  if (match.error || claims.error) return { kind: "error" };
+  const claimStatuses = (claims.data ?? [])
+    .map((row) => row.status)
+    .filter((status): status is string => typeof status === "string");
+  const reason = matchAvailabilityDeliveryBlock({
+    matchStatus: typeof match.data?.status === "string" ? match.data.status : null,
+    respondedAt: match.data?.responded_at ?? null,
+    claimStatuses,
+  });
+  return reason ? { kind: "blocked", reason } : { kind: "deliver" };
+}
+
 /** Deliver one persisted outbox row. Does not scan the rest of the queue. */
 export async function deliverOutboxById(
   supabase: SupabaseClient,
@@ -409,6 +441,34 @@ export async function deliverPendingOutbox(
       conversation_id?: string | null;
     }) | undefined;
     const messageEvent = payload?.event === "conversation_message";
+    if (isMatchAvailabilityNotice(payload)) {
+      const block = await matchAvailabilityBlock(supabase, payload?.match_id ?? row.match_id);
+      if (block.kind === "error") {
+        await supabase
+          .from("notification_outbox")
+          .update({
+            status: "retryable",
+            last_error_code: "stale_claim_check_failed",
+            next_attempt_at: new Date(clock.getTime() + 5 * 60 * 1000).toISOString(),
+            updated_at: now,
+          })
+          .eq("id", row.id);
+        processed += 1;
+        continue;
+      }
+      if (block.kind === "blocked") {
+        await supabase
+          .from("notification_outbox")
+          .update({
+            status: "cancelled",
+            last_error_code: block.reason,
+            updated_at: now,
+          })
+          .eq("id", row.id);
+        processed += 1;
+        continue;
+      }
+    }
     if (quietHoursDeferralApplies(payload?.event)) {
       const quietZone = await lookupRecipientTimeZone(supabase, typeof row.recipient_user_id === "string" ? row.recipient_user_id : null);
       const quiet = externalDeliveryDecision(clock, quietZone, policy);

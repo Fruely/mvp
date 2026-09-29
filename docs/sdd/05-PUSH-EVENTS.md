@@ -82,6 +82,6 @@ A new event does not inherit match-reminder timers, selection preferences, email
 
 The paid service-request flow must not emit `client_selected_you`. Reservation is not client selection. Capture and fulfillment do not depend on that event. `connection_ready` means the connection is ready. `specialist_interested`, `client_reminder`, and `client_selected_you` remain compatibility behavior for the legacy paths only.
 
-A live exclusive claim (`reserved` or `completed`) suppresses later match-available reminders for that match. `released`, `expired`, and `failed` do not count as live and must not be revived by the reminder job. An ordinary active match with no live claim still receives reminders.
+A live exclusive claim (`reserved` or `completed`) suppresses later match-available reminders for that match. Delivery re-reads that claim before sending an already queued `match_available` or `match_reminder` and cancels the outbox row when the claim is live. The inbox row stays. `released`, `expired`, and `failed` do not count as live and must not be revived by the reminder job. An ordinary active match with no live claim still receives reminders. `connection_confirmation_required`, `connection_ready`, and `conversation_message` are not availability notices and are not cancelled by this guard.
 
 Budget reconciliation does not add a push event. The client learns the unresolved floor from the create response and from the authenticated request detail.

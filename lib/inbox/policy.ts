@@ -107,6 +107,27 @@ export function externalDeliveryDecision(
   return { action: "defer_until", until: until.toISOString() };
 }
 
+const LIVE_MATCH_CLAIM_STATUSES = new Set(["reserved", "completed"]);
+
+export type MatchAvailabilityBlock = "stale_claimed_match" | "stale_match_state";
+
+/**
+ * Final gate for an already queued match-availability notice.
+ * A live exclusive claim, or a match that is no longer active, makes delivery stale.
+ * Released, expired, and failed claims do not block by themselves.
+ */
+export function matchAvailabilityDeliveryBlock(input: {
+  matchStatus: string | null;
+  respondedAt: unknown;
+  claimStatuses: readonly string[];
+}): MatchAvailabilityBlock | null {
+  if (input.claimStatuses.some((status) => LIVE_MATCH_CLAIM_STATUSES.has(status))) {
+    return "stale_claimed_match";
+  }
+  if (input.matchStatus !== "active" || input.respondedAt != null) return "stale_match_state";
+  return null;
+}
+
 export function nextAttemptStatus(input: {
   result: "sent" | "retryable" | "failed" | "skipped";
   attempt: number;
