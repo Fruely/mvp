@@ -114,15 +114,13 @@ match
 
 The reservation proves specialist intent while the client decides. Native does not charge before confirmation.
 
-After confirmation, and before a verified purchase, the specialist is waiting to pay. That state is derived:
+After confirmation, and before a verified purchase, the specialist may be waiting to pay. The actionable read `payment_required` is narrower than that wait. It is true only when the reserved claim is client-confirmed, the canonical positive offer is bound, there is no active access grant, and there is no `request_offer_payments` row for that claim in `pending`, `authorized`, or `paid`.
 
-```text
-claim.status = reserved
-AND client_confirmed_at IS NOT NULL
-AND no active access grant for that offer and specialist
-```
+`pending`, `authorized`, or `paid` means fulfillment is in flight or already settled. That is not permission to start another charge, even when the grant is not written yet. `failed`, `expired`, and `released` do not suppress `payment_required`. `refunded` and `disputed` are outside the current active-payment set, so they do not by themselves suppress it. An active grant still does.
 
-No new `service_request` status and no new claim status is required for this state.
+No new `service_request` status and no new claim status is required. The specialist match preview returns this boolean. It is not a notification and it does not open a conversation.
+
+`POST /api/client/requests/service-request/[id]/confirm` still requires the three Stripe flags and an authorized PaymentIntent. This read does not make Native store confirmation executable.
 
 No verified purchase means no access grant and no conversation. A Native receipt assertion alone is not verification.
 

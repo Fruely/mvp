@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { loadPaymentRequiredByMatch } from "@/lib/billing/serviceRequestPaidAccessState";
 import { canonicalizeLanguages } from "@/lib/matching/languages";
 import { openOwnMatch } from "./respond";
 import type { MatchResponseStatus } from "./policy";
@@ -68,6 +69,7 @@ export type MatchPreview = {
   matched_at: string | null;
   opened: boolean;
   access_offer: MatchAccessOffer | null;
+  payment_required: boolean;
 };
 
 type LoadResult =
@@ -167,6 +169,7 @@ export function toMatchPreview(match: Record<string, unknown>, request: Record<s
     offer_state: "open",
     conversation_id: null,
     access_offer: null,
+    payment_required: false,
   };
 }
 
@@ -189,11 +192,12 @@ function unavailablePreview(match: Record<string, unknown>, requestId: string): 
     matched_at: null,
     opened: Boolean(asString(match.opened_at)),
     access_offer: null,
+    payment_required: false,
   };
 }
 
 const ACCESS_OFFER_COLUMNS =
-  "id, service_request_id, specialist_id, price_cents, currency, status, billing_model, offer_reason, request_kind";
+  "id, service_request_id, specialist_id, price_cents, currency, status, billing_model, offer_reason, request_kind, idempotency_key";
 
 function accessOfferFrom(row: Record<string, unknown>, specialistId: string): MatchAccessOffer | null {
   if (String(row.specialist_id ?? "") !== specialistId) return null;
@@ -215,9 +219,9 @@ async function accessOffersByRequest(
   supabase: SupabaseClient,
   specialistId: string,
   requestIds: string[],
-): Promise<Map<string, MatchAccessOffer>> {
-  const found = new Map<string, MatchAccessOffer>();
-  if (!requestIds.length) return found;
+): Promise<{ byRequest: Map<string, MatchAccessOffer>; rows: Record<string, unknown>[] }> {
+  const byRequest = new Map<string, MatchAccessOffer>();
+  if (!requestIds.length) return { byRequest, rows: [] };
   try {
     const result = await supabase
       .from("request_offers")
@@ -225,18 +229,19 @@ async function accessOffersByRequest(
       .eq("specialist_id", specialistId)
       .eq("request_kind", "service_request")
       .in("service_request_id", requestIds);
-    if (result.error || !Array.isArray(result.data)) return found;
-    for (const row of result.data as Record<string, unknown>[]) {
+    if (result.error || !Array.isArray(result.data)) return { byRequest, rows: [] };
+    const rows = result.data as Record<string, unknown>[];
+    for (const row of rows) {
       const requestId = typeof row.service_request_id === "string" ? row.service_request_id : null;
       const offer = requestId ? accessOfferFrom(row, specialistId) : null;
       if (!requestId || !offer) continue;
-      const current = found.get(requestId);
-      if (!current || (offer.ready && !current.ready)) found.set(requestId, offer);
+      const current = byRequest.get(requestId);
+      if (!current || (offer.ready && !current.ready)) byRequest.set(requestId, offer);
     }
+    return { byRequest, rows };
   } catch {
-    return found;
+    return { byRequest, rows: [] };
   }
-  return found;
 }
 
 function offerStateFor(matchStatus: string, ownerId: string | null, specialistId: string): MatchOfferState {
@@ -294,16 +299,22 @@ export async function loadOwnedMatchPreview(
       }
     }
 
-    const offers = await accessOffersByRequest(supabase, input.specialistId, [
-      String(matchRow.service_request_id),
-    ]);
+    const requestId = String(matchRow.service_request_id);
+    const offers = await accessOffersByRequest(supabase, input.specialistId, [requestId]);
+    const paymentRequired = await loadPaymentRequiredByMatch(
+      supabase,
+      input.specialistId,
+      [{ matchId: String(matchRow.id), requestId }],
+      offers.rows,
+    );
     return {
       status: "ready",
       preview: {
         ...toMatchPreview(matchRow, requestRow),
         offer_state: offerState,
         conversation_id: conversationId,
-        access_offer: offers.get(String(matchRow.service_request_id)) ?? null,
+        access_offer: offers.byRequest.get(requestId) ?? null,
+        payment_required: paymentRequired.get(String(matchRow.id)) === true,
       },
     };
   } catch {
@@ -351,13 +362,23 @@ export async function listOwnedActiveMatchPreviews(
       ((requests.data ?? []) as unknown as Record<string, unknown>[]).map((row) => [String(row.id), row]),
     );
     const offers = await accessOffersByRequest(supabase, specialistId, requestIds);
-    const items = rows
-      .flatMap((match) => {
-        const request = byId.get(String(match.service_request_id));
-        if (!request || asString(request.selected_specialist_id)) return [];
-        const requestId = String(match.service_request_id);
-        return [{ ...toMatchPreview(match, request), access_offer: offers.get(requestId) ?? null }];
-      })
+    const visible = rows.flatMap((match) => {
+      const request = byId.get(String(match.service_request_id));
+      if (!request || asString(request.selected_specialist_id)) return [];
+      return [{ match, request, requestId: String(match.service_request_id) }];
+    });
+    const paymentRequired = await loadPaymentRequiredByMatch(
+      supabase,
+      specialistId,
+      visible.map((item) => ({ matchId: String(item.match.id), requestId: item.requestId })),
+      offers.rows,
+    );
+    const items = visible
+      .map((item) => ({
+        ...toMatchPreview(item.match, item.request),
+        access_offer: offers.byRequest.get(item.requestId) ?? null,
+        payment_required: paymentRequired.get(String(item.match.id)) === true,
+      }))
       .sort((a, b) => (b.matched_at ?? "").localeCompare(a.matched_at ?? ""))
       .slice(0, LIST_LIMIT);
     return { status: "ready", items };

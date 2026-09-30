@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { buildMatchedServiceRequestOfferIdempotencyKey } from "../leadEngine/requestOfferPolicy.ts";
 import {
   MATCH_PREVIEW_REQUEST_COLUMNS,
   listOwnedActiveMatchPreviews,
@@ -53,7 +54,9 @@ function memory(seed: Record<string, Row[]>) {
     tables[name] = rows.map((row) => ({ ...row }));
   }
   const updates: Array<{ table: string; patch: Row }> = [];
+  const queries: string[] = [];
   function from(table: string) {
+    queries.push(table);
     const filters: Array<(row: Row) => boolean> = [];
     let patch: Row | null = null;
     const rows = () => (tables[table] ?? []).filter((row) => filters.every((filter) => filter(row)));
@@ -100,7 +103,7 @@ function memory(seed: Record<string, Row[]>) {
     };
     return api;
   }
-  return { supabase: { from } as unknown as SupabaseClient, tables, updates };
+  return { supabase: { from } as unknown as SupabaseClient, tables, updates, queries };
 }
 
 function seed(requestOverrides: Row = {}, extra: Record<string, Row[]> = {}) {
@@ -350,4 +353,117 @@ test("owned preview exposes only this specialist's service-request offer and not
     currency: "eur",
     ready: true,
   });
+  assert.equal(own.preview.payment_required, false);
+  assert.equal(foreign.preview.payment_required, false);
+});
+
+test("single and list previews expose the same payment_required read without a per-item payment query", async () => {
+  const secondMatch = "33333333-3333-4333-8333-333333333333";
+  const secondRequest = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+  const offerId = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
+  const claimId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+  function paidOffer(requestId: string, id: string) {
+    return {
+      id,
+      service_request_id: requestId,
+      specialist_id: OWN,
+      request_kind: "service_request",
+      offer_reason: "matched",
+      billing_model: "pay_per_lead",
+      currency: "eur",
+      status: "offered",
+      price_cents: 7000,
+      idempotency_key: buildMatchedServiceRequestOfferIdempotencyKey({
+        requestId,
+        specialistId: OWN,
+      }),
+    };
+  }
+  const db = seed(
+    {},
+    {
+      service_request_matches: [
+        {
+          id: MATCH,
+          specialist_id: OWN,
+          service_request_id: REQUEST,
+          status: "active",
+          opened_at: null,
+          matched_at: "2026-09-27T16:05:00.000Z",
+        },
+        {
+          id: secondMatch,
+          specialist_id: OWN,
+          service_request_id: secondRequest,
+          status: "active",
+          opened_at: null,
+          matched_at: "2026-09-27T16:06:00.000Z",
+        },
+      ],
+      service_requests: [
+        requestRow(),
+        requestRow({ id: secondRequest, client_email: "hidden-two@example.test" }),
+      ],
+      request_offers: [
+        paidOffer(REQUEST, offerId),
+        paidOffer(secondRequest, "ffffffff-ffff-4fff-8fff-ffffffffffff"),
+      ],
+      service_request_claims: [
+        {
+          id: claimId,
+          status: "reserved",
+          service_request_id: REQUEST,
+          match_id: MATCH,
+          specialist_id: OWN,
+          request_offer_id: offerId,
+          client_confirmed_at: "2026-09-30T12:00:00.000Z",
+        },
+        {
+          id: "abababab-abab-4aba-8aba-abababababab",
+          status: "reserved",
+          service_request_id: secondRequest,
+          match_id: secondMatch,
+          specialist_id: OWN,
+          request_offer_id: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+          client_confirmed_at: "2026-09-30T12:00:00.000Z",
+        },
+      ],
+      request_offer_access_grants: [],
+      request_offer_payments: [],
+    },
+  );
+
+  const before = db.queries.length;
+  const listed = await listOwnedActiveMatchPreviews(db.supabase, OWN);
+  const during = db.queries.slice(before);
+  assert.equal(listed.status, "ready");
+  if (listed.status !== "ready") return;
+  assert.deepEqual(
+    listed.items.map((item) => item.match_id),
+    [secondMatch, MATCH],
+  );
+  assert.equal(listed.items.every((item) => item.payment_required), true);
+  assert.equal(listed.items[0]?.offer_state, "open");
+  assert.equal(listed.items[0]?.conversation_id, null);
+  assert.equal(listed.items[0]?.match_status, "active");
+  assert.equal(listed.items[0]?.access_offer?.price_cents, 7000);
+  assert.equal(during.filter((table) => table === "service_request_claims").length, 1);
+  assert.equal(during.filter((table) => table === "request_offer_access_grants").length, 1);
+  assert.equal(during.filter((table) => table === "request_offer_payments").length, 1);
+  assert.equal(JSON.stringify(listed.items).includes("hidden@example.test"), false);
+  assert.equal(JSON.stringify(listed.items).includes(claimId), false);
+  assert.equal(JSON.stringify(listed.items).includes("stripe"), false);
+
+  const single = await readOwnedMatchPreview(db.supabase, {
+    matchId: MATCH,
+    specialistId: OWN,
+    userId: USER,
+  });
+  assert.equal(single.status, "ready");
+  if (single.status !== "ready") return;
+  assert.equal(single.preview.payment_required, true);
+  assert.equal(single.preview.access_offer?.offer_id, offerId);
+  assert.equal(single.preview.offer_state, "open");
+  assert.equal(single.preview.conversation_id, null);
+  assert.equal(single.preview.match_status, "active");
 });

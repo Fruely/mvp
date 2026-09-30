@@ -174,15 +174,9 @@ These semantic phases are not necessarily persisted as one enum. They may be der
 
 Do not add a new persisted mega-enum unless a concrete requirement proves it necessary.
 
-Waiting for specialist payment on the Native store rail is derived, not a new claim or request status:
+Waiting for specialist payment is derived, not a new claim or request status. The actionable `payment_required` read also requires that no payment for that claim is `pending`, `authorized`, or `paid`. Those statuses mean an in-flight or settled payment, including Stripe authorization before capture. They are not an instruction to start another purchase.
 
-```text
-claim.status = reserved
-AND client_confirmed_at IS NOT NULL
-AND no active request_offer_access_grants row for that offer and specialist
-```
-
-On the Stripe rail, confirmation starts capture of an already authorized PaymentIntent. That is not the same derived state, because the specialist is not asked to start a new purchase.
+`failed`, `expired`, and `released` do not suppress that read. `refunded` and `disputed` are not in the current active-payment set. An active, non-revoked grant does suppress it.
 
 ## 10. Transition authority
 
@@ -195,6 +189,8 @@ Native/Web may request actions such as TAKE, decline, confirm or send message. A
 **Implemented, flags off:** request/match/offer/claim states above, Stripe manual-capture authorization, client confirmation, capture, webhook fulfillment, grant, connection finalizer, conversation.
 
 **Specified, persistence only:** nullable provider columns on `request_offer_payments`. Stripe writers tag new rows. The migration is not applied, and the columns are not entitlement.
+
+**Implemented as a read:** specialist match preview `payment_required`. It does not write payment, grant access, or send the `payment_required` notice.
 
 **Specified, not implemented:** the Native store rail, store verification, the `payment_required` notice, and reservation/payment timeout release.
 
