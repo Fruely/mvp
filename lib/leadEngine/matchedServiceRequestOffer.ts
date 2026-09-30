@@ -1,4 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  activeUserIdsWithNativeCapability,
+  PAID_REQUEST_ACCESS_CAPABILITY,
+} from "@/lib/nativeInstallations/capabilities";
 import { buildMatchedServiceRequestOffer } from "@/lib/leadEngine/requestOfferPolicy";
 import {
   resolveAcceptedCeilingAccessPrice,
@@ -131,6 +135,39 @@ function existingOfferMatches(
   );
 }
 
+/**
+ * Capability gates only the introduction of a new paid offer.
+ * An existing positive offer is left untouched when the specialist is no longer capable.
+ */
+async function specialistsEligibleForNewPaidOffer(
+  supabase: Pick<SupabaseClient, "from">,
+  specialistIds: readonly string[],
+): Promise<Set<string> | { error: true }> {
+  if (specialistIds.length === 0) return new Set();
+  const listed = await supabase.from("specialists").select("id, user_id").in("id", [...specialistIds]);
+  if (listed.error) return { error: true };
+  const specialistUsers = new Map<string, string>();
+  const userIds: string[] = [];
+  for (const row of listed.data ?? []) {
+    const specialistId = typeof row.id === "string" ? row.id : "";
+    const userId = typeof row.user_id === "string" ? row.user_id : "";
+    if (!specialistId || !userId) continue;
+    specialistUsers.set(specialistId, userId);
+    if (!userIds.includes(userId)) userIds.push(userId);
+  }
+  const capableUsers = await activeUserIdsWithNativeCapability(
+    supabase,
+    userIds,
+    PAID_REQUEST_ACCESS_CAPABILITY,
+  );
+  if ("error" in capableUsers) return { error: true };
+  const eligible = new Set<string>();
+  specialistUsers.forEach((userId, specialistId) => {
+    if (capableUsers.has(userId)) eligible.add(specialistId);
+  });
+  return eligible;
+}
+
 export async function ensureMatchedServiceRequestOffers(
   supabase: Pick<SupabaseClient, "from">,
   input: { requestId: string; specialistIds: readonly string[] },
@@ -150,7 +187,10 @@ export async function ensureMatchedServiceRequestOffers(
     const pricing = budget.acceptedCents != null
       ? resolveAcceptedCeilingAccessPrice(budget.acceptedCents)
       : resolveServiceRequestAccessPrice(budget.text);
+    const eligible = await specialistsEligibleForNewPaidOffer(supabase, specialistIds);
+    if ("error" in eligible) return { ok: false, kind: "offer_write_failed" };
     for (const specialistId of specialistIds) {
+      if (!eligible.has(specialistId)) continue;
       const payload = buildMatchedServiceRequestOffer({
         requestId: input.requestId,
         specialistId,

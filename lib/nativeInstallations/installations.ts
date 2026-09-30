@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { normalizeRegistrationCapabilities } from "@/lib/nativeInstallations/capabilities";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -8,6 +9,7 @@ export type InstallationCommand = {
   actorUserId: string;
   installationId: string;
   platform: string;
+  capabilities: string[] | "invalid";
 };
 
 /**
@@ -18,6 +20,7 @@ export function installationCommand(actorUserId: string, body: Record<string, un
     actorUserId,
     installationId: typeof body.installationId === "string" ? body.installationId : "",
     platform: typeof body.platform === "string" ? body.platform : "",
+    capabilities: normalizeRegistrationCapabilities(body),
   };
 }
 
@@ -42,7 +45,10 @@ export async function registerNativeInstallation(
 ): Promise<{ installationId: string; active: true } | { error: "invalid" }> {
   const platform = asPlatform(input.platform);
   const installationId = input.installationId.trim().toLowerCase();
-  if (!input.actorUserId || !UUID.test(installationId) || !platform) return { error: "invalid" };
+  if (!input.actorUserId || !UUID.test(installationId) || !platform || input.capabilities === "invalid") {
+    return { error: "invalid" };
+  }
+  const capabilities = input.capabilities ?? [];
   const now = input.now ?? new Date().toISOString();
   const existing = await supabase
     .from("native_installations")
@@ -57,6 +63,7 @@ export async function registerNativeInstallation(
     active: true,
     last_seen_at: now,
     deactivated_at: null,
+    capabilities,
   };
   if (existing.data?.installation_id) {
     const saved = await updateInstallation(supabase, { installationId, patch: assignment });

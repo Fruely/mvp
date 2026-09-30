@@ -36,7 +36,13 @@ function database(
   rows = [specialist("specialist-1", ["ru"])],
   installations?: Array<{ user_id: string; active: boolean }>,
 ) {
-  const installs = installations ?? rows.map((row) => ({ user_id: row.user_id, active: true }));
+  const installs =
+    installations ??
+    rows.map((row) => ({
+      user_id: row.user_id,
+      active: true,
+      capabilities: ["paid_request_access_v1"],
+    }));
   const matches = new Map<string, Record<string, unknown>>();
   const offers = new Map<string, Record<string, unknown>>();
   const seen: string[] = [];

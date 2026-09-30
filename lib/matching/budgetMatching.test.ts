@@ -49,7 +49,11 @@ function harness(input: {
     specialists: input.specialists,
     specialist_services: input.services ?? [],
     specialist_profiles: input.profiles ?? [],
-    native_installations: input.specialists.map((row) => ({ user_id: row.user_id, active: true })),
+    native_installations: input.specialists.map((row) => ({
+      user_id: row.user_id,
+      active: true,
+      capabilities: ["paid_request_access_v1"],
+    })),
     service_request_matches: [],
     request_offers: input.offers ?? [],
     inbox_items: [],

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { legacyClaimBlockedByPaidOffer } from "@/lib/selection/legacyClaimGate";
 import { recordClaimConnection } from "./interest";
 
 /**
@@ -317,10 +318,22 @@ export async function finalizeServiceRequestConnection(
   return reconcileWinner(supabase, { match, request, specialistId: input.specialistId, changed: false });
 }
 
-/** Current production TAKE. Unchanged contract: select, conversation, notices. */
+/**
+ * Legacy immediate TAKE. A persisted positive matched paid offer blocks this
+ * path. The calling device is not consulted. Paid fulfillment must call
+ * finalizeServiceRequestConnection after settlement, not this function.
+ */
 export async function claimOwnMatch(
   supabase: SupabaseClient,
   input: { matchId: string; specialistId: string },
 ): Promise<ClaimResult> {
+  const match = await loadMatch(supabase, input.matchId);
+  if (match && match.specialist_id === input.specialistId) {
+    const blocked = await legacyClaimBlockedByPaidOffer(supabase, {
+      serviceRequestId: match.service_request_id,
+      specialistId: input.specialistId,
+    });
+    if (blocked) return { ok: false, error: "not_claimable" };
+  }
   return finalizeServiceRequestConnection(supabase, input);
 }

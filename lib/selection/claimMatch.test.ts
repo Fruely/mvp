@@ -5,7 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { respondToOwnMatch } from "../inbox/respond.ts";
 import { renderClientEvent } from "./render.ts";
-import { claimOwnMatch } from "./claimMatch.ts";
+import { claimOwnMatch, finalizeServiceRequestConnection } from "./claimMatch.ts";
 import {
   specialistLeadSessionErrorCode,
   specialistLeadSessionErrorStatus,
@@ -319,4 +319,84 @@ test("claim route uses the session specialist and rejects absent or blocked spec
   assert.equal(source.includes("client_email"), false);
   assert.equal(source.includes("client_phone"), false);
   assert.match(source, /claimOwnMatch/);
+});
+
+function paidOffer(specialistId: string, price: number | null, extras: Row = {}): Row {
+  return {
+    idempotency_key: `service-request:${REQUEST}:specialist:${specialistId}:matched:initial`,
+    request_kind: "service_request",
+    service_request_id: REQUEST,
+    specialist_id: specialistId,
+    offer_reason: "matched",
+    billing_model: "pay_per_lead",
+    currency: "eur",
+    price_cents: price,
+    status: "offered",
+    ...extras,
+  };
+}
+
+test("legacy claim stays open when no positive paid offer exists", async () => {
+  const db = seed();
+  db.tables.request_offers = [paidOffer(A, 0), paidOffer(B, 2500)];
+  const result = await claimOwnMatch(db.supabase, { matchId: MATCH_A, specialistId: A });
+  assert.equal(result.ok, true);
+  assert.equal(db.tables.service_requests[0].selected_specialist_id, A);
+});
+
+test("a positive paid offer blocks legacy claim without opening a conversation", async () => {
+  for (const status of ["offered", "viewed", "accepted", "paid", "expired", "declined"]) {
+    const db = seed();
+    db.tables.request_offers = [paidOffer(A, 2500, { status })];
+    const result = await claimOwnMatch(db.supabase, { matchId: MATCH_A, specialistId: A });
+    assert.deepEqual(result, { ok: false, error: "not_claimable" });
+    assert.equal(db.tables.service_requests[0].selected_specialist_id, null);
+    assert.equal(db.tables.conversations.length, 0);
+  }
+});
+
+test("another specialist, another request, a direct lead, or a non-positive price does not block this claim", async () => {
+  const otherRequest = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+  const db = seed();
+  db.tables.request_offers = [
+    paidOffer(B, 2500),
+    {
+      ...paidOffer(A, 2500),
+      service_request_id: otherRequest,
+      idempotency_key: `service-request:${otherRequest}:specialist:${A}:matched:initial`,
+    },
+    {
+      ...paidOffer(A, 2500),
+      request_kind: "direct_lead",
+      offer_reason: "direct_selection",
+      billing_model: "subscription",
+      idempotency_key: `direct-lead:${REQUEST}:specialist:${A}:initial`,
+    },
+  ];
+  const result = await claimOwnMatch(db.supabase, { matchId: MATCH_A, specialistId: A });
+  assert.equal(result.ok, true);
+  assert.equal(db.tables.conversations.length, 1);
+});
+
+test("paid fulfillment still finalizes once when a paid offer exists", async () => {
+  const db = seed();
+  db.tables.request_offers = [paidOffer(A, 2500, { status: "paid" })];
+  const blocked = await claimOwnMatch(db.supabase, { matchId: MATCH_A, specialistId: A });
+  assert.deepEqual(blocked, { ok: false, error: "not_claimable" });
+  const first = await finalizeServiceRequestConnection(db.supabase, { matchId: MATCH_A, specialistId: A });
+  const second = await finalizeServiceRequestConnection(db.supabase, { matchId: MATCH_A, specialistId: A });
+  assert.equal(first.ok && second.ok && first.conversationId === second.conversationId, true);
+  assert.equal(db.tables.conversations.length, 1);
+  assert.equal(db.tables.service_requests[0].selected_specialist_id, A);
+  const source = readFileSync(new URL("./claimMatch.ts", import.meta.url), "utf8");
+  const finalizeBody = source.slice(
+    source.indexOf("export async function finalizeServiceRequestConnection"),
+    source.indexOf("export async function claimOwnMatch"),
+  );
+  assert.equal(finalizeBody.includes("legacyClaimBlockedByPaidOffer"), false);
+  assert.equal(finalizeBody.includes("request_offers"), false);
+  const claimBody = source.slice(source.indexOf("export async function claimOwnMatch"));
+  assert.match(claimBody, /legacyClaimBlockedByPaidOffer/);
+  assert.equal(claimBody.includes("native_installations"), false);
+  assert.equal(claimBody.includes("paid_request_access_v1"), false);
 });

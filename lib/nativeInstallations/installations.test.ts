@@ -22,6 +22,7 @@ type Row = {
   registered_at: string;
   last_seen_at: string;
   deactivated_at: string | null;
+  capabilities?: string[];
 };
 
 function memory() {
@@ -248,6 +249,65 @@ test("10-12. push permission, preference and token invalidation do not own the i
   assert.equal(pushSource.includes("native_installations"), false);
 });
 
+test("registration stores only the current known capability set", async () => {
+  assert.deepEqual(
+    installationCommand("user-a", { installationId: INSTALLATION, platform: "android" }).capabilities,
+    [],
+  );
+  assert.equal(
+    installationCommand("user-a", {
+      installationId: INSTALLATION,
+      platform: "android",
+      capabilities: { bad: true },
+    }).capabilities,
+    "invalid",
+  );
+  const oldClient = memory();
+  const created = await registerNativeInstallation(oldClient.supabase, {
+    actorUserId: "user-a",
+    installationId: INSTALLATION,
+    platform: "android",
+    capabilities: [],
+    now: "2026-09-30T08:00:00.000Z",
+  });
+  assert.deepEqual(created, { installationId: INSTALLATION, active: true });
+  assert.deepEqual(oldClient.installations[0].capabilities, []);
+
+  const capable = memory();
+  const advertised = installationCommand("user-a", {
+    installationId: INSTALLATION,
+    platform: "ios",
+    capabilities: ["paid_request_access_v1", "paid_request_access_v1", "unknown_capability"],
+  });
+  await registerNativeInstallation(capable.supabase, {
+    ...advertised,
+    now: "2026-09-30T08:00:00.000Z",
+  });
+  assert.deepEqual(capable.installations[0].capabilities, ["paid_request_access_v1"]);
+
+  const replaced = await registerNativeInstallation(capable.supabase, {
+    actorUserId: "user-a",
+    installationId: INSTALLATION,
+    platform: "ios",
+    capabilities: [],
+    now: "2026-09-30T09:00:00.000Z",
+  });
+  assert.equal("active" in replaced && replaced.active, true);
+  assert.deepEqual(capable.installations[0].capabilities, []);
+  assert.equal(capable.installations.length, 1);
+
+  const malformed = memory();
+  const rejected = await registerNativeInstallation(malformed.supabase, {
+    actorUserId: "user-a",
+    installationId: INSTALLATION,
+    platform: "android",
+    capabilities: "invalid",
+    now: "2026-09-30T08:00:00.000Z",
+  });
+  assert.deepEqual(rejected, { error: "invalid" });
+  assert.equal(malformed.installations.length, 0);
+});
+
 test("the installation table is one row per installation and stores no push secret", () => {
   const sql = readFileSync(
     new URL("../../supabase/manual_migrations/2026-09-28_native_installations.sql", import.meta.url),
@@ -263,6 +323,14 @@ test("the installation table is one row per installation and stores no push secr
   assert.match(sql, /REVOKE ALL ON public\.native_installations FROM anon, authenticated/);
   assert.match(sql, /GRANT ALL ON public\.native_installations TO service_role/);
   assert.equal(sql.includes("token"), false);
+  const capabilitySql = readFileSync(
+    new URL("../../supabase/manual_migrations/2026-09-30_native_paid_request_access_capability.sql", import.meta.url),
+    "utf8",
+  );
+  assert.match(capabilitySql, /ADD COLUMN IF NOT EXISTS capabilities text\[\]/);
+  assert.match(capabilitySql, /DEFAULT '\{\}'::text\[\]/);
+  assert.equal(capabilitySql.includes("CHECK"), false);
+  assert.match(capabilitySql, /paid_request_access_v1/);
   assert.equal(sql.includes("email"), false);
   assert.equal(sql.includes("phone"), false);
 });

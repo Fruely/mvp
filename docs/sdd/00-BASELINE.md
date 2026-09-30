@@ -52,7 +52,7 @@ Sequential redistribution/rematch may happen after a claim is declined, released
 
 Freuly sells **access to real demand**, not a percentage of the specialist's later earnings.
 
-A commercial offer snapshots the exact access price for that offer. Once a positive price is persisted, it does not silently change.
+A commercial offer snapshots the exact access price for that offer. Once a positive price is persisted, it does not silently change. A client capability may decide whether a new paid offer is introduced. It does not grant entitlement or payment, and it does not make an existing positive offer free. Legacy immediate claim must not finalize a connection that already has that paid offer.
 
 The current Beta Access Pricing v1 is owned by ADR-006 and is based only on explicit client budget. Market density, specialist identity, recurrence, campaign/CAC, category scarcity and subscription status are not v1 price inputs.
 

@@ -79,11 +79,29 @@ const REQUEST_ID = "11111111-1111-4111-8111-111111111111";
 const SPECIALIST_A = "22222222-2222-4222-8222-222222222222";
 const SPECIALIST_B = "33333333-3333-4333-8333-333333333333";
 
-function commercialDb(input: { budget: string | null; existing?: Record<string, unknown>[] }) {
+function commercialDb(input: {
+  budget: string | null;
+  existing?: Record<string, unknown>[];
+  capableSpecialistIds?: string[];
+}) {
   const rows = (input.existing ?? []).map((row) => ({ ...row }));
+  const specialists = (input.capableSpecialistIds ?? []).map((id) => ({
+    id,
+    user_id: `user-${id}`,
+  }));
+  const installations = (input.capableSpecialistIds ?? []).map((id) => ({
+    user_id: `user-${id}`,
+    active: true,
+    capabilities: ["paid_request_access_v1"],
+  }));
   const inserts: Record<string, unknown>[] = [];
   const updates: Record<string, unknown>[] = [];
   const tables: string[] = [];
+  function tableRows(table: string): Record<string, unknown>[] {
+    if (table === "specialists") return specialists;
+    if (table === "native_installations") return installations;
+    return rows;
+  }
   const supabase = {
     from(table: string) {
       tables.push(table);
@@ -95,6 +113,10 @@ function commercialDb(input: { budget: string | null; existing?: Record<string, 
         },
         eq(column: string, value: unknown) {
           filters.push((row) => row[column] === value);
+          return api;
+        },
+        in(column: string, values: unknown[]) {
+          filters.push((row) => values.includes(row[column]));
           return api;
         },
         is(column: string, value: unknown) {
@@ -117,26 +139,30 @@ function commercialDb(input: { budget: string | null; existing?: Record<string, 
           if (table === "service_requests") {
             return { data: { id: REQUEST_ID, client_budget_text: input.budget }, error: null };
           }
-          const found = rows.filter((row) => filters.every((filter) => filter(row)));
+          const found = tableRows(table).filter((row) => filters.every((filter) => filter(row)));
           return { data: found[0] ? { ...found[0] } : null, error: null };
         },
         then(
-          resolve: (value: { error: null }) => unknown,
+          resolve: (value: { data?: Record<string, unknown>[]; error: null }) => unknown,
           reject?: (reason: unknown) => unknown,
         ) {
           if (patch) {
             updates.push({ ...patch });
-            for (const row of rows) {
+            for (const row of tableRows(table)) {
               if (filters.every((filter) => filter(row))) Object.assign(row, patch);
             }
+            return Promise.resolve({ error: null }).then(resolve, reject);
           }
-          return Promise.resolve({ error: null }).then(resolve, reject);
+          const data = tableRows(table)
+            .filter((row) => filters.every((filter) => filter(row)))
+            .map((row) => ({ ...row }));
+          return Promise.resolve({ data, error: null }).then(resolve, reject);
         },
       };
       return api;
     },
   };
-  return { supabase, inserts, updates, rows, tables };
+  return { supabase, inserts, updates, rows, tables, installations };
 }
 
 function canonicalOffer(specialistId: string, price: number | null) {
@@ -168,7 +194,7 @@ test("commercial offers stay off without reading pricing tables", async () => {
 });
 
 test("one request gets the same priced snapshot for every matched specialist", async () => {
-  const db = commercialDb({ budget: "500 €" });
+  const db = commercialDb({ budget: "500 €", capableSpecialistIds: [SPECIALIST_A, SPECIALIST_B] });
   const result = await ensureMatchedServiceRequestOffers(
     db.supabase as never,
     { requestId: REQUEST_ID, specialistIds: [SPECIALIST_A, SPECIALIST_B, SPECIALIST_A] },
@@ -192,7 +218,7 @@ test("one request gets the same priced snapshot for every matched specialist", a
 });
 
 test("no budget still prices the floor and a retry does not reprice", async () => {
-  const db = commercialDb({ budget: null });
+  const db = commercialDb({ budget: null, capableSpecialistIds: [SPECIALIST_A] });
   const first = await ensureMatchedServiceRequestOffers(
     db.supabase as never,
     { requestId: REQUEST_ID, specialistIds: [SPECIALIST_A] },
@@ -216,6 +242,7 @@ test("a null-price canonical offer is priced once and a conflicting offer fails"
   const missing = commercialDb({
     budget: "до 80 евро",
     existing: [canonicalOffer(SPECIALIST_A, null)],
+    capableSpecialistIds: [SPECIALIST_A],
   });
   const priced = await ensureMatchedServiceRequestOffers(
     missing.supabase as never,
@@ -239,6 +266,7 @@ test("a null-price canonical offer is priced once and a conflicting offer fails"
   const conflict = commercialDb({
     budget: "500 €",
     existing: [{ ...canonicalOffer(SPECIALIST_A, 4000), billing_model: "subscription" }],
+    capableSpecialistIds: [SPECIALIST_A],
   });
   const failed = await ensureMatchedServiceRequestOffers(
     conflict.supabase as never,
@@ -250,6 +278,63 @@ test("a null-price canonical offer is priced once and a conflicting offer fails"
   assert.equal(JSON.stringify(failed).includes(SPECIALIST_B), false);
 });
 
+test("a capable specialist is required before a new paid offer is introduced", async () => {
+  const legacy = commercialDb({ budget: "500 €" });
+  const skipped = await ensureMatchedServiceRequestOffers(
+    legacy.supabase as never,
+    { requestId: REQUEST_ID, specialistIds: [SPECIALIST_A, SPECIALIST_B] },
+    COMMERCIAL,
+  );
+  assert.deepEqual(skipped, { ok: true, kind: "ready" });
+  assert.equal(legacy.inserts.length, 0);
+
+  const mixed = commercialDb({ budget: "500 €", capableSpecialistIds: [SPECIALIST_A] });
+  const result = await ensureMatchedServiceRequestOffers(
+    mixed.supabase as never,
+    { requestId: REQUEST_ID, specialistIds: [SPECIALIST_A, SPECIALIST_B] },
+    COMMERCIAL,
+  );
+  assert.deepEqual(result, { ok: true, kind: "ready" });
+  assert.deepEqual(
+    mixed.rows.map((row) => row.specialist_id),
+    [SPECIALIST_A],
+  );
+  assert.equal(mixed.rows[0]?.price_cents, 4000);
+});
+
+test("a persisted positive offer stays priced after capability disappears", async () => {
+  const db = commercialDb({
+    budget: "500 €",
+    existing: [canonicalOffer(SPECIALIST_A, 4000)],
+  });
+  const result = await ensureMatchedServiceRequestOffers(
+    db.supabase as never,
+    { requestId: REQUEST_ID, specialistIds: [SPECIALIST_A] },
+    COMMERCIAL,
+  );
+  assert.deepEqual(result, { ok: true, kind: "ready" });
+  assert.equal(db.rows.length, 1);
+  assert.equal(db.rows[0]?.price_cents, 4000);
+  assert.equal(db.inserts.length, 0);
+  assert.equal(db.updates.length, 0);
+});
+
+test("offer preparation does not scan specialists outside the current match set", async () => {
+  const db = commercialDb({
+    budget: "500 €",
+    existing: [canonicalOffer(SPECIALIST_B, 4000)],
+    capableSpecialistIds: [SPECIALIST_A],
+  });
+  const result = await ensureMatchedServiceRequestOffers(
+    db.supabase as never,
+    { requestId: REQUEST_ID, specialistIds: [SPECIALIST_A] },
+    COMMERCIAL,
+  );
+  assert.deepEqual(result, { ok: true, kind: "ready" });
+  assert.equal(db.rows.filter((row) => row.specialist_id === SPECIALIST_B)[0]?.price_cents, 4000);
+  assert.equal(db.rows.filter((row) => row.specialist_id === SPECIALIST_A).length, 1);
+});
+
 test("access pricing does not read shadow rules or payment-request budget text", () => {
   const pricing = readFileSync(new URL("./serviceRequestAccessPricing.ts", import.meta.url), "utf8");
   const offers = readFileSync(new URL("./matchedServiceRequestOffer.ts", import.meta.url), "utf8");
@@ -258,6 +343,8 @@ test("access pricing does not read shadow rules or payment-request budget text",
     "utf8",
   );
   const direct = readFileSync(new URL("./requestOfferPolicy.ts", import.meta.url), "utf8");
+  const matching = readFileSync(new URL("../matching/runMatching.ts", import.meta.url), "utf8");
+  assert.equal(matching.includes("paid_request_access_v1"), false);
   assert.equal(pricing.includes("lead_pricing_rules"), false);
   assert.equal(offers.includes("lead_pricing_rules"), false);
   assert.equal(pricing.includes("shadowPricing"), false);

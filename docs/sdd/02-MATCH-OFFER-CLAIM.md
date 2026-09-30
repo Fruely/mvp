@@ -24,9 +24,9 @@ No explicit service-language requirement means unrestricted (`[]`), not "use int
 
 ## 2. Offer creation
 
-For a matched service request, the backend creates a canonical service-request `request_offer`.
+For a matched service request, the backend may create a canonical service-request `request_offer`.
 
-All specialists matched to the same request receive the same initial access-price snapshot under Pricing v1.
+Specialists who receive a new paid offer for the same request get the same initial access-price snapshot under Pricing v1. Who may receive that new contract is a consumer-capability decision, not a matching decision.
 
 The offer price is server-generated. Client/Native never supplies authoritative amount or currency.
 
@@ -161,6 +161,40 @@ Those legacy paths stay for their current consumers until an explicit cutover. A
 
 ## 12. Paid rollout blocker
 
-`SERVICE_REQUEST_PAID_CLAIM_ENABLED`, `SERVICE_REQUEST_PAYMENT_AUTH_ENABLED`, `SERVICE_REQUEST_CAPTURE_ENABLED`, and commercial-offer rollout are not safe for Native while Native TAKE still calls legacy `POST /api/specialist/matches/{matchId}/claim`.
+`SERVICE_REQUEST_PAID_CLAIM_ENABLED`, `SERVICE_REQUEST_PAYMENT_AUTH_ENABLED`, `SERVICE_REQUEST_CAPTURE_ENABLED`, and `SERVICE_REQUEST_COMMERCIAL_OFFERS_ENABLED` stay off. Shipping a newer Native build is not enough, because older installed binaries still call legacy `/claim`.
 
-That endpoint still finalizes a connection immediately. Do not break it and do not silently redirect it into the paid flow. Paid flags stay off until Native TAKE uses reserve, payment, and entitlement, or until an explicit server gate prevents this bypass.
+The server gate is now: a persisted positive matched paid offer blocks legacy `/claim` for that request and specialist. Do not redirect `/claim` into the paid flow, and do not put that block inside `finalizeServiceRequestConnection`. Paid fulfillment still finalizes after settlement.
+
+Do not enable commercial offers until the paid reservation, payment, and settlement path can complete. A new offer without a payable path would strand the capable client and block the legacy client.
+
+## 13. Paid-access capability rollout
+
+`paid_request_access_v1` is a client-contract capability. It means the current Native installation understands `access_offer`, reserve-first TAKE, and no legacy `/claim` fallback for a paid offer.
+
+It does not mean a payment SDK is installed, payment can succeed, StoreKit or Google Play Billing is available, or the specialist has an entitlement or subscription. App version is not the business rule.
+
+While commercial offers are enabled:
+
+- a new matched paid offer may be introduced only for a specialist account with at least one active `native_installations` row advertising `paid_request_access_v1`;
+- absence of that capability leaves the match in place and does not create a paid offer, so the legacy path remains possible for that consumer;
+- capability is not a matching requirement;
+- no zero-price offer is created for a legacy specialist.
+
+Once a positive canonical matched `pay_per_lead` offer exists for a service request and specialist, it stays immutable. Later capability loss does not delete it, reprice it, or turn it into a free legacy claim. Offer status, including a terminal or not-purchasable state, does not restore free `/claim`.
+
+Legacy `/claim` checks that persisted offer and returns `not_claimable` when it exists. The check does not identify the calling device. The same account may have a new capable installation and an old installation; the old installation's `/claim` is still blocked after the offer exists. `finalizeServiceRequestConnection` remains the paid fulfillment finalizer and is not blocked by the offer.
+
+An old device on that account may still see the opportunity and then receive `not_claimable`. That is a compatibility UX limitation. It is not a payment bypass. Per-installation push targeting is out of scope here.
+
+Registration replaces the installation's capability set with the normalized set from the current client. Unknown capability names are not stored. Existing installations stay empty until a capable app registers. Apply `2026-09-30_native_paid_request_access_capability.sql` before deploying the backend that reads `native_installations.capabilities`.
+
+Safe later activation order:
+
+1. apply the capability migration;
+2. deploy the backend that stores capabilities and blocks legacy `/claim` for a persisted paid offer;
+3. ship and verify a Native build that registers `paid_request_access_v1`;
+4. observe real capability registrations;
+5. have reserve, payment, and settlement available;
+6. only then enable `SERVICE_REQUEST_COMMERCIAL_OFFERS_ENABLED`.
+
+Payment, capture, and paid-claim flags stay off until that payment rail is actually available. Direct-lead offers, subscriptions, and `lead_pricing_rules` are outside this gate.
