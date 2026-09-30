@@ -73,6 +73,8 @@ test("checkout returns to the canonical specialist leads dashboard", async () =>
 test("success redirect is not treated as payment entitlement", async () => {
   const src = await readFile(creatorPath, "utf8");
   assert.match(src, /status: "pending"/);
+  assert.match(src, /provider: STRIPE_REQUEST_OFFER_PAYMENT_PROVIDER/);
+  assert.doesNotMatch(src, /provider_transaction_id:/);
   assert.doesNotMatch(src, /request_offer_access_grants"\)\.insert/);
   assert.doesNotMatch(src, /status: "paid"/);
 });

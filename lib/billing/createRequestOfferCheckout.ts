@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Lang } from "@/lib/i18n";
 import { stripeCheckoutLocale } from "@/lib/dashboard/directPplBuyCopy";
 import { getOrCreateStripeCustomerForSpecialist } from "@/lib/billing/billingCustomers";
+import { STRIPE_REQUEST_OFFER_PAYMENT_PROVIDER } from "@/lib/billing/requestOfferPaymentProvider";
 import { isRequestOfferCheckoutReady } from "@/lib/billing/requestOfferCheckoutReadiness";
 import { getStripeClient } from "@/lib/billing/stripeClient";
 import { resolveSpecialistEntitlements } from "@/lib/billing/planEntitlements";
@@ -116,6 +117,7 @@ export async function createRequestOfferCheckout(input: {
       amount_cents: priceCents,
       currency,
       status: "pending",
+      provider: STRIPE_REQUEST_OFFER_PAYMENT_PROVIDER,
       created_at: nowIso,
       updated_at: nowIso,
     })
@@ -166,6 +168,8 @@ export async function createRequestOfferCheckout(input: {
     if (!session.id || !session.url) throw new Error("stripe_session_incomplete");
 
     const checkoutCreatedAt = new Date().toISOString();
+    // The Checkout session id is not the settlement identity. The PaymentIntent
+    // is stored later by the webhook as provider_transaction_id.
     const { error: updateError } = await input.supabase
       .from("request_offer_payments")
       .update({

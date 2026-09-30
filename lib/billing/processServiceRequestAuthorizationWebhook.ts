@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { stripePaymentIntentAttribution } from "@/lib/billing/requestOfferPaymentProvider";
 import type Stripe from "stripe";
 import {
   isServiceRequestCaptureEnabled,
@@ -179,6 +180,7 @@ export async function processStripeWebhookEventForServiceRequestAuthorization(
         status: "authorized",
         authorized_at: authorizedAt,
         stripe_payment_intent_id: intent.id,
+        ...stripePaymentIntentAttribution(intent.id),
         updated_at: authorizedAt,
       })
       .eq("id", payment.id)
@@ -200,6 +202,7 @@ export async function processStripeWebhookEventForServiceRequestAuthorization(
       .from("request_offer_payments")
       .update({
         stripe_payment_intent_id: intent.id,
+        ...stripePaymentIntentAttribution(intent.id),
         updated_at: updatedAt,
       })
       .eq("id", payment.id)
@@ -213,12 +216,14 @@ export async function processStripeWebhookEventForServiceRequestAuthorization(
       return { outcome: "validation_failed" };
     }
     const releasedAt = new Date().toISOString();
+    const transactionId = payment.stripe_payment_intent_id ?? intent.id;
     const { error } = await supabase
       .from("request_offer_payments")
       .update({
         status: "released",
         released_at: releasedAt,
-        stripe_payment_intent_id: payment.stripe_payment_intent_id ?? intent.id,
+        stripe_payment_intent_id: transactionId,
+        ...stripePaymentIntentAttribution(transactionId),
         updated_at: releasedAt,
       })
       .eq("id", payment.id)

@@ -209,6 +209,10 @@ test("confirmed capture fulfillment pays, grants, connects, and completes once",
   assert.deepEqual(first, { outcome: "success" });
   assert.deepEqual(second, { outcome: "success" });
   assert.equal(db.tables.request_offer_payments[0]?.status, "paid");
+  assert.equal(db.tables.request_offer_payments[0]?.provider, "stripe");
+  assert.equal(db.tables.request_offer_payments[0]?.provider_transaction_id, "pi_auth");
+  assert.equal(db.tables.request_offer_payments[0]?.stripe_payment_intent_id, "pi_auth");
+  assert.equal(db.tables.request_offers[0]?.price_cents, 2500);
   assert.equal(db.tables.request_offer_access_grants.length, 1);
   assert.equal(db.tables.request_offer_access_grants[0]?.source_payment_id, PAYMENT);
   assert.equal(db.tables.request_offer_access_grants[0]?.revoked_at ?? null, null);

@@ -1,5 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getOrCreateStripeCustomerForSpecialist } from "@/lib/billing/billingCustomers";
+import {
+  STRIPE_REQUEST_OFFER_PAYMENT_PROVIDER,
+  stripePaymentIntentAttribution,
+} from "@/lib/billing/requestOfferPaymentProvider";
 import { getStripeClient } from "@/lib/billing/stripeClient";
 import { PURCHASABLE_SERVICE_REQUEST_OFFER_STATUSES } from "@/lib/leadEngine/requestOfferPolicy";
 import { notifyClientConfirmationRequired } from "@/lib/selection/interest";
@@ -269,6 +273,7 @@ export async function createServiceRequestAuthorization(input: {
         amount_cents: priceCents,
         currency: "eur",
         status: "pending",
+        provider: STRIPE_REQUEST_OFFER_PAYMENT_PROVIDER,
         created_at: nowIso,
         updated_at: nowIso,
       })
@@ -360,6 +365,7 @@ export async function createServiceRequestAuthorization(input: {
       .from("request_offer_payments")
       .update({
         stripe_payment_intent_id: intent.id,
+        ...stripePaymentIntentAttribution(intent.id),
         updated_at: updatedAt,
       })
       .eq("id", payment.id)
@@ -404,6 +410,7 @@ async function finishAuthorized(
         status: "authorized",
         authorized_at: authorizedAt,
         stripe_payment_intent_id: paymentIntentId,
+        ...stripePaymentIntentAttribution(paymentIntentId),
         updated_at: authorizedAt,
       })
       .eq("id", payment.id)
@@ -428,6 +435,7 @@ async function finishPaid(
         status: "paid",
         paid_at: paidAt,
         stripe_payment_intent_id: paymentIntentId,
+        ...stripePaymentIntentAttribution(paymentIntentId),
         updated_at: paidAt,
       })
       .eq("id", payment.id)

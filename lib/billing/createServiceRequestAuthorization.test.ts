@@ -256,6 +256,10 @@ test("amount and currency come from the offer and the body cannot choose them", 
   assert.deepEqual(creates[0]?.params.payment_method_types, ["card"]);
   assert.equal(db.inserts[0]?.row.amount_cents, 2500);
   assert.equal(db.inserts[0]?.row.currency, "eur");
+  assert.equal(db.inserts[0]?.row.provider, "stripe");
+  assert.equal(db.tables.request_offer_payments[0]?.stripe_payment_intent_id, "pi_created");
+  assert.equal(db.tables.request_offer_payments[0]?.provider, "stripe");
+  assert.equal(db.tables.request_offer_payments[0]?.provider_transaction_id, "pi_created");
   assert.equal(creates[0]?.params.metadata && (creates[0].params.metadata as Row).offer_id, OFFER);
 });
 
@@ -277,12 +281,17 @@ test("retry reuses the pending payment and a stable Stripe idempotency key", asy
   const first = await authorize(db, stripe);
   assert.deepEqual(first, { ok: false, error: "retryable" });
   assert.equal(db.inserts.length, 1);
+  assert.equal(db.inserts[0]?.row.provider, "stripe");
   assert.equal(db.tables.request_offer_payments[0]?.status, "pending");
+  assert.equal(db.tables.request_offer_payments[0]?.provider_transaction_id ?? null, null);
   const second = await authorize(db, stripe);
   assert.equal(second.ok, true);
   if (!second.ok || second.state !== "requires_confirmation") return;
   assert.equal(second.clientSecret, SECRET);
   assert.equal(db.inserts.length, 1);
+  assert.equal(db.inserts[0]?.row.provider, "stripe");
+  assert.equal(db.tables.request_offer_payments.length, 1);
+  assert.equal(db.tables.request_offer_payments[0]?.provider_transaction_id, "pi_created");
   assert.equal(creates.length, 2);
   const paymentId = String(db.inserts[0]?.row.id);
   assert.equal(creates[0]?.options.idempotencyKey, serviceRequestAuthorizationIdempotencyKey(paymentId));
@@ -325,6 +334,8 @@ test("an authorized or paid payment does not create another PaymentIntent", asyn
     assert.equal(creates.length, 0);
     assert.equal(retrieves.length, 0);
     assert.equal(db.inserts.length, 0);
+    assert.equal(db.tables.request_offer_payments[0]?.provider ?? null, null);
+    assert.equal(db.tables.request_offer_payments[0]?.stripe_payment_intent_id, "pi_existing");
   }
 });
 
@@ -417,6 +428,7 @@ test("payment_failed keeps one pending PaymentIntent and the next call reuses it
   assert.equal(db.tables.request_offer_payments.length, 1);
   assert.equal(db.tables.request_offer_payments[0]?.status, "pending");
   assert.equal(db.tables.request_offer_payments[0]?.stripe_payment_intent_id, "pi_created");
+  assert.equal(db.tables.request_offer_payments[0]?.provider_transaction_id, "pi_created");
   assert.equal(db.tables.request_offer_payments[0]?.failed_at, undefined);
   assert.equal(db.tables.service_request_claims[0]?.status, "reserved");
 
@@ -428,6 +440,7 @@ test("payment_failed keeps one pending PaymentIntent and the next call reuses it
   assert.equal(creates.length, 1);
   assert.equal(db.inserts.length, 1);
   assert.equal(db.tables.request_offer_payments.length, 1);
+  assert.equal(db.tables.request_offer_payments[0]?.provider_transaction_id, "pi_created");
   assert.equal(persisted(db).includes(SECRET), false);
 });
 

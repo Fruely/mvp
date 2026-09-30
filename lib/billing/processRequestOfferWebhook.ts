@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type Stripe from "stripe";
+import { stripePaymentIntentAttribution } from "@/lib/billing/requestOfferPaymentProvider";
 
 export type RequestOfferWebhookOutcome =
   | "ignored"
@@ -199,6 +200,7 @@ async function handleSuccess(
     .update({
       status: "paid",
       stripe_payment_intent_id: paymentIntentId,
+      ...stripePaymentIntentAttribution(paymentIntentId),
       paid_at: paidAt,
       updated_at: nowIso,
     })

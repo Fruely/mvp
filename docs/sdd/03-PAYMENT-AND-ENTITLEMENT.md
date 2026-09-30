@@ -152,9 +152,11 @@ Provider does not change the offer price. Provider is not part of matching and n
 
 ## 9. Payment persistence gaps
 
-Current `request_offer_payments` is Stripe-shaped. It stores `stripe_checkout_session_id`, `stripe_payment_intent_id`, and `stripe_charge_id`. A paid row still requires a Stripe PaymentIntent. An authorized row requires a Stripe PaymentIntent and a claim. That schema cannot honestly record an Apple or Google purchase.
+`2026-09-30_request_offer_payment_provider_foundation.sql` adds nullable `provider`, `provider_transaction_id`, `provider_product_id`, `provider_verification_status`, and `provider_environment`. It is not applied. Apple and Google verification is not active. A paid row still requires the existing Stripe origin checks. These columns are not entitlement, and `provider_verification_status` does not replace `status`.
 
-Do not create that migration in the design step. The minimum future canonical fields are:
+Historical rows stay `provider` null unless an existing Stripe identifier proves the rail. `provider_transaction_id` is copied only from `stripe_payment_intent_id`. A Checkout session id is not that identity.
+
+The minimum canonical fields are:
 
 - `provider`: `stripe`, `apple`, or `google`;
 - provider transaction identifier, unique, and not reusable for another user, specialist, offer, or request;

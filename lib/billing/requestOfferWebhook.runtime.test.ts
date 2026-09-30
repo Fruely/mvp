@@ -135,7 +135,10 @@ test("paid request-offer checkout runtime path marks payment paid, grants access
 
   assert.deepEqual(result, { outcome: "success" });
   assert.equal(tables.request_offer_payments[0].status, "paid");
+  assert.equal(tables.request_offer_payments[0].provider, "stripe");
   assert.equal(tables.request_offer_payments[0].stripe_payment_intent_id, "pi_test_1");
+  assert.equal(tables.request_offer_payments[0].provider_transaction_id, "pi_test_1");
+  assert.notEqual(tables.request_offer_payments[0].provider_transaction_id, "cs_test_1");
   assert.ok(tables.request_offer_payments[0].paid_at);
 
   assert.equal(tables.request_offer_access_grants.length, 1);

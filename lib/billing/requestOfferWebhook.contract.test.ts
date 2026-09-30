@@ -30,6 +30,7 @@ test("webhook validates stored session, amount, currency and payment intent", as
 test("webhook creates grant only after payment is marked paid", async () => {
   const src = await readFile(processorPath, "utf8");
   assert.match(src, /status: "paid"/);
+  assert.match(src, /stripePaymentIntentAttribution\(paymentIntentId\)/);
   assert.match(src, /request_offer_access_grants/);
   assert.match(src, /source_payment_id: payment\.id/);
   assert.ok(src.indexOf('status: "paid"') < src.lastIndexOf("grantAccess(supabase, paidPayment"));

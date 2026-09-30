@@ -194,6 +194,8 @@ Native/Web may request actions such as TAKE, decline, confirm or send message. A
 
 **Implemented, flags off:** request/match/offer/claim states above, Stripe manual-capture authorization, client confirmation, capture, webhook fulfillment, grant, connection finalizer, conversation.
 
-**Specified, not implemented:** the Native store rail, store verification, the `payment_required` notice, reservation/payment timeout release, and provider-neutral payment columns.
+**Specified, persistence only:** nullable provider columns on `request_offer_payments`. Stripe writers tag new rows. The migration is not applied, and the columns are not entitlement.
+
+**Specified, not implemented:** the Native store rail, store verification, the `payment_required` notice, and reservation/payment timeout release.
 
 Until the store rail exists and rollout is approved, paid-flow feature flags remain off. `docs/sdd/03-PAYMENT-AND-ENTITLEMENT.md` owns the rail contract.

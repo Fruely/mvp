@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { stripePaymentIntentAttribution } from "@/lib/billing/requestOfferPaymentProvider";
 import { finalizeServiceRequestConnection } from "@/lib/selection/claimMatch";
 
 /**
@@ -69,6 +70,7 @@ async function ensurePaid(
       status: "paid",
       paid_at: paidAt,
       stripe_payment_intent_id: paymentIntentId,
+      ...stripePaymentIntentAttribution(paymentIntentId),
       updated_at: paidAt,
     })
     .eq("id", payment.id)
