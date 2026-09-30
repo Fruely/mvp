@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { isServiceRequestClientConfirmationRequired } from "@/lib/billing/serviceRequestClientConfirmationReadiness";
 import { clientBudgetReconciliationState } from "@/lib/serviceRequests/budgetReconciliation";
 import {
   buildLeadHistoryPaginationOrFilter,
@@ -25,7 +26,7 @@ const SERVICE_REQUEST_HISTORY_SELECT =
   "public_id, created_at, status, category_text, description, preferred_language, work_format, city, postal_code";
 
 const SERVICE_REQUEST_DETAIL_SELECT =
-  `${SERVICE_REQUEST_HISTORY_SELECT}, budget_reconciliation_required_cents, budget_reconciliation_accepted_cents, budget_reconciliation_declined_at`;
+  `${SERVICE_REQUEST_HISTORY_SELECT}, id, selected_specialist_id, budget_reconciliation_required_cents, budget_reconciliation_accepted_cents, budget_reconciliation_declined_at`;
 
 export async function listClientRequestHistory(
   supabase: SupabaseClient,
@@ -127,9 +128,14 @@ export async function getClientRequestHistoryDetail(
   if (error || !data) return null;
 
   const item = mapServiceRequestHistoryRow(data as Record<string, unknown>);
+  const requestId = typeof data.id === "string" ? data.id : "";
+  const connectionConfirmationRequired = requestId
+    ? await isServiceRequestClientConfirmationRequired({ supabase, requestId })
+    : false;
   return toClientSafeHistoryDetail(item, {
     description: data.description,
     public_id: data.public_id,
     budget_reconciliation: clientBudgetReconciliationState(data),
+    connection_confirmation_required: connectionConfirmationRequired,
   });
 }

@@ -114,6 +114,8 @@ Claim does not itself create a conversation and does not prove payment.
 
 `client_confirmed_at` belongs to the claim. It is provider-neutral. It records that the owning client confirmed the connection. It does not grant access and it does not choose a payment provider.
 
+`payment_rail` also belongs to the claim. `stripe` or `store` names the payment sequence. NULL means no sequence has bound the claim yet. It is not an entitlement and it does not name Apple or Google. A bound claim does not switch rail.
+
 ## 6. request_offer_payment
 
 Current persisted statuses include:

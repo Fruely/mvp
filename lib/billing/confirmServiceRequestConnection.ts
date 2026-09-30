@@ -5,18 +5,17 @@ import {
   isServiceRequestPaymentAuthEnabled,
   SERVICE_REQUEST_AUTHORIZATION_PURPOSE,
 } from "@/lib/billing/createServiceRequestAuthorization";
+import { specialistHasStorePurchaseCapability } from "@/lib/billing/prepareServiceRequestStorePayment";
 import { recordServiceRequestClientConfirmation } from "@/lib/billing/recordServiceRequestClientConfirmation";
 import {
-  activeUserIdsWithNativeCapability,
-  PAID_REQUEST_STORE_PURCHASE_CAPABILITY,
-} from "@/lib/nativeInstallations/capabilities";
+  bindServiceRequestPaymentRail,
+  isServiceRequestStorePaymentEnabled,
+  paymentProvesStripeRail,
+  SERVICE_REQUEST_STORE_PAYMENT_FLAG,
+} from "@/lib/billing/serviceRequestPaymentRail";
 import { isServiceRequestPaidClaimEnabled } from "@/lib/selection/reserveMatch";
 
-export const SERVICE_REQUEST_STORE_PAYMENT_FLAG = "SERVICE_REQUEST_STORE_PAYMENT_ENABLED";
-
-export function isServiceRequestStorePaymentEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
-  return env[SERVICE_REQUEST_STORE_PAYMENT_FLAG]?.trim().toLowerCase() === "true";
-}
+export { isServiceRequestStorePaymentEnabled, SERVICE_REQUEST_STORE_PAYMENT_FLAG };
 
 /**
  * Client confirmation of one reserved service-request connection.
@@ -69,6 +68,7 @@ type ClaimRow = {
   match_id: string;
   request_offer_id: string | null;
   client_confirmed_at: string | null;
+  payment_rail: string | null;
 };
 
 type PaymentRow = {
@@ -80,6 +80,7 @@ type PaymentRow = {
   currency: string;
   status: string;
   stripe_payment_intent_id: string | null;
+  provider?: string | null;
 };
 
 type OfferRow = {
@@ -140,7 +141,7 @@ export async function confirmServiceRequestConnection(input: {
 
   const claimResult = await input.supabase
     .from("service_request_claims")
-    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, client_confirmed_at")
+    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, client_confirmed_at, payment_rail")
     .eq("service_request_id", request.id)
     .eq("status", "reserved")
     .maybeSingle();
@@ -170,12 +171,39 @@ export async function confirmServiceRequestConnection(input: {
   const paymentResult = await input.supabase
     .from("request_offer_payments")
     .select(
-      "id, offer_id, specialist_id, service_request_claim_id, amount_cents, currency, status, stripe_payment_intent_id",
+      "id, offer_id, specialist_id, service_request_claim_id, amount_cents, currency, status, stripe_payment_intent_id, provider",
     )
     .eq("service_request_claim_id", claim.id)
     .in("status", ["pending", "authorized", "paid"]);
   if (paymentResult.error) return { ok: false, error: "retryable" };
   const payments = (paymentResult.data ?? []) as PaymentRow[];
+  let rail = claim.payment_rail === "stripe" || claim.payment_rail === "store" ? claim.payment_rail : null;
+  if (!rail && payments.some((row) => paymentProvesStripeRail(row))) {
+    const bound = await bindServiceRequestPaymentRail({
+      supabase: input.supabase,
+      claimId: claim.id,
+      specialistId: claim.specialist_id,
+      rail: "stripe",
+    });
+    if (!bound.ok) {
+      return { ok: false, error: bound.error === "retryable" ? "retryable" : "not_claimable" };
+    }
+    rail = "stripe";
+  }
+  if (!rail) return { ok: false, error: "not_claimable" };
+  if (rail === "store") {
+    return confirmStoreRail({
+      supabase: input.supabase,
+      env,
+      requestId: request.id,
+      clientUserId: input.clientUserId,
+      claim,
+      payments,
+    });
+  }
+  if (!isServiceRequestPaymentAuthEnabled(env) || !isServiceRequestCaptureEnabled(env)) {
+    return { ok: false, error: "not_found" };
+  }
   const payment = payments.find((row) => row.status === "authorized") ?? null;
   if (!payment && payments.some((row) => row.status === "pending")) {
     return { ok: false, error: "not_claimable" };
@@ -183,31 +211,7 @@ export async function confirmServiceRequestConnection(input: {
   if (!payment && payments.some((row) => row.status === "paid")) {
     return { ok: true, state: "capture_pending" };
   }
-  if (!payment) {
-    const grantResult = await input.supabase
-      .from("request_offer_access_grants")
-      .select("id, revoked_at")
-      .eq("offer_id", claim.request_offer_id)
-      .eq("specialist_id", claim.specialist_id)
-      .is("revoked_at", null)
-      .maybeSingle();
-    if (grantResult.error) return { ok: false, error: "retryable" };
-    if (grantResult.data?.id) return { ok: true, state: "capture_pending" };
-    if (!isServiceRequestStorePaymentEnabled(env)) return { ok: false, error: "not_found" };
-    const ready = await storePurchaseReady(input.supabase, claim.specialist_id);
-    if (ready === "retryable") return { ok: false, error: "retryable" };
-    if (!ready) return { ok: false, error: "not_found" };
-    const recorded = await recordServiceRequestClientConfirmation({
-      supabase: input.supabase,
-      requestId: request.id,
-      clientUserId: input.clientUserId,
-    });
-    if (!recorded.ok) return recorded;
-    return { ok: true, state: "payment_required" };
-  }
-  if (!isServiceRequestPaymentAuthEnabled(env) || !isServiceRequestCaptureEnabled(env)) {
-    return { ok: false, error: "not_found" };
-  }
+  if (!payment) return { ok: false, error: "not_claimable" };
   const amount = livePrice(payment.amount_cents);
   if (
     payment.service_request_claim_id !== claim.id ||
@@ -318,19 +322,33 @@ export async function confirmServiceRequestConnection(input: {
   return { ok: true, state: "capture_pending" };
 }
 
-async function storePurchaseReady(
-  supabase: SupabaseClient,
-  specialistId: string,
-): Promise<boolean | "retryable"> {
-  const specialist = await supabase.from("specialists").select("user_id").eq("id", specialistId).maybeSingle();
-  if (specialist.error) return "retryable";
-  const userId = specialist.data && typeof specialist.data.user_id === "string" ? specialist.data.user_id : "";
-  if (!userId) return false;
-  const capable = await activeUserIdsWithNativeCapability(
-    supabase,
-    [userId],
-    PAID_REQUEST_STORE_PURCHASE_CAPABILITY,
-  );
-  if ("error" in capable) return "retryable";
-  return capable.has(userId);
+async function confirmStoreRail(input: {
+  supabase: SupabaseClient;
+  env: NodeJS.ProcessEnv;
+  requestId: string;
+  clientUserId: string;
+  claim: ClaimRow;
+  payments: PaymentRow[];
+}): Promise<ConfirmServiceRequestConnectionResult> {
+  if (input.payments.length > 0) return { ok: false, error: "not_claimable" };
+  const grantResult = await input.supabase
+    .from("request_offer_access_grants")
+    .select("id, revoked_at")
+    .eq("offer_id", input.claim.request_offer_id)
+    .eq("specialist_id", input.claim.specialist_id)
+    .is("revoked_at", null)
+    .maybeSingle();
+  if (grantResult.error) return { ok: false, error: "retryable" };
+  if (grantResult.data?.id) return { ok: true, state: "capture_pending" };
+  if (!isServiceRequestStorePaymentEnabled(input.env)) return { ok: false, error: "not_found" };
+  const ready = await specialistHasStorePurchaseCapability(input.supabase, input.claim.specialist_id);
+  if (ready === "retryable") return { ok: false, error: "retryable" };
+  if (!ready) return { ok: false, error: "not_found" };
+  const recorded = await recordServiceRequestClientConfirmation({
+    supabase: input.supabase,
+    requestId: input.requestId,
+    clientUserId: input.clientUserId,
+  });
+  if (!recorded.ok) return recorded;
+  return { ok: true, state: "payment_required" };
 }

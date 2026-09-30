@@ -34,6 +34,7 @@ export type ClientRequestHistoryDetail = ClientRequestHistoryItem & {
   description: string | null;
   public_id: string | null;
   budget_reconciliation?: ClientBudgetReconciliationDetail;
+  connection_confirmation_required?: boolean;
 };
 
 export function normalizeHistoryLimit(value: unknown): number {
@@ -222,6 +223,7 @@ export function toClientSafeHistoryDetail(
     description?: unknown;
     public_id?: unknown;
     budget_reconciliation?: ClientBudgetReconciliationDetail | null;
+    connection_confirmation_required?: boolean;
   },
 ): ClientRequestHistoryDetail {
   return {
@@ -235,5 +237,8 @@ export function toClientSafeHistoryDetail(
           ? item.id
           : null,
     ...(extras.budget_reconciliation ? { budget_reconciliation: extras.budget_reconciliation } : {}),
+    ...(typeof extras.connection_confirmation_required === "boolean"
+      ? { connection_confirmation_required: extras.connection_confirmation_required }
+      : {}),
   };
 }

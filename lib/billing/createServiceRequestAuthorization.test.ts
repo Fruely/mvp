@@ -60,6 +60,11 @@ class Query {
     return this;
   }
 
+  is(column: string, value: unknown) {
+    this.filters.push((row) => (value == null ? row[column] == null : row[column] === value));
+    return this;
+  }
+
   in(column: string, values: unknown[]) {
     this.filters.push((row) => values.includes(row[column]));
     return this;
@@ -482,4 +487,51 @@ test("authorization route and service do not capture, grant, or open chat", () =
   assert.match(claimRoute, /conversationId: result\.conversationId/);
   assert.equal(claimRoute.includes("createServiceRequestAuthorization"), false);
   assert.equal(claimRoute.includes("request_offer_payments"), false);
+});
+
+test("authorization binds stripe before creating a PaymentIntent", async () => {
+  const db = seed();
+  const { stripe, creates } = stripeFor();
+  const result = await authorize(db, stripe);
+  assert.equal(result.ok, true);
+  assert.equal(db.tables.service_request_claims[0]?.payment_rail, "stripe");
+  assert.equal(creates.length, 1);
+  assert.equal(db.inserts.length, 1);
+  assert.equal(db.updates[0]?.table, "service_request_claims");
+  assert.equal(db.updates[0]?.patch.payment_rail, "stripe");
+});
+
+test("a store-bound claim cannot create a Stripe payment or PaymentIntent", async () => {
+  const db = seed();
+  db.tables.service_request_claims[0].payment_rail = "store";
+  const { stripe, creates } = stripeFor();
+  const result = await authorize(db, stripe);
+  assert.deepEqual(result, { ok: false, error: "not_claimable" });
+  assert.equal(creates.length, 0);
+  assert.equal(db.inserts.length, 0);
+  assert.equal(db.tables.request_offer_payments.length, 0);
+  assert.equal(db.tables.service_request_claims[0]?.payment_rail, "store");
+});
+
+test("an existing Stripe payment with a NULL rail is reused and bound", async () => {
+  const db = seed(2500, {
+    request_offer_payments: [{
+      id: "12121212-1212-4121-8121-121212121212",
+      offer_id: OFFER,
+      specialist_id: SPEC,
+      service_request_claim_id: CLAIM,
+      amount_cents: 2500,
+      currency: "eur",
+      status: "pending",
+      stripe_payment_intent_id: "pi_existing",
+      provider: "stripe",
+    }],
+  });
+  const { stripe, creates, retrieves } = stripeFor();
+  const result = await authorize(db, stripe);
+  assert.equal(result.ok, true);
+  assert.equal(db.tables.service_request_claims[0]?.payment_rail, "stripe");
+  assert.equal(db.tables.request_offer_payments.length, 1);
+  assert.equal(creates.length, 0);
+  assert.deepEqual(retrieves, ["pi_existing"]);
 });

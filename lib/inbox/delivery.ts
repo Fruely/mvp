@@ -367,6 +367,38 @@ async function matchAvailabilityBlock(
   return reason ? { kind: "blocked", reason } : { kind: "deliver" };
 }
 
+function confirmationClaimId(dedupeKey: unknown): string {
+  if (typeof dedupeKey !== "string") return "";
+  const matched = /^claim:([^:]+):connection_confirmation_required$/.exec(dedupeKey);
+  return matched?.[1] ?? "";
+}
+
+async function confirmationDeliveryBlock(
+  supabase: SupabaseClient,
+  input: { dedupeKey: unknown; matchId: unknown },
+): Promise<{ kind: "deliver" } | { kind: "blocked" } | { kind: "error" }> {
+  const claimId = confirmationClaimId(input.dedupeKey);
+  const claim = claimId
+    ? await supabase
+        .from("service_request_claims")
+        .select("id, status, client_confirmed_at")
+        .eq("id", claimId)
+        .maybeSingle()
+    : await supabase
+        .from("service_request_claims")
+        .select("id, status, client_confirmed_at")
+        .eq("match_id", typeof input.matchId === "string" ? input.matchId : "")
+        .eq("status", "reserved")
+        .maybeSingle();
+  if (claim.error) return { kind: "error" };
+  const status = typeof claim.data?.status === "string" ? claim.data.status : "";
+  const confirmedAt = claim.data?.client_confirmed_at;
+  if (!claim.data?.id || status !== "reserved" || (typeof confirmedAt === "string" && confirmedAt.length > 0)) {
+    return { kind: "blocked" };
+  }
+  return { kind: "deliver" };
+}
+
 /** Deliver one persisted outbox row. Does not scan the rest of the queue. */
 export async function deliverOutboxById(
   supabase: SupabaseClient,
@@ -424,7 +456,7 @@ export async function deliverPendingOutbox(
 
     const inbox = await supabase
       .from("inbox_items")
-      .select("payload")
+      .select("payload, dedupe_key")
       .eq("id", row.inbox_item_id)
       .maybeSingle();
     const payload = inbox.data?.payload as (MatchInboxPayload & {
@@ -462,6 +494,37 @@ export async function deliverPendingOutbox(
           .update({
             status: "cancelled",
             last_error_code: block.reason,
+            updated_at: now,
+          })
+          .eq("id", row.id);
+        processed += 1;
+        continue;
+      }
+    }
+    if (payload?.event === "connection_confirmation_required") {
+      const block = await confirmationDeliveryBlock(supabase, {
+        dedupeKey: inbox.data?.dedupe_key,
+        matchId: payload.match_id ?? row.match_id,
+      });
+      if (block.kind === "error") {
+        await supabase
+          .from("notification_outbox")
+          .update({
+            status: "retryable",
+            last_error_code: "confirmation_state_check_failed",
+            next_attempt_at: new Date(clock.getTime() + 5 * 60 * 1000).toISOString(),
+            updated_at: now,
+          })
+          .eq("id", row.id);
+        processed += 1;
+        continue;
+      }
+      if (block.kind === "blocked") {
+        await supabase
+          .from("notification_outbox")
+          .update({
+            status: "cancelled",
+            last_error_code: "stale_confirmation_state",
             updated_at: now,
           })
           .eq("id", row.id);

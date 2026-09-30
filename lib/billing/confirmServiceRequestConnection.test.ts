@@ -270,6 +270,7 @@ test("confirmation captures the stored intent once per idempotency key and does 
   assert.equal(db.tables.service_request_claims[0]?.status, "reserved");
   assert.equal(db.tables.request_offer_payments.length, 1);
   assert.equal(db.tables.request_offer_payments[0]?.status, "authorized");
+  assert.equal(db.tables.service_request_claims[0]?.payment_rail, "stripe");
   assert.equal(db.tables.request_offer_access_grants.length, 0);
   assert.equal(db.tables.conversations.length, 0);
   assert.deepEqual(captures.map((call) => call.id), ["pi_auth"]);
@@ -394,6 +395,7 @@ const STORE_ON = {
 
 function readyStore(db: Memory, capabilities: string[] = [PAID_REQUEST_STORE_PURCHASE_CAPABILITY], active = true, installationUserId = SPEC_USER) {
   db.tables.request_offer_payments = [];
+  db.tables.service_request_claims[0].payment_rail = "store";
   db.tables.specialists = [{ id: SPEC, user_id: SPEC_USER }];
   db.tables.native_installations = [{ user_id: installationUserId, active, capabilities }];
 }
@@ -449,20 +451,24 @@ test("store-ready confirmation records the client decision and does not charge",
 });
 
 test("an in-flight or settled payment never opens the store confirmation branch", async () => {
+  const stripeAndStore = { ...FLAGS, SERVICE_REQUEST_STORE_PAYMENT_ENABLED: "true" };
   const pending = seed({ paymentStatus: "pending" });
-  readyStore(pending);
-  pending.tables.request_offer_payments = seed({ paymentStatus: "pending" }).tables.request_offer_payments;
-  assert.deepEqual(await confirm(pending, stripeFor().stripe, CLIENT, STORE_ON), { ok: false, error: "not_claimable" });
+  assert.deepEqual(await confirm(pending, stripeFor().stripe, CLIENT, stripeAndStore), { ok: false, error: "not_claimable" });
   assert.equal(pending.tables.service_request_claims[0]?.client_confirmed_at, null);
+  assert.equal(pending.tables.service_request_claims[0]?.payment_rail, "stripe");
   assert.equal(pending.tables.request_offer_payments.length, 1);
 
   const paid = seed({ paymentStatus: "paid" });
-  readyStore(paid);
-  paid.tables.request_offer_payments = seed({ paymentStatus: "paid" }).tables.request_offer_payments;
-  assert.deepEqual(await confirm(paid, stripeFor().stripe, CLIENT, STORE_ON), { ok: true, state: "capture_pending" });
+  assert.deepEqual(await confirm(paid, stripeFor().stripe, CLIENT, stripeAndStore), { ok: true, state: "capture_pending" });
+  assert.equal(paid.tables.service_request_claims[0]?.payment_rail, "stripe");
   assert.equal(paid.tables.request_offer_access_grants.length, 0);
   assert.equal(paid.tables.conversations.length, 0);
   assert.equal(paid.tables.request_offer_payments.length, 1);
+
+  const storePaid = seed({ paymentStatus: "paid" });
+  storePaid.tables.service_request_claims[0].payment_rail = "store";
+  assert.deepEqual(await confirm(storePaid, stripeFor().stripe, CLIENT, STORE_ON), { ok: false, error: "not_claimable" });
+  assert.notEqual(storePaid.tables.service_request_claims[0]?.payment_rail, "stripe");
 
   const granted = seed();
   readyStore(granted);
@@ -477,8 +483,19 @@ test("an in-flight or settled payment never opens the store confirmation branch"
   assert.equal(granted.tables.request_offer_payments.length, 0);
 });
 
+test("a NULL rail does not become store from account capability", async () => {
+  const db = seed();
+  readyStore(db);
+  db.tables.service_request_claims[0].payment_rail = null;
+  assert.deepEqual(await confirm(db, stripeFor().stripe, CLIENT, STORE_ON), { ok: false, error: "not_claimable" });
+  assert.equal(db.tables.service_request_claims[0]?.client_confirmed_at, null);
+  assert.equal(db.tables.service_request_claims[0]?.payment_rail, null);
+  assert.equal(db.tables.request_offer_payments.length, 0);
+});
+
 test("store flag and purchase capability do not change authorized Stripe capture", async () => {
   const db = seed();
+  db.tables.service_request_claims[0].payment_rail = "stripe";
   db.tables.specialists = [{ id: SPEC, user_id: SPEC_USER }];
   db.tables.native_installations = [{
     user_id: SPEC_USER,
@@ -493,6 +510,7 @@ test("store flag and purchase capability do not change authorized Stripe capture
   assert.deepEqual(result, { ok: true, state: "capture_pending" });
   assert.deepEqual(captures.map((call) => call.id), ["pi_auth"]);
   assert.equal(captures[0]?.key, serviceRequestCaptureIdempotencyKey(PAYMENT));
+  assert.equal(db.tables.service_request_claims[0]?.payment_rail, "stripe");
   assert.equal(db.tables.request_offer_access_grants.length, 0);
   assert.equal(db.tables.conversations.length, 0);
 });

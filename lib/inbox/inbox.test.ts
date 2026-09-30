@@ -575,6 +575,98 @@ test("connection and conversation notices are not cancelled by a live claim", as
   }
 });
 
+test("a queued confirmation notice sends only while the claim is reserved and unconfirmed", async () => {
+  const live = seed();
+  const seen: string[] = [];
+  live.tables.service_requests[0].client_email = "client@example.com";
+  live.tables.service_request_claims = [{
+    id: "claim-1",
+    match_id: "match-1",
+    status: "reserved",
+    client_confirmed_at: null,
+  }];
+  queueNotice(live, {
+    event: "connection_confirmation_required",
+    service_request_id: "request-1",
+    public_id: "REQ-1",
+    service_label: "Tax advice",
+    match_id: "match-1",
+  });
+  live.tables.inbox_items[0].dedupe_key = "claim:claim-1:connection_confirmation_required";
+  await deliverPendingOutbox(live.supabase, DEFAULT_MATCH_DELIVERY_POLICY, countingTransports(seen), DAY);
+  assert.deepEqual(seen, ["email"]);
+  assert.equal(live.tables.notification_outbox[0].status, "sent");
+  assert.equal(live.tables.inbox_items.length, 1);
+
+  for (const status of ["completed", "released", "expired"] as const) {
+    const db = seed();
+    const quiet: string[] = [];
+    db.tables.service_request_claims = [{ id: "claim-1", match_id: "match-1", status, client_confirmed_at: null }];
+    queueNotice(db, {
+      event: "connection_confirmation_required",
+      service_request_id: "request-1",
+      public_id: "REQ-1",
+      service_label: "Tax advice",
+      match_id: "match-1",
+    });
+    db.tables.inbox_items[0].dedupe_key = "claim:claim-1:connection_confirmation_required";
+    await deliverPendingOutbox(db.supabase, DEFAULT_MATCH_DELIVERY_POLICY, countingTransports(quiet), DAY);
+    assert.deepEqual(quiet, [], status);
+    assert.equal(db.tables.notification_outbox[0].status, "cancelled", status);
+    assert.equal(db.tables.notification_outbox[0].last_error_code, "stale_confirmation_state", status);
+    assert.equal(db.tables.inbox_items.length, 1, status);
+  }
+
+  const confirmed = seed();
+  const confirmedSeen: string[] = [];
+  confirmed.tables.service_request_claims = [{
+    id: "claim-1",
+    match_id: "match-1",
+    status: "reserved",
+    client_confirmed_at: "2026-09-30T12:00:00.000Z",
+  }];
+  queueNotice(confirmed, {
+    event: "connection_confirmation_required",
+    service_request_id: "request-1",
+    public_id: "REQ-1",
+    service_label: "Tax advice",
+    match_id: "match-1",
+  });
+  confirmed.tables.inbox_items[0].dedupe_key = "claim:claim-1:connection_confirmation_required";
+  await deliverPendingOutbox(confirmed.supabase, DEFAULT_MATCH_DELIVERY_POLICY, countingTransports(confirmedSeen), DAY);
+  assert.deepEqual(confirmedSeen, []);
+  assert.equal(confirmed.tables.notification_outbox[0].status, "cancelled");
+  assert.equal(confirmed.tables.notification_outbox[0].last_error_code, "stale_confirmation_state");
+});
+
+test("a confirmation state read failure stays retryable and is not sent", async () => {
+  const db = seed();
+  const seen: string[] = [];
+  queueNotice(db, {
+    event: "connection_confirmation_required",
+    service_request_id: "request-1",
+    public_id: "REQ-1",
+    service_label: "Tax advice",
+    match_id: "match-1",
+  });
+  db.tables.inbox_items[0].dedupe_key = "claim:claim-1:connection_confirmation_required";
+  const original = db.supabase.from.bind(db.supabase);
+  db.supabase.from = ((table: string) => {
+    if (table !== "service_request_claims") return original(table);
+    const api = {
+      select() { return api; },
+      eq() { return api; },
+      maybeSingle: async () => ({ data: null, error: { message: "unavailable" } }),
+    };
+    return api;
+  }) as typeof db.supabase.from;
+  await deliverPendingOutbox(db.supabase, DEFAULT_MATCH_DELIVERY_POLICY, countingTransports(seen), DAY);
+  assert.deepEqual(seen, []);
+  assert.equal(db.tables.notification_outbox[0].status, "retryable");
+  assert.equal(db.tables.notification_outbox[0].last_error_code, "confirmation_state_check_failed");
+  assert.equal(db.tables.inbox_items.length, 1);
+});
+
 test("cancelling a stale availability notice is idempotent", async () => {
   const db = seed();
   const seen: string[] = [];

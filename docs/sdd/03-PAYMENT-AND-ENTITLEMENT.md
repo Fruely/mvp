@@ -68,9 +68,13 @@ Confirmation does not itself grant access, create a conversation, or choose the 
 
 `recordServiceRequestClientConfirmation` is the provider-neutral writer. It checks ownership, the reserved claim, the canonical positive EUR offer, and the active match, then stores the timestamp once.
 
-For Stripe, that writer runs only after an authorized PaymentIntent has already been validated. Confirmation then captures that same PaymentIntent. ADR-007 owns that rail. Absence of a Stripe payment is not permission to confirm a Stripe claim early.
+`service_request_claims.payment_rail` answers which payment sequence owns that reserved claim: `stripe` or `store`. It is not an entitlement, not payment success, and not Apple versus Google. Apple or Google remains the verified store transaction. NULL is valid until the first rail-specific action. Account capability alone does not select a rail. The client does not choose it. The first successful rail-specific action binds it, and a later action cannot switch it.
 
-For Native store billing, the same writer may run with no payment row only when `SERVICE_REQUEST_STORE_PAYMENT_ENABLED` is on and the reserved specialist has an active installation advertising `paid_request_store_purchase_v1`. `paid_request_access_v1` is not enough. The response state is `payment_required`. It does not charge, grant, open chat, or send the `payment_required` notice. Current Native does not advertise the purchase capability, so this branch stays closed.
+Stripe authorization binds `stripe` before it creates or reuses a PaymentIntent. Explicit store preparation binds `store`. A historical Stripe payment with a NULL rail is reconciled to `stripe` and is not treated as store.
+
+For Stripe, the confirmation writer runs only after an authorized PaymentIntent has already been validated on a `stripe` claim. Confirmation then captures that same PaymentIntent. ADR-007 owns that rail. Absence of a Stripe payment is not permission to confirm a Stripe claim early, and a NULL rail is not permission to confirm either.
+
+For Native store billing, the same writer may run with no payment row only when the claim is already bound to `store`, `SERVICE_REQUEST_STORE_PAYMENT_ENABLED` is on, and the reserved specialist has an active installation advertising `paid_request_store_purchase_v1`. `paid_request_access_v1` is not enough. The response state is `payment_required`. It does not charge, grant, open chat, or send the `payment_required` notice. Current Native does not advertise the purchase capability, so this branch stays closed.
 
 ## 6. Stripe / Web rail
 
@@ -122,7 +126,9 @@ After confirmation, and before a verified purchase, the specialist may be waitin
 
 No new `service_request` status and no new claim status is required. The specialist match preview returns this boolean. It is not a notification and it does not open a conversation.
 
-The same confirm endpoint chooses the rail. An authorized Stripe payment still requires the Stripe auth and capture flags and still returns `capture_pending`. A store-ready account with no active payment can return `payment_required` only behind the store flag. That response is not a purchase and not a notification. The store rail still has no client confirmation notice; `connection_confirmation_required` remains the Stripe authorization notice.
+The same confirm endpoint reads `payment_rail`. It does not guess. An authorized Stripe claim still requires the Stripe auth and capture flags and still returns `capture_pending`. A claim bound to `store`, with the store flag and purchase capability, can return `payment_required`. That response is not a purchase and not a specialist `payment_required` notification.
+
+`connection_confirmation_required` means the owning client must confirm the reserved connection. Stripe emits it after authorization. Store preparation emits it when the client has not confirmed yet. It is the same event, the same claim dedupe key, and the same client request link. It is not `client_selected_you`. Delivery cancels that queued notice when the claim is no longer reserved and unconfirmed.
 
 No verified purchase means no access grant and no conversation. A Native receipt assertion alone is not verification.
 

@@ -82,7 +82,7 @@ A new event does not inherit match-reminder timers, selection preferences, email
 
 The paid service-request flow must not emit `client_selected_you`. Reservation is not client selection. Capture and fulfillment do not depend on that event. `connection_ready` means the connection is ready. `specialist_interested`, `client_reminder`, and `client_selected_you` remain compatibility behavior for the legacy paths only.
 
-A live exclusive claim (`reserved` or `completed`) suppresses later match-available reminders for that match. Delivery re-reads that claim before sending an already queued `match_available` or `match_reminder` and cancels the outbox row when the claim is live. The inbox row stays. `released`, `expired`, and `failed` do not count as live and must not be revived by the reminder job. An ordinary active match with no live claim still receives reminders. `connection_confirmation_required`, `connection_ready`, and `conversation_message` are not availability notices and are not cancelled by this guard.
+A live exclusive claim (`reserved` or `completed`) suppresses later match-available reminders for that match. Delivery re-reads that claim before sending an already queued `match_available` or `match_reminder` and cancels the outbox row when the claim is live. The inbox row stays. `released`, `expired`, and `failed` do not count as live and must not be revived by the reminder job. An ordinary active match with no live claim still receives reminders. `connection_confirmation_required`, `connection_ready`, and `conversation_message` are not availability notices and are not cancelled by this guard. `connection_confirmation_required` has its own delivery check: if that claim is missing, no longer `reserved`, or already has `client_confirmed_at`, the outbox row is cancelled as `stale_confirmation_state`. The inbox row stays. `connection_ready` and `conversation_message` are outside that check.
 
 Budget reconciliation does not add a push event. The client learns the unresolved floor from the create response and from the authenticated request detail.
 
@@ -96,7 +96,7 @@ It means: the client confirmed, and the specialist must complete paid access to 
 
 It does not mean payment succeeded, an access grant exists, or the connection is ready.
 
-Do not reuse `client_selected_you`, `connection_ready`, `match_available`, `match_reminder`, or `connection_confirmation_required`. The last of those remains the client-facing Stripe confirmation notice.
+Do not reuse `client_selected_you`, `connection_ready`, `match_available`, `match_reminder`, or `connection_confirmation_required`. `connection_confirmation_required` means the owning client must confirm the reserved connection. Stripe sends it after authorization. Store preparation sends it before the client confirms. It is not the specialist `payment_required` event.
 
 The authoritative entity is the reserved claim with `client_confirmed_at` set and no active access grant. Send it once per claim. The deep link reloads server state. The payload must not include client contact details, a payment client secret, or a receipt. Opening the notification is not proof of purchase.
 

@@ -173,7 +173,7 @@ Do not enable commercial offers until the paid reservation, payment, and settlem
 
 It does not mean a payment SDK is installed, payment can succeed, StoreKit or Google Play Billing is available, or the specialist has an entitlement or subscription. App version is not the business rule. Do not reinterpret this capability as payment-ready. Current Native advertises it and then stops after reserve, because no store purchase exists. That is safe only while commercial offers stay off.
 
-`paid_request_store_purchase_v1` is a separate known capability for a fully usable store-purchase contract. Current Native does not advertise it. Store confirmation also requires `SERVICE_REQUEST_STORE_PAYMENT_ENABLED`, which stays off.
+`paid_request_store_purchase_v1` is a separate known capability for a fully usable store-purchase contract. Current Native does not advertise it. That capability does not by itself choose the claim's payment rail. Store preparation binds `payment_rail = store` only when `SERVICE_REQUEST_STORE_PAYMENT_ENABLED` is also on. The flag stays off.
 
 While commercial offers are enabled:
 

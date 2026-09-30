@@ -205,10 +205,11 @@ export async function notifyClientConfirmationRequired(
   try {
     const claim = await supabase
       .from("service_request_claims")
-      .select("id, service_request_id, match_id, status")
+      .select("id, service_request_id, match_id, status, client_confirmed_at")
       .eq("id", claimId)
       .maybeSingle();
     if (claim.error || claim.data?.status !== "reserved") return;
+    if (typeof claim.data.client_confirmed_at === "string" && claim.data.client_confirmed_at) return;
     const requestId = String(claim.data.service_request_id ?? "");
     const request = await supabase
       .from("service_requests")

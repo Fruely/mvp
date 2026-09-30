@@ -4,6 +4,7 @@ import {
   STRIPE_REQUEST_OFFER_PAYMENT_PROVIDER,
   stripePaymentIntentAttribution,
 } from "@/lib/billing/requestOfferPaymentProvider";
+import { bindServiceRequestPaymentRail } from "@/lib/billing/serviceRequestPaymentRail";
 import { getStripeClient } from "@/lib/billing/stripeClient";
 import { PURCHASABLE_SERVICE_REQUEST_OFFER_STATUSES } from "@/lib/leadEngine/requestOfferPolicy";
 import { notifyClientConfirmationRequired } from "@/lib/selection/interest";
@@ -93,6 +94,7 @@ type PaymentRow = {
   currency: string;
   status: string;
   stripe_payment_intent_id: string | null;
+  provider?: string | null;
 };
 
 type ClaimRow = {
@@ -102,6 +104,7 @@ type ClaimRow = {
   service_request_id: string;
   match_id: string;
   request_offer_id: string | null;
+  payment_rail?: string | null;
 };
 
 type OfferRow = {
@@ -116,7 +119,7 @@ type OfferRow = {
 };
 
 const PAYMENT_COLUMNS =
-  "id, offer_id, specialist_id, service_request_claim_id, amount_cents, currency, status, stripe_payment_intent_id";
+  "id, offer_id, specialist_id, service_request_claim_id, amount_cents, currency, status, stripe_payment_intent_id, provider";
 
 function livePrice(value: unknown): number | null {
   return typeof value === "number" && Number.isInteger(value) && value > 0 ? value : null;
@@ -167,7 +170,7 @@ export async function createServiceRequestAuthorization(input: {
 
   const claimResult = await input.supabase
     .from("service_request_claims")
-    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id")
+    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, payment_rail")
     .eq("id", input.claimId)
     .maybeSingle();
   if (claimResult.error) return { ok: false, error: "retryable" };
@@ -239,6 +242,11 @@ export async function createServiceRequestAuthorization(input: {
   }
   if (match.specialist_id !== input.specialistId) return { ok: false, error: "forbidden" };
   if (match.status !== "active") return { ok: false, error: "not_claimable" };
+  if (claim.payment_rail === "store") return { ok: false, error: "not_claimable" };
+
+  const active = await loadActivePayment(input.supabase, claim.id);
+  if ("error" in active) return { ok: false, error: "retryable" };
+  if (active.row?.provider && active.row.provider !== "stripe") return { ok: false, error: "not_claimable" };
 
   const stripe =
     input.stripe === undefined
@@ -246,8 +254,21 @@ export async function createServiceRequestAuthorization(input: {
       : input.stripe;
   if (!stripe) return { ok: false, error: "payments_unavailable" };
 
-  const active = await loadActivePayment(input.supabase, claim.id);
-  if ("error" in active) return { ok: false, error: "retryable" };
+  const bound = await bindServiceRequestPaymentRail({
+    supabase: input.supabase,
+    claimId: claim.id,
+    specialistId: input.specialistId,
+    rail: "stripe",
+  });
+  if (!bound.ok) {
+    return {
+      ok: false,
+      error: bound.error === "retryable" || bound.error === "not_found" || bound.error === "forbidden"
+        ? bound.error
+        : "not_claimable",
+    };
+  }
+
   let payment = active.row;
 
   if (payment?.status === "authorized") {

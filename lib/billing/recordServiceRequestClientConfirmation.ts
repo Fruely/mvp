@@ -13,6 +13,33 @@ function positivePrice(value: unknown): boolean {
   return typeof value === "number" && Number.isInteger(value) && value > 0;
 }
 
+export function isCanonicalMatchedServiceRequestOffer(
+  offer: {
+    request_kind?: string;
+    offer_reason?: string;
+    service_request_id?: string | null;
+    specialist_id?: string;
+    billing_model?: string;
+    price_cents?: number | null;
+    currency?: string;
+    idempotency_key?: string;
+  },
+  requestId: string,
+  specialistId: string,
+): boolean {
+  return (
+    offer.request_kind === "service_request" &&
+    offer.service_request_id === requestId &&
+    offer.specialist_id === specialistId &&
+    offer.offer_reason === "matched" &&
+    offer.billing_model === "pay_per_lead" &&
+    offer.currency === "eur" &&
+    positivePrice(offer.price_cents) &&
+    offer.idempotency_key ===
+      buildMatchedServiceRequestOfferIdempotencyKey({ requestId, specialistId })
+  );
+}
+
 export async function recordServiceRequestClientConfirmation(input: {
   supabase: SupabaseClient;
   requestId: string;
@@ -74,21 +101,9 @@ export async function recordServiceRequestClientConfirmation(input: {
     currency?: string;
     idempotency_key?: string;
   } | null;
-  if (!offer) return { ok: false, error: "not_claimable" };
+  if (!offer || !claim.specialist_id) return { ok: false, error: "not_claimable" };
   if (offer.request_kind !== "service_request") return { ok: false, error: "not_claimable" };
-  if (
-    offer.service_request_id !== request.id ||
-    offer.specialist_id !== claim.specialist_id ||
-    offer.offer_reason !== "matched" ||
-    offer.billing_model !== "pay_per_lead" ||
-    offer.currency !== "eur" ||
-    !positivePrice(offer.price_cents) ||
-    offer.idempotency_key !==
-      buildMatchedServiceRequestOfferIdempotencyKey({
-        requestId: request.id,
-        specialistId: claim.specialist_id,
-      })
-  ) {
+  if (!isCanonicalMatchedServiceRequestOffer(offer, request.id, claim.specialist_id)) {
     return { ok: false, error: "invariant" };
   }
 
