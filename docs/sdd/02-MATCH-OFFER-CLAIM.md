@@ -171,7 +171,7 @@ Do not enable commercial offers until the paid reservation, payment, and settlem
 
 `paid_request_access_v1` is a client-contract capability. It means the current Native installation understands `access_offer`, reserve-first TAKE, and no legacy `/claim` fallback for a paid offer.
 
-It does not mean a payment SDK is installed, payment can succeed, StoreKit or Google Play Billing is available, or the specialist has an entitlement or subscription. App version is not the business rule.
+It does not mean a payment SDK is installed, payment can succeed, StoreKit or Google Play Billing is available, or the specialist has an entitlement or subscription. App version is not the business rule. Do not reinterpret this capability as payment-ready. Current Native advertises it and then stops after reserve, because no store purchase exists. That is safe only while commercial offers stay off.
 
 While commercial offers are enabled:
 
@@ -194,7 +194,8 @@ Safe later activation order:
 2. deploy the backend that stores capabilities and blocks legacy `/claim` for a persisted paid offer;
 3. ship and verify a Native build that registers `paid_request_access_v1`;
 4. observe real capability registrations;
-5. have reserve, payment, and settlement available;
-6. only then enable `SERVICE_REQUEST_COMMERCIAL_OFFERS_ENABLED`.
+5. implement the Web Stripe rail and the Native store rail described in `docs/sdd/03-PAYMENT-AND-ENTITLEMENT.md`;
+6. ship a Native build that registers a separate future purchase capability, not an overload of `paid_request_access_v1`;
+7. only then enable `SERVICE_REQUEST_COMMERCIAL_OFFERS_ENABLED`.
 
-Payment, capture, and paid-claim flags stay off until that payment rail is actually available. Direct-lead offers, subscriptions, and `lead_pricing_rules` are outside this gate.
+Payment, capture, paid-claim, and any future store-payment flags stay off until that payment rail is actually available. Direct-lead offers, subscriptions, and `lead_pricing_rules` are outside this gate.

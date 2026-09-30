@@ -60,18 +60,14 @@ A future pricing policy may change prices for newly created offers. Existing off
 
 ## 6. Payment is a rail, entitlement is the product fact
 
-The product-level sequence is provider-neutral:
+The product invariant is provider-neutral. Final contact and chat require both an explicit client confirmation and a valid paid-access entitlement. The order between confirmation and payment may differ by rail. `docs/sdd/03-PAYMENT-AND-ENTITLEMENT.md` owns that contract.
 
 ```text
-claim/reservation
-→ payment readiness
-→ required product confirmation
-→ payment settled
-→ access entitlement
-→ final connection
+match → offer → claim/reservation → client confirmation
+→ payment satisfied → entitlement → connection → chat
 ```
 
-Stripe, StoreKit/App Store and Google Play are payment rails, not the domain model.
+Stripe, StoreKit/App Store and Google Play are payment rails, not the domain model. Provider transaction state is not the entitlement.
 
 Do not assume that every rail supports Stripe-style manual authorization/capture.
 

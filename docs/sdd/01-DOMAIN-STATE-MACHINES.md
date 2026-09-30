@@ -112,6 +112,8 @@ one match           → max one live reserved/completed claim owner
 
 Claim does not itself create a conversation and does not prove payment.
 
+`client_confirmed_at` belongs to the claim. It is provider-neutral. It records that the owning client confirmed the connection. It does not grant access and it does not choose a payment provider.
+
 ## 6. request_offer_payment
 
 Current persisted statuses include:
@@ -172,6 +174,16 @@ These semantic phases are not necessarily persisted as one enum. They may be der
 
 Do not add a new persisted mega-enum unless a concrete requirement proves it necessary.
 
+Waiting for specialist payment on the Native store rail is derived, not a new claim or request status:
+
+```text
+claim.status = reserved
+AND client_confirmed_at IS NOT NULL
+AND no active request_offer_access_grants row for that offer and specialist
+```
+
+On the Stripe rail, confirmation starts capture of an already authorized PaymentIntent. That is not the same derived state, because the specialist is not asked to start a new purchase.
+
 ## 10. Transition authority
 
 Server/database logic owns transitions that affect exclusivity, money, entitlement or connection.
@@ -180,10 +192,8 @@ Native/Web may request actions such as TAKE, decline, confirm or send message. A
 
 ## 11. Current vs planned
 
-**Implemented:** request/match/offer/claim states above, payment authorization foundation, grant table, connection finalizer, conversation.
+**Implemented, flags off:** request/match/offer/claim states above, Stripe manual-capture authorization, client confirmation, capture, webhook fulfillment, grant, connection finalizer, conversation.
 
-**Planned:** the final provider-neutral paid flow that turns a successful valid settlement into grant → final connection → completed claim.
+**Specified, not implemented:** the Native store rail, store verification, the `payment_required` notice, reservation/payment timeout release, and provider-neutral payment columns.
 
-**Planned:** release/expiry policy for abandoned reservations/payments.
-
-Until those planned flows are implemented and rollout-approved, paid-flow feature flags remain off.
+Until the store rail exists and rollout is approved, paid-flow feature flags remain off. `docs/sdd/03-PAYMENT-AND-ENTITLEMENT.md` owns the rail contract.

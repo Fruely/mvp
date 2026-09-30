@@ -85,3 +85,19 @@ The paid service-request flow must not emit `client_selected_you`. Reservation i
 A live exclusive claim (`reserved` or `completed`) suppresses later match-available reminders for that match. Delivery re-reads that claim before sending an already queued `match_available` or `match_reminder` and cancels the outbox row when the claim is live. The inbox row stays. `released`, `expired`, and `failed` do not count as live and must not be revived by the reminder job. An ordinary active match with no live claim still receives reminders. `connection_confirmation_required`, `connection_ready`, and `conversation_message` are not availability notices and are not cancelled by this guard.
 
 Budget reconciliation does not add a push event. The client learns the unresolved floor from the create response and from the authenticated request detail.
+
+## 9. Future Native `payment_required`
+
+This event is specified and not implemented.
+
+After the owning client confirms a reserved claim on the Native store rail, the specialist needs one semantic event: `payment_required`.
+
+It means: the client confirmed, and the specialist must complete paid access to continue.
+
+It does not mean payment succeeded, an access grant exists, or the connection is ready.
+
+Do not reuse `client_selected_you`, `connection_ready`, `match_available`, `match_reminder`, or `connection_confirmation_required`. The last of those remains the client-facing Stripe confirmation notice.
+
+The authoritative entity is the reserved claim with `client_confirmed_at` set and no active access grant. Send it once per claim. The deep link reloads server state. The payload must not include client contact details, a payment client secret, or a receipt. Opening the notification is not proof of purchase.
+
+Do not emit `payment_required` for the Stripe rail. On that rail the specialist has already authorized, and confirmation starts capture.
