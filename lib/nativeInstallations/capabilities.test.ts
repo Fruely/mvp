@@ -6,6 +6,7 @@ import {
   activeUserIdsWithNativeCapability,
   normalizeRegistrationCapabilities,
   PAID_REQUEST_ACCESS_CAPABILITY,
+  PAID_REQUEST_STORE_PURCHASE_CAPABILITY,
 } from "./capabilities.ts";
 
 test("normalization keeps only the known capability", () => {
@@ -19,6 +20,17 @@ test("normalization keeps only the known capability", () => {
   );
   assert.equal(normalizeRegistrationCapabilities({ capabilities: "paid_request_access_v1" }), "invalid");
   assert.equal(normalizeRegistrationCapabilities({ capabilities: [1] }), "invalid");
+  assert.deepEqual(
+    normalizeRegistrationCapabilities({
+      capabilities: [
+        PAID_REQUEST_ACCESS_CAPABILITY,
+        PAID_REQUEST_STORE_PURCHASE_CAPABILITY,
+        "storekit",
+      ],
+    }),
+    [PAID_REQUEST_ACCESS_CAPABILITY, PAID_REQUEST_STORE_PURCHASE_CAPABILITY],
+  );
+  assert.notEqual(PAID_REQUEST_ACCESS_CAPABILITY, PAID_REQUEST_STORE_PURCHASE_CAPABILITY);
 });
 
 type Installation = { user_id: string; active: boolean; capabilities: string[] };

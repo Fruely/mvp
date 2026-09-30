@@ -263,7 +263,8 @@ test("authorization webhook does not capture from the webhook handler", () => {
   assert.match(source, /fulfillConfirmedServiceRequestCapture/);
   assert.match(source, /client_confirmed_at/);
   assert.equal(confirm.includes("finalizeServiceRequestConnection"), false);
-  assert.equal(confirm.includes("request_offer_access_grants"), false);
+  assert.equal(confirm.includes('from("request_offer_access_grants").insert'), false);
+  assert.match(confirm, /request_offer_access_grants/);
   assert.match(aggregate, /processStripeWebhookEventForServiceRequestAuthorization/);
   assert.match(aggregate, /processStripeWebhookEventForRequestOffers/);
   assert.match(aggregate, /serviceRequestAuthorization\.outcome === "retryable_failure"/);

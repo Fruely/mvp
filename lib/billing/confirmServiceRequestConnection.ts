@@ -5,7 +5,18 @@ import {
   isServiceRequestPaymentAuthEnabled,
   SERVICE_REQUEST_AUTHORIZATION_PURPOSE,
 } from "@/lib/billing/createServiceRequestAuthorization";
+import { recordServiceRequestClientConfirmation } from "@/lib/billing/recordServiceRequestClientConfirmation";
+import {
+  activeUserIdsWithNativeCapability,
+  PAID_REQUEST_STORE_PURCHASE_CAPABILITY,
+} from "@/lib/nativeInstallations/capabilities";
 import { isServiceRequestPaidClaimEnabled } from "@/lib/selection/reserveMatch";
+
+export const SERVICE_REQUEST_STORE_PAYMENT_FLAG = "SERVICE_REQUEST_STORE_PAYMENT_ENABLED";
+
+export function isServiceRequestStorePaymentEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env[SERVICE_REQUEST_STORE_PAYMENT_FLAG]?.trim().toLowerCase() === "true";
+}
 
 /**
  * Client confirmation of one reserved service-request connection.
@@ -38,6 +49,7 @@ export type ServiceRequestCaptureStripe = {
 export type ConfirmServiceRequestConnectionResult =
   | { ok: true; state: "capture_pending" }
   | { ok: true; state: "connected"; conversationId: string | null }
+  | { ok: true; state: "payment_required" }
   | {
       ok: false;
       error: "not_found" | "not_claimable" | "already_claimed" | "invariant" | "payments_unavailable" | "retryable";
@@ -109,13 +121,7 @@ export async function confirmServiceRequestConnection(input: {
   stripe?: ServiceRequestCaptureStripe | null;
 }): Promise<ConfirmServiceRequestConnectionResult> {
   const env = input.env ?? process.env;
-  if (
-    !isServiceRequestPaidClaimEnabled(env) ||
-    !isServiceRequestPaymentAuthEnabled(env) ||
-    !isServiceRequestCaptureEnabled(env)
-  ) {
-    return { ok: false, error: "not_found" };
-  }
+  if (!isServiceRequestPaidClaimEnabled(env)) return { ok: false, error: "not_found" };
   const publicId = input.publicId.trim();
   if (!publicId || publicId.length > 80 || !/^[A-Za-z0-9_-]+$/.test(publicId)) {
     return { ok: false, error: "not_found" };
@@ -167,11 +173,41 @@ export async function confirmServiceRequestConnection(input: {
       "id, offer_id, specialist_id, service_request_claim_id, amount_cents, currency, status, stripe_payment_intent_id",
     )
     .eq("service_request_claim_id", claim.id)
-    .eq("status", "authorized")
-    .maybeSingle();
+    .in("status", ["pending", "authorized", "paid"]);
   if (paymentResult.error) return { ok: false, error: "retryable" };
-  const payment = paymentResult.data as PaymentRow | null;
-  if (!payment) return { ok: false, error: "not_claimable" };
+  const payments = (paymentResult.data ?? []) as PaymentRow[];
+  const payment = payments.find((row) => row.status === "authorized") ?? null;
+  if (!payment && payments.some((row) => row.status === "pending")) {
+    return { ok: false, error: "not_claimable" };
+  }
+  if (!payment && payments.some((row) => row.status === "paid")) {
+    return { ok: true, state: "capture_pending" };
+  }
+  if (!payment) {
+    const grantResult = await input.supabase
+      .from("request_offer_access_grants")
+      .select("id, revoked_at")
+      .eq("offer_id", claim.request_offer_id)
+      .eq("specialist_id", claim.specialist_id)
+      .is("revoked_at", null)
+      .maybeSingle();
+    if (grantResult.error) return { ok: false, error: "retryable" };
+    if (grantResult.data?.id) return { ok: true, state: "capture_pending" };
+    if (!isServiceRequestStorePaymentEnabled(env)) return { ok: false, error: "not_found" };
+    const ready = await storePurchaseReady(input.supabase, claim.specialist_id);
+    if (ready === "retryable") return { ok: false, error: "retryable" };
+    if (!ready) return { ok: false, error: "not_found" };
+    const recorded = await recordServiceRequestClientConfirmation({
+      supabase: input.supabase,
+      requestId: request.id,
+      clientUserId: input.clientUserId,
+    });
+    if (!recorded.ok) return recorded;
+    return { ok: true, state: "payment_required" };
+  }
+  if (!isServiceRequestPaymentAuthEnabled(env) || !isServiceRequestCaptureEnabled(env)) {
+    return { ok: false, error: "not_found" };
+  }
   const amount = livePrice(payment.amount_cents);
   if (
     payment.service_request_claim_id !== claim.id ||
@@ -257,25 +293,12 @@ export async function confirmServiceRequestConnection(input: {
     return { ok: false, error: "not_claimable" };
   }
 
-  if (!claim.client_confirmed_at) {
-    const confirmedAt = new Date().toISOString();
-    const saved = await input.supabase
-      .from("service_request_claims")
-      .update({ client_confirmed_at: confirmedAt, updated_at: confirmedAt })
-      .eq("id", claim.id)
-      .eq("status", "reserved")
-      .is("client_confirmed_at", null);
-    if (saved.error) return { ok: false, error: "retryable" };
-  }
-  const reread = await input.supabase
-    .from("service_request_claims")
-    .select("id, status, client_confirmed_at")
-    .eq("id", claim.id)
-    .maybeSingle();
-  if (reread.error) return { ok: false, error: "retryable" };
-  if (reread.data?.status !== "reserved" || typeof reread.data.client_confirmed_at !== "string") {
-    return { ok: false, error: "not_claimable" };
-  }
+  const recorded = await recordServiceRequestClientConfirmation({
+    supabase: input.supabase,
+    requestId: request.id,
+    clientUserId: input.clientUserId,
+  });
+  if (!recorded.ok) return recorded;
 
   if (intent.status === "succeeded") return { ok: true, state: "capture_pending" };
 
@@ -293,4 +316,21 @@ export async function confirmServiceRequestConnection(input: {
     return { ok: false, error: "retryable" };
   }
   return { ok: true, state: "capture_pending" };
+}
+
+async function storePurchaseReady(
+  supabase: SupabaseClient,
+  specialistId: string,
+): Promise<boolean | "retryable"> {
+  const specialist = await supabase.from("specialists").select("user_id").eq("id", specialistId).maybeSingle();
+  if (specialist.error) return "retryable";
+  const userId = specialist.data && typeof specialist.data.user_id === "string" ? specialist.data.user_id : "";
+  if (!userId) return false;
+  const capable = await activeUserIdsWithNativeCapability(
+    supabase,
+    [userId],
+    PAID_REQUEST_STORE_PURCHASE_CAPABILITY,
+  );
+  if ("error" in capable) return "retryable";
+  return capable.has(userId);
 }

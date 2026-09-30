@@ -64,11 +64,13 @@ Client confirmation belongs to `service_request_claims.client_confirmed_at`. It 
 
 It stores no client identity. The paid reservation still requires `service_requests.client_user_id`. Anonymous clients stay blocked. Do not design an anonymous store purchase around this path.
 
-Confirmation does not itself grant access, create a conversation, or choose the payment provider.
+Confirmation does not itself grant access, create a conversation, or choose the payment provider. The client does not send the rail, amount, specialist, claim, or offer.
 
-For Stripe, confirmation causes capture of the previously authorized PaymentIntent. ADR-007 owns that rail.
+`recordServiceRequestClientConfirmation` is the provider-neutral writer. It checks ownership, the reserved claim, the canonical positive EUR offer, and the active match, then stores the timestamp once.
 
-For Native store billing, confirmation makes the reserved claim eligible for specialist purchase. It does not charge the specialist and it does not create an entitlement.
+For Stripe, that writer runs only after an authorized PaymentIntent has already been validated. Confirmation then captures that same PaymentIntent. ADR-007 owns that rail. Absence of a Stripe payment is not permission to confirm a Stripe claim early.
+
+For Native store billing, the same writer may run with no payment row only when `SERVICE_REQUEST_STORE_PAYMENT_ENABLED` is on and the reserved specialist has an active installation advertising `paid_request_store_purchase_v1`. `paid_request_access_v1` is not enough. The response state is `payment_required`. It does not charge, grant, open chat, or send the `payment_required` notice. Current Native does not advertise the purchase capability, so this branch stays closed.
 
 ## 6. Stripe / Web rail
 
@@ -120,7 +122,7 @@ After confirmation, and before a verified purchase, the specialist may be waitin
 
 No new `service_request` status and no new claim status is required. The specialist match preview returns this boolean. It is not a notification and it does not open a conversation.
 
-`POST /api/client/requests/service-request/[id]/confirm` still requires the three Stripe flags and an authorized PaymentIntent. This read does not make Native store confirmation executable.
+The same confirm endpoint chooses the rail. An authorized Stripe payment still requires the Stripe auth and capture flags and still returns `capture_pending`. A store-ready account with no active payment can return `payment_required` only behind the store flag. That response is not a purchase and not a notification. The store rail still has no client confirmation notice; `connection_confirmation_required` remains the Stripe authorization notice.
 
 No verified purchase means no access grant and no conversation. A Native receipt assertion alone is not verification.
 
@@ -233,12 +235,12 @@ Store-billed recurring subscriptions are managed by the owning store. This docum
 
 ## 15. Rollout
 
-This document does not add a flag or a capability.
+The store flag and purchase capability exist and stay off for current Native.
 
 `paid_request_access_v1` means the installation understands `access_offer` and reserve-first TAKE. It does not mean store billing is available. Current Native advertises it and cannot complete payment. Commercial offers must stay off while that is true. Enabling them would create a paid offer, block legacy `/claim`, and leave the specialist unable to pay.
 
-Before commercial offers are enabled, Native needs a separate future capability for the usable store purchase flow. Do not expand `paid_request_access_v1` to mean payment-ready.
+`paid_request_store_purchase_v1` is that separate capability. It means the installation can complete the store-purchase contract. Current Native does not advertise it. Do not expand `paid_request_access_v1` to mean payment-ready.
 
-A future `SERVICE_REQUEST_STORE_PAYMENT_ENABLED` flag is the independent kill switch for starting and verifying store purchases. It is not added now. Stripe flags do not control that switch, and that switch does not capture Stripe PaymentIntents.
+`SERVICE_REQUEST_STORE_PAYMENT_ENABLED` is the store kill switch. It defaults off by absence and is not enabled. It does not capture Stripe PaymentIntents, and the Stripe flags do not open the store branch. Commercial offers stay off until a Native build advertises the purchase capability and the store purchase runtime exists.
 
 Safe activation remains: capability storage applied, both rails implemented, the purchase capability registered by a real Native build, then commercial offers. Until then every paid-flow flag stays off.

@@ -173,6 +173,8 @@ Do not enable commercial offers until the paid reservation, payment, and settlem
 
 It does not mean a payment SDK is installed, payment can succeed, StoreKit or Google Play Billing is available, or the specialist has an entitlement or subscription. App version is not the business rule. Do not reinterpret this capability as payment-ready. Current Native advertises it and then stops after reserve, because no store purchase exists. That is safe only while commercial offers stay off.
 
+`paid_request_store_purchase_v1` is a separate known capability for a fully usable store-purchase contract. Current Native does not advertise it. Store confirmation also requires `SERVICE_REQUEST_STORE_PAYMENT_ENABLED`, which stays off.
+
 While commercial offers are enabled:
 
 - a new matched paid offer may be introduced only for a specialist account with at least one active `native_installations` row advertising `paid_request_access_v1`;
@@ -195,7 +197,7 @@ Safe later activation order:
 3. ship and verify a Native build that registers `paid_request_access_v1`;
 4. observe real capability registrations;
 5. implement the Web Stripe rail and the Native store rail described in `docs/sdd/03-PAYMENT-AND-ENTITLEMENT.md`;
-6. ship a Native build that registers a separate future purchase capability, not an overload of `paid_request_access_v1`;
+6. ship a Native build that registers `paid_request_store_purchase_v1` as well as `paid_request_access_v1`;
 7. only then enable `SERVICE_REQUEST_COMMERCIAL_OFFERS_ENABLED`.
 
 Payment, capture, paid-claim, and any future store-payment flags stay off until that payment rail is actually available. Direct-lead offers, subscriptions, and `lead_pricing_rules` are outside this gate.

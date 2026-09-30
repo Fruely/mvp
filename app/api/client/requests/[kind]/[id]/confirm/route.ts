@@ -56,6 +56,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         { status: 200, headers: NO_STORE },
       );
     }
+    if (result.state === "payment_required") {
+      return NextResponse.json({ ok: true, state: "payment_required" }, { status: 200, headers: NO_STORE });
+    }
     return NextResponse.json({ ok: true, state: "capture_pending" }, { status: 200, headers: NO_STORE });
   } catch (error) {
     console.error("[client/requests/confirm] failed", {

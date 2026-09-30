@@ -7,7 +7,17 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  */
 export const PAID_REQUEST_ACCESS_CAPABILITY = "paid_request_access_v1";
 
-const KNOWN_CAPABILITIES = new Set<string>([PAID_REQUEST_ACCESS_CAPABILITY]);
+/**
+ * Fully usable store-purchase contract for paid service-request access.
+ * Distinct from paid_request_access_v1, which only understands reserve-first TAKE.
+ * Current Native does not advertise this name.
+ */
+export const PAID_REQUEST_STORE_PURCHASE_CAPABILITY = "paid_request_store_purchase_v1";
+
+const KNOWN_CAPABILITIES = new Set<string>([
+  PAID_REQUEST_ACCESS_CAPABILITY,
+  PAID_REQUEST_STORE_PURCHASE_CAPABILITY,
+]);
 
 /**
  * Omitted field is an empty set. A non-array is invalid.
