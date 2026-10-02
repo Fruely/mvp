@@ -5,6 +5,7 @@ import {
   stripePaymentIntentAttribution,
 } from "@/lib/billing/requestOfferPaymentProvider";
 import {
+  isConfirmationDeadlineOpen,
   parseServiceRequestConfirmationWindowSeconds,
   persistConfirmationDeadline,
   readStoredConfirmationDeadline,
@@ -188,7 +189,7 @@ export async function createServiceRequestAuthorization(input: {
 
   const claimResult = await input.supabase
     .from("service_request_claims")
-    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, payment_rail, confirmation_expires_at, client_rejected_at")
+    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, payment_rail, confirmation_expires_at, client_confirmed_at, client_rejected_at")
     .eq("id", input.claimId)
     .maybeSingle();
   if (claimResult.error) return { ok: false, error: "retryable" };
@@ -265,6 +266,12 @@ export async function createServiceRequestAuthorization(input: {
   }
   if (match.specialist_id !== input.specialistId) return { ok: false, error: "forbidden" };
   if (match.status !== "active") return { ok: false, error: "not_claimable" };
+  if (
+    storedConfirmationDeadline(claim.confirmation_expires_at) &&
+    !isConfirmationDeadlineOpen(claim.confirmation_expires_at)
+  ) {
+    return { ok: false, error: "not_claimable" };
+  }
   if (claim.payment_rail === "store") return { ok: false, error: "not_claimable" };
 
   const active = await loadActivePayment(input.supabase, claim.id);

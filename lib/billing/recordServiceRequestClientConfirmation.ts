@@ -1,14 +1,19 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { applyServiceRequestClientDecision } from "@/lib/billing/expireServiceRequestConfirmation";
 import { buildMatchedServiceRequestOfferIdempotencyKey } from "@/lib/leadEngine/requestOfferPolicy";
 import { CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS } from "@/lib/leadEngine/serviceRequestAccessPricing";
 
 /**
- * Provider-neutral record that the owning client confirmed one reserved connection.
- * It does not inspect a payment provider, capture money, grant access, or open chat.
+ * Records the owning client's confirmation of one reserved connection.
+ * Stripe requires payment_rail stripe and an open confirmation_expires_at at the write.
+ * Store does not read that deadline. It does not capture, grant access, or open chat.
  */
 export type RecordClientConfirmationResult =
   | { ok: true; clientConfirmedAt: string }
-  | { ok: false; error: "not_found" | "not_claimable" | "already_claimed" | "invariant" | "retryable" };
+  | {
+      ok: false;
+      error: "not_found" | "not_claimable" | "already_claimed" | "confirmation_expired" | "invariant" | "retryable";
+    };
 
 function canonicalConnectionFee(value: unknown): boolean {
   return value === CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS;
@@ -64,7 +69,7 @@ export async function recordServiceRequestClientConfirmation(input: {
 
   const claimResult = await input.supabase
     .from("service_request_claims")
-    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, client_confirmed_at, client_rejected_at")
+    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, client_confirmed_at, client_rejected_at, payment_rail, confirmation_expires_at")
     .eq("service_request_id", request.id)
     .eq("status", "reserved")
     .maybeSingle();
@@ -78,6 +83,8 @@ export async function recordServiceRequestClientConfirmation(input: {
     request_offer_id?: string | null;
     client_confirmed_at?: string | null;
     client_rejected_at?: string | null;
+    payment_rail?: string | null;
+    confirmation_expires_at?: unknown;
   } | null;
   if (!claim?.id || claim.status !== "reserved") return { ok: false, error: "not_claimable" };
   if (typeof claim.client_rejected_at === "string" && claim.client_rejected_at) {
@@ -132,16 +139,22 @@ export async function recordServiceRequestClientConfirmation(input: {
     return { ok: false, error: "not_claimable" };
   }
 
-  if (!claim.client_confirmed_at) {
+  if (!claim.client_confirmed_at && claim.payment_rail === "store") {
     const confirmedAt = new Date().toISOString();
     const saved = await input.supabase
       .from("service_request_claims")
       .update({ client_confirmed_at: confirmedAt, updated_at: confirmedAt })
       .eq("id", claim.id)
       .eq("status", "reserved")
+      .eq("payment_rail", "store")
       .is("client_confirmed_at", null)
       .is("client_rejected_at", null);
     if (saved.error) return { ok: false, error: "retryable" };
+  } else if (!claim.client_confirmed_at && claim.payment_rail === "stripe") {
+    const decided = await applyServiceRequestClientDecision(input.supabase, claim.id, "confirm");
+    if (!decided.ok) return decided;
+  } else if (!claim.client_confirmed_at) {
+    return { ok: false, error: "not_claimable" };
   }
 
   const reread = await input.supabase

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isConfirmationDeadlineOpen, storedConfirmationDeadline } from "@/lib/billing/serviceRequestConfirmationDeadline";
 import { isEmailConfigured, sendEmail } from "@/lib/email";
 import type { MatchRequest } from "@/lib/matching/eligibility";
 import { sendTelegramMessage } from "@/lib/telegram/sendMessage";
@@ -381,12 +382,12 @@ async function confirmationDeliveryBlock(
   const claim = claimId
     ? await supabase
         .from("service_request_claims")
-        .select("id, status, client_confirmed_at, client_rejected_at")
+        .select("id, status, match_id, client_confirmed_at, client_rejected_at, confirmation_expires_at")
         .eq("id", claimId)
         .maybeSingle()
     : await supabase
         .from("service_request_claims")
-        .select("id, status, client_confirmed_at, client_rejected_at")
+        .select("id, status, match_id, client_confirmed_at, client_rejected_at, confirmation_expires_at")
         .eq("match_id", typeof input.matchId === "string" ? input.matchId : "")
         .eq("status", "reserved")
         .maybeSingle();
@@ -401,6 +402,16 @@ async function confirmationDeliveryBlock(
     (typeof rejectedAt === "string" && rejectedAt.length > 0)
   ) {
     return { kind: "blocked" };
+  }
+  const deadline = claim.data?.confirmation_expires_at;
+  if (storedConfirmationDeadline(deadline) && !isConfirmationDeadlineOpen(deadline)) {
+    return { kind: "blocked" };
+  }
+  const matchId = claim.data?.match_id;
+  if (typeof matchId === "string" && matchId) {
+    const match = await supabase.from("service_request_matches").select("status").eq("id", matchId).maybeSingle();
+    if (match.error) return { kind: "error" };
+    if (match.data?.status === "expired" || match.data?.status === "not_selected") return { kind: "blocked" };
   }
   return { kind: "deliver" };
 }

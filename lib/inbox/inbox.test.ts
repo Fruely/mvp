@@ -660,6 +660,30 @@ test("a queued confirmation notice sends only while the claim is reserved and un
   assert.equal(rejected.tables.notification_outbox[0].status, "cancelled");
   assert.equal(rejected.tables.notification_outbox[0].last_error_code, "stale_confirmation_state");
   assert.equal(rejected.tables.inbox_items.length, 1);
+
+  const elapsed = seed();
+  const elapsedSeen: string[] = [];
+  elapsed.tables.service_request_claims = [{
+    id: "claim-1",
+    match_id: "match-1",
+    status: "reserved",
+    client_confirmed_at: null,
+    client_rejected_at: null,
+    confirmation_expires_at: "2000-01-01T00:00:00.000Z",
+  }];
+  queueNotice(elapsed, {
+    event: "connection_confirmation_required",
+    service_request_id: "request-1",
+    public_id: "REQ-1",
+    service_label: "Tax advice",
+    match_id: "match-1",
+  });
+  elapsed.tables.inbox_items[0].dedupe_key = "claim:claim-1:connection_confirmation_required";
+  await deliverPendingOutbox(elapsed.supabase, DEFAULT_MATCH_DELIVERY_POLICY, countingTransports(elapsedSeen), DAY);
+  assert.deepEqual(elapsedSeen, []);
+  assert.equal(elapsed.tables.notification_outbox[0].status, "cancelled");
+  assert.equal(elapsed.tables.notification_outbox[0].last_error_code, "stale_confirmation_state");
+  assert.equal(elapsed.tables.inbox_items.length, 1);
 });
 
 test("a confirmation state read failure stays retryable and is not sent", async () => {

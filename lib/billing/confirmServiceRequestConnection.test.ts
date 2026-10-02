@@ -106,6 +106,42 @@ class Memory {
     };
     return api;
   }
+
+  async rpc(fn: string, args: { p_claim_id?: string; p_decision?: string }) {
+    if (fn !== "apply_service_request_client_decision") {
+      return { data: null, error: { message: "unknown rpc" } };
+    }
+    return { data: decide(this.tables, args.p_claim_id, args.p_decision), error: null };
+  }
+}
+
+function decide(
+  tables: Record<string, Row[]>,
+  claimId: string | undefined,
+  decision: string | undefined,
+): { ok: boolean; at?: string; error?: string } {
+  const claim = tables.service_request_claims?.find((row) => row.id === claimId);
+  const match = tables.service_request_matches?.find((row) => row.id === claim?.match_id);
+  if (!claim || claim.status !== "reserved" || !match) return { ok: false, error: "not_claimable" };
+  if (decision === "confirm" && typeof claim.client_confirmed_at === "string" && !claim.client_rejected_at) {
+    return { ok: true, at: claim.client_confirmed_at };
+  }
+  if (decision === "reject" && typeof claim.client_rejected_at === "string" && !claim.client_confirmed_at) {
+    return { ok: true, at: claim.client_rejected_at };
+  }
+  if (claim.client_confirmed_at || claim.client_rejected_at) return { ok: false, error: "not_claimable" };
+  const deadline = typeof claim.confirmation_expires_at === "string" ? Date.parse(claim.confirmation_expires_at) : Number.NaN;
+  if (match.status === "expired" || (Number.isFinite(deadline) && deadline <= Date.now())) {
+    return { ok: false, error: "confirmation_expired" };
+  }
+  if (decision === "confirm" && !Number.isFinite(deadline)) return { ok: false, error: "not_claimable" };
+  if (match.status !== "active" && match.status !== "interested") return { ok: false, error: "not_claimable" };
+  const at = new Date().toISOString();
+  if (decision === "confirm") claim.client_confirmed_at = at;
+  else if (decision === "reject") claim.client_rejected_at = at;
+  else return { ok: false, error: "not_claimable" };
+  claim.updated_at = at;
+  return { ok: true, at };
 }
 
 function seed(overrides: { paymentStatus?: string; claimStatus?: string; selected?: string | null } = {}) {
@@ -503,6 +539,20 @@ test("store-ready confirmation records the client decision and does not charge",
   assert.equal(db.tables.request_offers[0]?.price_cents, 2500);
   assert.equal(captures.length, 0);
   assert.equal(db.tables.inbox_items.length, 0);
+});
+
+test("store confirmation records without a stripe deadline and does not charge", async () => {
+  const db = seed();
+  readyStore(db);
+  db.tables.service_request_claims[0].confirmation_expires_at = null;
+  const { stripe, captures } = stripeFor();
+  const result = await confirm(db, stripe, CLIENT, STORE_ON);
+  assert.deepEqual(result, { ok: true, state: "payment_required" });
+  assert.equal(typeof db.tables.service_request_claims[0]?.client_confirmed_at, "string");
+  assert.equal(db.tables.service_request_claims[0]?.status, "reserved");
+  assert.equal(db.tables.service_request_matches[0]?.status, "active");
+  assert.equal(db.tables.request_offer_payments.length, 0);
+  assert.equal(captures.length, 0);
 });
 
 test("an in-flight or settled payment never opens the store confirmation branch", async () => {

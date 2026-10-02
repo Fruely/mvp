@@ -4,6 +4,7 @@ import { SERVICE_REQUEST_AUTHORIZATION_PURPOSE } from "@/lib/billing/createServi
 import { stripePaymentIntentAttribution } from "@/lib/billing/requestOfferPaymentProvider";
 import { paymentProvesStripeRail } from "@/lib/billing/serviceRequestPaymentRail";
 import { CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS } from "@/lib/leadEngine/serviceRequestAccessPricing";
+import { applyServiceRequestClientDecision } from "@/lib/billing/expireServiceRequestConfirmation";
 import { connectionConfirmationInboxKey } from "@/lib/selection/policy";
 
 /**
@@ -247,18 +248,8 @@ async function establishRejection(
   claim: ClaimRow,
 ): Promise<{ ok: true; claim: ClaimRow } | { ok: false; error: "not_claimable" | "retryable" }> {
   if (claim.client_rejected_at) return { ok: true, claim };
-  const rejectedAt = new Date().toISOString();
-  const saved = await supabase
-    .from("service_request_claims")
-    .update({ client_rejected_at: rejectedAt, updated_at: rejectedAt })
-    .eq("id", claim.id)
-    .eq("status", "reserved")
-    .is("client_confirmed_at", null)
-    .is("client_rejected_at", null)
-    .select("id");
-  if (saved.error) {
-    return { ok: false, error: saved.error.code === "23514" ? "not_claimable" : "retryable" };
-  }
+  const decided = await applyServiceRequestClientDecision(supabase, claim.id, "reject");
+  if (!decided.ok) return { ok: false, error: decided.error === "retryable" ? "retryable" : "not_claimable" };
   const reread = await supabase.from("service_request_claims").select(CLAIM_COLUMNS).eq("id", claim.id).maybeSingle();
   if (reread.error || !reread.data) return { ok: false, error: "retryable" };
   const current = reread.data as ClaimRow;
