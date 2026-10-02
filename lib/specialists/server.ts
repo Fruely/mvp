@@ -9,7 +9,9 @@ import {
 import { validatePublication } from "@/lib/dashboard/publicationValidator";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/auth-server";
 import { createSupabaseServerClient as createServiceClient } from "@/lib/supabase/server";
+import { ensureSpecialistDraft } from "@/lib/specialists/ensureSpecialistDraft";
 import { specialistLangBecomePath } from "@/lib/specialists/navigation";
+import { supabaseSpecialistDraftStore } from "@/lib/specialists/supabaseSpecialistDraftStore";
 
 /** Marketplace v2 canonical statuses + legacy compatibility during rollout. */
 export type SpecialistStatus =
@@ -206,23 +208,26 @@ async function getCurrentUserAndSpecialistUncached() {
 
   if (!specialist) {
     const normalizedEmail = typeof user.email === "string" ? user.email.trim().toLowerCase() : null;
-    const { data: created, error: createError } = await service
-      .from("specialists")
-      .insert({
-        user_id: user.id,
-        name: null,
-        email: normalizedEmail,
-        status: "draft",
-        is_active: false,
-        is_visible: false,
-      })
-      .select(COLS)
-      .maybeSingle();
-
-    if (createError) {
-      console.error("[specialists/server] failed to auto-create draft specialist", createError);
+    const email = normalizedEmail && normalizedEmail.includes("@") ? normalizedEmail : null;
+    try {
+      const ensured = await ensureSpecialistDraft(supabaseSpecialistDraftStore(service), {
+        userId: user.id,
+        email,
+      });
+      if (ensured.ok) {
+        const { data: created, error: loadError } = await service
+          .from("specialists")
+          .select(COLS)
+          .eq("id", ensured.specialist.id)
+          .maybeSingle();
+        if (loadError) {
+          console.error("[specialists/server] failed to load ensured specialist", loadError);
+        }
+        specialist = toSpecialistRow(created as Record<string, unknown> | null);
+      }
+    } catch (error) {
+      console.error("[specialists/server] failed to ensure specialist draft", error);
     }
-    specialist = toSpecialistRow(created);
   }
 
   if (!specialist) {
