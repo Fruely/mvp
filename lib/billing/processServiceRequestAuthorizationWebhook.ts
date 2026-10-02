@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { persistConfirmationDeadline } from "@/lib/billing/serviceRequestConfirmationDeadline";
 import { CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS } from "@/lib/leadEngine/serviceRequestAccessPricing";
 import { stripePaymentIntentAttribution } from "@/lib/billing/requestOfferPaymentProvider";
 import type Stripe from "stripe";
@@ -177,15 +178,27 @@ export async function processStripeWebhookEventForServiceRequestAuthorization(
     if (payment.status !== "pending" || claim.status !== "reserved") {
       return { outcome: "validation_failed" };
     }
-    const authorizedAt = new Date().toISOString();
+    const authorizedAt = new Date();
+    const deadline = await persistConfirmationDeadline({
+      supabase,
+      claimId: claim.id,
+      authorizedAt,
+      env,
+    });
+    if (!deadline.ok) {
+      return {
+        outcome: deadline.error === "confirmation_window_unconfigured" ? "validation_failed" : "retryable_failure",
+      };
+    }
+    const authorizedAtIso = authorizedAt.toISOString();
     const { error } = await supabase
       .from("request_offer_payments")
       .update({
         status: "authorized",
-        authorized_at: authorizedAt,
+        authorized_at: authorizedAtIso,
         stripe_payment_intent_id: intent.id,
         ...stripePaymentIntentAttribution(intent.id),
-        updated_at: authorizedAt,
+        updated_at: authorizedAtIso,
       })
       .eq("id", payment.id)
       .eq("status", "pending");

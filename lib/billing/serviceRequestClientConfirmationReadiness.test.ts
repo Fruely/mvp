@@ -160,7 +160,31 @@ async function required(db: Memory, env: NodeJS.ProcessEnv = {}, stripeConfigure
 test("client detail confirmation is true only for a confirmable bound rail", async () => {
   assert.equal(await required(seed({ claim: null })), false);
   assert.equal(await required(seed({ rail: null }), STORE_ON, true), false);
-  assert.equal(await required(seed({ rail: "stripe", payment: authorized }), STRIPE_ON, true), true);
+  assert.equal(
+    await required(
+      seed({
+        rail: "stripe",
+        payment: authorized,
+        claim: { confirmation_expires_at: "2099-01-01T00:00:00.000Z" },
+      }),
+      STRIPE_ON,
+      true,
+    ),
+    true,
+  );
+  assert.equal(await required(seed({ rail: "stripe", payment: authorized }), STRIPE_ON, true), false);
+  assert.equal(
+    await required(
+      seed({
+        rail: "stripe",
+        payment: authorized,
+        claim: { confirmation_expires_at: "2000-01-01T00:00:00.000Z" },
+      }),
+      STRIPE_ON,
+      true,
+    ),
+    false,
+  );
   assert.equal(await required(seed({ rail: "stripe", payment: authorized }), STRIPE_ON, false), false);
   assert.equal(await required(seed({ rail: "store" }), STORE_ON), true);
   assert.equal(await required(seed({ rail: "store" }), { SERVICE_REQUEST_PAID_CLAIM_ENABLED: "true" }), false);
@@ -169,6 +193,39 @@ test("client detail confirmation is true only for a confirmable bound rail", asy
   assert.equal(await required(seed({ rail: "store", grant: true }), STORE_ON), false);
   assert.equal(await required(seed({ claim: { status: "released" }, rail: "store" }), STORE_ON), false);
   assert.equal(await required(seed({ rail: "stripe", payment: authorized, grant: true }), STRIPE_ON, true), false);
+});
+
+test("owned request detail exposes the absolute confirmation deadline", async () => {
+  const previousStore = process.env.SERVICE_REQUEST_STORE_PAYMENT_ENABLED;
+  const previousPaid = process.env.SERVICE_REQUEST_PAID_CLAIM_ENABLED;
+  process.env.SERVICE_REQUEST_STORE_PAYMENT_ENABLED = "true";
+  process.env.SERVICE_REQUEST_PAID_CLAIM_ENABLED = "true";
+  try {
+    const deadline = "2099-01-01T00:00:00.000Z";
+    const db = seed({
+      rail: "store",
+      claim: { confirmation_expires_at: deadline },
+    });
+    const detail = await getClientRequestHistoryDetail(
+      db as unknown as SupabaseClient,
+      CLIENT,
+      "service_request",
+      "REQ-DETAIL",
+    );
+    assert.equal(detail?.connection_confirmation_required, true);
+    assert.equal(detail?.confirmation_expires_at, deadline);
+    const encoded = JSON.stringify(detail);
+    assert.equal(encoded.includes("pi_auth"), false);
+    assert.equal(encoded.includes("client_secret"), false);
+    assert.equal(encoded.includes(SPEC), false);
+    const history = await listClientRequestHistory(db as unknown as SupabaseClient, CLIENT, {});
+    assert.equal(history.items.some((item) => "confirmation_expires_at" in item), false);
+  } finally {
+    if (previousStore === undefined) delete process.env.SERVICE_REQUEST_STORE_PAYMENT_ENABLED;
+    else process.env.SERVICE_REQUEST_STORE_PAYMENT_ENABLED = previousStore;
+    if (previousPaid === undefined) delete process.env.SERVICE_REQUEST_PAID_CLAIM_ENABLED;
+    else process.env.SERVICE_REQUEST_PAID_CLAIM_ENABLED = previousPaid;
+  }
 });
 
 test("service-request detail exposes the boolean and history does not", async () => {

@@ -13,6 +13,7 @@ import {
   paymentProvesStripeRail,
   SERVICE_REQUEST_STORE_PAYMENT_FLAG,
 } from "@/lib/billing/serviceRequestPaymentRail";
+import { isConfirmationDeadlineOpen, storedConfirmationDeadline } from "@/lib/billing/serviceRequestConfirmationDeadline";
 import { CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS } from "@/lib/leadEngine/serviceRequestAccessPricing";
 import { isServiceRequestPaidClaimEnabled } from "@/lib/selection/reserveMatch";
 
@@ -52,7 +53,15 @@ export type ConfirmServiceRequestConnectionResult =
   | { ok: true; state: "payment_required" }
   | {
       ok: false;
-      error: "not_found" | "not_claimable" | "already_claimed" | "invariant" | "payments_unavailable" | "retryable";
+      error:
+        | "not_found"
+        | "not_claimable"
+        | "already_claimed"
+        | "invariant"
+        | "payments_unavailable"
+        | "confirmation_deadline_missing"
+        | "confirmation_expired"
+        | "retryable";
     };
 
 type RequestRow = {
@@ -70,6 +79,7 @@ type ClaimRow = {
   request_offer_id: string | null;
   client_confirmed_at: string | null;
   payment_rail: string | null;
+  confirmation_expires_at?: unknown;
 };
 
 type PaymentRow = {
@@ -142,7 +152,7 @@ export async function confirmServiceRequestConnection(input: {
 
   const claimResult = await input.supabase
     .from("service_request_claims")
-    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, client_confirmed_at, payment_rail")
+    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, client_confirmed_at, payment_rail, confirmation_expires_at")
     .eq("service_request_id", request.id)
     .eq("status", "reserved")
     .maybeSingle();
@@ -223,6 +233,12 @@ export async function confirmServiceRequestConnection(input: {
     !payment.stripe_payment_intent_id
   ) {
     return { ok: false, error: "invariant" };
+  }
+  if (!storedConfirmationDeadline(claim.confirmation_expires_at)) {
+    return { ok: false, error: "confirmation_deadline_missing" };
+  }
+  if (!isConfirmationDeadlineOpen(claim.confirmation_expires_at)) {
+    return { ok: false, error: "confirmation_expired" };
   }
 
   const offerResult = await input.supabase

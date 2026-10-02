@@ -20,6 +20,7 @@ const SECRET = "pi_test_secret_do_not_store";
 const ON = {
   SERVICE_REQUEST_PAID_CLAIM_ENABLED: "true",
   SERVICE_REQUEST_PAYMENT_AUTH_ENABLED: "true",
+  SERVICE_REQUEST_CONFIRMATION_WINDOW_SECONDS: "900",
 };
 
 type Row = Record<string, unknown>;
@@ -239,6 +240,89 @@ test("null price returns price_unavailable and does not call Stripe", async () =
   assert.equal(db.updates.length, 0);
   assert.equal(JSON.stringify(db.inserts).includes("500 euros"), false);
   assert.equal(db.tables.request_offers[0]?.price_cents, null);
+});
+
+test("missing or malformed confirmation window does not create a PaymentIntent", async () => {
+  for (const value of [undefined, "", "0", "-15", "15m", "1.5", "Infinity", "  "]) {
+    const db = seed();
+    const { stripe, creates } = stripeFor();
+    const env = { ...ON };
+    if (value === undefined) delete env.SERVICE_REQUEST_CONFIRMATION_WINDOW_SECONDS;
+    else env.SERVICE_REQUEST_CONFIRMATION_WINDOW_SECONDS = value;
+    const result = await authorize(db, stripe, env, {
+      confirmationExpiresAt: "2099-01-01T00:00:00.000Z",
+      confirmationWindowSeconds: 60,
+    });
+    assert.deepEqual(result, { ok: false, error: "confirmation_window_unconfigured" });
+    assert.equal(creates.length, 0);
+    assert.equal(db.inserts.length, 0);
+    assert.equal(db.tables.request_offers[0]?.price_cents, 2500);
+  }
+});
+
+test("authorization persists one server deadline and replay does not extend it", async () => {
+  const db = seed();
+  const { stripe, creates } = stripeFor(async (params, options) => {
+    creates.push({ params, options });
+    return {
+      id: "pi_created",
+      amount: Number(params.amount),
+      currency: String(params.currency),
+      status: "requires_capture",
+      client_secret: SECRET,
+    };
+  });
+  const before = Date.now();
+  const first = await authorize(db, stripe, ON, {
+    confirmationExpiresAt: "2099-01-01T00:00:00.000Z",
+    confirmationWindowSeconds: 1,
+  });
+  const after = Date.now();
+  assert.equal(first.ok, true);
+  if (!first.ok || first.state !== "authorized") return;
+  assert.equal(first.amountCents, 2500);
+  assert.equal(creates[0]?.params.amount, 2500);
+  const authorizedAt = Date.parse(String(db.tables.request_offer_payments[0]?.authorized_at));
+  const expires = Date.parse(String(first.confirmationExpiresAt));
+  assert.equal(expires - authorizedAt, 900_000);
+  assert.equal(authorizedAt >= before && authorizedAt <= after, true);
+  assert.equal(db.tables.service_request_claims[0]?.confirmation_expires_at, first.confirmationExpiresAt);
+  const second = await authorize(db, stripe, {
+    ...ON,
+    SERVICE_REQUEST_CONFIRMATION_WINDOW_SECONDS: "30",
+  });
+  assert.equal(second.ok, true);
+  if (!second.ok || second.state !== "authorized") return;
+  assert.equal(second.confirmationExpiresAt, first.confirmationExpiresAt);
+  assert.equal(db.tables.service_request_claims[0]?.confirmation_expires_at, first.confirmationExpiresAt);
+  assert.equal(creates.length, 1);
+});
+
+test("an already authorized claim is not given a deadline when configuration is missing", async () => {
+  const db = seed(2500, {
+    request_offer_payments: [{
+      id: "12121212-1212-4121-8121-121212121212",
+      offer_id: OFFER,
+      specialist_id: SPEC,
+      service_request_claim_id: CLAIM,
+      amount_cents: 2500,
+      currency: "eur",
+      status: "authorized",
+      stripe_payment_intent_id: "pi_old",
+      provider: "stripe",
+    }],
+  });
+  const env = { ...ON };
+  delete env.SERVICE_REQUEST_CONFIRMATION_WINDOW_SECONDS;
+  const { stripe, creates } = stripeFor();
+  const result = await authorize(db, stripe, env);
+  assert.equal(result.ok, true);
+  if (!result.ok || result.state !== "authorized") return;
+  assert.equal(result.confirmationExpiresAt, undefined);
+  assert.equal(creates.length, 0);
+  assert.equal(db.inserts.length, 0);
+  assert.equal(db.tables.service_request_claims[0]?.confirmation_expires_at, undefined);
+  assert.equal(db.tables.request_offer_payments[0]?.amount_cents, 2500);
 });
 
 test("a live offer amount other than 2500 cannot be authorized", async () => {

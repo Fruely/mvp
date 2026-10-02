@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { isServiceRequestClientConfirmationRequired } from "@/lib/billing/serviceRequestClientConfirmationReadiness";
+import { storedConfirmationDeadline } from "@/lib/billing/serviceRequestConfirmationDeadline";
 import { clientBudgetReconciliationState } from "@/lib/serviceRequests/budgetReconciliation";
 import {
   buildLeadHistoryPaginationOrFilter,
@@ -132,10 +133,26 @@ export async function getClientRequestHistoryDetail(
   const connectionConfirmationRequired = requestId
     ? await isServiceRequestClientConfirmationRequired({ supabase, requestId })
     : false;
+  const confirmationExpiresAt = requestId ? await readConfirmationExpiresAt(supabase, requestId) : null;
   return toClientSafeHistoryDetail(item, {
     description: data.description,
     public_id: data.public_id,
     budget_reconciliation: clientBudgetReconciliationState(data),
     connection_confirmation_required: connectionConfirmationRequired,
+    confirmation_expires_at: confirmationExpiresAt,
   });
+}
+
+async function readConfirmationExpiresAt(
+  supabase: SupabaseClient,
+  requestId: string,
+): Promise<string | null> {
+  const result = await supabase
+    .from("service_request_claims")
+    .select("confirmation_expires_at")
+    .eq("service_request_id", requestId)
+    .eq("status", "reserved")
+    .maybeSingle();
+  if (result.error || !result.data) return null;
+  return storedConfirmationDeadline(result.data.confirmation_expires_at);
 }

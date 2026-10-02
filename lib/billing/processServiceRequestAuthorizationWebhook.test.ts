@@ -40,6 +40,10 @@ class Memory {
         filters.push((row) => values.includes(row[column]));
         return api;
       },
+      is(column: string, value: unknown) {
+        filters.push((row) => (value == null ? row[column] == null : row[column] === value));
+        return api;
+      },
       update(next: Row) {
         patch = next;
         return api;
@@ -138,10 +142,17 @@ function event(
   } as unknown as Stripe.Event;
 }
 
-async function run(database: Memory, stripeEvent: Stripe.Event) {
+const WINDOW = { SERVICE_REQUEST_CONFIRMATION_WINDOW_SECONDS: "900" };
+
+async function run(
+  database: Memory,
+  stripeEvent: Stripe.Event,
+  env: NodeJS.ProcessEnv = WINDOW,
+) {
   return processStripeWebhookEventForServiceRequestAuthorization(
     database as unknown as SupabaseClient,
     stripeEvent,
+    env,
   );
 }
 
@@ -159,6 +170,32 @@ test("amount_capturable_updated with requires_capture authorizes once", async ()
   assert.equal(database.tables.conversations.length, 0);
   assert.equal(database.writes.includes("request_offer_access_grants"), false);
   assert.equal(database.writes.includes("conversations"), false);
+});
+
+test("webhook authorization persists one deadline and a later window does not extend it", async () => {
+  const database = db();
+  const first = await run(database, event("payment_intent.amount_capturable_updated"));
+  const expires = database.tables.service_request_claims[0]?.confirmation_expires_at;
+  const authorizedAt = database.tables.request_offer_payments[0]?.authorized_at;
+  assert.deepEqual(first, { outcome: "success" });
+  assert.equal(Date.parse(String(expires)) - Date.parse(String(authorizedAt)), 900_000);
+  const second = await run(database, event("payment_intent.amount_capturable_updated"), {
+    SERVICE_REQUEST_CONFIRMATION_WINDOW_SECONDS: "30",
+  });
+  assert.deepEqual(second, { outcome: "success" });
+  assert.equal(database.tables.service_request_claims[0]?.confirmation_expires_at, expires);
+  assert.equal(database.tables.request_offer_payments[0]?.authorized_at, authorizedAt);
+  assert.equal(database.tables.request_offer_payments[0]?.status, "authorized");
+  assert.equal(database.tables.service_request_claims[0]?.status, "reserved");
+});
+
+test("webhook does not authorize when the confirmation window is not configured", async () => {
+  const database = db();
+  const result = await run(database, event("payment_intent.amount_capturable_updated"), {});
+  assert.deepEqual(result, { outcome: "validation_failed" });
+  assert.equal(database.tables.request_offer_payments[0]?.status, "pending");
+  assert.equal(database.tables.request_offer_payments[0]?.authorized_at, undefined);
+  assert.equal(database.tables.service_request_claims[0]?.confirmation_expires_at, undefined);
 });
 
 test("a persisted amount other than 2500 cannot be authorized by webhook", async () => {

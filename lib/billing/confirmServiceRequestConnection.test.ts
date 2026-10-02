@@ -29,6 +29,7 @@ const FLAGS = {
   SERVICE_REQUEST_PAID_CLAIM_ENABLED: "true",
   SERVICE_REQUEST_PAYMENT_AUTH_ENABLED: "true",
   SERVICE_REQUEST_CAPTURE_ENABLED: "true",
+  SERVICE_REQUEST_CONFIRMATION_WINDOW_SECONDS: "900",
 };
 
 type Row = Record<string, unknown>;
@@ -125,6 +126,7 @@ function seed(overrides: { paymentStatus?: string; claimStatus?: string; selecte
       match_id: MATCH,
       request_offer_id: OFFER,
       client_confirmed_at: null,
+      confirmation_expires_at: "2099-01-01T00:00:00.000Z",
     }],
     request_offer_payments: [{
       id: PAYMENT,
@@ -206,6 +208,39 @@ async function confirm(db: Memory, stripe: ServiceRequestCaptureStripe, userId =
     stripe,
   });
 }
+
+test("confirmation before the deadline captures and after the deadline does not", async () => {
+  const open = seed();
+  const { stripe: openStripe, captures: openCaptures } = stripeFor();
+  const confirmed = await confirm(open, openStripe, CLIENT, FLAGS);
+  assert.equal(confirmed.ok, true);
+  assert.equal(openCaptures.length, 1);
+  assert.equal(open.tables.request_offers[0]?.price_cents, 2500);
+
+  const expired = seed();
+  expired.tables.service_request_claims[0].confirmation_expires_at = "2000-01-01T00:00:00.000Z";
+  const { stripe: expiredStripe, captures } = stripeFor();
+  const result = await confirm(expired, expiredStripe, CLIENT, {
+    ...FLAGS,
+    SERVICE_REQUEST_CONFIRMATION_WINDOW_SECONDS: "30",
+  });
+  assert.deepEqual(result, { ok: false, error: "confirmation_expired" });
+  assert.equal(captures.length, 0);
+  assert.equal(expired.tables.service_request_claims[0]?.client_confirmed_at, null);
+  assert.equal(expired.tables.request_offer_payments[0]?.status, "authorized");
+  assert.equal(expired.tables.request_offer_payments[0]?.amount_cents, 2500);
+});
+
+test("a canonical authorization without a deadline cannot be captured", async () => {
+  const db = seed();
+  db.tables.service_request_claims[0].confirmation_expires_at = null;
+  const { stripe, captures } = stripeFor();
+  const result = await confirm(db, stripe);
+  assert.deepEqual(result, { ok: false, error: "confirmation_deadline_missing" });
+  assert.equal(captures.length, 0);
+  assert.equal(db.tables.service_request_claims[0]?.client_confirmed_at, null);
+  assert.equal(db.tables.service_request_claims[0]?.status, "reserved");
+});
 
 test("confirmation does not capture a live offer amount other than 2500", async () => {
   const db = seed();
@@ -341,6 +376,7 @@ test("confirmation copy and route do not accept client money fields", () => {
 test("one confirmation notice is shared by both authorization paths", async () => {
   const db = seed({ paymentStatus: "pending" });
   db.tables.request_offer_payments[0].stripe_payment_intent_id = null;
+  db.tables.service_request_claims[0].confirmation_expires_at = null;
   const created = await createServiceRequestAuthorization({
     supabase: db as unknown as SupabaseClient,
     claimId: CLAIM,
@@ -368,6 +404,10 @@ test("one confirmation notice is shared by both authorization paths", async () =
     resolveCustomer: async () => "cus_test",
   });
   assert.equal(created.ok, true);
+  if (!created.ok || created.state !== "authorized") return;
+  const deadline = db.tables.service_request_claims[0]?.confirmation_expires_at;
+  assert.equal(created.confirmationExpiresAt, deadline);
+  assert.equal(created.amountCents, 2500);
   await processStripeWebhookEventForServiceRequestAuthorization(
     db as unknown as SupabaseClient,
     {
@@ -390,8 +430,9 @@ test("one confirmation notice is shared by both authorization paths", async () =
         },
       },
     } as never,
-    FLAGS,
+    { ...FLAGS, SERVICE_REQUEST_CONFIRMATION_WINDOW_SECONDS: "30" },
   );
+  assert.equal(db.tables.service_request_claims[0]?.confirmation_expires_at, deadline);
   await notifyClientConfirmationRequired(db as unknown as SupabaseClient, CLAIM);
   const notices = db.tables.inbox_items.filter((row) => row.type === "connection_confirmation_required");
   assert.equal(notices.length, 1);

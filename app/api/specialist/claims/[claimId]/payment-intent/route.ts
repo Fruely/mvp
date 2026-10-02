@@ -48,7 +48,9 @@ export async function POST(
           ? 403
           : result.error === "not_found"
             ? 404
-            : result.error === "payments_unavailable" || result.error === "retryable"
+            : result.error === "payments_unavailable" ||
+                result.error === "confirmation_window_unconfigured" ||
+                result.error === "retryable"
               ? 503
               : 409;
       return NextResponse.json({ error: result.error }, { status, headers: NO_STORE });
@@ -73,6 +75,9 @@ export async function POST(
         paymentId: result.paymentId,
         amountCents: result.amountCents,
         currency: result.currency,
+        ...(result.state === "authorized" && result.confirmationExpiresAt
+          ? { confirmationExpiresAt: result.confirmationExpiresAt }
+          : {}),
       },
       { status: 200, headers: NO_STORE },
     );

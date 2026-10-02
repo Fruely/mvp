@@ -6,6 +6,7 @@ import {
 import { getStripeClient } from "@/lib/billing/stripeClient";
 import { isCanonicalMatchedServiceRequestOffer } from "@/lib/billing/recordServiceRequestClientConfirmation";
 import { specialistHasStorePurchaseCapability } from "@/lib/billing/prepareServiceRequestStorePayment";
+import { isConfirmationDeadlineOpen } from "@/lib/billing/serviceRequestConfirmationDeadline";
 import {
   isServiceRequestStorePaymentEnabled,
   paymentProvesStripeRail,
@@ -33,7 +34,7 @@ export async function isServiceRequestClientConfirmationRequired(input: {
 
   const claimResult = await input.supabase
     .from("service_request_claims")
-    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, client_confirmed_at, payment_rail")
+    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, client_confirmed_at, payment_rail, confirmation_expires_at")
     .eq("service_request_id", input.requestId)
     .eq("status", "reserved")
     .maybeSingle();
@@ -46,6 +47,7 @@ export async function isServiceRequestClientConfirmationRequired(input: {
     request_offer_id?: string | null;
     client_confirmed_at?: string | null;
     payment_rail?: string | null;
+    confirmation_expires_at?: unknown;
   };
   if (typeof claim.client_confirmed_at === "string" && claim.client_confirmed_at) return false;
   if (!claim.specialist_id || !claim.request_offer_id || !claim.match_id) return false;
@@ -101,6 +103,7 @@ export async function isServiceRequestClientConfirmationRequired(input: {
   }
 
   if (!isServiceRequestPaymentAuthEnabled(env) || !isServiceRequestCaptureEnabled(env)) return false;
+  if (!isConfirmationDeadlineOpen(claim.confirmation_expires_at)) return false;
   const stripeConfigured = input.stripeConfigured ?? Boolean(getStripeClient());
   if (!stripeConfigured) return false;
   const offerPrice = offerResult.data.price_cents;

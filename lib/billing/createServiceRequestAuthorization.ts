@@ -4,6 +4,12 @@ import {
   STRIPE_REQUEST_OFFER_PAYMENT_PROVIDER,
   stripePaymentIntentAttribution,
 } from "@/lib/billing/requestOfferPaymentProvider";
+import {
+  parseServiceRequestConfirmationWindowSeconds,
+  persistConfirmationDeadline,
+  readStoredConfirmationDeadline,
+  storedConfirmationDeadline,
+} from "@/lib/billing/serviceRequestConfirmationDeadline";
 import { bindServiceRequestPaymentRail } from "@/lib/billing/serviceRequestPaymentRail";
 import { getStripeClient } from "@/lib/billing/stripeClient";
 import { CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS } from "@/lib/leadEngine/serviceRequestAccessPricing";
@@ -67,7 +73,15 @@ export type ServiceRequestAuthorizationResult =
     }
   | {
       ok: true;
-      state: "authorized" | "paid";
+      state: "authorized";
+      paymentId: string;
+      amountCents: number;
+      currency: "eur";
+      confirmationExpiresAt?: string;
+    }
+  | {
+      ok: true;
+      state: "paid";
       paymentId: string;
       amountCents: number;
       currency: "eur";
@@ -82,6 +96,7 @@ export type ServiceRequestAuthorizationResult =
         | "offer_unavailable"
         | "price_unavailable"
         | "payments_unavailable"
+        | "confirmation_window_unconfigured"
         | "retryable"
         | "invariant";
     };
@@ -106,6 +121,7 @@ type ClaimRow = {
   match_id: string;
   request_offer_id: string | null;
   payment_rail?: string | null;
+  confirmation_expires_at?: unknown;
 };
 
 type OfferRow = {
@@ -171,7 +187,7 @@ export async function createServiceRequestAuthorization(input: {
 
   const claimResult = await input.supabase
     .from("service_request_claims")
-    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, payment_rail")
+    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, payment_rail, confirmation_expires_at")
     .eq("id", input.claimId)
     .maybeSingle();
   if (claimResult.error) return { ok: false, error: "retryable" };
@@ -277,12 +293,27 @@ export async function createServiceRequestAuthorization(input: {
   if (payment?.status === "authorized") {
     const settled = money(payment);
     if (!settled || payment.amount_cents !== priceCents) return { ok: false, error: "invariant" };
-    return noteAuthorized({ ok: true, state: "authorized", ...settled });
+    const deadline = await readStoredConfirmationDeadline(input.supabase, claim.id);
+    if (!deadline.ok) return { ok: false, error: "retryable" };
+    return noteAuthorized({
+      ok: true,
+      state: "authorized",
+      ...settled,
+      ...deadlineField(deadline.confirmationExpiresAt),
+    });
   }
   if (payment?.status === "paid") {
     const settled = money(payment);
     if (!settled || payment.amount_cents !== priceCents) return { ok: false, error: "invariant" };
     return { ok: true, state: "paid", ...settled };
+  }
+
+  if (
+    !payment &&
+    !storedConfirmationDeadline(claim.confirmation_expires_at) &&
+    parseServiceRequestConfirmationWindowSeconds(env) == null
+  ) {
+    return { ok: false, error: "confirmation_window_unconfigured" };
   }
 
   if (!payment) {
@@ -318,7 +349,14 @@ export async function createServiceRequestAuthorization(input: {
   if (payment.status === "authorized") {
     const settled = money(payment);
     if (!settled) return { ok: false, error: "invariant" };
-    return noteAuthorized({ ok: true, state: "authorized", ...settled });
+    const deadline = await readStoredConfirmationDeadline(input.supabase, claim.id);
+    if (!deadline.ok) return { ok: false, error: "retryable" };
+    return noteAuthorized({
+      ok: true,
+      state: "authorized",
+      ...settled,
+      ...deadlineField(deadline.confirmationExpiresAt),
+    });
   }
   if (payment.status === "paid") {
     const settled = money(payment);
@@ -330,6 +368,12 @@ export async function createServiceRequestAuthorization(input: {
   }
   if (payment.offer_id !== offer.id || payment.specialist_id !== input.specialistId) {
     return { ok: false, error: "invariant" };
+  }
+  if (
+    !storedConfirmationDeadline(claim.confirmation_expires_at) &&
+    parseServiceRequestConfirmationWindowSeconds(env) == null
+  ) {
+    return { ok: false, error: "confirmation_window_unconfigured" };
   }
 
   let customerId: string;
@@ -398,7 +442,8 @@ export async function createServiceRequestAuthorization(input: {
   }
 
   if (intent.status === "requires_capture") {
-    return noteAuthorized(await finishAuthorized(input.supabase, payment, intent.id));
+    const authorized = await finishAuthorized(input.supabase, payment, intent.id, env);
+    return authorized.ok ? noteAuthorized(authorized) : authorized;
   }
   if (intent.status === "succeeded") {
     return finishPaid(input.supabase, payment, intent.id);
@@ -421,21 +466,41 @@ export async function createServiceRequestAuthorization(input: {
   };
 }
 
+function deadlineField(value: unknown): { confirmationExpiresAt: string } | Record<string, never> {
+  const stored = storedConfirmationDeadline(value);
+  return stored ? { confirmationExpiresAt: stored } : {};
+}
+
 async function finishAuthorized(
   supabase: SupabaseClient,
   payment: PaymentRow,
   paymentIntentId: string,
+  env: NodeJS.ProcessEnv,
 ): Promise<ServiceRequestAuthorizationResult> {
+  if (!payment.service_request_claim_id) return { ok: false, error: "invariant" };
+  const authorizedAt = new Date();
+  const deadline = await persistConfirmationDeadline({
+    supabase,
+    claimId: payment.service_request_claim_id,
+    authorizedAt,
+    env,
+  });
+  if (!deadline.ok) {
+    return {
+      ok: false,
+      error: deadline.error === "confirmation_window_unconfigured" ? "confirmation_window_unconfigured" : "retryable",
+    };
+  }
   if (payment.status !== "authorized") {
-    const authorizedAt = new Date().toISOString();
+    const authorizedAtIso = authorizedAt.toISOString();
     const saved = await supabase
       .from("request_offer_payments")
       .update({
         status: "authorized",
-        authorized_at: authorizedAt,
+        authorized_at: authorizedAtIso,
         stripe_payment_intent_id: paymentIntentId,
         ...stripePaymentIntentAttribution(paymentIntentId),
-        updated_at: authorizedAt,
+        updated_at: authorizedAtIso,
       })
       .eq("id", payment.id)
       .eq("status", "pending");
@@ -443,7 +508,12 @@ async function finishAuthorized(
   }
   const settled = money({ ...payment, stripe_payment_intent_id: paymentIntentId });
   if (!settled) return { ok: false, error: "invariant" };
-  return { ok: true, state: "authorized", ...settled };
+  return {
+    ok: true,
+    state: "authorized",
+    ...settled,
+    confirmationExpiresAt: deadline.confirmationExpiresAt,
+  };
 }
 
 async function finishPaid(
