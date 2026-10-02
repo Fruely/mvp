@@ -37,6 +37,29 @@ test("creates a draft when the user has no specialist row", async () => {
   assert.deepEqual(draftStore.profiles, ["spec-1"]);
 });
 
+test("creates a draft without email contact", async () => {
+  let receivedEmail: string | null | undefined;
+  const draftStore = store({
+    insertDraft: async (input) => {
+      receivedEmail = input.email;
+      return { ok: true, specialist: { id: "spec-no-email", status: "draft" } };
+    },
+  });
+
+  const result = await ensureSpecialistDraft(draftStore, {
+    userId: "user-1",
+    email: null,
+  });
+
+  assert.deepEqual(result, {
+    ok: true,
+    specialist: { id: "spec-no-email", status: "draft" },
+    created: true,
+  });
+  assert.equal(receivedEmail, null);
+  assert.deepEqual(draftStore.profiles, ["spec-no-email"]);
+});
+
 test("returns an existing specialist without inserting another row", async () => {
   let inserted = 0;
   const result = await ensureSpecialistDraft(
