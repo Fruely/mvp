@@ -5,6 +5,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type Stripe from "stripe";
 
 import { processStripeWebhookEventForServiceRequestAuthorization } from "./processServiceRequestAuthorizationWebhook.ts";
+import {
+  shouldMarkServiceRequestAuthorizationBillingEventSkipped,
+  shouldRetryBillingWebhook,
+} from "./processStripeBillingWebhook.ts";
 
 const PAYMENT = "12121212-1212-4121-8121-121212121212";
 const CLAIM = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
@@ -191,11 +195,39 @@ test("webhook authorization persists one deadline and a later window does not ex
 
 test("webhook does not authorize when the confirmation window is not configured", async () => {
   const database = db();
-  const result = await run(database, event("payment_intent.amount_capturable_updated"), {});
-  assert.deepEqual(result, { outcome: "validation_failed" });
+  database.tables.service_requests = [{
+    id: REQUEST,
+    public_id: "REQ-1",
+    client_user_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    client_email: "client@example.com",
+    locale: "de",
+    requested_service: "coach",
+  }];
+  const result = await run(database, event("payment_intent.amount_capturable_updated"), {
+    SERVICE_REQUEST_CAPTURE_ENABLED: "true",
+  });
+  assert.deepEqual(result, { outcome: "retryable_failure" });
   assert.equal(database.tables.request_offer_payments[0]?.status, "pending");
   assert.equal(database.tables.request_offer_payments[0]?.authorized_at, undefined);
   assert.equal(database.tables.service_request_claims[0]?.confirmation_expires_at, undefined);
+  assert.equal(database.writes.includes("inbox_items"), false);
+  assert.equal(database.writes.includes("notification_outbox"), false);
+  assert.equal(database.tables.conversations.length, 0);
+  assert.equal(database.tables.request_offer_access_grants.length, 0);
+  assert.equal(shouldMarkServiceRequestAuthorizationBillingEventSkipped(result), false);
+  assert.equal(
+    shouldRetryBillingWebhook({
+      eventType: "payment_intent.amount_capturable_updated",
+      partner: { eventType: "payment_intent.amount_capturable_updated", partnerCommission: null },
+      planPayment: { outcome: "ignored" },
+      promoted: { outcome: "ignored" },
+      promotedReservation: { outcome: "ignored" },
+      requestOffer: { outcome: "ignored" },
+      serviceRequestAuthorization: result,
+      subscription: { outcome: "ignored", logCode: "ignored" },
+    }),
+    true,
+  );
 });
 
 test("a persisted amount other than 2500 cannot be authorized by webhook", async () => {

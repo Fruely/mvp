@@ -18,8 +18,14 @@ export function parseServiceRequestConfirmationWindowSeconds(
   return seconds;
 }
 
-export function confirmationDeadlineFrom(authorizedAt: Date, windowSeconds: number): string {
-  return new Date(authorizedAt.getTime() + windowSeconds * 1000).toISOString();
+export function confirmationDeadlineFrom(authorizedAt: Date, windowSeconds: number): string | null {
+  const authorizedMs = authorizedAt.getTime();
+  if (!Number.isFinite(authorizedMs) || !Number.isFinite(windowSeconds) || windowSeconds <= 0) return null;
+  const expiresMs = authorizedMs + windowSeconds * 1000;
+  if (!Number.isFinite(expiresMs)) return null;
+  const deadline = new Date(expiresMs);
+  if (!Number.isFinite(deadline.getTime())) return null;
+  return deadline.toISOString();
 }
 
 export function storedConfirmationDeadline(value: unknown): string | null {
@@ -83,6 +89,7 @@ export async function persistConfirmationDeadline(input: {
   if (windowSeconds == null) return { ok: false, error: "confirmation_window_unconfigured" };
 
   const confirmationExpiresAt = confirmationDeadlineFrom(input.authorizedAt, windowSeconds);
+  if (!confirmationExpiresAt) return { ok: false, error: "confirmation_window_unconfigured" };
   const updated = await input.supabase
     .from("service_request_claims")
     .update({

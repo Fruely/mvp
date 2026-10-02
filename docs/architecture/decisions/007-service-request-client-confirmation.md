@@ -23,7 +23,7 @@ The client has a finite server-owned window to confirm after a valid €25 Strip
 
 `service_request_claims.confirmation_expires_at` stores the absolute deadline for that reserved claim. It is written once, from the server authorization time, when synchronous authorization or the authorization webhook first makes the payment `authorized`. A replay returns the stored timestamp and does not move it. Existing rows are not backfilled.
 
-A new authorization does not create a PaymentIntent when that configuration is missing. Client confirmation does not capture when the deadline is missing or already past. This amendment does not cancel the PaymentIntent, release the payment, mark the claim expired, or run an expiry worker.
+A new authorization does not create a PaymentIntent when that configuration is missing. A valid `payment_intent.amount_capturable_updated` event with that configuration missing leaves the payment pending and is a retryable webhook failure, so the billing event is not skipped. Client confirmation does not capture when the deadline is missing or already past. This amendment does not cancel the PaymentIntent, release the payment, mark the claim expired, or run an expiry worker.
 
 ## Non-goals
 

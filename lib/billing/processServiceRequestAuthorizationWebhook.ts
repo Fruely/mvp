@@ -186,9 +186,7 @@ export async function processStripeWebhookEventForServiceRequestAuthorization(
       env,
     });
     if (!deadline.ok) {
-      return {
-        outcome: deadline.error === "confirmation_window_unconfigured" ? "validation_failed" : "retryable_failure",
-      };
+      return { outcome: "retryable_failure" };
     }
     const authorizedAtIso = authorizedAt.toISOString();
     const { error } = await supabase

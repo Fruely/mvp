@@ -24,6 +24,11 @@ test("deadline is an absolute timestamp from the server authorization instant", 
   assert.equal(confirmationDeadlineFrom(authorizedAt, 900), "2026-10-02T18:15:00.000Z");
 });
 
+test("an enormous positive duration does not throw and does not yield a deadline", () => {
+  const authorizedAt = new Date("2026-10-02T18:00:00.000Z");
+  assert.equal(confirmationDeadlineFrom(authorizedAt, Number.MAX_SAFE_INTEGER), null);
+});
+
 test("deadline code does not default the window or cancel an authorization", () => {
   const source = readFileSync(new URL("./serviceRequestConfirmationDeadline.ts", import.meta.url), "utf8");
   const webhook = readFileSync(new URL("./processServiceRequestAuthorizationWebhook.ts", import.meta.url), "utf8");
