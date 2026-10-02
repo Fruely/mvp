@@ -17,6 +17,14 @@ The billing webhook owns fulfillment after `payment_intent.succeeded`, and only 
 
 `SERVICE_REQUEST_CAPTURE_ENABLED` defaults off. All three paid flags must be on before confirmation is available. A confirmation-required inbox notice is sent only when that flag is on, once per claim.
 
+## Amendment 2026-10-02 — confirmation deadline
+
+The client has a finite server-owned window to confirm after a valid €25 Stripe authorization exists. The duration is `SERVICE_REQUEST_CONFIRMATION_WINDOW_SECONDS`. It is a positive integer number of seconds. There is no default. Native and Web do not calculate or send it.
+
+`service_request_claims.confirmation_expires_at` stores the absolute deadline for that reserved claim. It is written once, from the server authorization time, when synchronous authorization or the authorization webhook first makes the payment `authorized`. A replay returns the stored timestamp and does not move it. Existing rows are not backfilled.
+
+A new authorization does not create a PaymentIntent when that configuration is missing. A valid `payment_intent.amount_capturable_updated` event with that configuration missing leaves the payment pending and is a retryable webhook failure, so the billing event is not skipped. Client confirmation does not capture when the deadline is missing or already past. This amendment does not cancel the PaymentIntent, release the payment, mark the claim expired, or run an expiry worker.
+
 ## Non-goals
 
-No confirmation timeout, no PaymentIntent cancellation, no sequential rematch, no Native confirm control, and no capture of the client's own money. The final service transaction stays outside Freuly.
+No PaymentIntent cancellation, no expiry worker, no sequential rematch, no Native confirm control, and no capture of the client's own money. The final service transaction stays outside Freuly. The permanent confirmation-window duration is not chosen here.
