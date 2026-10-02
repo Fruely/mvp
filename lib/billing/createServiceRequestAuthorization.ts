@@ -6,6 +6,7 @@ import {
 } from "@/lib/billing/requestOfferPaymentProvider";
 import { bindServiceRequestPaymentRail } from "@/lib/billing/serviceRequestPaymentRail";
 import { getStripeClient } from "@/lib/billing/stripeClient";
+import { CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS } from "@/lib/leadEngine/serviceRequestAccessPricing";
 import { PURCHASABLE_SERVICE_REQUEST_OFFER_STATUSES } from "@/lib/leadEngine/requestOfferPolicy";
 import { notifyClientConfirmationRequired } from "@/lib/selection/interest";
 import { isServiceRequestPaidClaimEnabled } from "@/lib/selection/reserveMatch";
@@ -212,7 +213,9 @@ export async function createServiceRequestAuthorization(input: {
   }
 
   const priceCents = livePrice(offer.price_cents);
-  if (priceCents == null) return { ok: false, error: "price_unavailable" };
+  if (priceCents !== CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS) {
+    return { ok: false, error: "price_unavailable" };
+  }
 
   const requestResult = await input.supabase
     .from("service_requests")

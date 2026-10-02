@@ -2,51 +2,27 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS,
   normalizeExplicitClientBudget,
+  resolveAcceptedCeilingAccessPrice,
   resolveServiceRequestAccessPrice,
-  roundUpToNearestFiveEuros,
-  serviceRequestAccessPriceCents,
 } from "./serviceRequestAccessPricing.ts";
 
-function priceForEuros(euros: number | null): number {
-  return serviceRequestAccessPriceCents(euros == null ? null : euros * 100);
-}
-
-test("access price follows the v1 examples in cents", () => {
-  const cases: Array<[number | null, number]> = [
-    [null, 2500],
-    [50, 2500],
-    [80, 2500],
-    [150, 2500],
-    [250, 2500],
-    [300, 3000],
-    [500, 4000],
-    [800, 5500],
-    [1000, 6500],
-    [1500, 7500],
-    [3000, 10500],
-    [5000, 14500],
-    [10000, 24500],
-    [20000, 25000],
-  ];
-  for (const [euros, cents] of cases) {
-    assert.equal(priceForEuros(euros), cents, String(euros));
+test("the matched connection fee stays 2500 cents for every budget", () => {
+  assert.equal(CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS, 2500);
+  const cases = [null, "50 €", "до 80 евро", "500 €", "500-700 €", "10000 €", "20000 €"];
+  for (const text of cases) {
+    const price = resolveServiceRequestAccessPrice(text);
+    assert.equal(price.priceCents, 2500, String(text));
+    assert.equal(price.currency, "eur");
   }
-});
-
-test("tier and cap boundaries stay on the integer formula", () => {
-  assert.equal(priceForEuros(250), 2500);
-  assert.equal(priceForEuros(1000), 6500);
-  assert.equal(priceForEuros(10250), 25000);
-  assert.equal(serviceRequestAccessPriceCents(10_000_000), 25000);
-});
-
-test("nearest five euros rounds an exact halfway amount up", () => {
-  assert.equal(roundUpToNearestFiveEuros(2501), 2500);
-  assert.equal(roundUpToNearestFiveEuros(2749), 2500);
-  assert.equal(roundUpToNearestFiveEuros(2750), 3000);
-  assert.equal(roundUpToNearestFiveEuros(3750), 4000);
-  assert.equal(roundUpToNearestFiveEuros(6250), 6500);
+  assert.equal(resolveAcceptedCeilingAccessPrice(2_000_000).priceCents, 2500);
+  assert.equal(resolveAcceptedCeilingAccessPrice(0).priceCents, 2500);
+  assert.equal(resolveServiceRequestAccessPrice(null).estimatedServiceValueMinCents, null);
+  assert.equal(resolveServiceRequestAccessPrice("500 €").estimatedServiceValueMaxCents, 50000);
+  assert.equal(resolveServiceRequestAccessPrice("до 80 евро").estimatedServiceValueMaxCents, 8000);
+  assert.equal(resolveAcceptedCeilingAccessPrice(2_000_000).estimatedServiceValueMinCents, 2_000_000);
+  assert.equal(resolveAcceptedCeilingAccessPrice(2_000_000).estimatedServiceValueMaxCents, 2_000_000);
 });
 
 test("explicit EUR wording becomes one budget basis", () => {
@@ -109,5 +85,6 @@ test("non-EUR, ambiguous, and missing text do not invent a basis", () => {
   assert.equal(normalizeExplicitClientBudget(undefined), null);
   assert.equal(resolveServiceRequestAccessPrice(null).priceCents, 2500);
   assert.equal(resolveServiceRequestAccessPrice("80 USD").priceCents, 2500);
-  assert.equal(resolveServiceRequestAccessPrice("500-700 €").priceCents, 5000);
+  assert.equal(resolveServiceRequestAccessPrice("500-700 €").priceCents, 2500);
+  assert.equal(resolveServiceRequestAccessPrice("500-700 €").estimatedServiceValueMaxCents, 70000);
 });

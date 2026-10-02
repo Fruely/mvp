@@ -106,7 +106,7 @@ export type MatchedServiceRequestOfferInsert = RequestOfferInsert & {
 
 /**
  * Initial matched service-request offer.
- * The access price is the shared V1 snapshot. This function does not price.
+ * The caller supplies the server-authoritative connection fee. This function does not price.
  */
 export function buildMatchedServiceRequestOffer(input: {
   requestId: string;
