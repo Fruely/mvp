@@ -1,7 +1,22 @@
 import type { SpecialistOnboardingGateState } from "@/lib/specialists/server";
 import type { PublicServiceRadiusKm } from "@/lib/specialists/geography";
 
-export const SPECIALIST_PROFILE_ALLOWED_LANGUAGE_CODES = ["ru", "uk", "de", "en", "pl"] as const;
+export const SPECIALIST_PROFILE_ALLOWED_LANGUAGE_CODES = [
+  "de",
+  "en",
+  "ru",
+  "uk",
+  "pl",
+  "ar",
+  "ro",
+  "fr",
+  "es",
+  "it",
+  "tr",
+  "hr",
+  "sr",
+  "bs",
+] as const;
 
 export const SPECIALIST_PROFILE_EDITABLE_FIELDS = [
   "name",
