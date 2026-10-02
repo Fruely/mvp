@@ -122,6 +122,7 @@ type ClaimRow = {
   request_offer_id: string | null;
   payment_rail?: string | null;
   confirmation_expires_at?: unknown;
+  client_rejected_at?: string | null;
 };
 
 type OfferRow = {
@@ -187,7 +188,7 @@ export async function createServiceRequestAuthorization(input: {
 
   const claimResult = await input.supabase
     .from("service_request_claims")
-    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, payment_rail, confirmation_expires_at")
+    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, payment_rail, confirmation_expires_at, client_rejected_at")
     .eq("id", input.claimId)
     .maybeSingle();
   if (claimResult.error) return { ok: false, error: "retryable" };
@@ -195,6 +196,9 @@ export async function createServiceRequestAuthorization(input: {
   if (!claim) return { ok: false, error: "not_found" };
   if (claim.specialist_id !== input.specialistId) return { ok: false, error: "forbidden" };
   if (claim.status !== "reserved") return { ok: false, error: "not_claimable" };
+  if (typeof claim.client_rejected_at === "string" && claim.client_rejected_at) {
+    return { ok: false, error: "not_claimable" };
+  }
   if (!claim.request_offer_id) return { ok: false, error: "offer_unavailable" };
 
   const noteAuthorized = async (

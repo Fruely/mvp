@@ -48,6 +48,10 @@ class Memory {
         filters.push((row) => (value == null ? row[column] == null : row[column] === value));
         return api;
       },
+      not(column: string, operator: string, value: unknown) {
+        if (operator === "is" && value == null) filters.push((row) => row[column] != null);
+        return api;
+      },
       update(next: Row) {
         patch = next;
         return api;
@@ -331,6 +335,79 @@ test("succeeded without client confirmation does not pay, grant, or open chat", 
   assert.equal(paid.tables.conversations.length, 0);
   assert.equal(paid.writes.includes("request_offer_access_grants"), false);
   assert.equal(paid.writes.includes("conversations"), false);
+});
+
+test("duplicate canceled webhook releases a client rejection once", async () => {
+  const database = db();
+  const matchId = "11111111-1111-4111-8111-111111111111";
+  const otherMatchId = "22222222-2222-4222-8222-222222222222";
+  database.tables.service_request_claims[0].match_id = matchId;
+  database.tables.service_request_claims[0].client_rejected_at = "2026-10-02T18:00:00.000Z";
+  database.tables.service_request_claims[0].confirmation_expires_at = "2026-10-02T18:15:00.000Z";
+  database.tables.service_request_matches = [
+    { id: matchId, service_request_id: REQUEST, specialist_id: SPEC, status: "active" },
+    { id: otherMatchId, service_request_id: REQUEST, specialist_id: SPEC, status: "active" },
+  ];
+  database.tables.service_requests = [{ id: REQUEST, selected_specialist_id: null }];
+  assert.deepEqual(await run(database, event("payment_intent.canceled")), { outcome: "success" });
+  assert.deepEqual(await run(database, event("payment_intent.canceled")), { outcome: "success" });
+  assert.equal(database.tables.request_offer_payments[0]?.status, "released");
+  assert.equal(typeof database.tables.request_offer_payments[0]?.released_at, "string");
+  assert.equal(database.tables.service_request_claims[0]?.status, "released");
+  assert.equal(database.tables.service_request_claims[0]?.release_reason, "client_rejected");
+  assert.equal(database.tables.service_request_claims[0]?.confirmation_expires_at, "2026-10-02T18:15:00.000Z");
+  assert.equal(database.tables.service_request_matches[0]?.status, "not_selected");
+  assert.equal(database.tables.service_request_matches[1]?.status, "active");
+  assert.equal(database.tables.service_requests[0]?.selected_specialist_id, null);
+  assert.equal(database.tables.request_offer_access_grants.length, 0);
+  assert.equal(database.tables.conversations.length, 0);
+  assert.equal(database.tables.service_request_claims.length, 1);
+});
+
+test("canceled webhook does not release a paid completed connection", async () => {
+  const database = db();
+  database.tables.request_offer_payments[0].status = "paid";
+  database.tables.request_offer_payments[0].paid_at = "2026-09-29T12:00:00.000Z";
+  database.tables.service_request_claims[0].status = "completed";
+  database.tables.service_request_claims[0].client_confirmed_at = "2026-09-29T12:00:00.000Z";
+  assert.deepEqual(await run(database, event("payment_intent.canceled")), { outcome: "validation_failed" });
+  assert.equal(database.tables.request_offer_payments[0]?.status, "paid");
+  assert.equal(database.tables.service_request_claims[0]?.status, "completed");
+  assert.equal(database.tables.service_request_claims[0]?.release_reason, undefined);
+});
+
+test("amount_capturable_updated after client rejection does not authorize or notify", async () => {
+  const database = db();
+  database.tables.service_request_claims[0].client_rejected_at = "2026-10-02T18:00:00.000Z";
+  database.tables.service_requests = [{
+    id: REQUEST,
+    public_id: "REQ-1",
+    client_user_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    client_email: "client@example.com",
+    requested_service: "coach",
+  }];
+  const result = await run(database, event("payment_intent.amount_capturable_updated"), {
+    SERVICE_REQUEST_CAPTURE_ENABLED: "true",
+    SERVICE_REQUEST_CONFIRMATION_WINDOW_SECONDS: "900",
+  });
+  assert.deepEqual(result, { outcome: "success" });
+  assert.equal(database.tables.request_offer_payments[0]?.status, "pending");
+  assert.equal(database.tables.request_offer_payments[0]?.authorized_at, undefined);
+  assert.equal(database.tables.service_request_claims[0]?.status, "reserved");
+  assert.equal(database.tables.service_request_claims[0]?.confirmation_expires_at, undefined);
+  assert.equal(database.writes.includes("inbox_items"), false);
+  assert.equal(database.writes.includes("notification_outbox"), false);
+});
+
+test("succeeded after client rejection does not release the payment", async () => {
+  const database = db();
+  database.tables.request_offer_payments[0].status = "authorized";
+  database.tables.service_request_claims[0].client_rejected_at = "2026-10-02T18:00:00.000Z";
+  assert.deepEqual(await run(database, event("payment_intent.succeeded")), { outcome: "validation_failed" });
+  assert.equal(database.tables.request_offer_payments[0]?.status, "authorized");
+  assert.equal(database.tables.service_request_claims[0]?.status, "reserved");
+  assert.equal(database.tables.request_offer_access_grants.length, 0);
+  assert.equal(database.tables.conversations.length, 0);
 });
 
 test("authorization webhook does not capture from the webhook handler", () => {

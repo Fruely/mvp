@@ -78,6 +78,7 @@ type ClaimRow = {
   match_id: string;
   request_offer_id: string | null;
   client_confirmed_at: string | null;
+  client_rejected_at?: string | null;
   payment_rail: string | null;
   confirmation_expires_at?: unknown;
 };
@@ -152,7 +153,7 @@ export async function confirmServiceRequestConnection(input: {
 
   const claimResult = await input.supabase
     .from("service_request_claims")
-    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, client_confirmed_at, payment_rail, confirmation_expires_at")
+    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, client_confirmed_at, client_rejected_at, payment_rail, confirmation_expires_at")
     .eq("service_request_id", request.id)
     .eq("status", "reserved")
     .maybeSingle();
@@ -167,6 +168,9 @@ export async function confirmServiceRequestConnection(input: {
       .maybeSingle();
     if (completed.error) return { ok: false, error: "retryable" };
     if (completed.data?.id && request.selected_specialist_id) return connected(input.supabase, request.id);
+    return { ok: false, error: "not_claimable" };
+  }
+  if (typeof claim.client_rejected_at === "string" && claim.client_rejected_at) {
     return { ok: false, error: "not_claimable" };
   }
   if (claim.service_request_id !== request.id || !claim.request_offer_id) {
