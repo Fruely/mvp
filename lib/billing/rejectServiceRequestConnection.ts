@@ -4,7 +4,6 @@ import { SERVICE_REQUEST_AUTHORIZATION_PURPOSE } from "@/lib/billing/createServi
 import { stripePaymentIntentAttribution } from "@/lib/billing/requestOfferPaymentProvider";
 import { paymentProvesStripeRail } from "@/lib/billing/serviceRequestPaymentRail";
 import { CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS } from "@/lib/leadEngine/serviceRequestAccessPricing";
-import { isServiceRequestPaidClaimEnabled } from "@/lib/selection/reserveMatch";
 import { connectionConfirmationInboxKey } from "@/lib/selection/policy";
 
 /**
@@ -362,8 +361,6 @@ export async function rejectServiceRequestConnection(input: {
   env?: NodeJS.ProcessEnv;
   stripe?: ServiceRequestReleaseStripe | null;
 }): Promise<RejectServiceRequestConnectionResult> {
-  const env = input.env ?? process.env;
-  if (!isServiceRequestPaidClaimEnabled(env)) return { ok: false, error: "not_found" };
   const publicId = input.publicId.trim();
   if (!publicId || publicId.length > 80 || !/^[A-Za-z0-9_-]+$/.test(publicId)) {
     return { ok: false, error: "not_found" };

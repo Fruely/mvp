@@ -5,6 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { buildMatchedServiceRequestOfferIdempotencyKey } from "../leadEngine/requestOfferPolicy.ts";
 import { reserveOwnMatch } from "../selection/reserveMatch.ts";
+import { createServiceRequestAuthorization } from "./createServiceRequestAuthorization.ts";
 import { confirmServiceRequestConnection } from "./confirmServiceRequestConnection.ts";
 import { isServiceRequestClientConfirmationRequired } from "./serviceRequestClientConfirmationReadiness.ts";
 import {
@@ -482,6 +483,74 @@ test("a historical release that is not this client rejection is not success", as
   assert.deepEqual(result, { ok: false, error: "not_claimable" });
   assert.equal(cancels.length, 0);
   assert.equal(claim.release_reason, null);
+});
+
+test("an existing authorization is released when the paid-claim flag is off", async () => {
+  for (const env of [{}, { SERVICE_REQUEST_PAID_CLAIM_ENABLED: "false" }] as const) {
+    const db = seed();
+    const { stripe, cancels, captures } = stripeFor();
+    const result = await reject(db, stripe, CLIENT, env);
+    assert.deepEqual(result, { ok: true, state: "released" });
+    assert.equal(cancels.length, 1);
+    assert.equal(cancels[0]?.key, serviceRequestReleaseIdempotencyKey(PAYMENT));
+    assert.equal(captures.length, 0);
+    assert.equal(db.tables.request_offer_payments[0]?.status, "released");
+    assert.equal(db.tables.request_offer_payments[0]?.amount_cents, 2500);
+    assert.equal(db.tables.service_request_matches[0]?.status, "not_selected");
+    assert.equal(db.tables.service_request_matches[1]?.status, "active");
+    const claim = releasedClaim(db);
+    assert.equal(claim?.status, "released");
+    assert.equal(claim?.release_reason, CLIENT_REJECTION_RELEASE_REASON);
+    assert.equal(db.tables.conversations.length, 0);
+    assert.equal(db.tables.request_offer_access_grants.length, 0);
+    assert.equal(db.tables.service_request_claims.length, 1);
+    assert.equal(db.rpcCalls, 0);
+  }
+});
+
+test("a durable rejection finishes cleanup when the paid-claim flag is off", async () => {
+  const db = seed();
+  const claim = releasedClaim(db);
+  claim.client_rejected_at = "2026-10-02T18:20:00.000Z";
+  const { stripe, cancels, captures } = stripeFor();
+  const result = await reject(db, stripe, CLIENT, { SERVICE_REQUEST_PAID_CLAIM_ENABLED: "false" });
+  assert.deepEqual(result, { ok: true, state: "released" });
+  assert.equal(cancels.length, 1);
+  assert.equal(captures.length, 0);
+  assert.equal(db.tables.request_offer_payments[0]?.status, "released");
+  assert.equal(db.tables.service_request_matches[0]?.status, "not_selected");
+  assert.equal(claim.status, "released");
+  assert.equal(claim.release_reason, CLIENT_REJECTION_RELEASE_REASON);
+  assert.equal(db.tables.conversations.length, 0);
+  assert.equal(db.tables.request_offer_access_grants.length, 0);
+  assert.equal(db.tables.service_request_claims.length, 1);
+});
+
+test("a disabled paid-claim flag still blocks reservation and authorization", async () => {
+  for (const env of [{}, { SERVICE_REQUEST_PAID_CLAIM_ENABLED: "false" }] as const) {
+    const db = seed();
+    const reserved = await reserveOwnMatch(
+      db as unknown as SupabaseClient,
+      { matchId: OTHER_MATCH, specialistId: OTHER_SPEC },
+      env,
+    );
+    assert.deepEqual(reserved, { ok: false, error: "not_found" });
+    assert.equal(db.rpcCalls, 0);
+    assert.equal(db.tables.service_request_claims.length, 1);
+
+    const authorized = await createServiceRequestAuthorization({
+      supabase: db as unknown as SupabaseClient,
+      claimId: CLAIM,
+      specialistId: SPEC,
+      userId: SPEC,
+      env: { ...env, SERVICE_REQUEST_PAYMENT_AUTH_ENABLED: "true" },
+      stripe: null,
+    });
+    assert.deepEqual(authorized, { ok: false, error: "not_found" });
+    assert.equal(db.tables.service_request_claims.length, 1);
+    assert.equal(db.tables.request_offer_payments.length, 1);
+    assert.equal(db.tables.request_offer_payments[0]?.status, "authorized");
+  }
 });
 
 test("missing confirmation window and a disabled capture flag still release an existing authorization", async () => {

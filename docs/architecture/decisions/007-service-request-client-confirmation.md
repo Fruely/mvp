@@ -31,7 +31,7 @@ Client rejection is a different decision from a specialist `declined` match resp
 
 `POST /api/client/requests/service-request/[id]/reject` then cancels the uncaptured PaymentIntent with idempotency key `service-request-release:{paymentId}`. It does not capture or refund. Local release sets the payment to `released`, then that match to `not_selected`, and only then the claim to `released` with `release_reason = client_rejected`. The claim stays `reserved` until the match can no longer be reserved. `confirmation_expires_at` stays. The request stays unselected. No conversation, access grant, or automatic rematch is created. A repeated call returns the same released state.
 
-If cancellation or a later local write fails, the rejection timestamp remains and confirmation cannot capture. The call is retryable and resumes from the stored decision. `payment_intent.canceled` uses that same local release when the rejection timestamp is present. A paid or completed connection is not rewritten as released. A missing confirmation window or a disabled capture flag does not keep an existing uncaptured authorization held. Expiry and redistribution remain a separate gap.
+If cancellation or a later local write fails, the rejection timestamp remains and confirmation cannot capture. The call is retryable and resumes from the stored decision. `payment_intent.canceled` uses that same local release when the rejection timestamp is present. A paid or completed connection is not rewritten as released. A missing confirmation window, a disabled capture flag, or a disabled paid-claim flag does not keep an existing uncaptured authorization held. Expiry and redistribution remain a separate gap.
 
 ## Non-goals
 
