@@ -75,7 +75,7 @@ function seed(overrides: { offer?: Row; match?: Row; claim?: Row | null; selecte
       service_request_id: REQUEST,
       specialist_id: SPEC,
       billing_model: "pay_per_lead",
-      price_cents: 7000,
+      price_cents: 2500,
       currency: "eur",
       idempotency_key: buildMatchedServiceRequestOfferIdempotencyKey({
         requestId: REQUEST,
@@ -136,6 +136,8 @@ test("confirmation rejects the wrong owner, claim, offer, or match", async () =>
     { ok: false, error: "not_claimable" },
   );
   assert.deepEqual(await record(seed({ offer: { price_cents: 0 } })), { ok: false, error: "invariant" });
+  assert.deepEqual(await record(seed({ offer: { price_cents: 7000 } })), { ok: false, error: "invariant" });
+  assert.deepEqual(await record(seed({ offer: { price_cents: 4000 } })), { ok: false, error: "invariant" });
   assert.deepEqual(
     await record(seed({ match: { service_request_id: "ffffffff-ffff-4fff-8fff-ffffffffffff" } })),
     { ok: false, error: "not_claimable" },

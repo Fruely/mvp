@@ -161,6 +161,16 @@ test("amount_capturable_updated with requires_capture authorizes once", async ()
   assert.equal(database.writes.includes("conversations"), false);
 });
 
+test("a persisted amount other than 2500 cannot be authorized by webhook", async () => {
+  const database = db();
+  database.tables.request_offer_payments[0].amount_cents = 4000;
+  const result = await run(database, event("payment_intent.amount_capturable_updated", { amount: 4000 }));
+  assert.deepEqual(result, { outcome: "validation_failed" });
+  assert.equal(database.tables.request_offer_payments[0]?.status, "pending");
+  assert.equal(database.tables.request_offer_payments[0]?.amount_cents, 4000);
+  assert.equal(database.tables.request_offer_payments[0]?.authorized_at, undefined);
+});
+
 test("wrong amount, currency, or claim relation fails validation", async () => {
   for (const stripeEvent of [
     event("payment_intent.amount_capturable_updated", { amount: 100 }),

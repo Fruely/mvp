@@ -11,17 +11,19 @@ Exclusive service-request access is a Freuly product. It is not a commission on 
 
 ## Decision
 
-Currency is EUR. The price is computed once per service request from the explicit client budget and copied onto every initial matched offer. The default basis is `service_requests.client_budget_text`. If the client has explicitly accepted a budget-reconciliation ceiling, that accepted amount is the basis for offers created after the acceptance. Specialist identity does not change the price. The supply floor itself is not a pricing input. A previously persisted positive `price_cents` is not rewritten when the ceiling changes.
+Currency is EUR. The canonical matched service-request connection fee is exactly **2500 cents**. That is the MP1-S4 rollout price for every specialist. It is not a permanent pricing strategy and it is not the client's service price.
 
-Let B be the explicit client budget in EUR. If no reliable explicit EUR budget exists, or B is at most EUR 250, the raw price is EUR 25. Above EUR 250 and through EUR 1,000, the raw price is EUR 25 plus 5% of the amount above EUR 250. Above EUR 1,000, the raw price is EUR 62.50 plus 2% of the amount above EUR 1,000. The result is capped at EUR 250.
+The fee is server-authoritative. Browser, Native, and other client input cannot choose it. Specialist identity, category, and the supply floor are not inputs. `lead_pricing_rules` and shadow pricing are not inputs. `pricing_rule_id` stays null.
 
-Commercial rounding is to the nearest EUR 5. An amount exactly halfway between two steps rounds up. Persisted values are integer cents.
+Explicit client budget remains request and matching information. The budget normalizer accepts one explicit EUR amount, an "up to" ceiling, a "from" floor, or one range. A range uses its upper bound. A single amount is snapshotted as both minimum and maximum. "From X" leaves the maximum null. "Up to X" leaves the minimum null. Non-EUR currency, several unrelated amounts, and malformed text produce no numeric basis. There is no FX conversion.
 
-The budget normalizer accepts one explicit EUR amount, an "up to" ceiling, a "from" floor, or one range. A range uses its upper bound as B. A single amount is snapshotted as both minimum and maximum. "From X" leaves the maximum null. "Up to X" leaves the minimum null. Non-EUR currency, several unrelated amounts, and malformed text produce no numeric basis, and the access price is then the EUR 25 floor. There is no FX conversion.
+Those bounds are stored on the offer as `estimated_service_value_min_cents` and `estimated_service_value_max_cents`. If the client has accepted a budget-reconciliation ceiling, offers created after that acceptance snapshot that accepted amount as both bounds. Neither the original budget text nor the accepted ceiling changes `price_cents`.
 
-The offer stores that price in `price_cents`, the normalized bounds in `estimated_service_value_min_cents` and `estimated_service_value_max_cents`, and `max_buyers_snapshot = 1`. `pricing_rule_id` stays null. `lead_pricing_rules` and shadow pricing are not inputs.
+`price_cents` is 2500 and `currency` is `eur` on every newly created canonical matched offer. `max_buyers_snapshot` stays 1. A canonical matched offer that still has a null price may be filled once with 2500, and only while `price_cents` is null.
 
-A positive `price_cents` is never rewritten. A canonical matched offer that still has a null price may be filled once with the current v1 snapshot, and only while `price_cents` is null.
+A previously persisted positive `price_cents` is not rewritten, including when it is not 2500 and including when a budget ceiling later changes. Paid, accepted, and otherwise settled commercial rows stay as stored. Still-open rows are also left unchanged: this decision does not run a migration over historical offers.
+
+A new Stripe authorization, webhook authorization, or client confirmation/capture for a canonical matched service-request offer succeeds only when the persisted offer price and the payment amount are exactly 2500 cents EUR. Any other live amount fails closed and is not rewritten, canceled, or captured by this rule.
 
 ## Non-goals
 

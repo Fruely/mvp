@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildMatchedServiceRequestOfferIdempotencyKey } from "@/lib/leadEngine/requestOfferPolicy";
+import { CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS } from "@/lib/leadEngine/serviceRequestAccessPricing";
 
 /**
  * Provider-neutral record that the owning client confirmed one reserved connection.
@@ -9,8 +10,8 @@ export type RecordClientConfirmationResult =
   | { ok: true; clientConfirmedAt: string }
   | { ok: false; error: "not_found" | "not_claimable" | "already_claimed" | "invariant" | "retryable" };
 
-function positivePrice(value: unknown): boolean {
-  return typeof value === "number" && Number.isInteger(value) && value > 0;
+function canonicalConnectionFee(value: unknown): boolean {
+  return value === CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS;
 }
 
 export function isCanonicalMatchedServiceRequestOffer(
@@ -34,7 +35,7 @@ export function isCanonicalMatchedServiceRequestOffer(
     offer.offer_reason === "matched" &&
     offer.billing_model === "pay_per_lead" &&
     offer.currency === "eur" &&
-    positivePrice(offer.price_cents) &&
+    canonicalConnectionFee(offer.price_cents) &&
     offer.idempotency_key ===
       buildMatchedServiceRequestOfferIdempotencyKey({ requestId, specialistId })
   );

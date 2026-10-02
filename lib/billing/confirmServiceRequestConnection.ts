@@ -13,6 +13,7 @@ import {
   paymentProvesStripeRail,
   SERVICE_REQUEST_STORE_PAYMENT_FLAG,
 } from "@/lib/billing/serviceRequestPaymentRail";
+import { CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS } from "@/lib/leadEngine/serviceRequestAccessPricing";
 import { isServiceRequestPaidClaimEnabled } from "@/lib/selection/reserveMatch";
 
 export { isServiceRequestStorePaymentEnabled, SERVICE_REQUEST_STORE_PAYMENT_FLAG };
@@ -240,8 +241,8 @@ export async function confirmServiceRequestConnection(input: {
     offer.billing_model !== "pay_per_lead" ||
     offer.currency !== "eur" ||
     !LIVE_OFFER_STATUSES.includes(offer.status) ||
-    offerPrice == null ||
-    offerPrice !== amount
+    offerPrice !== CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS ||
+    amount !== CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS
   ) {
     return { ok: false, error: "invariant" };
   }

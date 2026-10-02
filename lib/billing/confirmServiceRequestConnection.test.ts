@@ -207,6 +207,20 @@ async function confirm(db: Memory, stripe: ServiceRequestCaptureStripe, userId =
   });
 }
 
+test("confirmation does not capture a live offer amount other than 2500", async () => {
+  const db = seed();
+  db.tables.request_offers[0].price_cents = 4000;
+  db.tables.request_offer_payments[0].amount_cents = 4000;
+  const { stripe, captures } = stripeFor();
+  const result = await confirm(db, stripe, CLIENT, FLAGS);
+  assert.deepEqual(result, { ok: false, error: "invariant" });
+  assert.equal(captures.length, 0);
+  assert.equal(db.tables.service_request_claims[0]?.client_confirmed_at, null);
+  assert.equal(db.tables.request_offers[0]?.price_cents, 4000);
+  assert.equal(db.tables.request_offer_payments[0]?.status, "authorized");
+  assert.equal(db.tables.request_offer_payments[0]?.amount_cents, 4000);
+});
+
 test("capture flag off makes confirmation unavailable and sends no notice", async () => {
   const db = seed();
   const { stripe, captures } = stripeFor();

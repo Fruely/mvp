@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS } from "@/lib/leadEngine/serviceRequestAccessPricing";
 import { stripePaymentIntentAttribution } from "@/lib/billing/requestOfferPaymentProvider";
 import type Stripe from "stripe";
 import {
@@ -97,6 +98,9 @@ async function coherent(
   if (metadata.offer_id !== payment.offer_id) return { outcome: "invalid" };
   if (metadata.specialist_id && metadata.specialist_id !== payment.specialist_id) return { outcome: "invalid" };
   if (intent.amount !== payment.amount_cents) return { outcome: "invalid" };
+  if (payment.amount_cents !== CANONICAL_MATCHED_SERVICE_REQUEST_CONNECTION_FEE_CENTS) {
+    return { outcome: "invalid" };
+  }
   if (intent.currency.toLowerCase() !== payment.currency.toLowerCase() || payment.currency !== "eur") {
     return { outcome: "invalid" };
   }

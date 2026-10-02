@@ -63,7 +63,7 @@ test("matched service-request offer snapshots the shared access price", () => {
   };
   const pricing = resolveServiceRequestAccessPrice("500 €");
   const offer = buildMatchedServiceRequestOffer({ ...input, pricing });
-  assert.equal(offer.price_cents, 4000);
+  assert.equal(offer.price_cents, 2500);
   assert.equal(offer.currency, "eur");
   assert.equal(offer.max_buyers_snapshot, 1);
   assert.equal(offer.pricing_rule_id, null);
@@ -81,6 +81,7 @@ const SPECIALIST_B = "33333333-3333-4333-8333-333333333333";
 
 function commercialDb(input: {
   budget: string | null;
+  acceptedCents?: number | null;
   existing?: Record<string, unknown>[];
   capableSpecialistIds?: string[];
 }) {
@@ -137,7 +138,14 @@ function commercialDb(input: {
         },
         maybeSingle: async () => {
           if (table === "service_requests") {
-            return { data: { id: REQUEST_ID, client_budget_text: input.budget }, error: null };
+            return {
+              data: {
+                id: REQUEST_ID,
+                client_budget_text: input.budget,
+                budget_reconciliation_accepted_cents: input.acceptedCents ?? null,
+              },
+              error: null,
+            };
           }
           const found = tableRows(table).filter((row) => filters.every((filter) => filter(row)));
           return { data: found[0] ? { ...found[0] } : null, error: null };
@@ -204,7 +212,7 @@ test("one request gets the same priced snapshot for every matched specialist", a
   assert.equal(db.rows.length, 2);
   assert.deepEqual(
     db.rows.map((row) => row.price_cents),
-    [4000, 4000],
+    [2500, 2500],
   );
   assert.deepEqual(
     db.rows.map((row) => row.max_buyers_snapshot),
@@ -299,7 +307,61 @@ test("a capable specialist is required before a new paid offer is introduced", a
     mixed.rows.map((row) => row.specialist_id),
     [SPECIALIST_A],
   );
-  assert.equal(mixed.rows[0]?.price_cents, 4000);
+  assert.equal(mixed.rows[0]?.price_cents, 2500);
+});
+
+test("budget text and an accepted ceiling do not change the connection fee", async () => {
+  const low = commercialDb({ budget: "до 80 евро", capableSpecialistIds: [SPECIALIST_A] });
+  assert.deepEqual(
+    await ensureMatchedServiceRequestOffers(
+      low.supabase as never,
+      { requestId: REQUEST_ID, specialistIds: [SPECIALIST_A] },
+      COMMERCIAL,
+    ),
+    { ok: true, kind: "ready" },
+  );
+  assert.equal(low.rows[0]?.price_cents, 2500);
+  assert.equal(low.rows[0]?.currency, "eur");
+  assert.equal(low.rows[0]?.estimated_service_value_max_cents, 8000);
+
+  const high = commercialDb({ budget: "10000 €", capableSpecialistIds: [SPECIALIST_A] });
+  assert.deepEqual(
+    await ensureMatchedServiceRequestOffers(
+      high.supabase as never,
+      { requestId: REQUEST_ID, specialistIds: [SPECIALIST_A] },
+      COMMERCIAL,
+    ),
+    { ok: true, kind: "ready" },
+  );
+  assert.equal(high.rows[0]?.price_cents, 2500);
+  assert.equal(high.rows[0]?.estimated_service_value_max_cents, 1_000_000);
+
+  const ceiling = commercialDb({
+    budget: "80 €",
+    acceptedCents: 2_000_000,
+    capableSpecialistIds: [SPECIALIST_A],
+  });
+  assert.deepEqual(
+    await ensureMatchedServiceRequestOffers(
+      ceiling.supabase as never,
+      { requestId: REQUEST_ID, specialistIds: [SPECIALIST_A] },
+      COMMERCIAL,
+    ),
+    { ok: true, kind: "ready" },
+  );
+  assert.equal(ceiling.rows[0]?.price_cents, 2500);
+  assert.equal(ceiling.rows[0]?.estimated_service_value_min_cents, 2_000_000);
+  assert.equal(ceiling.rows[0]?.estimated_service_value_max_cents, 2_000_000);
+
+  ceiling.rows[0].price_cents = 2500;
+  const again = await ensureMatchedServiceRequestOffers(
+    ceiling.supabase as never,
+    { requestId: REQUEST_ID, specialistIds: [SPECIALIST_A] },
+    { ...COMMERCIAL },
+  );
+  assert.deepEqual(again, { ok: true, kind: "ready" });
+  assert.equal(ceiling.rows[0]?.price_cents, 2500);
+  assert.equal(ceiling.updates.length, 0);
 });
 
 test("a persisted positive offer stays priced after capability disappears", async () => {

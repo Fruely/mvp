@@ -54,9 +54,9 @@ Freuly sells **access to real demand**, not a percentage of the specialist's lat
 
 A commercial offer snapshots the exact access price for that offer. Once a positive price is persisted, it does not silently change. A client capability may decide whether a new paid offer is introduced. It does not grant entitlement or payment, and it does not make an existing positive offer free. Legacy immediate claim must not finalize a connection that already has that paid offer.
 
-The current Beta Access Pricing v1 is owned by ADR-006 and is based only on explicit client budget. Market density, specialist identity, recurrence, campaign/CAC, category scarcity and subscription status are not v1 price inputs.
+The matched service-request connection fee is owned by ADR-006. For the MP1-S4 rollout it is a fixed EUR 25.00. Explicit client budget still snapshots estimated service value and remains matching information. It does not set the connection fee. Market density, specialist identity, recurrence, campaign/CAC, category scarcity and subscription status are not price inputs.
 
-A future pricing policy may change prices for newly created offers. Existing offer snapshots remain immutable.
+A future pricing policy may change prices for newly created offers. Existing offer snapshots remain immutable. A new authorization or capture requires the persisted canonical fee.
 
 ## 6. Payment is a rail, entitlement is the product fact
 

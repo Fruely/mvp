@@ -241,6 +241,19 @@ test("null price returns price_unavailable and does not call Stripe", async () =
   assert.equal(db.tables.request_offers[0]?.price_cents, null);
 });
 
+test("a live offer amount other than 2500 cannot be authorized", async () => {
+  const db = seed(4000);
+  db.tables.service_requests[0].client_budget_text = "20 €";
+  const { stripe, creates } = stripeFor();
+  const result = await authorize(db, stripe, ON, { amount: 2500, priceCents: 2500, currency: "eur" });
+  assert.deepEqual(result, { ok: false, error: "price_unavailable" });
+  assert.equal(creates.length, 0);
+  assert.equal(db.inserts.length, 0);
+  assert.equal(db.updates.length, 0);
+  assert.equal(db.tables.request_offers[0]?.price_cents, 4000);
+  assert.equal(db.tables.request_offer_payments.length, 0);
+});
+
 test("amount and currency come from the offer and the body cannot choose them", async () => {
   const db = seed(2500);
   const { stripe, creates } = stripeFor();
