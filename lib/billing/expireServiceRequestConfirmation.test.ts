@@ -772,6 +772,56 @@ test("concurrent expiry calls stay on one terminal claim", async () => {
   assert.equal(gate.cancels.every((row) => row.key === serviceRequestExpiryIdempotencyKey(PAYMENT)), true);
 });
 
+test("older due store claims do not consume the stripe expiry batch", async () => {
+  const db = seed();
+  const storeIds: string[] = [];
+  for (let index = 0; index < CONFIRMATION_EXPIRY_BATCH_LIMIT; index += 1) {
+    const id = `51515151-5151-4515-8515-${String(index).padStart(12, "0")}`;
+    storeIds.push(id);
+    db.tables.service_request_claims.push({
+      id,
+      status: "reserved",
+      specialist_id: OTHER_SPEC,
+      service_request_id: REQUEST,
+      match_id: OTHER_MATCH,
+      request_offer_id: OFFER,
+      client_confirmed_at: null,
+      client_rejected_at: null,
+      payment_rail: "store",
+      release_reason: null,
+      released_at: null,
+      expired_at: null,
+      confirmation_expires_at: `2010-01-${String(index + 1).padStart(2, "0")}T00:00:00.000Z`,
+    });
+  }
+  const gate = stripeFor();
+  const batch = await reconcileExpiredServiceRequestConfirmations({
+    supabase: db as unknown as SupabaseClient,
+    stripe: gate.stripe,
+    now: NOW,
+  });
+  assert.equal(CONFIRMATION_EXPIRY_BATCH_LIMIT, 25);
+  assert.equal(batch.examined, 1);
+  assert.equal(batch.expired, 1);
+  assert.equal(batch.skipped, 0);
+  assert.equal(claim(db)?.status, "expired");
+  assert.equal(claim(db)?.payment_rail, "stripe");
+  assert.equal(claim(db)?.release_reason, CONFIRMATION_EXPIRED_RELEASE_REASON);
+  assert.equal(gate.cancels.length, 1);
+  assert.equal(gate.captures.length, 0);
+  assert.equal(db.reserveCalls, 0);
+  assert.equal(db.tables.service_request_claims.length, storeIds.length + 1);
+  for (const id of storeIds) {
+    const row = db.tables.service_request_claims.find((item) => item.id === id);
+    assert.equal(row?.status, "reserved");
+    assert.equal(row?.payment_rail, "store");
+    assert.equal(row?.release_reason, null);
+    assert.equal(row?.expired_at, null);
+    assert.equal(row?.client_confirmed_at, null);
+    assert.equal(row?.client_rejected_at, null);
+  }
+});
+
 test("the cron route requires the cron secret and processes a bounded batch independently", async () => {
   const missing = await GET(new NextRequest("http://localhost/api/cron/service-request-confirmation-expiry"));
   assert.equal(missing.status, 401);

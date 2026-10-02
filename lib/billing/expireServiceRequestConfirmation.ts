@@ -332,6 +332,7 @@ export async function reconcileExpiredServiceRequestConfirmations(input: {
     .from("service_request_claims")
     .select("id")
     .eq("status", "reserved")
+    .eq("payment_rail", "stripe")
     .is("client_confirmed_at", null)
     .is("client_rejected_at", null)
     .not("confirmation_expires_at", "is", null)

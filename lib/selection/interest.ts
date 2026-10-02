@@ -206,14 +206,20 @@ export async function notifyClientConfirmationRequired(
   try {
     const claim = await supabase
       .from("service_request_claims")
-      .select("id, service_request_id, match_id, status, client_confirmed_at, client_rejected_at, confirmation_expires_at")
+      .select("id, service_request_id, match_id, status, client_confirmed_at, client_rejected_at, payment_rail, confirmation_expires_at")
       .eq("id", claimId)
       .maybeSingle();
     if (claim.error || claim.data?.status !== "reserved") return;
     if (typeof claim.data.client_confirmed_at === "string" && claim.data.client_confirmed_at) return;
     if (typeof claim.data.client_rejected_at === "string" && claim.data.client_rejected_at) return;
     const deadline = claim.data.confirmation_expires_at;
-    if (storedConfirmationDeadline(deadline) && !isConfirmationDeadlineOpen(deadline)) return;
+    if (
+      claim.data.payment_rail !== "store" &&
+      storedConfirmationDeadline(deadline) &&
+      !isConfirmationDeadlineOpen(deadline)
+    ) {
+      return;
+    }
     if (typeof claim.data.match_id === "string") {
       const match = await supabase
         .from("service_request_matches")
