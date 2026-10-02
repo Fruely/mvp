@@ -8,6 +8,7 @@ import {
   SERVICE_REQUEST_AUTHORIZATION_PURPOSE,
 } from "@/lib/billing/createServiceRequestAuthorization";
 import { fulfillConfirmedServiceRequestCapture } from "@/lib/billing/fulfillServiceRequestCapture";
+import { finalizeClientRejectedConnection } from "@/lib/billing/rejectServiceRequestConnection";
 import { notifyClientConfirmationRequired } from "@/lib/selection/interest";
 
 /**
@@ -53,6 +54,7 @@ type ClaimRow = {
   request_offer_id: string | null;
   status: string;
   client_confirmed_at: string | null;
+  client_rejected_at?: string | null;
 };
 
 type OfferRow = {
@@ -111,7 +113,7 @@ async function coherent(
 
   const claimResult = await supabase
     .from("service_request_claims")
-    .select("id, specialist_id, service_request_id, match_id, request_offer_id, status, client_confirmed_at")
+    .select("id, specialist_id, service_request_id, match_id, request_offer_id, status, client_confirmed_at, client_rejected_at")
     .eq("id", payment.service_request_claim_id)
     .maybeSingle();
   if (claimResult.error) return { outcome: "retry" };
@@ -170,6 +172,9 @@ export async function processStripeWebhookEventForServiceRequestAuthorization(
 
   if (event.type === "payment_intent.amount_capturable_updated") {
     if (intent.status !== "requires_capture") return { outcome: "validation_failed" };
+    if (typeof claim.client_rejected_at === "string" && claim.client_rejected_at) {
+      return { outcome: "success" };
+    }
     if (payment.status === "paid") return { outcome: "success" };
     if (payment.status === "authorized") {
       await noteAuthorized(supabase, claim.id, env);
@@ -226,6 +231,10 @@ export async function processStripeWebhookEventForServiceRequestAuthorization(
   }
 
   if (event.type === "payment_intent.canceled") {
+    if (payment.status === "paid" || claim.status === "completed") return { outcome: "validation_failed" };
+    if (typeof claim.client_rejected_at === "string" && claim.client_rejected_at) {
+      return { outcome: await finalizeClientRejectedConnection(supabase, claim.id) };
+    }
     if (payment.status === "released") return { outcome: "success" };
     if (payment.status !== "pending" && payment.status !== "authorized") {
       return { outcome: "validation_failed" };

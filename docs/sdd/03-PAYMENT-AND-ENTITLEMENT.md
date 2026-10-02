@@ -76,6 +76,8 @@ For Stripe, the confirmation writer runs only after an authorized PaymentIntent 
 
 A canonical Stripe authorization also requires `SERVICE_REQUEST_CONFIRMATION_WINDOW_SECONDS`. The value is a positive integer duration in seconds, with no default. When the payment first becomes `authorized`, the server stores `service_request_claims.confirmation_expires_at` as that authorization time plus the configured duration. Synchronous authorization and the authorization webhook share that write. A valid authorization webhook whose window is missing or cannot form a finite deadline stays retryable and does not mark the payment authorized. A later retry does not move it. Client and specialist responses may show that absolute timestamp. They do not receive a remaining duration to calculate, a Stripe client secret on the client request, or a client-supplied deadline. Confirmation fails closed when the timestamp is missing or no longer in the future. It does not cancel the PaymentIntent or mark the claim expired.
 
+Client rejection is `service_request_claims.client_rejected_at`. It is not specialist `declined`. Confirmation and rejection are compare-and-set writes: each timestamp can be stored only while the other is null, and the database check forbids both. `POST /api/client/requests/service-request/[id]/reject` ignores the body. For a canonical uncaptured €25 Stripe authorization it cancels that PaymentIntent, marks the payment `released`, marks that match `not_selected`, and only then marks the claim `released` with `release_reason = client_rejected`. Capture amount is €0. The request stays unselected, with no conversation, grant, or rematch. A retry resumes after a durable rejection without creating another payment. A missing confirmation window, a disabled capture flag, or a disabled paid-claim flag does not block that release. Expiry remains separate.
+
 For Native store billing, the same writer may run with no payment row only when the claim is already bound to `store`, `SERVICE_REQUEST_STORE_PAYMENT_ENABLED` is on, and the reserved specialist has an active installation advertising `paid_request_store_purchase_v1`. `paid_request_access_v1` is not enough. The response state is `payment_required`. It does not charge, grant, open chat, or send the `payment_required` notice. Current Native does not advertise the purchase capability, so this branch stays closed.
 
 ## 6. Stripe / Web rail
@@ -207,7 +209,7 @@ If two verifications race, one fulfillment wins. The loser fails closed without 
 
 ## 12. Reservation timeout
 
-The Stripe confirmation deadline is persisted and enforced on client confirmation. Claim expiry, PaymentIntent cancellation, release, and sequential redistribution are still not implemented. Reuse the current claim statuses. Do not add a status for "waiting for payment" or "purchase cancelled".
+The Stripe confirmation deadline is persisted and enforced on client confirmation. An explicit client rejection releases the uncaptured authorization and the reserved claim; it does not rematch. Claim expiry, automatic cancellation when the confirmation window ends, and sequential redistribution are still not implemented. Reuse the current claim statuses. Do not add a status for "waiting for payment" or "purchase cancelled".
 
 | Case | Claim result |
 | --- | --- |

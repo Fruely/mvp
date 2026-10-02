@@ -381,19 +381,25 @@ async function confirmationDeliveryBlock(
   const claim = claimId
     ? await supabase
         .from("service_request_claims")
-        .select("id, status, client_confirmed_at")
+        .select("id, status, client_confirmed_at, client_rejected_at")
         .eq("id", claimId)
         .maybeSingle()
     : await supabase
         .from("service_request_claims")
-        .select("id, status, client_confirmed_at")
+        .select("id, status, client_confirmed_at, client_rejected_at")
         .eq("match_id", typeof input.matchId === "string" ? input.matchId : "")
         .eq("status", "reserved")
         .maybeSingle();
   if (claim.error) return { kind: "error" };
   const status = typeof claim.data?.status === "string" ? claim.data.status : "";
   const confirmedAt = claim.data?.client_confirmed_at;
-  if (!claim.data?.id || status !== "reserved" || (typeof confirmedAt === "string" && confirmedAt.length > 0)) {
+  const rejectedAt = claim.data?.client_rejected_at;
+  if (
+    !claim.data?.id ||
+    status !== "reserved" ||
+    (typeof confirmedAt === "string" && confirmedAt.length > 0) ||
+    (typeof rejectedAt === "string" && rejectedAt.length > 0)
+  ) {
     return { kind: "blocked" };
   }
   return { kind: "deliver" };

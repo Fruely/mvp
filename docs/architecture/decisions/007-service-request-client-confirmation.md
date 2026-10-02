@@ -23,8 +23,16 @@ The client has a finite server-owned window to confirm after a valid €25 Strip
 
 `service_request_claims.confirmation_expires_at` stores the absolute deadline for that reserved claim. It is written once, from the server authorization time, when synchronous authorization or the authorization webhook first makes the payment `authorized`. A replay returns the stored timestamp and does not move it. Existing rows are not backfilled.
 
-A new authorization does not create a PaymentIntent when that configuration is missing. A valid `payment_intent.amount_capturable_updated` event with that configuration missing leaves the payment pending and is a retryable webhook failure, so the billing event is not skipped. Client confirmation does not capture when the deadline is missing or already past. This amendment does not cancel the PaymentIntent, release the payment, mark the claim expired, or run an expiry worker.
+A new authorization does not create a PaymentIntent when that configuration is missing. A valid `payment_intent.amount_capturable_updated` event with that configuration missing leaves the payment pending and is a retryable webhook failure, so the billing event is not skipped. Client confirmation does not capture when the deadline is missing or already past. This amendment does not cancel the PaymentIntent on a timeout, release the payment on a timeout, mark the claim expired, or run an expiry worker.
+
+## Amendment 2026-10-03 — client rejection
+
+Client rejection is a different decision from a specialist `declined` match response. The owning client rejects the currently reserved specialist before connection. `service_request_claims.client_rejected_at` is written only while `client_confirmed_at` is null, and confirmation is written only while `client_rejected_at` is null. A check constraint keeps both timestamps from being set. The request body does not choose the specialist, claim, amount, currency, PaymentIntent, reason, or timestamp.
+
+`POST /api/client/requests/service-request/[id]/reject` then cancels the uncaptured PaymentIntent with idempotency key `service-request-release:{paymentId}`. It does not capture or refund. Local release sets the payment to `released`, then that match to `not_selected`, and only then the claim to `released` with `release_reason = client_rejected`. The claim stays `reserved` until the match can no longer be reserved. `confirmation_expires_at` stays. The request stays unselected. No conversation, access grant, or automatic rematch is created. A repeated call returns the same released state.
+
+If cancellation or a later local write fails, the rejection timestamp remains and confirmation cannot capture. The call is retryable and resumes from the stored decision. `payment_intent.canceled` uses that same local release when the rejection timestamp is present. A paid or completed connection is not rewritten as released. A missing confirmation window, a disabled capture flag, or a disabled paid-claim flag does not keep an existing uncaptured authorization held. Expiry and redistribution remain a separate gap.
 
 ## Non-goals
 
-No PaymentIntent cancellation, no expiry worker, no sequential rematch, no Native confirm control, and no capture of the client's own money. The final service transaction stays outside Freuly. The permanent confirmation-window duration is not chosen here.
+No expiry worker, no automatic rematch, no Native confirm or reject control, no store-payment rejection, and no capture of the client's own money. The final service transaction stays outside Freuly. The permanent confirmation-window duration is not chosen here.

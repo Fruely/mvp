@@ -64,7 +64,7 @@ export async function recordServiceRequestClientConfirmation(input: {
 
   const claimResult = await input.supabase
     .from("service_request_claims")
-    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, client_confirmed_at")
+    .select("id, status, specialist_id, service_request_id, match_id, request_offer_id, client_confirmed_at, client_rejected_at")
     .eq("service_request_id", request.id)
     .eq("status", "reserved")
     .maybeSingle();
@@ -77,8 +77,12 @@ export async function recordServiceRequestClientConfirmation(input: {
     match_id?: string;
     request_offer_id?: string | null;
     client_confirmed_at?: string | null;
+    client_rejected_at?: string | null;
   } | null;
   if (!claim?.id || claim.status !== "reserved") return { ok: false, error: "not_claimable" };
+  if (typeof claim.client_rejected_at === "string" && claim.client_rejected_at) {
+    return { ok: false, error: "not_claimable" };
+  }
   if (claim.service_request_id !== request.id || !claim.request_offer_id || !claim.specialist_id || !claim.match_id) {
     return { ok: false, error: "not_claimable" };
   }
@@ -135,17 +139,22 @@ export async function recordServiceRequestClientConfirmation(input: {
       .update({ client_confirmed_at: confirmedAt, updated_at: confirmedAt })
       .eq("id", claim.id)
       .eq("status", "reserved")
-      .is("client_confirmed_at", null);
+      .is("client_confirmed_at", null)
+      .is("client_rejected_at", null);
     if (saved.error) return { ok: false, error: "retryable" };
   }
 
   const reread = await input.supabase
     .from("service_request_claims")
-    .select("id, status, client_confirmed_at")
+    .select("id, status, client_confirmed_at, client_rejected_at")
     .eq("id", claim.id)
     .maybeSingle();
   if (reread.error) return { ok: false, error: "retryable" };
-  if (reread.data?.status !== "reserved" || typeof reread.data.client_confirmed_at !== "string") {
+  if (
+    reread.data?.status !== "reserved" ||
+    typeof reread.data.client_confirmed_at !== "string" ||
+    (typeof reread.data.client_rejected_at === "string" && reread.data.client_rejected_at)
+  ) {
     return { ok: false, error: "not_claimable" };
   }
   return { ok: true, clientConfirmedAt: reread.data.client_confirmed_at };
