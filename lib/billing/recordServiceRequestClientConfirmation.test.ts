@@ -17,9 +17,15 @@ type Row = Record<string, unknown>;
 
 class Memory {
   readonly tables: Record<string, Row[]>;
+  readonly rpcCalls: string[] = [];
   constructor(seed: Record<string, Row[]>) {
     this.tables = {};
     for (const [name, rows] of Object.entries(seed)) this.tables[name] = rows.map((row) => ({ ...row }));
+  }
+  async rpc(fn: string, args: { p_claim_id?: string; p_decision?: string }) {
+    this.rpcCalls.push(fn);
+    if (fn !== "apply_service_request_client_decision") return { data: null, error: { message: "unknown rpc" } };
+    return { data: decide(this.tables, args.p_claim_id, args.p_decision), error: null };
   }
   from(table: string) {
     const filters: Array<(row: Row) => boolean> = [];
@@ -49,6 +55,38 @@ class Memory {
     };
     return api;
   }
+}
+
+function decide(
+  tables: Record<string, Row[]>,
+  claimId: string | undefined,
+  decision: string | undefined,
+): { ok: boolean; at?: string; error?: string } {
+  const claim = tables.service_request_claims?.find((row) => row.id === claimId);
+  const match = tables.service_request_matches?.find((row) => row.id === claim?.match_id);
+  if (!claim || claim.status !== "reserved" || !match || decision !== "confirm") {
+    return { ok: false, error: "not_claimable" };
+  }
+  if (typeof claim.client_confirmed_at === "string" && !claim.client_rejected_at) {
+    return { ok: true, at: claim.client_confirmed_at };
+  }
+  if (claim.client_confirmed_at || claim.client_rejected_at) return { ok: false, error: "not_claimable" };
+  if (claim.payment_rail === "store") {
+    if (match.status !== "active" && match.status !== "interested") return { ok: false, error: "not_claimable" };
+    const at = new Date().toISOString();
+    claim.client_confirmed_at = at;
+    return { ok: true, at };
+  }
+  if (claim.payment_rail !== "stripe") return { ok: false, error: "not_claimable" };
+  const deadline = typeof claim.confirmation_expires_at === "string" ? Date.parse(claim.confirmation_expires_at) : Number.NaN;
+  if (match.status === "expired" || (Number.isFinite(deadline) && deadline <= Date.now())) {
+    return { ok: false, error: "confirmation_expired" };
+  }
+  if (!Number.isFinite(deadline)) return { ok: false, error: "not_claimable" };
+  if (match.status !== "active" && match.status !== "interested") return { ok: false, error: "not_claimable" };
+  const at = new Date().toISOString();
+  claim.client_confirmed_at = at;
+  return { ok: true, at };
 }
 
 function seed(overrides: { offer?: Row; match?: Row; claim?: Row | null; selected?: string | null } = {}) {
@@ -105,7 +143,7 @@ async function record(db: Memory, userId = CLIENT) {
 }
 
 test("the owning client can confirm a reserved canonical offer once", async () => {
-  const db = seed();
+  const db = seed({ claim: { payment_rail: "store" } });
   const first = await record(db);
   const confirmedAt = db.tables.service_request_claims[0]?.client_confirmed_at;
   const second = await record(db);
@@ -118,6 +156,43 @@ test("the owning client can confirm a reserved canonical offer once", async () =
   assert.equal(db.tables.request_offer_payments.length, 0);
   assert.equal(db.tables.request_offer_access_grants.length, 0);
   assert.equal(db.tables.conversations.length, 0);
+  assert.deepEqual(db.rpcCalls, []);
+});
+
+test("stripe confirmation follows the stored deadline and store confirmation does not", async () => {
+  const future = seed({
+    claim: { payment_rail: "stripe", confirmation_expires_at: "2099-01-01T00:00:00.000Z" },
+  });
+  const recorded = await record(future);
+  assert.equal(recorded.ok, true);
+  assert.equal(typeof future.tables.service_request_claims[0]?.client_confirmed_at, "string");
+  assert.deepEqual(future.rpcCalls, ["apply_service_request_client_decision"]);
+
+  const elapsed = seed({
+    claim: { payment_rail: "stripe", confirmation_expires_at: "2000-01-01T00:00:00.000Z" },
+  });
+  assert.equal((await record(elapsed)).ok, false);
+  assert.equal(elapsed.tables.service_request_claims[0]?.client_confirmed_at, null);
+
+  const missing = seed({ claim: { payment_rail: "stripe", confirmation_expires_at: null } });
+  assert.deepEqual(await record(missing), { ok: false, error: "not_claimable" });
+  assert.equal(missing.tables.service_request_claims[0]?.client_confirmed_at, null);
+
+  const store = seed({ claim: { payment_rail: "store", confirmation_expires_at: null } });
+  const storeRecorded = await record(store);
+  assert.equal(storeRecorded.ok, true);
+  assert.equal(typeof store.tables.service_request_claims[0]?.client_confirmed_at, "string");
+  assert.equal(store.tables.service_request_claims[0]?.status, "reserved");
+  assert.equal(store.tables.service_request_matches[0]?.status, "active");
+  assert.deepEqual(store.rpcCalls, []);
+  assert.equal(store.tables.request_offer_payments.length, 0);
+
+  for (const paymentRail of [null, "card"]) {
+    const unknown = seed({ claim: { payment_rail: paymentRail } });
+    assert.deepEqual(await record(unknown), { ok: false, error: "not_claimable" });
+    assert.equal(unknown.tables.service_request_claims[0]?.client_confirmed_at, null);
+    assert.deepEqual(unknown.rpcCalls, []);
+  }
 });
 
 test("confirmation rejects the wrong owner, claim, offer, or match", async () => {

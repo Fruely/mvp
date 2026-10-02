@@ -20,6 +20,7 @@ import {
 import { buildPushContract, deliverPush } from "./pushContract.ts";
 import { renderMatchNotice } from "./render.ts";
 import { markOwnInboxRead, openOwnMatch, respondToOwnMatch } from "./respond.ts";
+import { notifyClientConfirmationRequired } from "../selection/interest.ts";
 import { countUnreadInbox } from "./unread.ts";
 
 type Row = Record<string, unknown>;
@@ -660,6 +661,136 @@ test("a queued confirmation notice sends only while the claim is reserved and un
   assert.equal(rejected.tables.notification_outbox[0].status, "cancelled");
   assert.equal(rejected.tables.notification_outbox[0].last_error_code, "stale_confirmation_state");
   assert.equal(rejected.tables.inbox_items.length, 1);
+
+  const elapsed = seed();
+  const elapsedSeen: string[] = [];
+  elapsed.tables.service_request_claims = [{
+    id: "claim-1",
+    match_id: "match-1",
+    status: "reserved",
+    client_confirmed_at: null,
+    client_rejected_at: null,
+    payment_rail: "stripe",
+    confirmation_expires_at: "2000-01-01T00:00:00.000Z",
+  }];
+  queueNotice(elapsed, {
+    event: "connection_confirmation_required",
+    service_request_id: "request-1",
+    public_id: "REQ-1",
+    service_label: "Tax advice",
+    match_id: "match-1",
+  });
+  elapsed.tables.inbox_items[0].dedupe_key = "claim:claim-1:connection_confirmation_required";
+  await deliverPendingOutbox(elapsed.supabase, DEFAULT_MATCH_DELIVERY_POLICY, countingTransports(elapsedSeen), DAY);
+  assert.deepEqual(elapsedSeen, []);
+  assert.equal(elapsed.tables.notification_outbox[0].status, "cancelled");
+  assert.equal(elapsed.tables.notification_outbox[0].last_error_code, "stale_confirmation_state");
+  assert.equal(elapsed.tables.inbox_items.length, 1);
+});
+
+const CONFIRMATION_NOTICE = {
+  event: "connection_confirmation_required",
+  service_request_id: "request-1",
+  public_id: "REQ-1",
+  service_label: "Tax advice",
+  match_id: "match-1",
+};
+
+function queueConfirmation(db: ReturnType<typeof seed>) {
+  const seen: string[] = [];
+  db.tables.service_requests[0].client_email = "client@example.com";
+  queueNotice(db, CONFIRMATION_NOTICE);
+  db.tables.inbox_items[0].dedupe_key = "claim:claim-1:connection_confirmation_required";
+  return seen;
+}
+
+test("confirmation notices follow the payment rail", async () => {
+  const stripeClaim = {
+    id: "claim-1",
+    service_request_id: "request-1",
+    match_id: "match-1",
+    status: "reserved",
+    payment_rail: "stripe",
+    client_confirmed_at: null,
+    client_rejected_at: null,
+    confirmation_expires_at: "2000-01-01T00:00:00.000Z",
+  };
+  const stripeCreate = seed();
+  stripeCreate.tables.service_request_claims = [{ ...stripeClaim }];
+  await notifyClientConfirmationRequired(stripeCreate.supabase, "claim-1");
+  assert.equal(stripeCreate.tables.inbox_items.length, 0);
+  const stripeDelivery = seed();
+  stripeDelivery.tables.service_request_claims = [{ ...stripeClaim }];
+  const stripeSeen = queueConfirmation(stripeDelivery);
+  await deliverPendingOutbox(stripeDelivery.supabase, DEFAULT_MATCH_DELIVERY_POLICY, countingTransports(stripeSeen), DAY);
+  assert.deepEqual(stripeSeen, []);
+  assert.equal(stripeDelivery.tables.notification_outbox[0].status, "cancelled");
+  assert.equal(stripeDelivery.tables.notification_outbox[0].last_error_code, "stale_confirmation_state");
+  assert.equal(stripeDelivery.tables.inbox_items.length, 1);
+
+  const unbound = seed();
+  unbound.tables.service_request_claims = [{ ...stripeClaim, payment_rail: null }];
+  const unboundSeen = queueConfirmation(unbound);
+  await deliverPendingOutbox(unbound.supabase, DEFAULT_MATCH_DELIVERY_POLICY, countingTransports(unboundSeen), DAY);
+  assert.deepEqual(unboundSeen, []);
+  assert.equal(unbound.tables.notification_outbox[0].status, "cancelled");
+
+  for (const confirmationExpiresAt of ["2000-01-01T00:00:00.000Z", null]) {
+    const created = seed();
+    created.tables.service_request_claims = [{
+      ...stripeClaim,
+      payment_rail: "store",
+      confirmation_expires_at: confirmationExpiresAt,
+    }];
+    await notifyClientConfirmationRequired(created.supabase, "claim-1");
+    assert.equal(created.tables.inbox_items.filter((row) => row.type === "connection_confirmation_required").length, 1, String(confirmationExpiresAt));
+    assert.equal(created.tables.service_request_claims[0].status, "reserved", String(confirmationExpiresAt));
+    const delivered = seed();
+    delivered.tables.service_request_claims = [{
+      ...stripeClaim,
+      payment_rail: "store",
+      confirmation_expires_at: confirmationExpiresAt,
+    }];
+    const seen = queueConfirmation(delivered);
+    await deliverPendingOutbox(delivered.supabase, DEFAULT_MATCH_DELIVERY_POLICY, countingTransports(seen), DAY);
+    assert.deepEqual(seen, ["email"], String(confirmationExpiresAt));
+    assert.equal(delivered.tables.notification_outbox[0].status, "sent", String(confirmationExpiresAt));
+    assert.equal(delivered.tables.service_request_claims[0].status, "reserved", String(confirmationExpiresAt));
+    assert.equal(delivered.tables.request_offer_payments?.length ?? 0, 0, String(confirmationExpiresAt));
+  }
+
+  for (const matchStatus of ["expired", "not_selected"] as const) {
+    const created = seed();
+    created.tables.service_request_matches[0].status = matchStatus;
+    created.tables.service_request_claims = [{ ...stripeClaim, payment_rail: "store", confirmation_expires_at: null }];
+    await notifyClientConfirmationRequired(created.supabase, "claim-1");
+    assert.equal(created.tables.inbox_items.length, 0, matchStatus);
+    const delivered = seed();
+    delivered.tables.service_request_matches[0].status = matchStatus;
+    delivered.tables.service_request_claims = [{ ...stripeClaim, payment_rail: "store", confirmation_expires_at: null }];
+    const seen = queueConfirmation(delivered);
+    await deliverPendingOutbox(delivered.supabase, DEFAULT_MATCH_DELIVERY_POLICY, countingTransports(seen), DAY);
+    assert.deepEqual(seen, [], matchStatus);
+    assert.equal(delivered.tables.notification_outbox[0].status, "cancelled", matchStatus);
+    assert.equal(delivered.tables.notification_outbox[0].last_error_code, "stale_confirmation_state", matchStatus);
+  }
+
+  for (const claimRow of [
+    { ...stripeClaim, payment_rail: "store", confirmation_expires_at: null, client_confirmed_at: "2026-10-02T18:00:00.000Z" },
+    { ...stripeClaim, payment_rail: "store", confirmation_expires_at: null, client_rejected_at: "2026-10-02T18:00:00.000Z" },
+    { ...stripeClaim, payment_rail: "store", confirmation_expires_at: null, status: "released" },
+  ]) {
+    const created = seed();
+    created.tables.service_request_claims = [claimRow];
+    await notifyClientConfirmationRequired(created.supabase, "claim-1");
+    assert.equal(created.tables.inbox_items.length, 0, String(claimRow.status));
+    const delivered = seed();
+    delivered.tables.service_request_claims = [{ ...claimRow }];
+    const seen = queueConfirmation(delivered);
+    await deliverPendingOutbox(delivered.supabase, DEFAULT_MATCH_DELIVERY_POLICY, countingTransports(seen), DAY);
+    assert.deepEqual(seen, [], String(claimRow.status));
+    assert.equal(delivered.tables.notification_outbox[0].status, "cancelled", String(claimRow.status));
+  }
 });
 
 test("a confirmation state read failure stays retryable and is not sent", async () => {

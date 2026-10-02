@@ -111,8 +111,42 @@ class Memory {
 
   async rpc(
     fn: string,
-    args: { p_match_id: string; p_specialist_id: string; p_request_offer_id: string | null },
+    args: {
+      p_match_id?: string;
+      p_specialist_id?: string;
+      p_request_offer_id?: string | null;
+      p_claim_id?: string;
+      p_decision?: string;
+    },
   ) {
+    if (fn === "apply_service_request_client_decision") {
+      const claim = this.tables.service_request_claims?.find((row) => row.id === args.p_claim_id);
+      const match = this.tables.service_request_matches?.find((row) => row.id === claim?.match_id);
+      if (!claim || claim.status !== "reserved" || !match) return { data: { ok: false, error: "not_claimable" }, error: null };
+      if (args.p_decision === "confirm" && typeof claim.client_confirmed_at === "string" && !claim.client_rejected_at) {
+        return { data: { ok: true, at: claim.client_confirmed_at }, error: null };
+      }
+      if (args.p_decision === "reject" && typeof claim.client_rejected_at === "string" && !claim.client_confirmed_at) {
+        return { data: { ok: true, at: claim.client_rejected_at }, error: null };
+      }
+      if (claim.client_confirmed_at || claim.client_rejected_at) return { data: { ok: false, error: "not_claimable" }, error: null };
+      const deadline = typeof claim.confirmation_expires_at === "string" ? Date.parse(claim.confirmation_expires_at) : Number.NaN;
+      if (match.status === "expired" || (Number.isFinite(deadline) && deadline <= Date.now())) {
+        return { data: { ok: false, error: "confirmation_expired" }, error: null };
+      }
+      if (args.p_decision === "confirm" && !Number.isFinite(deadline)) {
+        return { data: { ok: false, error: "not_claimable" }, error: null };
+      }
+      if (match.status !== "active" && match.status !== "interested") {
+        return { data: { ok: false, error: "not_claimable" }, error: null };
+      }
+      const at = new Date().toISOString();
+      if (args.p_decision === "confirm") claim.client_confirmed_at = at;
+      else if (args.p_decision === "reject") claim.client_rejected_at = at;
+      else return { data: { ok: false, error: "not_claimable" }, error: null };
+      claim.updated_at = at;
+      return { data: { ok: true, at }, error: null };
+    }
     this.rpcCalls += 1;
     if (fn !== "reserve_service_request_claim") return { data: null, error: { message: "unknown rpc" } };
     const match = this.tables.service_request_matches?.find((row) => row.id === args.p_match_id);

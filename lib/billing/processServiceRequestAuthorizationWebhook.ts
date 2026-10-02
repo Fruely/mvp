@@ -8,6 +8,11 @@ import {
   SERVICE_REQUEST_AUTHORIZATION_PURPOSE,
 } from "@/lib/billing/createServiceRequestAuthorization";
 import { fulfillConfirmedServiceRequestCapture } from "@/lib/billing/fulfillServiceRequestCapture";
+import {
+  expiryDecisionIsDurable,
+  finalizeConfirmationExpiry,
+} from "@/lib/billing/expireServiceRequestConfirmation";
+import { isConfirmationDeadlineOpen, storedConfirmationDeadline } from "@/lib/billing/serviceRequestConfirmationDeadline";
 import { finalizeClientRejectedConnection } from "@/lib/billing/rejectServiceRequestConnection";
 import { notifyClientConfirmationRequired } from "@/lib/selection/interest";
 
@@ -55,6 +60,10 @@ type ClaimRow = {
   status: string;
   client_confirmed_at: string | null;
   client_rejected_at?: string | null;
+  confirmation_expires_at?: unknown;
+  match_status?: string | null;
+  payment_rail?: string | null;
+  release_reason?: string | null;
 };
 
 type OfferRow = {
@@ -113,13 +122,22 @@ async function coherent(
 
   const claimResult = await supabase
     .from("service_request_claims")
-    .select("id, specialist_id, service_request_id, match_id, request_offer_id, status, client_confirmed_at, client_rejected_at")
+    .select("id, specialist_id, service_request_id, match_id, request_offer_id, status, client_confirmed_at, client_rejected_at, confirmation_expires_at, payment_rail, release_reason")
     .eq("id", payment.service_request_claim_id)
     .maybeSingle();
   if (claimResult.error) return { outcome: "retry" };
   const claim = claimResult.data as ClaimRow | null;
   if (!claim || claim.request_offer_id !== payment.offer_id || claim.specialist_id !== payment.specialist_id) {
     return { outcome: "invalid" };
+  }
+  if (claim.match_id) {
+    const matchResult = await supabase
+      .from("service_request_matches")
+      .select("status")
+      .eq("id", claim.match_id)
+      .maybeSingle();
+    if (matchResult.error) return { outcome: "retry" };
+    claim.match_status = (matchResult.data as { status?: string } | null)?.status ?? null;
   }
 
   const offerResult = await supabase
@@ -175,6 +193,7 @@ export async function processStripeWebhookEventForServiceRequestAuthorization(
     if (typeof claim.client_rejected_at === "string" && claim.client_rejected_at) {
       return { outcome: "success" };
     }
+    if (confirmationWindowClosed(claim)) return { outcome: "success" };
     if (payment.status === "paid") return { outcome: "success" };
     if (payment.status === "authorized") {
       await noteAuthorized(supabase, claim.id, env);
@@ -235,6 +254,34 @@ export async function processStripeWebhookEventForServiceRequestAuthorization(
     if (typeof claim.client_rejected_at === "string" && claim.client_rejected_at) {
       return { outcome: await finalizeClientRejectedConnection(supabase, claim.id) };
     }
+    const requestResult = await supabase
+      .from("service_requests")
+      .select("id, selected_specialist_id")
+      .eq("id", claim.service_request_id)
+      .maybeSingle();
+    if (requestResult.error) return { outcome: "retryable_failure" };
+    const request = requestResult.data as { id?: string; selected_specialist_id?: string | null } | null;
+    if (
+      expiryDecisionIsDurable({
+        matchStatus: claim.match_status,
+        clientConfirmedAt: claim.client_confirmed_at,
+        clientRejectedAt: claim.client_rejected_at,
+        confirmationExpiresAt: claim.confirmation_expires_at,
+        claimStatus: claim.status,
+        releaseReason: claim.release_reason,
+        paymentRail: claim.payment_rail,
+        amountCents: payment.amount_cents,
+        currency: payment.currency,
+        paymentStatus: payment.status,
+        requestUnselected: Boolean(request?.id) && !request?.selected_specialist_id,
+      })
+    ) {
+      const expired = await finalizeConfirmationExpiry(supabase, claim.id);
+      if (expired === "expired") return { outcome: "success" };
+      if (expired === "invariant") return { outcome: "validation_failed" };
+      if (expired === "skipped") return { outcome: "validation_failed" };
+      return { outcome: "retryable_failure" };
+    }
     if (payment.status === "released") return { outcome: "success" };
     if (payment.status !== "pending" && payment.status !== "authorized") {
       return { outcome: "validation_failed" };
@@ -275,4 +322,20 @@ export async function processStripeWebhookEventForServiceRequestAuthorization(
   }
 
   return { outcome: "ignored" };
+}
+
+function confirmationWindowClosed(claim: ClaimRow): boolean {
+  if (claim.client_confirmed_at) return false;
+  if (expiryDecisionIsDurable({
+    matchStatus: claim.match_status,
+    clientConfirmedAt: claim.client_confirmed_at,
+    clientRejectedAt: claim.client_rejected_at,
+    confirmationExpiresAt: claim.confirmation_expires_at,
+    claimStatus: claim.status,
+    releaseReason: claim.release_reason,
+  })) {
+    return true;
+  }
+  const deadline = storedConfirmationDeadline(claim.confirmation_expires_at);
+  return Boolean(deadline) && !isConfirmationDeadlineOpen(claim.confirmation_expires_at);
 }

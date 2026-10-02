@@ -3,6 +3,7 @@ import { channelDedupeKey, planExternalChannels, stageInitialChannels } from "@/
 import { applyTransportPreferences, eventClassEnabled, type PushEventClass } from "@/lib/push/policy";
 import { loadNotificationPreferences } from "@/lib/push/preferences";
 import { isRecipientPushReady } from "@/lib/push/readiness";
+import { isConfirmationDeadlineOpen, storedConfirmationDeadline } from "@/lib/billing/serviceRequestConfirmationDeadline";
 import { deliverOutboxById } from "@/lib/inbox/delivery";
 import { isEmailConfigured } from "@/lib/email";
 import {
@@ -205,12 +206,28 @@ export async function notifyClientConfirmationRequired(
   try {
     const claim = await supabase
       .from("service_request_claims")
-      .select("id, service_request_id, match_id, status, client_confirmed_at, client_rejected_at")
+      .select("id, service_request_id, match_id, status, client_confirmed_at, client_rejected_at, payment_rail, confirmation_expires_at")
       .eq("id", claimId)
       .maybeSingle();
     if (claim.error || claim.data?.status !== "reserved") return;
     if (typeof claim.data.client_confirmed_at === "string" && claim.data.client_confirmed_at) return;
     if (typeof claim.data.client_rejected_at === "string" && claim.data.client_rejected_at) return;
+    const deadline = claim.data.confirmation_expires_at;
+    if (
+      claim.data.payment_rail !== "store" &&
+      storedConfirmationDeadline(deadline) &&
+      !isConfirmationDeadlineOpen(deadline)
+    ) {
+      return;
+    }
+    if (typeof claim.data.match_id === "string") {
+      const match = await supabase
+        .from("service_request_matches")
+        .select("status")
+        .eq("id", claim.data.match_id)
+        .maybeSingle();
+      if (match.error || match.data?.status === "expired" || match.data?.status === "not_selected") return;
+    }
     const requestId = String(claim.data.service_request_id ?? "");
     const request = await supabase
       .from("service_requests")
