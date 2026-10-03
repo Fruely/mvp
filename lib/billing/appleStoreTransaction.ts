@@ -4,6 +4,7 @@ import {
   VerificationException,
 } from "@apple/app-store-server-library";
 import { readFileSync } from "node:fs";
+import { bundledAppleRootCertificates } from "@/lib/billing/appleRootCertificates";
 
 export const CANONICAL_STORE_PRODUCT_ID = "freuly.request_access.eur.2500";
 export const FREULY_IOS_BUNDLE_ID = "de.freuly.app";
@@ -127,8 +128,11 @@ export function createAppleSignedTransactionVerifier(config: AppleStoreVerificat
 }
 
 function loadRootCertificates(env: NodeJS.ProcessEnv): Buffer[] | null {
-  const raw = text(env.APPLE_ROOT_CERTIFICATE_PATHS);
-  if (!raw) return null;
+  if (!Object.prototype.hasOwnProperty.call(env, "APPLE_ROOT_CERTIFICATE_PATHS")) {
+    return bundledAppleRootCertificates();
+  }
+  const raw = env.APPLE_ROOT_CERTIFICATE_PATHS;
+  if (typeof raw !== "string" || !raw.trim()) return null;
   const paths = raw.split(",").map((item) => item.trim()).filter(Boolean);
   if (!paths.length) return null;
   try {
