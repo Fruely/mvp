@@ -107,4 +107,3 @@ export function derivePaymentRequired(input: {
   );
   return !paymentActive;
 }
-
