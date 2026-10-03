@@ -118,6 +118,11 @@ export async function POST(request: NextRequest) {
 
     const authConfig = resolveAiJsonAuth(serviceIntentExtractionModel());
     if (!authConfig) {
+      console.error("[intent/extract] ai auth missing", {
+        correlationId,
+        oidcPresent: Boolean(process.env.VERCEL_OIDC_TOKEN?.trim()),
+        requestAiJsonReached: false,
+      });
       return fail("ai_unavailable");
     }
 
@@ -126,6 +131,13 @@ export async function POST(request: NextRequest) {
     const result = await extractServiceIntent(validated.input, {
       now: () => new Date(),
       callModel: async ({ systemPrompt, userPayload }) => {
+        console.warn("[intent/extract] requestAiJson", {
+          correlationId,
+          oidcPresent: Boolean(process.env.VERCEL_OIDC_TOKEN?.trim()),
+          transport: authConfig.transport,
+          model: authConfig.model,
+          endpoint: authConfig.endpoint,
+        });
         const response = await requestAiJson({
           auth: authConfig,
           schemaName: SERVICE_INTENT_MODEL_SCHEMA_NAME,

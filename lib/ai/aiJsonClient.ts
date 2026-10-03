@@ -229,7 +229,13 @@ export async function requestAiJson<T>(request: AiJsonRequest<T>): Promise<AiJso
   const correlationId = request.correlationId?.trim() || randomUUID();
   const fetchImpl = request.fetchImpl ?? fetch;
   const timeoutMs = request.timeoutMs ?? AI_JSON_DEFAULT_TIMEOUT_MS;
-  const log = request.logger ?? ((event) => console.info("[ai/json]", event));
+  const log =
+    request.logger ??
+    ((event) => {
+      // Failures must be visible in Vercel runtime logs. console.info is dropped there.
+      const sink = event.outcome === "ok" ? console.info : console.error;
+      sink("[ai/json]", event);
+    });
 
   const body = JSON.stringify({
     model: request.auth.model,
@@ -261,6 +267,7 @@ export async function requestAiJson<T>(request: AiJsonRequest<T>): Promise<AiJso
       correlationId,
       schema: request.schemaName,
       transport: request.auth.transport,
+      model: request.auth.model,
       attempt: attempts,
       durationMs: Date.now() - startedAt,
       outcome: outcome.ok ? "ok" : outcome.code,

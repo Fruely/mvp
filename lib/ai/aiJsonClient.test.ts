@@ -260,6 +260,7 @@ test("28. logs carry technical metadata only, never secrets, prompt or user text
     "attempt",
     "correlationId",
     "durationMs",
+    "model",
     "outcome",
     "schema",
     "status",
@@ -267,6 +268,46 @@ test("28. logs carry technical metadata only, never secrets, prompt or user text
   ]);
   assert.equal(logs[0]?.outcome, "RATE_LIMITED");
   assert.equal(logs[1]?.outcome, "ok");
+});
+
+test("a failed call without an injected logger emits safe metadata on console.error", async () => {
+  const original = console.error;
+  const events: unknown[][] = [];
+  console.error = ((...args: unknown[]) => {
+    events.push(args);
+  }) as typeof console.error;
+  try {
+    const result = await requestAiJson({
+      auth: AUTH,
+      schemaName: "test_schema",
+      schema: SCHEMA,
+      systemPrompt: "SYSTEM RULES MARKER",
+      userPayload: { text: "Нужен сантехник, тел +4915112345678" },
+      parse: () => null,
+      timeoutMs: 50,
+      correlationId: "corr-default",
+      fetchImpl: scriptedFetch([jsonResponse(401, { error: "upstream secret body" })], []),
+    });
+    assert.equal(result.ok, false);
+    if (result.ok) return;
+    assert.equal(result.code, "REQUEST_REJECTED");
+    assert.equal(result.status, 401);
+    assert.equal(events.length, 1);
+    assert.equal(events[0]?.[0], "[ai/json]");
+    const event = events[0]?.[1] as Record<string, unknown>;
+    assert.equal(event.correlationId, "corr-default");
+    assert.equal(event.transport, "gateway");
+    assert.equal(event.model, "openai/gpt-5-mini");
+    assert.equal(event.outcome, "REQUEST_REJECTED");
+    assert.equal(event.status, 401);
+    assert.equal(event.attempt, 1);
+    const serialized = JSON.stringify(events);
+    for (const forbidden of [AUTH.token, "SYSTEM RULES MARKER", "сантехник", "upstream secret body"]) {
+      assert.ok(!serialized.includes(forbidden), `${forbidden} leaked into console.error`);
+    }
+  } finally {
+    console.error = original;
+  }
 });
 
 test("the default timeout is a bounded latency budget", () => {
