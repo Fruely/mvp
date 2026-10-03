@@ -192,7 +192,7 @@ Native/Web may request actions such as TAKE, decline, confirm or send message. A
 
 **Specified, persistence only:** nullable provider columns on `request_offer_payments`. Stripe writers tag new rows. The migration is not applied, and the columns are not entitlement.
 
-**Implemented as a read:** specialist match preview `payment_required`. It does not write payment, grant access, or send the `payment_required` notice.
+**Implemented as a read:** specialist match preview `payment_required`. It does not write payment, grant access, or send the `payment_required` notice. The same preview also returns `commercial_connection`, a derived Stripe continuation projection. `request_presented` means no canonical current commercial saga owns this specialist and match. Null means a current or incoherent saga exists, or the projection cannot be derived safely; clients must fail closed and must not coerce null into `request_presented` or present a fresh paid-connect action. Legacy previews with no access offer stay unchanged. That field is not a persisted enum and does not replace `payment_required`. The response contract is in `docs/sdd/03-PAYMENT-AND-ENTITLEMENT.md`.
 
 **Specified, not implemented:** the Native store rail, store verification, the `payment_required` notice, and reservation/payment timeout release.
 
