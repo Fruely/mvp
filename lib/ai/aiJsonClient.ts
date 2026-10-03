@@ -1,15 +1,16 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
+import { getVercelOidcToken } from "@vercel/oidc";
 
 /**
  * Shared server-side transport for strict-JSON AI calls.
  *
- * Reuses the authorization schemes already present in this repository:
- * AI Gateway key, Vercel OIDC token, then the direct OpenAI API as fallback.
- * No provider SDK is added: the project already calls these endpoints with fetch.
- *
- * Nothing here logs secrets, prompts, user text or model output.
+ * Authorization order: an explicit AI Gateway key, then a Vercel runtime OIDC
+ * token from `getVercelOidcToken()`, then an explicit OpenAI key. The OIDC
+ * token is short-lived and is not read from `process.env.VERCEL_OIDC_TOKEN`.
+ * Provider calls stay raw `fetch`. Nothing here logs secrets, prompts, user
+ * text or model output.
  */
 
 const GATEWAY_URL = "https://ai-gateway.vercel.sh/v1/chat/completions";
@@ -83,11 +84,27 @@ type ChatCompletionResponse = {
   };
 };
 
+/** Test seam. Production uses `getVercelOidcToken()` and never a static env token. */
+export type OidcTokenReader = () => Promise<string>;
+
+async function readRuntimeOidcToken(readOidcToken: OidcTokenReader): Promise<string | null> {
+  try {
+    const token = (await readOidcToken())?.trim();
+    return token || null;
+  } catch {
+    // The helper error can include request context. Do not log it.
+    return null;
+  }
+}
+
 /**
  * Resolves transport, credentials and model for a strict-JSON call.
  * `modelEnvValue` is the caller's own server-only model variable.
  */
-export function resolveAiJsonAuth(modelEnvValue?: string | null): AiJsonAuth | null {
+export async function resolveAiJsonAuth(
+  modelEnvValue?: string | null,
+  readOidcToken: OidcTokenReader = getVercelOidcToken,
+): Promise<AiJsonAuth | null> {
   const configured = modelEnvValue?.trim() || null;
 
   const gateway = process.env.AI_GATEWAY_API_KEY?.trim();
@@ -100,7 +117,7 @@ export function resolveAiJsonAuth(modelEnvValue?: string | null): AiJsonAuth | n
     };
   }
 
-  const oidc = process.env.VERCEL_OIDC_TOKEN?.trim();
+  const oidc = await readRuntimeOidcToken(readOidcToken);
   if (oidc) {
     return {
       token: oidc,

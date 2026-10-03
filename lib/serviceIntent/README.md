@@ -143,9 +143,10 @@ Server-only, never `NEXT_PUBLIC_*`:
 - `SERVICE_INTENT_EXTRACTION_MODEL` — optional model override for this feature
   only. Defaults of the other AI features are untouched.
 
-Credentials reuse the schemes already present in the repository, in order:
-`AI_GATEWAY_API_KEY`, then `VERCEL_OIDC_TOKEN` (both via the AI Gateway), then
-`OPENAI_API_KEY` directly. With none of them the endpoint reports
+Credentials are resolved in order: an explicit `AI_GATEWAY_API_KEY`, then the
+Vercel runtime OIDC token from `getVercelOidcToken()` (both via the AI Gateway),
+then an explicit `OPENAI_API_KEY` directly. The runtime token is not read from
+`process.env.VERCEL_OIDC_TOKEN`. With none of them the endpoint reports
 `ai_unavailable` instead of calling anything.
 
 Rate limiting uses the existing Upstash configuration

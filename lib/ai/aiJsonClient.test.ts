@@ -315,42 +315,62 @@ test("the default timeout is a bounded latency budget", () => {
   assert.ok(AI_JSON_DEFAULT_TIMEOUT_MS > 0 && AI_JSON_DEFAULT_TIMEOUT_MS <= 30_000);
 });
 
-test("auth resolution follows the existing gateway, OIDC then OpenAI order", () => {
+test("auth resolution uses the gateway key, then runtime OIDC, then OpenAI", async () => {
   const keys = ["AI_GATEWAY_API_KEY", "VERCEL_OIDC_TOKEN", "OPENAI_API_KEY"] as const;
   const saved = keys.map((key) => [key, process.env[key]] as const);
   const clear = () => {
     for (const key of keys) delete process.env[key];
   };
+  const unavailable = async () => {
+    throw new Error("oidc token unavailable");
+  };
 
   try {
     clear();
-    assert.equal(resolveAiJsonAuth(null), null, "no credentials means no call");
+    // A static env token must not authenticate the gateway.
+    process.env.VERCEL_OIDC_TOKEN = "static-env-token";
+    assert.equal(await resolveAiJsonAuth(null, unavailable), null, "no credentials means no call");
 
     clear();
     process.env.AI_GATEWAY_API_KEY = "gw";
-    process.env.VERCEL_OIDC_TOKEN = "oidc";
+    process.env.VERCEL_OIDC_TOKEN = "static-env-token";
     process.env.OPENAI_API_KEY = "sk-test";
-    const gateway = resolveAiJsonAuth(null);
+    let oidcCalls = 0;
+    const gateway = await resolveAiJsonAuth(null, async () => {
+      oidcCalls += 1;
+      return "runtime-oidc-token";
+    });
+    assert.equal(oidcCalls, 0);
     assert.equal(gateway?.transport, "gateway");
+    assert.equal(gateway?.endpoint, "https://ai-gateway.vercel.sh/v1/chat/completions");
     assert.equal(gateway?.token, "gw");
     assert.equal(gateway?.model, "openai/gpt-5-mini");
 
     clear();
-    process.env.VERCEL_OIDC_TOKEN = "oidc";
+    process.env.VERCEL_OIDC_TOKEN = "static-env-token";
     process.env.OPENAI_API_KEY = "sk-test";
-    const oidc = resolveAiJsonAuth("openai/gpt-5");
+    const oidc = await resolveAiJsonAuth("openai/gpt-5", async () => "runtime-oidc-token");
     assert.equal(oidc?.transport, "gateway");
-    assert.equal(oidc?.token, "oidc");
+    assert.equal(oidc?.endpoint, "https://ai-gateway.vercel.sh/v1/chat/completions");
+    assert.equal(oidc?.token, "runtime-oidc-token");
+    assert.notEqual(oidc?.token, "static-env-token");
     assert.equal(oidc?.model, "openai/gpt-5");
 
     clear();
     process.env.OPENAI_API_KEY = "sk-test";
-    const direct = resolveAiJsonAuth("openai/gpt-5-mini");
-    assert.equal(direct?.transport, "openai");
-    assert.equal(direct?.token, "sk-test");
+    const failedOidc = await resolveAiJsonAuth("openai/gpt-5-mini", unavailable);
+    assert.equal(failedOidc?.transport, "openai");
+    assert.equal(failedOidc?.token, "sk-test");
     // The direct API rejects the gateway prefix.
-    assert.equal(direct?.model, "gpt-5-mini");
-    assert.equal(resolveAiJsonAuth("   ")?.model, "gpt-4o-mini");
+    assert.equal(failedOidc?.model, "gpt-5-mini");
+
+    const blankOidc = await resolveAiJsonAuth("   ", async () => "   ");
+    assert.equal(blankOidc?.transport, "openai");
+    assert.equal(blankOidc?.model, "gpt-4o-mini");
+
+    clear();
+    assert.equal(await resolveAiJsonAuth(null, async () => ""), null);
+    assert.equal(await resolveAiJsonAuth(null, unavailable), null);
   } finally {
     clear();
     for (const [key, value] of saved) {

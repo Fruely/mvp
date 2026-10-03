@@ -116,11 +116,10 @@ export async function POST(request: NextRequest) {
       return fail("rate_limiter_unavailable");
     }
 
-    const authConfig = resolveAiJsonAuth(serviceIntentExtractionModel());
+    const authConfig = await resolveAiJsonAuth(serviceIntentExtractionModel());
     if (!authConfig) {
       console.error("[intent/extract] ai auth missing", {
         correlationId,
-        oidcPresent: Boolean(process.env.VERCEL_OIDC_TOKEN?.trim()),
         requestAiJsonReached: false,
       });
       return fail("ai_unavailable");
@@ -133,7 +132,11 @@ export async function POST(request: NextRequest) {
       callModel: async ({ systemPrompt, userPayload }) => {
         console.warn("[intent/extract] requestAiJson", {
           correlationId,
-          oidcPresent: Boolean(process.env.VERCEL_OIDC_TOKEN?.trim()),
+          authMethod: process.env.AI_GATEWAY_API_KEY?.trim()
+            ? "gateway_key"
+            : authConfig.transport === "gateway"
+              ? "oidc"
+              : "openai",
           transport: authConfig.transport,
           model: authConfig.model,
           endpoint: authConfig.endpoint,
