@@ -1,5 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { loadPaymentRequiredByMatch } from "@/lib/billing/serviceRequestPaidAccessState";
+import {
+  emptyCommercialConnection,
+  loadSpecialistMatchPreviewFacts,
+  type CommercialConnectionProjection,
+} from "@/lib/billing/serviceRequestCommercialProjection";
 import { canonicalizeLanguages } from "@/lib/matching/languages";
 import { openOwnMatch } from "./respond";
 import type { MatchResponseStatus } from "./policy";
@@ -70,6 +74,7 @@ export type MatchPreview = {
   opened: boolean;
   access_offer: MatchAccessOffer | null;
   payment_required: boolean;
+  commercial_connection: CommercialConnectionProjection | null;
 };
 
 type LoadResult =
@@ -170,6 +175,7 @@ export function toMatchPreview(match: Record<string, unknown>, request: Record<s
     conversation_id: null,
     access_offer: null,
     payment_required: false,
+    commercial_connection: emptyCommercialConnection(),
   };
 }
 
@@ -193,6 +199,7 @@ function unavailablePreview(match: Record<string, unknown>, requestId: string): 
     opened: Boolean(asString(match.opened_at)),
     access_offer: null,
     payment_required: false,
+    commercial_connection: emptyCommercialConnection(),
   };
 }
 
@@ -277,14 +284,9 @@ export async function loadOwnedMatchPreview(
     const matchRow = match.data as unknown as Record<string, unknown>;
     const ownerId = asString(requestRow.selected_specialist_id);
     const offerState = offerStateFor(String(matchRow.status ?? ""), ownerId, input.specialistId);
-    if (offerState === "unavailable") {
-      return {
-        status: "ready",
-        preview: unavailablePreview(matchRow, String(matchRow.service_request_id)),
-      };
-    }
 
     let conversationId: string | null = null;
+    let conversationSpecialistId: string | null = null;
     if (offerState === "owned") {
       const conversation = await supabase
         .from("conversations")
@@ -296,17 +298,33 @@ export async function loadOwnedMatchPreview(
         String(conversation.data.specialist_id) === input.specialistId
       ) {
         conversationId = String(conversation.data.id);
+        conversationSpecialistId = input.specialistId;
       }
     }
 
     const requestId = String(matchRow.service_request_id);
     const offers = await accessOffersByRequest(supabase, input.specialistId, [requestId]);
-    const paymentRequired = await loadPaymentRequiredByMatch(
+    const facts = await loadSpecialistMatchPreviewFacts(
       supabase,
       input.specialistId,
-      [{ matchId: String(matchRow.id), requestId }],
+      [{
+        matchId: String(matchRow.id),
+        requestId,
+        selectedSpecialistId: ownerId,
+        conversationSpecialistId,
+      }],
       offers.rows,
     );
+    const commercialConnection = facts.commercial.get(String(matchRow.id)) ?? null;
+    if (offerState === "unavailable") {
+      return {
+        status: "ready",
+        preview: {
+          ...unavailablePreview(matchRow, requestId),
+          commercial_connection: commercialConnection,
+        },
+      };
+    }
     return {
       status: "ready",
       preview: {
@@ -314,7 +332,8 @@ export async function loadOwnedMatchPreview(
         offer_state: offerState,
         conversation_id: conversationId,
         access_offer: offers.byRequest.get(requestId) ?? null,
-        payment_required: paymentRequired.get(String(matchRow.id)) === true,
+        payment_required: facts.paymentRequired.get(String(matchRow.id)) === true,
+        commercial_connection: commercialConnection,
       },
     };
   } catch {
@@ -367,17 +386,23 @@ export async function listOwnedActiveMatchPreviews(
       if (!request || asString(request.selected_specialist_id)) return [];
       return [{ match, request, requestId: String(match.service_request_id) }];
     });
-    const paymentRequired = await loadPaymentRequiredByMatch(
+    const facts = await loadSpecialistMatchPreviewFacts(
       supabase,
       specialistId,
-      visible.map((item) => ({ matchId: String(item.match.id), requestId: item.requestId })),
+      visible.map((item) => ({
+        matchId: String(item.match.id),
+        requestId: item.requestId,
+        selectedSpecialistId: null,
+        conversationSpecialistId: null,
+      })),
       offers.rows,
     );
     const items = visible
       .map((item) => ({
         ...toMatchPreview(item.match, item.request),
         access_offer: offers.byRequest.get(item.requestId) ?? null,
-        payment_required: paymentRequired.get(String(item.match.id)) === true,
+        payment_required: facts.paymentRequired.get(String(item.match.id)) === true,
+        commercial_connection: facts.commercial.get(String(item.match.id)) ?? null,
       }))
       .sort((a, b) => (b.matched_at ?? "").localeCompare(a.matched_at ?? ""))
       .slice(0, LIST_LIMIT);
