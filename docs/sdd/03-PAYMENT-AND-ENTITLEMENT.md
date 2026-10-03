@@ -35,26 +35,18 @@ A payment-provider success page, client callback, local receipt flag or UI state
 
 ## 4. Provider-neutral invariant
 
-Canonical product order:
+Client confirmation and settlement are not the same step. The shared rules are:
 
-```text
-match
-→ offer
-→ claim/reservation
-→ client confirmation
-→ payment satisfied
-→ entitlement
-→ connection
-→ chat
-```
-
-Provider-specific steps may occur in a different order. The final invariants do not:
-
-- the owning client has explicitly confirmed the reserved claim;
-- an active, non-revoked `request_offer_access_grants` row exists for that offer and specialist;
+- the specialist sees the concrete request before payment setup and explicitly chooses to connect;
+- the owning client explicitly confirms the reserved claim before Freuly earns the €25 fee;
+- client confirmation makes that fee eligible and does not by itself prove settlement;
+- rejection or expiry before settlement charges €0;
+- an active, non-revoked `request_offer_access_grants` row exists for that offer and specialist only after authoritative settlement;
 - only then may `finalizeServiceRequestConnection` open the conversation and complete the claim.
 
-Stripe, StoreKit, and Google Play transaction states are not the product entitlement.
+Payment order is rail-specific. Stripe authorizes €25 before the client decides and captures that authorization after confirmation. Store-distributed Native does not authorize before the decision. Its purchase becomes actionable only after confirmation. Those two sequences are sections 6 and 7. Neither sequence is permission for the other rail to imitate it. The Native Domain Model owns the provider-neutral rule. Native ADR-003 records the rail architecture that implements it. This section does not override that model.
+
+Stripe, StoreKit, and Google Play transaction states are not the product entitlement. A StoreKit or Google Play pending purchase is not a Freuly-held authorization.
 
 The backend owns reconciliation and idempotency. Native and Web may request reserve, confirm, or purchase. Those requests are not proof that the transition succeeded.
 
@@ -84,7 +76,7 @@ For Native store billing, the same writer may run with no payment row only when 
 
 ## 6. Stripe / Web rail
 
-Preserve the accepted Phase 3A sequence. Do not make the store rail imitate it, and do not redesign Stripe to imitate the store rail.
+This sequence is unchanged. Do not make the store rail imitate it, and do not redesign Stripe to imitate the store rail. ADR-007 remains the Stripe confirmation, rejection, and expiry decision.
 
 ```text
 match
@@ -107,26 +99,32 @@ The specialist match preview also returns `commercial_connection`. That object i
 
 ## 7. Native store rail
 
-Freuly's request-access fee is a digital service purchased from Freuly inside the Native app. It is separate from the later client-specialist service payment. The Native design is therefore compatible with Apple In-App Purchase / StoreKit and Google Play Billing.
+Freuly's request-access fee on store-distributed Native is a digital service purchased from Freuly inside the Native app. It is separate from the later client-specialist service payment. The purchase is compatible with Apple In-App Purchase / StoreKit and Google Play Billing. This section does not implement either store SDK.
 
-Do not put Stripe into Native in order to imitate Web. EU/EEA alternative billing programs are a later distribution decision.
+Store-distributed Native does not use Stripe PaymentSheet as its in-app connection-fee rail. The Web rail remains the Stripe sequence in section 6. A future alternative Native payment distribution model, including EU/EEA alternative billing, requires a separate explicit decision.
+
+The reservation is the specialist's commitment while the client decides. Native does not charge before confirmation. A pending StoreKit or Google Play purchase is not a reversible authorization held by Freuly.
 
 Native sequence:
 
 ```text
 match
-→ offer
-→ reserve
-→ client confirmation
-→ store purchase
-→ server-side store verification
-→ payment satisfied
+→ specialist sees the request
+→ specialist chooses to connect
+→ reserve claim
+→ client decides
+→ reject or pre-confirmation expiry: no store purchase, €0 charged
+→ confirm: the canonical €25 store purchase becomes actionable
+→ specialist completes the store purchase
+→ server verifies the purchase
+→ authoritative payment settlement
 → access grant
 → finalizeServiceRequestConnection
 → claim completed
+→ conversation
 ```
 
-The reservation proves specialist intent while the client decides. Native does not charge before confirmation.
+If the client confirms and the specialist does not successfully purchase inside the applicable server-owned purchase window, no conversation opens and no entitlement is granted. That attempt may expire under a store timeout implemented separately. This document does not implement that timeout and does not authorize an automatic rematch.
 
 After confirmation, and before a verified purchase, the specialist may be waiting to pay. The actionable read `payment_required` is narrower than that wait. It is true only when the reserved claim is client-confirmed, the canonical positive offer is bound, there is no active access grant, and there is no `request_offer_payments` row for that claim in `pending`, `authorized`, or `paid`.
 
@@ -142,27 +140,23 @@ No verified purchase means no access grant and no conversation. A Native receipt
 
 ## 8. Store product model
 
-Pricing v1 is server-authoritative. The persisted offer price is the customer-facing gross purchase price. Current UI says the specialist is paying for access to the request, for example "Доступ к заявке: €X". It is not Freuly's target net revenue. Store commission and tax do not rewrite `price_cents`.
+The MP1-S4 first commercial rollout has one server-authoritative price on every supported rail: `amount_cents = 2500` and `currency = eur`. Native must display that persisted offer price. Native must not calculate it or choose another amount.
 
-Pricing v1 uses EUR, a €25 floor, a €250 cap, and €5 steps. The possible prices are the finite ladder €25, €30, €35, … €250. That is 46 prices. Native must display the persisted offer price. Native must not calculate it or choose another product.
+The earlier €25–€250 ladder, with €5 steps and 46 prices, does not apply to this rollout. A future variable-price ladder requires a separate accepted product decision. This document does not create store products.
 
-Recommended model, for both App Store and Google Play: one consumable product per ladder price. One offer price maps to one product, one purchase, and one entitlement.
+For this rollout, both App Store and Google Play use one consumable product for that single price. One purchase maps to one entitlement. A credit or wallet model is not required.
 
-A credit or wallet model is not required. The ladder is finite, and a wallet would introduce a second currency.
-
-Product identifiers are deterministic:
+The product identifier for this rollout is:
 
 ```text
-freuly.request_access.eur.<price_cents>
+freuly.request_access.eur.2500
 ```
 
-Examples: `freuly.request_access.eur.2500` is €25, and `freuly.request_access.eur.7000` is €70. The same identifier meaning is used on both stores. The store catalogs are separate. The cent amount is the same.
+The same identifier meaning is used on both stores. The store catalogs are separate. Server verification accepts the purchase only when the verified product identifier maps to the persisted `request_offers.price_cents` of 2500 and the currency is EUR. Proof of another product must not satisfy this offer.
 
-Server verification accepts the purchase only when the verified product identifier maps to the persisted `request_offers.price_cents` and the currency is EUR. Proof of the €25 product must not satisfy a €70 offer.
+If a store price-point list cannot represent exactly 2500 in the specialist's storefront currency terms required by that store, the purchase is not sellable. Do not round the offer and do not pick a nearby product.
 
-If a store price-point list cannot represent an exact ladder amount in the specialist's storefront, that amount is not sellable. Do not round the offer, do not pick the nearest cheaper product, and do not start Pricing v2. Record that as a commercial catalog gap.
-
-Provider does not change the offer price. Provider is not part of matching and not part of Pricing v1. Web uses Stripe. iOS uses Apple. Android uses Google. The entitlement does not store the platform.
+Provider does not change the offer price. Provider is not part of matching. Web uses Stripe. Store-distributed iOS uses Apple. Store-distributed Android uses Google. The entitlement does not store the platform. Store commission and tax do not rewrite `price_cents`.
 
 ## 9. Payment persistence gaps
 

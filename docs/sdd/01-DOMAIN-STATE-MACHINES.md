@@ -133,7 +133,7 @@ released
 
 These are current storage semantics shared with legacy direct-lead billing and the service-request authorization foundation.
 
-Important: the provider-neutral product contract must not require every rail to expose an `authorized` state. Stripe manual-capture may use it; StoreKit/Google rails may settle differently.
+Important: the provider-neutral product contract must not require every rail to expose an `authorized` state. Stripe manual-capture uses `authorized` before the client decides. The Native store rail does not. A StoreKit or Google Play pending purchase is not that authorization and is not held or released by Freuly. Native ADR-003 records that rail split. It does not override the Native Domain Model, and this file does not add a store authorization status.
 
 Therefore mobile/UI business state must not be a direct mirror of raw provider status.
 
@@ -194,6 +194,6 @@ Native/Web may request actions such as TAKE, decline, confirm or send message. A
 
 **Implemented as a read:** specialist match preview `payment_required`. It does not write payment, grant access, or send the `payment_required` notice. The same preview also returns `commercial_connection`, a derived Stripe continuation projection. `request_presented` means no canonical current commercial saga owns this specialist and match. Null means a current or incoherent saga exists, or the projection cannot be derived safely; clients must fail closed and must not coerce null into `request_presented` or present a fresh paid-connect action. Legacy previews with no access offer stay unchanged. That field is not a persisted enum and does not replace `payment_required`. The response contract is in `docs/sdd/03-PAYMENT-AND-ENTITLEMENT.md`.
 
-**Specified, not implemented:** the Native store rail, store verification, the `payment_required` notice, and reservation/payment timeout release.
+**Specified, not implemented:** the Native store purchase, store verification, the `payment_required` notice, and the store purchase timeout. Stripe confirmation expiry is a separate implemented Stripe behavior. This document does not add the store timeout or a rematch.
 
-Until the store rail exists and rollout is approved, paid-flow feature flags remain off. `docs/sdd/03-PAYMENT-AND-ENTITLEMENT.md` owns the rail contract.
+Until the store rail exists and rollout is approved, paid-flow feature flags remain off. `docs/sdd/03-PAYMENT-AND-ENTITLEMENT.md` owns the rail contract and follows the provider-neutral rule: `client_confirmed_at` makes the fee eligible. It does not, by itself, prove settlement or open the conversation.
