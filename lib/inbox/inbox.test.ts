@@ -188,6 +188,9 @@ test("2-3. repeating the match enqueue does not duplicate the inbox item", async
   await enqueueMatchNotifications(db.supabase, request, { emailConfigured: false });
   assert.equal(db.tables.inbox_items.length, 1);
   assert.equal(db.tables.notification_outbox.length, 3);
+  const attempts = db.tables.notification_outbox.map((row) => Number(row.attempt_count ?? 0));
+  assert.equal(attempts.some((value) => value === 1), true);
+  assert.equal(attempts.every((value) => value <= 1), true);
 });
 
 test("5-6. another specialist and an anonymous actor cannot read the inbox item", () => {
@@ -457,13 +460,13 @@ test("recipient locale is used for external delivery, not the request language",
   assert.equal(locale, "de");
 });
 
-test("quiet hours defer external delivery and a missing channel is recorded", async () => {
+test("quiet hours defer reminders and a missing channel is recorded", async () => {
   const night = externalDeliveryDecision(new Date("2026-01-15T22:30:00+01:00"), "Europe/Berlin");
   const day = externalDeliveryDecision(new Date("2026-01-15T12:00:00+01:00"), "Europe/Berlin");
   assert.equal(night.action, "defer_until");
   assert.equal(day.action, "deliver_now");
   const db = seed();
-  db.tables.inbox_items.push({ id: "inbox-1", payload: PAYLOAD });
+  db.tables.inbox_items.push({ id: "inbox-1", payload: { ...PAYLOAD, stage: "reminder" } });
   db.tables.notification_outbox.push({
     id: "mail",
     inbox_item_id: "inbox-1",

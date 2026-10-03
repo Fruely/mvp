@@ -399,7 +399,7 @@ test("audio and location use conversation_message, skip quiet hours, and do not 
   assert.equal(payload.includes("52.5"), false);
   assert.equal(payload.includes("audio/mp4"), false);
   assert.equal(quietHoursDeferralApplies("conversation_message"), false);
-  assert.equal(quietHoursDeferralApplies("match_available"), true);
+  assert.equal(quietHoursDeferralApplies("match_available"), false);
   assert.equal(db.tables.notification_outbox.filter((row) => row.channel === "push" && row.status === "pending").length, 2);
 });
 

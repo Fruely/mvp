@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { legacyFreeConnectionBlocked } from "./legacyClaimGate";
 import { selectionDecision } from "./policy";
 import { recordSelectionNotices } from "./interest";
 
@@ -76,6 +77,14 @@ export async function selectInterestedSpecialist(
     matchStatus: match.data?.status ? String(match.data.status) : null,
   });
   if (!decision.ok) return decision;
+  if (
+    await legacyFreeConnectionBlocked(supabase, {
+      serviceRequestId: input.requestId,
+      specialistId: input.specialistId,
+    })
+  ) {
+    return { ok: false, error: "not_selectable" };
+  }
 
   const serviceLabel =
     (typeof request.data.requested_service === "string" && request.data.requested_service) ||

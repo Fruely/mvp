@@ -396,7 +396,7 @@ test("paid fulfillment still finalizes once when a paid offer exists", async () 
   assert.equal(finalizeBody.includes("legacyClaimBlockedByPaidOffer"), false);
   assert.equal(finalizeBody.includes("request_offers"), false);
   const claimBody = source.slice(source.indexOf("export async function claimOwnMatch"));
-  assert.match(claimBody, /legacyClaimBlockedByPaidOffer/);
+  assert.match(claimBody, /legacyFreeConnectionBlocked/);
   assert.equal(claimBody.includes("native_installations"), false);
   assert.equal(claimBody.includes("paid_request_access_v1"), false);
 });

@@ -12,6 +12,7 @@ import {
   dueReminderIndex,
   externalDeliveryDecision,
   matchAvailabilityDeliveryBlock,
+  pushNoticeEvent,
   quietHoursDeferralApplies,
   initialInboxKey,
   nextAttemptStatus,
@@ -90,11 +91,15 @@ async function ensureOutbox(
     policy?: MatchDeliveryPolicy;
     stage?: "initial" | "reminder";
     eventClass?: PushEventClass;
+    noticeEvent?: string;
   },
-): Promise<void> {
+): Promise<string[]> {
   const policy = input.policy ?? DEFAULT_MATCH_DELIVERY_POLICY;
+  const noticeEvent = input.noticeEvent ?? (input.stage === "reminder" ? "match_reminder" : "match_available");
   const zone = await lookupRecipientTimeZone(supabase, input.recipientUserId);
-  const decision = externalDeliveryDecision(new Date(), zone, policy);
+  const decision = quietHoursDeferralApplies(noticeEvent)
+    ? externalDeliveryDecision(new Date(), zone, policy)
+    : { action: "deliver_now" as const };
   const when = decision.action === "defer_until" ? decision.until : new Date().toISOString();
   const prefs = await loadNotificationPreferences(supabase, input.recipientUserId);
   const eventClass = input.eventClass ?? "match";
@@ -115,14 +120,16 @@ async function ensureOutbox(
     ),
     input.stage ?? "initial",
   );
+  const ids: string[] = [];
   for (const channel of channels) {
+    const dedupeKey = channelDedupeKey(input.inboxKey, channel.channel);
     const { error } = await supabase.from("notification_outbox").upsert(
       {
         inbox_item_id: input.inboxItemId,
         match_id: input.matchId,
         recipient_user_id: input.recipientUserId,
         channel: channel.channel,
-        dedupe_key: channelDedupeKey(input.inboxKey, channel.channel),
+        dedupe_key: dedupeKey,
         status: channel.status,
         next_attempt_at: when,
         last_error_code: channel.errorCode,
@@ -131,6 +138,29 @@ async function ensureOutbox(
       { onConflict: "dedupe_key", ignoreDuplicates: true },
     );
     if (error) throw error;
+    if (channel.status !== "pending" || quietHoursDeferralApplies(noticeEvent)) continue;
+    const stored = await supabase
+      .from("notification_outbox")
+      .select("id, status")
+      .eq("dedupe_key", dedupeKey)
+      .maybeSingle();
+    if (stored.error) throw stored.error;
+    const status = stored.data?.status;
+    if (stored.data?.id && (status === "pending" || status === "retryable")) ids.push(String(stored.data.id));
+  }
+  return ids;
+}
+
+/** Best-effort send of rows just written. A failure leaves them for the cron retry. */
+async function deliverNewOutboxItems(supabase: SupabaseClient, outboxIds: readonly string[]): Promise<void> {
+  for (const outboxId of outboxIds) {
+    try {
+      await deliverOutboxById(supabase, outboxId);
+    } catch (error) {
+      console.error("[inbox] immediate delivery failed", {
+        name: error instanceof Error ? error.name : "Error",
+      });
+    }
   }
 }
 
@@ -200,7 +230,7 @@ export async function enqueueMatchNotifications(
       .update({ first_notified_at: new Date().toISOString() })
       .eq("id", match.id)
       .is("first_notified_at", null);
-    await ensureOutbox(supabase, {
+    const outboxIds = await ensureOutbox(supabase, {
       inboxItemId: inboxId,
       matchId: String(match.id),
       recipientUserId: userId,
@@ -209,7 +239,9 @@ export async function enqueueMatchNotifications(
       email: typeof specialist?.email === "string" ? specialist.email : null,
       emailConfigured,
       policy,
+      noticeEvent: "match_available",
     });
+    await deliverNewOutboxItems(supabase, outboxIds);
   }
 }
 
@@ -553,7 +585,7 @@ export async function deliverPendingOutbox(
         continue;
       }
     }
-    if (quietHoursDeferralApplies(payload?.event)) {
+    if (quietHoursDeferralApplies(pushNoticeEvent(payload))) {
       const quietZone = await lookupRecipientTimeZone(supabase, typeof row.recipient_user_id === "string" ? row.recipient_user_id : null);
       const quiet = externalDeliveryDecision(clock, quietZone, policy);
       if (quiet.action === "defer_until") {

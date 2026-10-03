@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { legacyClaimBlockedByPaidOffer } from "@/lib/selection/legacyClaimGate";
+import { legacyFreeConnectionBlocked } from "@/lib/selection/legacyClaimGate";
 import { recordClaimConnection } from "./interest";
 
 /**
@@ -329,7 +329,7 @@ export async function claimOwnMatch(
 ): Promise<ClaimResult> {
   const match = await loadMatch(supabase, input.matchId);
   if (match && match.specialist_id === input.specialistId) {
-    const blocked = await legacyClaimBlockedByPaidOffer(supabase, {
+    const blocked = await legacyFreeConnectionBlocked(supabase, {
       serviceRequestId: match.service_request_id,
       specialistId: input.specialistId,
     });

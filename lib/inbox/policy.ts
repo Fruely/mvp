@@ -83,9 +83,32 @@ export type ExternalDeliveryDecision =
   | { action: "defer_until"; until: string }
   | { action: "skip_channel"; reason: string };
 
-/** Marketplace match and reminder pushes wait. A live conversation message does not. */
+/**
+ * Live commercial notices are delivered when they happen.
+ * Reminders and any other event wait for quiet hours.
+ */
+const IMMEDIATE_PUSH_EVENTS = new Set([
+  "match_available",
+  "connection_confirmation_required",
+  "client_selected_you",
+  "payment_required",
+  "connection_ready",
+  "conversation_message",
+]);
+
 export function quietHoursDeferralApplies(event: string | null | undefined): boolean {
-  return event !== "conversation_message";
+  return !IMMEDIATE_PUSH_EVENTS.has(event ?? "");
+}
+
+/** Match rows store stage instead of an event name. Reminders stay a separate class. */
+export function pushNoticeEvent(payload: {
+  event?: string | null;
+  stage?: string | null;
+} | null | undefined): string | null {
+  if (typeof payload?.event === "string" && payload.event) return payload.event;
+  if (payload?.stage === "initial") return "match_available";
+  if (payload?.stage === "reminder" || payload?.stage === "final") return "match_reminder";
+  return null;
 }
 
 /** Inbox is created immediately. This decision applies only to external transports. */

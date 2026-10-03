@@ -1,6 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { isServiceRequestClientConfirmationRequired } from "@/lib/billing/serviceRequestClientConfirmationReadiness";
+import {
+  isServiceRequestClientConfirmationRequired,
+  isServiceRequestStorePaymentRequired,
+} from "@/lib/billing/serviceRequestClientConfirmationReadiness";
 import { storedConfirmationDeadline } from "@/lib/billing/serviceRequestConfirmationDeadline";
 import { clientBudgetReconciliationState } from "@/lib/serviceRequests/budgetReconciliation";
 import {
@@ -139,6 +142,9 @@ export async function getClientRequestHistoryDetail(
     public_id: data.public_id,
     budget_reconciliation: clientBudgetReconciliationState(data),
     connection_confirmation_required: connectionConfirmationRequired,
+    connection_payment_required: requestId
+      ? await isServiceRequestStorePaymentRequired({ supabase, requestId })
+      : false,
     confirmation_expires_at: confirmationExpiresAt,
   });
 }

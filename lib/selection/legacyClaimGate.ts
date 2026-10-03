@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildMatchedServiceRequestOfferIdempotencyKey } from "@/lib/leadEngine/requestOfferPolicy";
+import { activeUserIdsWithNativeCapability } from "@/lib/nativeInstallations/capabilities";
 
 function positivePriceCents(value: unknown): boolean {
   return typeof value === "number" && Number.isInteger(value) && value > 0;
@@ -31,4 +32,23 @@ export async function legacyClaimBlockedByPaidOffer(
     .maybeSingle();
   if (result.error) return true;
   return positivePriceCents(result.data?.price_cents);
+}
+
+/**
+ * Paid-capable Native must not receive a free conversation.
+ * A capability lookup failure is closed. A specialist with no account is not paid-capable.
+ */
+export async function legacyFreeConnectionBlocked(
+  supabase: Pick<SupabaseClient, "from">,
+  input: { serviceRequestId: string; specialistId: string },
+): Promise<boolean> {
+  const specialist = await supabase.from("specialists").select("user_id").eq("id", input.specialistId).maybeSingle();
+  if (specialist.error) return true;
+  const userId = typeof specialist.data?.user_id === "string" ? specialist.data.user_id : "";
+  if (userId) {
+    const capable = await activeUserIdsWithNativeCapability(supabase, [userId]);
+    if ("error" in capable) return true;
+    if (capable.has(userId)) return true;
+  }
+  return legacyClaimBlockedByPaidOffer(supabase, input);
 }

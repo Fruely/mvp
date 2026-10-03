@@ -35,6 +35,7 @@ export type ClientRequestHistoryDetail = ClientRequestHistoryItem & {
   public_id: string | null;
   budget_reconciliation?: ClientBudgetReconciliationDetail;
   connection_confirmation_required?: boolean;
+  connection_payment_required?: boolean;
   confirmation_expires_at?: string;
 };
 
@@ -225,6 +226,7 @@ export function toClientSafeHistoryDetail(
     public_id?: unknown;
     budget_reconciliation?: ClientBudgetReconciliationDetail | null;
     connection_confirmation_required?: boolean;
+    connection_payment_required?: boolean;
     confirmation_expires_at?: string | null;
   },
 ): ClientRequestHistoryDetail {
@@ -241,6 +243,9 @@ export function toClientSafeHistoryDetail(
     ...(extras.budget_reconciliation ? { budget_reconciliation: extras.budget_reconciliation } : {}),
     ...(typeof extras.connection_confirmation_required === "boolean"
       ? { connection_confirmation_required: extras.connection_confirmation_required }
+      : {}),
+    ...(typeof extras.connection_payment_required === "boolean"
+      ? { connection_payment_required: extras.connection_payment_required }
       : {}),
     ...(typeof extras.confirmation_expires_at === "string"
       ? { confirmation_expires_at: extras.confirmation_expires_at }

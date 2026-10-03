@@ -120,3 +120,39 @@ export async function isServiceRequestClientConfirmationRequired(input: {
       paymentProvesStripeRail(payment),
   );
 }
+
+/** Store rail after the client confirmed and before authoritative settlement. */
+export async function isServiceRequestStorePaymentRequired(input: {
+  supabase: SupabaseClient;
+  requestId: string;
+}): Promise<boolean> {
+  const claimResult = await input.supabase
+    .from("service_request_claims")
+    .select("id, status, specialist_id, request_offer_id, client_confirmed_at, client_rejected_at, payment_rail")
+    .eq("service_request_id", input.requestId)
+    .eq("status", "reserved")
+    .maybeSingle();
+  if (claimResult.error || !claimResult.data?.id) return false;
+  const claim = claimResult.data;
+  if (claim.payment_rail !== "store") return false;
+  if (typeof claim.client_confirmed_at !== "string" || !claim.client_confirmed_at) return false;
+  if (typeof claim.client_rejected_at === "string" && claim.client_rejected_at) return false;
+  if (!claim.request_offer_id || !claim.specialist_id) return false;
+
+  const grantResult = await input.supabase
+    .from("request_offer_access_grants")
+    .select("id")
+    .eq("offer_id", claim.request_offer_id)
+    .eq("specialist_id", claim.specialist_id)
+    .is("revoked_at", null)
+    .maybeSingle();
+  if (grantResult.error || grantResult.data?.id) return false;
+
+  const paymentResult = await input.supabase
+    .from("request_offer_payments")
+    .select("id, status")
+    .eq("service_request_claim_id", claim.id)
+    .eq("status", "paid");
+  if (paymentResult.error || (paymentResult.data ?? []).length > 0) return false;
+  return true;
+}

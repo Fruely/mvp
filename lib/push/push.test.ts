@@ -287,8 +287,13 @@ async function deliverChatAt(clock: string): Promise<{ calls: number; status: un
 
 test("conversation messages ignore quiet hours and marketplace notices keep them", async () => {
   assert.equal(quietHoursDeferralApplies("conversation_message"), false);
-  assert.equal(quietHoursDeferralApplies("match_available"), true);
+  assert.equal(quietHoursDeferralApplies("match_available"), false);
+  assert.equal(quietHoursDeferralApplies("connection_confirmation_required"), false);
+  assert.equal(quietHoursDeferralApplies("client_selected_you"), false);
+  assert.equal(quietHoursDeferralApplies("payment_required"), false);
+  assert.equal(quietHoursDeferralApplies("connection_ready"), false);
   assert.equal(quietHoursDeferralApplies("match_reminder"), true);
+  assert.equal(quietHoursDeferralApplies("client_reminder"), true);
   for (const clock of [
     "2026-09-28T21:59:00+02:00",
     "2026-09-28T22:01:00+02:00",
@@ -317,6 +322,15 @@ test("conversation messages ignore quiet hours and marketplace notices keep them
     },
   });
   nightMatch.tables.notification_outbox.push(dueRow("match", "inbox-match", "user-1"));
+  nightMatch.tables.push_endpoints.push({
+    id: "endpoint-match",
+    user_id: "user-1",
+    enabled: true,
+    invalidated_at: null,
+    token: TOKEN_A,
+    platform: "ios",
+    provider: "expo",
+  });
   let matchCalls = 0;
   await deliverPendingOutbox(nightMatch.supabase, DEFAULT_MATCH_DELIVERY_POLICY, {
     push: async () => ({ status: "sent", providerMessageId: "x", errorCode: null }),
@@ -328,10 +342,9 @@ test("conversation messages ignore quiet hours and marketplace notices keep them
       return { status: "sent", errorCode: null, providerMessageId: "ticket", invalidate: false };
     },
   });
-  assert.equal(matchCalls, 0);
-  assert.equal(nightMatch.tables.notification_outbox[0].status, "pending");
-  assert.equal(nightMatch.tables.notification_outbox[0].attempt_count ?? 0, 0);
-  assert.notEqual(nightMatch.tables.notification_outbox[0].next_attempt_at, "2020-01-01T00:00:00.000Z");
+  assert.equal(matchCalls, 1);
+  assert.equal(nightMatch.tables.notification_outbox[0].status, "sent");
+  assert.equal(Number(nightMatch.tables.notification_outbox[0].attempt_count) > 0, true);
 
   const reminder = base();
   reminder.tables.inbox_items.push({
@@ -754,7 +767,7 @@ test("35-40. channel preferences do not remove the inbox or grant marketing cons
   }, { emailConfigured: true });
   assert.equal(db.tables.inbox_items.length, 1);
   assert.equal(db.tables.notification_outbox.find((row) => row.channel === "email")?.status, "skipped");
-  assert.equal(db.tables.notification_outbox.find((row) => row.channel === "telegram")?.status, "pending");
+  assert.equal(db.tables.notification_outbox.find((row) => row.channel === "telegram")?.status, "skipped");
 
   const saved = await saveNotificationPreferences(db.supabase, "user-1", { marketingConsent: true, pushEnabled: false });
   assert.equal("marketingConsent" in saved && saved.marketingConsent, false);

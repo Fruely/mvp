@@ -5,7 +5,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { getClientRequestHistoryDetail, listClientRequestHistory } from "../clientRequests/historyService.ts";
 import { buildMatchedServiceRequestOfferIdempotencyKey } from "../leadEngine/requestOfferPolicy.ts";
 import { PAID_REQUEST_ACCESS_CAPABILITY, PAID_REQUEST_STORE_PURCHASE_CAPABILITY } from "../nativeInstallations/capabilities.ts";
-import { isServiceRequestClientConfirmationRequired } from "./serviceRequestClientConfirmationReadiness.ts";
+import {
+  isServiceRequestClientConfirmationRequired,
+  isServiceRequestStorePaymentRequired,
+} from "./serviceRequestClientConfirmationReadiness.ts";
 
 const CLIENT = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const SPEC = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -246,10 +249,37 @@ test("service-request detail exposes the boolean and history does not", async ()
 
   const history = await listClientRequestHistory(ready as unknown as SupabaseClient, CLIENT, {});
   assert.equal(history.items.some((item) => "connection_confirmation_required" in item), false);
+  assert.equal(detail?.connection_payment_required, false);
   } finally {
     if (previousStore === undefined) delete process.env.SERVICE_REQUEST_STORE_PAYMENT_ENABLED;
     else process.env.SERVICE_REQUEST_STORE_PAYMENT_ENABLED = previousStore;
     if (previousPaid === undefined) delete process.env.SERVICE_REQUEST_PAID_CLAIM_ENABLED;
     else process.env.SERVICE_REQUEST_PAID_CLAIM_ENABLED = previousPaid;
   }
+});
+
+test("store payment is required only after client confirmation and before settlement", async () => {
+  const waiting = seed({ rail: "store" });
+  assert.equal(await isServiceRequestStorePaymentRequired({
+    supabase: waiting as unknown as SupabaseClient,
+    requestId: REQUEST,
+  }), false);
+  const confirmed = seed({ rail: "store", confirmed: "2026-09-30T12:00:00.000Z" });
+  assert.equal(await isServiceRequestStorePaymentRequired({
+    supabase: confirmed as unknown as SupabaseClient,
+    requestId: REQUEST,
+  }), true);
+  const settled = seed({ rail: "store", confirmed: "2026-09-30T12:00:00.000Z", grant: true });
+  assert.equal(await isServiceRequestStorePaymentRequired({
+    supabase: settled as unknown as SupabaseClient,
+    requestId: REQUEST,
+  }), false);
+  const detail = await getClientRequestHistoryDetail(
+    confirmed as unknown as SupabaseClient,
+    CLIENT,
+    "service_request",
+    "REQ-DETAIL",
+  );
+  assert.equal(detail?.connection_confirmation_required, false);
+  assert.equal(detail?.connection_payment_required, true);
 });

@@ -10,7 +10,7 @@ export const PAID_REQUEST_ACCESS_CAPABILITY = "paid_request_access_v1";
 /**
  * Fully usable store-purchase contract for paid service-request access.
  * Distinct from paid_request_access_v1, which only understands reserve-first TAKE.
- * Current Native does not advertise this name.
+ * Store-distributed iOS advertises this name. Android does not.
  */
 export const PAID_REQUEST_STORE_PURCHASE_CAPABILITY = "paid_request_store_purchase_v1";
 
