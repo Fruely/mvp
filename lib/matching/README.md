@@ -1,6 +1,6 @@
 # Deterministic request matching
 
-Confirmed `service_requests` are matched to published specialists without a model call.
+Confirmed `service_requests` are matched to specialists who have a compatible active offer, without a model call. Public publication is not a matching prerequisite.
 The result is stored in `service_request_matches` and shown in the specialist dashboard
 at `/{lang}/specialist/dashboard/requests/matched`. Native reads the same rows through
 `GET /api/specialist/matches` and `GET /api/specialist/matches/{matchId}`. Those reads
@@ -54,9 +54,11 @@ events. The first response wins and stops reminders.
 
 ## Live-market participation
 
-A published profile is not enough to receive a new live match. `matchConfirmedServiceRequest`
-keeps the existing category, language, work-format and location rules, and also requires
-an active `native_installations` row for `specialists.user_id`.
+A published profile is not required to receive a new live match. `matchConfirmedServiceRequest`
+compares the request's service meaning with active offer titles. A legacy category id is
+used only when the request has no service meaning. Language, work format, city or postal
+code, and an active `native_installations` row for `specialists.user_id` still apply.
+`specialists.status`, `is_visible`, and `is_active` do not.
 
 One `installation_id` has one current `user_id`. Signing in on that installation reassigns
 the same row. Logout sets `active=false` on that installation only. Another active

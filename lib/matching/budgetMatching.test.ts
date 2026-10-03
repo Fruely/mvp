@@ -248,6 +248,116 @@ test("an accepted ceiling matches the same request and prices a new offer from t
   assert.equal(offer.price_cents, 2500);
 });
 
+test("a draft specialist matches by service meaning without a category", async () => {
+  const db = harness({
+    request: { client_budget_text: "бюджет до 200 евро" },
+    specialists: [
+      specialist("generator", {
+        status: "draft",
+        is_active: false,
+        is_visible: false,
+        category_id: null,
+        work_format: "offline",
+        postal_code: "57399",
+      }),
+    ],
+    services: [
+      {
+        specialist_id: "generator",
+        category_id: null,
+        is_active: true,
+        title: "Замена генератора",
+        minimum_order_cents: null,
+        currency: "EUR",
+      },
+    ],
+    profiles: [{ specialist_id: "generator", city: "Kirchhundem" }],
+  });
+  const result = await matchConfirmedServiceRequest(
+    db.supabase,
+    matchRequest({
+      categoryId: null,
+      meaning: "Замена генератора",
+      workFormat: "offline",
+      city: "Kirchhundem",
+      serviceLanguages: ["ru"],
+    }),
+  );
+  assert.equal(result.matches, 1);
+  assert.equal(result.budgetReconciliation, null);
+  assert.equal(db.tables.service_request_matches.length, 1);
+});
+
+test("an unrelated offer, another work format, another city, or another language does not match", async () => {
+  const baseSpecialist = specialist("other", {
+    status: "draft",
+    is_visible: false,
+    category_id: null,
+    work_format: "offline",
+    postal_code: "10115",
+  });
+  const request = matchRequest({
+    categoryId: null,
+    meaning: "Замена генератора",
+    workFormat: "offline",
+    city: "Kirchhundem",
+    postalCode: "57399",
+    serviceLanguages: ["ru"],
+  });
+
+  const unrelated = harness({
+    specialists: [baseSpecialist],
+    services: [{ specialist_id: "other", is_active: true, title: "Покраска стен", minimum_order_cents: null, currency: "EUR" }],
+    profiles: [{ specialist_id: "other", city: "Kirchhundem" }],
+  });
+  assert.equal((await matchConfirmedServiceRequest(unrelated.supabase, request)).matches, 0);
+
+  const online = harness({
+    specialists: [{ ...baseSpecialist, work_format: "online", postal_code: "57399" }],
+    services: [{ specialist_id: "other", is_active: true, title: "Замена генератора", minimum_order_cents: null, currency: "EUR" }],
+    profiles: [{ specialist_id: "other", city: "Kirchhundem" }],
+  });
+  assert.equal((await matchConfirmedServiceRequest(online.supabase, request)).matches, 0);
+
+  const far = harness({
+    specialists: [{ ...baseSpecialist, postal_code: "10115" }],
+    services: [{ specialist_id: "other", is_active: true, title: "Замена генератора", minimum_order_cents: null, currency: "EUR" }],
+    profiles: [{ specialist_id: "other", city: "Berlin" }],
+  });
+  assert.equal((await matchConfirmedServiceRequest(far.supabase, request)).matches, 0);
+
+  const german = harness({
+    specialists: [{ ...baseSpecialist, languages: ["de"], postal_code: "57399" }],
+    services: [{ specialist_id: "other", is_active: true, title: "Замена генератора", minimum_order_cents: null, currency: "EUR" }],
+    profiles: [{ specialist_id: "other", city: "Kirchhundem" }],
+  });
+  assert.equal((await matchConfirmedServiceRequest(german.supabase, request)).matches, 0);
+});
+
+test("an offer above the stated ceiling is not a normal match", async () => {
+  const db = harness({
+    request: { client_budget_text: "до 200 евро" },
+    specialists: [specialist("dear", { category_id: null })],
+    services: [
+      {
+        specialist_id: "dear",
+        category_id: null,
+        is_active: true,
+        title: "Замена генератора",
+        minimum_order_cents: 25000,
+        currency: "EUR",
+      },
+    ],
+  });
+  const result = await matchConfirmedServiceRequest(
+    db.supabase,
+    matchRequest({ categoryId: null, meaning: "Замена генератора", serviceLanguages: ["ru"] }),
+  );
+  assert.equal(result.matches, 0);
+  assert.equal(result.budgetReconciliation?.minimum_budget_cents, 25000);
+  assert.equal(db.tables.service_request_matches.length, 0);
+});
+
 test("a positive existing offer is not repriced from the accepted ceiling", async () => {
   const db = harness({
     request: { budget_reconciliation_accepted_cents: 7000, client_budget_text: "50 €" },

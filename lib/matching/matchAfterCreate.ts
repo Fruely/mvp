@@ -39,7 +39,7 @@ export async function matchPersistedServiceRequest(
   try {
     const { data, error } = await supabase
       .from("service_requests")
-      .select("id, category_id, service_languages, work_format, city, postal_code")
+      .select("id, category_id, requested_service, service_languages, work_format, city, postal_code")
       .eq("id", requestId)
       .maybeSingle();
     if (error || !data?.id) {
@@ -54,9 +54,11 @@ export async function matchPersistedServiceRequest(
       return skipped(String(data.id));
     }
     const workFormat = asFormat(data.work_format);
-    if (!workFormat || !data.category_id) {
+    const meaning = typeof data.requested_service === "string" ? data.requested_service.trim() : "";
+    const categoryId = typeof data.category_id === "string" && data.category_id.trim() ? data.category_id : null;
+    if (!workFormat || (!meaning && !categoryId)) {
       console.info("[matching] matching_skipped", {
-        reason: workFormat ? "category_unresolved" : "work_format",
+        reason: !workFormat ? "work_format" : "service_meaning_missing",
         request_id: String(data.id),
       });
       return skipped(String(data.id));
@@ -65,7 +67,8 @@ export async function matchPersistedServiceRequest(
       supabase,
       {
         id: String(data.id),
-        categoryId: String(data.category_id),
+        meaning,
+        categoryId,
         serviceLanguages: asLanguages(data.service_languages),
         workFormat,
         city: typeof data.city === "string" ? data.city : null,

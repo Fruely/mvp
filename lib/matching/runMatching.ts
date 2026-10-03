@@ -1,7 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { enqueueMatchNotifications } from "@/lib/inbox/delivery";
 import { ensureMatchedServiceRequestOffers } from "@/lib/leadEngine/matchedServiceRequestOffer";
-import { VISIBLE_PUBLIC_SPECIALIST_STATUSES } from "@/lib/specialists/status";
 import {
   partitionEconomicEligibility,
   reconciliationFloorCents,
@@ -18,6 +17,7 @@ import {
   type MatchWorkFormat,
 } from "./eligibility";
 import { storedLanguageVariants } from "./languages";
+import { serviceMeaningsCompatible } from "./serviceMeaning";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -124,25 +124,46 @@ async function loadRequestEconomy(
   };
 }
 
+type ServiceOfferRow = {
+  specialist_id?: string;
+  title?: string | null;
+  minimum_order_cents?: unknown;
+  currency?: string | null;
+  is_active?: boolean | null;
+};
+
+async function loadActiveServiceOffers(supabase: SupabaseClient): Promise<ServiceOfferRow[]> {
+  const { data, error } = await supabase
+    .from("specialist_services")
+    .select("specialist_id, title, minimum_order_cents, currency, is_active")
+    .eq("is_active", true);
+  if (error) throw error;
+  return (data ?? []) as ServiceOfferRow[];
+}
+
+/**
+ * Freuly row loader. Publication columns are read so the adapter can ignore
+ * them; they are not eligibility filters.
+ */
 async function loadSpecialistRows(
   supabase: SupabaseClient,
   request: MatchRequest,
   serviceSpecialistIds: readonly string[],
+  meaningSpecialistIds: readonly string[] | null,
 ): Promise<SpecialistRow[]> {
   let query = supabase
     .from("specialists")
     .select(
       "id, user_id, category_id, languages, work_format, postal_code, status, is_active, is_visible, billing_visibility_blocked, is_test",
     )
-    .eq("is_active", true)
-    .eq("is_visible", true)
-    .in("status", [...VISIBLE_PUBLIC_SPECIALIST_STATUSES])
     .in("work_format", formatsFor(request.workFormat));
 
   const variants = storedLanguageVariants(request.serviceLanguages);
   if (variants.length > 0) query = query.overlaps("languages", variants);
 
-  if (request.categoryId && UUID.test(request.categoryId)) {
+  if (meaningSpecialistIds) {
+    query = query.in("id", meaningSpecialistIds);
+  } else if (request.categoryId && UUID.test(request.categoryId)) {
     const safeIds = serviceSpecialistIds.filter((id) => UUID.test(id));
     const parts = [`category_id.eq.${request.categoryId}`];
     if (safeIds.length > 0) parts.push(`id.in.(${safeIds.join(",")})`);
@@ -219,9 +240,28 @@ export async function matchConfirmedServiceRequest(
   const started = Date.now();
   const runId = crypto.randomUUID();
   try {
-    const serviceFloors = request.categoryId
-      ? await loadCategoryServiceFloors(supabase, request.categoryId)
-      : new Map<string, ServiceEconomicFloor[]>();
+    const meaning = request.meaning?.trim() ?? "";
+    const offerFacts = new Map<string, { meaning: string; active: boolean }[]>();
+    let serviceFloors = new Map<string, ServiceEconomicFloor[]>();
+    if (meaning) {
+      const offerRows = await loadActiveServiceOffers(supabase);
+      for (const row of offerRows) {
+        const id = String(row.specialist_id ?? "");
+        const title = typeof row.title === "string" ? row.title : "";
+        if (!id || row.is_active === false || !serviceMeaningsCompatible(meaning, title)) continue;
+        const floors = serviceFloors.get(id) ?? [];
+        floors.push({
+          minimumOrderCents: nonNegativeIntegerCents(row.minimum_order_cents),
+          currency: typeof row.currency === "string" ? row.currency : null,
+        });
+        serviceFloors.set(id, floors);
+        const facts = offerFacts.get(id) ?? [];
+        facts.push({ meaning: title, active: true });
+        offerFacts.set(id, facts);
+      }
+    } else if (request.categoryId) {
+      serviceFloors = await loadCategoryServiceFloors(supabase, request.categoryId);
+    }
     const serviceSpecialistIds: string[] = [];
     serviceFloors.forEach((_floors, specialistId) => {
       serviceSpecialistIds.push(specialistId);
@@ -232,7 +272,17 @@ export async function matchConfirmedServiceRequest(
       clientBudgetText: economy.text,
       acceptedCents: economy.acceptedCents,
     });
-    const rows = await loadSpecialistRows(supabase, request, serviceSpecialistIds);
+    const rows =
+      !meaning && !request.categoryId
+        ? []
+        : meaning && offerFacts.size === 0
+          ? []
+          : await loadSpecialistRows(
+              supabase,
+              request,
+              serviceSpecialistIds,
+              meaning ? Array.from(offerFacts.keys()) : null,
+            );
     const needsCity = request.workFormat !== "online";
     const cities = needsCity
       ? await loadCities(
@@ -249,9 +299,10 @@ export async function matchConfirmedServiceRequest(
     for (const row of rows) {
       if (typeof row.user_id !== "string" || !activeUsers.has(row.user_id)) continue;
       const extraCategory =
-        request.categoryId && row.id && serviceIdSet.has(row.id) ? [request.categoryId] : [];
+        !meaning && request.categoryId && row.id && serviceIdSet.has(row.id) ? [request.categoryId] : [];
       const candidate = toCandidate(row, row.id ? cities.get(row.id) ?? null : null, extraCategory);
       if (!candidate) continue;
+      if (meaning && row.id) candidate.offers = offerFacts.get(row.id) ?? [];
       const decision = evaluateMatch(request, candidate);
       if (!decision.eligible) continue;
       otherwiseEligible.push({

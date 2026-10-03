@@ -9,6 +9,7 @@ import type { MatchRequest } from "./eligibility.ts";
 
 const REQUEST: MatchRequest = {
   id: "request-1",
+  meaning: "Замена генератора",
   categoryId: null,
   serviceLanguages: ["ru"],
   workFormat: "online",
@@ -83,7 +84,20 @@ function database(
           return { error: null };
         },
         then(resolve: (value: { data: unknown; error: null }) => void) {
-          const data = table === "specialists" ? rows : table === "native_installations" ? installs : [];
+          const data =
+            table === "specialists"
+              ? rows
+              : table === "native_installations"
+                ? installs
+                : table === "specialist_services"
+                  ? rows.map((row) => ({
+                      specialist_id: row.id,
+                      title: "Замена генератора",
+                      is_active: true,
+                      minimum_order_cents: null,
+                      currency: "EUR",
+                    }))
+                  : [];
           resolve({ data, error: null });
         },
       };
@@ -121,7 +135,7 @@ test("22. a match row has no client contact or raw text", async () => {
   for (const forbidden of ["client_email", "client_phone", "client_name", "description", "anna@"]) {
     assert.equal(serialized.includes(forbidden), false, forbidden);
   }
-  assert.deepEqual(row.match_reasons, ["language_match", "format_match", "location_not_required"]);
+  assert.deepEqual(row.match_reasons, ["service_match", "language_match", "format_match", "location_not_required"]);
 });
 
 test("23. the specialist card query does not read client contacts", () => {

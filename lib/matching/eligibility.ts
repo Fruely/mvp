@@ -1,7 +1,8 @@
-import { isPublicLeadTargetSpecialist } from "@/lib/specialists/status";
 import { languagesOverlap } from "./languages";
+import { serviceMeaningsCompatible } from "./serviceMeaning";
 
 export const MATCH_REASON_CODES = [
+  "service_match",
   "category_match",
   "language_match",
   "format_match",
@@ -14,8 +15,16 @@ export type MatchReasonCode = (typeof MATCH_REASON_CODES)[number];
 export type MatchWorkFormat = "online" | "offline" | "hybrid";
 
 /** Confirmed request facts used for matching. Contacts and free text are absent on purpose. */
+export type MatchOfferFact = {
+  meaning: string;
+  active: boolean;
+};
+
 export type MatchRequest = {
   id: string;
+  /** What the person asked for. This is the semantic join. */
+  meaning?: string;
+  /** Legacy catalog id. Used only when the request has no service meaning. */
   categoryId: string | null;
   serviceLanguages: readonly string[];
   workFormat: MatchWorkFormat;
@@ -25,6 +34,9 @@ export type MatchRequest = {
 
 export type MatchCandidate = {
   id: string;
+  /** Active offers. Required when the request carries a service meaning. */
+  offers?: readonly MatchOfferFact[];
+  /** Legacy catalog ids. Used only when the request has no service meaning. */
   categoryIds: readonly string[];
   languages: readonly string[];
   workFormat: string | null;
@@ -82,25 +94,26 @@ function locationDecision(
 }
 
 export function evaluateMatch(request: MatchRequest, candidate: MatchCandidate): MatchDecision {
-  if (
-    !isPublicLeadTargetSpecialist({
-      status: candidate.status,
-      is_active: candidate.isActive,
-      is_visible: candidate.isVisible,
-      billing_visibility_blocked: candidate.billingVisibilityBlocked,
-      is_test: candidate.isTest,
-    })
-  ) {
+  if (candidate.isTest === true) {
     return { eligible: false, reasons: [] };
   }
 
   const reasons: MatchReasonCode[] = [];
+  const meaning = request.meaning?.trim() ?? "";
 
-  if (request.categoryId) {
+  if (meaning) {
+    const compatible = (candidate.offers ?? []).some(
+      (offer) => offer.active && serviceMeaningsCompatible(meaning, offer.meaning),
+    );
+    if (!compatible) return { eligible: false, reasons: [] };
+    reasons.push("service_match");
+  } else if (request.categoryId) {
     if (!candidate.categoryIds.includes(request.categoryId)) {
       return { eligible: false, reasons: [] };
     }
     reasons.push("category_match");
+  } else {
+    return { eligible: false, reasons: [] };
   }
 
   if (request.serviceLanguages.length > 0) {

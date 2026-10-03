@@ -14,7 +14,7 @@ const VALIDATED = {
   postal_code: null,
 } as never;
 
-function database(specialistCategoryId: string | null = null) {
+function database(specialistCategoryId: string | null = null, requestedService = "") {
   const writes: string[] = [];
   const supabase = {
     from(table: string) {
@@ -30,6 +30,7 @@ function database(specialistCategoryId: string | null = null) {
           data: {
             id: "request-internal-1",
             category_id: specialistCategoryId,
+            requested_service: requestedService,
             service_languages: [],
             work_format: "online",
             city: null,
@@ -130,7 +131,7 @@ test("3. flag true runs matching for the new request", async () => {
   assert.equal(upsertAt > 0 && enqueueAt > upsertAt, true);
 });
 
-test("3b. a missing category does not start matching", async () => {
+test("3b. a missing category and missing service meaning does not start matching", async () => {
   const db = database();
   const logs: unknown[][] = [];
   const original = console.info;
@@ -151,12 +152,38 @@ test("3b. a missing category does not start matching", async () => {
   assert.deepEqual(db.writes, []);
   assert.deepEqual(logs, [[
     "[matching] matching_skipped",
-    { reason: "category_unresolved", request_id: "request-internal-1" },
+    { reason: "service_meaning_missing", request_id: "request-internal-1" },
   ]]);
   const serialized = JSON.stringify(logs);
+  assert.equal(serialized.includes("category_unresolved"), false);
   assert.equal(serialized.includes("category_text"), false);
   assert.equal(serialized.includes("description"), false);
   assert.equal(serialized.includes("@"), false);
+});
+
+test("3c. a service meaning starts matching when category_id is null", async () => {
+  const db = database(null, "Замена генератора");
+  const logs: unknown[][] = [];
+  const original = console.info;
+  console.info = (...args: unknown[]) => {
+    logs.push(args);
+  };
+  try {
+    await withFlag("true", async () => {
+      await matchAfterServiceRequestCreated(
+        db.supabase,
+        { kind: "created", public_id: "REQ-1", created_at: "2026-09-26T00:00:00.000Z" },
+        VALIDATED,
+      );
+    });
+  } finally {
+    console.info = original;
+  }
+  const serialized = JSON.stringify(logs);
+  assert.equal(serialized.includes("[matching] completed"), true);
+  assert.equal(serialized.includes("category_unresolved"), false);
+  assert.equal(serialized.includes("service_meaning_missing"), false);
+  assert.equal(serialized.includes("feature_disabled"), false);
 });
 
 test("4-5. extraction and matching flags are independent", () => {

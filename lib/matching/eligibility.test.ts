@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { evaluateMatch, type MatchCandidate, type MatchRequest } from "./eligibility.ts";
 import { canonicalizeLanguage, languagesOverlap } from "./languages.ts";
+import { isPublicLeadTargetSpecialist } from "../specialists/status.ts";
 
 function candidate(overrides: Partial<MatchCandidate> = {}): MatchCandidate {
   return {
@@ -98,10 +99,44 @@ test("12. a different category does not match", () => {
   assert.equal(evaluateMatch(request({ categoryId: "tax" }), candidate({ categoryIds: ["plumbing"] })).eligible, false);
 });
 
-test("a missing category does not reject the specialist", () => {
-  const decision = evaluateMatch(request({ categoryId: null }), candidate({ categoryIds: ["plumbing"] }));
+test("a missing category does not reject a compatible offer", () => {
+  const decision = evaluateMatch(
+    request({ categoryId: null, meaning: "Замена генератора" }),
+    candidate({
+      categoryIds: [],
+      status: "draft",
+      isActive: false,
+      isVisible: false,
+      offers: [{ meaning: "Замена генератора", active: true }],
+    }),
+  );
   assert.equal(decision.eligible, true);
   assert.equal(decision.reasons.includes("category_match"), false);
+  assert.ok(decision.reasons.includes("service_match"));
+});
+
+test("a missing category and missing service meaning does not match", () => {
+  assert.equal(evaluateMatch(request({ categoryId: null }), candidate()).eligible, false);
+});
+
+test("an unrelated service meaning does not match", () => {
+  assert.equal(
+    evaluateMatch(
+      request({ categoryId: null, meaning: "Замена генератора" }),
+      candidate({ offers: [{ meaning: "Покраска стен", active: true }] }),
+    ).eligible,
+    false,
+  );
+});
+
+test("an inactive offer does not match", () => {
+  assert.equal(
+    evaluateMatch(
+      request({ categoryId: null, meaning: "Замена генератора" }),
+      candidate({ offers: [{ meaning: "Замена генератора", active: false }] }),
+    ).eligible,
+    false,
+  );
 });
 
 test("13. an online request matches an online or hybrid specialist and ignores city", () => {
@@ -135,12 +170,15 @@ test("16. hybrid accepts online or a physically compatible specialist", () => {
   assert.equal(evaluateMatch(request({ workFormat: "hybrid", city: "Hamburg" }), candidate({ workFormat: "offline", city: "Berlin" })).eligible, false);
 });
 
-test("17. an unpublished specialist is excluded", () => {
-  assert.equal(evaluateMatch(request(), candidate({ status: "draft", isVisible: false })).eligible, false);
-  assert.equal(evaluateMatch(request(), candidate({ isActive: false })).eligible, false);
+test("17. publication state does not decide matching", () => {
+  assert.equal(
+    evaluateMatch(request(), candidate({ status: "draft", isVisible: false, isActive: false })).eligible,
+    true,
+  );
+  assert.equal(evaluateMatch(request(), candidate({ isTest: true })).eligible, false);
 });
 
-test("18. a published visible specialist is included", () => {
+test("18. a published visible specialist is still included", () => {
   assert.equal(evaluateMatch(request(), candidate({ status: "published_unverified" })).eligible, true);
   assert.equal(evaluateMatch(request(), candidate({ status: "featured_verified" })).eligible, true);
 });
@@ -154,4 +192,19 @@ test("21. match reasons are stable and contain no free text", () => {
 
 test("paid plan is not required", () => {
   assert.equal(evaluateMatch(request(), candidate()).eligible, true);
+});
+
+test("public profile eligibility still excludes a draft", () => {
+  assert.equal(
+    isPublicLeadTargetSpecialist({ status: "draft", is_active: false, is_visible: false }),
+    false,
+  );
+  assert.equal(
+    isPublicLeadTargetSpecialist({
+      status: "published_unverified",
+      is_active: true,
+      is_visible: true,
+    }),
+    true,
+  );
 });
