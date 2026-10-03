@@ -4,7 +4,9 @@ import test from "node:test";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { Environment } from "@apple/app-store-server-library";
 
+import { bundledAppleRootCertificates } from "./appleRootCertificates.ts";
 import {
+  createAppleSignedTransactionVerifier,
   interpretAppleTransaction,
   readAppleStoreVerificationConfig,
 } from "./appleStoreTransaction.ts";
@@ -443,8 +445,32 @@ test("verified appAccountToken must belong to the authenticated user", async () 
   assert.equal(other.tables.request_offers[0].status, "open");
 });
 
-test("production Apple verification fails closed when the app id or roots are missing", () => {
-  assert.equal(readAppleStoreVerificationConfig({ APPLE_STORE_ENVIRONMENT: "Production" }).ok, false);
-  assert.equal(readAppleStoreVerificationConfig({ APPLE_STORE_ENVIRONMENT: "Sandbox" }).ok, false);
+test("bundled Apple roots are the default and an explicit path override fails closed", () => {
   assert.equal(readAppleStoreVerificationConfig({}).ok, false);
+  assert.equal(readAppleStoreVerificationConfig({ APPLE_STORE_ENVIRONMENT: "Production" }).ok, false);
+
+  const sandbox = readAppleStoreVerificationConfig({ APPLE_STORE_ENVIRONMENT: "Sandbox" });
+  assert.equal(sandbox.ok, true);
+  if (!sandbox.ok) return;
+  const bundled = bundledAppleRootCertificates();
+  assert.equal(sandbox.config.rootCertificates.length, bundled.length);
+  sandbox.config.rootCertificates.forEach((certificate, index) => {
+    assert.equal(certificate.equals(bundled[index]), true);
+  });
+  createAppleSignedTransactionVerifier(sandbox.config);
+
+  const production = readAppleStoreVerificationConfig({
+    APPLE_STORE_ENVIRONMENT: "Production",
+    APPLE_APP_APPLE_ID: "123456789",
+  });
+  assert.equal(production.ok, true);
+  if (production.ok) createAppleSignedTransactionVerifier(production.config);
+
+  assert.equal(
+    readAppleStoreVerificationConfig({
+      APPLE_STORE_ENVIRONMENT: "Sandbox",
+      APPLE_ROOT_CERTIFICATE_PATHS: "/tmp/freuly-missing-apple-root.cer",
+    }).ok,
+    false,
+  );
 });
