@@ -74,6 +74,8 @@ export type MatchPreview = {
   opened: boolean;
   access_offer: MatchAccessOffer | null;
   payment_required: boolean;
+  /** Authoritative reserved claim for this match. Null is fail-closed. */
+  claim_id: string | null;
   commercial_connection: CommercialConnectionProjection | null;
 };
 
@@ -175,6 +177,7 @@ export function toMatchPreview(match: Record<string, unknown>, request: Record<s
     conversation_id: null,
     access_offer: null,
     payment_required: false,
+    claim_id: null,
     commercial_connection: emptyCommercialConnection(),
   };
 }
@@ -199,6 +202,7 @@ function unavailablePreview(match: Record<string, unknown>, requestId: string): 
     opened: Boolean(asString(match.opened_at)),
     access_offer: null,
     payment_required: false,
+    claim_id: null,
     commercial_connection: emptyCommercialConnection(),
   };
 }
@@ -333,6 +337,7 @@ export async function loadOwnedMatchPreview(
         conversation_id: conversationId,
         access_offer: offers.byRequest.get(requestId) ?? null,
         payment_required: facts.paymentRequired.get(String(matchRow.id)) === true,
+        claim_id: facts.claimId.get(String(matchRow.id)) ?? null,
         commercial_connection: commercialConnection,
       },
     };
@@ -402,6 +407,7 @@ export async function listOwnedActiveMatchPreviews(
         ...toMatchPreview(item.match, item.request),
         access_offer: offers.byRequest.get(item.requestId) ?? null,
         payment_required: facts.paymentRequired.get(String(item.match.id)) === true,
+        claim_id: null,
         commercial_connection: facts.commercial.get(String(item.match.id)) ?? null,
       }))
       .sort((a, b) => (b.matched_at ?? "").localeCompare(a.matched_at ?? ""))

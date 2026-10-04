@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   ACTIVE_REQUEST_OFFER_PAYMENT_STATUSES,
+  authoritativeReservedClaimId,
   derivePaymentRequired,
   type PaymentRequiredGrant,
   type PaymentRequiredOffer,
@@ -292,16 +293,19 @@ function isConnected(
 type PreviewRead = {
   paymentRequired: Map<string, boolean>;
   commercial: Map<string, CommercialConnectionProjection | null>;
+  claimId: Map<string, string | null>;
 };
 
 function closedRead(items: readonly CommercialPreviewItem[]): PreviewRead {
   const paymentRequired = new Map<string, boolean>();
   const commercial = new Map<string, CommercialConnectionProjection | null>();
+  const claimId = new Map<string, string | null>();
   for (const item of items) {
     paymentRequired.set(item.matchId, false);
     commercial.set(item.matchId, null);
+    claimId.set(item.matchId, null);
   }
-  return { paymentRequired, commercial };
+  return { paymentRequired, commercial, claimId };
 }
 
 function asRow(value: unknown): Record<string, unknown> | null {
@@ -453,6 +457,18 @@ export async function loadSpecialistMatchPreviewFacts(
         offers: offerFacts,
         claims: matchClaims,
         payments: paymentFacts,
+      }),
+    );
+    result.claimId.set(
+      item.matchId,
+      authoritativeReservedClaimId({
+        requestId: item.requestId,
+        matchId: item.matchId,
+        specialistId,
+        offers: offerFacts,
+        claims: matchClaims,
+        grants: grantRows,
+        payments: paymentRows,
       }),
     );
   }

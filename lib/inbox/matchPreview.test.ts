@@ -417,6 +417,7 @@ test("single and list previews expose the same payment_required read without a p
           specialist_id: OWN,
           request_offer_id: offerId,
           client_confirmed_at: "2026-09-30T12:00:00.000Z",
+          payment_rail: "store",
         },
         {
           id: "abababab-abab-4aba-8aba-abababababab",
@@ -462,6 +463,8 @@ test("single and list previews expose the same payment_required read without a p
   assert.equal(single.status, "ready");
   if (single.status !== "ready") return;
   assert.equal(single.preview.payment_required, true);
+  assert.equal(single.preview.claim_id, claimId);
+  assert.equal(listed.items.every((item) => item.claim_id === null), true);
   assert.equal(single.preview.access_offer?.offer_id, offerId);
   assert.equal(single.preview.offer_state, "open");
   assert.equal(single.preview.conversation_id, null);

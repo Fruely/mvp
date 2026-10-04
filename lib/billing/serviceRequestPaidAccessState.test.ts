@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { buildMatchedServiceRequestOfferIdempotencyKey } from "../leadEngine/requestOfferPolicy.ts";
 import {
+  authoritativeReservedClaimId,
   derivePaymentRequired,
   isActiveRequestOfferPaymentStatus,
   type PaymentRequiredClaim,
@@ -108,4 +109,43 @@ test("terminal claims and a mismatched claim or offer do not ask for payment", (
   assert.equal(required({ offer: offer({ requestKind: "direct_lead" }) }), false);
   assert.equal(required({ offer: offer({ priceCents: null }) }), false);
   assert.equal(required({ offer: offer({ priceCents: 0 }) }), false);
+});
+
+test("the preview claim id is the one reserved claim for this match", () => {
+  const input = {
+    requestId: REQUEST,
+    matchId: MATCH,
+    specialistId: SPEC,
+    offers: [offer()],
+    claims: [claim()],
+    grants: [],
+    payments: [],
+  };
+  assert.equal(authoritativeReservedClaimId(input), CLAIM);
+  assert.equal(
+    authoritativeReservedClaimId({ ...input, payments: [{ claimId: CLAIM, status: "paid" }] }),
+    null,
+  );
+  assert.equal(authoritativeReservedClaimId({ ...input, claims: [] }), null);
+  assert.equal(
+    authoritativeReservedClaimId({
+      ...input,
+      claims: [claim(), claim({ id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd" })],
+    }),
+    null,
+  );
+  assert.equal(
+    authoritativeReservedClaimId({
+      ...input,
+      claims: [claim({ matchId: "22222222-2222-4222-8222-222222222222" })],
+    }),
+    null,
+  );
+  assert.equal(
+    authoritativeReservedClaimId({
+      ...input,
+      claims: [claim({ specialistId: "ffffffff-ffff-4fff-8fff-ffffffffffff" })],
+    }),
+    null,
+  );
 });

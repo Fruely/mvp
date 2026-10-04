@@ -107,3 +107,41 @@ export function derivePaymentRequired(input: {
   );
   return !paymentActive;
 }
+
+/**
+ * The one reserved claim for this match and specialist.
+ * Zero or more than one is closed. The caller does not supply the id.
+ */
+export function authoritativeReservedClaimId(input: {
+  requestId: string;
+  matchId: string;
+  specialistId: string;
+  offers: readonly PaymentRequiredOffer[];
+  claims: readonly PaymentRequiredClaim[];
+  grants: readonly PaymentRequiredGrant[];
+  payments: readonly PaymentRequiredPayment[];
+}): string | null {
+  const ids: string[] = [];
+  for (const claim of input.claims) {
+    if (claim.status !== "reserved" || typeof claim.id !== "string" || !claim.id) continue;
+    const offer = input.offers.find((item) => item.id === claim.requestOfferId) ?? null;
+    if (!canonicalOffer(offer, input.requestId, input.specialistId)) continue;
+    if (claim.serviceRequestId !== input.requestId) continue;
+    if (claim.matchId !== input.matchId) continue;
+    if (claim.specialistId !== input.specialistId) continue;
+    if (claim.requestOfferId !== offer.id) continue;
+    const grantActive = input.grants.some(
+      (grant) =>
+        grant.offerId === offer.id &&
+        grant.specialistId === input.specialistId &&
+        grant.revokedAt == null,
+    );
+    if (grantActive) continue;
+    const paymentActive = input.payments.some(
+      (payment) => payment.claimId === claim.id && isActiveRequestOfferPaymentStatus(payment.status),
+    );
+    if (paymentActive) continue;
+    ids.push(claim.id);
+  }
+  return ids.length === 1 ? ids[0] : null;
+}
