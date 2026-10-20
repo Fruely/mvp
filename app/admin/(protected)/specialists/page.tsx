@@ -538,16 +538,11 @@ export default function AdminSpecialistsPage() {
     if (
       typeof window !== "undefined" &&
       !window.confirm(
-        "Безвозвратно удалить специалиста, файлы в Storage и связанные данные в БД?"
+        "Безвозвратно удалить специалиста, файлы и учётную запись входа Supabase Auth? Связанная платёжная история может заблокировать удаление."
       )
     ) {
       return;
     }
-    const deleteAuthUser =
-      typeof window !== "undefined" &&
-      window.confirm(
-        "Также удалить учётную запись входа Supabase Auth (auth.users) для этого пользователя? «Отмена» — оставить только удаление профиля и данных."
-      );
 
     setDeletingSpecialistById((prev) => ({ ...prev, [specialistId]: true }));
     setToast(null);
@@ -561,12 +556,14 @@ export default function AdminSpecialistsPage() {
         },
         body: JSON.stringify({
           specialist_id: specialistId,
-          delete_auth_user: deleteAuthUser,
+          delete_auth_user: true,
         }),
       });
       const json = (await res.json()) as {
         ok?: boolean;
         error?: string;
+        code?: string;
+        user_id?: string;
         auth_user_deleted?: boolean;
       };
       if (!res.ok || !json.ok) {
@@ -576,7 +573,13 @@ export default function AdminSpecialistsPage() {
             : res.status === 404
               ? "Специалист не найден"
               : "Не удалось удалить специалиста";
-        setToast({ type: "error", message: adminErrorMessage(msg) });
+        setToast({
+          type: "error",
+          message:
+            json.code === "AUTH_DELETE_FAILED_AFTER_PROFILE_REMOVAL"
+              ? `Профиль удалён, но учётная запись Auth осталась (ID: ${json.user_id ?? "неизвестен"}). Требуется ручная проверка в Supabase. ${msg}`
+              : adminErrorMessage(msg),
+        });
         return;
       }
       setToast({
