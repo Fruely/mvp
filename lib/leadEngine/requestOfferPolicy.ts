@@ -47,6 +47,42 @@ export type RequestOfferInsert = {
   idempotency_key: string;
 };
 
+/** Stable server-side key for the first automatic match of an open request. */
+export function buildServiceRequestMatchOfferIdempotencyKey(input: {
+  serviceRequestId: string;
+  specialistId: string;
+}): string {
+  return `service-request:${input.serviceRequestId}:specialist:${input.specialistId}:match:initial`;
+}
+
+/**
+ * Initial automatic match offer for an open service request.
+ *
+ * The offer starts with the same safe commercial posture as a direct-lead
+ * shadow offer: subscription is the current entitlement path and the live
+ * pay-per-lead price remains unset. Shadow pricing can be attached separately
+ * without changing checkout, contact visibility, or billing behaviour.
+ */
+export function buildServiceRequestMatchedShadowOffer(input: {
+  serviceRequestId: string;
+  specialistId: string;
+}): RequestOfferInsert {
+  return {
+    request_kind: "service_request",
+    lead_id: null,
+    service_request_id: input.serviceRequestId,
+    promotion_id: null,
+    specialist_id: input.specialistId,
+    offer_reason: "matched",
+    pricing_segment: "professional",
+    billing_model: "subscription",
+    price_cents: null,
+    currency: "eur",
+    status: "offered",
+    idempotency_key: buildServiceRequestMatchOfferIdempotencyKey(input),
+  };
+}
+
 /** Stable server-side key for the initial direct-selection offer. */
 export function buildDirectLeadOfferIdempotencyKey(input: {
   leadId: string;
