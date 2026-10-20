@@ -46,7 +46,7 @@ const README = `# Final Legal Review Pack — INTERNAL
 ## Code-verified facts
 
 - **Operator (public):** Natalia Sheshenia, Sheshenia – Freuly, Hofolper Straße 46, 57399 Kirchhundem, Deutschland. Email: freuly.de@gmail.com. Phone: +49 160 92686432. USt-IdNr.: DE464033560. W-IdNr.: DE464033560-00001. **Steuernummer is internal-only** (\`lib/legal/freulyIdentity.ts\`, not in public bundles).
-- **Prices:** Pro 29 €/month, Pro Premium 59 €/month, Promoted Request 10 € one-time (\`locales/de.json\` pricing section).
+- **Prices:** Professional 29 €/month, Growth 59 €/month. Direct pay-per-lead pricing is server-authoritative and currently starts at 20 €; the exact request price is shown before checkout. Legacy Promoted Request is a separate 10 € one-time flow.
 - **7-day grace:** Subscription grace period and Promoted credit window (\`locales/de.json\` dashboard billing strings).
 - **Partner validation:** 14 calendar days (\`content/partners/agreementContentV10.ts\` constant; v1.2 text uses same rule).
 - **Referral cookie:** \`freuly_partner_ref\`, 90 days (\`lib/partners/cookie.ts\` \`PARTNER_REF_MAX_AGE_SEC\`).

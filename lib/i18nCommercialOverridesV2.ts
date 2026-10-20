@@ -10,8 +10,8 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
     pricing: {
       compare: {
         rows: [
-          { label: "Канал клиентских заявок", professional: "Да", growth: "Да" },
-          { label: "Публичный профиль", professional: "Да", growth: "Да" },
+          { label: "Доступ к контактам подходящих заявок", professional: "Без доплаты за каждую", growth: "Без доплаты за каждую" },
+          { label: "Публичный профиль", professional: "Да, бесплатно", growth: "Да, бесплатно" },
           { label: "Услуги и цены", professional: "Да", growth: "Да" },
           { label: "Фотографии в галерее", professional: "До 5", growth: "До 15" },
           { label: "Языки, формат работы и география", professional: "Да", growth: "Да" },
@@ -78,8 +78,8 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
     pricing: {
       compare: {
         rows: [
-          { label: "Канал клієнтських запитів", professional: "Так", growth: "Так" },
-          { label: "Публічний профіль", professional: "Так", growth: "Так" },
+          { label: "Доступ до контактів відповідних запитів", professional: "Без доплати за кожен", growth: "Без доплати за кожен" },
+          { label: "Публічний профіль", professional: "Так, безкоштовно", growth: "Так, безкоштовно" },
           { label: "Послуги та ціни", professional: "Так", growth: "Так" },
           { label: "Фотографії в галереї", professional: "До 5", growth: "До 15" },
           { label: "Мови, формат роботи та географія", professional: "Так", growth: "Так" },
@@ -146,8 +146,8 @@ const OVERRIDES: Record<CommercialLang, Dict> = {
     pricing: {
       compare: {
         rows: [
-          { label: "Kundenanfrage-Kanal", professional: "Ja", growth: "Ja" },
-          { label: "Öffentliches Profil", professional: "Ja", growth: "Ja" },
+          { label: "Zugang zu Kontakten passender Anfragen", professional: "Ohne Einzelzahlung", growth: "Ohne Einzelzahlung" },
+          { label: "Öffentliches Profil", professional: "Ja, kostenlos", growth: "Ja, kostenlos" },
           { label: "Leistungen und Preise", professional: "Ja", growth: "Ja" },
           { label: "Galeriebilder", professional: "Bis 5", growth: "Bis 15" },
           { label: "Sprachen, Arbeitsformat und Geografie", professional: "Ja", growth: "Ja" },

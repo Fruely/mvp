@@ -44,7 +44,7 @@ const COPY: Record<Lang, PublicPricingCopy> = {
         "Для специалиста, который хочет подключиться к каналу клиентских заявок Freuly и самостоятельно вести свой профиль.",
       features: [
         "коммерческое участие в канале клиентских заявок",
-        "публичный профессиональный профиль после оплаты",
+        "публичный профиль (бесплатная публикация)",
         "услуги и цены",
         "до 5 фотографий в галерее (аватар отдельно)",
         "языки, формат работы, город и радиус",
@@ -82,11 +82,11 @@ const COPY: Record<Lang, PublicPricingCopy> = {
       },
       {
         q: "Когда профиль становится видимым клиентам?",
-        a: "После успешной оплаты Freuly Professional или Freuly Growth и завершения автоматической публикации профиля.",
+        a: "После публикации заполненного профиля. Подписка Professional или Growth для публикации не требуется.",
       },
       {
         q: "Есть ли бесплатный период публичного размещения?",
-        a: "Нет. Бесплатно можно подготовить черновик и опубликовать профиль. Подписка Professional или Growth включает доступ к заявкам в рамках тарифа; без неё подходящие заявки можно покупать отдельно.",
+        a: "Публикация базового профиля бесплатна без ограничения по пробному периоду. Платным является доступ к контактам заявок: отдельно за заявку или в рамках Professional/Growth.",
       },
       {
         q: "Продлевается ли подписка автоматически?",
@@ -102,7 +102,7 @@ const COPY: Record<Lang, PublicPricingCopy> = {
       },
     ],
     disclaimer:
-      "Оплата тарифа активирует публичный профиль и коммерческое участие в канале клиентских заявок Freuly на оплаченный период. Автоматического повторного списания нет. Freuly не гарантирует конкретное количество просмотров, заявок, заказов или доход.",
+      "Регистрация и публикация профиля бесплатны. Оплата Professional или Growth относится к доступу к заявкам и функциям тарифа, а не к публикации профиля. Автоматического повторного списания нет. Freuly не гарантирует конкретное количество просмотров, заявок, заказов или доход.",
     preview: {
       professionalLabel: "Посмотреть пример профиля",
       growthLabel: "Посмотреть пример Growth Page",
@@ -134,7 +134,7 @@ const COPY: Record<Lang, PublicPricingCopy> = {
         "Для спеціаліста, який хоче підключитися до каналу клієнтських запитів Freuly та самостійно вести свій профіль.",
       features: [
         "комерційна участь у каналі клієнтських запитів",
-        "публічний професійний профіль після оплати",
+        "публічний профіль (безкоштовна публікація)",
         "послуги та ціни",
         "до 5 фотографій у галереї (аватар окремо)",
         "мови, формат роботи, місто та радіус",
@@ -192,7 +192,7 @@ const COPY: Record<Lang, PublicPricingCopy> = {
       },
     ],
     disclaimer:
-      "Оплата тарифу активує публічний профіль і комерційну участь у каналі клієнтських запитів Freuly на оплачений період. Автоматичного повторного списання немає. Freuly не гарантує конкретну кількість переглядів, запитів, замовлень або доходу.",
+      "Реєстрація та публікація профілю безкоштовні. Оплата Professional або Growth стосується доступу до запитів і функцій тарифу, а не публікації профілю. Автоматичного повторного списання немає. Freuly не гарантує конкретну кількість переглядів, запитів, замовлень або доходу.",
     preview: {
       professionalLabel: "Переглянути приклад профілю",
       growthLabel: "Переглянути приклад Growth Page",
@@ -224,7 +224,7 @@ const COPY: Record<Lang, PublicPricingCopy> = {
         "Für Spezialisten, die den Freuly-Kanal für Kundenanfragen aktivieren und ihr Profil selbst verwalten möchten.",
       features: [
         "kommerzielle Teilnahme am Kundenanfrage-Kanal",
-        "öffentliches professionelles Profil nach Zahlung",
+        "öffentliches Profil (kostenlose Veröffentlichung)",
         "Leistungen und Preise",
         "bis zu 5 Galeriebilder (Avatar separat)",
         "Sprachen, Arbeitsformat, Ort und Radius",
@@ -262,11 +262,11 @@ const COPY: Record<Lang, PublicPricingCopy> = {
       },
       {
         q: "Wann wird mein Profil für Kunden sichtbar?",
-        a: "Nach erfolgreicher Zahlung von Freuly Professional oder Freuly Growth und der anschließenden automatischen Veröffentlichung des Profils.",
+        a: "Nach Veröffentlichung eines vollständigen Profils. Professional oder Growth sind für die Veröffentlichung nicht erforderlich.",
       },
       {
         q: "Gibt es eine kostenlose Phase für die öffentliche Veröffentlichung?",
-        a: "Nein. Kostenlos kann nur ein nicht sichtbarer Entwurf vorbereitet werden. Öffentliche Sichtbarkeit und kommerzielle Teilnahme am Anfragekanal beginnen nach der Zahlung.",
+        a: "Die Veröffentlichung des Basisprofils ist ohne Testfrist kostenlos. Kostenpflichtig ist der Zugang zu Anfragekontakten: einzeln pro Anfrage oder über Professional/Growth.",
       },
       {
         q: "Verlängert sich das Abonnement automatisch?",
@@ -282,7 +282,7 @@ const COPY: Record<Lang, PublicPricingCopy> = {
       },
     ],
     disclaimer:
-      "Die Tarifzahlung aktiviert das öffentliche Profil und die kommerzielle Teilnahme am Freuly-Kundenanfrage-Kanal für den bezahlten Zeitraum. Es gibt keine automatische wiederkehrende Abbuchung. Freuly garantiert keine bestimmte Anzahl von Aufrufen, Anfragen, Aufträgen oder Umsätzen.",
+      "Registrierung und Veröffentlichung des Basisprofils sind kostenlos. Professional oder Growth bezahlen den Anfragezugang und die jeweiligen Tariffunktionen, nicht die Profilveröffentlichung. Es gibt keine automatische wiederkehrende Abbuchung. Freuly garantiert keine bestimmte Anzahl von Aufrufen, Anfragen, Aufträgen oder Umsätzen.",
     preview: {
       professionalLabel: "Profilbeispiel ansehen",
       growthLabel: "Growth-Page-Beispiel ansehen",

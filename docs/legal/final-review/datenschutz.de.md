@@ -1,6 +1,6 @@
 # Datenschutzerklärung Freuly
 
-Version 1.1 — August 2026
+Version 1.2 — September 2026
 
 Maßgeblich ist ausschließlich die deutsche Fassung.
 

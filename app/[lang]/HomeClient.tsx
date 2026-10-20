@@ -433,7 +433,7 @@ export default function HomeClient({
                   {t(dict, "home.variantC.promo.specialist.title")}
                 </span>
                 <span className="block text-sm leading-relaxed text-freuly-text-secondary">
-                  {t(dict, "home.mapCta.body")}
+                  {t(dict, "home.variantC.promo.specialist.body")}
                 </span>
                 <span className="inline-flex items-center gap-1 text-sm font-semibold text-freuly-primary">
                   {t(dict, "home.variantC.promo.specialist.cta")}
