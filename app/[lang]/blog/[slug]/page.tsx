@@ -179,11 +179,19 @@ export default async function BlogArticlePage({
       "@type": "Organization",
       name: "Freuly",
       url: SITE_DOMAIN,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_DOMAIN}/brand/freuly-logo.svg`,
+      },
     },
     publisher: {
       "@type": "Organization",
       name: "Freuly",
       url: SITE_DOMAIN,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_DOMAIN}/brand/freuly-logo.svg`,
+      },
     },
     mainEntityOfPage: {
       "@type": "WebPage",
