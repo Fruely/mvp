@@ -75,6 +75,14 @@ export default async function AdminProtectedLayout({
             >
               Partners
             </Link>
+            <a
+              href="https://youme-sandbox-api.freuly.de/api/admin/home"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition"
+            >
+              YouMe
+            </a>
             <Link
               href="/admin/campaign-links"
               className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition"
