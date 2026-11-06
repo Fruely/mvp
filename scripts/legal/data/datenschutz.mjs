@@ -224,9 +224,9 @@ export const DATENSCHUTZ_BLOCKS = [
     "Блок F — Прямі звернення клієнтів",
     {
       purpose: {
-        de: "Zweck: Vermittlung direkter Kontaktanfragen von Endnutzern an ausgewählte Spezialisten.",
-        ru: "Цель: передача прямых контактных запросов от конечных пользователей выбранным специалистам.",
-        ua: "Мета: передача прямих контактних запитів від кінцевих користувачів обраним спеціалістам.",
+        de: "Zweck: Bearbeitung direkter Kontaktanfragen, priorisierte Zuordnung zum ausgewählten Spezialisten und erforderlichenfalls Weitervermittlung an geeignete Spezialisten.",
+        ru: "Цель: обработка прямых обращений, приоритетная передача выбранному специалисту и при необходимости дальнейший подбор подходящих специалистов.",
+        ua: "Мета: обробка прямих звернень, пріоритетне передавання обраному спеціалісту та за потреби подальший підбір відповідних спеціалістів.",
       },
       data: {
         de: "Datenkategorien: Name, E-Mail, Telefonnummer, Nachrichteninhalt, Zeitstempel, zugeordneter Spezialist.",
@@ -234,9 +234,9 @@ export const DATENSCHUTZ_BLOCKS = [
         ua: "Категорії даних: ім’я, e-mail, телефон, зміст повідомлення, мітка часу, призначений спеціаліст.",
       },
       recipient: {
-        de: "Empfänger: ausgewählter Spezialist, Supabase.",
-        ru: "Получатели: выбранный специалист, Supabase.",
-        ua: "Одержувачі: обраний спеціаліст, Supabase.",
+        de: "Empfänger: der zur Bearbeitung berechtigte Spezialist; geeignete Spezialisten erhalten vor Freischaltung höchstens eine datensparsame Vorschau; Supabase.",
+        ru: "Получатели: специалист, получивший право на обработку заявки; другим подходящим специалистам до разблокировки доступно только ограниченное превью; Supabase.",
+        ua: "Одержувачі: спеціаліст, який отримав право на обробку запиту; іншим відповідним спеціалістам до розблокування доступне лише обмежене прев’ю; Supabase.",
       },
       basis: {
         de: "Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO. Berechtigtes Interesse: Betrieb einer Kontaktvermittlungsplattform; Abwägung zugunsten der Vermittlung bei angemessenen Schutzmaßnahmen.",
@@ -268,9 +268,9 @@ export const DATENSCHUTZ_BLOCKS = [
         ua: "Категорії даних: зміст запиту, контактні дані, місцезнаходження, категорія, статус, призначення.",
       },
       recipient: {
-        de: "Empfänger: betroffene Spezialisten, Supabase.",
-        ru: "Получатели: затронутые специалисты, Supabase.",
-        ua: "Одержувачі: залучені спеціалісти, Supabase.",
+        de: "Empfänger: geeignete Spezialisten mit begrenzter Vorschau sowie der zur Bearbeitung freigeschaltete Spezialist mit den erforderlichen Daten; Supabase.",
+        ru: "Получатели: подходящие специалисты с ограниченным превью и специалист, получивший доступ к обработке, — с необходимыми данными; Supabase.",
+        ua: "Одержувачі: відповідні спеціалісти з обмеженим прев’ю та спеціаліст, якому відкрито обробку, — з необхідними даними; Supabase.",
       },
       basis: {
         de: "Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (vorvertragliche Maßnahmen) und lit. f DSGVO (Sicherheit und Missbrauchsprävention).",

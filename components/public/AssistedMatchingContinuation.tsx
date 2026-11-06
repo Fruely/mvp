@@ -44,7 +44,7 @@ export default function AssistedMatchingContinuation({
 }: AssistedMatchingContinuationProps) {
   return (
     <div className="flex flex-col items-center bg-freuly-page px-4 py-10 sm:px-6 sm:py-16">
-      <div className="w-full max-w-[560px]">
+      <div className="w-full max-w-[560px] sm:max-w-[680px]">
         <Link
           href={backHref}
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-freuly-primary hover:text-freuly-primary-hover"
@@ -61,25 +61,25 @@ export default function AssistedMatchingContinuation({
           </svg>
           {backLabel}
         </Link>
-        <h1 className="mt-3 text-[24px] font-bold leading-tight text-freuly-text-primary sm:text-[28px]">
+        <h1 className="mt-3 text-[24px] font-bold leading-tight text-freuly-text-primary sm:text-[32px]">
           {pageTitle}
         </h1>
 
-        <div className="mt-6 flex flex-col items-center gap-6 rounded-2xl border border-freuly-border-default bg-freuly-surface p-8 text-center sm:p-10">
+        <div className="mt-6 flex flex-col items-center gap-6 rounded-2xl border border-freuly-border-default bg-freuly-surface p-8 text-center sm:p-12">
           <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-freuly-primary-light">
             <FreulyMarkIcon />
           </div>
           <div className="flex w-full flex-col gap-2.5">
-            <h2 className="text-xl font-bold text-freuly-text-primary">{title}</h2>
-            <p className="text-sm leading-[1.5] text-freuly-text-secondary">{subtitle}</p>
+            <h2 className="text-xl font-bold text-freuly-text-primary sm:text-2xl">{title}</h2>
+            <p className="text-sm leading-[1.6] text-freuly-text-secondary sm:text-lg">{subtitle}</p>
           </div>
-          <Link href={primaryHref} className={`${publicLinkPrimaryClass} w-full min-h-11 px-6 py-3.5 text-[15px]`}>
+          <Link href={primaryHref} className={`${publicLinkPrimaryClass} w-full min-h-11 px-6 py-3.5 text-[15px] sm:text-base`}>
             {primaryLabel}
           </Link>
           {secondaryHref && secondaryLabel ? (
             <Link
               href={secondaryHref}
-              className={`${publicLinkOutlineClass} w-full min-h-11 px-6 py-3.5 text-[15px]`}
+              className={`${publicLinkOutlineClass} w-full min-h-11 px-6 py-3.5 text-[15px] sm:text-base`}
             >
               {secondaryLabel}
             </Link>
@@ -92,7 +92,7 @@ export default function AssistedMatchingContinuation({
           <div className="mt-8 text-center">
             <Link
               href={refineHref}
-              className="text-sm font-semibold text-freuly-primary hover:text-freuly-primary-hover"
+              className="text-sm font-semibold text-freuly-primary hover:text-freuly-primary-hover sm:text-base"
             >
               {refineLabel}
             </Link>
